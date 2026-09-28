@@ -141,9 +141,15 @@ changing the archive. Reporting and target creation launch no workloads.
 ### PDF presentation
 
 The reusable [Typst template](report.typ) reads the same `report.json` data as
-the Markdown report. Its A4 layout includes a twelve-slice dashboard, separate
-top tens, measurement settings, exclusions, per-case timing/variability and
-workload boundaries, and source/reference provenance. Non-measurement evidence
+the Markdown report. Its A4 layout opens with measured findings, named checkpoints
+across all twelve slices, and matched generated/native comparisons from the same
+run. All case timings follow in readable units, with a short methods appendix.
+Full parameters and provenance remain in the evidence archive and Markdown
+appendix. Missing comparison references are explained once; repeated exclusions
+are grouped. Historical regressions and target shortfalls appear only when their
+references are available. Same-run native ratios require matching units, inputs,
+timing boundaries and batch operation counts; they describe the tested endpoint
+contracts, not arbitrary language behavior or isolated code-generation overhead. Non-measurement evidence
 is labelled and receives no rankings. Synthetic examples are marked on every
 page when the document's `synthetic` field is true.
 

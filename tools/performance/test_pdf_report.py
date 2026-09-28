@@ -180,6 +180,127 @@ class InstalledTypstTests(unittest.TestCase):
     def test_smoke_template_compiles(self):
         self.compile_report("smoke")
 
+    def render(self, data, name):
+        output = self.root / f"{name}.pdf"
+        pdf_report.write_pdf(data, output)
+        with output.open("rb") as result:
+            self.assertEqual(result.read(5), b"%PDF-")
+        self.assertFalse(list(self.root.glob(".can-performance-pdf-*")))
+        try:
+            from pypdf import PdfReader
+        except ImportError:
+            return None
+        text = "\n".join(page.extract_text() or "" for page in PdfReader(output).pages)
+        return " ".join(text.replace("\u200b", "").split())
+
+    def generated_report(self):
+        data = evidence()
+        data["manifest"].update(quality="measurement", requested_suites=["generated"],
+                                completed_suites=["generated"])
+        return data
+
+    def case(self, median, **changes):
+        row = {"unit": "ns/op", "parameters": {"size": 1}, "timing_scope": "complete workload",
+               "iterations_per_sample": 1,
+               "distribution": {"median": median, "min": median, "max": median,
+                                "median_absolute_deviation": 0, "n": 3}}
+        row.update(changes)
+        return row
+
+    def add_pair(self, data, name, *, adapter=False, native_changes=None, can_changes=None):
+        prefix = "generated/generated." + name
+        data["cases"][prefix + ".can"] = self.case(4000, **(can_changes or {}))
+        data["cases"][prefix + (".native-adapter" if adapter else ".native")] = self.case(
+            1000, **(native_changes or {}))
+
+    def test_matched_native_and_adapter_pairs_exclude_incompatible_contracts(self):
+        data = self.generated_report()
+        self.add_pair(data, "frequency")
+        self.add_pair(data, "record-update", adapter=True)
+        for name, changes in (
+            ("wrong-parameters", {"parameters": {"size": 2}}),
+            ("wrong-unit", {"unit": "ms/op"}),
+            ("wrong-scope", {"timing_scope": "different timer boundary"}),
+            ("wrong-iterations", {"iterations_per_sample": 2}),
+            ("native-issue", {"ranking_issues": ["Incomplete correctness evidence"]}),
+        ):
+            self.add_pair(data, name, native_changes=changes)
+        self.add_pair(data, "can-issue", can_changes={"ranking_issues": ["Incomplete delivery"]})
+        for name, unit in (("not-time", "bytes"), ("throughput", "ops/s")):
+            self.add_pair(data, name, native_changes={"unit": unit}, can_changes={"unit": unit})
+        zero = {"median": 0, "min": 0, "max": 0, "median_absolute_deviation": 0, "n": 3}
+        self.add_pair(data, "zero-native", native_changes={"distribution": zero})
+        self.add_pair(data, "zero-can", can_changes={"distribution": zero})
+        text = self.render(data, "matched-pairs")
+        if text is not None:
+            self.assertIn("Across 2 matched workloads", text)
+            section = text.split("Generated code vs native", 1)[1].split("All measured results", 1)[0]
+            self.assertIn("Word frequency", section)
+            self.assertIn("Immutable record update", section)
+            for excluded in ("wrong-parameters", "wrong-unit", "wrong-scope", "wrong-iterations",
+                             "native-issue", "can-issue", "not-time", "throughput", "zero-native", "zero-can"):
+                self.assertNotIn(excluded.replace("-", " "), section)
+            self.assertEqual(section.count("4×"), 2)
+
+    def test_missing_references_many_cases_do_not_create_rankings_or_exclusion_pages(self):
+        data = self.generated_report()
+        data["cases"] = {f"runtime/workload-{i}": self.case(1000 + i) for i in range(24)}
+        data["manifest"].update(requested_suites=["runtime"], completed_suites=["runtime"])
+        reason = "No reviewed target profile supplied"
+        data["rankings"] = {"targets": {
+            "status": "unavailable", "rows": [], "exclusions": dict.fromkeys(data["cases"], reason),
+        }}
+        text = self.render(data, "missing-references")
+        if text is not None:
+            self.assertIn("All 24 case results follow", text)
+            self.assertIn("A defensible top ten", text)
+            self.assertNotIn("Cross-slice priorities", text)
+            self.assertNotIn("Comparison coverage", text)
+            self.assertNotIn(reason, text)
+
+    def test_partial_reference_exclusions_group_repeated_reasons(self):
+        data = self.generated_report()
+        data["cases"] = {f"runtime/workload-{i}": self.case(1000 + i) for i in range(12)}
+        data["manifest"].update(requested_suites=["runtime"], completed_suites=["runtime"],
+                                ranking_references={"targets": {"name": "Reviewed small profile"}})
+        exclusions = {key: "Missing target" if i < 8 else "Contract differs"
+                      for i, key in enumerate(data["cases"])}
+        data["rankings"] = {"targets": {
+            "status": "partial", "eligible_cases": 0, "total_cases": 12,
+            "rows": [], "per_case": {}, "exclusions": exclusions,
+        }}
+        text = self.render(data, "partial-exclusions")
+        if text is not None:
+            self.assertIn("Partial coverage", text)
+            section = text.split("Comparison coverage", 1)[1].split("Interpretation limits", 1)[0]
+            self.assertIn("Missing target 8", section)
+            self.assertIn("Contract differs 4", section)
+            # Each reason occurs once in the count table and once above its case list.
+            self.assertEqual(section.count("Missing target"), 2)
+            self.assertEqual(section.count("Contract differs"), 2)
+            self.assertIn("runtime/workload-0", section)
+            self.assertIn("runtime/workload-11", section)
+
+    def test_smoke_and_incomplete_reports_suppress_same_run_ratios(self):
+        for quality, status in (("smoke", "complete"), ("measurement", "failed")):
+            with self.subTest(quality=quality, status=status):
+                data = self.generated_report()
+                data["manifest"].update(quality=quality, status=status)
+                self.add_pair(data, "frequency")
+                data["rankings"] = {"targets": {
+                    "status": "ranked", "eligible_cases": 1, "total_cases": 2,
+                    "per_case": {"generated/generated.frequency.can": {}},
+                    "rows": [{"case": "INELIGIBLE_RANK_SENTINEL", "unit": "ns/op", "observed": 4000,
+                              "reference": 1000, "ratio": 4, "trial_count": 3, "mad": 0}],
+                }}
+                text = self.render(data, quality + "-" + status)
+                if text is not None:
+                    self.assertIn("Not eligible for performance rankings", text)
+                    self.assertIn("Ineligible evidence. No ranked positions are shown", text)
+                    self.assertNotIn("Generated code vs native", text)
+                    self.assertNotIn("Across 1 matched workloads", text)
+                    self.assertNotIn("INELIGIBLE_RANK_SENTINEL", text)
+
 
 class PdfCommandTests(unittest.TestCase):
     def setUp(self):

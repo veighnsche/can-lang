@@ -1,5 +1,6 @@
 """Synthetic report checks; no drivers, builds or benchmarks are executed."""
 
+import copy
 import unittest
 
 from reporting import DEFAULT_SUITES, markdown_report
@@ -26,6 +27,81 @@ def fixtures():
 
 
 class ReportingTests(unittest.TestCase):
+    def test_measured_results_lead_and_technical_details_are_collapsed(self):
+        manifest, summary, boards = fixtures()
+        report = markdown_report(manifest, summary, boards)
+        measured = report.index("## Measured results")
+        comparisons = report.index("## Top 10 target shortfalls")
+        appendix = report.index("## Technical appendix")
+        self.assertLess(measured, comparisons)
+        self.assertLess(comparisons, appendix)
+        main = report[measured:comparisons]
+        self.assertNotIn("<details>", main)
+        for suite in DEFAULT_SUITES:
+            self.assertIn(f"### {suite} —", main)
+            self.assertIn(f"| {suite}/case | 4 | ms |", main)
+        self.assertIn("/op means one workload execution", main)
+        self.assertIn("not necessarily one element or language operation", main)
+        self.assertIn("without ranking different workloads", main)
+        self.assertGreater(report.index("Source provenance:"), appendix)
+        self.assertGreater(report.index("Sample settings:"), appendix)
+        self.assertGreater(report.index("| Case | Raw unit | Parameters | Timing scope |"), appendix)
+        self.assertIn("<summary>Timing boundaries, parameters, provenance and comparison exclusions</summary>", report)
+
+    def test_readable_units_apply_consistently_without_mutating_evidence(self):
+        manifest, summary, boards = fixtures()
+        for key, median in (("compiler/case", 2_500_000), ("runtime/case", 12_000),
+                            ("generated/case", 250)):
+            summary[key]["unit"] = "ns/op"
+            summary[key]["distribution"].update(median=median, min=median / 2,
+                                                 max=median * 2, median_absolute_deviation=median / 10)
+        boards["targets"]["rows"][0].update(unit="ns/op", observed=2_500_000,
+                                            reference=1_250_000, mad=250_000)
+        before = copy.deepcopy((manifest, summary, boards))
+        report = markdown_report(manifest, summary, boards)
+        self.assertIn("| compiler/case | 2.5 | ms/op | 1.25–5 | 0.25 | 3 |", report)
+        self.assertIn("| runtime/case | 12 | µs/op | 6–24 | 1.2 | 3 |", report)
+        self.assertIn("| generated/case | 250 | ns/op | 125–500 | 25 | 3 |", report)
+        self.assertIn("| 1 | journeys/case | 2.5 ms/op | 1.25 ms/op | 2× | 100 | 3 | 0.25 ms/op |", report)
+        self.assertEqual(before, (manifest, summary, boards))
+
+    def test_shared_missing_references_are_summarized_once_per_board(self):
+        manifest, summary, _ = fixtures()
+        boards = {kind: {"status": "unavailable", "reason": reason,
+                        "eligible_cases": 0, "total_cases": len(summary), "rows": [],
+                        "exclusions": {case: reason for case in summary}}
+                  for kind, reason in (("targets", "No targets reference supplied"),
+                                       ("baseline", "No baseline reference supplied"))}
+        report = markdown_report(manifest, summary, boards)
+        for reason in ("No targets reference supplied", "No baseline reference supplied"):
+            self.assertEqual(report.count(reason), 1)
+        self.assertEqual(report.count("All 12 measured cases are excluded for the comparison reason above."), 2)
+        self.assertNotIn("- compiler/case:", report)
+        self.assertLess(report.index("| browser/case | 4 | ms |"), report.index("No baseline reference supplied"))
+
+    def test_partial_exclusions_group_reasons_and_retain_affected_cases(self):
+        manifest, summary, boards = fixtures()
+        boards["targets"] = {"status": "partial", "reason": "Some references unavailable",
+                             "eligible_cases": 9, "total_cases": 12, "rows": [],
+                             "exclusions": {"runtime/case": "missing target",
+                                            "generated/case": "missing target",
+                                            "browser/case": "target workload contract differs"}}
+        report = markdown_report(manifest, summary, boards)
+        self.assertEqual(report.count("missing target"), 1)
+        self.assertIn("missing target — 2 cases: runtime/case; generated/case.", report)
+        self.assertIn("browser/case: target workload contract differs", report)
+        self.assertGreater(report.index("missing target"), report.index("## Technical appendix"))
+
+    def test_stale_reference_cases_are_not_described_as_measured_cases(self):
+        manifest, summary, boards = fixtures()
+        boards["targets"] = {"status": "partial", "reason": "Some references unavailable",
+                             "eligible_cases": 12, "total_cases": 12, "rows": [],
+                             "exclusions": {f"runtime/stale-{index}": "stale target case absent from candidate"
+                                            for index in range(12)}}
+        report = markdown_report(manifest, summary, boards)
+        self.assertNotIn("all 12 measured cases", report)
+        self.assertIn("stale target case absent from candidate — 12 cases:", report)
+
     def test_zero_trial_timing_has_visible_limit_without_mutating_legacy_summary(self):
         manifest, summary, _ = fixtures()
         row = summary['browser/case']
