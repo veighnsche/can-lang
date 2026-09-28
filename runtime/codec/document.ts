@@ -34,7 +34,10 @@ export function parseJSONText(text: string) {
     parsed = JSON.parse(
       text,
       function (this: object, key: string, value: unknown, context?: { source?: string }) {
-        if (context?.source !== undefined) {
+        // Only numeric source spellings have consumers (exact integers,
+        // raw numeric comparison). Strings, booleans and null keep their
+        // parsed values; retaining their tokens would be unread.
+        if (typeof value === "number" && context?.source !== undefined) {
           let holder = tokens.get(this);
           if (!holder) {
             holder = new Map();

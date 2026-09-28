@@ -151,6 +151,7 @@ test("browser overlay table is complete and inventory is sealed", () => {
 test("browser surfaces expose the profile contract with fail-closed ambient names", async () => {
   const keys = (ns: object) => Object.keys(ns).sort();
   expect(keys(browserOwner)).toEqual([
+    "bindNativeCallback",
     "closeResource",
     "closeResourceWithContext",
     "guardCallback",
@@ -170,7 +171,7 @@ test("browser surfaces expose the profile contract with fail-closed ambient name
     "withScope",
     "withScopeWithContext",
   ]);
-  expect(keys(canonicalOwner).length).toBe(18);
+  expect(keys(canonicalOwner).length).toBe(19);
   // Ambient names exist only so shared modules instantiate; every ambient
   // call fails closed instead of substituting synchronous context.
   for (const ambient of ["registerResource", "launchOwned", "launchNative", "guardCallback"]) {
@@ -188,6 +189,9 @@ test("browser surfaces expose the profile contract with fail-closed ambient name
     "ambient ownership is unavailable in the browser profile",
   );
   await expect(browserOwner.runOwnedRoot(async () => ({}) as never)).rejects.toThrow(
+    "ambient ownership is unavailable in the browser profile",
+  );
+  expect(() => browserOwner.bindNativeCallback(() => {})).toThrow(
     "ambient ownership is unavailable in the browser profile",
   );
   expect(keys(browserDomain)).toEqual([
