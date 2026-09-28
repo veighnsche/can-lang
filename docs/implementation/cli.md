@@ -2,7 +2,7 @@
 
 This document describes the current implementation. Verified build publication
 and supervised assertions were implemented in LF03/LF04/LF15; see their
-[completion evidence](language-fixes-tasks-2026-09-22.md). Their contracts are
+[completion evidence](evidence/2026-09-22/language-fixes/). Their contracts are
 [P15.1](../syntax-taste/platform-testing-spec.md#p151-verified-build-and-publication)
 and [P4.1](../syntax-taste/platform-testing-spec.md#p41-attached-native-and-wrapper-assertions).
 The [September 22 gap report](implementation-gap-verification-2026-09-22.md)

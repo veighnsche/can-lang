@@ -1,7 +1,7 @@
 # Emitted assertions
 
 This document describes the current implementation. The LF03/LF04/LF15
-[completion records](language-fixes-tasks-2026-09-22.md) cover nonpublishing
+[completion records](evidence/2026-09-22/language-fixes/) cover nonpublishing
 assertions, supervised roots and verified build publication under
 [P15.1](../syntax-taste/platform-testing-spec.md#p151-verified-build-and-publication).
 Native assertion requirements are in

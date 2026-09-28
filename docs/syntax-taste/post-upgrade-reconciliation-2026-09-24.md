@@ -117,7 +117,7 @@ These cover the foundation table and the cautionary portions of §10. They do no
 
 | Documents | Correction |
 | --- | --- |
-| [Docs index](../README.md), [implementation index](../implementation/README.md), [LF task record](../implementation/language-fixes-tasks-2026-09-22.md), [T task record](can-implementation-task-list-2026-09-24.md) | Identify completed execution rounds and link remaining requirements instead of describing all implementation as pending or all contracts as fulfilled. |
+| [Docs index](../README.md), [implementation index](../implementation/README.md), LF task record (retired), [T task record](can-implementation-task-list-2026-09-24.md) | Identify completed execution rounds and link remaining requirements instead of describing all implementation as pending or all contracts as fulfilled. |
 | [Preparation checklist](can-design-preparation-2026-09-24.md), [parallel plan](can-preparation-parallel-plan-2026-09-24.md), [recommendation program](can-recommendation-program-2026-09-24.md), [preparation reading guide](preparation/README.md) | Label the completed preparation round and earlier source-state descriptions; route current-status questions here. |
 | Selected preparation contracts, constraints, inventory, resolution records and readiness audit | Add explicit post-upgrade status notes. Preserve earlier selections, illustrative grammar and evidence rather than rewriting them as current compiler syntax. The stream cleanup omission is marked before-fix evidence. |
 | [Decisions](decisions.md) | Clarify the later browser/Linux additions and existing token-evaluation protocol, while retaining initial-scope decisions as such and reporting zero live comparison attempts. No new grammar is adopted. |
@@ -125,7 +125,7 @@ These cover the foundation table and the cautionary portions of §10. They do no
 | [T27 audit](t27-release-audit-2026-09-24.md) | Add a superseding status correction for restored decision inputs, final Linux evidence and the bounded browser recommendation. Preserve original audit rows and commands. |
 | [CLI](../implementation/cli.md), [assertions](../implementation/assertions.md), [Bun integration index](../bun-integration/README.md) | Describe implemented verified publication, supervised assertions and browser target, with delivery limits. |
 | [Webhook README](../../examples/webhook/README.md) | Remove the false “no HTTP client” explanation; describe the sample's operator-carrier choice and retained destination-policy limits. |
-| I01–I50 [coverage](../implementation/coverage.md), [native reuse](../implementation/native-reuse.md), [reconciliation](../implementation/reconciliation.md) | Mark earlier client/browser exclusions as historical, with a link to subsequent implementation status. |
+| I01–I50 coverage, native reuse and reconciliation records (retired; history in Git) | Mark earlier client/browser exclusions as historical, with a link to subsequent implementation status. |
 
 ## Verification and next boundary
 

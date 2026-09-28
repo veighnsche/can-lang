@@ -5,8 +5,9 @@
 > given/call evidence, revision pins, `e"..."` literals, and CAN
 > codes, and its sketch programs were deleted. The body below is
 > preserved untouched per its own no-silent-rewrite rule; current
-> authority lives in [tasks](docs/implementation/tasks.md),
-> [coverage](docs/implementation/coverage.md), the package READMEs,
+> authority lives in [decisions](docs/syntax-taste/decisions.md),
+> the [post-upgrade reconciliation](docs/syntax-taste/post-upgrade-reconciliation-2026-09-24.md),
+> the package READMEs,
 > and [evidence](docs/implementation/evidence/2026-09-21/).
 
 Status: living — v0.1 freeze plus ratified amendments, each tagged

@@ -7,26 +7,26 @@ generated into [`catalogue/`](catalogue/) from
 `compiler/internal/catalogue/catalogue.json` — explanations and
 domain examples live in the owning package, never as a second
 handwritten declaration source. The per-package predecessor notes
-for retired packages were merged into the
-[package history](../docs/archive/std-package-history.md).
+for retired packages were merged into the package history
+(retired; history in Git).
 
 ## Package dispositions
 
 | Package | Current disposition | Maintained demonstration |
 |---|---|---|
-| [`ascii/`](../docs/archive/std-package-history.md#ascii) | Superseded; native `text::to_*` strict grammar | `scalars/current` |
+| `ascii/` (retired) | Superseded; native `text::to_*` strict grammar | `scalars/current` |
 | `catalogue/` | Generated mirror (see below) | `cataloguegen --check` |
-| [`division/`](../docs/archive/std-package-history.md#division) | `number::divmod`, `euclidean_divmod` | `ratio/current` |
-| [`host/`](../docs/archive/std-package-history.md#host) | Finite `clock`/`random`/`crypto`/`env`/`log` catalogue | `cli` fixtures, admitted applications |
+| `division/` (retired) | `number::divmod`, `euclidean_divmod` | `ratio/current` |
+| `host/` (retired) | Finite `clock`/`random`/`crypto`/`env`/`log` catalogue | `cli` fixtures, admitted applications |
 | [`html/`](#html) | Catalogue-owned safe constructors | `html` fixtures, admitted applications |
-| [`json/`](../docs/archive/std-package-history.md#json) | Exact typed `codec` JSON | `codec` fixtures, native-ai report |
+| `json/` (retired) | Exact typed `codec` JSON | `codec` fixtures, native-ai report |
 | `map/` | Native immutable maps and sets | `map/current` (shared with `set/`) |
-| [`quota/`](../docs/archive/std-package-history.md#quota) | Ordinary Can validation pattern | form-validation application |
+| `quota/` (retired) | Ordinary Can validation pattern | form-validation application |
 | `ratio/` | Exact-amount divmod and half-even rounding | `ratio/current` |
 | `scalars/` | I22 numeric/conversion catalogue | `scalars/current` |
-| [`schema/`](../docs/archive/std-package-history.md#schema) | Static build-time asset approval | `assets` fixtures, admitted applications |
-| [`seq/`](../docs/archive/std-package-history.md#seq) | Native array catalogue | `arrays` fixtures, admitted applications |
-| [`set/`](../docs/archive/std-package-history.md#set) | Native immutable maps and sets | `map/current` (shared with `map/`) |
+| `schema/` (retired) | Static build-time asset approval | `assets` fixtures, admitted applications |
+| `seq/` (retired) | Native array catalogue | `arrays` fixtures, admitted applications |
+| `set/` (retired) | Native immutable maps and sets | `map/current` (shared with `map/`) |
 | `text/` | Native text and Unicode catalogue | `text/current` |
 
 No new maintained project was authored: every domain above is
@@ -50,9 +50,8 @@ serving and browser admission belong to I34.
 [Current source example](../compiler/testdata/current/html/main.can) and
 [staged integration](../tests/integration/html_test.go) exercise real rendering
 of request-derived hostile text. The old Can/TS sources and `compiler/bridge.go`
-were deleted by the I43/I44 retirement; the
-[html history notes](../docs/archive/std-package-history.md#html-history)
-record what they were.
+were deleted by the I43/I44 retirement; the retired
+html history notes (history in Git) record what they were.
 
 ## Maintained example inventory
 
@@ -150,5 +149,5 @@ deletion list was every `std/*/*.can` and `std/*/*.ts` outside
 `current/` and `catalogue/`, the twelve `std/*/errors.json` files
 beside them, `std/host/host.externs.ts`,
 `std/host/platform.d.ts`, and all twenty `docs/archive/sketches/*/` programs.
-The [html history notes](../docs/archive/std-package-history.md#html-history)
-stay as a labelled historical document.
+The html history notes (retired; history in Git)
+stay a labelled historical record.

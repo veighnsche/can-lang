@@ -2,8 +2,8 @@
 
 For current implementation status, start with the
 [post-upgrade reconciliation](syntax-taste/post-upgrade-reconciliation-2026-09-24.md).
-The original [I01–I50 ledger](implementation/tasks.md), September 22
-[LF01–LF21 ledger](implementation/language-fixes-tasks-2026-09-22.md), and
+The original I01–I50 ledger (retired; [evidence](implementation/evidence/2026-09-21/) retained),
+September 22 LF01–LF21 ledger (retired; [evidence](implementation/evidence/2026-09-22/language-fixes/) retained), and
 September 24 [T01–T27 ledger](syntax-taste/can-implementation-task-list-2026-09-24.md)
 record completed execution rounds. Their checked tasks do not establish that
 every accepted contract is fulfilled; the reconciliation identifies remaining
@@ -37,14 +37,14 @@ the particular checks that ran.
 
 ## Historical records
 
-- [Zero-compatibility syntax and ABI audit](archive/can-language-audit.md) — older,
+- Zero-compatibility syntax and ABI audit (retired; history in Git) — older,
   unapproved redesign recommendations. Its supporting probe archive was removed.
-- [Stdlib implementation record](archive/stdlib-remaining.md) — previous implementation
+- Stdlib implementation record (retired; history in Git) — previous implementation
   history, not the implementation plan for the current design.
 
 The status map and reviewer guidance below are historical and incomplete;
 they do not override the current decisions or specification. Older `aNN`
-documents generally live under `archive/a/`.
+documents lived under `archive/a/` (retired; history in Git).
 
 ## Status map
 

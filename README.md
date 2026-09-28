@@ -22,16 +22,15 @@ P15.1).
   (native-ai, account-search, form-validation, dashboard)
 - [`std/`](std/README.md) — package dispositions and the four
   maintained `current/` example projects
-- [`docs/archive/`](docs/archive/README.md) — retired predecessor gallery,
-  historical design records, and the I36 binding comparison (history only)
+- [`docs/archive/`](docs/archive/README.md) — historical design
+  records and the I36 binding comparison (history only)
 - [`distribution/`](distribution/README.md) — pinned target,
   qualification, bundles, offline install/update, release notes
 - [`tests/`](tests/integration/) — staged integration suites
   (incl. SQL, browser, applications, stdlib)
-- [`docs/`](docs/README.md) — design records and the implementation
-  ledger ([tasks](docs/implementation/tasks.md),
-  [coverage](docs/implementation/coverage.md),
-  [evidence](docs/implementation/evidence/2026-09-21/))
+- [`docs/`](docs/README.md) — design records and completed
+  execution history ([evidence](docs/implementation/evidence/2026-09-21/);
+  the task and coverage ledgers are retired, history in Git)
 - [`editors/vscode/`](editors/vscode/README.md) — syntax highlighting
   plus an LSP client over `canlc lsp`
 - [`tools/`](tools/) — distbuild, gramcheck
