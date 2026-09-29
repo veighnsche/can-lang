@@ -121,6 +121,9 @@ type ConstructorExpr struct {
 	Name      QualifiedName
 	Types     []TypeNode
 	Arguments []Argument
+	// Braces records whether source used {} (true) or () (false). The
+	// checker decides, after resolution, which nominals require braces.
+	Braces bool
 }
 type CallExpr struct {
 	ExpressionLocation

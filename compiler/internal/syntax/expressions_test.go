@@ -78,6 +78,9 @@ func TestExplicitCallsAndConstructors(t *testing.T) {
 	if ctor.Name.Package != "option" || FormatType(ctor.Types[0]) != "outer<inner<int>>" {
 		t.Fatal(ctor)
 	}
+	if ctor.Braces {
+		t.Fatal("paren constructor recorded braces")
+	}
 	comparison := expressionFragment(t, "left < middle > right").(*ComparisonExpr)
 	if len(comparison.Operands) != 3 {
 		t.Fatal(comparison)
@@ -85,6 +88,50 @@ func TestExplicitCallsAndConstructors(t *testing.T) {
 	field := expressionFragment(t, "call produce().value").(*FieldExpr)
 	if _, ok := field.Receiver.(*CallExpr); !ok {
 		t.Fatal(field)
+	}
+}
+
+func TestBraceConstructorsRecordDelimiter(t *testing.T) {
+	empty := expressionFragment(t, `empty{}`).(*ConstructorExpr)
+	if !empty.Braces || len(empty.Arguments) != 0 {
+		t.Fatalf("empty braces: %+v", empty)
+	}
+	leaf := expressionFragment(t, `missing{"x"}`).(*ConstructorExpr)
+	if !leaf.Braces || len(leaf.Arguments) != 1 {
+		t.Fatalf("leaf braces: %+v", leaf)
+	}
+	qualified := expressionFragment(t, `codec::invalid_data{"a", "type"}`).(*ConstructorExpr)
+	if !qualified.Braces || qualified.Name.Package != "codec" || len(qualified.Arguments) != 2 {
+		t.Fatalf("qualified braces: %+v", qualified)
+	}
+	nested := expressionFragment(t, `all_failed<a_failure>{[codec::invalid_data{"a", "type"}]}`).(*ConstructorExpr)
+	if !nested.Braces || FormatType(nested.Types[0]) != "a_failure" || len(nested.Arguments) != 1 {
+		t.Fatalf("generic braces: %+v", nested)
+	}
+	payload := nested.Arguments[0].Value.(*ArrayExpr)
+	inner := payload.Elements[0].Value.(*ConstructorExpr)
+	if !inner.Braces || inner.Name.Name != "invalid_data" {
+		t.Fatalf("nested braces: %+v", inner)
+	}
+	deep := expressionFragment(t, `retry::rejected<retry::traced<load_failure>>{leaf}`).(*ConstructorExpr)
+	if !deep.Braces || FormatType(deep.Types[0]) != "retry::traced<load_failure>" {
+		t.Fatalf("nested generic braces: %+v", deep)
+	}
+	stored := expressionFragment(t, `wrapper(missing{"x"})`).(*ConstructorExpr)
+	if stored.Braces || len(stored.Arguments) != 1 {
+		t.Fatalf("outer record braces: %+v", stored)
+	}
+	if leaf, ok := stored.Arguments[0].Value.(*ConstructorExpr); !ok || !leaf.Braces {
+		t.Fatalf("stored error braces: %+v", stored.Arguments[0].Value)
+	}
+	// Comparisons still roll back when no constructor delimiter follows.
+	chain := expressionFragment(t, "box < item > value").(*ComparisonExpr)
+	if len(chain.Operands) != 3 {
+		t.Fatalf("comparison lost: %+v", chain)
+	}
+	single := expressionFragment(t, "a < b").(*ComparisonExpr)
+	if len(single.Operands) != 2 {
+		t.Fatalf("comparison lost: %+v", single)
 	}
 }
 
@@ -114,6 +161,7 @@ func TestExpressionsRejectMalformedForms(t *testing.T) {
 		"shape with x = 1, y = 2", "shape with (x = 1)", "shape with (x = 1, y = 2,)",
 		"shape with x = 1 with y = 2", "shape with x =", "%", "ok 1",
 		"call f((a,b),c)", "call f((a,))", "call f(...())",
+		`missing{"x",}`, "missing{", "missing{(key, other)}", `missing{"x"`,
 	} {
 		file, err := source.New("bad.can", text)
 		if err != nil {

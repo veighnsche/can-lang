@@ -135,14 +135,15 @@ func (p *parser) primary(constructors bool) Expr {
 		name := p.qualified()
 		if constructors {
 			types := p.constructorTypes()
-			if p.at("(") {
-				args := p.arguments()
+			if p.at("(") || p.at("{") {
+				braces := p.at("{")
+				args := p.constructorArguments(braces)
 				for _, argument := range args {
 					if argument.Group != nil {
 						p.fail("a constructor cannot receive a state group")
 					}
 				}
-				return &ConstructorExpr{ExpressionLocation: p.location(start), Name: name, Types: types, Arguments: args}
+				return &ConstructorExpr{ExpressionLocation: p.location(start), Name: name, Types: types, Arguments: args, Braces: braces}
 			}
 		}
 		return &NameExpr{ExpressionLocation: p.location(start), Name: name}
@@ -194,7 +195,7 @@ func (p *parser) constructorTypes() (out []TypeNode) {
 		}
 	}()
 	out = p.typeArguments()
-	if !p.at("(") {
+	if !p.at("(") && !p.at("{") {
 		*p = saved
 		return nil
 	}
@@ -228,6 +229,16 @@ func (p *parser) arguments() []Argument {
 	p.expect("(")
 	args := p.invocationArguments(")")
 	p.expect(")")
+	return args
+}
+
+func (p *parser) constructorArguments(braces bool) []Argument {
+	if !braces {
+		return p.arguments()
+	}
+	p.expect("{")
+	args := p.invocationArguments("}")
+	p.expect("}")
 	return args
 }
 

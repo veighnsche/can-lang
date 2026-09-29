@@ -133,13 +133,13 @@ appropriate to protect laptop load.
 
 ## Lane N — constructor meaning and failure semantics
 
-- [ ] **N01 · constructor AST and expression parser.** Depends: G02,F01.
+- [x] **N01 · constructor AST and expression parser.** Depends: G02,F01.
   Files: `syntax/ast.go`, `expressions.go`, `expressions_test.go`. Record
   whether a constructor used `()` or `{}`; admit `E{}` and `E<T>{...}`;
   extend generic lookahead to braces without breaking `<` comparisons or
   record constructors. Do not touch `declarations.go` yet. Done when focused
   expression tests cover qualified, nested, empty, and comparison cases.
-  Evidence: pending.
+  Evidence: `ConstructorExpr.Braces` records `{}` vs `()`; `primary` admits `{` via new `constructorArguments`, `constructorTypes` lookahead accepts `{`; `()` path unchanged. New `TestBraceConstructorsRecordDelimiter` (empty/qualified/generic/nested/stored + 2 comparison rollbacks), `Braces` assert in explicit-call test, 4 brace rejects. `go test -p 1 ./compiler/internal/syntax/` passes.
 - [ ] **N02 · terminal constructor detection.** Depends: F02,N01.
   Files: `syntax/declarations.go` only after F02 releases it, plus new N-owned
   `syntax/constructor_braces_test.go`. Recognize
