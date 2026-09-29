@@ -47,6 +47,27 @@ export function sqliteAffectedRows(
   return success(BigInt(count));
 }
 
+function staticTemplate(text: string): TemplateStringsArray {
+  return Object.freeze(
+    Object.assign([text], { raw: Object.freeze([text]) }),
+  ) as unknown as TemplateStringsArray;
+}
+
+const FOREIGN_KEYS_ON = staticTemplate("PRAGMA foreign_keys = ON");
+const FOREIGN_KEYS_READ = staticTemplate("PRAGMA foreign_keys");
+
+async function failConnect(
+  client: InstanceType<typeof Bun.SQL>,
+  failures: SQLFailures,
+): Promise<Completion<never>> {
+  try {
+    await client.close();
+  } catch {
+    /* already failed; report the connection */
+  }
+  return failures.connectionFailed("connect");
+}
+
 async function established(
   client: InstanceType<typeof Bun.SQL>,
   failures: SQLFailures,
@@ -56,12 +77,26 @@ async function established(
     // refused file surfaces here as SQLITE_CANTOPEN.
     await client.connect();
   } catch {
-    try {
-      await client.close();
-    } catch {
-      /* already failed; report the connection */
-    }
-    return failures.connectionFailed("connect");
+    return failConnect(client, failures);
+  }
+  return undefined;
+}
+
+async function enforceForeignKeys(
+  client: InstanceType<typeof Bun.SQL>,
+  failures: SQLFailures,
+): Promise<Completion<never> | undefined> {
+  try {
+    // Foreign keys are per-connection and default off, so every
+    // constructor enables them before any application query or
+    // transaction. safeIntegers delivers the flag as 1n; any other
+    // read-back fails closed instead of returning a lax handle.
+    await client(FOREIGN_KEYS_ON);
+    const back = await client(FOREIGN_KEYS_READ);
+    const row = (back as readonly unknown[])[0] as { foreign_keys?: unknown } | undefined;
+    if (row?.foreign_keys !== 1n) return failConnect(client, failures);
+  } catch {
+    return failConnect(client, failures);
   }
   return undefined;
 }
@@ -74,6 +109,8 @@ export async function openSqliteMemory(
   const client = new Bun.SQL({ adapter: "sqlite", filename: ":memory:", safeIntegers: true });
   const failed = await established(client, failures);
   if (failed !== undefined) return { ok: false, failure: failed };
+  const keys = await enforceForeignKeys(client, failures);
+  if (keys !== undefined) return { ok: false, failure: keys };
   return { ok: true, client };
 }
 
@@ -92,23 +129,17 @@ export async function openSqliteFile(
   });
   const failed = await established(client, failures);
   if (failed !== undefined) return { ok: false, failure: failed };
+  const keys = await enforceForeignKeys(client, failures);
+  if (keys !== undefined) return { ok: false, failure: keys };
   // PRAGMA values cannot bind (SQLite rejects placeholders there), so the
   // validated millisecond count travels as canonical digits inside one
   // static template through the tag call: never string-call, never unsafe.
   // A read-only handle accepts the pragma; failure still closes the pool.
   const pragma = `PRAGMA busy_timeout = ${config.busyTimeoutMs}`;
-  const strings = Object.freeze(
-    Object.assign([pragma], { raw: Object.freeze([pragma]) }),
-  ) as unknown as TemplateStringsArray;
   try {
-    await client(strings);
+    await client(staticTemplate(pragma));
   } catch {
-    try {
-      await client.close();
-    } catch {
-      /* already failed; report the connection */
-    }
-    return { ok: false, failure: failures.connectionFailed("connect") };
+    return { ok: false, failure: await failConnect(client, failures) };
   }
   return { ok: true, client };
 }

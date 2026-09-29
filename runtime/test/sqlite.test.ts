@@ -358,6 +358,76 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       total: 2,
       version: 102,
     },
+    fk_readback: {
+      dialect: D,
+      cardinality: "one",
+      kind: "select_statement",
+      segments: [{ text: "SELECT foreign_keys FROM pragma_foreign_keys LIMIT " }, { param: 1 }],
+      params: [],
+      paramType: "p",
+      rowType: "r",
+      limit: 1,
+      total: 1,
+      version: 102,
+    },
+    setup_fk_parent: {
+      dialect: D,
+      cardinality: "execute",
+      kind: "create_table_statement",
+      segments: [{ text: "CREATE TABLE fk_parent (id INTEGER PRIMARY KEY)" }],
+      params: [],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 0,
+      version: 102,
+    },
+    setup_fk_child: {
+      dialect: D,
+      cardinality: "execute",
+      kind: "create_table_statement",
+      segments: [
+        {
+          text: "CREATE TABLE fk_child (id INTEGER PRIMARY KEY, pid INTEGER REFERENCES fk_parent(id))",
+        },
+      ],
+      params: [],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 0,
+      version: 102,
+    },
+    insert_fk_parent: {
+      dialect: D,
+      cardinality: "execute",
+      kind: "insert_statement",
+      segments: [{ text: "INSERT INTO fk_parent (id) VALUES (" }, { param: 1 }, { text: ")" }],
+      params: ["id"],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 1,
+      version: 102,
+    },
+    insert_fk_child: {
+      dialect: D,
+      cardinality: "execute",
+      kind: "insert_statement",
+      segments: [
+        { text: "INSERT INTO fk_child (id, pid) VALUES (" },
+        { param: 1 },
+        { text: ", " },
+        { param: 2 },
+        { text: ")" },
+      ],
+      params: ["id", "pid"],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 2,
+      version: 102,
+    },
   },
 };
 const emptyParams: SQLPlan = { params: { root: "app::empty", fields: [] } };
@@ -418,6 +488,16 @@ const childParams: SQLPlan = {
       { name: "pid", kind: "int" },
     ],
   },
+};
+const fkReadbackParams: SQLPlan = {
+  params: { root: "app::empty", fields: [] },
+  rows: {
+    root: "app::fk_row",
+    fields: [{ name: "foreign_keys", kind: "int" }],
+  },
+};
+const fkParentInsertParams: SQLPlan = {
+  params: { root: "app::fk_parent_insert", fields: [{ name: "id", kind: "int" }] },
 };
 const descriptors = createSQLDescriptors(table);
 const poolContracts = {
@@ -1116,6 +1196,167 @@ describe("sqlite pools", () => {
       ).toEqual({ query: "cover_by_id" });
       value(await pools.close(token, 1000n));
     });
+  });
+  test("memory connections enforce foreign keys before application queries", async () => {
+    await owned(async () => {
+      const token = value(await pools.sqliteOpenMemory());
+      // The flag reads back enabled before any application query runs.
+      const probe = descriptors.declareDescriptor("", "fk_readback");
+      const flag = value(
+        await pools.queryOne(probe, fkReadbackParams, token, record("app::empty", [])),
+      );
+      expect(dataProperty(flag, "foreign_keys")).toBe(1n);
+      // An immediate foreign key rejects the orphan at the write, while a
+      // referenced child still lands: enforcement is real, not a blanket
+      // write refusal.
+      const setupParent = descriptors.declareDescriptor("", "setup_fk_parent");
+      const setupChild = descriptors.declareDescriptor("", "setup_fk_child");
+      const insertParent = descriptors.declareDescriptor("", "insert_fk_parent");
+      const insertChild = descriptors.declareDescriptor("", "insert_fk_child");
+      value(await pools.execute(setupParent, emptyParams, token, record("app::empty", [])));
+      value(await pools.execute(setupChild, emptyParams, token, record("app::empty", [])));
+      value(
+        await pools.execute(
+          insertParent,
+          fkParentInsertParams,
+          token,
+          record("app::fk_parent_insert", [["id", 1n]]),
+        ),
+      );
+      expect(
+        value(
+          await pools.execute(
+            insertChild,
+            childInsertParams,
+            token,
+            record("app::child_insert", [
+              ["id", 1n],
+              ["pid", 1n],
+            ]),
+          ),
+        ),
+      ).toBe(1n);
+      expect(
+        domainOutcome(
+          await pools.execute(
+            insertChild,
+            childInsertParams,
+            token,
+            record("app::child_insert", [
+              ["id", 2n],
+              ["pid", 999n],
+            ]),
+          ),
+          "sql::constraint_failed",
+        ),
+      ).toEqual({ constraint: "SQLITE_CONSTRAINT_FOREIGNKEY" });
+      value(await pools.close(token, 1000n));
+    });
+  });
+  test("file connections enforce foreign keys including read-only reopen", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "can-sqlite-fk-"));
+    try {
+      const filename = join(directory, "fk.sqlite");
+      await owned(async () => {
+        const token = value(await pools.sqliteOpenFile(filename, fileOptions("rwc", 100n)));
+        const probe = descriptors.declareDescriptor("", "fk_readback");
+        const flag = value(
+          await pools.queryOne(probe, fkReadbackParams, token, record("app::empty", [])),
+        );
+        expect(dataProperty(flag, "foreign_keys")).toBe(1n);
+        const setupParent = descriptors.declareDescriptor("", "setup_fk_parent");
+        const setupChild = descriptors.declareDescriptor("", "setup_fk_child");
+        const insertParent = descriptors.declareDescriptor("", "insert_fk_parent");
+        const insertChild = descriptors.declareDescriptor("", "insert_fk_child");
+        value(await pools.execute(setupParent, emptyParams, token, record("app::empty", [])));
+        value(await pools.execute(setupChild, emptyParams, token, record("app::empty", [])));
+        value(
+          await pools.execute(
+            insertParent,
+            fkParentInsertParams,
+            token,
+            record("app::fk_parent_insert", [["id", 1n]]),
+          ),
+        );
+        expect(
+          domainOutcome(
+            await pools.execute(
+              insertChild,
+              childInsertParams,
+              token,
+              record("app::child_insert", [
+                ["id", 2n],
+                ["pid", 999n],
+              ]),
+            ),
+            "sql::constraint_failed",
+          ),
+        ).toEqual({ constraint: "SQLITE_CONSTRAINT_FOREIGNKEY" });
+        value(await pools.close(token, 1000n));
+        // A read-only reopen is its own connection: it enforces too.
+        const reopened = value(await pools.sqliteOpenFile(filename, fileOptions("ro", 0n)));
+        const roFlag = value(
+          await pools.queryOne(probe, fkReadbackParams, reopened, record("app::empty", [])),
+        );
+        expect(dataProperty(roFlag, "foreign_keys")).toBe(1n);
+        value(await pools.close(reopened, 1000n));
+      });
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+  test("foreign key setup or verification failure closes without a token", async () => {
+    const RealSQL = Bun.SQL;
+    try {
+      // Read-back disagrees: the constructor closes the client and reports
+      // the sanitized connection failure instead of returning a lax pool.
+      let closed = 0;
+      (Bun as unknown as { SQL: unknown }).SQL = function () {
+        const callable = async function (...args: unknown[]) {
+          const strings = args[0] as readonly string[];
+          if (strings[0] === "PRAGMA foreign_keys") return [{ foreign_keys: 0n }];
+          return [];
+        };
+        Object.assign(callable, {
+          connect: async () => {},
+          close: async () => {
+            closed++;
+          },
+        });
+        return callable;
+      };
+      await owned(async () => {
+        expect(domainOutcome(await pools.sqliteOpenMemory(), "sql::connection_failed")).toEqual({
+          phase: "connect",
+        });
+      });
+      expect(closed).toBe(1);
+      // Setup throw: same closed outcome, no token.
+      closed = 0;
+      (Bun as unknown as { SQL: unknown }).SQL = function () {
+        const callable = async function (...args: unknown[]) {
+          const strings = args[0] as readonly string[];
+          if (strings[0] === "PRAGMA foreign_keys = ON")
+            throw Object.assign(new Error("denied"), { name: "SQLiteError", code: "SQLITE_ERROR" });
+          return [];
+        };
+        Object.assign(callable, {
+          connect: async () => {},
+          close: async () => {
+            closed++;
+          },
+        });
+        return callable;
+      };
+      await owned(async () => {
+        expect(domainOutcome(await pools.sqliteOpenMemory(), "sql::connection_failed")).toEqual({
+          phase: "connect",
+        });
+      });
+      expect(closed).toBe(1);
+    } finally {
+      (Bun as unknown as { SQL: unknown }).SQL = RealSQL;
+    }
   });
   test("sqlite commit failure reports commit-unknown and lands nothing", async () => {
     await owned(async () => {
