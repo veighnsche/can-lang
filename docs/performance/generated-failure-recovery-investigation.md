@@ -50,3 +50,36 @@ Current source SHA-256 at this investigation:
 The frozen startup-attribution auxiliary lane stays closed; catalogue, browser,
 HTTP, docs/user-guide and local poster work in the dirty checkout is foreign to
 this investigation and must be preserved.
+
+## Checked-route decision (2026-09-29)
+
+A bounded in-place checker/emitter probe of the real fixture completed and its
+temporary test was retired. The concrete `gallery::is_positive` region has one
+`int` input, a `bool` result, no escaping errors, escapes or body steps. Its
+terminal completion match contains one canonical `checks::require` call,
+resolved to `$canChecks.require`, with a pure input-versus-zero comparison and
+literal reason. The only arms map `checks::failed` to `false` and `ok` to `true`;
+there is no standard arm. Generated **TypeScript** currently awaits `$canInvoke`
+around the check and dispatches on its branded Completion. The JavaScript driver
+calls the exported function once for each bigint, so an array callback fast path
+would miss this workload.
+
+The false check allocates one global failure occurrence ID even though the
+match consumes its domain failure. Later diagnostics expose numeric IDs. A direct
+native predicate must advance that counter once on false, preserve a boxed
+Completion, and retain the original route for assertion contexts, malformed host
+inputs and every unproven IR shape. The checker prepares call arguments into
+ordered locals, so a proof must validate their original pure values, matching
+types and exact positional bindings rather than simply inspect `step.Arguments`.
+Browser output stays on the original route. These are source requirements, not
+an observed speedup or a proven ready implementation.
+
+Three fresh, fully reworded equivalent Jev Choice requests and responses are
+saved in `generated-failure-recovery-request/response-[1-3].json`, with exact
+facts, option equivalence, probabilities and source reconciliation in
+`generated-failure-recovery-consultation-equivalence.json`. All selected a
+closed native route, but confidence ranged from 0.29 to 0.83; the middle answer
+also gave material probability to a synchronous adapter and deferral. That
+spread reinforced the need for positive source proof. The finite design and
+ordered handoff are in [generated-failure-recovery-plan.md](generated-failure-recovery-plan.md)
+and [generated-failure-recovery-tasks.md](generated-failure-recovery-tasks.md).
