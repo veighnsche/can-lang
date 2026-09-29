@@ -78,6 +78,11 @@ type programAssembly struct {
 	// inferred, and is shared read-only by assembly region emitters
 	// only.
 	mapBatches map[string]*MapBatchProof
+	// closedRecoveries proves concrete closed-recovery functions with
+	// a native boolean branch. It is built after final binding
+	// resolution from checked program functions, never inferred, and
+	// is shared read-only by assembly region emitters only.
+	closedRecoveries map[string]*ClosedRecoveryProof
 
 	httpIDs    []string
 	httpNames  map[string]string
@@ -162,6 +167,7 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 	assembly.integerWorkers = assembly.checkedIntegerWorkers()
 	assembly.mapLeaves = assembly.checkedMapLeaves()
 	assembly.mapBatches = assembly.checkedMapBatches()
+	assembly.closedRecoveries = assembly.checkedClosedRecoveries()
 	assembly.bindInitializers()
 	return assembly, nil
 }

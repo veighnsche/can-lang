@@ -171,7 +171,7 @@ test("browser surfaces expose the profile contract with fail-closed ambient name
     "withScope",
     "withScopeWithContext",
   ]);
-  expect(keys(canonicalOwner).length).toBe(19);
+  expect(keys(canonicalOwner).length).toBe(20);
   // Ambient names exist only so shared modules instantiate; every ambient
   // call fails closed instead of substituting synchronous context.
   for (const ambient of ["registerResource", "launchOwned", "launchNative", "guardCallback"]) {

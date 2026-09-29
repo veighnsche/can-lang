@@ -68,11 +68,19 @@ forwarding on a decline. A private Bun owner-state query is an adapter for
 admission only; do not add a Can API, public cache or general effect system.
 
 The hot branch uses source-map comments for its exact defining function and
-predicate spans. It does not initialize/assign `$canOrigin` or allocate an
-origin object/array on success. Any cold synchronous fault is caught and
-boxed with the original region source/span; the normal body retains its
-existing mapped origins. Keep the function's Promise-of-Completion interface
-and direct native JS comparison in its generated TypeScript.
+predicate spans. The emitted function retains its existing first mapped
+`let $canOrigin = ...` line before the branch. That expression uses the
+module-private lazy frozen-origin slot: it creates one origin object/array on
+first use, then reuses it without per-call origin allocation. This small
+cached lookup preserves the unchanged generated-workload binding adapter,
+which identifies functions from that first line, and preserves the original
+slow-path origin. The proof-selected branch follows that line and still skips
+the per-call require invocation, domain carrier and recovery work. Any cold
+synchronous fault is caught and boxed with the original region source/span;
+the normal body retains its existing mapped origins. Measure the net effect,
+including the cached origin lookup, rather than claiming a zero-origin-cost
+hot path. Keep the function's Promise-of-Completion interface and direct
+native JS comparison in its generated TypeScript.
 
 If proving the real checked fixture needs a broader grammar, special casing,
 or weakened guards, stop that production edit, release the affected writers,

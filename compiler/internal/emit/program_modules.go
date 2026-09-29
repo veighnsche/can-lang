@@ -90,7 +90,7 @@ func emitAuthoredModule(assembly *programAssembly, runtime, path string, fns []*
 	}
 	body.WriteString(localTypes)
 	for _, fn := range fns {
-		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, DomainRuntime: "$canDomain", SourceID: fn.Symbol.Source.ID, Browser: assembly.browser, authoredProof: assembly.authoredProof, collectionProof: assembly.collectionAsyncProof, coreProof: assembly.coreAsyncProof, integerWorkers: assembly.integerWorkers, mapLeaves: assembly.mapLeaves, mapBatches: assembly.mapBatches}
+		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, DomainRuntime: "$canDomain", SourceID: fn.Symbol.Source.ID, Browser: assembly.browser, authoredProof: assembly.authoredProof, collectionProof: assembly.collectionAsyncProof, coreProof: assembly.coreAsyncProof, integerWorkers: assembly.integerWorkers, mapLeaves: assembly.mapLeaves, mapBatches: assembly.mapBatches, closedRecoveries: assembly.closedRecoveries}
 		code, err := emitter.Function(assembly.functions[fn.Identity()], fn.Region)
 		if err != nil {
 			return Module{}, err
@@ -183,6 +183,10 @@ func authoredModuleImports(assembly *programAssembly, runtime, path string) []Mo
 	if !assembly.browser {
 		imports = append(imports, ModuleImport{Target: runtime + "/platform/crypto/primitives.ts", Names: []ImportName{{"sha256", "$canSHA256"}}})
 		imports = append(imports, ModuleImport{Target: runtime + "/ai/questions.ts", TypeOnly: true, Names: []ImportName{{"PreparedQuestion", "$canPreparedQuestion"}, {"Answer", "$canAnswer"}}})
+	}
+	if !assembly.browser && assembly.closedRecoveryImport(path) {
+		imports = append(imports, ModuleImport{Target: runtime + "/failure.ts", Names: []ImportName{{"allocateOccurrenceID", "$canAllocateOccurrenceID"}}})
+		imports = append(imports, ModuleImport{Target: runtime + "/owner.ts", Names: []ImportName{{"ambientOwnerPresent", "$canAmbientOwnerPresent"}}})
 	}
 	if assembly.fetches {
 		imports = append(imports, ModuleImport{Target: programStatePath, Names: []ImportName{{"$canFetch", "$canFetch"}}})

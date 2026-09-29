@@ -188,6 +188,11 @@ type RegionEmitter struct {
 	// other proofs, nil for direct emitters without assembly evidence,
 	// shared read-only within one assembly and never mutated.
 	mapBatches map[string]*MapBatchProof
+	// closedRecoveries proves concrete closed-recovery functions with
+	// a native boolean branch. It is separate from the other proofs,
+	// nil for direct emitters without assembly evidence, shared
+	// read-only within one assembly and never mutated.
+	closedRecoveries map[string]*ClosedRecoveryProof
 	// leaf selects isolated synchronous companion lowering for the
 	// proven entry: invocations resolve only proof-recorded map calls
 	// through invokeSync with no context or fallback. Nil selects the
@@ -364,8 +369,24 @@ func (e *RegionEmitter) Function(name string, region *ir.Region) (string, error)
 	for index := range e.originSlots {
 		fmt.Fprintf(&slots, "var %s%d: Readonly<{source: string; start: number; end: number; invocation: readonly string[]}> | undefined;\n", e.originCachePrefix, index)
 	}
+	// A proven closed recovery runs its native boolean branch
+	// immediately after the mapped origin prefix: the prefix keeps the
+	// generated-workload binding adapter's first-line identity, and the
+	// branch's admission needs no $canOrigin value. The prefix is one
+	// cached slot lookup/assignment per call (at most one origin
+	// object/array per emitted site, on first slot fill); every decline
+	// falls into the unchanged async body below. Browser and
+	// loop-lowered functions keep their exact shape.
+	branch := ""
+	if !lowered && !e.Browser {
+		if entry, ok := e.provenClosedRecovery(region.ID, name); ok {
+			if branch, err = e.ClosedRecoveryBranch(entry); err != nil {
+				return "", err
+			}
+		}
+	}
 	if !lowered {
-		return fmt.Sprintf("async function %s(%s): Promise<$canCompletion<%s>> {\n%stry {\n%s} catch ($canCause) { return $canCaught($canCause, %s); }\n}\n", name, strings.Join(args, ", "), TypeName(region.Result), prefix, body, origin) + slots.String(), nil
+		return fmt.Sprintf("async function %s(%s): Promise<$canCompletion<%s>> {\n%s%stry {\n%s} catch ($canCause) { return $canCaught($canCause, %s); }\n}\n", name, strings.Join(args, ", "), TypeName(region.Result), prefix, branch, body, origin) + slots.String(), nil
 	}
 	return fmt.Sprintf("async function %s(%s): Promise<$canCompletion<%s>> {\nlet %s = 0;\n%stry {\nwhile (true) {\n%s}\n} catch ($canCause) { return $canCaught($canCause, %s); }\n}\n", name, strings.Join(args, ", "), TypeName(region.Result), e.loopStep, prefix, body, origin), nil
 }

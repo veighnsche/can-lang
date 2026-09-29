@@ -42,3 +42,11 @@ export const {
   bindNativeCallback,
   runOwnedRoot,
 } = ambient;
+// Compiler-private admission query for closed fast branches: reports
+// whether an ambient owner execution is present. Bun-only and
+// side-effect-free; reads only the AsyncLocalStorage store identity,
+// never resource state. Any present store declines, including a closed
+// scope, so admitted branches never run under ambient ownership.
+export function ambientOwnerPresent(): boolean {
+  return context.getStore() !== undefined;
+}
