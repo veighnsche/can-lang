@@ -156,13 +156,13 @@ appropriate to protect laptop load.
   acceptance tests after F02 supplies the new declaration/bound grammar.
   Done when `E(...)` and `R{...}` fail with useful spans and valid
   constructions type-check. Evidence: constructor checking requires `{}` for `types.Error` / `()` for `types.Record` with canonical-name diagnostics at located spans (`check/infer.go` and resolve needed no change). New `TestConstructorDelimiterRequiresResolvedKind`: valid program covers local/imported/catalogue/generic/expected-variant (registry `app::missing,leaf::fused`); 9 delimiter-mutation negatives assert needle match + `byte ` span. Focused check test passes.
-- [ ] **N04 · ordinary value versus emitted failure proof.** Depends:
+- [x] **N04 · ordinary value versus emitted failure proof.** Depends:
   N02,N03. Files: focused `check`/`emit` tests; production IR/emitter/runtime
   only for a demonstrated failure and after resolving existing dirty owners.
   Prove nested `E{...}` stays frozen data, terminal `E{...}` emits with the
   right bound/origin, forwarding retains an occurrence, reconstruction builds
   a value, and standard failures remain outside finite bounds. Done when
-  checker-to-emitter assertions confirm these contracts. Evidence: pending.
+  checker-to-emitter assertions confirm these contracts. Evidence: new `check/error_value_test.go` (IR: success/record nesting, `DomainCompletion` + bound + span, forward arm w/o body, reconstruction binding, standard arm; negatives: empty-bound escape with `CAN-CHECK-OUTWARD-ERROR` span, `standard_failure` bound reject) and `emit/error_value_test.go` (terminal → `$canFailure($canDomain.create(checked-id))` + `domain` mark span; store/rebuilt/quiet → `$canSuccess` without `$canFailure`; forward → passthrough, 0 `.create(`). No production change needed; both focused tests pass.
 - [ ] **N05 · diagnostics and owned Go snippets.** Depends: F02,N03.
   Files: `check/completions.go`, `program.go`, `action_bindings.go` and
   affected `check`, `resolve`, and `emit` Go tests. Replace user-facing
