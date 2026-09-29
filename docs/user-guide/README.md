@@ -57,7 +57,7 @@ flags from another tool or historical document.
 | Domain modeling | Use current records, variants, optionals, immutable updates, collections, generics, and callables correctly | Recipe pending |
 | Contracts and failures | Author meaningful assertions; distinguish domain outcomes and platform failures; interpret supplied versus real-native evidence | Recipe pending |
 | Server pages and forms | Compose safe HTML, typed requests, validation feedback, routes, and assets | Partial: safe email actions and upload attribute/response notes; full form recipe pending |
-| Persistence and authorization | Use typed SQL descriptors, transactions, credentials, and access checks; sessions are an optional web example | Recipe pending |
+| Persistence and authorization | Use typed SQL descriptors, transactions, credentials, and access checks; sessions are an optional web example | Partial: exact SQLite execute-count note; full persistence recipe pending |
 | Browser applications | Keep server capabilities private; build and serve the qualified browser/server pair where needed | Recipe pending |
 | Files, bytes, and external integrations | Implement bounded input, storage, delivery, and protocol boundaries using demonstrated capabilities; images are one example | Partial: upload attributes and typed image responses; bounded admission/storage recipe pending |
 | Troubleshooting and maintenance | Map real diagnostics to causes and corrections; keep advice current and verification/storage bounded | Recipe pending |
@@ -139,6 +139,29 @@ The Can fixture is at
 the runtime behavior is covered in
 [`runtime/test/html.test.ts`](../../runtime/test/html.test.ts). This verifies
 safe action construction, not deliverability or mail-provider behavior.
+
+## Verified SQLite note: exact counts for guarded writes
+
+For a SQLite execute descriptor, `sql::execute` returns the number of rows the
+statement changed. A guarded write can therefore use `1` for an applied change
+and `0` when its predicate prevented a change. Zero is a valid result, not a
+query failure. For example, an `INSERT ... SELECT ... ON CONFLICT ... DO
+UPDATE ... WHERE ...` can update one existing row even when a Bun SQL result's
+`count` field reports zero.
+
+The SQLite runtime reads native `changes()` immediately after INSERT, UPDATE,
+or DELETE on the same connection. It serializes that pair per SQL client so a
+concurrent Can write cannot replace the count before it is read; the same path
+works for explicit and managed transaction handles. Continue to use typed
+`sql::execute` and handle both zero and positive counts. Use a typed `RETURNING`
+query when the caller needs the changed row itself.
+
+Verified on Bun 1.4.2 at Can `58e71d0f`: `bun run check:runtime` and
+`bun test runtime/test/sqlite.test.ts` passed (17 tests / 179 assertions). The
+regression covers a successful conditional upsert, a no-op, concurrent mixed
+results, a transaction handle, and lock contention. See the neutral
+[SQLite runtime regression](../../runtime/test/sqlite.test.ts). This is a
+runtime contract note, not a complete SQL application recipe.
 
 ## Evidence contract for each recipe
 
