@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "a5d5d5dbad7ec622ff0afe2f06888682643c2b1f620a30ae375df071a10235e6";
+export const catalogueSHA256 = "32b1f8efce82221a0fabd3c47f9d3c1321f4e562dec282f1f58c4e9b8ff29842";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -7006,6 +7006,38 @@ export const catalogue = freeze({
           "Bun.escapeHTML"
         ],
         "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
+        "task": "I31"
+      },
+      "assertion": "real",
+      "refs": [
+        "P6",
+        "P9"
+      ]
+    },
+    {
+      "name": "html::email_href",
+      "identity": "can.std.html@1::email_href",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "address",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "html::attribute",
+      "callbacks": [],
+      "emits": [
+        "html::invalid_url"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.escapeHTML"
+        ],
+        "adapter": "Validate one simple ASCII mailbox and construct an opaque anchor-only mailto href attribute.",
         "task": "I31"
       },
       "assertion": "real",

@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: a5d5d5dbad7ec622ff0afe2f06888682643c2b1f620a30ae375df071a10235e6.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 32b1f8efce82221a0fabd3c47f9d3c1321f4e562dec282f1f58c4e9b8ff29842.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -397,6 +397,7 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | html::text | str value → html::node | [] |  | Bun.escapeHTML | Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization. | real | I31 / P6,P9 |
 | html::parse_url | str value → html::url | [html::invalid_url] |  | URL | Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization. | real | I31 / P6,P9 |
 | html::text_attribute | str name, str value → html::attribute | [html::invalid_structure] |  | Bun.escapeHTML | Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization. | real | I31 / P6,P9 |
+| html::email_href | str address → html::attribute | [html::invalid_url] |  | Bun.escapeHTML | Validate one simple ASCII mailbox and construct an opaque anchor-only mailto href attribute. | real | I31 / P6,P9 |
 | html::url_attribute | str name, html::url url → html::attribute | [html::invalid_structure] |  | Bun.escapeHTML | Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization. | real | I31 / P6,P9 |
 | html::element | html::tag tag, html::attribute[] attributes, html::node[] children → html::node | [html::invalid_structure] |  | Array.prototype.join, Bun.escapeHTML | Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization. | real | I31 / P6,P9 |
 | html::fragment | html::node[] nodes → html::safe | [html::invalid_structure] |  | Array.prototype.join | Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization. | real | I31 / P6,P9 |

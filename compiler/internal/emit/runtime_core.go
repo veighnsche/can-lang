@@ -64,6 +64,7 @@ func coreOperationBindings() bindingContribution {
 	functions["can.std.html@1::text_fragment"] = "$canHTML.textFragment"
 	functions["can.std.html@1::parse_url"] = "$canHTML.parseURL"
 	functions["can.std.html@1::text_attribute"] = "$canHTML.textAttribute"
+	functions["can.std.html@1::email_href"] = "$canHTML.emailHref"
 	functions["can.std.html@1::url_attribute"] = "$canHTML.urlAttribute"
 	functions["can.std.html@1::element"] = "$canHTML.element"
 	functions["can.std.html@1::fragment"] = "$canHTML.fragment"

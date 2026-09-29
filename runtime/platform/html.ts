@@ -357,6 +357,24 @@ export function createHTML(
       if (!validValue(name, value)) return structure("attribute_value");
       return success(attr(name, value, "text"));
     },
+    async emailHref(address: string, _context?: AssertionContext) {
+      string(address);
+      if (address.length > 254) return bad(types.url, "email_address");
+      const at = address.indexOf("@");
+      const mailbox = address.slice(0, at);
+      const domain = address.slice(at + 1);
+      const labels = domain.split(".");
+      if (
+        mailbox.length > 64 ||
+        !/^[A-Za-z0-9_+-]+(?:\.[A-Za-z0-9_+-]+)*$/.test(mailbox) ||
+        domain.length > 253 ||
+        labels.length < 2 ||
+        labels.some((label) => !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$/.test(label)) ||
+        !/^[A-Za-z]{2,63}$/.test(labels[labels.length - 1] ?? "")
+      )
+        return bad(types.url, "email_address");
+      return success(attr("href", `mailto:${address}`, "url"));
+    },
     async urlAttribute(name: string, url: unknown, _context?: AssertionContext) {
       name = lower(name);
       const value = read(urls, url);

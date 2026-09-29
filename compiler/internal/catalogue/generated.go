@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "a5d5d5dbad7ec622ff0afe2f06888682643c2b1f620a30ae375df071a10235e6"
+const GeneratedSourceSHA256 = "32b1f8efce82221a0fabd3c47f9d3c1321f4e562dec282f1f58c4e9b8ff29842"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -440,6 +440,7 @@ const OpHtmlMakeTag = "html::make_tag"
 const OpHtmlText = "html::text"
 const OpHtmlParseUrl = "html::parse_url"
 const OpHtmlTextAttribute = "html::text_attribute"
+const OpHtmlEmailHref = "html::email_href"
 const OpHtmlUrlAttribute = "html::url_attribute"
 const OpHtmlElement = "html::element"
 const OpHtmlFragment = "html::fragment"

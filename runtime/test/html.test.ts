@@ -240,6 +240,45 @@ test("URL parsing rejects origin and script ambiguity", async () => {
     '<div hx-get="/search?q=a&amp;x=b"></div>',
   );
 });
+test("email hrefs accept one simple mailbox and remain anchor-only", async () => {
+  for (const address of [
+    "maker@example.com",
+    "maker+portfolio@sub.example.co",
+    "a_b-c@example.org",
+  ]) {
+    const href = value(await html.emailHref(address));
+    expect(await render([await element("a", [await text("Email")], [href])])).toBe(
+      `<a href="mailto:${address}">Email</a>`,
+    );
+    for (const sink of ["img", "form", "button"])
+      check(await html.element(await tag(sink), [href], []), "html::invalid_structure");
+  }
+  for (const address of [
+    "",
+    "maker",
+    "maker@localhost",
+    "maker@example.c",
+    "maker@-example.com",
+    "maker@example..com",
+    ".maker@example.com",
+    "maker..name@example.com",
+    "maker@example.com,other@example.com",
+    "maker@example.com?subject=hello",
+    "maker@example.com#fragment",
+    "maker%0d%0a@example.com",
+    "maker@example.com%0d%0a",
+    "maker@example.com\r\n",
+    " maker@example.com",
+    "maker@example.com/evil",
+    "maker\\x@example.com",
+    "màker@example.com",
+    `${"a".repeat(65)}@example.com`,
+    "javascript:alert(1)",
+  ])
+    check(await html.emailHref(address), "html::invalid_url");
+  check(await html.parseURL("mailto:maker@example.com"), "html::invalid_url");
+  check(await html.textAttribute("href", "mailto:maker@example.com"), "html::invalid_structure");
+});
 test("head-only nodes, native title escaping and pinned HTMX policy", async () => {
   const runtime = value(await html.runtimeHead()),
     viewport = value(await html.metaViewport()),
