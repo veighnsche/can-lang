@@ -183,6 +183,11 @@ type RegionEmitter struct {
 	// for direct emitters without assembly evidence, shared read-only
 	// within one assembly and never mutated.
 	mapLeaves map[string]*MapLeafProof
+	// mapBatches proves concrete batch-transition functions with
+	// synchronous bigint value companions. It is separate from the
+	// other proofs, nil for direct emitters without assembly evidence,
+	// shared read-only within one assembly and never mutated.
+	mapBatches map[string]*MapBatchProof
 	// leaf selects isolated synchronous companion lowering for the
 	// proven entry: invocations resolve only proof-recorded map calls
 	// through invokeSync with no context or fallback. Nil selects the

@@ -72,6 +72,12 @@ type programAssembly struct {
 	// from checked program functions, never inferred, and is shared
 	// read-only by assembly region emitters only.
 	mapLeaves map[string]*MapLeafProof
+	// mapBatches proves concrete batch-transition functions with
+	// synchronous bigint value companions. It is built after final
+	// binding resolution from checked program functions, never
+	// inferred, and is shared read-only by assembly region emitters
+	// only.
+	mapBatches map[string]*MapBatchProof
 
 	httpIDs    []string
 	httpNames  map[string]string
@@ -155,6 +161,7 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 	assembly.coreAsyncProof = assembly.checkedCoreProof()
 	assembly.integerWorkers = assembly.checkedIntegerWorkers()
 	assembly.mapLeaves = assembly.checkedMapLeaves()
+	assembly.mapBatches = assembly.checkedMapBatches()
 	assembly.bindInitializers()
 	return assembly, nil
 }

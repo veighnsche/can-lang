@@ -90,7 +90,7 @@ func emitAuthoredModule(assembly *programAssembly, runtime, path string, fns []*
 	}
 	body.WriteString(localTypes)
 	for _, fn := range fns {
-		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, DomainRuntime: "$canDomain", SourceID: fn.Symbol.Source.ID, Browser: assembly.browser, authoredProof: assembly.authoredProof, collectionProof: assembly.collectionAsyncProof, coreProof: assembly.coreAsyncProof, integerWorkers: assembly.integerWorkers, mapLeaves: assembly.mapLeaves}
+		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, DomainRuntime: "$canDomain", SourceID: fn.Symbol.Source.ID, Browser: assembly.browser, authoredProof: assembly.authoredProof, collectionProof: assembly.collectionAsyncProof, coreProof: assembly.coreAsyncProof, integerWorkers: assembly.integerWorkers, mapLeaves: assembly.mapLeaves, mapBatches: assembly.mapBatches}
 		code, err := emitter.Function(assembly.functions[fn.Identity()], fn.Region)
 		if err != nil {
 			return Module{}, err
@@ -113,6 +113,16 @@ func emitAuthoredModule(assembly *programAssembly, runtime, path string, fns []*
 				}
 				body.WriteString("export ")
 				body.WriteString(companion)
+			}
+			if entry, ok := assembly.mapBatches[fn.Identity()]; ok && entry != nil {
+				absent, present, err := emitter.BatchCompanions(entry)
+				if err != nil {
+					return Module{}, err
+				}
+				body.WriteString("export ")
+				body.WriteString(absent)
+				body.WriteString("export ")
+				body.WriteString(present)
 			}
 		}
 	}
@@ -230,6 +240,9 @@ func authoredModuleImports(assembly *programAssembly, runtime, path string) []Mo
 				}
 				if entry, ok := assembly.mapLeaves[fn.Identity()]; ok && entry != nil && entry.Companion != "" {
 					imports = append(imports, ModuleImport{Target: target, Names: []ImportName{{entry.Companion, entry.Companion}}})
+				}
+				if entry, ok := assembly.mapBatches[fn.Identity()]; ok && entry != nil && entry.Absent != "" && entry.Present != "" {
+					imports = append(imports, ModuleImport{Target: target, Names: []ImportName{{entry.Absent, entry.Absent}, {entry.Present, entry.Present}}})
 				}
 			}
 		}

@@ -10,7 +10,7 @@ import {
 import { array, record } from "../data.ts";
 import { nonfiniteSortKeyFailure, type FailureOrigin } from "../failure.ts";
 import { callContext, type AssertionContext } from "../assert/context.ts";
-import { callableInstance, integerWorker, mapLeafWorker } from "../callable.ts";
+import { callableInstance, integerWorker, mapBatchWorker, mapLeafWorker } from "../callable.ts";
 import type { OwnerContext } from "../owner-core.ts";
 import { isHostProxy } from "../reflect.ts";
 
@@ -247,6 +247,23 @@ export function fold<T, U>(
       if (elements !== undefined) {
         const fast = success(elements.reduce((total, item) => worker.run(total, item), initial));
         return Promise.resolve(fast) as unknown as Promise<Completion<U>>;
+      }
+    }
+    // Proven batch transitions reduce through the exact factory-owned
+    // runner with one clone and one publication. Context and owner stay
+    // strictly undefined; array and initial-map admission both complete
+    // before the first visit. A declined runner falls through to the
+    // unchanged leaf/generic paths with no effect; empty arrays return
+    // success(initial) without touching the transitions.
+    const batched = mapBatchWorker(action);
+    if (batched !== undefined && trace.context === undefined && trace.owner === undefined) {
+      const elements = leafElements(source, batched.keyKind);
+      if (elements !== undefined) {
+        const { batch: runner, absent, present, origin } = batched;
+        const fast = runner.run(initial, elements, absent, present, origin);
+        if (fast !== undefined) {
+          return Promise.resolve(fast) as unknown as Promise<Completion<U>>;
+        }
       }
     }
     // Proven map leaves reduce natively with synchronous completion

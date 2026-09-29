@@ -113,6 +113,7 @@ func (e *RegionEmitter) callable(node *ir.Expression) (LoweredExpression, error)
 	} else {
 		descriptor := ""
 		leaf := ""
+		batch := ""
 		if declaration.Array == nil {
 			if companion, ok := e.provenIntegerWorker(declaration.Target, target); ok {
 				if entry := e.integerWorkers[declaration.Target]; ok && entry != nil && entry.Region != nil && (len(node.Type.Inputs()) == 1 || len(node.Type.Inputs()) == 2) {
@@ -136,11 +137,31 @@ func (e *RegionEmitter) callable(node *ir.Expression) (LoweredExpression, error)
 						companion, quote(entry.KeyKind), quote(entry.Source), span.Start, span.End, quote(entry.Region.ID))
 				}
 			}
+			// A proven batch attaches its own ninth descriptor after the
+			// unchanged optional integer seventh and leaf eighth:
+			// absent/present companions, keyKind, first call-site
+			// origin and the exact factory get method. Non-batch call
+			// sites keep their exact shape.
+			if entry, ok := e.provenMapBatch(declaration.Target, target); ok {
+				if entry.Region != nil && len(node.Type.Inputs()) == 2 && len(declaration.Positions) == 0 {
+					span := entry.GetSpan
+					batch = fmt.Sprintf(",{absent:%s,present:%s,keyKind:%s,origin:Object.freeze({source:%s,start:%d,end:%d,invocation:[%s]}),factory:%s.get}",
+						entry.Absent, entry.Present, quote(entry.KeyKind), quote(entry.Source), span.Start, span.End, quote(entry.Region.ID), entry.Receiver)
+				}
+			}
 		}
 		if leaf != "" && descriptor == "" {
 			descriptor = ",undefined"
 		}
-		fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], %s(%s): Promise<$canCompletion<%s>> => %s, [%s],$canContext%s%s);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), adapter, strings.Join(parameters, ", "), TypeName(node.Type.Result()), invoke, strings.Join(retained, ", "), descriptor, leaf)
+		if batch != "" {
+			if descriptor == "" {
+				descriptor = ",undefined"
+			}
+			if leaf == "" {
+				leaf = ",undefined"
+			}
+		}
+		fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], %s(%s): Promise<$canCompletion<%s>> => %s, [%s],$canContext%s%s%s);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), adapter, strings.Join(parameters, ", "), TypeName(node.Type.Result()), invoke, strings.Join(retained, ", "), descriptor, leaf, batch)
 	}
 	return LoweredExpression{Statements: out.String(), Value: name}, nil
 }

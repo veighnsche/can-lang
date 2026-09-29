@@ -1,7 +1,7 @@
-import { success, failure, type Completion, type AssertionContext } from "../completion.ts";
+import { success, failure, caught, type Completion, type AssertionContext } from "../completion.ts";
 import { array, record, registerOpaqueContents } from "../data.ts";
 import { createDomainRuntime } from "../domain.ts";
-import { resourceStateFailure } from "../failure.ts";
+import { resourceStateFailure, type FailureOrigin } from "../failure.ts";
 import { checkKey, type Key, type KeyKind } from "./set.ts";
 declare const brand: unique symbol;
 export type ImmutableMap<K extends Key = Key, V = unknown> = Readonly<{
@@ -19,6 +19,30 @@ export function mapMethodWorker(
 ): ((...args: unknown[]) => Completion<unknown>) | undefined {
   if ((typeof fn !== "object" && typeof fn !== "function") || fn === null) return undefined;
   return methodWorkers.get(fn);
+}
+// Private batch runner behind the exact factory-owned async methods. Run
+// validates the genuine initial map and all-bigint values before any
+// visit, clones once, applies the proven transitions with native
+// has/get/set, and publishes through own() once; invalid map state
+// declines with undefined before traversal and the first transition
+// throw stops with the first-boundary origin. Only the three canonical
+// operations register; identity is by exact function object, never by
+// name or property inspection.
+export type MapBatchRunner = Readonly<{
+  run: (
+    initial: unknown,
+    keys: readonly unknown[],
+    absent: (key: unknown) => bigint,
+    present: (key: unknown, previous: bigint) => bigint,
+    origin: FailureOrigin,
+  ) => Completion<unknown> | undefined;
+}>;
+const batchRunners = new WeakMap<object, MapBatchRunner>();
+// Compiler-private query for proven batch folds. Unknown functions
+// refuse without inspection, so forged capabilities fail closed.
+export function mapBatchCapability(fn: unknown): MapBatchRunner | undefined {
+  if ((typeof fn !== "object" && typeof fn !== "function") || fn === null) return undefined;
+  return batchRunners.get(fn);
 }
 const origin = Object.freeze({
   source: "can:collections:map",
@@ -73,6 +97,45 @@ export function createMap<K extends Key, V>(
     checkKey(keyKind, key);
     if (!source.has(key)) return error(identities.absent);
     return success(own(new Map(source).set(key, value)));
+  }
+  // Batch reduction for one proven transition. Guards run before the
+  // first visit with no effect: genuine initial map of this exact
+  // factory (wrong identity, proxy or non-object declines) and every
+  // stored value a bigint. Empty input returns the initial token
+  // without cloning. Otherwise one private clone is mutated in order
+  // and published once through own() with independent opaque
+  // ownership; the old backing Map is never mutated and no mutable
+  // alias escapes. Absent keys take the insert value, present keys the
+  // replace value over the stored bigint — the proof's impossible
+  // recovery arms. No per-word token, Completion, Promise, snapshot
+  // or origin object on success.
+  function runBatch(
+    initial: unknown,
+    keys: readonly unknown[],
+    absent: (key: unknown) => bigint,
+    present: (key: unknown, previous: bigint) => bigint,
+    origin: FailureOrigin,
+  ): Completion<unknown> | undefined {
+    const found =
+      initial !== null && typeof initial === "object" ? storage.get(initial) : undefined;
+    if (found === undefined || found.identity !== identities.map) return undefined;
+    for (const current of found.values.values()) {
+      if (typeof current !== "bigint") return undefined;
+    }
+    if (keys.length === 0) return success(initial as ImmutableMap<K, V>);
+    const builder = new Map(found.values);
+    try {
+      for (const key of keys) {
+        if (builder.has(key as Key)) {
+          builder.set(key as Key, present(key, builder.get(key as Key) as bigint));
+        } else {
+          builder.set(key as Key, absent(key));
+        }
+      }
+    } catch (cause) {
+      return caught(cause, origin);
+    }
+    return success(own(builder));
   }
   const methods = Object.freeze({
     async empty(_context?: AssertionContext) {
@@ -147,5 +210,11 @@ export function createMap<K extends Key, V>(
   methodWorkers.set(methods.get, getBody);
   methodWorkers.set(methods.insert, insertBody);
   methodWorkers.set(methods.replace, replaceBody);
+  const runner = Object.freeze({
+    run: runBatch,
+  });
+  batchRunners.set(methods.get, runner);
+  batchRunners.set(methods.insert, runner);
+  batchRunners.set(methods.replace, runner);
   return methods;
 }
