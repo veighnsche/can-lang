@@ -162,9 +162,11 @@ func TestLexicalFailuresHavePreciseSpans(t *testing.T) {
 		{"1_000", "CAN-LEX-NUMBER", "1_000"}, {"1e+", "CAN-LEX-NUMBER", "1e+"}, {".5", "CAN-LEX-NUMBER", ".5"}, {"1.", "CAN-LEX-NUMBER", "1."}, {"1e9999", "CAN-LEX-FLOAT-RANGE", "1e9999"},
 		{"\"x\ny\"", "CAN-LEX-STRING", "\n"}, {"\"unclosed", "CAN-LEX-STRING", "\"unclosed"}, {"r\"\"\"unclosed", "CAN-LEX-STRING", "r\"\"\"unclosed"}, {"/* unclosed /* */", "CAN-LEX-COMMENT", "/* unclosed /* */"},
 		{"call f(\n)", "CAN-LEX-CONTINUATION", "\n"}, {"[r\"\"\"x\ny\"\"\"]", "CAN-LEX-CONTINUATION", "\n"}, {"(x /*\n*/)", "CAN-LEX-CONTINUATION", "\n"},
+		{"emits {missing\n}", "CAN-LEX-CONTINUATION", "\n"}, {"{r\"\"\"x\ny\"\"\"}", "CAN-LEX-CONTINUATION", "\n"}, {"({x} /*\n*/)", "CAN-LEX-CONTINUATION", "\n"},
 		{"(]", "CAN-LEX-DELIMITER", "]"}, {"(", "CAN-LEX-DELIMITER", "("}, {")", "CAN-LEX-DELIMITER", ")"},
+		{"{]", "CAN-LEX-DELIMITER", "]"}, {"(}", "CAN-LEX-DELIMITER", "}"}, {"{)", "CAN-LEX-DELIMITER", ")"}, {"{", "CAN-LEX-DELIMITER", "{"}, {"}", "CAN-LEX-DELIMITER", "}"},
 	}
-	for _, punct := range []string{";", "{", "}", "'", "\\", "==", "!=", "&&", "||", "+=", "->", "@", "?"} {
+	for _, punct := range []string{";", "'", "\\", "==", "!=", "&&", "||", "+=", "->", "@", "?"} {
 		cases = append(cases, struct{ text, code, fragment string }{punct, "CAN-LEX-PUNCTUATION", punct})
 	}
 	for _, tc := range cases {
@@ -181,6 +183,38 @@ func TestLexicalFailuresHavePreciseSpans(t *testing.T) {
 		})
 	}
 }
+func TestBracesLexAsBalancedOneLineDelimiters(t *testing.T) {
+	result := valid(t, "error missing{str key}\nerror empty{}\nfn int load\n    emits {missing, other}\n    emits {}\n    missing{\"x\"}\n    all_failed<a_failure>{[codec::invalid_data{\"a\", \"type\"}]}")
+	got := []string{}
+	for _, token := range significantTokens(result) {
+		got = append(got, token.Text)
+	}
+	want := []string{"error", "missing", "{", "str", "key", "}", "error", "empty", "{", "}", "fn", "int", "load",
+		"emits", "{", "missing", ",", "other", "}", "emits", "{", "}",
+		"missing", "{", `"x"`, "}",
+		"all_failed", "<", "a_failure", ">", "{", "[", "codec", "::", "invalid_data", "{", `"a"`, ",", `"type"`, "}", "]", "}"}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("brace tokens: %v", got)
+	}
+	for _, token := range significantTokens(result) {
+		if token.Text == "{" && token.Kind != Kind("{") || token.Text == "}" && token.Kind != Kind("}") {
+			t.Fatalf("brace kind lost: %+v", token)
+		}
+	}
+	// Braces never open a layout block: an unindented braced line emits no indent/dedent.
+	flat := valid(t, "emits {missing}\nmissing{\"x\"}")
+	for _, token := range flat.Tokens {
+		if token.Kind == Indent || token.Kind == Dedent {
+			t.Fatalf("brace introduced layout: %+v", token)
+		}
+	}
+	// Braces inside strings and comments remain inert.
+	literal := valid(t, "\"{\" // }\n/* {} */\n\"}\"")
+	if len(significantTokens(literal)) != 2 {
+		t.Fatalf("braces leaked through trivia: %+v", significantTokens(literal))
+	}
+}
+
 func TestLFAndCRLFHaveIdenticalLogicalTokens(t *testing.T) {
 	lf := "\uFEFFpackage demo\n    provides []\n    uses []\nstr text = \"\"\"\n  é😀\n\"\"\"\n"
 	left := valid(t, lf)

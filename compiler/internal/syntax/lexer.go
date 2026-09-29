@@ -94,7 +94,7 @@ func (l *lexer) newline() {
 	}
 	l.pos++
 	if len(l.delimiters) > 0 {
-		l.fail("CAN-LEX-CONTINUATION", "parentheses and brackets must stay on one physical line", start, l.pos)
+		l.fail("CAN-LEX-CONTINUATION", "parentheses, brackets, and braces must stay on one physical line", start, l.pos)
 		return
 	}
 	if l.significant {
@@ -271,7 +271,7 @@ func (l *lexer) stringLiteral() {
 				return
 			}
 			if len(l.delimiters) > 0 {
-				l.fail("CAN-LEX-CONTINUATION", "a multiline literal cannot span a parenthesized or bracketed form", newlineStart, newlineEnd)
+				l.fail("CAN-LEX-CONTINUATION", "a multiline literal cannot span a parenthesized, bracketed, or braced form", newlineStart, newlineEnd)
 				return
 			}
 			value.WriteByte('\n')
@@ -422,23 +422,23 @@ func (l *lexer) punctuation() {
 		}
 	}
 	ch := remaining[0]
-	if !strings.ContainsRune("()[],:.=+-*/%&|^~<>", rune(ch)) {
+	if !strings.ContainsRune("()[]{},:.=+-*/%&|^~<>", rune(ch)) {
 		_, size := utf8.DecodeRuneInString(remaining)
 		l.pos += size
 		l.fail("CAN-LEX-PUNCTUATION", "character is not part of Can syntax", start, l.pos)
 		return
 	}
 	l.pos++
-	if ch == '(' || ch == '[' {
+	if ch == '(' || ch == '[' || ch == '{' {
 		l.delimiters = append(l.delimiters, delimiter{kind: ch, offset: start})
 	}
-	if ch == ')' || ch == ']' {
+	if ch == ')' || ch == ']' || ch == '}' {
 		if len(l.delimiters) == 0 {
 			l.fail("CAN-LEX-DELIMITER", "unmatched closing delimiter", start, l.pos)
 			return
 		}
 		top := l.delimiters[len(l.delimiters)-1]
-		if ch == ')' && top.kind != '(' || ch == ']' && top.kind != '[' {
+		if ch == ')' && top.kind != '(' || ch == ']' && top.kind != '[' || ch == '}' && top.kind != '{' {
 			l.fail("CAN-LEX-DELIMITER", "mismatched closing delimiter", start, l.pos)
 			return
 		}
