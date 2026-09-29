@@ -130,6 +130,10 @@ Verification on 2026-09-29 at Can `4393a89e`: the compiler's
 `TestEmailHrefFixtureBindsToHTMLRuntime` bound the Can call to the native HTML
 constructor, and `bun test runtime/test/html.test.ts` passed 11 tests / 470
 assertions for accepted examples, hostile address cases, and anchor-only use.
+A fresh temporary Can project containing the snippet above also passed
+`canlc assert <project-directory>` on the pinned `4393a89e` development
+distribution (one assertion, complete report); the temporary project was
+removed afterward.
 The Can fixture is at
 [`compiler/testdata/current/html/main.can`](../../compiler/testdata/current/html/main.can);
 the runtime behavior is covered in
