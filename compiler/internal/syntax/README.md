@@ -63,8 +63,10 @@ integer spelling; exponent-form literals are always floats. Finite underflow
 is accepted. Signs remain operators. Integer ranges take precedence over a
 fractional point. No numeric value is evaluated as a Can operation here.
 
-Parentheses/brackets cannot cross a physical source newline, even through a
-comment or multiline literal. Other context-sensitive restrictions belong to
+Parentheses, brackets, and braces cannot cross a physical source newline,
+even through a comment or multiline literal. Braces delimit error declarations,
+finite error bounds, and error values only; they never open a layout block.
+Other context-sensitive restrictions belong to
 the parser: declaration grammar, required nonempty blocks, trailing commas, physical
 one-line assertions and completed method chains. Multiline literal spans let
 the parser enforce those restrictions without scanning strings again.

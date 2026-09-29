@@ -36,14 +36,14 @@ recorded Can-to-Bun platform boundary remains in force.
 The [49-finding disposition ledger](../implementation/language-design-dispositions-2026-09-22.md) selects 16 changes, retains 18 current designs and defers 15 findings with reasons. The [acceptance specification](../implementation/language-change-acceptance-2026-09-22.md) defines evidence for every accepted change. These incorporated records fix scope; they do not imply that implementation has passed acceptance.
 
 - Preserve native AI forms, grouped state, explicit contracts, attached assertions and mode-specific coordination ownership.
-- Fetch/judge expose `http::request_failed(http::failure_detail detail)` for their native infrastructure failures. The seven existing typed errors form its detail variant; authored failures preserve their origin and identity. [A2.4](ai-io-spec.md#a24-fetchjudge-normalization) owns the boundary, provenance and public bounds.
+- Fetch/judge expose `http::request_failed{http::failure_detail detail}` for their native infrastructure failures. The seven existing typed errors form its detail variant; authored failures preserve their origin and identity. [A2.4](ai-io-spec.md#a24-fetchjudge-normalization) owns the boundary, provenance and public bounds.
 - `wrap name from target` derives a fetch/judge operation. It has explicit `emits calculated`, attached assertions and origin-specific `handles native`/`handles emitted` tables. Single inheritance, terminal `inherit`, finite calculated bounds and handler coverage follow [A3.2](ai-io-spec.md#a32-operation-wrappers).
 - Exact generic error heads and optional aliases distinguish specializations. Bare names require one applicable specialization. Failure arms precede final success in completion regions; coordination keeps its own per-entry/shared ownership. [C5.1](technical-spec.md#c51-exact-generic-error-patterns-and-match-order) and [Q5/Q6](coordination-spec.md#q5-which-completion-arms-are-required-and-what-do-they-cover) define coverage.
 - Bound standard catches use `[_] as standard_failure f`; immutable `kind`, `message` and `occurrence_id` preserve occurrence identity while keeping the cause private. [C9.1](technical-spec.md#c91-standard-failure-snapshots) owns this projection.
 - A successful build verifies all assertion roots against captured inputs before atomic publication. Root workers have bounded deadlines; assertion commands never publish. [P15.1](platform-testing-spec.md#p151-verified-build-and-publication) owns the exact guarantee, CLI bounds and dependency fixture digests.
 - Typed inert fixture templates expand into locally owned queues under [P3.1](platform-testing-spec.md#p31-typed-fixture-reuse-with-local-ownership). Fetch/judge/LLM/wrapper declarations require attached native assertions; raw requests and wrapper policy injections have distinct evidence labels under [P4.1](platform-testing-spec.md#p41-attached-native-and-wrapper-assertions).
 
-Error-set parameters, changed capture syntax and state-callable redesign remain deferred until concrete programs demonstrate a need. LD29 selects `checks::require(bool condition, str reason) -> void emits [checks::failed]`, with ordinary domain recovery and existing constructor expectations. [C9.2](technical-spec.md#c92-named-runtime-checks) fixes its complete contract after [three fresh consultations](evidence/2026-09-22/ld29-checks/README.md); its design gate is closed, while implementation evidence remains required. No new standard category or assertion grammar is introduced. Resource escape analysis remains deferred: the verified escape admits a handle but subsequent use fails with `resource_state`; no safety bypass was established.
+Error-set parameters, changed capture syntax and state-callable redesign remain deferred until concrete programs demonstrate a need. LD29 selects `checks::require(bool condition, str reason) -> void emits {checks::failed}`, with ordinary domain recovery and existing constructor expectations. [C9.2](technical-spec.md#c92-named-runtime-checks) fixes its complete contract after [three fresh consultations](evidence/2026-09-22/ld29-checks/README.md); its design gate is closed, while implementation evidence remains required. No new standard category or assertion grammar is introduced. Resource escape analysis remains deferred: the verified escape admits a handle but subsequent use fails with `resource_state`; no safety bypass was established.
 
 The [existing behavior consultations](evidence/2026-09-22/behavior-contracts/README.md), including the [payload disagreement investigation](evidence/2026-09-22/behavior-contracts/disagreement-investigation.md), support these already selected rules. The [reconciliation record](evidence/2026-09-22/document-reconciliation/README.md) records their canonical locations. The behavior-contract document is now a navigation and acceptance-case index, not an overriding addendum.
 
@@ -133,17 +133,17 @@ or effect classification.
 
 Approved from deep-review decision U1: native questions (`noul`, `choice`,
 `score`, including generated-record forms), `judge`, named `choice_arm`,
-`fetch`, and `llm` declarations use an ordinary indented `emits [...]` section,
+`fetch`, and `llm` declarations use an ordinary indented `emits {...}` section,
 matching functions. Do not put this annotation in the declaration header or
 introduce a separate `contract` section. The list describes permitted domain
 errors; standard runtime failures remain outside it.
 
 ```text
 choice str route from service
-    emits [ai::invalid_question, ai::invalid_answer, review_required]
+    emits {ai::invalid_question, ai::invalid_answer, review_required}
     asks "Which route?"
         auto "Routine request." => ok "auto"
-        manual "Needs review." => review_required()
+        manual "Needs review." => review_required{}
 ```
 
 Every declaration spells its full domain-error upper bound, including applicable
@@ -222,7 +222,7 @@ their criterion description followed by `=>` and an executable handler:
 
 ```text
 noul bool needs_human from default_wrapper
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     given
         str what_question
         str what_is_true
@@ -265,7 +265,7 @@ beneath `asks`. Only the winning option's handler executes:
 
 ```text
 choice str route_ticket from default_wrapper
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     asks "Which team should handle this message?"
         billing "Payments, invoices, or refunds." => ok "billing"
         technical "Bugs or problems using the product." => ok "technical"
@@ -283,7 +283,7 @@ earlier handler-free, raw-probability-only form:
 
 ```text
 record routing_result choice float routing_weights from default_wrapper
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     given
         str question
     confidence as conf
@@ -338,7 +338,7 @@ approved and differs from ordinary sequential `call` execution outside a judge.
 
 ```text
 judge str assess_urgency from default_wrapper
-    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
+    emits {http::request_failed, ai::invalid_question, ai::invalid_answer}
     given
         str question
     state
@@ -369,7 +369,7 @@ The selected confidence/fallback surface is illustrated by:
 
 ```text
 choice str route_ticket from default_wrapper
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     asks "Which team should handle this message?"
     confidence as conf
     minimum 0.6 => ok "Review needed."
@@ -386,24 +386,24 @@ beneath `asks`:
 
 ```text
 choice_arm float billing_arm
-    emits []
+    emits {}
     describes "Payments and refunds."
     ok %
 
 choice_arm float technical_arm
-    emits []
+    emits {}
     describes "Product faults."
     ok %
 
 /// Reusable department judgment arms.
 record departments
-    choice_arm<float> emits [] billing
-    choice_arm<float> emits [] technical
+    choice_arm<float> emits {} billing
+    choice_arm<float> emits {} technical
 
 departments all_depts = departments(billing_arm, technical_arm)
 
 record routing_result2 choice float routing_weights2 from default_wrapper
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     confidence as conf
     asks "Which team should handle this message?"
         ...all_depts
@@ -422,7 +422,7 @@ arm receiving the selected key:
 
 ```text
 choice str select_department from default_wrapper
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     given
         str question
         choice_option[] candidates
@@ -438,10 +438,10 @@ spreading reusable `choice_arm` values. Runtime-generated names do not create
 statically named result fields. No `dynamic` modifier or separate `options`
 section is introduced.
 
-Stored reusable arm values use `choice_arm<result_type> emits [errors] name`
+Stored reusable arm values use `choice_arm<result_type> emits {errors} name`
 (approved deep-review U2 option 1). The generic argument describes the handler's
 result type; the explicit error list is its domain-error contract. For example,
-`choice_arm<float> emits [] billing` stores a float-returning arm with no domain
+`choice_arm<float> emits {} billing` stores a float-returning arm with no domain
 errors. Named arm declarations retain `choice_arm <return_type> <name>` and the
 ordinary `emits` section. Arms are capture-free; their result/error compatibility is defined in
 [AI/I/O](ai-io-spec.md). This introduces no `choice_context` record and does not
@@ -456,7 +456,7 @@ rewrite of other declaration layouts.
 
 ```text
 score float assess_severity from default_wrapper
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     confidence as conf
     score as value
     minimum 0.6 => ok -1.0
@@ -467,7 +467,7 @@ score float assess_severity from default_wrapper
         ok => ok value
 
 record severity_weights score float assess_severity_weights from default_wrapper
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     confidence as conf
     score as value
     asks "How severe is the problem described in the email?"
@@ -501,7 +501,7 @@ the name and `from` selecting shared connection configuration:
 
 ```text
 fetch user_profile load_profile from account_service
-    emits [http::request_failed]
+    emits {http::request_failed}
     given
         str user_id
     get "/profile"
@@ -531,7 +531,7 @@ status and immutable header data. A body-only `fetch receipt ...` remains availa
 
 ```text
 fetch http::response<receipt> save_receipt from service
-    emits [http::request_failed]
+    emits {http::request_failed}
     given
         receipt_request payload
     post "/receipts"
@@ -557,7 +557,7 @@ a general tuple value. A single state input is still grouped:
 
 ```text
 llm str summarize from generator
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response]
+    emits {http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response}
     state
         str email_content
     asks "Summarize the email."
@@ -583,7 +583,7 @@ record email_summary
     str summary
 
 llm email_summary summarize_email from generator
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response]
+    emits {http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response}
     state
         str email_content
     asks "Summarize the email with a short subject and a factual summary."
