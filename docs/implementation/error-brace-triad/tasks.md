@@ -147,7 +147,7 @@ appropriate to protect laptop load.
   success-data construction and bare match forwarding distinct. Done when
   dedicated tests reach the existing `FailureBody` and preserve source spans.
   Return the file lease to F for final syntax integration. Evidence: `startsConstructor` admits `{`; new `constructor_braces_test.go` with 5 tests (terminal `FailureBody`, empty/generic, success-data non-completion, bare-forwarding distinctness, span round-trip). `go test -p 1 ./compiler/internal/syntax/` passes. `declarations.go` lease returned to F.
-- [ ] **N03 · nominal delimiter checks.** Depends: N01. Files:
+- [x] **N03 · nominal delimiter checks.** Depends: N01. Files:
   `check/expressions.go`, `check/infer.go`, relevant resolve code and new
   focused checker tests. After resolution, require `{}` for `types.Error` and
   `()` for `types.Record`, including imported, catalogue, generic, and
@@ -155,7 +155,7 @@ appropriate to protect laptop load.
   owner rules. Code can proceed alongside F02; run its source-level
   acceptance tests after F02 supplies the new declaration/bound grammar.
   Done when `E(...)` and `R{...}` fail with useful spans and valid
-  constructions type-check. Evidence: pending.
+  constructions type-check. Evidence: constructor checking requires `{}` for `types.Error` / `()` for `types.Record` with canonical-name diagnostics at located spans (`check/infer.go` and resolve needed no change). New `TestConstructorDelimiterRequiresResolvedKind`: valid program covers local/imported/catalogue/generic/expected-variant (registry `app::missing,leaf::fused`); 9 delimiter-mutation negatives assert needle match + `byte ` span. Focused check test passes.
 - [ ] **N04 · ordinary value versus emitted failure proof.** Depends:
   N02,N03. Files: focused `check`/`emit` tests; production IR/emitter/runtime
   only for a demonstrated failure and after resolving existing dirty owners.

@@ -386,6 +386,12 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 		if !types.Equal(typ, typ) || (typ.Kind() != types.Record && typ.Kind() != types.Error) {
 			return nil, fmt.Errorf("constructor requires an ordinary nominal record/error")
 		}
+		if typ.Kind() == types.Error && !n.Braces {
+			return nil, fmt.Errorf("error %s requires brace construction", types.CanonicalName(typ))
+		}
+		if typ.Kind() == types.Record && n.Braces {
+			return nil, fmt.Errorf("record %s requires parenthesis construction", types.CanonicalName(typ))
+		}
 		fields := typ.Fields()
 		if len(fields) != len(n.Arguments) {
 			return nil, fmt.Errorf("constructor arity mismatch")
