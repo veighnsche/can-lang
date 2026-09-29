@@ -96,7 +96,10 @@
     "callable.ts": [
       "./owner.ts",
       "./assert/context.ts",
-      "./assert/identity.ts"
+      "./assert/identity.ts",
+      "./completion.ts",
+      "./reflect.ts",
+      "./collections/map.ts"
     ],
     "codec/budget.ts": [],
     "codec/numbers.ts": [
@@ -256,7 +259,8 @@
       "../failure.ts",
       "../assert/context.ts",
       "../callable.ts",
-      "../owner-core.ts"
+      "../owner-core.ts",
+      "../reflect.ts"
     ],
     "number.ts": [
       "./completion.ts",
