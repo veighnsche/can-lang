@@ -1,0 +1,20 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "proposal": "The open question is whether braces should visually mark every piece of Can source concerned with failures. The designer is asking for an honest assessment before any coding.",
+    "syntax": "Today bare { and } are invalid source punctuation, though strings may hold those characters as text, and multiline suites are indented. Calls and constructed nominal values share (...); collections and bounded error rows use [...]. Typical spellings include error unavailable(str key), emits [unavailable, forbidden], unavailable(key), a match call load(key) whose arms name errors, relay call, and test expectations specifying an error payload.",
+    "semantics": "An application error is a nominal typed outcome value rather than a language throw. Declared emits entries conservatively bound such outcomes, and outcome dispatch is exhaustive. Arithmetic or unknown native faults are standard failures, excluded from emits and handled by a separate pattern. A new visual convention must not collapse these categories.",
+    "constraints": "With no outside users, old spelling need not be supported. Agent-oriented source benefits from predictable and statically verifiable rules. There is not yet a concrete brace grammar, a parsing experiment, or observed authoring evidence proving improved usability."
+  },
+  "questions": {
+    "direction": {
+      "type": "choice",
+      "instructions": "Recommend the most defensible grammar path at this stage, considering how quickly a reader can identify each role and how coherently delimiters are assigned. Compatibility is irrelevant here.",
+      "criteria": {
+        "universal_braces": "Make { and } the common notation around error definitions, declared error bounds, created error values, handled error arms, wrapper handlers, standard-failure catches, and asserted failures, with separate grammar rules preserving every current behavior.",
+        "emits_only_braces": "Use { and } only where emits enumerates its possible domain-error types, such as emits {unavailable, forbidden}; keep ordinary constructor parentheses and existing match and test notation.",
+        "retain_current_syntax": "Preserve the brace-free language and its established use of (...), [...], and indentation; improve error comprehension through wording or layout rather than adding a punctuation category."
+      }
+    }
+  }
+}

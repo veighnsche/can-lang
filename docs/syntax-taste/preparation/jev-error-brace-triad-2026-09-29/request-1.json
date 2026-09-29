@@ -1,0 +1,22 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "proposal": "A Can designer proposes three matching brace forms: error missing{str key} for a declaration, emits {missing} for a finite error bound, and missing{key} for positional construction of a nominal error. Calls and record constructors stay parenthesized; arrays keep brackets; indented blocks, match heads, relay call, and standard-failure syntax do not change. This is a design review, not an implementation request.",
+    "language_facts": "Bare braces are not current Can syntax. Existing forms are error missing(str key), emits [missing], and missing(key). Every function declares an emits bound, including the empty bound emits []; a nested callable-array type may say emits [][] today and could say emits {}[] with braces. Error declarations and constructors have positional fields. Generic errors can appear inside aggregates such as all_failed<T>([missing(key)]).",
+    "meaning": "A domain error is a typed nominal value. Its constructor can be the terminal emitted outcome or can sit inside successful data, variants, assertions, and fixture inputs. Merely constructing it is not throwing. A bare matched error can forward the original occurrence; constructing a new one is different. Standard failures are outside all emits bounds and cannot be constructed as domain errors. The proposal changes spelling, not runtime behavior.",
+    "constraints": "There are no external users or compatibility obligations. Coding agents are primary authors, so clear and enforceable visual conventions matter. The parser, formatter, editor tooling, and source corpus would need coordinated changes. No authoring experiment has established that the brace forms read better."
+  },
+  "questions": {
+    "direction": {
+      "type": "choice",
+      "instructions": "Which candidate grammar is best supported for Can now? Compare visual consistency, likely reader interpretation of positional braces, and the existing distinction between error values and emitted outcomes.",
+      "criteria": {
+        "full_triad": "Use braces for error declaration fields, finite emits sets, and positional construction of every error value; retain current calls, records, matching, forwarding, and standard-failure rules.",
+        "bound_and_constructor": "Use emits {E} and E{value}, while error declarations continue as error E(type field); preserve all current error semantics and the non-error grammar.",
+        "declaration_and_constructor": "Pair error E{type field} with E{value}, but leave error bounds as emits [E]; do not change calls, records, or outcome handling.",
+        "bound_only": "Use emits {E} as finite-set notation, keeping error declarations and nominal error values parenthesized like today.",
+        "retain_current": "Keep error E(type field), emits [E], and E(value), with braces absent from Can source grammar."
+      }
+    }
+  }
+}

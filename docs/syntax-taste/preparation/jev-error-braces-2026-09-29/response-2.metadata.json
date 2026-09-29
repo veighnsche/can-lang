@@ -1,0 +1,13 @@
+{
+  "fresh_call": true,
+  "started_at": "2026-09-29T17:14:13.648757+00:00",
+  "elapsed_seconds": 0.292,
+  "http_status": 200,
+  "request_sha256": "ca2921155c4fa1da282ee375b90b53b14781322c1f8b75ec2f1f65dbe33c67ec",
+  "response_sha256": "c70cc40e296089b808b32b6a3489e9f9aaa29b2c48e0c664eed7d8ce1cb3843d",
+  "returned_model": "jev-1.13.0",
+  "usage": {
+    "input_tokens": 733,
+    "output_tokens": 54
+  }
+}

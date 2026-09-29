@@ -1,0 +1,19 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "direction": {
+      "type": "choice",
+      "choice": "retain_parentheses",
+      "confidence": 0.38,
+      "probabilities": {
+        "marked_brackets": 0.37,
+        "bare_brackets": 0.04,
+        "retain_parentheses": 0.59
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 792,
+    "output_tokens": 52
+  }
+}

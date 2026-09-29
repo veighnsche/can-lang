@@ -1,0 +1,21 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "proposal": "The Can designer now proposes exactly two delimiter substitutions: emits [E] becomes emits {E}, and constructing any nominal error E(value) becomes E{value}. Error declarations, calls, record constructors, match heads, and relay syntax stay as they are. Evaluate this as a possible grammar choice, not an implementation instruction.",
+    "grammar": "Bare curly braces are currently unused as Can syntax. Indentation encloses blocks; [] is used for lists and error bounds; () is used for calls and record/error constructors. Error fields are positional, so the proposed E{value} is positional too. Existing examples include error missing(str key), emits [missing], missing(key), and generic all_failed<T>([missing(key)]). Pure callables spell emits []; an array of pure callables can spell emits [][] today, which would become emits {}[] if only the bound delimiter changes. Wrap declarations also have emits calculated.",
+    "semantics": "Errors are typed nominal values. E(value) may be a terminal emitted completion or ordinary data inside an ok result, variant, or assertion; the brace form must keep that distinction. Standard failures are separate from emits and cannot be application-constructed. The checker can resolve whether a constructor name is an error or record; no runtime contract needs changing.",
+    "constraints": "There are no external users and no backward-compatibility requirement. Coding agents are important authors, so visual cues and teachable rules matter. The current source corpus is large, but no authoring experiment yet shows that the new punctuation helps."
+  },
+  "questions": {
+    "direction": {
+      "type": "choice",
+      "instructions": "Which delimiter direction is the best provisional design for source clarity under these facts? Treat the two proposed changes independently where useful; preserve error-value semantics and compare benefits against added punctuation distinctions.",
+      "criteria": {
+        "both_changes": "Use emits {E} for finite domain-error bounds and E{value} for positional construction of nominal error values everywhere; keep record constructors and calls with parentheses and leave the other error grammar untouched.",
+        "emits_only": "Adopt emits {E} and emits {} as set notation, including nested callable types, while error values continue to use E(value) just like records.",
+        "constructor_only": "Keep emits [E], but write E{value} for every nominal error construction, whether it is emitted or stored; records and calls still use parentheses.",
+        "neither_change": "Retain emits [E] and E(value), keeping the present delimiter assignments for error bounds and all nominal constructors."
+      }
+    }
+  }
+}

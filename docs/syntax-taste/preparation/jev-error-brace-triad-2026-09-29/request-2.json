@@ -1,0 +1,22 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "proposal": "Assess a coordinated punctuation revision for Can: write an error shape as error missing{str key}, the allowed failure types as emits {missing}, and a positional error value as missing{key}. Parentheses remain for ordinary invocation and record values, square brackets for arrays, and indentation for suites. Error patterns, relay call, and the separate standard-failure form are outside this revision. No code change is being requested yet.",
+    "language_facts": "The lexer currently rejects bare curly delimiters. Present source spells the same three locations error missing(str key), emits [missing], and missing(key). Even pure functions carry emits []; the existing emits [][] spelling for an array of pure callables would become emits {}[] after a bound change. Error constructors take ordered, not named, values. Specialized aggregate examples include all_failed<T>([missing(key)]).",
+    "meaning": "Constructed application errors retain nominal types and can be returned as failures or embedded in ok data, variants, test expectations, and native fixture modes. Braces must never imply an automatic throw. Forwarding an existing matched failure preserves its occurrence, unlike rebuilding an error value. Standard runtime faults are unconstructible through application syntax and do not enter emits. Generated behavior remains equivalent.",
+    "constraints": "Because Can has no outside consumers, migration compatibility is irrelevant. Agent-written programs benefit from a syntax rule they can recognize and the compiler can verify. Changing the delimiter affects parsing, formatting, editor tooling, and many checked examples. There is no measured usability result for the proposal."
+  },
+  "questions": {
+    "direction": {
+      "type": "choice",
+      "instructions": "Select the most defensible source spelling for this language stage. Weigh the mnemonic gained by reserving braces for error forms against misleading object-like positional syntax and the need to keep value construction separate from emission.",
+      "criteria": {
+        "full_triad": "Introduce curly delimiters in the error declaration, the finite emits bound, and every positional error construction, leaving other declarations, constructors, calls, and handlers alone.",
+        "bound_and_constructor": "Change the bound and constructed error value to curly notation, but retain parentheses around typed fields in an error declaration; preserve the same typed completion rules.",
+        "declaration_and_constructor": "Give error declarations and error-value construction corresponding brace shapes, yet continue listing permitted failure types with square brackets after emits.",
+        "bound_only": "Change the membership list after emits to a brace-delimited set, while declarations and constructed error values continue to use their current parentheses.",
+        "retain_current": "Do not assign braces a source role; retain the current parentheses for error definitions and values and brackets for emits."
+      }
+    }
+  }
+}

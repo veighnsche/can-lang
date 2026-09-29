@@ -1,0 +1,22 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "proposal": "Review a proposed error notation family in Can: error missing{str key} declares fields, emits {missing} names possible domain failures, and missing{key} builds an error with positional arguments. No braces are proposed for statement blocks, record construction, function calls, match arms, relay call, or standard failures; arrays still use []. The task is to judge the design, not implement it.",
+    "language_facts": "Can now treats bare { and } as invalid punctuation, using indentation for blocks, () for calls plus records/errors, and [] for arrays plus emits bounds. Existing equivalents are error missing(str key), emits [missing], and missing(key). The bound is mandatory even when empty, as emits []; in a callable array, emits [][] could instead read emits {}[]. Generic error data can nest as all_failed<T>([missing(key)]). Declared error fields and constructed values are positional.",
+    "meaning": "Nominal error instances are ordinary immutable data until a terminal completion emits one; ok results, sum variants, assertions, and fixture inputs may contain them without failing. A bare forwarding arm retains the prior occurrence, whereas reconstructing an error is not forwarding that occurrence. Standard failures have a separate channel, are excluded from emits, and are not constructible by an application. The proposed punctuation must preserve these contracts exactly.",
+    "constraints": "There is no backward-compatibility need for external users. Can source is heavily authored by coding agents, so consistent and unambiguous notation is valuable. A full syntax migration would touch compiler front end, formatter, editor integration, and examples. No controlled source-reading or authoring trial has demonstrated a benefit."
+  },
+  "questions": {
+    "direction": {
+      "type": "choice",
+      "instructions": "Recommend one provisional grammar direction from the listed alternatives, considering whether the three brace roles form a helpful visual family and whether their positional contents will be understood correctly.",
+      "criteria": {
+        "full_triad": "Mark typed error declarations, finite emits sets, and all error-value constructors with braces, while preserving the present rules for non-error code, matching, propagation, and standard faults.",
+        "bound_and_constructor": "Mark error sets and error-value creation with braces but leave the field list in error declarations parenthesized; retain the current semantics and other syntax.",
+        "declaration_and_constructor": "Use matching braced shapes for declaring an error and building its positional value, while the allowed-error set continues to be written emits [E].",
+        "bound_only": "Reserve curly braces just for finite emits membership; keep the declaration field list and error constructor arguments in parentheses.",
+        "retain_current": "Continue with the brace-free source grammar: error declarations and construction use (), and emits bounds use []."
+      }
+    }
+  }
+}

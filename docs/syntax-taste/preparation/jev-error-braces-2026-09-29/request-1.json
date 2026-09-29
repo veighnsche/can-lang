@@ -1,0 +1,20 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "proposal": "A Can designer asks whether every error-related source form should use curly braces. This is a design review, not an implementation order.",
+    "syntax": "Can currently rejects bare { and } as syntax and uses indentation for blocks; strings can contain brace characters as data. Parentheses serve calls and nominal construction; square brackets serve lists and finite emits bounds. Present examples are error unavailable(str key), emits [unavailable, forbidden], unavailable(key), match call load(key) with named error arms, relay call for propagation, and assertion outcomes that name the constructed error.",
+    "semantics": "Domain errors are typed nominal completion values, not thrown exceptions. A function declares an upper bound of domain errors; matches must cover outcomes. Standard failures such as arithmetic and native exceptions sit outside emits and have their own catch form. The proposal must retain those distinctions.",
+    "constraints": "There are zero external users and no compatibility duty, so syntax can change. Can is authored largely by coding agents, where consistency and checkable meaning matter. No code mockup, parser probe, or user trial yet demonstrates an ergonomic gain from braces."
+  },
+  "questions": {
+    "direction": {
+      "type": "choice",
+      "instructions": "Which source-syntax direction is best justified now? Judge readability, delimiter consistency, and whether distinct error meanings remain apparent. Select a design direction, not a compatibility plan.",
+      "criteria": {
+        "universal_braces": "Reserve curly braces for all error-related forms, including declaration fields, emits sets, error construction, match outcomes, wrapper handlers, standard-failure catches, and assertion cases; define each role precisely while keeping current error semantics.",
+        "emits_only_braces": "Introduce braces solely for the finite list in emits bounds, for example emits {unavailable, forbidden}; leave declaration fields, error values, matching, and assertions in their existing forms.",
+        "retain_current_syntax": "Keep braces out of Can syntax; continue using parentheses, square brackets, and indentation for their present roles, and address any error-readability problem without a new delimiter."
+      }
+    }
+  }
+}

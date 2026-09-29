@@ -1,0 +1,76 @@
+{
+  "reviewed_before_send": true,
+  "same_facts": [
+    "exact three substitutions; non-error calls, records, arrays, indentation blocks, match/relay and standard-failure syntax stay",
+    "current grammar lacks bare braces; current declaration, bound, and constructor spellings preserved in state",
+    "empty and nested callable bounds, generic aggregate error values, and positional fields covered",
+    "error constructors create typed nominal data; terminal completion, not braces, determines emission; forwarding differs from reconstruction",
+    "standard failures remain unconstructible and outside emits; runtime behavior unchanged",
+    "zero external compatibility requirement, agent-oriented source, front-end/formatter/editor/corpus migration, no measured authoring benefit"
+  ],
+  "same_alternatives": [
+    "bound_and_constructor",
+    "bound_only",
+    "declaration_and_constructor",
+    "full_triad",
+    "retain_current"
+  ],
+  "all_prose_fields_distinct": true,
+  "pairwise_string_similarity": {
+    "state.proposal": {
+      "1-2": 0.157,
+      "1-3": 0.104,
+      "2-3": 0.156
+    },
+    "state.language_facts": {
+      "1-2": 0.317,
+      "1-3": 0.312,
+      "2-3": 0.156
+    },
+    "state.meaning": {
+      "1-2": 0.043,
+      "1-3": 0.259,
+      "2-3": 0.026
+    },
+    "state.constraints": {
+      "1-2": 0.044,
+      "1-3": 0.093,
+      "2-3": 0.051
+    },
+    "questions.direction.instructions": {
+      "1-2": 0.058,
+      "1-3": 0.082,
+      "2-3": 0.022
+    },
+    "questions.direction.criteria.full_triad": {
+      "1-2": 0.521,
+      "1-3": 0.547,
+      "2-3": 0.432
+    },
+    "questions.direction.criteria.bound_and_constructor": {
+      "1-2": 0.348,
+      "1-3": 0.477,
+      "2-3": 0.503
+    },
+    "questions.direction.criteria.declaration_and_constructor": {
+      "1-2": 0.161,
+      "1-3": 0.365,
+      "2-3": 0.405
+    },
+    "questions.direction.criteria.bound_only": {
+      "1-2": 0.489,
+      "1-3": 0.466,
+      "2-3": 0.484
+    },
+    "questions.direction.criteria.retain_current": {
+      "1-2": 0.249,
+      "1-3": 0.338,
+      "2-3": 0.458
+    }
+  },
+  "request_sha256": {
+    "1": "04d1113cfb14d473894bb573f045178ffff60ca3a84297fcac5f257b5703a5a3",
+    "2": "bf57130de702640ae26258d7df67371681de3fb6ea7defc74c043610c00b1623",
+    "3": "c85e5a0672af209676b64906c7fdc21e8496f816da61865ce426d9bb44acae46"
+  }
+}

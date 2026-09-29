@@ -1,0 +1,21 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "proposal": "Consider a narrow Can syntax revision: write a declared failure set as emits {E} instead of emits [E], and instantiate an error as E{value} instead of E(value). The declaration header for E, ordinary invocation, record construction, matching, and relay call forwarding are not being redesigned. This is an assessment before code changes.",
+    "grammar": "Can reserves no operative brace tokens today. Significant indentation structures suites, brackets denote arrays and authored error sets, and parentheses surround calls plus record and error arguments. Constructor arguments remain ordered by position in this proposal. A small specimen is error missing(str key), emits [missing], missing(key), with all_failed<T>([missing(key)]) illustrating nested generic error data. Every pure callable uses emits []; the existing emits [][] callable-array spelling would read emits {}[] after changing the set punctuation. Wrapper bounds may instead say emits calculated.",
+    "semantics": "A domain failure has nominal type and value identity. Constructing E(value) can complete with an error, but it can also appear as data inside a success, a variant, or a test expectation; the proposed braces must not become an implicit throw. Runtime standard faults are outside all emits sets and are not constructible by user code. Name resolution already knows record versus error kinds, and the proposed change need not alter outcomes.",
+    "constraints": "Compatibility does not constrain the choice because no one outside the project uses Can. Agent-authored source should be easy to scan and specify without hidden rules. Repository examples are available, but no controlled trial establishes a readability improvement."
+  },
+  "questions": {
+    "direction": {
+      "type": "choice",
+      "instructions": "Select the tentative punctuation policy that most improves comprehensibility while keeping the current typed completion model. A proposal may adopt both edits, one edit, or none; weigh the notation on real nested examples.",
+      "criteria": {
+        "both_changes": "Change finite emits rows to curly-brace sets and spell each positional nominal error value with braces, in both terminal and data positions; leave parentheses for ordinary records and calls and retain the remaining syntax.",
+        "emits_only": "Put braces around the errors listed by emits, including an empty set, and keep construction of an error in the same parenthesized form as construction of a record.",
+        "constructor_only": "Continue to list allowed errors in bracketed emits clauses, but give all constructed error values a braced positional-argument form; ordinary records and invocations remain parenthesized.",
+        "neither_change": "Keep the existing bracketed emits bounds and parenthesized error constructors, without assigning new source roles to braces."
+      }
+    }
+  }
+}

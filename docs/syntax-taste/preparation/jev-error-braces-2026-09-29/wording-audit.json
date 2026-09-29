@@ -1,0 +1,64 @@
+{
+  "reviewed_before_send": true,
+  "same_facts": [
+    "bare braces invalid as Can syntax, but valid string data",
+    "indentation owns blocks; parentheses own calls and nominal construction; brackets own lists and emits bounds",
+    "typed nominal domain errors are completion values and exhaustively handled",
+    "standard failures are separate from emits",
+    "no external user compatibility requirement",
+    "agent-oriented source and no measured brace benefit"
+  ],
+  "same_alternatives": [
+    "universal_braces",
+    "emits_only_braces",
+    "retain_current_syntax"
+  ],
+  "all_prose_fields_distinct": true,
+  "pairwise_string_similarity": {
+    "state.proposal": {
+      "1-2": 0.224,
+      "1-3": 0.464,
+      "2-3": 0.285
+    },
+    "state.syntax": {
+      "1-2": 0.252,
+      "1-3": 0.116,
+      "2-3": 0.115
+    },
+    "state.semantics": {
+      "1-2": 0.061,
+      "1-3": 0.059,
+      "2-3": 0.012
+    },
+    "state.constraints": {
+      "1-2": 0.061,
+      "1-3": 0.032,
+      "2-3": 0.059
+    },
+    "questions.direction.instructions": {
+      "1-2": 0.358,
+      "1-3": 0.32,
+      "2-3": 0.302
+    },
+    "questions.direction.criteria.universal_braces": {
+      "1-2": 0.247,
+      "1-3": 0.053,
+      "2-3": 0.265
+    },
+    "questions.direction.criteria.emits_only_braces": {
+      "1-2": 0.476,
+      "1-3": 0.557,
+      "2-3": 0.512
+    },
+    "questions.direction.criteria.retain_current_syntax": {
+      "1-2": 0.357,
+      "1-3": 0.512,
+      "2-3": 0.379
+    }
+  },
+  "request_sha256": {
+    "1": "f10e2927027ba0a538726945723048c1fffba936ea55f913d08546d33daf5a20",
+    "2": "ca2921155c4fa1da282ee375b90b53b14781322c1f8b75ec2f1f65dbe33c67ec",
+    "3": "2c07946581be4acdf2fa97ee2ad0099528f4648f5f4de0de5897a1477e497e5e"
+  }
+}

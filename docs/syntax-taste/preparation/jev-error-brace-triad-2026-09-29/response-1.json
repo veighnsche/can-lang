@@ -1,0 +1,21 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "direction": {
+      "type": "choice",
+      "choice": "retain_current",
+      "confidence": 0.33,
+      "probabilities": {
+        "bound_only": 0.07,
+        "retain_current": 0.45,
+        "full_triad": 0.34,
+        "bound_and_constructor": 0.12,
+        "declaration_and_constructor": 0.02
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 850,
+    "output_tokens": 63
+  }
+}

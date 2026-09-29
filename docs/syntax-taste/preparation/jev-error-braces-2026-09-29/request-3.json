@@ -1,0 +1,20 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "proposal": "Before changing Can, assess a suggestion to put every failure-related construct behind a brace notation. No implementation has been requested.",
+    "syntax": "In the existing language, bare literal braces are illegal syntax tokens, but they can be characters inside strings; indentation encloses suites. The (...) form is used for invocation and construction, while [...] holds enumerations such as emits bounds. For instance, source can declare error unavailable(str key), write emits [unavailable, forbidden], complete with unavailable(key), branch on match call load(key), forward through relay call, and assert a specific error value.",
+    "semantics": "Nominal domain errors travel as typed completion values and are never thrown. The emits set is an upper limit on these errors, with exhaustive branching at call matches. Standard runtime failures, including arithmetic and native faults, do not belong to any emits set and use distinct handling. Any redesign must preserve that separation.",
+    "constraints": "No external consumer requires legacy parsing. Source is optimized for coding agents and should have coherent, inspectable contracts. The proposed brace treatment has no detailed grammar, prototype parse results, or measured authoring benefit yet."
+  },
+  "questions": {
+    "direction": {
+      "type": "choice",
+      "instructions": "Choose the best-supported recommendation for Can's punctuation scheme now. Account for the visual signal of braces as well as the risk of using one delimiter for unrelated syntactic jobs.",
+      "criteria": {
+        "universal_braces": "Apply curly-brace notation to error declaration payloads, finite emits membership, emitted value creation, failure-pattern branches, wrapper handlers, standard-failure catches, and error assertions; specify each distinct construct without changing typed outcome rules.",
+        "emits_only_braces": "Change just an emits bound from [...] to {...}, for example emits {unavailable, forbidden}; retain the existing shapes for declaring, constructing, matching, and testing error values.",
+        "retain_current_syntax": "Stay with no braces in source grammar and keep the current parentheses, brackets, and indentation assignments; solve any demonstrated error-authoring friction within that delimiter system."
+      }
+    }
+  }
+}

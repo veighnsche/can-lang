@@ -1,0 +1,21 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "proposal": "Review two candidate spellings in Can: emits {E} for the error bound currently written emits [E], and E{value} for a constructed error currently written E(value). All other declaration, call, record, match, and relay forms remain stable. The question is whether to choose either or both spellings at design time.",
+    "grammar": "The lexer does not presently admit bare braces, and block layout is indentation-based. Square brackets cover collections as well as emits lists; parentheses cover function application and nominal record/error construction. Fields supplied to constructors are positional in the current design and remain so here. Example source uses error missing(str key), emits [missing], missing(key), and nested generic all_failed<T>([missing(key)]). A no-error callable uses emits [], and an array of such callables may render emits [][]; changing only the bound would render emits {}[]. The separate wrapper form emits calculated persists.",
+    "semantics": "A typed domain error is a nominal value, so E(value) may be returned as failure or embedded as data in a successful result, sum, or assertion. E{value} must preserve that meaning, not introduce exception throwing. Standard runtime failures do not belong in emits and are deliberately nonconstructible. Existing type resolution can distinguish error identities from record identities; generated behavior can remain equivalent.",
+    "constraints": "There is no migration burden from external consumers. Predictable source matters for coding agents. Although many current files exercise these forms, empirical evidence that braces are better for authors is absent."
+  },
+  "questions": {
+    "direction": {
+      "type": "choice",
+      "instructions": "Recommend a source delimiter scheme now, considering visual separation of error concepts, consistency with existing forms, and what a reader will infer from positional values inside braces. Choose the strongest of the four defined paths.",
+      "criteria": {
+        "both_changes": "Represent the finite emits set with {} and use {} for every positional error construction, including nested data values, while non-error constructors and calls stay in () and other grammar remains intact.",
+        "emits_only": "Write each finite error bound with braces after emits, including emits {}, but preserve E(value) as the constructor spelling shared with records.",
+        "constructor_only": "Preserve bracketed error bounds; reserve braced positional construction for E{value} at both failure completions and ordinary data sites, keeping records and calls with parentheses.",
+        "neither_change": "Use the current emits [E] bound and E(value) constructor and make no brace-based syntax change."
+      }
+    }
+  }
+}
