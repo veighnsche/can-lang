@@ -1,6 +1,7 @@
 # Error brace syntax: parallel-ready task list
 
-Status: **planned; no implementation has started**. This is the execution order
+Status: **partial implementation paused at the user's request**. The saved
+[Muse handoff prompt](muse-prompt.md) resumes this checklist. This is the execution order
 for the [implementation plan](checklist.md). The [chosen source-level design](../../syntax-taste/preparation/jev-error-brace-triad-2026-09-29/source-comparison.md)
 and [Jev review](../../syntax-taste/preparation/jev-error-brace-triad-2026-09-29/findings.md)
 define the syntax and semantic contract. Use the IDs below for progress and
@@ -18,12 +19,17 @@ evidence; the older A–E IDs in `checklist.md` remain background detail.
   and serialize Go/Bun test commands. Do not create disposable worktrees for
   each lane. The master checklist and evidence files remain the source of
   truth; do not let concurrent workers edit the same checklist lines.
+- The Codex-owned runtime record is
+  [`evidence/muse-monitor.md`](evidence/muse-monitor.md); it owns session,
+  heartbeat, process, and temporary-resource state. Update it at launch and
+  scheduled inspections. Muse alone updates task progress and evidence while
+  it owns the run; Codex leaves V04 for independent review.
 - Every worker reads `AGENTS.md`, this task list, and the linked design. Give
   Muse the **actual task-list path** in its prompt, use the configured
   `muse-spark-1.3-contributor` CLI and authorized `--yolo` mode, and keep each
   run sustained through its ready tasks. Codex coordinates leases, reviews
-  work and evidence, and runs the final checks. No implementation is authorized
-  merely by writing this list.
+  work and evidence, and runs the final checks. Implementation is authorized
+  by the user's current request; the checklist alone would not authorize it.
 - Do not keep old syntax for compatibility. Keep record constructors/calls in
   `()`, arrays in `[]`, constructor patterns and bare match heads unchanged,
   and `emits calculated` on wraps. An error constructor creates data; only a
@@ -43,13 +49,18 @@ evidence; the older A–E IDs in `checklist.md` remain background detail.
 | --- | --- | --- |
 | **F · syntax** | `compiler/internal/syntax/lexer.go`, `parser.go`, `native.go`, `format.go`, `format_trivia.go`; `lexer_test.go`, `parser_test.go`, `declarations_test.go`, `format_trivia_test.go` | Owns `declarations.go` through F02, then hands it to N02. Excludes N-owned `expressions_test.go` and `constructor_braces_test.go`. |
 | **N · constructor and semantics** | `syntax/ast.go`, `expressions.go`, `expressions_test.go`, new `constructor_braces_test.go`; `compiler/internal/check/**`, `resolve/**`, and focused `emit/**` code/tests | Owns `declarations.go` only during N02. `emit/regions.go` and other emitter paths are already dirty; preserve their existing owner and edit production lowering only if a failing semantic test requires it. |
-| **M · live corpus** | Active `.can` in `compiler/testdata/current`, `examples`, `tests`, `std`, `shared`, `tools`, and executable probes under `docs`; embedded Can in `tests/integration`, `tests/failure-conventions`, `host/conformance` Go tests | `compiler/testdata/current/http/main.can` is already dirty. Do not edit syntax/check/emit Go tests or `compiler/lsp*_test.go`; those belong to F, N, and P. |
-| **P · product surfaces** | `compiler/internal/catalogue/**` and its four generated outputs; `compiler/lsp*_test.go`, `compiler/internal/driver/hover.go` if needed, `editors/vscode/**`, `tools/gramcheck/**`, current documentation | Catalogue JSON/mirrors, `README.md`, and `docs/user-guide/` already have unrelated changes. The generator alone writes `generated.go`, `runtime/catalogue.ts`, `std/catalogue/README.md`, and `std/catalogue/errors.json`. |
+| **M · live corpus** | Active `.can` in `compiler/testdata/current`, `examples`, `tests`, `std`, `shared`, `tools`, and executable probes under `docs`; embedded Can in `tests/integration`, `tests/failure-conventions`, `host/conformance` Go tests | `compiler/testdata/current/html/main.can` is dirty with an HTML email-link example. Preserve those additions; only change old Can syntax at identified syntax spans. Do not edit syntax/check/emit Go tests or `compiler/lsp*_test.go`; those belong to F, N, and P. |
+| **P · product surfaces** | `compiler/internal/catalogue/**` and its four generated outputs; `compiler/lsp*_test.go`, `compiler/internal/driver/hover.go` if needed, `editors/vscode/**`, `tools/gramcheck/**`, current documentation | Current unrelated HTML work touches `compiler/internal/catalogue/catalogue.json`, `catalogue_test.go`, `generated.go`, `compiler/internal/emit/runtime_core.go`, `runtime/catalogue.ts`, `runtime/platform/html.ts`, `runtime/test/html.test.ts`, and `std/catalogue/README.md`. Preserve the `html::email_href` operation and runtime/test changes. The generator alone writes `generated.go`, `runtime/catalogue.ts`, `std/catalogue/README.md`, and `std/catalogue/errors.json`; inspect regenerated diffs against G00. |
 
-The task currently has unrelated dirty work. G00 must identify its live owner;
-the table is an intended lease, not permission to overwrite that work. The
-syntax and constructor lanes may edit different files in the same directory.
-Any file not listed explicitly gets one owner before editing.
+The task currently has unrelated dirty work. At handoff, the observed baseline
+is `a129bf61498e0e549e84d3be157d2310dad74275` plus the nine paths above; G00
+must refresh that snapshot and identify its live owner. The active HTML changes
+are pre-existing work, not part of this syntax implementation. G00 must
+determine whether any writer is still active and arrange explicit path leases
+before overlapping edits. The following table is an intended lease, not
+permission to overwrite that work. The syntax and constructor lanes may edit
+different files in the same directory. Any file not listed explicitly gets
+one owner before editing.
 
 ## Ready windows
 
@@ -68,19 +79,19 @@ appropriate to protect laptop load.
 
 ## Gate G — baseline and migration map
 
-- [ ] **G00 · baseline and leases.** Depends: none. Record `HEAD`,
+- [x] **G00 · baseline and leases.** Depends: none. Record `HEAD`,
   `git status --short`, usable worktree, relevant tool versions, and owners of
   currently dirty files. Keep unrelated changes intact. Files: this list and
   `evidence/baseline.md` only. Done when the source diff can be separated from
   pre-existing work and every contested path has a release or isolation plan.
-  Evidence: pending.
-- [ ] **G01 · inventory the live syntax surface.** Depends: G00. Classify
+  Evidence: HEAD `4393a89e` (HTML email_href committed, ex-dirty paths clean); status only task-doc hunks + `evidence/`; go1.27.1/bun1.4.2/node24; sole writer PID 73157, no test process, no locks; all lane files free, no wait. See `evidence/baseline.md`.
+- [x] **G01 · inventory the live syntax surface.** Depends: G00. Classify
   active `.can`, executable docs probes, Go-embedded Can, intentional negative
   fixtures, LSP examples, catalogue displays, generated outputs, and current
   docs. Exclude dated evidence from mechanical rewriting unless tests execute
   it. Files: `evidence/inventory.md` only. Done when each live surface has an
-  owning lane and a migration disposition. Evidence: pending.
-- [ ] **G02 · freeze a reviewed migration map.** Depends: G01,F01. While the
+  owning lane and a migration disposition. Evidence: 183 active + 79 docs `.can` confirmed; 11 `.can` error decls; executable probes = technical-spec C10/Consumer, decisions ## Packages (13), frozen 2026-09-22 projects; embedded-Can owners F/N/M03/P04 (+types/driver/project/browser→N05, current_*→P04); negatives pinned; see `evidence/inventory.md`.
+- [x] **G02 · freeze a reviewed migration map.** Depends: G01,F01. While the
   old parser still accepts old source, use parser/lexer spans for declarations
   and bounds; classify each constructor by resolved nominal kind or a reviewed
   declaration/catalogue map. Record source hashes and ambiguous cases. A
@@ -88,16 +99,16 @@ appropriate to protect laptop load.
   plus `evidence/migration-map.md`. Done when nullary, generic, qualified,
   nested, catalogue, successful-data, and terminal candidates are covered;
   calls, records, patterns, strings, comments, and JSON are excluded.
-  Evidence: pending.
+  Evidence: 196 walked/194 parsed; 3470 span edits (28 decl, 2396 bound, 296 data, 750 terminal), 5729 record ctors kept, 0 unknown; `emits calculated` untouched; `emits [][]` maps bound pair only; 2 skips classified (lexer/core.can hand-edit, diagnostic-parse historical); only 3/13 frozen projects executed. Helper deleted. See `evidence/migration-map.md` + `evidence/migration-edits.txt`.
 
 ## Lane F — lexical grammar and canonical formatting
 
-- [ ] **F01 · balanced one-line braces.** Depends: G00. Files:
+- [x] **F01 · balanced one-line braces.** Depends: G00. Files:
   `syntax/lexer.go`, `lexer_test.go`. Admit `{}` and enforce current delimiter
   matching, newline, and multiline-literal rules. Done when focused tests
   cover valid nesting, mismatches, missing closers, strings/comments, and the
   one-line diagnostic without introducing general brace blocks.
-  Evidence: pending.
+  Evidence: `{}` push/pop with mismatch/unclosed/unmatched diagnostics; one-line + multiline-literal messages extended; new `TestBracesLexAsBalancedOneLineDelimiters` + 8 failure cases; `go test -p 1 ./compiler/internal/syntax/` passes.
 - [ ] **F02 · error declarations and finite bounds.** Depends: G02.
   Files: `syntax/parser.go`, `declarations.go`, `native.go`,
   `parser_test.go`, `declarations_test.go`. Parse `error E{fields}` and all
@@ -199,7 +210,7 @@ appropriate to protect laptop load.
   Add brace pairing/highlighting and update the three source forms; retain
   `emits calculated`, arrays, headers, calls and matches. Done when these
   files describe the chosen contract without treating a plan as shipped code.
-  Evidence: pending.
+  Evidence (window 1 interim): `{}` pairing + `punctuation.definition.error.can` grammar rule (gramcheck OK); syntax README one-line rule; technical-spec prose + LD29 block migrated (executed C10/Consumer blocks deferred to F02 window); decisions.md pre-654 migrated. Gramcheck brace/error samples + executed snippets converge in window 2.
 - [ ] **P02 · authored catalogue presentation.** Depends: F02. Files:
   `compiler/internal/catalogue/types.go`, `generate.go`, and catalogue tests
   after resolving any pre-existing owner. Render concrete callable/choice

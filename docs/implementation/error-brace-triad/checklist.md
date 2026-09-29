@@ -1,9 +1,11 @@
 # Error brace syntax: implementation checklist
 
-Status: planned, not implemented. The user chose positional error payloads and
-asked for the complete implementation plan. This document records scope and
-acceptance; the [parallel-ready task list](tasks.md) controls execution order,
-file ownership and the Muse handoff, followed by Codex review.
+Status: partial implementation paused at the user's request. G00, G01, and F01
+are marked complete with evidence; their source edits remain uncommitted. This
+document records scope and acceptance; the [parallel-ready task list](tasks.md)
+controls execution order. Resume with the [Muse handoff prompt](muse-prompt.md),
+then complete the remaining implementation and Codex review. Runtime state is
+in the [monitor record](evidence/muse-monitor.md).
 
 Supporting design: [three-form assessment](../../syntax-taste/preparation/jev-error-brace-triad-2026-09-29/findings.md), [actual-source comparison](../../syntax-taste/preparation/jev-error-brace-triad-2026-09-29/source-comparison.md), and the [three saved Jev requests, responses, and wording audit](../../syntax-taste/preparation/jev-error-brace-triad-2026-09-29/). Jev's answers disagreed; the source comparison, exact semantics, and verification below govern implementation. If implementation reveals a new difficult design choice, consult Jev three fresh times under `AGENTS.md` before deciding; save and audit every request and response.
 
@@ -47,11 +49,12 @@ failures are handled.
 ## Execution rules
 
 - Read `AGENTS.md` and capture current `HEAD`, `git status --short`, and active
-  file ownership before edits. As of planning, unrelated work already touches
-  catalogue mirrors, runtime files, `README.md`, and a current HTTP fixture.
-  Preserve those changes and do not overwrite another task's files. Reuse a
-  suitable existing worktree; if isolation is necessary, give the checkout an
-  owner and a retirement step. A task waits on a true ownership conflict.
+  file ownership before edits. At implementation handoff, unrelated HTML
+  email-link work touches catalogue sources/mirrors, runtime files, and
+  `compiler/testdata/current/html/main.can`; preserve those changes while
+  making syntax-only edits. Reuse a suitable existing worktree; if isolation
+  is necessary, give the checkout an owner and a retirement step. A task waits
+  on a true ownership conflict.
 - Muse owns implementation. Codex coordinates, reviews the complete diff,
   checks evidence, and verifies the result. Use
   `muse exec --yolo --model muse-spark-1.3-contributor --workspace <repo> --worktree off --prompt-file <owned-temporary-prompt>`;
