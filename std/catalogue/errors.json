@@ -109,7 +109,8 @@
     "browser::rejected",
     "browser::stale_version",
     "browser::invalid_query",
-    "action::invalid_path"
+    "action::invalid_path",
+    "image::invalid_image"
   ],
   "retired": []
 }

@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 32b1f8efce82221a0fabd3c47f9d3c1321f4e562dec282f1f58c4e9b8ff29842.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: be23f2b3ac115b201800890dbf7ff67e8a0b344ac8ea4ccca866ee3ad6172ad6.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -31,6 +31,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - html → can.std.html@1
 - htmx → can.std.htmx@1
 - http → can.std.http@1
+- image → can.std.image@1
 - io → can.std.io@1
 - json → can.std.json@1
 - llm → can.std.llm@1
@@ -160,6 +161,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | browser::selection | record |  | int start, int end, str direction | true |
 | browser::file | record |  | str name, int size, str mime | true |
 | action::declaration | opaque |  |  | false |
+| image::metadata | record |  | str format, int width, int height | true |
 
 ## Domain errors
 
@@ -275,6 +277,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | browser::stale_version | can.std.browser@1::stale_version |  | int expected, int actual |
 | browser::invalid_query | can.std.browser@1::invalid_query |  | str key, str reason |
 | action::invalid_path | can.std.action@1::invalid_path |  | str reason |
+| image::invalid_image | can.std.image@1::invalid_image |  | str reason |
 
 ## Operations
 
@@ -587,6 +590,7 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | action::url | action::declaration action → str | [action::invalid_path] |  | URL, encodeURIComponent | Render the canonical action path from the symbol route template and the typed captures record; strict single-segment captures fail as action::invalid_path. | real | I32 / P10 |
 | action::request | Result:data; action::declaration action → Result | [http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data] |  | fetch, Request, Response, TextDecoder | Resolve the action symbol against the checked JSON table, build the canonical same-origin URL from the typed captures record, issue a bodyless GET through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound. | real | I32 / P10 |
 | action::post | Result:data, Wire:data; action::declaration action → Result | [http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data] |  | fetch, Request, Response, TextDecoder | Resolve the action symbol against the checked JSON table, build the canonical same-origin URL from the typed captures record, encode the exact wire body under the shared codec within the wire limit, POST through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound. | real | I32 / P10 |
+| image::inspect | bytes::buffer bytes, int max_pixels → image::metadata | [image::invalid_image] |  | Bun.Image, Bun.Image.prototype.metadata | Sniff actual JPEG/PNG/WebP bytes and read dimensions using Bun metadata bounded by max_pixels; reject animated WebP (VP8X animation flag or ANIM/ANMF chunks), APNG (acTL), malformed and unsupported image data. | real | I13 / A2 |
 
 ## Native declaration profiles
 

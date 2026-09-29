@@ -198,6 +198,7 @@ func (builder *stateBuilder) declareCoreState() {
 		fmt.Fprintf(&builder.out, "export let $canHTTPRequests: ReturnType<typeof $canCreateRequests<%s>>;\nexport let $canHTTPResponses: ReturnType<typeof $canCreateHTTPResponses>;\nexport let $canRouter: ReturnType<typeof $canCreateRouter>;\nexport let $canServer: ReturnType<typeof $canCreateServer>;\n", builder.headerType)
 	}
 	builder.out.WriteString("export let $canClock:ReturnType<typeof $canCreateClock>;\nexport let $canRandom:ReturnType<typeof $canCreateRandom>;\nexport let $canLog:ReturnType<typeof $canCreateLog>;\n")
+	builder.out.WriteString("export let $canImage:ReturnType<typeof $canCreateImage>;\n")
 	if !builder.assembly.browser {
 		fmt.Fprintf(&builder.out, "export let $canIO: ReturnType<typeof $canCreateIO>;\nexport let $canEnv: ReturnType<typeof $canCreateEnv<%s>>;\n", builder.optionType)
 	}
@@ -332,6 +333,7 @@ func (builder *stateBuilder) initializeAssets() ([]ir.Artifact, error) {
 // initializeCoreState creates the remaining pre-B1 factories: HTTP, clock,
 // random, log, IO, environment, numbers, checks, amounts and text.
 func (builder *stateBuilder) initializeCoreState() {
+	fmt.Fprintf(&builder.out, "$canImage=$canCreateImage($canDomain,%s,%s);\n", quote(builder.numberIDs["can.std.image@1::invalid_image"]), quote(builder.numberIDs["can.std.image@1::metadata"]))
 	fmt.Fprintf(&builder.out, "$canHTTPRequests=$canCreateRequests<%s>($canDomain,{invalid:%s,limit:%s,invalidData:%s,header:%s,close:%s,writeFailed:%s,multipartForm:%s,multipartField:%s,multipartFile:%s});\n", builder.headerType, quote(builder.numberIDs["can.std.http@1::invalid_request"]), quote(builder.numberIDs["can.std.http@1::body_limit"]), quote(builder.numberIDs["can.std.codec@1::invalid_data"]), quote(builder.numberIDs["can.std.http@1::header"]), quote(builder.numberIDs["can.std.stream@1::close_failed"]), quote(builder.numberIDs["can.std.stream@1::write_failed"]), quote(builder.numberIDs["can.std.http@1::multipart_form"]), quote(builder.numberIDs["can.std.http@1::multipart_field"]), quote(builder.numberIDs["can.std.http@1::multipart_file"]))
 	fmt.Fprintf(&builder.out, "$canHTTPResponses=$canCreateHTTPResponses($canDomain,{invalid:%s,invalidData:%s,close:%s,writeFailed:%s,limit:%s});\n", quote(builder.numberIDs["can.std.http@1::invalid_request"]), quote(builder.numberIDs["can.std.codec@1::invalid_data"]), quote(builder.numberIDs["can.std.stream@1::close_failed"]), quote(builder.numberIDs["can.std.stream@1::write_failed"]), quote(builder.numberIDs["can.std.http@1::body_limit"]))
 	fmt.Fprintf(&builder.out, "$canRouter=$canCreateRouter($canDomain,{invalid:%s,duplicate:%s,ambiguous:%s});\n", quote(builder.numberIDs["can.std.http@1::invalid_route"]), quote(builder.numberIDs["can.std.http@1::duplicate_route"]), quote(builder.numberIDs["can.std.http@1::ambiguous_route"]))

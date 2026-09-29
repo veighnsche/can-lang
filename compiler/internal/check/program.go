@@ -432,7 +432,7 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 		if httpGenericOperation(op.Identity) || sqlGenericOperation(op.Identity) || streamGenericOperation(op.Identity) || codecOperation(op.Identity) || formGenericOperation(op.Identity) || fetchGenericOperation(op.Identity) || browserStateOperation(op.Identity) != nil {
 			continue
 		} // I32, I35, B1-05, codec, form, T23 fetch and T22 state generics specialize per concrete type argument on use.
-		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && op.Lowering.Task != "I29" && op.Lowering.Task != "I30" && op.Lowering.Task != "I31" && op.Lowering.Task != "I32" && op.Lowering.Task != "I33" && op.Lowering.Task != "I34" && op.Lowering.Task != "I35" && op.Lowering.Task != "LF08" && op.Lowering.Task != "T22" && op.Lowering.Task != "C02" && !strings.HasPrefix(op.Lowering.Task, "B1-") {
+		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && !strings.HasPrefix(op.Name, "image::") && op.Lowering.Task != "I29" && op.Lowering.Task != "I30" && op.Lowering.Task != "I31" && op.Lowering.Task != "I32" && op.Lowering.Task != "I33" && op.Lowering.Task != "I34" && op.Lowering.Task != "I35" && op.Lowering.Task != "LF08" && op.Lowering.Task != "T22" && op.Lowering.Task != "C02" && !strings.HasPrefix(op.Lowering.Task, "B1-") {
 			continue
 		}
 		signature := &syntax.CallableType{}

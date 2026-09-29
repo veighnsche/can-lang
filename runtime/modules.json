@@ -42,6 +42,13 @@
       "./data.ts",
       "./domain.ts"
     ],
+    "image.ts": [
+      "./completion.ts",
+      "./data.ts",
+      "./domain.ts",
+      "./bytes.ts",
+      "./failure.ts"
+    ],
     "catalogue.ts": [
       "./data.ts"
     ],
@@ -826,6 +833,13 @@
     ],
     "browser/assets.ts": [
       "../platform/assets.ts"
+    ],
+    "browser/image.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts",
+      "../bytes.ts",
+      "../failure.ts"
     ],
     "platform/htmx-guard.ts": []
   }

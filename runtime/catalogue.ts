@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "32b1f8efce82221a0fabd3c47f9d3c1321f4e562dec282f1f58c4e9b8ff29842";
+export const catalogueSHA256 = "be23f2b3ac115b201800890dbf7ff67e8a0b344ac8ea4ccca866ee3ad6172ad6";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -84,6 +84,10 @@ export const catalogue = freeze({
     {
       "name": "http",
       "identity": "can.std.http@1"
+    },
+    {
+      "name": "image",
+      "identity": "can.std.image@1"
     },
     {
       "name": "io",
@@ -1962,6 +1966,29 @@ export const catalogue = freeze({
       "leaves": [],
       "projections": [],
       "constructible": false
+    },
+    {
+      "name": "image::metadata",
+      "identity": "can.std.image@1::metadata",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "format",
+          "type": "str"
+        },
+        {
+          "name": "width",
+          "type": "int"
+        },
+        {
+          "name": "height",
+          "type": "int"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
     }
   ],
   "errors": [
@@ -3223,6 +3250,17 @@ export const catalogue = freeze({
     {
       "name": "action::invalid_path",
       "identity": "can.std.action@1::invalid_path",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "image::invalid_image",
+      "identity": "can.std.image@1::invalid_image",
       "parameters": [],
       "fields": [
         {
@@ -14208,6 +14246,42 @@ export const catalogue = freeze({
       "refs": [
         "P10"
       ]
+    },
+    {
+      "name": "image::inspect",
+      "identity": "can.std.image@1::inspect",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "bytes",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "max_pixels",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "image::metadata",
+      "callbacks": [],
+      "emits": [
+        "image::invalid_image"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.Image",
+          "Bun.Image.prototype.metadata"
+        ],
+        "adapter": "Sniff actual JPEG/PNG/WebP bytes and read dimensions using Bun metadata bounded by max_pixels; reject animated WebP (VP8X animation flag or ANIM/ANMF chunks), APNG (acTL), malformed and unsupported image data.",
+        "task": "I13"
+      },
+      "assertion": "real",
+      "refs": [
+        "A2"
+      ]
     }
   ],
   "nativeDeclarations": [
@@ -16580,6 +16654,36 @@ export const catalogueTypeShapes = freeze([
     "leaves": []
   },
   {
+    "name": "image::metadata",
+    "identity": "can.std.image@1::metadata",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "format",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "width",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "height",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
     "name": "all_failed",
     "identity": "can.prelude@1::all_failed",
     "kind": "error",
@@ -18437,6 +18541,22 @@ export const catalogueTypeShapes = freeze([
   {
     "name": "action::invalid_path",
     "identity": "can.std.action@1::invalid_path",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "image::invalid_image",
+    "identity": "can.std.image@1::invalid_image",
     "kind": "error",
     "parameters": [],
     "fields": [
