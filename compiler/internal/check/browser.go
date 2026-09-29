@@ -79,6 +79,7 @@ var browserAttributes = map[string]bool{
 	"hidden": true, "tabindex": true, "role": true,
 	"name": true, "value": true, "type": true, "placeholder": true,
 	"autocomplete": true, "for": true, "method": true, "rel": true,
+	"enctype": true, "accept": true,
 	"checked": true, "selected": true, "disabled": true, "required": true,
 	"multiple": true, "rows": true, "cols": true, "scope": true,
 	"colspan": true, "rowspan": true, "alt": true, "align": true, "start": true,

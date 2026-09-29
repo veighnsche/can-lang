@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 762356c8a2068aea365a65e6e10c39018785dbf666beeb5739506955cb66c2e1.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: a5d5d5dbad7ec622ff0afe2f06888682643c2b1f620a30ae375df071a10235e6.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -438,6 +438,7 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | http::response_bytes | http::body_status status, http::server_headers headers, bytes::buffer body → http::server_response | [] |  | Response, Headers, TextEncoder | Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec. | real | I32 / P10 |
 | http::response_text | http::body_status status, http::server_headers headers, str body → http::server_response | [] |  | Response, Headers, TextEncoder | Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec. | real | I32 / P10 |
 | http::response_html | http::body_status status, http::server_headers headers, html::safe body → http::server_response | [] |  | Response, Headers, TextEncoder | Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec. | real | I32 / P10 |
+| http::response_image | http::body_status status, http::server_headers headers, bytes::buffer body, str media_type → http::server_response | [http::invalid_request] |  | Response, Headers | Validated raster allowlist (image/png, image/jpeg, image/webp) with immutable byte snapshot and nosniff; any other media type emits http::invalid_request. | real | I32 / P10 |
 | http::response_json | T:wire; http::body_status status, http::server_headers headers, T body → http::server_response | [codec::invalid_data] |  | Response, Headers, JSON.stringify | Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec. | real | I32 / P10 |
 | http::response_stream | http::body_status status, http::server_headers headers → http::server_response | [http::invalid_request] |  | ReadableStream | Build a pending response whose bounded queue the vended writer fills. | real | B1-06 / P10 |
 | http::response_writer | http::server_response response → stream::writer | [http::invalid_request] |  | ReadableStream | Vend the pending response writer exactly once for short-write production. | supplied | B1-06 / P10 |

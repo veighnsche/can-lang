@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "762356c8a2068aea365a65e6e10c39018785dbf666beeb5739506955cb66c2e1"
+const GeneratedSourceSHA256 = "a5d5d5dbad7ec622ff0afe2f06888682643c2b1f620a30ae375df071a10235e6"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -481,6 +481,7 @@ const OpHttpResponseEmpty = "http::response_empty"
 const OpHttpResponseBytes = "http::response_bytes"
 const OpHttpResponseText = "http::response_text"
 const OpHttpResponseHtml = "http::response_html"
+const OpHttpResponseImage = "http::response_image"
 const OpHttpResponseJson = "http::response_json"
 const OpHttpResponseStream = "http::response_stream"
 const OpHttpResponseWriter = "http::response_writer"

@@ -65,6 +65,7 @@ func TestHTTPEmissionBindsRequestsResponsesAndRouter(t *testing.T) {
 		"$canHTTPResponses.emptyHeaders",
 		"$canHTTPResponses.text",
 		"$canHTTPResponses.html",
+		"$canHTTPResponses.image",
 		"$canRouter.get",
 		"$canRouter.post",
 		"$canRouter.make",

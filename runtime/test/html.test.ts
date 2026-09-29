@@ -110,6 +110,8 @@ test("closed tags, attributes, enums and tag applicability", async () => {
     ["hidden", "false"],
     ["checked", "true"],
     ["method", "put"],
+    ["enctype", "text/plain"],
+    ["enctype", "multipart/form-data; charset=utf-8"],
     ["scope", "all"],
     ["align", "justify"],
     ["start", "NaN"],
@@ -124,6 +126,9 @@ test("closed tags, attributes, enums and tag applicability", async () => {
     ["dir", "rtl"],
     ["hidden", "until-found"],
     ["required", ""],
+    ["enctype", "multipart/form-data"],
+    ["enctype", "Multipart/Form-Data"],
+    ["accept", "image/png,image/jpeg,image/webp"],
     ["autocomplete", "section-login username webauthn"],
     ["rel", "nofollow noopener"],
     ["rowspan", "0"],
@@ -132,6 +137,16 @@ test("closed tags, attributes, enums and tag applicability", async () => {
     expect((await html.textAttribute(name!, val!)).kind).toBe("ok");
   const checked = value(await html.textAttribute("checked", "checked"));
   check(await html.element(await tag("div"), [checked], []), "html::invalid_structure");
+  const enctype = value(await html.textAttribute("enctype", "multipart/form-data"));
+  check(await html.element(await tag("input"), [enctype], []), "html::invalid_structure");
+  expect(await render([await element("form", [], [enctype])])).toBe(
+    '<form enctype="multipart/form-data"></form>',
+  );
+  const accept = value(await html.textAttribute("accept", "image/png,image/jpeg,image/webp"));
+  check(await html.element(await tag("form"), [accept], []), "html::invalid_structure");
+  expect(await render([await element("input", [], [accept])])).toBe(
+    '<input accept="image/png,image/jpeg,image/webp">',
+  );
   check(
     await html.element(
       await tag("button"),
@@ -340,6 +355,8 @@ test("the complete author tag inventory and each tag-checked attribute are admit
     ["autocomplete", "email", "input"],
     ["for", "field", "label"],
     ["method", "post", "form"],
+    ["enctype", "multipart/form-data", "form"],
+    ["accept", "image/png,image/jpeg,image/webp", "input"],
     ["rel", "noopener", "a"],
     ["checked", "", "input"],
     ["selected", "selected", "option"],

@@ -8313,6 +8313,50 @@
       ]
     },
     {
+      "name": "http::response_image",
+      "identity": "can.std.http@1::response_image",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "status",
+          "type": "http::body_status"
+        },
+        {
+          "name": "headers",
+          "type": "http::server_headers"
+        },
+        {
+          "name": "body",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "media_type",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "http::server_response",
+      "callbacks": [],
+      "emits": [
+        "http::invalid_request"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Response",
+          "Headers"
+        ],
+        "adapter": "Validated raster allowlist (image/png, image/jpeg, image/webp) with immutable byte snapshot and nosniff; any other media type emits http::invalid_request.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
       "name": "http::response_json",
       "identity": "can.std.http@1::response_json",
       "kind": "function",

@@ -675,6 +675,17 @@ export function createResponses(
         response(status, headers, ownBytes(copyBytes(body, origin)), "application/octet-stream"),
       );
     },
+    async image(
+      status: unknown,
+      headers: unknown,
+      body: unknown,
+      mediaType: string,
+      _context?: AssertionContext,
+    ): Promise<Completion<unknown>> {
+      if (mediaType !== "image/png" && mediaType !== "image/jpeg" && mediaType !== "image/webp")
+        return invalid("unsupported_media_type");
+      return success(response(status, headers, ownBytes(copyBytes(body, origin)), mediaType));
+    },
     async text(
       status: unknown,
       headers: unknown,

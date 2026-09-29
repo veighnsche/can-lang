@@ -471,6 +471,43 @@ test("immutable response reuse makes independent native bodies with fixed encodi
     { path: "", reason: "unicode_scalar" },
   );
 });
+test("image responses pin the raster allowlist with immutable reusable bodies", async () => {
+  const status = value(await responses.ok()),
+    headers = value(await responses.emptyHeaders());
+  for (const media of ["image/png", "image/jpeg", "image/webp"]) {
+    const body = ownBytes(new Uint8Array([137, 80, 78, 71]));
+    const image = value(await responses.image(status, headers, body, media));
+    expect(Object.isFrozen(image)).toBe(true);
+    const inputReuse = nativeResponse(value(await responses.image(status, headers, body, media)));
+    expect(new Uint8Array(await inputReuse.arrayBuffer())).toEqual(
+      new Uint8Array([137, 80, 78, 71]),
+    );
+    const first = nativeResponse(image),
+      second = nativeResponse(image);
+    expect(first).not.toBe(second);
+    expect(first.headers.get("content-type")).toBe(media);
+    expect(first.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(new Uint8Array(await first.arrayBuffer())).toEqual(new Uint8Array([137, 80, 78, 71]));
+    expect(new Uint8Array(await second.arrayBuffer())).toEqual(new Uint8Array([137, 80, 78, 71]));
+    const head = nativeResponse(image, true);
+    expect(await head.arrayBuffer()).toHaveLength(0);
+    expect(head.headers.get("content-length")).toBe("4");
+    expect(head.headers.get("content-type")).toBe(media);
+  }
+  const body = ownBytes(new Uint8Array([1, 2, 3]));
+  for (const media of [
+    "image/gif",
+    "image/jpg",
+    "IMAGE/PNG",
+    "image/png; charset=utf-8",
+    " image/png",
+    "text/plain",
+    "",
+  ])
+    check(await responses.image(status, headers, body, media), "http::invalid_request", {
+      reason: "unsupported_media_type",
+    });
+});
 test("response sinks reject forged and wrong-kind opaque handles without traps", async () => {
   let traps = 0;
   const forged = new Proxy(

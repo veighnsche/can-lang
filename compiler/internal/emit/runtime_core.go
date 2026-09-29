@@ -98,6 +98,7 @@ func coreOperationBindings() bindingContribution {
 	functions["can.std.http@1::empty_server_headers"] = "$canHTTPResponses.emptyHeaders"
 	functions["can.std.http@1::response_empty"] = "$canHTTPResponses.empty"
 	functions["can.std.http@1::response_bytes"] = "$canHTTPResponses.bytes"
+	functions["can.std.http@1::response_image"] = "$canHTTPResponses.image"
 	functions["can.std.http@1::response_text"] = "$canHTTPResponses.text"
 	functions["can.std.http@1::response_html"] = "$canHTTPResponses.html"
 	functions["can.std.http@1::route_get"] = "$canRouter.get"

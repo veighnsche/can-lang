@@ -98,10 +98,12 @@ export const applicability: Readonly<Record<string, readonly string[]>> = Object
   name: ["form", "input", "textarea", "select", "button"],
   value: ["input", "option", "button", "li"],
   type: ["input", "button", "a", "ol"],
+  accept: ["input"],
   placeholder: ["input", "textarea"],
   autocomplete: ["form", "input", "textarea", "select"],
   for: ["label"],
   method: ["form"],
+  enctype: ["form"],
   rel: ["a", "form"],
   checked: ["input"],
   selected: ["option"],
@@ -154,6 +156,7 @@ function validValue(name: string, value: string, tag?: string): boolean {
   if (["checked", "selected", "disabled", "required", "multiple"].includes(name))
     return v === "" || v === name;
   if (name === "method") return ["get", "post", "dialog"].includes(v);
+  if (name === "enctype") return v === "multipart/form-data";
   if (name === "scope") return ["row", "col", "rowgroup", "colgroup"].includes(v);
   if (name === "align") return ["left", "center", "right"].includes(v);
   if (name === "autocomplete")

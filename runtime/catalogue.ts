@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "762356c8a2068aea365a65e6e10c39018785dbf666beeb5739506955cb66c2e1";
+export const catalogueSHA256 = "a5d5d5dbad7ec622ff0afe2f06888682643c2b1f620a30ae375df071a10235e6";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -8315,6 +8315,50 @@ export const catalogue = freeze({
           "TextEncoder"
         ],
         "adapter": "Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::response_image",
+      "identity": "can.std.http@1::response_image",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "status",
+          "type": "http::body_status"
+        },
+        {
+          "name": "headers",
+          "type": "http::server_headers"
+        },
+        {
+          "name": "body",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "media_type",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "http::server_response",
+      "callbacks": [],
+      "emits": [
+        "http::invalid_request"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Response",
+          "Headers"
+        ],
+        "adapter": "Validated raster allowlist (image/png, image/jpeg, image/webp) with immutable byte snapshot and nosniff; any other media type emits http::invalid_request.",
         "task": "I32"
       },
       "assertion": "real",
