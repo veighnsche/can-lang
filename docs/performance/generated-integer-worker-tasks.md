@@ -247,7 +247,13 @@ in G61; no other source paths. Checklist/design clarification only after release
   - Acceptance: continue substantial ready fixes; final exhaustion only after all
     candidates have verified fixes/specific dispositions and independent review
     finds no ready supported fix; cleanup after writers AND viewers release.
-  - Evidence: pending.
+  - Evidence: dominant frequency continuation selected in
+    [map-leaf design](generated-map-leaf-plan.md) and
+    [G68–G75](generated-map-leaf-tasks.md). Source shows per-word promise/invoke
+    layers around synchronous native immutable map operations and nested domain
+    recovery. Three new equivalent Jev consultations favor leaf_worker with
+    .96/.92/.80 probabilities; uncertainty preserved. Final twelve-slice exhaustion
+    stays unchecked; no additional wrapper micro-series or auxiliary expansion.
 
 ## Resource-blocker release note (2026-09-29, goal paused, no work resumed)
 - Codex observed owned native storage 67875475B > 64MiB bound and interrupted

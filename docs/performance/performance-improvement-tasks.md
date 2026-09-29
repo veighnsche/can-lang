@@ -322,3 +322,20 @@ per-element promises/carriers with one same-method after comparison. Three fresh
 equivalent Jev consultations advise paired workers; proof/tests remain decisive.
 Frequency/domain recovery and remaining twelve-slice queue stay open. No auxiliary
 expansion or speculative wrapper-series continuation.
+
+Integer workers accepted10610e7e after first arithmetic/source review and narrow
+capture/real-array corrections: independent34 runtime tests/344 assertions,
+11 actual emitted-worker contracts/zero skips, runtime checks and473 input
+identity checks passed. Original measured producer observed1.65–1.99x faster
+integer map/fold endpoints on an ordered busy host; corrected accepted runtime
+was not timed. Three original evidence files retain their actual bytes/producers.
+Execution graphs/probe retired; new tests link runtime rather than copying it.
+
+Next supported dominant lane: [checked map-recovery leaves](generated-map-leaf-plan.md)
+and [G68–G75](generated-map-leaf-tasks.md). Retain immutable native Map point
+copies and domain recovery while removing positively proved per-element promise
+layers through synchronous Completion companions and guarded native fold.
+Current-producer baseline and one after comparison use existing fixed tools;
+no speedup is guaranteed. Three new equivalent consultations favor leaf_worker
+.96/.92/.80; proof/tests/measurement decide. Frequency residual metadata/copy
+costs, startup and all-twelve final exhaustion remain open.

@@ -190,3 +190,23 @@ consultations are saved/reconciled; one sole Muse implements opt-in tools and
 parallel-safe new tests, then one qualified bounded busy-host attribution run.
 Production imports/factories remain unchanged until actual stage and source proof
 supports a remedy. R5/Q5 govern independent acceptance and the continuing queue.
+
+## Current dominant execution continuation
+
+Integer-worker production is independently accepted10610e7e. Its original
+measured version observed1.65–1.99x gains across four integer map/fold endpoints;
+corrected capture/array guards are qualified separately and unmeasured. Complete
+raw records and actual producers are preserved. Source review selects immutable
+map recovery as the next dominant lane: frequency still had a roughly14x native
+gap, and per-word promise/invoke chains remain around synchronous native work.
+Both controls copy Map per update; copying/ownership/domain allocation remain
+explicit residual uncertainties rather than an attributed explanation.
+
+The [map-leaf design](generated-map-leaf-plan.md) and
+[ordered G68–G75 assignments](generated-map-leaf-tasks.md) retain the async public
+runtime route and immutable native algorithms, adding synchronous Completion
+companions only for a finite exact checked callback grammar. Three fresh
+equivalent consultations and reconciliation are saved; agreement is advice.
+One current before and one after observation use existing accepted tools with
+busy-host limits. Auxiliary tooling stays frozen; final twelve-slice exhaustion
+and other supported production candidates remain active.
