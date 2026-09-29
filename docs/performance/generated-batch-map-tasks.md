@@ -250,7 +250,15 @@ checks and measurements; Codex owns R13/Q13 review/closure. No Muse commits.
   a busy ordered host. This is an observed result, not isolated causality,
   heap or p95 proof. Compact independent evidence is
   `generated-packet-13-independent-review.json`.
-- [ ] **Q13 — Codex commit and queue continuation.** Prerequisite R13 accepted.
+- [x] **Q13 — Codex commit and queue continuation.** Prerequisite R13 accepted.
   Commit only coherent owned accepted paths, preserve foreign README/docs work,
   and continue remaining supported generated/startup and all twelve slices.
   Stop campaign only at independently evidenced exhaustion, never at this patch.
+  DONE: exact eleven-path batch implementation/test/checklist commit `b770b457`;
+  foreign catalogue/browser/HTTP/docs and local poster output left untouched.
+  The next bounded source investigation is generated failure recovery, whose
+  current observed Can/native gap is large but not yet attributed. It is tracked
+  in `generated-failure-recovery-investigation.md`; new implementation needs
+  independent proof/design, three fresh equivalent Jev consultations and its
+  own ordered checklist. Startup and the independent twelve-slice exhaustion
+  review remain open.
