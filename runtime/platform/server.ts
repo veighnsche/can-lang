@@ -29,6 +29,7 @@ import {
   revokeRequest,
   nativeResponse,
   bindRequestServer,
+  bindRequestPeer,
   isUpgradedResponse,
   type UpgradeServer,
 } from "./http.ts";
@@ -70,7 +71,14 @@ const origin = Object.freeze({
 type Config = Readonly<{ host: string; port: bigint; bodyLimit: number; shutdownMs: number }>;
 type TlsMaterial = Readonly<{ cert: Uint8Array; key: Uint8Array }>;
 type Native = Readonly<{
-  server: Readonly<{ stop: (closeActiveConnections?: boolean) => void } & UpgradeServer>;
+  server: Readonly<
+    {
+      stop: (closeActiveConnections?: boolean) => void;
+      requestIP: (
+        request: Request,
+      ) => Readonly<{ address: string; family: string; port: number }> | null;
+    } & UpgradeServer
+  >;
   scope: Scope;
   router: unknown;
   bodyLimit: number;
@@ -359,6 +367,7 @@ export function createServer(
                   : await snapshotRequest(native, bodyLimit, scope.signal);
                 if (snapshot.kind === "rejected") return success(fixed(snapshot.status));
                 bindRequestServer(snapshot.value, server);
+                bindRequestPeer(snapshot.value, server.requestIP(native)?.address);
                 // R2 respond_then_drain: the handler Response publishes the
                 // moment the handler completes, releasing the peer while
                 // the per-request scope drains owned in the background to

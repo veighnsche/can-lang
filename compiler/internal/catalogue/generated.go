@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "be23f2b3ac115b201800890dbf7ff67e8a0b344ac8ea4ccca866ee3ad6172ad6"
+const GeneratedSourceSHA256 = "7f9e34ecfa49b6c02952c42cb19875d03eec207b125bbec30dfdc332e2c21022"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -466,6 +466,7 @@ const OpHtmxRuntimeHead = "htmx::runtime_head"
 const OpAssetUrl = "asset::url"
 const OpHttpRequestMethod = "http::request_method"
 const OpHttpRequestPath = "http::request_path"
+const OpHttpPeerAddress = "http::peer_address"
 const OpHttpRequestHeaders = "http::request_headers"
 const OpHttpQueryOne = "http::query_one"
 const OpHttpQueryAll = "http::query_all"

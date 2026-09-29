@@ -204,6 +204,17 @@ fn http::server_response attach
                 false => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), form.fields[0].value + "|" + form.files[0].filename)
                 true => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), form.fields[0].value)
             true => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "empty")
+fn http::server_response peer
+    emits [http::invalid_request]
+    given
+        http::request req
+    asserts
+        sample: => ok
+    match call http::peer_address(req)
+        when
+            sample: req => ok "127.0.0.1"
+        http::invalid_request => ok call http::response_text(call http::status_unavailable(), call http::empty_server_headers(), "unavailable")
+        ok str address => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), address)
 fn http::server_response wrapped
     emits []
     given

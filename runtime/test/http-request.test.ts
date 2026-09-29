@@ -7,6 +7,8 @@ import {
   createResponses,
   snapshotRequest,
   snapshotRequestLazy,
+  bindRequestPeer,
+  revokeRequest,
   isRequest,
   isHTTPValue,
   nativeResponse,
@@ -134,6 +136,46 @@ test("request URL normalization retains decoded path and query distinctions", as
   ]);
   expect(Object.isFrozen(request)).toBe(true);
   expect(isRequest(request)).toBe(true);
+});
+test("peer address fails closed when absent and ignores forwarding headers", async () => {
+  const request = await snapshot("http://localhost/", {
+    headers: { "X-Forwarded-For": "198.51.100.7" },
+  });
+  bindRequestPeer(request, undefined);
+  check(await api.peerAddress(request), "http::invalid_request", { reason: "peer_unavailable" });
+  bindRequestPeer(request, "127.0.0.1");
+  expect(value(await api.peerAddress(request))).toBe("127.0.0.1");
+  revokeRequest(request);
+});
+test("live Bun socket peer is returned despite spoofed X-Forwarded-For", async () => {
+  const server = Bun.serve({
+    hostname: "127.0.0.1",
+    port: 0,
+    async fetch(native, server) {
+      const accepted = await snapshotRequest(native, 1024);
+      if (accepted.kind !== "request") return new Response("invalid", { status: 400 });
+      try {
+        bindRequestPeer(accepted.value, server.requestIP(native)?.address);
+        const peer = await api.peerAddress(accepted.value);
+        return peer.kind === "ok"
+          ? new Response(peer.value)
+          : new Response("unavailable", { status: 503 });
+      } finally {
+        revokeRequest(accepted.value);
+      }
+    },
+  });
+  try {
+    for (const forwarded of ["198.51.100.7", "203.0.113.9"]) {
+      const response = await fetch(server.url, {
+        headers: { "X-Forwarded-For": forwarded },
+      });
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe("127.0.0.1");
+    }
+  } finally {
+    await server.stop(true);
+  }
 });
 test("invalid query encodings fail without native replacement fallback", async () => {
   for (const query of ["x=%", "x=%GG", "x=%FF", "%ED%A0%80=x"]) {

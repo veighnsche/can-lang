@@ -54,6 +54,7 @@ func TestHTTPEmissionBindsRequestsResponsesAndRouter(t *testing.T) {
 	for _, want := range []string{
 		"$canHTTPRequests.method",
 		"$canHTTPRequests.path",
+		"$canHTTPRequests.peerAddress",
 		"$canHTTPRequests.headers",
 		"$canHTTPRequests.queryOne",
 		"$canHTTPRequests.queryAll",

@@ -7748,6 +7748,38 @@
       ]
     },
     {
+      "name": "http::peer_address",
+      "identity": "can.std.http@1::peer_address",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "request",
+          "type": "http::request"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [
+        "http::invalid_request"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.Server.requestIP",
+          "Request"
+        ],
+        "adapter": "Return only Bun's connected socket address; missing peers fail closed and forwarding headers are ignored.",
+        "task": "I32"
+      },
+      "assertion": "scoped",
+      "refs": [
+        "P05"
+      ]
+    },
+    {
       "name": "http::request_headers",
       "identity": "can.std.http@1::request_headers",
       "kind": "function",

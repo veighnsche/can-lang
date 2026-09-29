@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "be23f2b3ac115b201800890dbf7ff67e8a0b344ac8ea4ccca866ee3ad6172ad6";
+export const catalogueSHA256 = "7f9e34ecfa49b6c02952c42cb19875d03eec207b125bbec30dfdc332e2c21022";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -7755,6 +7755,38 @@ export const catalogue = freeze({
       "assertion": "scoped",
       "refs": [
         "P10"
+      ]
+    },
+    {
+      "name": "http::peer_address",
+      "identity": "can.std.http@1::peer_address",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "request",
+          "type": "http::request"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [
+        "http::invalid_request"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.Server.requestIP",
+          "Request"
+        ],
+        "adapter": "Return only Bun's connected socket address; missing peers fail closed and forwarding headers are ignored.",
+        "task": "I32"
+      },
+      "assertion": "scoped",
+      "refs": [
+        "P05"
       ]
     },
     {

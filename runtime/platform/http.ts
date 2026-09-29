@@ -52,7 +52,8 @@ type BodyCell =
       cell?: ReaderCell;
     };
 const requests = new WeakMap<object, Snapshot>(),
-  bodies = new WeakMap<object, BodyCell>();
+  bodies = new WeakMap<object, BodyCell>(),
+  peerAddresses = new WeakMap<object, string | null>();
 // WebSocket upgrade plumbing. Every snapshot retains its native request;
 // the server binds its handle after snapshotting, and accept claims the
 // pair exactly once. Claimed requests skip the HTTP reply in dispatch.
@@ -105,6 +106,16 @@ const object = (value: unknown): value is object =>
 export function requestSnapshot(value: unknown): Snapshot {
   if (!object(value) || !requests.has(value)) throw resourceStateFailure(undefined, origin);
   return requests.get(value)!;
+}
+// The server adapter binds only Bun's connected socket address to this
+// request capability. Forwarded headers never participate in peer identity.
+export function bindRequestPeer(value: unknown, address: string | undefined): void {
+  requestSnapshot(value);
+  const bounded =
+    address !== undefined && address !== "" && address.length <= 128 && address.isWellFormed()
+      ? address
+      : null;
+  peerAddresses.set(value as object, bounded);
 }
 // Private native handle for the request reporter: dispatch layers resolve
 // the per-request correlation through it. Unknown, forged, or revoked
@@ -310,6 +321,7 @@ export function revokeRequest(request: unknown): void {
   if (!object(request)) return;
   requests.delete(request);
   bodies.delete(request);
+  peerAddresses.delete(request);
   upgradeServers.delete(request);
   upgraded.delete(request);
 }
@@ -927,6 +939,12 @@ export function createRequests<Header>(
     async path(request: unknown, context?: AssertionContext): Promise<Completion<string>> {
       denyLiveBoundary(context, origin);
       return success(requestSnapshot(request).path);
+    },
+    async peerAddress(request: unknown, context?: AssertionContext): Promise<Completion<string>> {
+      denyLiveBoundary(context, origin);
+      requestSnapshot(request);
+      const address = object(request) ? peerAddresses.get(request) : undefined;
+      return typeof address === "string" ? success(address) : invalid("peer_unavailable");
     },
     async headers(
       request: unknown,

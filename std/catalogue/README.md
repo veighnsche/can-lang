@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: be23f2b3ac115b201800890dbf7ff67e8a0b344ac8ea4ccca866ee3ad6172ad6.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 7f9e34ecfa49b6c02952c42cb19875d03eec207b125bbec30dfdc332e2c21022.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -423,6 +423,7 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | asset::url | str name → html::url; static name | [html::invalid_url] |  | URL | Resolve a static declared asset to its validated build-manifest URL. | real | I34 / P11 |
 | http::request_method | http::request request → str | [] |  | Request, URL, Headers | Read the immutable request snapshot and expose copied Can data. | scoped | I32 / P10 |
 | http::request_path | http::request request → str | [] |  | Request, URL, Headers | Read the immutable request snapshot and expose copied Can data. | scoped | I32 / P10 |
+| http::peer_address | http::request request → str | [http::invalid_request] |  | Bun.Server.requestIP, Request | Return only Bun's connected socket address; missing peers fail closed and forwarding headers are ignored. | scoped | I32 / P05 |
 | http::request_headers | http::request request → http::header[] | [] |  | Request, URL, Headers | Read the immutable request snapshot and expose copied Can data. | scoped | I32 / P10 |
 | http::query_one | http::request request, str name → str | [http::invalid_request] |  | URLSearchParams | Check missing/repeated single query values; preserve repeated order. | scoped | I32 / P10 |
 | http::query_all | http::request request, str name → str[] | [http::invalid_request] |  | URLSearchParams | Check missing/repeated single query values; preserve repeated order. | scoped | I32 / P10 |

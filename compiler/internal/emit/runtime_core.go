@@ -88,6 +88,7 @@ func coreOperationBindings() bindingContribution {
 	functions["can.std.htmx@1::runtime_head"] = "$canHTML.runtimeHead"
 	functions["can.std.http@1::request_method"] = "$canHTTPRequests.method"
 	functions["can.std.http@1::request_path"] = "$canHTTPRequests.path"
+	functions["can.std.http@1::peer_address"] = "$canHTTPRequests.peerAddress"
 	functions["can.std.http@1::request_headers"] = "$canHTTPRequests.headers"
 	functions["can.std.http@1::query_one"] = "$canHTTPRequests.queryOne"
 	functions["can.std.http@1::query_all"] = "$canHTTPRequests.queryAll"
