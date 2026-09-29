@@ -499,7 +499,7 @@ func (p *parser) startsConstructor() (yes bool) {
 	}()
 	p.qualified()
 	p.constructorTypes()
-	return p.at("(")
+	return p.at("(") || p.at("{")
 }
 
 func (p *parser) armBody(terminal bool) Body {

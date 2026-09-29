@@ -140,13 +140,13 @@ appropriate to protect laptop load.
   record constructors. Do not touch `declarations.go` yet. Done when focused
   expression tests cover qualified, nested, empty, and comparison cases.
   Evidence: `ConstructorExpr.Braces` records `{}` vs `()`; `primary` admits `{` via new `constructorArguments`, `constructorTypes` lookahead accepts `{`; `()` path unchanged. New `TestBraceConstructorsRecordDelimiter` (empty/qualified/generic/nested/stored + 2 comparison rollbacks), `Braces` assert in explicit-call test, 4 brace rejects. `go test -p 1 ./compiler/internal/syntax/` passes.
-- [ ] **N02 · terminal constructor detection.** Depends: F02,N01.
+- [x] **N02 · terminal constructor detection.** Depends: F02,N01.
   Files: `syntax/declarations.go` only after F02 releases it, plus new N-owned
   `syntax/constructor_braces_test.go`. Recognize
   brace constructors at terminal statement/completion positions while keeping
   success-data construction and bare match forwarding distinct. Done when
   dedicated tests reach the existing `FailureBody` and preserve source spans.
-  Return the file lease to F for final syntax integration. Evidence: pending.
+  Return the file lease to F for final syntax integration. Evidence: `startsConstructor` admits `{`; new `constructor_braces_test.go` with 5 tests (terminal `FailureBody`, empty/generic, success-data non-completion, bare-forwarding distinctness, span round-trip). `go test -p 1 ./compiler/internal/syntax/` passes. `declarations.go` lease returned to F.
 - [ ] **N03 · nominal delimiter checks.** Depends: N01. Files:
   `check/expressions.go`, `check/infer.go`, relevant resolve code and new
   focused checker tests. After resolution, require `{}` for `types.Error` and
