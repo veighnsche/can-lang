@@ -90,7 +90,11 @@ func FormatExpression(expression Expr) string {
 		}
 		return FormatExpression(n.Receiver) + "[" + start + ":" + end + "]"
 	case *ConstructorExpr:
-		return formatName(n.Name) + formatTypeArguments(n.Types) + "(" + formatArguments(n.Arguments) + ")"
+		open, close := "(", ")"
+		if n.Braces {
+			open, close = "{", "}"
+		}
+		return formatName(n.Name) + formatTypeArguments(n.Types) + open + formatArguments(n.Arguments) + close
 	case *CallExpr:
 		out := "call " + FormatExpression(n.Invocation.Callee) + formatTypeArguments(n.Invocation.Types) + "(" + formatArguments(n.Invocation.Arguments) + ")"
 		for _, m := range n.Methods {

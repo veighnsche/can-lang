@@ -336,3 +336,46 @@ func TestFormatTriviaNativeForms(t *testing.T) {
 		})
 	}
 }
+
+// Brace constructors keep their delimiter under trivia formatting, with
+// comments, CRLF, and empty/generic/nested forms preserved idempotently.
+func TestFormatTriviaBraceConstructors(t *testing.T) {
+	text := testHeader + `error empty{}
+error missing{str key}
+fn int load
+    emits {missing}
+    asserts
+        sample: => ok 1
+    // leading terminal note
+    missing{"x"} // trailing terminal note
+fn int aggregate
+    emits {all_failed<a_failure>}
+    asserts
+        sample: => ok 1
+    all_failed<a_failure>{[codec::invalid_data{"a", "type"}]}
+fn wrapper fetch
+    emits {}
+    asserts
+        sample: => ok wrapper(empty{})
+    ok wrapper(empty{})
+`
+	out := formatTrivia(t, text)
+	for _, want := range []string{
+		"error empty{}", "error missing{str key}",
+		"emits {missing}", "emits {all_failed<a_failure>}",
+		`missing{"x"}`, `all_failed<a_failure>{[codec::invalid_data{"a", "type"}]}`,
+		"ok wrapper(empty{})",
+		"// leading terminal note", "// trailing terminal note",
+	} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("trivia output omits %q:\n%s", want, out)
+		}
+	}
+	assertIdempotent(t, out)
+	crlf := "// caf\u00e9\r\npackage app\r\n    provides []\r\n    uses []\r\nerror empty{}\r\nfn wrapper fetch\r\n    emits {}\r\n    asserts\r\n        sample: => ok wrapper(empty{})\r\n    ok wrapper(empty{})\r\n"
+	crlfOut := formatTrivia(t, crlf)
+	if !strings.Contains(crlfOut, "ok wrapper(empty{})") {
+		t.Fatalf("CRLF trivia lost braces:\n%s", crlfOut)
+	}
+	assertIdempotent(t, crlfOut)
+}

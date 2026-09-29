@@ -116,13 +116,13 @@ appropriate to protect laptop load.
   `emits {}[]` callable-array precedence. Done when new empty/generic/nested
   forms parse and old declaration/bound spellings fail. Release
   `declarations.go` to N02 after this task. Evidence: `errorBound()` + `ErrorDecl` take braces; `emits calculated` untouched; `emits {}[]` spans hold (16..24). Bound/decl *rendering* (`formatBound`, `FormatType`, `ErrorDecl` line) shipped here for round-trip coherence since `parseFile` re-parses `Format` output; F03 keeps constructor-delimiter rendering + trivia. 99 test bounds + 3 test decls migrated; new `TestErrorDeclarationBraces`/`TestFiniteErrorBoundBraces` + 3 old-spelling type rejects. Spec probes + gramcheck samples converged (P01 window 2); map-driven bound-only migration of templates/wrap/shared fixtures. `go test -p 1 ./compiler/internal/syntax/` and `go run ./tools/gramcheck` pass. Downstream (check/resolve/emit/catalogue/LSP/integration) failures expected in window 2; N05/M03/P04 migrate. `declarations.go` released to N02.
-- [ ] **F03 · canonical rendering and trivia.** Depends: F02,N01.
+- [x] **F03 · canonical rendering and trivia.** Depends: F02,N01.
   Files: `syntax/format.go`, `parser.go`, `format_trivia.go`,
   `format_trivia_test.go`. Render braces for error declarations/bounds and
   the AST-recorded constructor delimiter; preserve comments, CRLF, UTF-8,
   source spans, and fixpoint formatting. Done when focused parse → format →
   parse and trivia tests cover empty, generic and nested forms.
-  Evidence: pending.
+  Evidence: `FormatExpression` renders the recorded `Braces` delimiter (decl/bound rendering shipped in F02; `parser.go`/`format_trivia.go` needed no change). New `TestFormatTriviaBraceConstructors` covers decls, bounds, empty/generic/nested ctors, same-line comments, UTF-8, CRLF, and idempotence. `go test -p 1 ./compiler/internal/syntax/` passes.
 - [ ] **F04 · syntax-owned fixture and rejection sweep.** Depends:
   F03,N02. Files: F-owned syntax package tests only; do not edit N-owned
   `expressions_test.go` or `constructor_braces_test.go`. Migrate positive
