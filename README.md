@@ -12,6 +12,8 @@ P15.1).
 
 ## Layout
 
+- [`docs/user-guide/`](docs/user-guide/README.md) — working guide for AI coding
+  agents, developed from application-building experience
 - [`compiler/`](compiler/README.md) — `canlc`, the Go launcher plus
   the current parse/resolve/check/emit pipeline
 - [`runtime/`](runtime/) — the private TypeScript runtime (partitioned

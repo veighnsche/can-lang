@@ -1,5 +1,10 @@
 # docs — can-lang design records (reviewer index)
 
+AI coding agents building applications should start with the
+[Can user guide](user-guide/README.md). It is a working, experience-based guide;
+verified recipes are added as application work produces them. The index below
+primarily covers compiler design and execution records.
+
 For current implementation status, start with the
 [post-upgrade reconciliation](syntax-taste/post-upgrade-reconciliation-2026-09-24.md).
 The original I01–I50 ledger (retired; [evidence](implementation/evidence/2026-09-21/) retained),
