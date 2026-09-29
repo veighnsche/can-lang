@@ -62,6 +62,11 @@ type programAssembly struct {
 	// table, never inferred, and is shared read-only by assembly region
 	// emitters only.
 	coreAsyncProof map[string]string
+	// integerWorkers proves concrete integer functions with synchronous
+	// bigint companions. It is built after final binding resolution from
+	// checked program functions, never inferred, and is shared read-only
+	// by assembly region emitters only.
+	integerWorkers map[string]*IntegerWorkerProof
 
 	httpIDs    []string
 	httpNames  map[string]string
@@ -143,6 +148,7 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 	assembly.authoredProof = assembly.checkedAuthoredProof()
 	assembly.collectionAsyncProof = assembly.checkedCollectionProof()
 	assembly.coreAsyncProof = assembly.checkedCoreProof()
+	assembly.integerWorkers = assembly.checkedIntegerWorkers()
 	assembly.bindInitializers()
 	return assembly, nil
 }

@@ -361,11 +361,22 @@ func TestForwardingProductionSelectionOrdinaryGenericCaptured(t *testing.T) {
 			"): Promise<$canCompletion<",
 			"=> $canRegion",
 			"$canContext",
-			"],$canContext)",
+			"],$canContext",
 		} {
 			if !strings.Contains(line, want) {
 				t.Fatalf("direct adapter lost %q:\n%s", want, line)
 			}
+		}
+		// Integer-worker proof appends an optional descriptor for proven
+		// int callbacks; all other direct adapters keep the exact ending.
+		if strings.Contains(line, "],$canContext,{companion:") {
+			for _, field := range []string{"companion:$canFunction", "positions:[", "arity:", "origin:Object.freeze({source:"} {
+				if !strings.Contains(line, field) {
+					t.Fatalf("worker descriptor lost %q:\n%s", field, line)
+				}
+			}
+		} else if !strings.Contains(line, "],$canContext);") {
+			t.Fatalf("direct adapter lost %q:\n%s", "],$canContext);", line)
 		}
 		if strings.Contains(line, "async (") {
 			t.Fatalf("direct adapter kept async:\n%s", line)

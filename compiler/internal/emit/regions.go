@@ -173,6 +173,11 @@ type RegionEmitter struct {
 	// collection proof, nil for direct emitters without assembly
 	// evidence, shared read-only within one assembly and never mutated.
 	coreProof map[string]string
+	// integerWorkers proves concrete integer functions with synchronous
+	// companions. It is separate from the other proofs, nil for direct
+	// emitters without assembly evidence, shared read-only within one
+	// assembly and never mutated.
+	integerWorkers map[string]*IntegerWorkerProof
 	// RuleNames maps wrapper rule region IDs to their emitted function
 	// names so inherit delegates to the predecessor rule.
 	RuleNames map[string]string

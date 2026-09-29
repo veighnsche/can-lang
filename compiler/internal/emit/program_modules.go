@@ -90,20 +90,30 @@ func emitAuthoredModule(assembly *programAssembly, runtime, path string, fns []*
 	}
 	body.WriteString(localTypes)
 	for _, fn := range fns {
-		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, DomainRuntime: "$canDomain", SourceID: fn.Symbol.Source.ID, Browser: assembly.browser, authoredProof: assembly.authoredProof, collectionProof: assembly.collectionAsyncProof, coreProof: assembly.coreAsyncProof}
+		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, DomainRuntime: "$canDomain", SourceID: fn.Symbol.Source.ID, Browser: assembly.browser, authoredProof: assembly.authoredProof, collectionProof: assembly.collectionAsyncProof, coreProof: assembly.coreAsyncProof, integerWorkers: assembly.integerWorkers}
 		code, err := emitter.Function(assembly.functions[fn.Identity()], fn.Region)
 		if err != nil {
 			return Module{}, err
 		}
 		body.WriteString("export ")
 		body.WriteString(code)
+		if !assembly.browser {
+			if entry, ok := assembly.integerWorkers[fn.Identity()]; ok && entry != nil {
+				companion, err := emitter.IntegerCompanion(entry)
+				if err != nil {
+					return Module{}, err
+				}
+				body.WriteString("export ")
+				body.WriteString(companion)
+			}
+		}
 	}
 	for _, native := range program.Natives {
 		if native.Symbol.Source.OutputPath != path || native.Question == nil && native.Judge == nil && native.Fetch == nil && native.LLM == nil && native.ArmDescription == nil && native.Wrapper == nil {
 			continue
 		}
 		for _, region := range native.Regions {
-			emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, RuleNames: assembly.nativeNames, DomainRuntime: "$canDomain", SourceID: native.Symbol.Source.ID, authoredProof: assembly.authoredProof, collectionProof: assembly.collectionAsyncProof, coreProof: assembly.coreAsyncProof}
+			emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, RuleNames: assembly.nativeNames, DomainRuntime: "$canDomain", SourceID: native.Symbol.Source.ID, authoredProof: assembly.authoredProof, collectionProof: assembly.collectionAsyncProof, coreProof: assembly.coreAsyncProof, integerWorkers: assembly.integerWorkers}
 			render := emitter.Function
 			if native.Wrapper != nil {
 				render = emitter.WrapperRule
@@ -114,7 +124,7 @@ func emitAuthoredModule(assembly *programAssembly, runtime, path string, fns []*
 			}
 			body.WriteString("export " + code)
 		}
-		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, RuleNames: assembly.nativeNames, DomainRuntime: "$canDomain", SourceID: native.Symbol.Source.ID, authoredProof: assembly.authoredProof, collectionProof: assembly.collectionAsyncProof, coreProof: assembly.coreAsyncProof}
+		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, RuleNames: assembly.nativeNames, DomainRuntime: "$canDomain", SourceID: native.Symbol.Source.ID, authoredProof: assembly.authoredProof, collectionProof: assembly.collectionAsyncProof, coreProof: assembly.coreAsyncProof, integerWorkers: assembly.integerWorkers}
 		var code string
 		var err error
 		if native.Question != nil {
@@ -206,6 +216,11 @@ func authoredModuleImports(assembly *programAssembly, runtime, path string) []Mo
 		target := fn.Symbol.Source.OutputPath
 		if target != path {
 			imports = append(imports, ModuleImport{Target: target, Names: []ImportName{{assembly.functions[fn.Identity()], assembly.functions[fn.Identity()]}}})
+			if !assembly.browser {
+				if entry, ok := assembly.integerWorkers[fn.Identity()]; ok && entry != nil && entry.Companion != "" {
+					imports = append(imports, ModuleImport{Target: target, Names: []ImportName{{entry.Companion, entry.Companion}}})
+				}
+			}
 		}
 	}
 	return imports

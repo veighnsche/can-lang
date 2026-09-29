@@ -2,8 +2,9 @@ import { invoke, success, failure, caught, isCompletion, type Completion } from 
 import { array, record } from "../data.ts";
 import { nonfiniteSortKeyFailure, type FailureOrigin } from "../failure.ts";
 import { callContext, type AssertionContext } from "../assert/context.ts";
-import { callableInstance } from "../callable.ts";
+import { callableInstance, integerWorker } from "../callable.ts";
 import type { OwnerContext } from "../owner-core.ts";
+import { isHostProxy } from "../reflect.ts";
 
 export type Trace = Readonly<{
   site: string;
@@ -89,6 +90,32 @@ async function observations<T, U>(
     return result;
   });
 }
+// integerElements admits only ordinary frozen dense arrays with own bigint
+// data slots for the native worker path. The proxy check precedes all
+// descriptor reads; no getter, method override or symbol can interfere:
+// species construction stays on Array.prototype, and element reads below
+// use the guarded methods directly. Anything else keeps the slow adapter.
+function integerElements(source: readonly unknown[]): readonly bigint[] | undefined {
+  if (isHostProxy(source)) return undefined;
+  // Prototype equality alone does not establish a real Array; shaped
+  // objects keep the conservative adapter.
+  if (!Array.isArray(source)) return undefined;
+  if (Object.getPrototypeOf(source) !== Array.prototype) return undefined;
+  if (!Object.isFrozen(source)) return undefined;
+  if (Object.getOwnPropertySymbols(source).length !== 0) return undefined;
+  for (const key of ["constructor", "keys", "map", "reduce"] as const) {
+    if (Object.hasOwn(source, key)) return undefined;
+  }
+  const length = Object.getOwnPropertyDescriptor(source, "length");
+  if (length === undefined || !("value" in length) || typeof length.value !== "number")
+    return undefined;
+  for (let index = 0; index < length.value; index++) {
+    const slot = Object.getOwnPropertyDescriptor(source, index);
+    if (slot === undefined || !("value" in slot) || typeof slot.value !== "bigint")
+      return undefined;
+  }
+  return source as readonly bigint[];
+}
 // Element overloads admit the Bun and browser-profile callback shapes while
 // preserving parameter inference for unannotated callbacks; each
 // implementation forwards trace.owner when present.
@@ -107,13 +134,25 @@ export function map<T, U>(
   action: ElementCallback<[T], U>,
   trace: Trace,
 ): Promise<Completion<readonly U[]>> {
-  return boundary(
-    async () =>
-      success(
-        array((await observations(source, action, trace)).map((completion) => completion.value)),
-      ),
-    trace,
-  );
+  return boundary(async () => {
+    const worker = integerWorker(action);
+    if (
+      worker !== undefined &&
+      worker.arity === 1 &&
+      trace.context === undefined &&
+      trace.owner === undefined
+    ) {
+      const elements = integerElements(source);
+      if (elements !== undefined) {
+        return success(array(elements.map((item) => worker.run(item)))) as unknown as Completion<
+          readonly U[]
+        >;
+      }
+    }
+    return success(
+      array((await observations(source, action, trace)).map((completion) => completion.value)),
+    );
+  }, trace);
 }
 export function filter<T>(
   source: readonly T[],
@@ -155,21 +194,33 @@ export function fold<T, U>(
   action: ElementCallback<[U, T], U>,
   trace: Trace,
 ): Promise<Completion<U>> {
-  return boundary(
-    () =>
-      source.reduce<Promise<PrivateSuccess<U>>>(
-        (prior, item) =>
-          prior.then(async (accumulator) => {
-            const result = await callback(action, [accumulator.value, item], trace);
-            if (result.kind !== "ok") throw result;
-            return result;
-          }),
-        // success() always creates a privately branded ok carrier; the chain
-        // forwards only guarded ok callback results.
-        Promise.resolve(success(initial) as PrivateSuccess<U>),
-      ),
-    trace,
-  );
+  return boundary(() => {
+    const worker = integerWorker(action);
+    if (
+      worker !== undefined &&
+      worker.arity === 2 &&
+      trace.context === undefined &&
+      trace.owner === undefined &&
+      typeof initial === "bigint"
+    ) {
+      const elements = integerElements(source);
+      if (elements !== undefined) {
+        const fast = success(elements.reduce((total, item) => worker.run(total, item), initial));
+        return Promise.resolve(fast) as unknown as Promise<Completion<U>>;
+      }
+    }
+    return source.reduce<Promise<PrivateSuccess<U>>>(
+      (prior, item) =>
+        prior.then(async (accumulator) => {
+          const result = await callback(action, [accumulator.value, item], trace);
+          if (result.kind !== "ok") throw result;
+          return result;
+        }),
+      // success() always creates a privately branded ok carrier; the chain
+      // forwards only guarded ok callback results.
+      Promise.resolve(success(initial) as PrivateSuccess<U>),
+    );
+  }, trace);
 }
 export function forEach<T>(
   source: readonly T[],

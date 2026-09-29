@@ -111,7 +111,21 @@ func (e *RegionEmitter) callable(node *ir.Expression) (LoweredExpression, error)
 	if e.Browser {
 		fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], %s(%s): Promise<$canCompletion<%s>> => %s, [%s]);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), adapter, strings.Join(parameters, ", "), TypeName(node.Type.Result()), invoke, strings.Join(retained, ", "))
 	} else {
-		fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], %s(%s): Promise<$canCompletion<%s>> => %s, [%s],$canContext);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), adapter, strings.Join(parameters, ", "), TypeName(node.Type.Result()), invoke, strings.Join(retained, ", "))
+		descriptor := ""
+		if declaration.Array == nil {
+			if companion, ok := e.provenIntegerWorker(declaration.Target, target); ok {
+				if entry := e.integerWorkers[declaration.Target]; ok && entry != nil && entry.Region != nil && (len(node.Type.Inputs()) == 1 || len(node.Type.Inputs()) == 2) {
+					slots := make([]string, len(declaration.Positions))
+					for i, position := range declaration.Positions {
+						slots[i] = strconv.Itoa(position)
+					}
+					span := entry.Region.Span
+					descriptor = fmt.Sprintf(",{companion:%s,positions:[%s],arity:%d,origin:Object.freeze({source:%s,start:%d,end:%d,invocation:[%s]})}",
+						companion, strings.Join(slots, ","), len(node.Type.Inputs()), quote(entry.Source), span.Start, span.End, quote(entry.Region.ID))
+				}
+			}
+		}
+		fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], %s(%s): Promise<$canCompletion<%s>> => %s, [%s],$canContext%s);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), adapter, strings.Join(parameters, ", "), TypeName(node.Type.Result()), invoke, strings.Join(retained, ", "), descriptor)
 	}
 	return LoweredExpression{Statements: out.String(), Value: name}, nil
 }

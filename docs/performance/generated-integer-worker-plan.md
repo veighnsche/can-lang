@@ -55,13 +55,18 @@ closed checked IR and real contracts, followed by observed gains.
 1. Build a SEPARATE private integer-worker proof after final authored binding
    resolution. Each entry ties concrete ProgramFunction identity/specialization,
    exact final target, defining source and full checked region to a companion
-   binding. Require int-only inputs/result; no Errors/Escapes/Requests; no body
+   binding. Require int-only inputs/result; no Errors/Escapes; no body
    statements; one SuccessCompletion for the same region with a nonnil expression.
    Recursively admit only int literals, bound region input references, unary
    minus, and binary +,-,* with exact arity/type/operator checks. Reject everything
    else, including division/remainder/power, fields/index/match/calls, coordination,
    captures of resource-bearing values and arbitrary effect annotations. Empty
    emits alone, prefixes, Promise types or mixed Functions are insufficient.
+   `ProgramFunction.Requests` records generic specialization call-site provenance
+   (`check/specialize.go` appends `request.text`); it is not runtime effect IR.
+   `ir.Region` has no Requests field. Do not reject otherwise proven concrete
+   generic instances merely for that provenance. Calls and all effectful nodes
+   remain excluded by the complete closed-expression/body proof.
 2. Emit a synchronous companion returning bigint alongside the unchanged async
    authored entry. Reuse ExpressionEmitter lowering and exact authored marks.
    Deterministic companion names/imports across modules must match actual proof;
@@ -70,6 +75,11 @@ closed checked IR and real contracts, followed by observed gains.
    callback-region source/span/invocation; never throw the completion carrier or
    recreate an occurrence. Origin construction belongs in the cold catch, not
    every element. The existing array boundary/invoke carries that failure onward.
+   Companion source marks must be mapping comments only, preserving each node's
+   defining source/span. The ordinary `markNode` also assigns `$canOrigin` and
+   allocates metadata, so it cannot serve this raw worker's successful hot path.
+   Emit the function/node mapping marks without origin assignments; keep the
+   original callback-region origin in the cold catch only.
 3. Extend Bun ownCallable with an OPTIONAL final integer descriptor after its
    existing context argument. Preserve construction of the same normal frozen
    callable, receipt, captures and registerCallableCaptures. For exact compiler
@@ -82,6 +92,12 @@ closed checked IR and real contracts, followed by observed gains.
    structure through own data properties, without getters/proxies; reject malformed
    registration honestly. Freeze maintained metadata. Expose only the minimal
    compiler-private query required by array.ts. Other ownCallable calls stay intact.
+   Capture `positions` are original companion parameter positions, while the
+   `captures` array is compact and ordered by those positions (`callables.go`).
+   Validate position bounds against full companion arity, then pair captures by
+   ordinal; never index compact captures by original parameter position. Real
+   array checks and own-data length validation precede metadata slot traversal,
+   including rejection of Array.prototype-shaped objects without getter access.
 4. Inside existing map/fold boundaries, look up exact private metadata and require
    trace.context === undefined AND trace.owner === undefined. Admit source only
    after trap-free isHostProxy rejection: ordinary Array.prototype, real frozen
@@ -91,6 +107,10 @@ closed checked IR and real contracts, followed by observed gains.
    adapter without replaying callback effects or touching then. Do not use an
    O(n) copy/descriptor-map allocation or cache foreign arrays; a bounded direct
    descriptor scan is enough. Guard overhead is a measured uncertainty.
+   Prototype equality alone does not establish a real Array. Require Array.isArray
+   after trap-free proxy rejection; frozen Array.prototype-shaped objects must
+   retain the conservative adapter. New emitted-execution tests link the actual
+   checkout runtime into owned scratch rather than copying runtime source bytes.
 5. Use native Array.prototype.map/reduce, preserving left-to-right once-only
    operands/accumulation. Native map transfers its fresh result to array() for
    freezing; fold returns its scalar. Worker outputs must be bigint by typeof
