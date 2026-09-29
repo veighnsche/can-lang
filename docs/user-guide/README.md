@@ -1,7 +1,8 @@
 # Can user guide for AI coding agents
 
-Status: working guide, started 2026-09-29. The initial material is source-backed
-orientation and a coverage plan; verified recipes will be added with their evidence.
+Status: working guide, started 2026-09-29. It combines source-backed orientation
+with small verified platform notes; broader topic recipes will be added when
+implementation supplies reproducible evidence.
 
 This guide helps AI coding agents implement correct Can applications in any project.
 It covers the language, toolchain, platform operations, verification, and diagnostics
@@ -55,10 +56,10 @@ flags from another tool or historical document.
 | CLI and native platform operations | Handle arguments, files, bytes, processes, declared capabilities, and resource lifecycle | Recipe pending |
 | Domain modeling | Use current records, variants, optionals, immutable updates, collections, generics, and callables correctly | Recipe pending |
 | Contracts and failures | Author meaningful assertions; distinguish domain outcomes and platform failures; interpret supplied versus real-native evidence | Recipe pending |
-| Server pages and forms | Compose safe HTML, typed requests, validation feedback, routes, and assets | Recipe pending |
+| Server pages and forms | Compose safe HTML, typed requests, validation feedback, routes, and assets | Partial: safe email actions and upload attribute/response notes; full form recipe pending |
 | Persistence and authorization | Use typed SQL descriptors, transactions, credentials, and access checks; sessions are an optional web example | Recipe pending |
 | Browser applications | Keep server capabilities private; build and serve the qualified browser/server pair where needed | Recipe pending |
-| Files, bytes, and external integrations | Implement bounded input, storage, delivery, and protocol boundaries using demonstrated capabilities; images are one example | Recipe pending |
+| Files, bytes, and external integrations | Implement bounded input, storage, delivery, and protocol boundaries using demonstrated capabilities; images are one example | Partial: upload attributes and typed image responses; bounded admission/storage recipe pending |
 | Troubleshooting and maintenance | Map real diagnostics to causes and corrections; keep advice current and verification/storage bounded | Recipe pending |
 
 Choose topics for their value across Can projects. A lesson learned in application
@@ -91,6 +92,49 @@ runtime/test/http-request.test.ts runtime/test/browser-dom.test.ts` passed 60/60
 ./compiler/internal/emit/` passed. These checks establish the attribute admission,
 typed response behavior, and compiler binding. An end-to-end upload/storage flow
 has not been demonstrated by this note.
+
+## Verified HTML note: construct an email action
+
+`html::parse_url` deliberately accepts HTTPS and local navigation URLs, not
+`mailto:`. When an authored page needs an email action, call
+`html::email_href(address)` to construct a typed anchor `href`:
+
+```can
+package app
+    provides []
+    uses [html]
+
+fn html::safe contact
+    emits [html::invalid_structure, html::invalid_url]
+    asserts
+        sample: => ok
+    match chain
+        call html::make_tag("a") as html::tag anchor
+        call html::email_href("reader+notes@example.test") as html::attribute href
+        call html::text("Send an email") as html::node label
+        call html::element(anchor, [href], [label]) as html::node link
+        call html::fragment([link]) as html::safe output
+        html::invalid_structure
+        html::invalid_url
+        ok => ok output
+```
+
+This constructor accepts one simple ASCII mailbox and mints an opaque attribute
+that is valid only on an `a` element. It rejects malformed or multi-address
+strings, line breaks, URL suffixes, and non-ASCII input. Do not replace it with
+`html::parse_url("mailto:…")` or a generic text attribute; those paths correctly
+reject the URL or unsafe sink. This deliberately small mailbox grammar is not a
+full RFC mailbox parser.
+
+Verification on 2026-09-29 at Can `4393a89e`: the compiler's
+`TestEmailHrefFixtureBindsToHTMLRuntime` bound the Can call to the native HTML
+constructor, and `bun test runtime/test/html.test.ts` passed 11 tests / 470
+assertions for accepted examples, hostile address cases, and anchor-only use.
+The Can fixture is at
+[`compiler/testdata/current/html/main.can`](../../compiler/testdata/current/html/main.can);
+the runtime behavior is covered in
+[`runtime/test/html.test.ts`](../../runtime/test/html.test.ts). This verifies
+safe action construction, not deliverability or mail-provider behavior.
 
 ## Evidence contract for each recipe
 
