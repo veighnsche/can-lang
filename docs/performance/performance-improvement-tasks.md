@@ -309,3 +309,16 @@ contract, strictTS/24 actual oracles/14 exports and identity/cleanup passed.
 No latency claim. Next production proof targets frozen async checked collection
 factory methods only: [G49-G54](generated-collection-context-tasks.md), separate
 from authored forwarding. Startup/other native/final12 queue stays active.
+
+
+Core context work accepted e57f3ad2, five new actual Bun contracts plus strictTS/
+24 controls and fresh14 binding inventory/identities/cleanup. No measured gain
+from that checkpoint. User priority now targets large current generated/native
+gaps. A fresh unchanged-driver size100 baseline observes fold12.37x, frequency
+13.96x and pure maps4.57–4.99x on a busy host; complete six-trial samples and
+identities are preserved. Next: [native integer map/fold workers](generated-integer-worker-plan.md)
+and [G61–G67](generated-integer-worker-tasks.md), a checked production path removing
+per-element promises/carriers with one same-method after comparison. Three fresh
+equivalent Jev consultations advise paired workers; proof/tests remain decisive.
+Frequency/domain recovery and remaining twelve-slice queue stay open. No auxiliary
+expansion or speculative wrapper-series continuation.
