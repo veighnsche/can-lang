@@ -112,6 +112,7 @@ func (e *RegionEmitter) callable(node *ir.Expression) (LoweredExpression, error)
 		fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], %s(%s): Promise<$canCompletion<%s>> => %s, [%s]);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), adapter, strings.Join(parameters, ", "), TypeName(node.Type.Result()), invoke, strings.Join(retained, ", "))
 	} else {
 		descriptor := ""
+		leaf := ""
 		if declaration.Array == nil {
 			if companion, ok := e.provenIntegerWorker(declaration.Target, target); ok {
 				if entry := e.integerWorkers[declaration.Target]; ok && entry != nil && entry.Region != nil && (len(node.Type.Inputs()) == 1 || len(node.Type.Inputs()) == 2) {
@@ -124,8 +125,22 @@ func (e *RegionEmitter) callable(node *ir.Expression) (LoweredExpression, error)
 						companion, strings.Join(slots, ","), len(node.Type.Inputs()), quote(entry.Source), span.Start, span.End, quote(entry.Region.ID))
 				}
 			}
+			// A proven leaf attaches its own eighth descriptor after the
+			// unchanged optional integer seventh: companion/keyKind/origin
+			// only, with no captures or resources. Integer-only call
+			// sites keep their exact shape.
+			if companion, ok := e.provenMapLeaf(declaration.Target, target); ok {
+				if entry := e.mapLeaves[declaration.Target]; ok && entry != nil && entry.Region != nil && len(node.Type.Inputs()) == 2 && len(declaration.Positions) == 0 {
+					span := entry.Region.Span
+					leaf = fmt.Sprintf(",{companion:%s,keyKind:%s,origin:Object.freeze({source:%s,start:%d,end:%d,invocation:[%s]})}",
+						companion, quote(entry.KeyKind), quote(entry.Source), span.Start, span.End, quote(entry.Region.ID))
+				}
+			}
 		}
-		fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], %s(%s): Promise<$canCompletion<%s>> => %s, [%s],$canContext%s);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), adapter, strings.Join(parameters, ", "), TypeName(node.Type.Result()), invoke, strings.Join(retained, ", "), descriptor)
+		if leaf != "" && descriptor == "" {
+			descriptor = ",undefined"
+		}
+		fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], %s(%s): Promise<$canCompletion<%s>> => %s, [%s],$canContext%s%s);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), adapter, strings.Join(parameters, ", "), TypeName(node.Type.Result()), invoke, strings.Join(retained, ", "), descriptor, leaf)
 	}
 	return LoweredExpression{Statements: out.String(), Value: name}, nil
 }

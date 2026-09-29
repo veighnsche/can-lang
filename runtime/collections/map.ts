@@ -8,6 +8,18 @@ export type ImmutableMap<K extends Key = Key, V = unknown> = Readonly<{
   readonly [brand]: readonly [K, V];
 }>;
 const storage = new WeakMap<object, { identity: string; values: Map<Key, unknown> }>();
+// Private synchronous bodies behind the exact factory-owned async
+// methods. Only these three canonical operations register; identity is
+// by exact function object, never by name or property inspection.
+const methodWorkers = new WeakMap<object, (...args: unknown[]) => Completion<unknown>>();
+// Compiler-private query for proven leaf companions. Unknown functions
+// refuse without inspection, so forged workers fail closed.
+export function mapMethodWorker(
+  fn: unknown,
+): ((...args: unknown[]) => Completion<unknown>) | undefined {
+  if ((typeof fn !== "object" && typeof fn !== "function") || fn === null) return undefined;
+  return methodWorkers.get(fn);
+}
 const origin = Object.freeze({
   source: "can:collections:map",
   start: 0,
@@ -40,7 +52,29 @@ export function createMap<K extends Key, V>(
   function error(identity: string): Completion<never> {
     return failure(domain.create(identity, record(identity, []), origin));
   }
-  return Object.freeze({
+  // Synchronous Completion bodies shared by the native async methods
+  // below and proven leaf companions. All key/backing checks, Map
+  // copies, insertion order, snapshots, opaque ownership, domain
+  // occurrences and origins are identical; only the async wrapper and
+  // its context parameter live in the methods.
+  function getBody(map: unknown, key: unknown): Completion<V> {
+    const source = backing(map);
+    checkKey(keyKind, key);
+    return source.has(key) ? success(source.get(key) as V) : error(identities.absent);
+  }
+  function insertBody(map: unknown, key: unknown, value: unknown): Completion<ImmutableMap<K, V>> {
+    const source = backing(map);
+    checkKey(keyKind, key);
+    if (source.has(key)) return error(identities.exists);
+    return success(own(new Map(source).set(key, value)));
+  }
+  function replaceBody(map: unknown, key: unknown, value: unknown): Completion<ImmutableMap<K, V>> {
+    const source = backing(map);
+    checkKey(keyKind, key);
+    if (!source.has(key)) return error(identities.absent);
+    return success(own(new Map(source).set(key, value)));
+  }
+  const methods = Object.freeze({
     async empty(_context?: AssertionContext) {
       return success(own(new Map()));
     },
@@ -65,9 +99,7 @@ export function createMap<K extends Key, V>(
       return success(own(values));
     },
     async get(map: unknown, key: K, _context?: AssertionContext): Promise<Completion<V>> {
-      const source = backing(map);
-      checkKey(keyKind, key);
-      return source.has(key) ? success(source.get(key) as V) : error(identities.absent);
+      return getBody(map, key);
     },
     async insert(
       map: unknown,
@@ -75,10 +107,7 @@ export function createMap<K extends Key, V>(
       value: V,
       _context?: AssertionContext,
     ): Promise<Completion<ImmutableMap<K, V>>> {
-      const source = backing(map);
-      checkKey(keyKind, key);
-      if (source.has(key)) return error(identities.exists);
-      return success(own(new Map(source).set(key, value)));
+      return insertBody(map, key, value);
     },
     async replace(
       map: unknown,
@@ -86,10 +115,7 @@ export function createMap<K extends Key, V>(
       value: V,
       _context?: AssertionContext,
     ): Promise<Completion<ImmutableMap<K, V>>> {
-      const source = backing(map);
-      checkKey(keyKind, key);
-      if (!source.has(key)) return error(identities.absent);
-      return success(own(new Map(source).set(key, value)));
+      return replaceBody(map, key, value);
     },
     async remove(
       map: unknown,
@@ -118,4 +144,8 @@ export function createMap<K extends Key, V>(
       );
     },
   });
+  methodWorkers.set(methods.get, getBody);
+  methodWorkers.set(methods.insert, insertBody);
+  methodWorkers.set(methods.replace, replaceBody);
+  return methods;
 }

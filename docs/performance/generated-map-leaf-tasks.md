@@ -179,7 +179,7 @@ integration; Codex owns R12/Q12. No commits by Muse. No auxiliary capabilities.
     comparison/proof/retirement/goal/release). ALL writers released; native
     goal complete; sole coordinator idle same TUI for Codex R12/Q12.
     No commits; R12/Q12 unchecked.
-- [ ] **G73a — close the actual emitted-path contract gap (test only)**
+- [x] **G73a — close the actual emitted-path contract gap (test only)**
   - Prerequisites: G75 completed native goal and explicit ALL-writer release;
     independent six Go/67 runtime contracts and current source/record audit.
     Sole SAME Muse obtains native get_goal then a matching corrective goal
@@ -211,8 +211,15 @@ integration; Codex owns R12/Q12. No commits by Muse. No auxiliary capabilities.
     inventories. No broad package repeats, new graph, timings, resampling,
     harness/tool capability, source copies or production corrections. Genuine
     production defect requires released-writer evidence and Codex saved repair.
-  - Evidence: pending.
-- [ ] **G75a — immutable records and reviewable corrective handoff**
+  - Evidence: met: 12/12 `TestMapLeaf*` with CAN_BUN zero skips (new
+    recovery/identity proof, int/bool emitted routes with asymmetric
+    counts+snapshots, exact mapping pairs, cold wrong-host/missing-worker
+    boundaries with +1n occurrence first-stop proof, standard recovery,
+    hostile identity opacity); gallery str route strengthened; 16/16
+    runtime leaf (new proxy-companion no-trap row); gofmt + lint:fix/
+    format/check clean. Production 9/9 + original 3 records byte-identical
+    to independent review. No defect found; none corrected.
+- [x] **G75a — immutable records and reviewable corrective handoff**
   - Prerequisites: G73a. Sole Muse owns this checklist and NEW corrective evidence.
   - Changes: save exact commands/exits/counts/source hashes and new-contract
     evidence; verify original generated-map-leaf-before.json,
@@ -223,14 +230,26 @@ integration; Codex owns R12/Q12. No commits by Muse. No auxiliary capabilities.
   - Acceptance: temporary groups/resources retired, no copies/caches/residue;
     native goal complete only with explicit ALL-writer release and idle SAME TUI.
     No commits; leave R12/Q12 unchecked for proportional changed-path acceptance.
-  - Evidence: pending.
-- [ ] **R12 — proportional independent acceptance and exact-path commit**
+  - Evidence: met: generated-packet-12-corrective-muse-evidence.json 3831B
+    (commands/exits/counts/hashes/new contracts, original-record SHA identity,
+    production-byte-identity, exact cleanup, monitor link, no new timing/gain).
+    ALL writers released; native goal complete; idle same TUI for Codex R12/Q12.
+- [x] **R12 — proportional independent acceptance and exact-path commit**
   - Prerequisites: G75 ALL-writer release. Codex owns actual diff/new contracts/
     identity/comparison arithmetic/cleanup acceptance, reuse successful evidence.
     Genuine defects -> saved tasks/SAME Muse, no convenience implementation.
   - Acceptance: correctness and honest measured limitations, exact accepted
     coherent source/test/checklist paths committed; preserve foreign work.
-  - Evidence: pending.
+  - Evidence: met: first independent review confirmed 6 original Go/67 runtime contracts,
+    full 24-case six-trial arithmetic/identities, 13 gates/14 bindings,
+    current after-source bytes and cleanup. The changed-path correction then
+    passed 6 new actual emitted Go contracts/zero skips and the new
+    proxy-companion runtime case; 9 production files and all 3 original raw
+    records stayed byte-identical. See the compact independent review in
+    .performance/performance-push-20260928/generated-packet-12-independent-review.json.
+    Frequency remained ~13.7x native on a busy host; no isolated gain is
+    claimed. Exact source/test/checklist paths accepted for one production
+    commit, foreign README/user-guide work preserved.
 - [ ] **Q12 — remaining substantial fixes and final twelve-slice review**
   - Prerequisites: R12. Codex owns residual native costs/startup/remaining12 lanes.
   - Acceptance: every supported candidate verified fix or specific disposition;

@@ -4,7 +4,7 @@ import {
   initializationCallableIdentity,
   type CallableIdentity,
 } from "./assert/identity.ts";
-import { caught } from "./completion.ts";
+import { caught, type Completion } from "./completion.ts";
 import type { FailureOrigin } from "./failure.ts";
 import { registerCallableCaptures } from "./owner.ts";
 import { isHostProxy } from "./reflect.ts";
@@ -133,6 +133,73 @@ function registerIntegerWorker(
 export function integerWorker(value: unknown): IntegerWorker | undefined {
   return typeof value === "function" ? integerWorkers.get(value) : undefined;
 }
+// MapLeafWorkerDescriptor is the compiler-private contract for checked map
+// leaves: a synchronous Completion companion over (map, key), the quantized
+// key kind and the callback origin. The emitter produces it only under exact
+// map-leaf proof for closed two-input callables with no captures.
+export type MapLeafWorkerDescriptor = Readonly<{
+  companion: (...args: never[]) => Completion<unknown>;
+  keyKind: string;
+  origin: FailureOrigin;
+}>;
+// MapLeafWorker is the registered leaf runner over (map, key); the guarded
+// fold invokes it inside completion authentication.
+export type MapLeafWorker = Readonly<{
+  run: (map: unknown, key: unknown) => Completion<unknown>;
+  keyKind: string;
+}>;
+const mapLeafWorkers = new WeakMap<Function, MapLeafWorker>();
+function mapLeafWorkerDescriptor(value: unknown):
+  | {
+      companion: (...args: never[]) => Completion<unknown>;
+      keyKind: string;
+      origin: FailureOrigin;
+    }
+  | undefined {
+  if (value === null || typeof value !== "object" || isHostProxy(value)) return undefined;
+  const keys = Object.keys(value);
+  if (keys.length !== 3) return undefined;
+  const companion = ownDataValue(value, "companion");
+  const keyKind = ownDataValue(value, "keyKind");
+  const origin = ownDataValue(value, "origin");
+  if (
+    typeof companion !== "function" ||
+    typeof keyKind !== "string" ||
+    (keyKind !== "int" && keyKind !== "bool" && keyKind !== "str") ||
+    origin === null ||
+    typeof origin !== "object" ||
+    isHostProxy(origin)
+  )
+    return undefined;
+  // The companion length arrives through its own data descriptor, so
+  // functions or proxies with accessor lengths never attest arity.
+  const length = ownDataValue(companion, "length");
+  if (length !== 2) return undefined;
+  return {
+    companion: companion as (...args: never[]) => Completion<unknown>,
+    keyKind,
+    origin: origin as FailureOrigin,
+  };
+}
+function registerMapLeafWorker(
+  guarded: Function,
+  captures: readonly unknown[],
+  resourceIndices: readonly number[],
+  descriptor: MapLeafWorkerDescriptor,
+): void {
+  const parsed = mapLeafWorkerDescriptor(descriptor);
+  if (parsed === undefined) throw new TypeError("invalid map leaf descriptor");
+  // Leaves are closed: any capture or resource capture declines
+  // registration and keeps slow behavior.
+  if (captures.length !== 0 || resourceIndices.length !== 0) return;
+  const invoke = parsed.companion as (...args: unknown[]) => Completion<unknown>;
+  const keyKind = parsed.keyKind;
+  const run = (map: unknown, key: unknown) => invoke(map, key);
+  mapLeafWorkers.set(guarded, Object.freeze({ run, keyKind }));
+}
+export function mapLeafWorker(value: unknown): MapLeafWorker | undefined {
+  return typeof value === "function" ? mapLeafWorkers.get(value) : undefined;
+}
 export function ownCallable<T extends Function>(
   site: string,
   target: string,
@@ -141,6 +208,7 @@ export function ownCallable<T extends Function>(
   resourceIndices: readonly number[] = captures.map((_, i) => i),
   context?: AssertionContext,
   worker?: IntegerWorkerDescriptor,
+  leaf?: MapLeafWorkerDescriptor,
 ): T {
   if (!site || !target || typeof value !== "function" || receipts.has(value))
     throw new TypeError("invalid callable construction");
@@ -162,6 +230,7 @@ export function ownCallable<T extends Function>(
     Object.freeze({ identity, site, target, captures: Object.freeze([...captures]) }),
   );
   if (worker !== undefined) registerIntegerWorker(guarded, captures, resourceIndices, worker);
+  if (leaf !== undefined) registerMapLeafWorker(guarded, captures, resourceIndices, leaf);
   return Object.freeze(guarded);
 }
 export function callableReceipt(value: unknown): Receipt | undefined {

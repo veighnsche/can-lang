@@ -1,8 +1,16 @@
-import { invoke, success, failure, caught, isCompletion, type Completion } from "../completion.ts";
+import {
+  invoke,
+  invokeSync,
+  success,
+  failure,
+  caught,
+  isCompletion,
+  type Completion,
+} from "../completion.ts";
 import { array, record } from "../data.ts";
 import { nonfiniteSortKeyFailure, type FailureOrigin } from "../failure.ts";
 import { callContext, type AssertionContext } from "../assert/context.ts";
-import { callableInstance, integerWorker } from "../callable.ts";
+import { callableInstance, integerWorker, mapLeafWorker } from "../callable.ts";
 import type { OwnerContext } from "../owner-core.ts";
 import { isHostProxy } from "../reflect.ts";
 
@@ -90,12 +98,15 @@ async function observations<T, U>(
     return result;
   });
 }
-// integerElements admits only ordinary frozen dense arrays with own bigint
-// data slots for the native worker path. The proxy check precedes all
-// descriptor reads; no getter, method override or symbol can interfere:
-// species construction stays on Array.prototype, and element reads below
-// use the guarded methods directly. Anything else keeps the slow adapter.
-function integerElements(source: readonly unknown[]): readonly bigint[] | undefined {
+// ordinaryElements admits only ordinary frozen dense arrays for the native
+// worker paths. The proxy check precedes all descriptor reads; no getter,
+// method override or symbol can interfere: species construction stays on
+// Array.prototype, and element reads below use the guarded methods
+// directly. Anything else keeps the slow adapter. Element kinds are
+// checked by the caller's own slot loop.
+function ordinaryElements(
+  source: readonly unknown[],
+): { values: readonly unknown[]; length: number } | undefined {
   if (isHostProxy(source)) return undefined;
   // Prototype equality alone does not establish a real Array; shaped
   // objects keep the conservative adapter.
@@ -109,12 +120,41 @@ function integerElements(source: readonly unknown[]): readonly bigint[] | undefi
   const length = Object.getOwnPropertyDescriptor(source, "length");
   if (length === undefined || !("value" in length) || typeof length.value !== "number")
     return undefined;
-  for (let index = 0; index < length.value; index++) {
-    const slot = Object.getOwnPropertyDescriptor(source, index);
+  return { values: source, length: length.value };
+}
+// integerElements admits only ordinary frozen dense arrays with own bigint
+// data slots for the native worker path.
+function integerElements(source: readonly unknown[]): readonly bigint[] | undefined {
+  const admitted = ordinaryElements(source);
+  if (admitted === undefined) return undefined;
+  for (let index = 0; index < admitted.length; index++) {
+    const slot = Object.getOwnPropertyDescriptor(admitted.values, index);
     if (slot === undefined || !("value" in slot) || typeof slot.value !== "bigint")
       return undefined;
   }
-  return source as readonly bigint[];
+  return admitted.values as readonly bigint[];
+}
+// leafElements admits only ordinary frozen dense arrays whose own data
+// slots all carry the leaf's primitive key kind for the native leaf fold.
+// Unknown key kinds fail closed; mixed or boxed elements keep the slow
+// adapter.
+function leafElements(source: readonly unknown[], keyKind: string): readonly unknown[] | undefined {
+  const want =
+    keyKind === "int"
+      ? "bigint"
+      : keyKind === "bool"
+        ? "boolean"
+        : keyKind === "str"
+          ? "string"
+          : undefined;
+  if (want === undefined) return undefined;
+  const admitted = ordinaryElements(source);
+  if (admitted === undefined) return undefined;
+  for (let index = 0; index < admitted.length; index++) {
+    const slot = Object.getOwnPropertyDescriptor(admitted.values, index);
+    if (slot === undefined || !("value" in slot) || typeof slot.value !== want) return undefined;
+  }
+  return admitted.values;
 }
 // Element overloads admit the Bun and browser-profile callback shapes while
 // preserving parameter inference for unannotated callbacks; each
@@ -206,6 +246,27 @@ export function fold<T, U>(
       const elements = integerElements(source);
       if (elements !== undefined) {
         const fast = success(elements.reduce((total, item) => worker.run(total, item), initial));
+        return Promise.resolve(fast) as unknown as Promise<Completion<U>>;
+      }
+    }
+    // Proven map leaves reduce natively with synchronous completion
+    // authentication per element. Context and owner stay strictly
+    // undefined; the leaf callback never runs before this guard admits
+    // the array. The first non-ok carrier throws out of the reduction
+    // and the boundary retains it unchanged; success re-boxes the final
+    // accumulator in a fresh Completion. Empty arrays return
+    // success(initial) without touching the leaf.
+    const leaf = mapLeafWorker(action);
+    if (leaf !== undefined && trace.context === undefined && trace.owner === undefined) {
+      const elements = leafElements(source, leaf.keyKind);
+      if (elements !== undefined) {
+        const fast = success(
+          elements.reduce((accumulator: unknown, item) => {
+            const carrier = invokeSync(() => leaf.run(accumulator, item), trace.origin);
+            if (carrier.kind !== "ok") throw carrier;
+            return carrier.value;
+          }, initial as unknown),
+        );
         return Promise.resolve(fast) as unknown as Promise<Completion<U>>;
       }
     }

@@ -82,3 +82,18 @@ export async function invoke<T>(
     return caught(cause, origin);
   }
 }
+// Synchronous Completion boundary for proven leaf companions. It
+// accepts only an immediately authenticated carrier, applies the same
+// standard first-boundary recording and caught constructors as invoke,
+// and catches synchronous throws. Unboxed, forged, Promise or thenable
+// results fail closed without await, then/getter inspection,
+// assimilation or effect replay.
+export function invokeSync<T>(call: () => Completion<T>, origin: FailureOrigin): Completion<T> {
+  try {
+    const result = call();
+    if (!isCompletion(result)) throw new TypeError("call returned an unboxed result");
+    return locatedCompletion(result, origin);
+  } catch (cause) {
+    return caught(cause, origin);
+  }
+}

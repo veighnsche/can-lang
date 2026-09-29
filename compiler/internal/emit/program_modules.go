@@ -90,7 +90,7 @@ func emitAuthoredModule(assembly *programAssembly, runtime, path string, fns []*
 	}
 	body.WriteString(localTypes)
 	for _, fn := range fns {
-		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, DomainRuntime: "$canDomain", SourceID: fn.Symbol.Source.ID, Browser: assembly.browser, authoredProof: assembly.authoredProof, collectionProof: assembly.collectionAsyncProof, coreProof: assembly.coreAsyncProof, integerWorkers: assembly.integerWorkers}
+		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, DomainRuntime: "$canDomain", SourceID: fn.Symbol.Source.ID, Browser: assembly.browser, authoredProof: assembly.authoredProof, collectionProof: assembly.collectionAsyncProof, coreProof: assembly.coreAsyncProof, integerWorkers: assembly.integerWorkers, mapLeaves: assembly.mapLeaves}
 		code, err := emitter.Function(assembly.functions[fn.Identity()], fn.Region)
 		if err != nil {
 			return Module{}, err
@@ -100,6 +100,14 @@ func emitAuthoredModule(assembly *programAssembly, runtime, path string, fns []*
 		if !assembly.browser {
 			if entry, ok := assembly.integerWorkers[fn.Identity()]; ok && entry != nil {
 				companion, err := emitter.IntegerCompanion(entry)
+				if err != nil {
+					return Module{}, err
+				}
+				body.WriteString("export ")
+				body.WriteString(companion)
+			}
+			if entry, ok := assembly.mapLeaves[fn.Identity()]; ok && entry != nil {
+				companion, err := emitter.LeafCompanion(entry)
 				if err != nil {
 					return Module{}, err
 				}
@@ -220,6 +228,25 @@ func authoredModuleImports(assembly *programAssembly, runtime, path string) []Mo
 				if entry, ok := assembly.integerWorkers[fn.Identity()]; ok && entry != nil && entry.Companion != "" {
 					imports = append(imports, ModuleImport{Target: target, Names: []ImportName{{entry.Companion, entry.Companion}}})
 				}
+				if entry, ok := assembly.mapLeaves[fn.Identity()]; ok && entry != nil && entry.Companion != "" {
+					imports = append(imports, ModuleImport{Target: target, Names: []ImportName{{entry.Companion, entry.Companion}}})
+				}
+			}
+		}
+	}
+	// Leaf companions need their synchronous boundary and worker query
+	// only in modules that define them; all other modules keep the
+	// shared base imports.
+	if !assembly.browser {
+		for _, fn := range program.Functions {
+			if fn.Symbol.Source.OutputPath != path {
+				continue
+			}
+			if entry, ok := assembly.mapLeaves[fn.Identity()]; ok && entry != nil && entry.Companion != "" {
+				imports = append(imports,
+					ModuleImport{Target: runtime + "/completion.ts", Names: []ImportName{{"invokeSync", "$canInvokeSync"}}},
+					ModuleImport{Target: runtime + "/collections/map.ts", Names: []ImportName{{"mapMethodWorker", "$canMapMethodWorker"}}})
+				break
 			}
 		}
 	}

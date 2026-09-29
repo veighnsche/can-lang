@@ -67,6 +67,11 @@ type programAssembly struct {
 	// checked program functions, never inferred, and is shared read-only
 	// by assembly region emitters only.
 	integerWorkers map[string]*IntegerWorkerProof
+	// mapLeaves proves concrete map-leaf functions with synchronous
+	// Completion companions. It is built after final binding resolution
+	// from checked program functions, never inferred, and is shared
+	// read-only by assembly region emitters only.
+	mapLeaves map[string]*MapLeafProof
 
 	httpIDs    []string
 	httpNames  map[string]string
@@ -149,6 +154,7 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 	assembly.collectionAsyncProof = assembly.checkedCollectionProof()
 	assembly.coreAsyncProof = assembly.checkedCoreProof()
 	assembly.integerWorkers = assembly.checkedIntegerWorkers()
+	assembly.mapLeaves = assembly.checkedMapLeaves()
 	assembly.bindInitializers()
 	return assembly, nil
 }

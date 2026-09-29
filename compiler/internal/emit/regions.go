@@ -178,6 +178,17 @@ type RegionEmitter struct {
 	// emitters without assembly evidence, shared read-only within one
 	// assembly and never mutated.
 	integerWorkers map[string]*IntegerWorkerProof
+	// mapLeaves proves concrete map-leaf functions with synchronous
+	// Completion companions. It is separate from the other proofs, nil
+	// for direct emitters without assembly evidence, shared read-only
+	// within one assembly and never mutated.
+	mapLeaves map[string]*MapLeafProof
+	// leaf selects isolated synchronous companion lowering for the
+	// proven entry: invocations resolve only proof-recorded map calls
+	// through invokeSync with no context or fallback. Nil selects the
+	// ordinary asynchronous lowering; only fresh companion emitters
+	// set it, never ordinary region emitters.
+	leaf *MapLeafProof
 	// RuleNames maps wrapper rule region IDs to their emitted function
 	// names so inherit delegates to the predecessor rule.
 	RuleNames map[string]string
@@ -620,6 +631,9 @@ func (e *RegionEmitter) eligibleCoreBypass(step *ir.InvocationStep, target strin
 	return e.provenCoreBinding(step.Identity, target)
 }
 func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, error) {
+	if e.leaf != nil {
+		return e.leafInvocation(call)
+	}
 	if call == nil || len(call.Steps) == 0 || !types.Equal(call.Result, call.Result) {
 		return LoweredExpression{}, fmt.Errorf("invalid checked invocation")
 	}
@@ -838,6 +852,83 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 	}())
 	return LoweredExpression{out.String(), result}, nil
 }
+
+// leafInvocation lowers one proven map-leaf call synchronously. Every
+// step must be a proof-recorded canonical map call whose resolved
+// target still agrees with the entry; anything else fails the build
+// instead of falling back after partial effects. Temps, success
+// bindings, preparation order, call-site marks, first-failure breaks
+// and the cold catch match ordinary lowering; only the boundary is
+// synchronous: the exact factory method resolves through
+// mapMethodWorker and runs under invokeSync with no context,
+// callContext wrapper, await or fixture replay. The trailing
+// assertion keeps strict callers quiet and erases at runtime, so
+// unknown worker identity still throws inside the closure and
+// fails closed through that same boundary.
+func (e *RegionEmitter) leafInvocation(call *ir.Invocation) (LoweredExpression, error) {
+	if e.leaf == nil || call == nil || len(call.Steps) == 0 || !types.Equal(call.Result, call.Result) {
+		return LoweredExpression{}, fmt.Errorf("invalid checked leaf invocation")
+	}
+	var out strings.Builder
+	result := e.temp()
+	label := e.temp()
+	fmt.Fprintf(&out, "let %s: $canCompletion<unknown>;\n", result)
+	for _, step := range call.Steps {
+		if step.SuccessBinding == "" || !types.Equal(step.Result, step.Result) {
+			return LoweredExpression{}, fmt.Errorf("missing leaf invocation binding")
+		}
+		local := e.temp()
+		e.expression.Bindings[step.SuccessBinding] = local
+		fmt.Fprintf(&out, "let %s!: %s;\n", local, TypeName(step.Result))
+	}
+	fmt.Fprintf(&out, "%s: { try {\n", label)
+	for _, step := range call.Steps {
+		if step.Callee != nil || step.Native != nil || step.Array != nil || step.Asset != nil || step.Fixtures != nil || step.SQL != nil || step.FormAction != nil || step.JSONFetch != nil || step.Action != nil {
+			return LoweredExpression{}, fmt.Errorf("unproven leaf invocation step")
+		}
+		want, ok := e.leaf.Calls[step.Identity]
+		if !ok || want == "" {
+			return LoweredExpression{}, fmt.Errorf("unproven leaf invocation step")
+		}
+		target, err := e.target(step.Identity)
+		if err != nil || target != want {
+			return LoweredExpression{}, fmt.Errorf("unproven leaf invocation step")
+		}
+		for _, prepared := range step.Prepare {
+			value, err := e.expression.Lower(prepared.Value)
+			if err != nil {
+				return LoweredExpression{}, err
+			}
+			out.WriteString(value.Statements)
+			name := e.temp()
+			e.expression.Bindings[prepared.Local.Identity] = name
+			fmt.Fprintf(&out, "const %s = %s;\n", name, value.Value)
+		}
+		var args []string
+		for _, argument := range step.Arguments {
+			lowered, err := e.expression.Lower(argument)
+			if err != nil {
+				return LoweredExpression{}, err
+			}
+			out.WriteString(lowered.Statements)
+			args = append(args, lowered.Value)
+		}
+		invocation := "$canMapMethodWorker(" + target + ")!(" + strings.Join(args, ", ") + ")"
+		out.WriteString(e.mark(step.Span, "call"))
+		fmt.Fprintf(&out, "%s = $canInvokeSync(() => %s, %s);\nif (%s.kind !== 'ok') break %s;\n%s = $canValue(%s) as %s;\n", result, invocation, e.origin(step.Span), result, label, e.expression.Bindings[step.SuccessBinding], result, TypeName(step.Result))
+	}
+	if call.Result.Kind() == types.Void {
+		fmt.Fprintf(&out, "%s = $canSuccess(undefined);\n", result)
+	}
+	fmt.Fprintf(&out, "} catch ($canCause) { %s = $canCaught($canCause, %s); } }\n", result, func() string {
+		if e.SourceID != "" {
+			return "$canOrigin"
+		}
+		return e.origin(call.Span)
+	}())
+	return LoweredExpression{out.String(), result}, nil
+}
+
 func (e *RegionEmitter) invocationValue(call *ir.Invocation) (LoweredExpression, error) {
 	if call == nil || len(call.Errors) != 0 || call.Result.Kind() == types.Void {
 		return LoweredExpression{}, fmt.Errorf("unchecked completion used as a value")
