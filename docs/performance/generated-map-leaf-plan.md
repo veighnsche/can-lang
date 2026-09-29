@@ -65,10 +65,16 @@ Extend scope only from actual checked inputs, success bindings and arm bindings.
 Reject every unlisted node/field, ordinary data matches, explicit domain creation,
 body statements, authored/recursive/indirect calls, native expressions, fixtures,
 array/asset/SQL/FormAction/JSONFetch/Action calls, coordination, resources, browser
-and mismatched/rebound proof. Reject call preparation for this first finite grammar
-rather than silently changing evaluation. Verify the actual gallery callback fits
-before implementation; a real mismatch is a design question with writer release,
-not permission to weaken proof. Standard arms preserve standard snapshots.
+and mismatched/rebound proof. The actual checker prepares even the gallery
+get call into two locals. Independent source review accepts only this finite
+normalization: every prepared value must satisfy its positional map/key/int
+grammar, local and value types must agree, and each step argument must be the
+exact corresponding local binding. No arbitrary preparation or reordering
+qualifies; shared invocation lowering preserves once-only evaluation order.
+This clarifies the original no-effect preparation requirement after ALL-writer
+release. Standard arms preserve standard snapshots. The current proof also
+conservatively excludes declared outgoing domain errors; recovered gallery
+leaves qualify, unhandled domain-forwarding functions use the normal route.
 
 ## M2: shared native factory bodies and synchronous boundaries
 
