@@ -40,6 +40,12 @@ export function sqliteAffectedRows(
   result: unknown,
   failures: SQLFailures,
 ): Completion<bigint> {
+  // Bun.SQL safeIntegers returns SELECT integer columns as bigint. Can's
+  // SQLite execute path passes the connection-local changes() value here.
+  if (typeof result === "bigint") {
+    if (result < 0n) return failures.queryFailed(operation, "bad_count");
+    return success(result);
+  }
   const count = (result as { count?: unknown } | null)?.count;
   if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0) {
     return failures.queryFailed(operation, "bad_count");
@@ -47,10 +53,23 @@ export function sqliteAffectedRows(
   return success(BigInt(count));
 }
 
+export function sqliteChangesCount(result: unknown): unknown {
+  if (!Array.isArray(result) || result.length !== 1) return undefined;
+  const row = result[0];
+  if (row === null || typeof row !== "object") return undefined;
+  return (row as { affected_rows?: unknown }).affected_rows;
+}
+
 function staticTemplate(text: string): TemplateStringsArray {
   return Object.freeze(
     Object.assign([text], { raw: Object.freeze([text]) }),
   ) as unknown as TemplateStringsArray;
+}
+
+const SQLITE_CHANGES = staticTemplate("SELECT changes() AS affected_rows");
+
+export function sqliteChangesTemplate(): TemplateStringsArray {
+  return SQLITE_CHANGES;
 }
 
 const FOREIGN_KEYS_ON = staticTemplate("PRAGMA foreign_keys = ON");

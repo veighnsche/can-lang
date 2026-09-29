@@ -27,7 +27,14 @@ import {
   type SQLPlan,
 } from "./values.ts";
 import { classifyPostgres, postgresAffectedRows, openPostgresClient } from "./postgres.ts";
-import { classifySQLite, sqliteAffectedRows, openSqliteMemory, openSqliteFile } from "./sqlite.ts";
+import {
+  classifySQLite,
+  sqliteAffectedRows,
+  sqliteChangesCount,
+  sqliteChangesTemplate,
+  openSqliteMemory,
+  openSqliteFile,
+} from "./sqlite.ts";
 import { classifyMySQL, mysqlAffectedRows, openMySQLClient } from "./mysql.ts";
 import { poolMaxConnections, sqliteFileConfig } from "./config.ts";
 
@@ -58,6 +65,33 @@ export function poolDialect(token: unknown): SQLDialect | undefined {
   return pools.get(token)?.dialect;
 }
 const variableName = /^[A-Z_][A-Z0-9_]*$/;
+const sqliteMutationQueues = new WeakMap<object, Promise<void>>();
+
+async function executeSQLiteMutation(
+  client: Native,
+  strings: TemplateStringsArray,
+  values: readonly unknown[],
+): Promise<unknown> {
+  // SQLite's Bun adapter owns one connection per SQL client. Keep the write
+  // and connection-local changes() read adjacent so another Can write cannot
+  // replace the count between them. This also works inside an explicit SQL
+  // transaction, where starting a nested client.begin() would fail.
+  const previous = sqliteMutationQueues.get(client) ?? Promise.resolve();
+  let release!: () => void;
+  const turn = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const tail = previous.then(() => turn);
+  sqliteMutationQueues.set(client, tail);
+  await previous;
+  try {
+    await client(strings, ...values);
+    return await client(sqliteChangesTemplate());
+  } finally {
+    release();
+    if (sqliteMutationQueues.get(client) === tail) sqliteMutationQueues.delete(client);
+  }
+}
 
 // SQLBounds carries the cancel-absent operation bounds (E04): the
 // caller bound and the shared request budget race as min(bound,
@@ -286,11 +320,24 @@ export function createSQLOperations(
         () =>
           useResource(token, kind, async (native: unknown): Promise<Completion<unknown>> => {
             const client = native as Native;
+            const sqliteMutation =
+              descriptor.dialect === "sqlite" &&
+              descriptor.cardinality === "execute" &&
+              (descriptor.kind === "insert_statement" ||
+                descriptor.kind === "update_statement" ||
+                descriptor.kind === "delete_statement");
             let result: unknown;
             try {
-              result = await client(template.strings, ...template.values);
+              if (sqliteMutation) {
+                result = await executeSQLiteMutation(client, template.strings, template.values);
+              } else {
+                result = await client(template.strings, ...template.values);
+              }
             } catch (cause) {
               return profile.classify("execute", cause, failures, contracts);
+            }
+            if (sqliteMutation) {
+              return sqliteAffectedRows("execute", sqliteChangesCount(result), failures);
             }
             return profile.affectedRows("execute", result, failures);
           }),

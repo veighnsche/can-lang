@@ -223,6 +223,63 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       total: 2,
       version: 102,
     },
+    setup_budget: {
+      dialect: D,
+      cardinality: "execute",
+      kind: "create_table_statement",
+      segments: [
+        {
+          text: "CREATE TABLE budget (key TEXT PRIMARY KEY, hits INTEGER NOT NULL, updated_ms INTEGER NOT NULL)",
+        },
+      ],
+      params: [],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 0,
+      version: 102,
+    },
+    seed_budget: {
+      dialect: D,
+      cardinality: "execute",
+      kind: "insert_statement",
+      segments: [
+        { text: "INSERT INTO budget (key, hits, updated_ms) VALUES (" },
+        { param: 1 },
+        { text: ", " },
+        { param: 2 },
+        { text: ", " },
+        { param: 3 },
+        { text: ")" },
+      ],
+      params: ["key", "hits", "updated_ms"],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 3,
+      version: 102,
+    },
+    upsert_budget: {
+      dialect: D,
+      cardinality: "execute",
+      kind: "insert_statement",
+      segments: [
+        { text: "INSERT INTO budget (key, hits, updated_ms) SELECT " },
+        { param: 1 },
+        { text: ", 1, " },
+        { param: 2 },
+        {
+          text: " WHERE true ON CONFLICT(key) DO UPDATE SET hits = budget.hits + 1, updated_ms = excluded.updated_ms WHERE budget.updated_ms < excluded.updated_ms AND budget.hits < ",
+        },
+        { param: 3 },
+      ],
+      params: ["key", "updated_ms", "max_hits"],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 3,
+      version: 102,
+    },
     broken_syntax: {
       dialect: D,
       cardinality: "execute",
@@ -431,6 +488,26 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
   },
 };
 const emptyParams: SQLPlan = { params: { root: "app::empty", fields: [] } };
+const seedBudgetParams: SQLPlan = {
+  params: {
+    root: "app::budget_seed",
+    fields: [
+      { name: "key", kind: "str" },
+      { name: "hits", kind: "int" },
+      { name: "updated_ms", kind: "int" },
+    ],
+  },
+};
+const upsertBudgetParams: SQLPlan = {
+  params: {
+    root: "app::budget_upsert",
+    fields: [
+      { name: "key", kind: "str" },
+      { name: "updated_ms", kind: "int" },
+      { name: "max_hits", kind: "int" },
+    ],
+  },
+};
 const coverParams: SQLPlan = {
   params: { root: "app::cover_parameters", fields: [{ name: "id", kind: "int" }] },
   rows: {
@@ -710,6 +787,71 @@ describe("sqlite pools", () => {
           "sql::row_limit",
         ),
       ).toEqual({ limit: 0n });
+      value(await pools.close(token, 1000n));
+    });
+  });
+  test("execute reports SQLite changes for conditional INSERT SELECT upserts", async () => {
+    await owned(async () => {
+      const token = value(await pools.sqliteOpenMemory());
+      const setup = descriptors.declareDescriptor("", "setup_budget");
+      const seed = descriptors.declareDescriptor("", "seed_budget");
+      const upsert = descriptors.declareDescriptor("", "upsert_budget");
+      value(await pools.execute(setup, emptyParams, token, record("app::empty", [])));
+      value(
+        await pools.execute(
+          seed,
+          seedBudgetParams,
+          token,
+          record("app::budget_seed", [
+            ["key", "peer"],
+            ["hits", 1n],
+            ["updated_ms", 100n],
+          ]),
+        ),
+      );
+      const upsertParams = (key: string, updatedMs: bigint, maxHits: bigint) =>
+        record("app::budget_upsert", [
+          ["key", key],
+          ["updated_ms", updatedMs],
+          ["max_hits", maxHits],
+        ]);
+
+      // Bun.SQL reports count=0 for this successful conditional UPSERT shape.
+      // Can must report SQLite's connection-local changes() value instead.
+      expect(
+        value(
+          await pools.execute(upsert, upsertBudgetParams, token, upsertParams("peer", 200n, 10n)),
+        ),
+      ).toBe(1n);
+      expect(
+        value(
+          await pools.execute(upsert, upsertBudgetParams, token, upsertParams("peer", 150n, 10n)),
+        ),
+      ).toBe(0n);
+      const concurrentCounts = await Promise.all([
+        pools.execute(upsert, upsertBudgetParams, token, upsertParams("peer", 150n, 10n)),
+        pools.execute(upsert, upsertBudgetParams, token, upsertParams("new-peer", 100n, 10n)),
+      ]);
+      expect(concurrentCounts.map(value)).toEqual([0n, 1n]);
+
+      const transactionCount = value(
+        await transactions.withTransaction(
+          token,
+          async (handle: unknown) => {
+            const affected = value(
+              await transactions.execute(
+                upsert,
+                upsertBudgetParams,
+                handle,
+                upsertParams("peer", 300n, 10n),
+              ),
+            );
+            return success(record(COMMIT, [["value", affected]]));
+          },
+          leaves,
+        ),
+      );
+      expect(transactionCount).toBe(1n);
       value(await pools.close(token, 1000n));
     });
   });
