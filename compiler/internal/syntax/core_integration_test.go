@@ -19,12 +19,12 @@ const coreIntegratedSource = `package app
 owner record email
     str address
 
-error failed(str reason)
+error failed{str reason}
 
 scenario checkout
 
 fn email make_email
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -32,7 +32,7 @@ fn email make_email
     ok email(address)
 
 fn str read
-    emits [first::failed]
+    emits {first::failed}
     asserts
         customer:  => ok "fixture" link checkout
     match call first::risky(0)
@@ -40,7 +40,7 @@ fn str read
         ok int got => ok "done"
 
 fn int area_units
-    emits []
+    emits {}
     given
         first::shape value
     asserts
@@ -77,7 +77,7 @@ func TestCoreIntegratedSurfaceRoundTrip(t *testing.T) {
 	for _, want := range []string{
 		"uses [left::model as first, codec]",
 		"owner record email",
-		"error failed(str reason)",
+		"error failed{str reason}",
 		"scenario checkout",
 		"link checkout",
 		"first::failed as failed",

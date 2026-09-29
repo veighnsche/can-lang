@@ -28,11 +28,11 @@ func TestTypeGrammarRoundTrip(t *testing.T) {
 	for _, text := range []string{
 		"int", "str[][]", "option::value<item>", "outer<middle<inner<int>>>",
 		"pair<int[], option::value<str>>[]",
-		"callable int[] () emits []",
-		"callable int () emits [][]",
-		"callable callable int (str) emits [failed] (bool) emits [other<int>]",
-		"choice_arm<option::value<str>> emits [failed][]",
-		"callable choice_arm<int> emits [] (callable str () emits []) emits []",
+		"callable int[] () emits {}",
+		"callable int () emits {}[]",
+		"callable callable int (str) emits {failed} (bool) emits {other<int>}",
+		"choice_arm<option::value<str>> emits {failed}[]",
+		"callable choice_arm<int> emits {} (callable str () emits {}) emits {}",
 	} {
 		t.Run(text, func(t *testing.T) {
 			node := typeFragment(t, text)
@@ -48,11 +48,11 @@ func TestTypeGrammarRoundTrip(t *testing.T) {
 }
 
 func TestCallableArrayOwnership(t *testing.T) {
-	resultArray := typeFragment(t, "callable int[] () emits []").(*CallableType)
+	resultArray := typeFragment(t, "callable int[] () emits {}").(*CallableType)
 	if _, ok := resultArray.Result.(*ArrayType); !ok {
 		t.Fatal("result array lost")
 	}
-	callableArray := typeFragment(t, "callable int () emits [][]").(*ArrayType)
+	callableArray := typeFragment(t, "callable int () emits {}[]").(*ArrayType)
 	callable := callableArray.Element.(*CallableType)
 	if _, ok := callable.Result.(*NamedType); !ok {
 		t.Fatal("array attached to result")
@@ -65,10 +65,11 @@ func TestCallableArrayOwnership(t *testing.T) {
 func TestTypeGrammarRejectsMalformedFragments(t *testing.T) {
 	for _, text := range []string{
 		"", "[]", "(int)", "item<>", "item<int,>", "int<str>",
-		"callable int ()", "callable int (str,) emits []", "callable int () emits [bad,]",
-		"choice_arm<int>", "choice_arm<int, str> emits []", "item<int>=x",
+		"callable int ()", "callable int (str,) emits {}", "callable int () emits {bad,}",
+		"choice_arm<int>", "choice_arm<int, str> emits {}", "item<int>=x",
+		"callable int () emits []", "callable int () emits [failed]", "choice_arm<int> emits [failed]",
 		"int[3]", "item<int", "item<int>>", "int str", "int\nstr",
-		"callable int (\nstr) emits []", strings.Repeat("item<", 257) + "int" + strings.Repeat(">", 257),
+		"callable int (\nstr) emits {}", strings.Repeat("item<", 257) + "int" + strings.Repeat(">", 257),
 	} {
 		t.Run(text[:minLength(len(text), 60)], func(t *testing.T) {
 			file, err := source.New("bad.can", text)
@@ -118,7 +119,7 @@ func TestGenericClosersPreserveLexerResult(t *testing.T) {
 }
 
 func FuzzTypeParser(f *testing.F) {
-	for _, text := range []string{"int", "outer<inner<str>>", "callable int[] () emits []", "choice_arm<int> emits []"} {
+	for _, text := range []string{"int", "outer<inner<str>>", "callable int[] () emits {}", "choice_arm<int> emits {}"} {
 		f.Add(text)
 	}
 	f.Fuzz(func(t *testing.T, text string) {

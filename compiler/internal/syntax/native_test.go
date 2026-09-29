@@ -28,7 +28,7 @@ func TestNativeConnectionFetchLLM(t *testing.T) {
         model "example"
 
 fetch str load from service
-    emits []
+    emits {}
     given
         str path
     get path
@@ -38,7 +38,7 @@ fetch str load from service
         accept = "text/plain"
 
 llm str summarize from service
-    emits []
+    emits {}
     given
         str instructions
     state
@@ -77,11 +77,11 @@ llm str summarize from service
 func TestNativeSectionRejection(t *testing.T) {
 	for _, text := range []string{
 		"fetch str load from service\n    get \"/\"\n",
-		"fetch str load from service\n    emits []\n    get \"/\"\n    body text \"bad\"\n",
-		"fetch str load from service\n    emits []\n    get \"/\"\n    headers\n        accept = \"text/plain\"\n    query\n        q = \"late\"\n",
-		"llm str make from service\n    emits []\n    given\n        near str secret\n    asks secret\n",
-		"llm str make from service\n    emits []\n    state\n        str ...items\n    asks \"x\"\n",
-		"llm str make from service\n    emits []\n    asks \"x\"\n    ok \"body\"\n",
+		"fetch str load from service\n    emits {}\n    get \"/\"\n    body text \"bad\"\n",
+		"fetch str load from service\n    emits {}\n    get \"/\"\n    headers\n        accept = \"text/plain\"\n    query\n        q = \"late\"\n",
+		"llm str make from service\n    emits {}\n    given\n        near str secret\n    asks secret\n",
+		"llm str make from service\n    emits {}\n    state\n        str ...items\n    asks \"x\"\n",
+		"llm str make from service\n    emits {}\n    asks \"x\"\n    ok \"body\"\n",
 		"connection service\n    auth basic env \"TOKEN\"\n",
 	} {
 		if r := nativeParse(t, text); r.OK() {
@@ -92,14 +92,14 @@ func TestNativeSectionRejection(t *testing.T) {
 
 func TestQuestionJudgeArmGrammar(t *testing.T) {
 	text := `noul bool decide from service
-    emits []
+    emits {}
     asks "Proceed?"
     minimum 0.6
         false "No" => ok false
         true "Yes" => ok % > 0.5
 
 choice str route from service
-    emits []
+    emits {}
     asks "Where?"
     confidence as confidence_value
     minimum 0.6 => ok "fallback"
@@ -107,14 +107,14 @@ choice str route from service
         support "Support" => ok "support"
 
 record weights choice float weighted from service
-    emits []
+    emits {}
     confidence as certainty
     asks "Where?"
         sales "Sales" => ok %
         support "Support" => ok %
 
 score float severity from service
-    emits []
+    emits {}
     score as value
     confidence as confidence_value
     minimum 0.5 => ok -1.0
@@ -124,13 +124,13 @@ score float severity from service
         ok => ok value
 
 record levels score float level_weights from service
-    emits []
+    emits {}
     asks "Severity?"
         low "Low" => ok %
         high "High" => ok %
 
 choice str dynamic from service
-    emits []
+    emits {}
     given
         choice_option[] options
     asks "Choose"
@@ -138,14 +138,14 @@ choice str dynamic from service
         ok str selected => ok selected
 
 judge str classify from service
-    emits []
+    emits {}
     state
         str text
     call dynamic([]) as str result
     ok => ok result
 
 choice_arm float reusable
-    emits []
+    emits {}
     describes "Helpful"
     ok %
 `
@@ -172,15 +172,15 @@ choice_arm float reusable
 
 func TestNativeQuestionClosureAndProbability(t *testing.T) {
 	for _, text := range []string{
-		"noul bool q from c\n    emits []\n    asks \"x\"\n        true \"x\" => ok true\n        true \"y\" => ok false\n",
-		"choice str q from c\n    emits []\n    asks \"x\"\n    confidence as c\n        x \"x\" => ok \"x\"\n",
-		"record r choice str q from c\n    emits []\n    asks \"x\"\n    minimum 0.5 => ok \"x\"\n        x \"x\" => ok \"x\"\n",
-		"score float q from c\n    emits []\n    asks \"x\"\n        low \"low\"\n",
-		"score float q from c\n    emits []\n    asks \"x\"\n        low \"low\"\n        ok => ok %\n",
-		"choice str q from c\n    emits []\n    asks \"x\"\n        x \"x\" => ok \"x\"\n        ok str selected => ok selected\n",
-		"judge str q from c\n    emits []\n    ok => ok \"x\"\n",
-		"judge str q from c\n    emits []\n    call question() as str answer\n        ok => ok answer\n    ok => ok answer\n",
-		"llm str q from c\n    emits []\n    asks %\n",
+		"noul bool q from c\n    emits {}\n    asks \"x\"\n        true \"x\" => ok true\n        true \"y\" => ok false\n",
+		"choice str q from c\n    emits {}\n    asks \"x\"\n    confidence as c\n        x \"x\" => ok \"x\"\n",
+		"record r choice str q from c\n    emits {}\n    asks \"x\"\n    minimum 0.5 => ok \"x\"\n        x \"x\" => ok \"x\"\n",
+		"score float q from c\n    emits {}\n    asks \"x\"\n        low \"low\"\n",
+		"score float q from c\n    emits {}\n    asks \"x\"\n        low \"low\"\n        ok => ok %\n",
+		"choice str q from c\n    emits {}\n    asks \"x\"\n        x \"x\" => ok \"x\"\n        ok str selected => ok selected\n",
+		"judge str q from c\n    emits {}\n    ok => ok \"x\"\n",
+		"judge str q from c\n    emits {}\n    call question() as str answer\n        ok => ok answer\n    ok => ok answer\n",
+		"llm str q from c\n    emits {}\n    asks %\n",
 	} {
 		if result := nativeParse(t, text); result.OK() {
 			t.Fatalf("accepted invalid native form: %s", text)

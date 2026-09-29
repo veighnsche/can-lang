@@ -23,7 +23,7 @@ func TestScenarioDeclarationParsing(t *testing.T) {
 }
 
 func TestScenarioRowParsing(t *testing.T) {
-	text := "fn str read\n    emits []\n    asserts\n        unit: => ok \"fixture\"\n    match call text::from_int(7)\n        when\n            scenario checkout: 7 => ok \"fixture\"\n            unit: 7 => ok \"fixture\"\n        ok str result => ok result\n"
+	text := "fn str read\n    emits {}\n    asserts\n        unit: => ok \"fixture\"\n    match call text::from_int(7)\n        when\n            scenario checkout: 7 => ok \"fixture\"\n            unit: 7 => ok \"fixture\"\n        ok str result => ok result\n"
 	result := nativeParse(t, text)
 	if !result.OK() {
 		t.Fatal(result.Diagnostics)
@@ -57,7 +57,7 @@ func TestScenarioRowParsing(t *testing.T) {
 }
 
 func TestScenarioUseRowParsing(t *testing.T) {
-	text := "fn str read\n    emits []\n    asserts\n        unit: => ok \"fixture\"\n    match call find_receipt(\"r-7\")\n        when\n            scenario checkout: use absent_receipt(\"r-7\")\n        ok str found => ok found\n"
+	text := "fn str read\n    emits {}\n    asserts\n        unit: => ok \"fixture\"\n    match call find_receipt(\"r-7\")\n        when\n            scenario checkout: use absent_receipt(\"r-7\")\n        ok str found => ok found\n"
 	result := nativeParse(t, text)
 	if !result.OK() {
 		t.Fatal(result.Diagnostics)
@@ -77,7 +77,7 @@ func TestScenarioUseRowParsing(t *testing.T) {
 }
 
 func TestScenarioSelectorKeepsPlainMeaning(t *testing.T) {
-	text := "fn str read\n    emits []\n    asserts\n        scenario: => ok \"fixture\"\n    match call text::from_int(7)\n        when\n            scenario: 7 => ok \"fixture\"\n        ok str result => ok result\n"
+	text := "fn str read\n    emits {}\n    asserts\n        scenario: => ok \"fixture\"\n    match call text::from_int(7)\n        when\n            scenario: 7 => ok \"fixture\"\n        ok str result => ok result\n"
 	result := nativeParse(t, text)
 	if !result.OK() {
 		t.Fatal(result.Diagnostics)
@@ -93,7 +93,7 @@ func TestScenarioSelectorKeepsPlainMeaning(t *testing.T) {
 }
 
 func TestLinkClauseParsing(t *testing.T) {
-	text := "fn str read_customer\n    emits []\n    asserts\n        customer: => ok \"fixture\" link helper::checkout\n        pair: => ok \"both\" link helper::checkout, retry\n        bare: => ok link helper::checkout\n    ok call helper::read()\n"
+	text := "fn str read_customer\n    emits {}\n    asserts\n        customer: => ok \"fixture\" link helper::checkout\n        pair: => ok \"both\" link helper::checkout, retry\n        bare: => ok link helper::checkout\n    ok call helper::read()\n"
 	result := nativeParse(t, text)
 	if !result.OK() {
 		t.Fatal(result.Diagnostics)
@@ -134,7 +134,7 @@ func TestLinkClauseParsing(t *testing.T) {
 }
 
 func TestLinkValueNamedLinkKeepsMeaning(t *testing.T) {
-	source := "fn str read\n    emits []\n    given\n        str link\n    asserts\n        sample: \"x\" => ok link\n    ok link\n"
+	source := "fn str read\n    emits {}\n    given\n        str link\n    asserts\n        sample: \"x\" => ok link\n    ok link\n"
 	result := nativeParse(t, source)
 	if !result.OK() {
 		t.Fatal(result.Diagnostics)
@@ -152,10 +152,10 @@ func TestLinkValueNamedLinkKeepsMeaning(t *testing.T) {
 func TestScenarioLinkRejects(t *testing.T) {
 	cases := map[string]string{
 		"missing name":   "scenario\n",
-		"missing colon":  "fn str read\n    emits []\n    asserts\n        unit: => ok \"x\"\n    match call text::from_int(7)\n        when\n            scenario checkout 7 => ok \"x\"\n        ok str result => ok result\n",
-		"missing target": "fn str read\n    emits []\n    asserts\n        customer: => ok \"x\" link\n    ok \"x\"\n",
-		"dangling comma": "fn str read\n    emits []\n    asserts\n        customer: => ok \"x\" link helper::checkout,\n    ok \"x\"\n",
-		"use with link":  "fn str read\n    emits []\n    asserts\n        unit: => ok \"x\"\n    match call find(1)\n        when\n            sample: use t(1) link helper::checkout\n        ok str r => ok r\n",
+		"missing colon":  "fn str read\n    emits {}\n    asserts\n        unit: => ok \"x\"\n    match call text::from_int(7)\n        when\n            scenario checkout 7 => ok \"x\"\n        ok str result => ok result\n",
+		"missing target": "fn str read\n    emits {}\n    asserts\n        customer: => ok \"x\" link\n    ok \"x\"\n",
+		"dangling comma": "fn str read\n    emits {}\n    asserts\n        customer: => ok \"x\" link helper::checkout,\n    ok \"x\"\n",
+		"use with link":  "fn str read\n    emits {}\n    asserts\n        unit: => ok \"x\"\n    match call find(1)\n        when\n            sample: use t(1) link helper::checkout\n        ok str r => ok r\n",
 	}
 	for name, text := range cases {
 		t.Run(name, func(t *testing.T) {

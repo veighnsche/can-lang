@@ -14,7 +14,7 @@ func TestCompletionPatternsAcceptExactHeads(t *testing.T) {
 		"    int result = match call race\n        fetch()\n        ok int value => ok value\n        all_failed<int> as first => ok 0\n    ok result\n",
 		"    match call concurrent with error\n        fetch()\n            ok int value => ok\n            failure<int> as exact => ok\n    ok 0\n",
 	} {
-		text := testHeader + "fn int example\n    emits []\n    asserts\n        sample: => ok 0\n" + body
+		text := testHeader + "fn int example\n    emits {}\n    asserts\n        sample: => ok 0\n" + body
 		// Exact heads, explicit aliases, and unaliased exact forwarding are
 		// valid syntax; resolution against the matched bound happens in check.
 		parseFile(t, text)
@@ -26,7 +26,7 @@ func TestCompletionPatternsRejectAliasWithoutArrow(t *testing.T) {
 		"    match call fetch()\n        ok int value => ok value\n        failure<int> as exact\n",
 		"    match call fetch()\n        ok int value => ok value\n        failure as exact\n",
 	} {
-		text := testHeader + "fn int example\n    emits []\n    asserts\n        sample: => ok 0\n" + body
+		text := testHeader + "fn int example\n    emits {}\n    asserts\n        sample: => ok 0\n" + body
 		file, err := source.New("alias-pattern.can", text)
 		if err != nil {
 			t.Fatal(err)
@@ -40,6 +40,6 @@ func TestCompletionPatternsRejectAliasWithoutArrow(t *testing.T) {
 
 func TestNumericFieldDiagnosticFixturesRoundTrip(t *testing.T) {
 	for _, value := range []string{"1", "1.5", "1e3", "-1", "1 /* separator */ .other"} {
-		parseFile(t, testHeader+"fn int example\n    emits []\n    asserts\n        sample: => ok 0\n    ok "+value+" /* token separator */ .value\n")
+		parseFile(t, testHeader+"fn int example\n    emits {}\n    asserts\n        sample: => ok 0\n    ok "+value+" /* token separator */ .value\n")
 	}
 }

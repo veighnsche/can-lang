@@ -7,7 +7,7 @@ import (
 )
 
 func coordinationFunction(body string) string {
-	return testHeader + "fn void main\n    emits []\n    asserts\n        smoke: => ok\n" + body + "    ok\n"
+	return testHeader + "fn void main\n    emits {}\n    asserts\n        smoke: => ok\n" + body + "    ok\n"
 }
 
 func TestCoordinationGrammarAndRendering(t *testing.T) {

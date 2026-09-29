@@ -1035,17 +1035,17 @@ A function-valued input follows the usual type-before-name declaration shape:
 
 ```text
 given
-    callable int (int) emits [] transform
+    callable int (int) emits {} transform
 ```
 
 Every callable type spells its error bound, including an empty one.
 
-Place a callable's `emits [...]` annotation after its input types and before the binding
+Place a callable's `emits {...}` annotation after its input types and before the binding
 name:
 
 ```text
 given
-    callable receipt () emits [postgres_failed, redis_failed] operation
+    callable receipt () emits {postgres_failed, redis_failed} operation
 ```
 
 Here `receipt` is the success return type, and `operation` is the callable input
@@ -1090,7 +1090,7 @@ named binding does not satisfy the requirement.
 
 ```text
 fn int multiply
-    emits []
+    emits {}
     given
         near int factor
         int number
@@ -1165,7 +1165,7 @@ that callable is invoked. Existing `near` capture rules remain unchanged.
 
 Record methods support chaining on one source line. One leading `call` covers
 the whole chain; each subsequent method receives the preceding method's returned
-value. For methods declaring `emits []`, an example is:
+value. For methods declaring `emits {}`, an example is:
 
 ```text
 call panel.resize(5, 4).area()
@@ -1203,7 +1203,7 @@ function-body indentation. There is no separate business-logic heading.
 
 ```text
 fn int add
-    emits []
+    emits {}
     given
         int left
         int right
@@ -1245,11 +1245,11 @@ Use `fn void <name>` for a function whose successful completion carries no value
 Successful completion and assertion expectations for such a function use `ok`.
 This does not establish `void` as a type usable for inputs, fields or locals.
 
-`emits [...]` is an authored upper bound on function-specific domain errors.
+`emits {...}` is an authored upper bound on function-specific domain errors.
 Runtime failures such as fatal out-of-memory conditions are outside `emits`;
 this does not establish a runtime recovery or supervision policy. The implementation may
 produce only listed domain errors, and callers must handle or forward the declared
-set. An empty set is written explicitly as `emits []`; it does not promise freedom
+set. An empty set is written explicitly as `emits {}`; it does not promise freedom
 from primitive faults or runtime/resource failures. [C9](technical-spec.md#c9) and the companion catalogue fix standard-failure and
 platform-domain mapping within the compiler-owned Bun boundary.
 
@@ -1294,12 +1294,12 @@ the outcome instead of executing the dependency. Normal execution invokes the
 real dependency.
 
 The following excerpt uses the catalogue `clock::wall_millis()` operation,
-which returns `int` with `emits []`:
+which returns `int` with `emits {}`:
 
 ```text
 /// Reads the current time in milliseconds.
 fn int read_millis
-    emits []
+    emits {}
     asserts
         first_read: => ok 1726920000000
         later_read: => ok 1726920001000
@@ -1395,7 +1395,7 @@ action load_invoice
 POST requires a `json` or `form` record body; GET carries none. The
 handler is a named non-generic function whose inputs are the captures in
 path order plus the body, whose result is the action result, and whose
-bound is `emits []`: every outcome, including validation, conflict,
+bound is `emits {}`: every outcome, including validation, conflict,
 forbidden and unavailable, is data in the result variant. Cases map each
 result leaf to a 200--599 status that carries a representation. Actions
 are package symbols: they export through `provides`, resolve through
@@ -1506,7 +1506,7 @@ callee's success type; it is not a runtime type test or cast.
 
 ```text
 fn int lookup_or_zero
-    emits []
+    emits {}
     given
         str key
     asserts
@@ -1549,7 +1549,7 @@ Use terminal `relay call` to forward every outcome of a call:
 
 ```text
 fn int find_number
-    emits [missing]
+    emits {missing}
     given
         str key
     asserts
@@ -1621,7 +1621,7 @@ This complete example demonstrates matching and ignoring the second element:
 ```text
 /// Returns the values with the second element removed, if present.
 fn int[] remove_second
-    emits []
+    emits {}
     given
         int[] values
     asserts
@@ -1666,7 +1666,7 @@ This permits value-producing matches without making intermediate bindings the
 preferred style. It does not establish additional expression-placement rules
 or general completion storage.
 
-The following excerpt assumes `record_decision` returns `void` with `emits []`.
+The following excerpt assumes `record_decision` returns `void` with `emits {}`.
 Multiple steps use `pattern => do`
 followed by an indented body. `do` denotes multiple steps, not merely multiple
 lines. Arms have no prefix keyword.
@@ -1685,7 +1685,7 @@ not require `do`.
 
 ```text
 fn int sign
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -1748,7 +1748,7 @@ Declare an error with its name, then parenthesized type-before-name payload
 fields:
 
 ```text
-error below_minimum(int actual, int minimum)
+error below_minimum{int actual, int minimum}
 ```
 
 Error payload fields are declared in parentheses after the error name (and any
@@ -1768,7 +1768,7 @@ both in business logic and assertion expectations.
 
 ```text
 fn int require_minimum
-    emits [below_minimum]
+    emits {below_minimum}
     given
         int value
         int minimum
@@ -1780,7 +1780,7 @@ fn int require_minimum
         true => below_minimum(value, minimum)
 
 fn int clamp_minimum
-    emits []
+    emits {}
     given
         int value
         int minimum
@@ -1817,7 +1817,7 @@ record dimensions
     int height
 
 fn int area
-    emits []
+    emits {}
     given
         dimensions dimensions
     asserts
@@ -1835,7 +1835,7 @@ Variant matching uses bare type names as specified below.
 
 ```text
 fn bool has_zero_side
-    emits []
+    emits {}
     given
         dimensions dimensions
     asserts
@@ -1853,7 +1853,7 @@ no replacement-list parentheses; two or more require them.
 
 ```text
 fn dimensions widen
-    emits []
+    emits {}
     given
         dimensions dimensions
         int amount
@@ -1862,7 +1862,7 @@ fn dimensions widen
     ok dimensions with width = dimensions.width + amount
 
 fn dimensions enlarge
-    emits []
+    emits {}
     given
         dimensions dimensions
         int amount
@@ -1948,7 +1948,7 @@ supported.
 
 ```text
 fn int[] repeat_twice
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -1979,7 +1979,7 @@ adds one element and has an empty declared domain-error set.
 
 ```text
 fn int[] add_score
-    emits []
+    emits {}
     given
         int[] scores
         int score

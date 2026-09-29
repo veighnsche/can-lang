@@ -8,7 +8,7 @@ connection service
     timeout_ms 5000
     max_body_bytes 8192
 fetch receipt load from service
-    emits [http::request_failed]
+    emits {http::request_failed}
     asserts
         decoded: => ok receipt(7)
             using raw "fixtures/load.json"
@@ -46,7 +46,7 @@ connection classifier
         protocol "typesafe_systemone_v1"
         model "jev-latest"
 fn float report
-    emits [codec::invalid_data, io::write_failed]
+    emits {codec::invalid_data, io::write_failed}
     given
         float probability
         str marker
@@ -63,7 +63,7 @@ fn float report
             io::write_failed
             ok int written => ok probability
 noul float likelihood from classifier
-    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    emits {ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed}
     given
         str description
     asks description
@@ -71,7 +71,7 @@ noul float likelihood from classifier
         true "Yes" => relay call report(%, "T")
         false "No" => relay call report(%, "F")
 judge float assess from classifier
-    emits [http::request_failed, ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    emits {http::request_failed, ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed}
     state
         int amount
         float signed_zero
@@ -96,7 +96,7 @@ wrap guarded from assess
     handles emitted
         ai::invalid_answer as invalid => ok 0.0
 fn float probe
-    emits [http::request_failed, ai::invalid_question, codec::invalid_data, io::write_failed]
+    emits {http::request_failed, ai::invalid_question, codec::invalid_data, io::write_failed}
     asserts
         sample: => ok 0.5
     match call guarded((9007199254740993, -0.0))
@@ -108,17 +108,17 @@ fn float probe
         io::write_failed
         ok float value => ok value
 fn receipt via_reference
-    emits [http::request_failed]
+    emits {http::request_failed}
     asserts
         sample: => ok receipt(0)
-    callable receipt () emits [http::request_failed] action = callable settled
+    callable receipt () emits {http::request_failed} action = callable settled
     match call action()
         when
             sample: => ok receipt(0)
         http::request_failed
         ok receipt output => ok output
 fn void main
-    emits [http::request_failed, ai::invalid_question, codec::invalid_data, io::write_failed, checks::failed]
+    emits {http::request_failed, ai::invalid_question, codec::invalid_data, io::write_failed, checks::failed}
     given
         str[] args
     asserts

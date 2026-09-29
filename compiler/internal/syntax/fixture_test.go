@@ -64,7 +64,7 @@ func TestFixtureGenericTargetParsing(t *testing.T) {
 }
 
 func TestUseRowParsing(t *testing.T) {
-	text := "fn receipt fetch_cached\n    emits [http::request_failed]\n    given\n        str requested\n    asserts\n        sample: \"r-7\" => ok receipt(0)\n    match call find_receipt(requested)\n        when\n            sample: use absent_receipt(\"r-7\")\n        missing_receipt => ok receipt(0)\n        ok receipt found => ok found\n"
+	text := "fn receipt fetch_cached\n    emits {http::request_failed}\n    given\n        str requested\n    asserts\n        sample: \"r-7\" => ok receipt(0)\n    match call find_receipt(requested)\n        when\n            sample: use absent_receipt(\"r-7\")\n        missing_receipt => ok receipt(0)\n        ok receipt found => ok found\n"
 	result := nativeParse(t, text)
 	if !result.OK() {
 		t.Fatal(result.Diagnostics)
@@ -93,7 +93,7 @@ func TestFixtureDeclarationRejects(t *testing.T) {
 		"empty cases":       "fixture absent_receipt for find_receipt\n    cases\n",
 		"missing target":    "fixture absent_receipt\n    cases\n        1 => ok 1\n",
 		"spread case input": "fixture absent_receipt for find_receipt\n    cases\n        ...key => ok 1\n",
-		"use with mode":     "fn receipt fetch_cached\n    emits []\n    asserts\n        sample: => ok receipt(0)\n    match call find_receipt(\"r-7\")\n        when\n            sample: use absent_receipt(\"r-7\")\n                using raw \"fixtures/absent.json\"\n        ok receipt found => ok found\n",
+		"use with mode":     "fn receipt fetch_cached\n    emits {}\n    asserts\n        sample: => ok receipt(0)\n    match call find_receipt(\"r-7\")\n        when\n            sample: use absent_receipt(\"r-7\")\n                using raw \"fixtures/absent.json\"\n        ok receipt found => ok found\n",
 	}
 	for name, text := range cases {
 		t.Run(name, func(t *testing.T) {

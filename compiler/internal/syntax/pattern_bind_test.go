@@ -9,7 +9,7 @@ import (
 // pattern depth. Bare identifiers are nominal leaf tests, never captures.
 func TestBindPatternNodes(t *testing.T) {
 	program := testHeader + `fn int inspect
-    emits []
+    emits {}
     given
         int[] values
     asserts
@@ -44,7 +44,7 @@ func TestBindPatternNodes(t *testing.T) {
 
 func TestBindPatternNestedAlternatives(t *testing.T) {
 	program := testHeader + `fn int inspect
-    emits []
+    emits {}
     given
         shape value
     asserts
@@ -74,7 +74,7 @@ func TestBindFallsBackToNominal(t *testing.T) {
 	// `bind` followed by anything but a name keeps its nominal reading, so
 	// a leaf literally named bind is still addressable.
 	program := testHeader + `fn int inspect
-    emits []
+    emits {}
     given
         shape value
     asserts

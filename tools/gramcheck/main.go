@@ -34,7 +34,8 @@ type sampleCase struct {
 
 var cases = []sampleCase{
 	{"keyword.control.can", []string{"fn void main", "record", "variant failure", "given", "asserts", "call", "callable", "match value", "chain", "do", "ok", "relay", " on ", " with ", " and ", " or ", " not ", " is ", " as ", "near", "when", "concurrent", "race"}},
-	{"keyword.declaration.error.can", []string{"error unavailable(str reason)"}},
+	{"keyword.declaration.error.can", []string{"error unavailable{str reason}"}},
+	{"punctuation.definition.error.can", []string{"error unavailable{str reason}", "emits {}"}},
 	{"entity.name.namespace.can", []string{"package offline", "package lexical"}},
 	{"storage.type.primitive.can", []string{"str path", "int value", "float ratio", "bool", "void"}},
 	{"storage.type.generic.can", []string{"<int>", "<account_row>", "record box<item>"}},

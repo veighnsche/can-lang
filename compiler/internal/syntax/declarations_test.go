@@ -78,11 +78,11 @@ func assertSyntaxShape(t *testing.T, a, b reflect.Value) {
 }
 
 func TestParserLocationsAndGroupingSurviveRendering(t *testing.T) {
-	text := testHeader + "fn void main\n    emits []\n    asserts\n        smile: => ok\n    call f(a + b)\n    call g((a + b))\n    call h(())\n    call i((a, b))\n    str text = \"\"\"😀\nsecond line\"\"\" + suffix\n    ok\n"
+	text := testHeader + "fn void main\n    emits {}\n    asserts\n        smile: => ok\n    call f(a + b)\n    call g((a + b))\n    call h(())\n    call i((a, b))\n    str text = \"\"\"😀\nsecond line\"\"\" + suffix\n    ok\n"
 	for _, program := range []string{text, "\ufeff" + strings.ReplaceAll(text, "\n", "\r\n")} {
 		parseFile(t, program)
 	}
-	bad := testHeader + "fn void main\n    emits []\n    asserts\n        smile: => ok\n    call f(\"😀\",)\n    ok\n"
+	bad := testHeader + "fn void main\n    emits {}\n    asserts\n        smile: => ok\n    call f(\"😀\",)\n    ok\n"
 	file, err := source.New("bad.can", bad)
 	if err != nil {
 		t.Fatal(err)
@@ -172,13 +172,13 @@ func TestCurrentDeclarationsAndBodies(t *testing.T) {
 	program := testHeader + `record finished
 record box<item>
     item value
-error missing(str key)
+error missing{str key}
 variant result<item>
     box<item>
     finished
 int max_retries = 3
 fn box<item> wrap<item>
-    emits []
+    emits {}
     given
         item value
     asserts
@@ -186,12 +186,12 @@ fn box<item> wrap<item>
     ok box<item>(value)
 fn int area
     on box<int> shape
-    emits []
+    emits {}
     asserts
         sample: box<int>(2) => => ok 2
     ok shape.value
 fn int lookup
-    emits [missing]
+    emits {missing}
     given
         str key
     asserts
@@ -202,7 +202,7 @@ fn int lookup
         ok
         missing
 fn int run
-    emits [missing]
+    emits {missing}
     asserts
         done: => ok 1
     match chain
@@ -239,7 +239,7 @@ fn int run
 
 func TestPatternNodes(t *testing.T) {
 	program := testHeader + `fn int inspect
-    emits []
+    emits {}
     given
         pair[] values
     asserts
@@ -261,12 +261,12 @@ func TestFileParserRejectsObsoleteAndMalformedGrammar(t *testing.T) {
 	for _, fragment := range []string{
 		"rev 1\n", "extern fn int thing\n", "dec value = d\"1.0\"\n",
 		"record box\n    int value,\n", "error 1001 missing()\n", "error 1001 bad(int x,)\n", "variant empty\n",
-		"fn int bad\n    emits []\n    ok 1\n",
-		"fn int bad\n    asserts\n        a: => ok 1\n    emits []\n    ok 1\n",
-		"fn int bad\n    emits []\n    asserts\n        a: => ok 1\n        ok 1\n",
-		"fn int bad\n    emits []\n    asserts\n        a: => ok 1\n    ok 1\n    int x = 2\n",
-		"fn int bad\n    emits []\n    given []\n    asserts\n        a: => ok 1\n    ok 1\n",
-		"fn str bad\n    emits []\n    asserts\n        a: => ok \"\"\"a\nb\"\"\"\n    ok \"x\"\n",
+		"fn int bad\n    emits {}\n    ok 1\n",
+		"fn int bad\n    asserts\n        a: => ok 1\n    emits {}\n    ok 1\n",
+		"fn int bad\n    emits {}\n    asserts\n        a: => ok 1\n        ok 1\n",
+		"fn int bad\n    emits {}\n    asserts\n        a: => ok 1\n    ok 1\n    int x = 2\n",
+		"fn int bad\n    emits {}\n    given []\n    asserts\n        a: => ok 1\n    ok 1\n",
+		"fn str bad\n    emits {}\n    asserts\n        a: => ok \"\"\"a\nb\"\"\"\n    ok \"x\"\n",
 	} {
 		file, err := source.New("bad.can", testHeader+fragment)
 		if err != nil {
@@ -283,7 +283,7 @@ func TestFileParserRejectsObsoleteAndMalformedGrammar(t *testing.T) {
 }
 
 func TestCompletionRegionsRejectAmbiguousOrUnadmittedForms(t *testing.T) {
-	function := testHeader + "fn int bad\n    emits []\n    asserts\n        sample: => ok 1\n"
+	function := testHeader + "fn int bad\n    emits {}\n    asserts\n        sample: => ok 1\n"
 	for _, body := range []string{
 		"    match true\n        false => ok 0\n        true => do\n            ok 1\n",
 		"    int value = match call f()\n        ok int x => ok x\n    ok value\n",
@@ -311,7 +311,7 @@ func TestCompletionRegionsRejectAmbiguousOrUnadmittedForms(t *testing.T) {
 
 func FuzzFileParser(f *testing.F) {
 	f.Add(testHeader)
-	f.Add(testHeader + "fn int one\n    emits []\n    asserts\n        one: => ok 1\n    ok 1\n")
+	f.Add(testHeader + "fn int one\n    emits {}\n    asserts\n        one: => ok 1\n    ok 1\n")
 	fixture, err := os.ReadFile("../../testdata/current/parser/offline.can")
 	if err != nil {
 		f.Fatal(err)
@@ -346,4 +346,99 @@ func FuzzFileParser(f *testing.F) {
 			}
 		}
 	})
+}
+
+func TestErrorDeclarationBraces(t *testing.T) {
+	file := parseFile(t, testHeader+`error empty{}
+error missing{str key}
+error pair{str key, int code}
+error boxed<item>{item value}
+`)
+	decls := file.Declarations
+	if len(decls) != 4 {
+		t.Fatalf("declarations: %d", len(decls))
+	}
+	empty := decls[0].(*ErrorDecl)
+	if empty.Name.Text != "empty" || len(empty.Fields) != 0 {
+		t.Fatalf("empty decl: %+v", empty)
+	}
+	missing := decls[1].(*ErrorDecl)
+	if missing.Name.Text != "missing" || len(missing.Fields) != 1 || missing.Fields[0].Name.Text != "key" {
+		t.Fatalf("missing decl: %+v", missing)
+	}
+	if FormatType(missing.Fields[0].Type) != "str" {
+		t.Fatalf("missing field type: %s", FormatType(missing.Fields[0].Type))
+	}
+	pair := decls[2].(*ErrorDecl)
+	if len(pair.Fields) != 2 || pair.Fields[1].Name.Text != "code" {
+		t.Fatalf("pair decl: %+v", pair)
+	}
+	boxed := decls[3].(*ErrorDecl)
+	if len(boxed.Parameters) != 1 || boxed.Parameters[0].Text != "item" {
+		t.Fatalf("generic decl: %+v", boxed)
+	}
+	rendered := Format(file)
+	for _, want := range []string{"error empty{}", "error missing{str key}", "error pair{str key, int code}", "error boxed<item>{item value}"} {
+		if !strings.Contains(rendered, want) {
+			t.Fatalf("rendered decl omits %q:\n%s", want, rendered)
+		}
+	}
+	for _, text := range []string{
+		testHeader + "error missing(str key)\n",
+		testHeader + "error empty()\n",
+		testHeader + "error boxed<item>(item value)\n",
+	} {
+		file, err := source.New("bad.can", text)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if result := Parse(file); result.OK() {
+			t.Fatalf("accepted old error declaration: %q", text)
+		}
+	}
+}
+
+func TestFiniteErrorBoundBraces(t *testing.T) {
+	// The terminal keeps paren construction until N01 admits braces; F04
+	// migrates it to missing{"x"}.
+	file := parseFile(t, testHeader+`fn int load
+    emits {missing, other}
+    asserts
+        sample: => ok 1
+    missing("x")
+fn void quiet
+    emits {}
+    asserts
+        sample: => ok
+    ok
+`)
+	if len(file.Declarations) != 2 {
+		t.Fatalf("declarations: %d", len(file.Declarations))
+	}
+	load := file.Declarations[0].(*FunctionDecl)
+	if len(load.Errors.Types) != 2 || FormatType(load.Errors.Types[1]) != "other" {
+		t.Fatalf("finite bound: %+v", load.Errors)
+	}
+	quiet := file.Declarations[1].(*FunctionDecl)
+	if len(quiet.Errors.Types) != 0 {
+		t.Fatalf("empty bound: %+v", quiet.Errors)
+	}
+	rendered := Format(file)
+	for _, want := range []string{"emits {missing, other}", "emits {}"} {
+		if !strings.Contains(rendered, want) {
+			t.Fatalf("rendered bound omits %q:\n%s", want, rendered)
+		}
+	}
+	for _, text := range []string{
+		testHeader + "fn int load\n    emits [missing]\n    asserts\n        sample: => ok 1\n    ok 1\n",
+		testHeader + "fn void quiet\n    emits []\n    asserts\n        sample: => ok\n    ok\n",
+	} {
+		file, err := source.New("bad.can", text)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if result := Parse(file); result.OK() {
+			t.Fatalf("accepted old finite bound: %q", text)
+		}
+	}
 }

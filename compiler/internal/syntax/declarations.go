@@ -183,9 +183,9 @@ func (p *parser) declaration() Declaration {
 		p.take()
 		name := p.expect(Name)
 		parameters := p.parameters()
-		p.expect("(")
+		p.expect("{")
 		var fields []Field
-		if !p.at(")") {
+		if !p.at("}") {
 			for {
 				fields = append(fields, p.field())
 				if !p.at(",") {
@@ -194,7 +194,7 @@ func (p *parser) declaration() Declaration {
 				p.take()
 			}
 		}
-		p.expect(")")
+		p.expect("}")
 		p.expect(Newline)
 		return &ErrorDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, Name: name, Parameters: parameters, Fields: fields}
 	default:

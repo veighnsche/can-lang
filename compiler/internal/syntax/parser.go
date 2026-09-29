@@ -109,9 +109,9 @@ func (p *parser) errorBound() ErrorBound {
 	if p.word("calculated") {
 		p.fail("emits calculated is only admitted on wrap declarations")
 	}
-	p.expect("[")
-	types := p.typeList("]")
-	p.expect("]")
+	p.expect("{")
+	types := p.typeList("}")
+	p.expect("}")
 	return ErrorBound{Span: p.span(start), Types: types}
 }
 
@@ -215,9 +215,9 @@ func FormatType(node TypeNode) string {
 	case *ArrayType:
 		return FormatType(n.Element) + "[]"
 	case *CallableType:
-		return "callable " + FormatType(n.Result) + " (" + list(n.Inputs) + ") emits [" + list(n.Errors.Types) + "]"
+		return "callable " + FormatType(n.Result) + " (" + list(n.Inputs) + ") emits {" + list(n.Errors.Types) + "}"
 	case *ChoiceArmType:
-		return "choice_arm<" + FormatType(n.Result) + "> emits [" + list(n.Errors.Types) + "]"
+		return "choice_arm<" + FormatType(n.Result) + "> emits {" + list(n.Errors.Types) + "}"
 	default:
 		panic("unknown type node")
 	}

@@ -198,7 +198,7 @@ func formatActionInput(input *ActionInput) string {
 	}
 	return row
 }
-func formatBound(bound ErrorBound) string { return "emits [" + formatTypes(bound.Types) + "]" }
+func formatBound(bound ErrorBound) string { return "emits {" + formatTypes(bound.Types) + "}" }
 func formatParameters(parameters []Token) string {
 	if len(parameters) == 0 {
 		return ""
@@ -310,7 +310,7 @@ func (f *formatter) render(file *File) {
 			for i, field := range n.Fields {
 				fields[i] = formatField(field)
 			}
-			f.line(0, "error "+n.Name.Text+formatParameters(n.Parameters)+"("+strings.Join(fields, ", ")+")", n.DeclSpan().Start)
+			f.line(0, "error "+n.Name.Text+formatParameters(n.Parameters)+"{"+strings.Join(fields, ", ")+"}", n.DeclSpan().Start)
 		case *ValueDecl:
 			f.binding(0, n.Binding)
 		case *FixtureDecl:

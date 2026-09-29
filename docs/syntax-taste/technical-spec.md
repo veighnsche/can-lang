@@ -376,7 +376,7 @@ package main
 
 /// Returns a fresh pair of equal integer values.
 fn int[] pair
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -385,7 +385,7 @@ fn int[] pair
 
 /// Exercises immutable native array copying.
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -434,7 +434,7 @@ package ticket_routing
 
 /// Generates routing criteria, then judges the email against them.
 fn str route_email
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response, http::request_failed, ai::invalid_question, ai::invalid_answer]
+    emits {http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response, http::request_failed, ai::invalid_question, ai::invalid_answer}
     given
         str email
     asserts

@@ -47,7 +47,7 @@ package   app
 /* block before */
 /// doc tally
 fn   int   tally
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         int seed
     asserts
@@ -60,7 +60,7 @@ fn   int   tally
 line
 block */
 fn str motto
-    emits []
+    emits {}
     asserts
         sample: => ok "// not a comment /* neither */"
     ok "// not a comment /* neither */"
@@ -72,7 +72,7 @@ package app
 /* block before */
 /// doc tally
 fn int tally
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         int seed
     asserts
@@ -85,7 +85,7 @@ fn int tally
 line
 block */
 fn str motto
-    emits []
+    emits {}
     asserts
         sample:  => ok "// not a comment /* neither */"
     ok "// not a comment /* neither */"
@@ -109,7 +109,7 @@ package app
 
 
 fn int one
-    emits []
+    emits {}
     asserts
         sample: => ok 1
     ok 1
@@ -118,7 +118,7 @@ fn int one
 
 // between
 fn int two
-    emits []
+    emits {}
     asserts
         sample: => ok 2
     ok 2
@@ -132,7 +132,7 @@ fn int two
 
 
 fn int one
-    emits []
+    emits {}
     asserts
         sample:  => ok 1
     ok 1
@@ -141,7 +141,7 @@ fn int one
 
 // between
 fn int two
-    emits []
+    emits {}
     asserts
         sample:  => ok 2
     ok 2
@@ -154,7 +154,7 @@ fn int two
 
 // CRLF input formats to LF; UTF-8 content passes through untouched.
 func TestFormatTriviaCRLFAndUTF8(t *testing.T) {
-	text := "// caf\u00e9 \U0001D11E\r\npackage app\r\n    provides []\r\n    uses []\r\nfn str motto  // \U0001D11E trailing\r\n    emits []\r\n    asserts\r\n        sample: => ok \"\U0001D11E\"\r\n    ok \"\U0001D11E\"\r\n"
+	text := "// caf\u00e9 \U0001D11E\r\npackage app\r\n    provides []\r\n    uses []\r\nfn str motto  // \U0001D11E trailing\r\n    emits {}\r\n    asserts\r\n        sample: => ok \"\U0001D11E\"\r\n    ok \"\U0001D11E\"\r\n"
 	out := formatTrivia(t, text)
 	if strings.Contains(out, "\r") {
 		t.Fatalf("CR survived: %q", out)
@@ -174,7 +174,7 @@ func TestFormatTriviaSyntheticLines(t *testing.T) {
     provides []
     uses []
 fn int tally
-    emits []
+    emits {}
     given  // the inputs
         // seeded
         int seed
@@ -271,7 +271,7 @@ str poem = """
    /* a nested comment */
 */
 fn str take
-    emits []
+    emits {}
     given
         str score
     asserts

@@ -37,7 +37,7 @@ func significantTokens(result Result) []Token {
 	return out
 }
 func TestIndentationAndCommentOnlyLines(t *testing.T) {
-	input := "package demo\r\n    provides []\r\n    // comment-only line\r\n          /* arbitrary comment-only indentation */\r\n    uses []\r\n\r\nfn void main\r\n    emits []\r\n    asserts\r\n        () => ok\r\n    ok"
+	input := "package demo\r\n    provides []\r\n    // comment-only line\r\n          /* arbitrary comment-only indentation */\r\n    uses []\r\n\r\nfn void main\r\n    emits {}\r\n    asserts\r\n        () => ok\r\n    ok"
 	result := valid(t, input)
 	layouts := []Kind{}
 	for _, token := range result.Tokens {

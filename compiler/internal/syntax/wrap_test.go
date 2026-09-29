@@ -72,7 +72,7 @@ func TestWrapDeclarationParsing(t *testing.T) {
 
 func TestWrapDeclarationRejects(t *testing.T) {
 	cases := map[string]string{
-		"explicit list":      "    emits [http::request_failed]\n",
+		"explicit list":      "    emits {http::request_failed}\n",
 		"missing handles":    "",
 		"duplicate native":   "    handles native\n        http::status_error => ok receipt(0)\n    handles native\n        http::timeout => ok receipt(0)\n",
 		"emitted first":      "    handles emitted\n        cache_failed => ok receipt(0)\n    handles native\n        http::timeout => ok receipt(0)\n",
@@ -106,7 +106,7 @@ func TestEmitsCalculatedRejectedElsewhere(t *testing.T) {
 }
 
 func TestInheritOutsideCompletionRejects(t *testing.T) {
-	text := "fn int pick\n    emits []\n    given\n        int value\n    asserts\n        sample: 1 => ok 1\n    int chosen = match value\n        1 => inherit\n        _ => value\n    ok chosen\n"
+	text := "fn int pick\n    emits {}\n    given\n        int value\n    asserts\n        sample: 1 => ok 1\n    int chosen = match value\n        1 => inherit\n        _ => value\n    ok chosen\n"
 	if nativeParse(t, text).OK() {
 		t.Fatal("inherit admitted in a value position")
 	}

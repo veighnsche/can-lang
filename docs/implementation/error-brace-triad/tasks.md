@@ -109,13 +109,13 @@ appropriate to protect laptop load.
   cover valid nesting, mismatches, missing closers, strings/comments, and the
   one-line diagnostic without introducing general brace blocks.
   Evidence: `{}` push/pop with mismatch/unclosed/unmatched diagnostics; one-line + multiline-literal messages extended; new `TestBracesLexAsBalancedOneLineDelimiters` + 8 failure cases; `go test -p 1 ./compiler/internal/syntax/` passes.
-- [ ] **F02 · error declarations and finite bounds.** Depends: G02.
+- [x] **F02 · error declarations and finite bounds.** Depends: G02.
   Files: `syntax/parser.go`, `declarations.go`, `native.go`,
   `parser_test.go`, `declarations_test.go`. Parse `error E{fields}` and all
   finite `emits {types}` forms; preserve `emits calculated` and
   `emits {}[]` callable-array precedence. Done when new empty/generic/nested
   forms parse and old declaration/bound spellings fail. Release
-  `declarations.go` to N02 after this task. Evidence: pending.
+  `declarations.go` to N02 after this task. Evidence: `errorBound()` + `ErrorDecl` take braces; `emits calculated` untouched; `emits {}[]` spans hold (16..24). Bound/decl *rendering* (`formatBound`, `FormatType`, `ErrorDecl` line) shipped here for round-trip coherence since `parseFile` re-parses `Format` output; F03 keeps constructor-delimiter rendering + trivia. 99 test bounds + 3 test decls migrated; new `TestErrorDeclarationBraces`/`TestFiniteErrorBoundBraces` + 3 old-spelling type rejects. Spec probes + gramcheck samples converged (P01 window 2); map-driven bound-only migration of templates/wrap/shared fixtures. `go test -p 1 ./compiler/internal/syntax/` and `go run ./tools/gramcheck` pass. Downstream (check/resolve/emit/catalogue/LSP/integration) failures expected in window 2; N05/M03/P04 migrate. `declarations.go` released to N02.
 - [ ] **F03 · canonical rendering and trivia.** Depends: F02,N01.
   Files: `syntax/format.go`, `parser.go`, `format_trivia.go`,
   `format_trivia_test.go`. Render braces for error declarations/bounds and
@@ -211,6 +211,7 @@ appropriate to protect laptop load.
   `emits calculated`, arrays, headers, calls and matches. Done when these
   files describe the chosen contract without treating a plan as shipped code.
   Evidence (window 1 interim): `{}` pairing + `punctuation.definition.error.can` grammar rule (gramcheck OK); syntax README one-line rule; technical-spec prose + LD29 block migrated (executed C10/Consumer blocks deferred to F02 window); decisions.md pre-654 migrated. Gramcheck brace/error samples + executed snippets converge in window 2.
+  Evidence (window 2): executed C10/Consumer bounds + all 24 decisions bounds + `error below_minimum` decl migrated; gramcheck samples pinned to `error unavailable{str reason}` + new brace scope samples; shared.can decl migrated to keep the sample in-fixture. Error-value `E(...)` spellings in spec text remain until N01/P05.
 - [ ] **P02 · authored catalogue presentation.** Depends: F02. Files:
   `compiler/internal/catalogue/types.go`, `generate.go`, and catalogue tests
   after resolving any pre-existing owner. Render concrete callable/choice

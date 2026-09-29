@@ -10,7 +10,7 @@ import (
 func TestBooleanArmCanonicalization(t *testing.T) {
 	header := testHeader
 	trueFirst := header + `fn int pick
-    emits []
+    emits {}
     given
         bool flag
     asserts
@@ -29,7 +29,7 @@ func TestBooleanArmCanonicalization(t *testing.T) {
 
 func TestBooleanArmCanonicalizationValueMatch(t *testing.T) {
 	text := testHeader + `fn int pick
-    emits []
+    emits {}
     given
         bool flag
     asserts
@@ -59,7 +59,7 @@ func TestBooleanArmCanonicalizationNegatives(t *testing.T) {
 		"    match flag\n        true | false => ok 1\n",
 	}
 	for _, body := range bodies {
-		text := testHeader + "fn int pick\n    emits []\n    given\n        bool flag\n    asserts\n        sample: true => ok 1\n" + body
+		text := testHeader + "fn int pick\n    emits {}\n    given\n        bool flag\n    asserts\n        sample: true => ok 1\n" + body
 		out := formatTrivia(t, text)
 		if out != text {
 			t.Fatalf("non-canonicalizable match moved:\n%s\n---\n%s", text, out)
@@ -69,7 +69,7 @@ func TestBooleanArmCanonicalizationNegatives(t *testing.T) {
 
 func TestBooleanArmCanonicalizationCompletionUntouched(t *testing.T) {
 	text := testHeader + `fn int guarded
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     asserts
         sample:  => ok 1
     match call number()
@@ -84,7 +84,7 @@ func TestBooleanArmCanonicalizationCompletionUntouched(t *testing.T) {
 
 func TestBooleanArmCanonicalizationWithComments(t *testing.T) {
 	text := testHeader + `fn int pick
-    emits []
+    emits {}
     given
         bool flag
     asserts

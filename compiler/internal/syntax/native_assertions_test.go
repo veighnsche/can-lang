@@ -12,14 +12,14 @@ func TestNativeAttachedAssertions(t *testing.T) {
     endpoint "https://example.invalid/"
 
 fetch str load from service
-    emits []
+    emits {}
     asserts
         decoded: => ok "hi"
             using raw "fixtures/load.json"
     get "/receipt"
 
 llm str summarize from service
-    emits []
+    emits {}
     state
         str email
     asserts
@@ -60,7 +60,7 @@ func TestAssertionModeLinesRejectMalformed(t *testing.T) {
 		"decoded: => ok \"hi\"\n            raw \"a.json\"\n",
 		"decoded: => ok \"hi\"\n            using raw 7\n",
 	} {
-		text := "connection service\n    timeout_ms 1000\n    endpoint \"https://example.invalid/\"\n\nfetch str load from service\n    emits []\n    asserts\n        " + bad + "    get \"/x\"\n"
+		text := "connection service\n    timeout_ms 1000\n    endpoint \"https://example.invalid/\"\n\nfetch str load from service\n    emits {}\n    asserts\n        " + bad + "    get \"/x\"\n"
 		if result := nativeParse(t, text); result.OK() {
 			t.Fatalf("malformed mode admitted: %q", bad)
 		}
@@ -69,7 +69,7 @@ func TestAssertionModeLinesRejectMalformed(t *testing.T) {
 
 func TestWhenRowAcceptsRawMode(t *testing.T) {
 	text := nativePackage + `fn str main
-    emits []
+    emits {}
     given
         str[] args
     asserts
