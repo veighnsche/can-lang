@@ -115,6 +115,9 @@ test("closed tags, attributes, enums and tag applicability", async () => {
     ["scope", "all"],
     ["align", "justify"],
     ["start", "NaN"],
+    ["maxlength", "-1"],
+    ["maxlength", "2147483648"],
+    ["maxlength", "1.5"],
     ["autocomplete", "unknown"],
     ["rel", "javascript"],
     ["rows", "0"],
@@ -129,6 +132,8 @@ test("closed tags, attributes, enums and tag applicability", async () => {
     ["enctype", "multipart/form-data"],
     ["enctype", "Multipart/Form-Data"],
     ["accept", "image/png,image/jpeg,image/webp"],
+    ["maxlength", "0"],
+    ["maxlength", "120"],
     ["autocomplete", "section-login username webauthn"],
     ["rel", "nofollow noopener"],
     ["rowspan", "0"],
@@ -139,6 +144,16 @@ test("closed tags, attributes, enums and tag applicability", async () => {
   check(await html.element(await tag("div"), [checked], []), "html::invalid_structure");
   const enctype = value(await html.textAttribute("enctype", "multipart/form-data"));
   check(await html.element(await tag("input"), [enctype], []), "html::invalid_structure");
+  const maximum = value(await html.textAttribute("maxlength", "120"));
+  const numberType = value(await html.textAttribute("type", "number"));
+  check(
+    await html.element(await tag("input"), [numberType, maximum], []),
+    "html::invalid_structure",
+  );
+  expect(await render([await element("input", [], [maximum])])).toBe('<input maxlength="120">');
+  expect(await render([await element("textarea", [await text("Work")], [maximum])])).toBe(
+    '<textarea maxlength="120">Work</textarea>',
+  );
   expect(await render([await element("form", [], [enctype])])).toBe(
     '<form enctype="multipart/form-data"></form>',
   );

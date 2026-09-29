@@ -101,6 +101,7 @@ export const applicability: Readonly<Record<string, readonly string[]>> = Object
   accept: ["input"],
   placeholder: ["input", "textarea"],
   autocomplete: ["form", "input", "textarea", "select"],
+  maxlength: ["input", "textarea"],
   for: ["label"],
   method: ["form"],
   enctype: ["form"],
@@ -187,6 +188,7 @@ function validValue(name: string, value: string, tag?: string): boolean {
     if (tag === "button") return ["submit", "reset", "button"].includes(v);
     if (tag === "ol") return ["1", "a", "A", "i", "I"].includes(value);
   }
+  if (name === "maxlength") return /^[0-9]+$/.test(value) && BigInt(value) <= 2147483647n;
   if (["rows", "cols", "colspan", "rowspan"].includes(name)) {
     if (!/^[0-9]+$/.test(value)) return false;
     const n = BigInt(value);
@@ -391,7 +393,8 @@ export function createHTML(
       const name = read(tags, tag),
         attrs = dataArray(inputAttributes).map((v) => read(attributes, v)),
         kids = children(inputChildren),
-        seen = new Set<string>();
+        seen = new Set<string>(),
+        inputType = lower(attrs.find((a) => a.name === "type")?.value ?? "text");
       for (const a of attrs) {
         if (seen.has(a.name)) return structure("duplicate_attribute");
         seen.add(a.name);
@@ -403,6 +406,12 @@ export function createHTML(
           return structure("attribute_tag");
         if (a.kind === "text" && !validValue(a.name, a.value, name))
           return structure("attribute_value");
+        if (
+          a.name === "maxlength" &&
+          name === "input" &&
+          !["text", "search", "url", "tel", "email", "password"].includes(inputType)
+        )
+          return structure("attribute_tag");
         if (
           a.kind === "url" &&
           (
