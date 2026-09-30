@@ -238,7 +238,7 @@
       "acceptance": "Two repository roots cannot bypass the gate; nested producer demand does not deadlock; deadline-at-success is failure; no case starts if body plus cleanup cannot fit.",
       "evidence": "Save bounded race controls; commit admission.",
       "commit": "feat(testing): reserve host capacity and deadlines",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P07",
         "P08",
