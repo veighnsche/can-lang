@@ -49,7 +49,7 @@
   "commits": [
     "1faee801 Go codec (pre-existing)",
     "b2851b47 snake_case wire (pre-existing)",
-    "<this commit> Can codec"
+    "ce130fd0d8fd191a6ce3e3cd1862d0e854f68cc0 Can codec"
   ],
   "correction_registry_head": null,
   "coverage": {
