@@ -1,0 +1,65 @@
+Implement the native Can testing migration in /Users/vince/Projects/can-lang. You are the Muse implementation executor for this task. Use muse-spark-1.3-contributor and preserve the configured reasoning effort.
+
+GOAL
+Complete the reviewed implementation plan: replace the in-scope host test harnesses with ordinary Can functions that own scenarios, expectations, selection and reporting; preserve every retained coverage obligation; implement and independently accept the reference toolchain and external resource owner; qualify the required capabilities; retire old harnesses only after their deletion gates pass. Deliver checked code, small incremental commits, current migration evidence, reliable cleanup and an independent final review.
+
+AUTHORITATIVE CHECKLIST
+Read /Users/vince/Projects/can-lang/AGENTS.md, then:
+/Users/vince/Projects/can-lang/docs/implementation/native-can-tests-plan-2026-09-30.md
+
+The plan's companion directory is:
+/Users/vince/Projects/can-lang/docs/implementation/native-can-tests-plan-2026-09-30/
+
+Read and execute foundation-checklist.md, capabilities-checklist.md, integration-checklist.md and migration-checklist.md. Use tasks.json, the source task JSON files, coverage-map.json and retirement-map.json for exact IDs, dependencies, ownership and gates. Read the linked supporting designs before implementing the affected contracts. The baseline contains 143 task records, 45 migration groups and 292 ledger obligations; reconcile current source drift before relying on it.
+
+The plan's “Executor: Codex” and “planning only” wording describes the previous planning round. This handoff authorizes Muse to implement the saved plan. It does not waive acceptance gates, permissions, host resource limits or the existing deferral of broad builds and performance measurements. Keep current, historical and static-fixture dispositions distinct.
+
+Use the actual checklist as your work queue, not merely background reading. Record task and row progress there and in the corresponding structured records. Keep task JSON sources and tasks.json consistent. Use progress-template.json for evidence. Record owner, status, commits, checked paths, bounded command results, R/N/C/S/A identities, positive and negative controls, cleanup receipts, correction state and remaining blockers. Never claim a task is complete just because code exists.
+
+IMPLEMENTATION LANES
+Use multiple implementation lanes and the available sub-agent/worker support, with at most three disjoint implementation workers plus one integrator/reviewer. The logical lanes are:
+- Shared contracts, reference acceptance and catalogue integration.
+- External owner, bootstrap witness, enforcement and recovery.
+- Ordinary Can runner, diagnostics and CLI.
+- Native values and candidate-runtime ingress.
+- Browser mechanics and independent host observation.
+- Descriptor delivery and inherited leases.
+- HTTP/WebSocket peers.
+- Database and object-store observations.
+- Per-row migration groups M01–M45.
+- Coverage reconciliation, caller activation, retirement and review.
+
+Rotate ready work into the available slots. Follow start_after and accept_after, including each migration row's own gates. Do not wait for an entire unrelated lane when a smaller dependency has passed. Do not credit a row before its required qualification. Keep one writer per path; the integrator owns shared compiler/catalogue files, global formatting, commits, caller activation and old-harness deletion. If worker support is unavailable, preserve the lane queues and report the limitation without claiming parallel execution.
+
+Parallelize source work and review, not heavy execution. Respect the plan's single admitted live run, live case, verification worker and build producer with phase ordering. Batch compatible ready capability slices into one bounded build where allowed, keeping separate acceptance receipts. Preserve R/N/S/A/C separation and independently accepted capability deltas. New helpers or test cases require a current reviewed suite snapshot; the candidate must never judge or promote itself.
+
+COMMIT EARLY AND OFTEN
+Inspect the working tree and preserve existing work. Make the baseline/contract commit early, then commit each small, coherent, checked schema, binding, helper, case slice or qualification result. Do not wait until a lane or the migration finishes. Separate implementation, qualification evidence and harness retirement when their readiness differs.
+
+Use concise Conventional Commits. Stage explicit owned paths; do not use broad staging that captures unrelated changes. Serialize commits through the integrator in a shared checkout. Record commit SHAs against task/row IDs. Do not amend away useful progress or push/publish without separate authorization.
+
+WAIT BEFORE POLLING LONG COMMANDS
+When a command remains running, wait at least 60 seconds before the first status poll and between subsequent polls. Do useful independent work during that interval, or use a wait of at most 60 seconds per call. Do not busy-poll. Completion notifications may be consumed immediately. Keep me informed when a run starts and when meaningful progress, completion or a blocker occurs.
+
+Polling cadence does not extend command deadlines. Enforce timeouts, resource limits, cancellation and cleanup independently, so a deadline or cleanup reserve can fire while you are waiting. Do not relaunch a command just because its result has not arrived.
+
+MUSE “TOO MANY FILES OPEN” BUG
+If Muse itself or its tool/execution layer hits the known “too many files open” / EMFILE / ENFILE failure, warn me immediately and pause for me to restart the Muse instance. Do not keep retrying, spawn replacement workers, raise descriptor limits, restart Muse yourself or mistake this for an implementation defect. An intentionally induced application-level error in a test is not automatically this Muse bug.
+
+If tools still work, make one bounded attempt to save a compact checkpoint at:
+/Users/vince/Projects/can-lang/docs/implementation/native-can-tests-plan-2026-09-30/muse-resume.md
+
+Record completed/current task IDs, latest commits, uncommitted owned paths, worker assignments, running command/session IDs, cleanup ownership, blockers and the next ready actions. Stop new dispatch and quiesce workers. Keep owned cleanup under its existing supervisor; stop owned work safely where possible and explicitly report anything whose cleanup is unconfirmed. If checkpointing fails, include the essential state directly in the warning and stop retrying.
+
+Tell me: “Muse has hit the too-many-files-open bug. Please restart this Muse instance. I have paused; resume from the saved checklist/checkpoint.” Include the actual checkpoint status and any unresolved running work. Wait for the restart. After restart, reread the checkpoint and Git/checklist state, reconcile surviving commands and cleanup before dispatch, and resume the same work rather than duplicating it.
+
+QUALITY AND COMPLETION
+Follow AGENTS.md: Can targets reliable AI authorship; there are no compatibility obligations. Keep scenarios and verdicts in ordinary Can and native services limited to mechanics. Consult Jev as specified for new difficult design decisions. Never weaken coverage or trust requirements to close a task.
+
+For authored runtime TypeScript edits, run bun run lint:fix:runtime and bun run format:runtime through the integrator. Before finishing, run bun run check:runtime and relevant bounded tests. Regenerate catalogue mirrors through the documented generator; never hand-edit them. Register temporary cleanup before allocation, reuse builds within the run and retain compact evidence rather than bulky execution workspaces. Report every cleanup failure.
+
+Follow per-row and per-file retirement gates. Preserve useful static fixtures and historical records. Missing services, unqualified hosts, uncertain observations, deferred retained metrics and failed controls remain explicit blockers; they are not passes. Continue independent ready tasks instead of stopping the whole implementation unnecessarily.
+
+Work through the complete ordered checklist in a sustained run. Do not stop after the first lane or impose an arbitrary short total step cap; a 12–24 hour run is acceptable if needed, with bounded individual commands and resources. Stop only for completion, a genuine blocker with no safe ready work, a required user decision, or the Muse bug/restart procedure above.
+
+Finish by issuing the main plan's final review request to an independent reviewer with the exact commit range, checklist and evidence paths. Resolve actionable findings in small commits and rerun affected checks. Report completed and blocked task IDs, commits, coverage and qualification results, retired harnesses, cleanup status and remaining decisions. Never present partial qualification as complete migration.

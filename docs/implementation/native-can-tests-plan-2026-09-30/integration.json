@@ -1,0 +1,726 @@
+{
+  "status": "planned",
+  "tasks": [
+    {
+      "id": "I01",
+      "title": "Integrate and accept native value transport capability slice",
+      "lane": "integration-reference",
+      "start_after": [
+        "K01",
+        "K02",
+        "K03",
+        "P28"
+      ],
+      "accept_after": [
+        "P06",
+        "P26",
+        "P14"
+      ],
+      "files": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen/",
+        "runtime/test-support/slices/i01/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I01.json",
+        "tests/native-can/src/capabilities/i01/",
+        "tests/native-can/examples/capabilities/i01/"
+      ],
+      "changes": "Integration writer merges this slice\u2019s finite descriptors, native adapters and required checker/emitter hooks, regenerates catalogue mirrors, then separately builds and accepts the changed R/N capability scope with predecessor checks and independent bootstrap controls. Commit bindings first and acceptance evidence separately. Source changes stay provisional until acceptance; unrelated queued slices do not delay this one. Draft bindings once start dependencies are accepted; reference/owner promotion waits for accept_after. Batch compatible ready slices into one bounded build when possible, but record independent per-slice controls, receipts and acceptance; do not make unrelated slices prerequisites. Own a complete ordinary Can helper package and tiny typed example for this slice, including signatures, effects, opaque handles, errors and mandatory assertions. Do not defer the API surface to the later Q case.",
+      "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
+      "evidence": "evidence/I01.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
+      "commit": "feat(testing): integrate native value transport",
+      "status": "planned",
+      "scope": "binding implementation plus separate reference/owner delta acceptance"
+    },
+    {
+      "id": "I02",
+      "title": "Integrate and accept generated C ingress capability slice",
+      "lane": "integration-reference",
+      "start_after": [
+        "I01",
+        "K04",
+        "K05",
+        "P28"
+      ],
+      "accept_after": [
+        "P06",
+        "P26",
+        "P14"
+      ],
+      "files": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen/",
+        "runtime/test-support/slices/i02/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I02.json",
+        "tests/native-can/src/capabilities/i02/",
+        "tests/native-can/examples/capabilities/i02/"
+      ],
+      "changes": "Integration writer merges this slice\u2019s finite descriptors, native adapters and required checker/emitter hooks, regenerates catalogue mirrors, then separately builds and accepts the changed R/N capability scope with predecessor checks and independent bootstrap controls. Commit bindings first and acceptance evidence separately. Source changes stay provisional until acceptance; unrelated queued slices do not delay this one. Draft bindings once start dependencies are accepted; reference/owner promotion waits for accept_after. Batch compatible ready slices into one bounded build when possible, but record independent per-slice controls, receipts and acceptance; do not make unrelated slices prerequisites. Own a complete ordinary Can helper package and tiny typed example for this slice, including signatures, effects, opaque handles, errors and mandatory assertions. Do not defer the API surface to the later Q case.",
+      "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
+      "evidence": "evidence/I02.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
+      "commit": "feat(testing): integrate generated C ingress",
+      "status": "planned",
+      "scope": "binding implementation plus separate reference/owner delta acceptance"
+    },
+    {
+      "id": "I03",
+      "title": "Integrate and accept late native events capability slice",
+      "lane": "integration-reference",
+      "start_after": [
+        "I02",
+        "K06",
+        "P28"
+      ],
+      "accept_after": [
+        "P06",
+        "P26",
+        "P14"
+      ],
+      "files": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen/",
+        "runtime/test-support/slices/i03/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I03.json",
+        "tests/native-can/src/capabilities/i03/",
+        "tests/native-can/examples/capabilities/i03/"
+      ],
+      "changes": "Integration writer merges this slice\u2019s finite descriptors, native adapters and required checker/emitter hooks, regenerates catalogue mirrors, then separately builds and accepts the changed R/N capability scope with predecessor checks and independent bootstrap controls. Commit bindings first and acceptance evidence separately. Source changes stay provisional until acceptance; unrelated queued slices do not delay this one. Draft bindings once start dependencies are accepted; reference/owner promotion waits for accept_after. Batch compatible ready slices into one bounded build when possible, but record independent per-slice controls, receipts and acceptance; do not make unrelated slices prerequisites. Own a complete ordinary Can helper package and tiny typed example for this slice, including signatures, effects, opaque handles, errors and mandatory assertions. Do not defer the API surface to the later Q case.",
+      "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
+      "evidence": "evidence/I03.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
+      "commit": "feat(testing): integrate late native events",
+      "status": "planned",
+      "scope": "binding implementation plus separate reference/owner delta acceptance"
+    },
+    {
+      "id": "I04",
+      "title": "Integrate and accept HTTP and controlled peers capability slice",
+      "lane": "integration-reference",
+      "start_after": [
+        "K20",
+        "P28",
+        "P29"
+      ],
+      "accept_after": [
+        "P06",
+        "P26",
+        "P14"
+      ],
+      "files": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen/",
+        "runtime/test-support/slices/i04/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I04.json",
+        "tests/native-can/src/capabilities/i04/",
+        "tests/native-can/examples/capabilities/i04/"
+      ],
+      "changes": "Integration writer merges this slice\u2019s finite descriptors, native adapters and required checker/emitter hooks, regenerates catalogue mirrors, then separately builds and accepts the changed R/N capability scope with predecessor checks and independent bootstrap controls. Commit bindings first and acceptance evidence separately. Source changes stay provisional until acceptance; unrelated queued slices do not delay this one. Draft bindings once start dependencies are accepted; reference/owner promotion waits for accept_after. Batch compatible ready slices into one bounded build when possible, but record independent per-slice controls, receipts and acceptance; do not make unrelated slices prerequisites. Own a complete ordinary Can helper package and tiny typed example for this slice, including signatures, effects, opaque handles, errors and mandatory assertions. Do not defer the API surface to the later Q case.",
+      "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
+      "evidence": "evidence/I04.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
+      "commit": "feat(testing): integrate HTTP and controlled peers",
+      "status": "planned",
+      "scope": "binding implementation plus separate reference/owner delta acceptance"
+    },
+    {
+      "id": "I05",
+      "title": "Integrate and accept WebSocket observation capability slice",
+      "lane": "integration-reference",
+      "start_after": [
+        "I04",
+        "K21",
+        "P28",
+        "P29"
+      ],
+      "accept_after": [
+        "P06",
+        "P26",
+        "P14"
+      ],
+      "files": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen/",
+        "runtime/test-support/slices/i05/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I05.json",
+        "tests/native-can/src/capabilities/i05/",
+        "tests/native-can/examples/capabilities/i05/"
+      ],
+      "changes": "Integration writer merges this slice\u2019s finite descriptors, native adapters and required checker/emitter hooks, regenerates catalogue mirrors, then separately builds and accepts the changed R/N capability scope with predecessor checks and independent bootstrap controls. Commit bindings first and acceptance evidence separately. Source changes stay provisional until acceptance; unrelated queued slices do not delay this one. Draft bindings once start dependencies are accepted; reference/owner promotion waits for accept_after. Batch compatible ready slices into one bounded build when possible, but record independent per-slice controls, receipts and acceptance; do not make unrelated slices prerequisites. Own a complete ordinary Can helper package and tiny typed example for this slice, including signatures, effects, opaque handles, errors and mandatory assertions. Do not defer the API surface to the later Q case.",
+      "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
+      "evidence": "evidence/I05.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
+      "commit": "feat(testing): integrate WebSocket observation",
+      "status": "planned",
+      "scope": "binding implementation plus separate reference/owner delta acceptance"
+    },
+    {
+      "id": "I06",
+      "title": "Integrate and accept browser core capability slice",
+      "lane": "integration-reference",
+      "start_after": [
+        "I04",
+        "K07",
+        "K08",
+        "K09",
+        "K10",
+        "K11",
+        "P28",
+        "P29"
+      ],
+      "accept_after": [
+        "P06",
+        "P26",
+        "P14"
+      ],
+      "files": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen/",
+        "runtime/test-support/slices/i06/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I06.json",
+        "tests/native-can/src/capabilities/i06/",
+        "tests/native-can/examples/capabilities/i06/"
+      ],
+      "changes": "Integration writer merges this slice\u2019s finite descriptors, native adapters and required checker/emitter hooks, regenerates catalogue mirrors, then separately builds and accepts the changed R/N capability scope with predecessor checks and independent bootstrap controls. Commit bindings first and acceptance evidence separately. Source changes stay provisional until acceptance; unrelated queued slices do not delay this one. Draft bindings once start dependencies are accepted; reference/owner promotion waits for accept_after. Batch compatible ready slices into one bounded build when possible, but record independent per-slice controls, receipts and acceptance; do not make unrelated slices prerequisites. Own a complete ordinary Can helper package and tiny typed example for this slice, including signatures, effects, opaque handles, errors and mandatory assertions. Do not defer the API surface to the later Q case.",
+      "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
+      "evidence": "evidence/I06.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
+      "commit": "feat(testing): integrate browser core",
+      "status": "planned",
+      "scope": "binding implementation plus separate reference/owner delta acceptance"
+    },
+    {
+      "id": "I07",
+      "title": "Integrate and accept browser DOM events capability slice",
+      "lane": "integration-reference",
+      "start_after": [
+        "I06",
+        "K13",
+        "P28",
+        "P29"
+      ],
+      "accept_after": [
+        "P06",
+        "P26",
+        "P14"
+      ],
+      "files": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen/",
+        "runtime/test-support/slices/i07/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I07.json",
+        "tests/native-can/src/capabilities/i07/",
+        "tests/native-can/examples/capabilities/i07/"
+      ],
+      "changes": "Integration writer merges this slice\u2019s finite descriptors, native adapters and required checker/emitter hooks, regenerates catalogue mirrors, then separately builds and accepts the changed R/N capability scope with predecessor checks and independent bootstrap controls. Commit bindings first and acceptance evidence separately. Source changes stay provisional until acceptance; unrelated queued slices do not delay this one. Draft bindings once start dependencies are accepted; reference/owner promotion waits for accept_after. Batch compatible ready slices into one bounded build when possible, but record independent per-slice controls, receipts and acceptance; do not make unrelated slices prerequisites. Own a complete ordinary Can helper package and tiny typed example for this slice, including signatures, effects, opaque handles, errors and mandatory assertions. Do not defer the API surface to the later Q case.",
+      "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
+      "evidence": "evidence/I07.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
+      "commit": "feat(testing): integrate browser DOM events",
+      "status": "planned",
+      "scope": "binding implementation plus separate reference/owner delta acceptance"
+    },
+    {
+      "id": "I08",
+      "title": "Integrate and accept page-origin Fetch capability slice",
+      "lane": "integration-reference",
+      "start_after": [
+        "I06",
+        "K14",
+        "P28",
+        "P29"
+      ],
+      "accept_after": [
+        "P06",
+        "P26",
+        "P14"
+      ],
+      "files": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen/",
+        "runtime/test-support/slices/i08/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I08.json",
+        "tests/native-can/src/capabilities/i08/",
+        "tests/native-can/examples/capabilities/i08/"
+      ],
+      "changes": "Integration writer merges this slice\u2019s finite descriptors, native adapters and required checker/emitter hooks, regenerates catalogue mirrors, then separately builds and accepts the changed R/N capability scope with predecessor checks and independent bootstrap controls. Commit bindings first and acceptance evidence separately. Source changes stay provisional until acceptance; unrelated queued slices do not delay this one. Draft bindings once start dependencies are accepted; reference/owner promotion waits for accept_after. Batch compatible ready slices into one bounded build when possible, but record independent per-slice controls, receipts and acceptance; do not make unrelated slices prerequisites. Own a complete ordinary Can helper package and tiny typed example for this slice, including signatures, effects, opaque handles, errors and mandatory assertions. Do not defer the API surface to the later Q case.",
+      "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
+      "evidence": "evidence/I08.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
+      "commit": "feat(testing): integrate page-origin Fetch",
+      "status": "planned",
+      "scope": "binding implementation plus separate reference/owner delta acceptance"
+    },
+    {
+      "id": "I09",
+      "title": "Integrate and accept browser Can artifacts capability slice",
+      "lane": "integration-reference",
+      "start_after": [
+        "I06",
+        "I01",
+        "K15",
+        "P28",
+        "P29"
+      ],
+      "accept_after": [
+        "P06",
+        "P26",
+        "P14"
+      ],
+      "files": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen/",
+        "runtime/test-support/slices/i09/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I09.json",
+        "tests/native-can/src/capabilities/i09/",
+        "tests/native-can/examples/capabilities/i09/"
+      ],
+      "changes": "Integration writer merges this slice\u2019s finite descriptors, native adapters and required checker/emitter hooks, regenerates catalogue mirrors, then separately builds and accepts the changed R/N capability scope with predecessor checks and independent bootstrap controls. Commit bindings first and acceptance evidence separately. Source changes stay provisional until acceptance; unrelated queued slices do not delay this one. Draft bindings once start dependencies are accepted; reference/owner promotion waits for accept_after. Batch compatible ready slices into one bounded build when possible, but record independent per-slice controls, receipts and acceptance; do not make unrelated slices prerequisites. Own a complete ordinary Can helper package and tiny typed example for this slice, including signatures, effects, opaque handles, errors and mandatory assertions. Do not defer the API surface to the later Q case.",
+      "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
+      "evidence": "evidence/I09.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
+      "commit": "feat(testing): integrate browser Can artifacts",
+      "status": "planned",
+      "scope": "binding implementation plus separate reference/owner delta acceptance"
+    },
+    {
+      "id": "I10",
+      "title": "Integrate and accept remote browser contexts capability slice",
+      "lane": "integration-reference",
+      "start_after": [
+        "I06",
+        "K16",
+        "P28",
+        "P29"
+      ],
+      "accept_after": [
+        "P06",
+        "P26",
+        "P14"
+      ],
+      "files": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen/",
+        "runtime/test-support/slices/i10/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I10.json",
+        "tests/native-can/src/capabilities/i10/",
+        "tests/native-can/examples/capabilities/i10/"
+      ],
+      "changes": "Integration writer merges this slice\u2019s finite descriptors, native adapters and required checker/emitter hooks, regenerates catalogue mirrors, then separately builds and accepts the changed R/N capability scope with predecessor checks and independent bootstrap controls. Commit bindings first and acceptance evidence separately. Source changes stay provisional until acceptance; unrelated queued slices do not delay this one. Draft bindings once start dependencies are accepted; reference/owner promotion waits for accept_after. Batch compatible ready slices into one bounded build when possible, but record independent per-slice controls, receipts and acceptance; do not make unrelated slices prerequisites. Own a complete ordinary Can helper package and tiny typed example for this slice, including signatures, effects, opaque handles, errors and mandatory assertions. Do not defer the API surface to the later Q case.",
+      "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
+      "evidence": "evidence/I10.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
+      "commit": "feat(testing): integrate remote browser contexts",
+      "status": "planned",
+      "scope": "binding implementation plus separate reference/owner delta acceptance"
+    },
+    {
+      "id": "I11",
+      "title": "Integrate and accept descriptor delivery capability slice",
+      "lane": "integration-reference",
+      "start_after": [
+        "K17",
+        "K18",
+        "P28"
+      ],
+      "accept_after": [
+        "P06",
+        "P26",
+        "P14"
+      ],
+      "files": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen/",
+        "runtime/test-support/slices/i11/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I11.json",
+        "tests/native-can/src/capabilities/i11/",
+        "tests/native-can/examples/capabilities/i11/"
+      ],
+      "changes": "Integration writer merges this slice\u2019s finite descriptors, native adapters and required checker/emitter hooks, regenerates catalogue mirrors, then separately builds and accepts the changed R/N capability scope with predecessor checks and independent bootstrap controls. Commit bindings first and acceptance evidence separately. Source changes stay provisional until acceptance; unrelated queued slices do not delay this one. Draft bindings once start dependencies are accepted; reference/owner promotion waits for accept_after. Batch compatible ready slices into one bounded build when possible, but record independent per-slice controls, receipts and acceptance; do not make unrelated slices prerequisites. Own a complete ordinary Can helper package and tiny typed example for this slice, including signatures, effects, opaque handles, errors and mandatory assertions. Do not defer the API surface to the later Q case.",
+      "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
+      "evidence": "evidence/I11.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
+      "commit": "feat(testing): integrate descriptor delivery",
+      "status": "planned",
+      "scope": "binding implementation plus separate reference/owner delta acceptance"
+    },
+    {
+      "id": "I12",
+      "title": "Integrate and accept inherited generation lease capability slice",
+      "lane": "integration-reference",
+      "start_after": [
+        "I11",
+        "K19",
+        "P28"
+      ],
+      "accept_after": [
+        "P06",
+        "P26",
+        "P14"
+      ],
+      "files": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen/",
+        "runtime/test-support/slices/i12/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I12.json",
+        "tests/native-can/src/capabilities/i12/",
+        "tests/native-can/examples/capabilities/i12/"
+      ],
+      "changes": "Integration writer merges this slice\u2019s finite descriptors, native adapters and required checker/emitter hooks, regenerates catalogue mirrors, then separately builds and accepts the changed R/N capability scope with predecessor checks and independent bootstrap controls. Commit bindings first and acceptance evidence separately. Source changes stay provisional until acceptance; unrelated queued slices do not delay this one. Draft bindings once start dependencies are accepted; reference/owner promotion waits for accept_after. Batch compatible ready slices into one bounded build when possible, but record independent per-slice controls, receipts and acceptance; do not make unrelated slices prerequisites. Own a complete ordinary Can helper package and tiny typed example for this slice, including signatures, effects, opaque handles, errors and mandatory assertions. Do not defer the API surface to the later Q case.",
+      "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
+      "evidence": "evidence/I12.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
+      "commit": "feat(testing): integrate inherited generation lease",
+      "status": "planned",
+      "scope": "binding implementation plus separate reference/owner delta acceptance"
+    },
+    {
+      "id": "I13",
+      "title": "Integrate and accept database row observation capability slice",
+      "lane": "integration-reference",
+      "start_after": [
+        "K22",
+        "K23",
+        "P28",
+        "P29"
+      ],
+      "accept_after": [
+        "P06",
+        "P26",
+        "P14"
+      ],
+      "files": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen/",
+        "runtime/test-support/slices/i13/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I13.json",
+        "tests/native-can/src/capabilities/i13/",
+        "tests/native-can/examples/capabilities/i13/"
+      ],
+      "changes": "Integration writer merges this slice\u2019s finite descriptors, native adapters and required checker/emitter hooks, regenerates catalogue mirrors, then separately builds and accepts the changed R/N capability scope with predecessor checks and independent bootstrap controls. Commit bindings first and acceptance evidence separately. Source changes stay provisional until acceptance; unrelated queued slices do not delay this one. Draft bindings once start dependencies are accepted; reference/owner promotion waits for accept_after. Batch compatible ready slices into one bounded build when possible, but record independent per-slice controls, receipts and acceptance; do not make unrelated slices prerequisites. Own a complete ordinary Can helper package and tiny typed example for this slice, including signatures, effects, opaque handles, errors and mandatory assertions. Do not defer the API surface to the later Q case.",
+      "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
+      "evidence": "evidence/I13.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
+      "commit": "feat(testing): integrate database row observation",
+      "status": "planned",
+      "scope": "binding implementation plus separate reference/owner delta acceptance"
+    },
+    {
+      "id": "I14",
+      "title": "Integrate and accept database transaction identity capability slice",
+      "lane": "integration-reference",
+      "start_after": [
+        "I13",
+        "K24",
+        "P28",
+        "P29"
+      ],
+      "accept_after": [
+        "P06",
+        "P26",
+        "P14"
+      ],
+      "files": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen/",
+        "runtime/test-support/slices/i14/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I14.json",
+        "tests/native-can/src/capabilities/i14/",
+        "tests/native-can/examples/capabilities/i14/"
+      ],
+      "changes": "Integration writer merges this slice\u2019s finite descriptors, native adapters and required checker/emitter hooks, regenerates catalogue mirrors, then separately builds and accepts the changed R/N capability scope with predecessor checks and independent bootstrap controls. Commit bindings first and acceptance evidence separately. Source changes stay provisional until acceptance; unrelated queued slices do not delay this one. Draft bindings once start dependencies are accepted; reference/owner promotion waits for accept_after. Batch compatible ready slices into one bounded build when possible, but record independent per-slice controls, receipts and acceptance; do not make unrelated slices prerequisites. Own a complete ordinary Can helper package and tiny typed example for this slice, including signatures, effects, opaque handles, errors and mandatory assertions. Do not defer the API surface to the later Q case.",
+      "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
+      "evidence": "evidence/I14.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
+      "commit": "feat(testing): integrate database transaction identity",
+      "status": "planned",
+      "scope": "binding implementation plus separate reference/owner delta acceptance"
+    },
+    {
+      "id": "I15",
+      "title": "Integrate and accept poisoned transaction observation capability slice",
+      "lane": "integration-reference",
+      "start_after": [
+        "I13",
+        "K25",
+        "P28",
+        "P29"
+      ],
+      "accept_after": [
+        "P06",
+        "P26",
+        "P14"
+      ],
+      "files": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen/",
+        "runtime/test-support/slices/i15/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I15.json",
+        "tests/native-can/src/capabilities/i15/",
+        "tests/native-can/examples/capabilities/i15/"
+      ],
+      "changes": "Integration writer merges this slice\u2019s finite descriptors, native adapters and required checker/emitter hooks, regenerates catalogue mirrors, then separately builds and accepts the changed R/N capability scope with predecessor checks and independent bootstrap controls. Commit bindings first and acceptance evidence separately. Source changes stay provisional until acceptance; unrelated queued slices do not delay this one. Draft bindings once start dependencies are accepted; reference/owner promotion waits for accept_after. Batch compatible ready slices into one bounded build when possible, but record independent per-slice controls, receipts and acceptance; do not make unrelated slices prerequisites. Own a complete ordinary Can helper package and tiny typed example for this slice, including signatures, effects, opaque handles, errors and mandatory assertions. Do not defer the API surface to the later Q case.",
+      "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
+      "evidence": "evidence/I15.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
+      "commit": "feat(testing): integrate poisoned transaction observation",
+      "status": "planned",
+      "scope": "binding implementation plus separate reference/owner delta acceptance"
+    },
+    {
+      "id": "I16",
+      "title": "Integrate and accept database deadline settlement capability slice",
+      "lane": "integration-reference",
+      "start_after": [
+        "I14",
+        "K26",
+        "P28",
+        "P29"
+      ],
+      "accept_after": [
+        "P06",
+        "P26",
+        "P14"
+      ],
+      "files": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen/",
+        "runtime/test-support/slices/i16/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I16.json",
+        "tests/native-can/src/capabilities/i16/",
+        "tests/native-can/examples/capabilities/i16/"
+      ],
+      "changes": "Integration writer merges this slice\u2019s finite descriptors, native adapters and required checker/emitter hooks, regenerates catalogue mirrors, then separately builds and accepts the changed R/N capability scope with predecessor checks and independent bootstrap controls. Commit bindings first and acceptance evidence separately. Source changes stay provisional until acceptance; unrelated queued slices do not delay this one. Draft bindings once start dependencies are accepted; reference/owner promotion waits for accept_after. Batch compatible ready slices into one bounded build when possible, but record independent per-slice controls, receipts and acceptance; do not make unrelated slices prerequisites. Own a complete ordinary Can helper package and tiny typed example for this slice, including signatures, effects, opaque handles, errors and mandatory assertions. Do not defer the API surface to the later Q case.",
+      "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
+      "evidence": "evidence/I16.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
+      "commit": "feat(testing): integrate database deadline settlement",
+      "status": "planned",
+      "scope": "binding implementation plus separate reference/owner delta acceptance"
+    },
+    {
+      "id": "I17",
+      "title": "Integrate and accept object-store ownership capability slice",
+      "lane": "integration-reference",
+      "start_after": [
+        "K27",
+        "P28",
+        "P29"
+      ],
+      "accept_after": [
+        "P06",
+        "P26",
+        "P14"
+      ],
+      "files": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen/",
+        "runtime/test-support/slices/i17/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17.json",
+        "tests/native-can/src/capabilities/i17/",
+        "tests/native-can/examples/capabilities/i17/"
+      ],
+      "changes": "Integration writer merges this slice\u2019s finite descriptors, native adapters and required checker/emitter hooks, regenerates catalogue mirrors, then separately builds and accepts the changed R/N capability scope with predecessor checks and independent bootstrap controls. Commit bindings first and acceptance evidence separately. Source changes stay provisional until acceptance; unrelated queued slices do not delay this one. Draft bindings once start dependencies are accepted; reference/owner promotion waits for accept_after. Batch compatible ready slices into one bounded build when possible, but record independent per-slice controls, receipts and acceptance; do not make unrelated slices prerequisites. Own a complete ordinary Can helper package and tiny typed example for this slice, including signatures, effects, opaque handles, errors and mandatory assertions. Do not defer the API surface to the later Q case.",
+      "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
+      "evidence": "evidence/I17.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
+      "commit": "feat(testing): integrate object-store ownership",
+      "status": "planned",
+      "scope": "binding implementation plus separate reference/owner delta acceptance"
+    },
+    {
+      "id": "Z01",
+      "title": "Reconcile every retained facet with concrete Can evidence",
+      "lane": "integration-retirement",
+      "start_after": [
+        "P16"
+      ],
+      "accept_after": [
+        "P23"
+      ],
+      "files": [
+        "tests/native-can/src/coverage/migration/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/"
+      ],
+      "changes": "Extend the Can registry/reducer with per-row facet, variant, environment and delegated-declaration mappings. Include source hashes, dispositions, expected case/check IDs, required receipts and correction chains. Validate each ready row incrementally; a group label or pass count is not coverage.",
+      "acceptance": "Dropped facet, missing engine, undeclared duplicate credit, unaccepted reference and later invalidation each prevent complete coverage. Validate the 292-row ledger and 30 delegate inventory against current sources.",
+      "evidence": "evidence/Z01.json plus per-row/file control and commit links",
+      "commit": "feat(testing): reconcile migration coverage evidence",
+      "status": "planned",
+      "scope": "incremental retirement and final acceptance"
+    },
+    {
+      "id": "Z02",
+      "title": "Retire qualified harness symbols and files incrementally",
+      "lane": "integration-retirement",
+      "start_after": [
+        "Z01"
+      ],
+      "accept_after": [
+        "P23"
+      ],
+      "files": [
+        "old executable harnesses and shared support listed in retirement-map.json"
+      ],
+      "changes": "Integration owner applies the shared deletion gate separately to each file/symbol once its actual rows/callers are qualified. Record per-file pending/eligible/retired state and deletion commit; do not wait for unrelated files. Static fixtures and reviewed historical records keep declared roles. Re-scan direct and reverse references before each deletion.",
+      "acceptance": "No file-wide retirement while any direct/related obligation or caller remains unresolved. Per-row retained facets, qualified replacement/control evidence and current cleanup/correction receipts are mandatory. Run affected replacement/caller checks before accepting each deletion; record partial progress without completing the task until all eligible executable host policy is resolved.",
+      "evidence": "evidence/Z02.json plus per-row/file control and commit links",
+      "commit": "refactor(tests): retire qualified harness slices",
+      "status": "planned",
+      "scope": "incremental retirement and final acceptance"
+    },
+    {
+      "id": "Z03",
+      "title": "Activate qualified caller replacements and operator entrypoints",
+      "lane": "integration-retirement",
+      "start_after": [
+        "P21",
+        "Z01"
+      ],
+      "accept_after": [
+        "M43",
+        "M44",
+        "M45"
+      ],
+      "files": [
+        "distribution/qualify.py",
+        "distribution/",
+        "host/conformance/",
+        ".github/workflows/",
+        "operator documentation paths in retirement-map.json"
+      ],
+      "changes": "Apply submitted M43\u2013M45 edits through one integration writer. Activate each caller only after its own referenced replacement scope is qualified; keep independent out-of-scope compiler/runtime gates separate. Move selection/scenario/oracle/aggregation policy into Can, leaving only generic invocation and provisioning.",
+      "acceptance": "Partial/unrun/malformed or invalidated report plus receipt is rejected; required service legs are not hidden skips. No active caller invokes retired host policy or counts host unit invocations as migrated Can coverage.",
+      "evidence": "evidence/Z03.json plus per-row/file control and commit links",
+      "commit": "refactor(testing): activate qualified Can callers",
+      "status": "planned",
+      "scope": "incremental retirement and final acceptance"
+    },
+    {
+      "id": "Z04",
+      "title": "Retire transitional bootstrap scenario harnesses",
+      "lane": "integration-retirement",
+      "start_after": [
+        "Z01",
+        "P23"
+      ],
+      "accept_after": [
+        "I01",
+        "I02",
+        "I03",
+        "I04",
+        "I05",
+        "I06",
+        "I07",
+        "I08",
+        "I09",
+        "I10",
+        "I11",
+        "I12",
+        "I13",
+        "I14",
+        "I15",
+        "I16",
+        "I17"
+      ],
+      "files": [
+        "tools/native-test-bootstrap/",
+        "tests/native-can/bootstrap/",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/bootstrap-retirement/"
+      ],
+      "changes": "Use the accepted outer Can judge to own ongoing runner/owner qualification. Remove transitional host scenario/verdict policy from active suite/CI/release paths after equivalent independent Can controls land. Retain only generic finite native witnessing/ownership mechanisms and compact dated bootstrap evidence.",
+      "acceptance": "Kill subordinate controller/owner while independent outer witness survives; loss of the outer judge stays incomplete. Reverse-call scan confirms no permanent alternate host test suite. Do not delete bootstrap evidence or pretend candidate self-comparison replaces independent authority.",
+      "evidence": "evidence/Z04.json plus per-row/file control and commit links",
+      "commit": "refactor(testing): retire transitional host test policy",
+      "status": "planned",
+      "scope": "incremental retirement and final acceptance"
+    },
+    {
+      "id": "Z05",
+      "title": "Audit full completion and run the authorized qualification matrix",
+      "lane": "integration-retirement",
+      "start_after": [
+        "Z01",
+        "Z02",
+        "Z03",
+        "Z04",
+        "P24",
+        "M01",
+        "M02",
+        "M03",
+        "M04",
+        "M05",
+        "M06",
+        "M07",
+        "M08",
+        "M09",
+        "M10",
+        "M11",
+        "M12",
+        "M13",
+        "M14",
+        "M15",
+        "M16",
+        "M17",
+        "M18",
+        "M19",
+        "M20",
+        "M21",
+        "M22",
+        "M23",
+        "M24",
+        "M25",
+        "M26",
+        "M27",
+        "M28",
+        "M29",
+        "M30",
+        "M31",
+        "M32",
+        "M33",
+        "M34",
+        "M35",
+        "M36",
+        "M37",
+        "M38",
+        "M39",
+        "M40",
+        "M41",
+        "M42",
+        "M43",
+        "M44",
+        "M45",
+        "QN1",
+        "QN2",
+        "QN3",
+        "QB1",
+        "QB2",
+        "QB3",
+        "QB4",
+        "QB5",
+        "QF1",
+        "QF2",
+        "QWS",
+        "QD1",
+        "QD2",
+        "QD3",
+        "QD4",
+        "QStore",
+        "QB0",
+        "QB1base",
+        "QHTTP"
+      ],
+      "accept_after": [],
+      "files": [
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/completion/"
+      ],
+      "changes": "Reconcile fresh inventory and all retained environments, dynamic variants, 30 delegated suites, 14 hard gates and caller receipts. Run the selected complete matrix serially under accepted profiles; reuse builds within the run. Reconcile deferred metrics explicitly: keep completion blocked until authorized retained measurement legs run, or a reviewed current-contract retirement decision removes an obsolete obligation.",
+      "acceptance": "All retained coverage has Can-owned scenarios/oracles, independent facts and valid cleanup/correction-aware receipts. Historical/static dispositions are reviewed. No retained obligation disappears because of missing service, Linux/engine profile or deferred load. Broad performance work remains subject to existing user deferral.",
+      "evidence": "evidence/Z05.json plus per-row/file control and commit links",
+      "commit": "test(testing): record complete migration qualification",
+      "status": "planned",
+      "scope": "incremental retirement and final acceptance"
+    },
+    {
+      "id": "Z06",
+      "title": "Request independent final review and resolve findings",
+      "lane": "integration-retirement",
+      "start_after": [
+        "Z05"
+      ],
+      "accept_after": [],
+      "files": [
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/final-review/"
+      ],
+      "changes": "Send the main plan\u2019s final review prompt with exact commit range and evidence to an independent reviewer. Fix actionable findings in small commits; rerun affected checks and any invalidated acceptance. Reconcile current source hashes and record open limitations without declaring completion.",
+      "acceptance": "Reviewer checks coverage, hidden host policy, R/N/C authority, native/browser/descriptor/DB controls, lifecycle/resource scope and deletion order. Finish only with no unresolved completion blocker, clean owned scratch and current accepted evidence; never infer permission to publish.",
+      "evidence": "evidence/Z06.json plus per-row/file control and commit links",
+      "commit": "docs(testing): record independent migration review",
+      "status": "planned",
+      "scope": "incremental retirement and final acceptance"
+    }
+  ]
+}

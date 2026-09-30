@@ -1,0 +1,39 @@
+{
+  "status": "planned",
+  "executor": null,
+  "writing_owner": null,
+  "task_id": null,
+  "row_or_file_slice": null,
+  "start_prerequisite_receipts": [],
+  "acceptance_prerequisite_receipts": [],
+  "commits": [],
+  "changed_paths": [],
+  "commands_with_deadlines_and_results": [],
+  "identities": {
+    "reference": null,
+    "owner": null,
+    "candidate": null,
+    "suite": null,
+    "artifact": null,
+    "host_profile": null,
+    "observer": null
+  },
+  "coverage": {
+    "case_check_ids": [],
+    "retained_facets": [],
+    "variants_and_environments": [],
+    "unrun_or_blocked": []
+  },
+  "controls": {
+    "positive": [],
+    "seeded_defect": [],
+    "missing_evidence": []
+  },
+  "resource_and_cleanup_receipts": [],
+  "correction_registry_head": null,
+  "relevance_decision": null,
+  "retirement_eligible": false,
+  "retirement_commit": null,
+  "reviewer_disposition": null,
+  "limitations": []
+}

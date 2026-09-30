@@ -1,0 +1,877 @@
+{
+  "status": "planned",
+  "tasks": [
+    {
+      "id": "K01",
+      "title": "Freeze native-value typed operation schema",
+      "lane": "native-values",
+      "files": [
+        "tools/runtime/test-services/native-values/schema*"
+      ],
+      "changes": "Finite operations, inert handles, sync/async assimilation and ownership contracts; hand catalogue descriptors to integration writer.",
+      "acceptance": "No arbitrary module/export/eval, raw hostile async reply, expected outcome or unlimited handle. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Reviewed effect table and focused schema checks. Record under evidence/K01.json.",
+      "commit": "feat(test): define native-value service operations",
+      "start_after": [
+        "P01"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K02",
+      "title": "Build inert same-realm native sessions",
+      "lane": "native-values",
+      "files": [
+        "tools/runtime/test-services/native-values/session*"
+      ],
+      "changes": "Raw handles, aliases, getter-backed then, throwing thenable, revoked Proxy and inert transport.",
+      "acceptance": "No implicit getter/then read; wrong-owner and stale handles reject; service close reclaims child. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Bounded mechanics controls, counters and cleanup receipt. Record under evidence/K02.json.",
+      "commit": "feat(test): preserve hostile native values behind handles",
+      "start_after": [
+        "K01",
+        "P02",
+        "P08"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K03",
+      "title": "Add exact native observations and seals",
+      "lane": "native-values",
+      "files": [
+        "tools/runtime/test-services/native-values/observe*"
+      ],
+      "changes": "IEEE bits, integer lexeme, aliases, explicit effectful reads, counter intervals and final seal.",
+      "acceptance": "Normalization, rounding, alias swap and assimilation are distinguishable. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Focused value-matrix controls; QN1 holds integrated credit. Record under evidence/K03.json.",
+      "commit": "feat(test): expose exact native value facts",
+      "start_after": [
+        "K02"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K04",
+      "title": "Review generated C ingress seam",
+      "lane": "native-values",
+      "files": [
+        "tools/runtime/test-services/native-values/c-ingress*"
+      ],
+      "changes": "Fix current-version C generated entry/export/signature/import manifest and same-realm completion handling; supply shared edits to integration writer.",
+      "acceptance": "No private runtime swap or arbitrary dynamic importer; seam reviewed before coding subject bridge. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Signed boundary review with C/R artifacts and hook provenance. Record under evidence/K04.json.",
+      "commit": "docs(test): specify generated C native ingress",
+      "start_after": [
+        "K01",
+        "P03",
+        "P04"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K05",
+      "title": "Implement independent C adapter witness",
+      "lane": "native-values",
+      "files": [
+        "tools/runtime/test-services/native-values/c-witness*"
+      ],
+      "changes": "Witness actual adapter invocation through generated C path; return inert counter/identity facts.",
+      "acceptance": "Plausible bypass, wrong export/signature, eager read and forged local completion each detectable. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Bounded witness controls with instrumented and uninstrumented artifact IDs; QN2 holds credit. Record under evidence/K05.json.",
+      "commit": "feat(test): witness generated C adapter invocation",
+      "start_after": [
+        "K02",
+        "K03",
+        "K04"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K06",
+      "title": "Expose late native occurrence and lease facts",
+      "lane": "native-values",
+      "files": [
+        "tools/runtime/test-services/native-values/late*"
+      ],
+      "changes": "Two gated participants, selected identity, late fault/use and terminal event/lease observations.",
+      "acceptance": "Occurrence swap, dropped late event and early release detectable; worker death is incomplete. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Bounded raw and C-subject controls; QN3 holds credit. Record under evidence/K06.json.",
+      "commit": "feat(test): observe late native events and leases",
+      "start_after": [
+        "K03",
+        "K05",
+        "P09",
+        "P11"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K07",
+      "title": "Implement independent browser host-effect observation",
+      "lane": "browser",
+      "files": [
+        "tools/runtime/test-services/browser-driver/admission*",
+        "tools/native-test-owner/host/browser_observer/"
+      ],
+      "changes": "Independent host-UI observer scope, launch attestation, interval through disposal, unknown/gap and correction keys. Implement the observer and admission adapter, including interruption, unknown scope, durable correction publication and the interval through disposal; specification alone does not complete this task. Implement the actual observer outside the launch/driver service and its killable subtree, under independent N/T ownership. Keep the TS admission file as a typed adapter. Observation survives driver death and covers late host effects through confirmed disposal; observer loss makes the interval unknown.",
+      "acceptance": "No headless/HOME/flags/process sample as no-UI proof; missing observer blocks launch. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Reviewed observer coverage and host-profile requirements. Record under evidence/K07.json.",
+      "commit": "feat(test): define browser host-effect admission",
+      "start_after": [
+        "P01",
+        "P12"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K08",
+      "title": "Own pinned-driver browser launches",
+      "lane": "browser",
+      "files": [
+        "tools/runtime/test-services/browser-driver/launch*",
+        "tools/native-test-owner/external/browser_local.go"
+      ],
+      "changes": "N-owned service uses pinned driver's launcher and captures effective profile/child identities before context exposure. Implement the outside-service N child-discovery/containment/reclaim adapter so driver death mid-launch cannot orphan children; a receipt from the dead driver is not its own cleanup witness.",
+      "acceptance": "Source/local simulated controls establish launch identity and external ownership; no live browser at this code task. Actual launch, host effects and service-death controls are QB0. A missing qualified observer blocks that acceptance.",
+      "evidence": "Bounded launch and service-death controls plus host observer receipt. Record under evidence/K08.json.",
+      "commit": "feat(test): own browser driver launches",
+      "start_after": [
+        "K07",
+        "P29"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K09",
+      "title": "Add browser event capture and terminal seal",
+      "lane": "browser",
+      "files": [
+        "tools/runtime/test-services/browser-driver/events*"
+      ],
+      "changes": "Context/page/navigation watches, complete body/error callbacks, cursors, checkpoint and close/seal.",
+      "acceptance": "Pending capture, gap or quiet prefix cannot prove absence; repeated header/decoding scope explicit. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Focused event loss/close tests and terminal receipt. Record under evidence/K09.json.",
+      "commit": "feat(test): seal browser event observations",
+      "start_after": [
+        "K08"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K10",
+      "title": "Separate pending input from settlement",
+      "lane": "browser",
+      "files": [
+        "tools/runtime/test-services/browser-driver/input*"
+      ],
+      "changes": "input_begin/input_settle, bounded DOM capture, action identity and lock-free route service while click pending.",
+      "acceptance": "Click settlement remains distinct from route delivery and application witness; route abort may fulfill input. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Bounded held-route mechanics and abort/close controls. Record under evidence/K10.json.",
+      "commit": "feat(test): expose pending browser input facts",
+      "start_after": [
+        "K09"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K11",
+      "title": "Implement one-contact route tokens",
+      "lane": "browser",
+      "files": [
+        "tools/runtime/test-services/browser-driver/route*"
+      ],
+      "changes": "Route token state, fetch once, immutable captured body, resolve modes and separate contact/delivery IDs.",
+      "acceptance": "Duplicate upstream contact, partial body and unknown delivery cannot pass; repeated native operation joins. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Route controls with operation journal and disposal receipt. Record under evidence/K11.json.",
+      "commit": "feat(test): preserve browser route contact and delivery",
+      "start_after": [
+        "K09",
+        "K10",
+        "K20"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K13",
+      "title": "Add immediate DOM and event provenance",
+      "lane": "browser",
+      "files": [
+        "tools/runtime/test-services/browser-driver/dom*"
+      ],
+      "changes": "Finite same-task batch, clone/append, same-node listener acknowledgment and microtask-order observer.",
+      "acceptance": "Yield, wrong cancellation, returned original handle and missing occurrence detectable. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Focused DOM event controls; QB2 holds credit. Record under evidence/K13.json.",
+      "commit": "feat(test): observe immediate browser DOM actions",
+      "start_after": [
+        "K09",
+        "K10"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K14",
+      "title": "Invoke page-origin Fetch",
+      "lane": "browser",
+      "files": [
+        "tools/runtime/test-services/browser-driver/fetch*"
+      ],
+      "changes": "Typed bounded page-realm Fetch with credentials and redirect policy.",
+      "acceptance": "Cookie/origin/CSP facts distinguish page Fetch from external HTTP; no source eval. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Focused page-policy controls; QB3 holds credit. Record under evidence/K14.json.",
+      "commit": "feat(test): expose page-origin fetch facts",
+      "start_after": [
+        "K09",
+        "K20"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K15",
+      "title": "Load Can browser artifacts and export facts",
+      "lane": "browser",
+      "files": [
+        "tools/runtime/test-services/browser-driver/artifact*"
+      ],
+      "changes": "C artifact lease, module load, DOM-ready and bounded typed data export.",
+      "acceptance": "Missing ready/export and unsupported exact representation cannot become empty pass. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Artifact identity and focused export controls; QB4 holds credit. Record under evidence/K15.json.",
+      "commit": "feat(test): load compiled Can browser fixtures",
+      "start_after": [
+        "K03",
+        "K09"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K16",
+      "title": "Clean remote browser contexts after worker death",
+      "lane": "browser",
+      "files": [
+        "tools/runtime/test-services/browser-driver/remote*",
+        "tools/native-test-owner/external/browser_remote.go"
+      ],
+      "changes": "Own remote connection/context separately from shared Firefox launch server. Implement independent N remote-context cleanup authority and confirmation, preserving the shared launch server; missing independent close capability blocks qualification.",
+      "acceptance": "Case close-server attempt rejects before effect; lost close confirmation remains unresolved. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Disposable controls and pinned instance receipt; QB5 holds credit. Record under evidence/K16.json.",
+      "commit": "feat(test): reclaim owned remote browser contexts",
+      "start_after": [
+        "K08",
+        "K09",
+        "P29"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K17",
+      "title": "Specify descriptor and environment contract",
+      "lane": "descriptor",
+      "files": [
+        "schemas/native-test/descriptors/"
+      ],
+      "changes": "fd 0/1/2/3/4 directions, byte/EOF/lifetime states and distinct C CLI/direct-entry environments; N owner owns ExtraFiles.",
+      "acceptance": "No private owner fd or secret argv/log; each launch has fresh snapshot state. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Contract review and descriptor-map checks. Record under evidence/K17.json.",
+      "commit": "feat(test): define managed descriptor fixtures",
+      "start_after": [
+        "P01"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K18",
+      "title": "Add F1 descriptor fixtures",
+      "lane": "descriptor",
+      "files": [
+        "tests/native-can/subjects/descriptors/f1/"
+      ],
+      "changes": "Binary stdin, Unicode/empty/missing names, malformed and unused snapshot fixtures. Keep stimuli as Can subjects or fixed inert bytes; scenario decisions and expectations are authored at QF1 in ordinary Can. Existing Go CLI remains the subject.",
+      "acceptance": "Offered/accepted bytes, EOF, writer exit and child result stay separate; non-reader does not strand writer. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Bounded wrong-fd, withheld-EOF, truncation and sanitation controls; QF1 holds credit. Record under evidence/K18.json.",
+      "commit": "test: cover descriptor delivery and startup isolation",
+      "start_after": [
+        "K17",
+        "P10"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K19",
+      "title": "Add inherited fd 4 lease fixture",
+      "lane": "descriptor",
+      "files": [
+        "tests/native-can/subjects/descriptors/f2/"
+      ],
+      "changes": "Gate child readiness, launcher exit, clean attempt, child release and prune observations. Subject helpers expose raw readiness/lease facts only; QF2 owns the Can sequence and verdict.",
+      "acceptance": "Actual inherited kernel lease protects generation; early/missing lease control loses protection. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Bounded lease controls and cleanup receipt; QF2 holds credit. Record under evidence/K19.json.",
+      "commit": "test: cover child-held generation lease",
+      "start_after": [
+        "K18",
+        "P10",
+        "P27"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K20",
+      "title": "Implement controlled peer and HTTP operations",
+      "lane": "peer",
+      "files": [
+        "tools/runtime/test-services/http-peer/peer*",
+        "tools/runtime/test-services/http-peer/http*"
+      ],
+      "changes": "Typed listener/read/write/half-close and pending HTTP upload/header/body operations with finite destination/byte bounds.",
+      "acceptance": "No implicit retry/redirect; accepted bytes differ from consumption; repeated headers, EOF and partial state explicit. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Bounded malformed, truncated, redirect, backpressure and cleanup controls. Record under evidence/K20.json.",
+      "commit": "feat(test): add controlled HTTP peer observations",
+      "start_after": [
+        "P29"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K21",
+      "title": "Implement external WebSocket client observations",
+      "lane": "peer",
+      "files": [
+        "tools/runtime/test-services/http-peer/websocket*"
+      ],
+      "changes": "Connect/send/event/close with opcode, payload and distinct local/remote close facts.",
+      "acceptance": "Dropped event and forged remote-close controls detectable; bounded pending work. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Focused protocol checks; QWS holds Can credit. Record under evidence/K21.json.",
+      "commit": "feat(test): expose external websocket events",
+      "start_after": [
+        "K20"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K22",
+      "title": "Implement independent raw DB observer",
+      "lane": "database",
+      "files": [
+        "tools/runtime/test-services/db-observer/core*",
+        "tools/native-test-owner/external/db_observer.go"
+      ],
+      "changes": "Owned namespace, pinned raw connection, typed exact cells, engine/driver and SQL error provenance.",
+      "acceptance": "Rows retain exact number/text/bytes/null/order; independence scope from Can adapter stated. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Focused transport controls and namespace receipt. Record under evidence/K22.json.",
+      "commit": "feat(test): add typed independent database observer",
+      "start_after": [
+        "P29"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K23",
+      "title": "Observe compiled RETURNING and final rows",
+      "lane": "database",
+      "files": [
+        "tools/runtime/test-services/db-observer/returning*"
+      ],
+      "changes": "D1 raw row-count and typed row observations beside ordinary C fixture.",
+      "acceptance": "Raw RETURNING alone cannot credit C; bigint narrowing and wrong row schema detectable. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Selected PG/SQLite bounded controls; QD1 holds credit. Record under evidence/K23.json.",
+      "commit": "feat(test): observe returning rows independently",
+      "start_after": [
+        "K22"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K24",
+      "title": "Expose fresh-pool transaction identity",
+      "lane": "database",
+      "files": [
+        "tools/runtime/test-services/db-observer/transactions*",
+        "tools/native-test-owner/external/db_transaction.go"
+      ],
+      "changes": "Callback entry, pinned connection, actor identity and settled rollback facts. Implement engine-specific settlement observations and release acknowledgment without deciding rollback expectations in native code.",
+      "acceptance": "Swapped actor and wrong-handle LAST_INSERT_ID detectable regardless of coincidentally correct values. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "One bounded eight-actor control, no warmup; QD2 holds credit. Record under evidence/K24.json.",
+      "commit": "feat(test): observe fresh-pool transaction identity",
+      "start_after": [
+        "K22",
+        "K23",
+        "P12"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K25",
+      "title": "Add poisoned transaction sentinel observations",
+      "lane": "database",
+      "files": [
+        "tools/runtime/test-services/db-observer/poison*"
+      ],
+      "changes": "PG error codes, terminal settlement and fresh raw sentinel/replay reads.",
+      "acceptance": "Omit-poison control reveals committed sentinel; callback success never proves commit. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Bounded poison/control facts; QD3 holds credit. Record under evidence/K25.json.",
+      "commit": "feat(test): witness poisoned transaction rollback",
+      "start_after": [
+        "K22",
+        "K23",
+        "P29"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K26",
+      "title": "Separate SQL deadline from server settlement",
+      "lane": "database",
+      "files": [
+        "tools/runtime/test-services/db-observer/deadline*",
+        "tools/native-test-owner/external/db_settlement.go"
+      ],
+      "changes": "Dispatch, visible deadline, driver settlement, server acknowledgment/quiescence, retained lease and fence facts. Implement the engine-specific N quiescence/fence adapter and retained namespace authority; do not assume a generic P29 grant supplies server cancellation.",
+      "acceptance": "At most one dispatch; unknown server effect blocks cleanup; no unsupported cancellation claim. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Bounded delayed-write/prestart controls; QD4 holds credit. Record under evidence/K26.json.",
+      "commit": "feat(test): reconcile SQL work after visible deadline",
+      "start_after": [
+        "K22",
+        "K24",
+        "P29"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "K27",
+      "title": "Implement owned object-store observations",
+      "lane": "object-store",
+      "files": [
+        "tools/runtime/test-services/object-store/service*",
+        "tools/native-test-owner/external/object_store.go"
+      ],
+      "changes": "Scoped prefix, put/get/list/delete/close, exact bytes, pagination and accepted-write settlement.",
+      "acceptance": "Caller prefix is not authority; incomplete pages/eventual empty list cannot prove cleanup; shared bucket untouched. Use local or bounded bootstrap controls only; live host-dependent controls wait for the corresponding qualified profile and Q task.",
+      "evidence": "Focused pending-write and paginated-cleanup controls; QStore holds Can credit. Record under evidence/K27.json.",
+      "commit": "feat(test): own object-store prefix observations",
+      "start_after": [
+        "P29"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "mechanism code and local controls; no integrated credit"
+    },
+    {
+      "id": "QN1",
+      "title": "Qualify integrated N1 Can case",
+      "lane": "acceptance-native",
+      "files": [
+        "tests/native-can/qualification/qn1/**"
+      ],
+      "changes": "Can owns N1 descriptors, sequencing and exact expectations.",
+      "acceptance": "Full N1 matrix plus assimilation/normalization/rounding/alias controls, final seal and N receipt. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "Can case/check IDs, R/C/observer IDs, seeded controls and cleanup receipt. Record evidence/QN1.json with qualified scope and all unrun engine legs.",
+      "commit": "test: qualify exact native value transport",
+      "start_after": [
+        "P23",
+        "I01"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "integrated Can qualification"
+    },
+    {
+      "id": "QN2",
+      "title": "Qualify integrated N2 C adapter ingress",
+      "lane": "acceptance-native",
+      "files": [
+        "tests/native-can/qualification/qn2/**"
+      ],
+      "changes": "Can invokes ordinary C-compiled subject and checks independent boundary witness.",
+      "acceptance": "Bypass, wrong export, eager getter and forged completion controls fail. Require independent version-bound invocation and local-completion authentication plus instrumented/uninstrumented parity; a C-supplied invoked flag is insufficient. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "Generated artifact/import IDs, witness facts, Can report and N receipt. Record evidence/QN2.json with qualified scope and all unrun engine legs.",
+      "commit": "test: qualify generated C native ingress",
+      "start_after": [
+        "QN1",
+        "I02"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "integrated Can qualification"
+    },
+    {
+      "id": "QN3",
+      "title": "Qualify integrated N3 late identity",
+      "lane": "acceptance-native",
+      "files": [
+        "tests/native-can/qualification/qn3/**"
+      ],
+      "changes": "Can controls gates, selected occurrence and lease release.",
+      "acceptance": "Late event/identity/early release controls fail; sealed complete interval and cleanup. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "Separate raw/C leg reports and receipts. Record evidence/QN3.json with qualified scope and all unrun engine legs.",
+      "commit": "test: qualify late native occurrence identity",
+      "start_after": [
+        "QN2",
+        "I03"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "integrated Can qualification"
+    },
+    {
+      "id": "QB1",
+      "title": "Qualify integrated B1 pending route",
+      "lane": "acceptance-browser",
+      "files": [
+        "tests/native-can/qualification/qb1/**"
+      ],
+      "changes": "Can owns pending-click, route abort and durable corruption/replay choreography. Reuse only the application payload operation_id on replay; new native action/request/route IDs are mandatory. Never redispatch an uncertain native operation.",
+      "acceptance": "Input, upstream contact, browser delivery, application witness, native/app IDs, seal and host effects separately pass controls. Full B1 is still unrun until durable corruption/replay controls pass; QB1base alone does not close B1. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "Per-engine Can checks, route/DB facts, host observer and cleanup receipts. Record evidence/QB1.json with qualified scope and all unrun engine legs.",
+      "commit": "test: qualify browser route delivery and settlement",
+      "start_after": [
+        "QB1base",
+        "QD1"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "integrated Can qualification"
+    },
+    {
+      "id": "QB2",
+      "title": "Qualify integrated B2 DOM semantics",
+      "lane": "acceptance-browser",
+      "files": [
+        "tests/native-can/qualification/qb2/**"
+      ],
+      "changes": "Can owns same-task clicks, clone/missing target, physical/synthetic events and cancellation checks.",
+      "acceptance": "Yield, cancellation, clone and missing-occurrence controls fail; pre-submit and in-flight absence distinct. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "Per-engine Can checks, event seal and host receipt. Record evidence/QB2.json with qualified scope and all unrun engine legs.",
+      "commit": "test: qualify browser DOM event semantics",
+      "start_after": [
+        "QB1base",
+        "I07"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "integrated Can qualification"
+    },
+    {
+      "id": "QB3",
+      "title": "Qualify integrated B3 page Fetch",
+      "lane": "acceptance-browser",
+      "files": [
+        "tests/native-can/qualification/qb3/**"
+      ],
+      "changes": "Can chooses same-origin cookie/generation/CSP requests.",
+      "acceptance": "CSP forbidden origin has sealed independent no-contact; external HTTP substitution fails. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "Page/server Can checks, listener seal and host receipt. Record evidence/QB3.json with qualified scope and all unrun engine legs.",
+      "commit": "test: qualify page-origin fetch policy",
+      "start_after": [
+        "QB0",
+        "QHTTP",
+        "I08",
+        "P23"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "integrated Can qualification"
+    },
+    {
+      "id": "QB4",
+      "title": "Qualify integrated B4 Can browser codec",
+      "lane": "acceptance-browser",
+      "files": [
+        "tests/native-can/qualification/qb4/**"
+      ],
+      "changes": "Ordinary Can browser fixture exports exact codec facts for R Can oracle.",
+      "acceptance": "Unsafe int64/-0, variant/nested and decode rejection; malformed/missing ready/export controls fail. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "C artifact identities, browser/Bun facts, Can checks and receipts. Record evidence/QB4.json with qualified scope and all unrun engine legs.",
+      "commit": "test: qualify browser codec facts in Can",
+      "start_after": [
+        "QB0",
+        "QN1",
+        "I09",
+        "P23"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "integrated Can qualification"
+    },
+    {
+      "id": "QB5",
+      "title": "Qualify integrated B5 remote Firefox cleanup",
+      "lane": "acceptance-browser",
+      "files": [
+        "tests/native-can/qualification/qb5/**"
+      ],
+      "changes": "Can checks worker death, first context close and second context on same server.",
+      "acceptance": "Shared server survives and case close-server rejects before effect; unknown close blocks. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "Pinned server instance, Can check and N cleanup receipt. Record evidence/QB5.json with qualified scope and all unrun engine legs.",
+      "commit": "test: qualify remote browser context recovery",
+      "start_after": [
+        "QB0",
+        "I10",
+        "P23"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "integrated Can qualification"
+    },
+    {
+      "id": "QF1",
+      "title": "Qualify integrated F1 descriptors",
+      "lane": "acceptance-descriptor",
+      "files": [
+        "tests/native-can/qualification/qf1/**"
+      ],
+      "changes": "Can owns binary/Unicode/malformed/unused snapshot and startup policy cases.",
+      "acceptance": "Independent fd 3 EOF, blocked writer cleanup and wrong-fd/withheld-EOF/sanitization controls. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "Can checks and writer/child/descriptor receipts. Record evidence/QF1.json with qualified scope and all unrun engine legs.",
+      "commit": "test: qualify descriptor delivery in Can",
+      "start_after": [
+        "P23",
+        "I11"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "integrated Can qualification"
+    },
+    {
+      "id": "QF2",
+      "title": "Qualify integrated F2 inherited lease",
+      "lane": "acceptance-descriptor",
+      "files": [
+        "tests/native-can/qualification/qf2/**"
+      ],
+      "changes": "Can checks child-held fd 4 across launcher exit and prune.",
+      "acceptance": "Generation lives only until confirmed lease release; missing/early lease controls fail. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "Can check and N generation/child receipts. Record evidence/QF2.json with qualified scope and all unrun engine legs.",
+      "commit": "test: qualify inherited generation leases",
+      "start_after": [
+        "QF1",
+        "I12"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "integrated Can qualification"
+    },
+    {
+      "id": "QWS",
+      "title": "Qualify Can HTTP/peer/WebSocket cases",
+      "lane": "acceptance-peer",
+      "files": [
+        "tests/native-can/qualification/qws/**"
+      ],
+      "changes": "Can supplies bytes, hold/release schedule, status/body/message/shutdown expectations.",
+      "acceptance": "Missing EOF/event, wrong close provenance and incomplete peer cleanup fail. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "Can check IDs, peer event seals and N receipts. Record evidence/QWS.json with qualified scope and all unrun engine legs.",
+      "commit": "test: qualify controlled peer protocols in Can",
+      "start_after": [
+        "QHTTP",
+        "I05"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "integrated Can qualification"
+    },
+    {
+      "id": "QD1",
+      "title": "Qualify integrated D1 RETURNING",
+      "lane": "acceptance-database",
+      "files": [
+        "tests/native-can/qualification/qd1/**"
+      ],
+      "changes": "Can exercises C RETURNING and checks independent final rows.",
+      "acceptance": "PG/SQLite selected legs and narrowing/wrong-row controls; absent service blocked. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "C path, raw rows, Can checks and namespace receipt. Record evidence/QD1.json with qualified scope and all unrun engine legs.",
+      "commit": "test: qualify returning rows in Can",
+      "start_after": [
+        "P23",
+        "I13"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "integrated Can qualification"
+    },
+    {
+      "id": "QD2",
+      "title": "Qualify integrated D2 fresh pool",
+      "lane": "acceptance-database",
+      "files": [
+        "tests/native-can/qualification/qd2/**"
+      ],
+      "changes": "Can runs one eight-actor burst and rollback with independent final reads.",
+      "acceptance": "No warmup, exact actor/connection identity and wrong-handle controls; MySQL separate. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "Can checks, native settlement IDs and namespace receipt. Record evidence/QD2.json with qualified scope and all unrun engine legs.",
+      "commit": "test: qualify fresh-pool transaction scope",
+      "start_after": [
+        "QD1",
+        "I14"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "integrated Can qualification"
+    },
+    {
+      "id": "QD3",
+      "title": "Qualify integrated D3 rollback sentinel",
+      "lane": "acceptance-database",
+      "files": [
+        "tests/native-can/qualification/qd3/**"
+      ],
+      "changes": "Can inserts sentinel, poisons PG transaction and checks replay via raw observer.",
+      "acceptance": "23505/25P02, settled rollback, absent sentinel and omit-poison control. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "Can checks, server/driver settlement and namespace receipt. Record evidence/QD3.json with qualified scope and all unrun engine legs.",
+      "commit": "test: qualify poisoned transaction rollback",
+      "start_after": [
+        "QD1",
+        "I15"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "integrated Can qualification"
+    },
+    {
+      "id": "QD4",
+      "title": "Qualify integrated D4 SQL deadline",
+      "lane": "acceptance-database",
+      "files": [
+        "tests/native-can/qualification/qd4/**"
+      ],
+      "changes": "Can separates visible deadline from driver/server settlement and later raw reads.",
+      "acceptance": "Stable commit_unknown, at-most-once dispatch, retained lease, prestart no-dispatch; unresolved blocks cleanup. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "Can checks, fence/quiescence facts and namespace receipt. Record evidence/QD4.json with qualified scope and all unrun engine legs.",
+      "commit": "test: qualify SQL deadline settlement",
+      "start_after": [
+        "QD1",
+        "I16"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "integrated Can qualification"
+    },
+    {
+      "id": "QStore",
+      "title": "Qualify Can object-store cases",
+      "lane": "acceptance-object-store",
+      "files": [
+        "tests/native-can/qualification/qstore/**"
+      ],
+      "changes": "Can supplies object names/content, faults and durability expectations.",
+      "acceptance": "Owned prefix, full pagination, accepted-write quiescence and qualified consistency before deletion. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "Can checks, service identity and cleanup receipt. Record evidence/QStore.json with qualified scope and all unrun engine legs.",
+      "commit": "test: qualify owned object-store lifecycle",
+      "start_after": [
+        "P23",
+        "I17"
+      ],
+      "accept_after": [],
+      "status": "planned",
+      "scope": "integrated Can qualification"
+    },
+    {
+      "id": "QB0",
+      "title": "Qualify browser host admission and launch ownership",
+      "lane": "acceptance-browser",
+      "start_after": [
+        "P14",
+        "P23",
+        "I06"
+      ],
+      "accept_after": [],
+      "files": [
+        "tests/native-can/qualification/qb0/**"
+      ],
+      "changes": "Independently qualify observer scope and enforcing launch profile before admitting the first bounded browser. Then check effective pinned-driver profile, launch-to-disposal host interval, service death and inherited children. Unobservable host effects fail closed; do not launch to discover whether an unqualified observer works.",
+      "acceptance": "Observer-loss and planted host-effect controls invalidate admission; prompt/unknown interval or unconfirmed disposal cannot produce success. Noninteractive credential behavior and strict host resource profile are proven independently of browser flags. PM-B1 remains recorded failed; do not re-credit its route-only result. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Demonstrate observer continuity across driver/service death and conservative invalidation on observer loss.",
+      "evidence": "evidence/QB0.json: accepted host/observer/browser profile, bounded controls, disposal receipts and correction registry",
+      "commit": "test(testing): qualify browser host isolation",
+      "status": "planned",
+      "scope": "host admission before integrated browser acceptance"
+    },
+    {
+      "id": "QB1base",
+      "title": "Qualify pending browser input and routes without DB replay",
+      "lane": "acceptance-browser",
+      "start_after": [
+        "QB0",
+        "QHTTP",
+        "I06",
+        "P23"
+      ],
+      "accept_after": [],
+      "files": [
+        "tests/native-can/qualification/qb1base/**"
+      ],
+      "changes": "Ordinary Can checks held-route pending click, abort/close, captured body, duplicate contact and missing receipt controls. Save input/contact/delivery/application facts separately. This qualifies shared browser mechanics only; durable DB replay is QB1.",
+      "acceptance": "Actual input settlement observed independently; route abort need not reject click. A plausible response, missing seal, dropped event or host-effect gap fails; Can supplies all sequencing and expected outcomes. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "evidence/QB1base.json: per-engine cases/controls, route journal, host interval and N receipt; explicitly not full B1",
+      "commit": "test(testing): qualify pending input and route mechanics",
+      "status": "planned",
+      "scope": "partial B1 shared-mechanism qualification"
+    },
+    {
+      "id": "QHTTP",
+      "title": "Qualify Can-controlled peer and HTTP observations",
+      "lane": "acceptance-peer",
+      "start_after": [
+        "P23",
+        "I04"
+      ],
+      "accept_after": [],
+      "files": [
+        "tests/native-can/qualification/qhttp/**"
+      ],
+      "changes": "Can chooses raw bytes, read/write/half-close scheduling, request policy and expected status/body/EOF; native peer returns finite observations.",
+      "acceptance": "Wrong bytes, missing EOF, truncated body, hidden retry/redirect and incomplete cleanup controls fail. Exact header provenance and stream completeness are explicit. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "evidence": "evidence/QHTTP.json: Can cases, controls, peer seals and N cleanup receipt",
+      "commit": "test(testing): qualify controlled HTTP observations",
+      "status": "planned",
+      "scope": "integrated Can qualification"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "validated_utc": "2026-09-30T15:55:06.445050+00:00",
+  "scope": "static planning validation only",
+  "task_count": 143,
+  "task_counts": {
+    "P": 30,
+    "K": 26,
+    "I": 17,
+    "Q": 19,
+    "M": 45,
+    "Z": 6
+  },
+  "unique_ids": true,
+  "all_prerequisites_resolved": true,
+  "acyclic_completion_graph": true,
+  "ledger_rows_exactly_once": 292,
+  "distinct_migration_prefixes": 45,
+  "unchanged_tracked_test_files": 224,
+  "unchanged_delegated_oracle_suites": 30,
+  "external_caller_records": 16,
+  "local_links_checked": 331,
+  "all_14_integrated_gates": "unrun; explicit tasks exist",
+  "implementation_executed": false,
+  "browser_or_service_launched": false,
+  "build_or_performance_run": false,
+  "harnesses_deleted": 0,
+  "runtime_coverage_credited": 0
+}
