@@ -14,19 +14,19 @@ func TestBrowserAdmitsBrowserCatalogue(t *testing.T) {
     provides []
     uses [browser]
 fn void on_click
-    emits []
+    emits {}
     given
         browser::event e
     asserts
         sample: browser::event("click", "", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void on_tick
-    emits []
+    emits {}
     asserts
         sample: => ok
     ok
 fn int demo
-    emits [browser::missing_root, browser::disposed, browser::rejected, browser::stale_version]
+    emits {browser::missing_root, browser::disposed, browser::rejected, browser::stale_version}
     given
         str root
     asserts
@@ -55,7 +55,7 @@ fn int demo
                                         ok => match call browser::dispose_app(app)
                                             ok => ok next
 fn void main
-    emits [browser::missing_root, browser::disposed, browser::rejected, browser::stale_version]
+    emits {browser::missing_root, browser::disposed, browser::rejected, browser::stale_version}
     given
         str[] arguments
     asserts
@@ -91,14 +91,14 @@ func TestBrowserCatalogueKeepsServerDenials(t *testing.T) {
     provides []
     uses [browser, env, http]
 fn void on_click
-    emits []
+    emits {}
     given
         browser::event e
     asserts
         sample: browser::event("click", "", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn str helper
-    emits [env::invalid_name, http::credentials_missing]
+    emits {env::invalid_name, http::credentials_missing}
     asserts
         sample: => ok "fixture"
     match call env::required("HOME")
@@ -108,7 +108,7 @@ fn str helper
         http::credentials_missing
         ok str value => ok value
 fn int demo
-    emits [browser::missing_root, browser::disposed, browser::rejected, env::invalid_name, http::credentials_missing]
+    emits {browser::missing_root, browser::disposed, browser::rejected, env::invalid_name, http::credentials_missing}
     given
         str root
     asserts
@@ -127,7 +127,7 @@ fn int demo
                         ok => match call browser::dispose_app(app)
                             ok => ok 1
 fn void main
-    emits [browser::missing_root, browser::disposed, browser::rejected, env::invalid_name, http::credentials_missing]
+    emits {browser::missing_root, browser::disposed, browser::rejected, env::invalid_name, http::credentials_missing}
     given
         str[] arguments
     asserts

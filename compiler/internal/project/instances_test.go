@@ -19,8 +19,8 @@ func lineageFixture(t *testing.T, root string) {
 	}
 	writeFixture(t, root, "libs/left/can.errors.json", `{"active":["model::failed"],"retired":[]}`)
 	writeFixture(t, root, "libs/right/can.errors.json", `{"active":["model::failed"],"retired":[]}`)
-	writeFixture(t, root, "libs/left/src/model.can", "package model\n    provides [item, failed]\n    uses []\nrecord item\n    int value\nerror failed(str reason)\n")
-	writeFixture(t, root, "libs/right/src/model.can", "package model\n    provides [item, failed]\n    uses []\nrecord item\n    str label\nerror failed(str reason)\n")
+	writeFixture(t, root, "libs/left/src/model.can", "package model\n    provides [item, failed]\n    uses []\nrecord item\n    int value\nerror failed{str reason}\n")
+	writeFixture(t, root, "libs/right/src/model.can", "package model\n    provides [item, failed]\n    uses []\nrecord item\n    str label\nerror failed{str reason}\n")
 	writeFixtureLock(t, root, map[string]string{"left": "libs/left", "right": "libs/right"})
 }
 

@@ -97,8 +97,8 @@ func TestSourceConcreteTypeRefusals(t *testing.T) {
 		{"record box<item>\n    item value\n", "box", "arity"},
 		{"record box<item>\n    item value\n", "box<void>", "void"},
 		{"record leaf\n", "void[]", "void"},
-		{"record leaf\n", "callable int (void) emits []", "void"},
-		{"record leaf\n", "callable int () emits [leaf]", "nominal errors"},
+		{"record leaf\n", "callable int (void) emits {}", "void"},
+		{"record leaf\n", "callable int () emits {leaf}", "nominal errors"},
 		{"record leaf\n", "collections::set<float>", "map_key"},
 		{"record leaf\n", "all_failed<leaf>", "failure_variant"},
 		{"variant invalid\n    int\n", "invalid", "ineligible variant leaf"},
@@ -147,14 +147,14 @@ func TestDeclarationAnnotationsCheckUnusedTemplates(t *testing.T) {
 		"record box<item>\n    item value\n\nrecord unused<item>\n    box value\n",
 		"variant unused<item>\n    int\n    item\n",
 		"record leaf\n\nvariant unused<item>\n    leaf\n    leaf\n    item\n",
-		"record unused<item>\n    callable item (void) emits [] callback\n",
+		"record unused<item>\n    callable item (void) emits {} callback\n",
 	} {
 		b, _ := buildSource(t, sourceHeader+declaration)
 		if _, err := CheckDeclarations(b.world); err == nil {
 			t.Fatalf("accepted parameter-independent template error: %s", declaration)
 		}
 	}
-	b, _ := buildSource(t, sourceHeader+"record unused<item>\n    callable item (item) emits [] callback\n")
+	b, _ := buildSource(t, sourceHeader+"record unused<item>\n    callable item (item) emits {} callback\n")
 	if _, err := CheckDeclarations(b.world); err != nil {
 		t.Fatal(err)
 	}

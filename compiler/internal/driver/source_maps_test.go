@@ -53,14 +53,14 @@ func TestPackagedSourceMaps(t *testing.T) {
     provides []
     uses []
 fn str first
-    emits []
+    emits {}
     given
         str[] values
     asserts
         sample: ["x"] => ok "😀x"
     ok "😀" + values[0]
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts

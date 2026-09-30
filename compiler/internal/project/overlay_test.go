@@ -31,7 +31,7 @@ func writeTestProject(t *testing.T, files map[string]string) string {
 	return root
 }
 
-const overlayMain = "package app\n    provides [main]\n    uses []\n\nfn int main\n    emits []\n    given\n        int seed\n    asserts\n        sample: 1 => ok 1\n    ok seed\n"
+const overlayMain = "package app\n    provides [main]\n    uses []\n\nfn int main\n    emits {}\n    given\n        int seed\n    asserts\n        sample: 1 => ok 1\n    ok seed\n"
 
 func TestOverlaySubstitutesBeforeParse(t *testing.T) {
 	root := writeTestProject(t, map[string]string{"src/main.can": overlayMain})

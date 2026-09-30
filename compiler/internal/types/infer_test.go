@@ -20,7 +20,7 @@ variant failures
     standard_failure
 `)
 	values := map[string]*Type{}
-	for _, name := range []string{"int", "float", "str", "void", "box<int>", "box<float>", "other<int>", "box<node>", "node", "node[]", "all_failed<failures>", "failures", "callable int (int[]) emits []", "callable str (int[]) emits []"} {
+	for _, name := range []string{"int", "float", "str", "void", "box<int>", "box<float>", "other<int>", "box<node>", "node", "node[]", "all_failed<failures>", "failures", "callable int (int[]) emits {}", "callable str (int[]) emits {}"} {
 		typ, err := b.Resolve(file, annotation(t, name), nil, true)
 		if err != nil {
 			t.Fatal(err)
@@ -37,7 +37,7 @@ func TestFiniteInferenceEqualities(t *testing.T) {
 	file, values := inferenceFixture(t)
 	for _, tc := range []struct{ pattern, actual, want string }{
 		{"item", "int", "int"}, {"box<item>", "box<int>", "int"}, {"item[]", "node[]", "node"},
-		{"box<item>", "box<node>", "node"}, {"callable item (item[]) emits []", "callable int (int[]) emits []", "int"},
+		{"box<item>", "box<node>", "node"}, {"callable item (item[]) emits {}", "callable int (int[]) emits {}", "int"},
 		{"all_failed<item>", "all_failed<failures>", "failures"},
 	} {
 		t.Run(tc.pattern+"/"+tc.actual, func(t *testing.T) {
@@ -76,7 +76,7 @@ func TestInferenceRejectsConflictAmbiguityAndWidening(t *testing.T) {
 	}
 	for _, tc := range []struct{ pattern, actual string }{
 		{"box<item>", "other<int>"}, {"box<item>", "int"}, {"item[]", "box<int>"},
-		{"callable item (item[]) emits []", "callable str (int[]) emits []"}, {"item", "void"},
+		{"callable item (item[]) emits {}", "callable str (int[]) emits {}"}, {"item", "void"},
 	} {
 		pattern, err := Pattern(file, annotation(t, tc.pattern), []string{"item"})
 		if err != nil {

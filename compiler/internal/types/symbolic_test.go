@@ -29,7 +29,7 @@ func TestUnusedGenericSymbolicVariantDuplicates(t *testing.T) {
 
 func TestSymbolicCallableArgumentsNormalizeBounds(t *testing.T) {
 	header := strings.Replace(sourceHeader, "uses [option, collections, bytes]", "uses [option, collections, bytes, number, text]", 1)
-	declaration := "record box<item>\n    item value\n\nvariant invalid<item>\n    box<callable item () emits [number::inexact, text::invalid_bool]>\n    box<callable item () emits [text::invalid_bool, number::inexact]>\n"
+	declaration := "record box<item>\n    item value\n\nvariant invalid<item>\n    box<callable item () emits {number::inexact, text::invalid_bool}>\n    box<callable item () emits {text::invalid_bool, number::inexact}>\n"
 	b, _ := buildSource(t, header+declaration)
 	if _, err := CheckDeclarations(b.world); err == nil || !strings.Contains(err.Error(), "duplicate variant leaf") {
 		t.Fatalf("bound order hid symbolic identity: %v", err)
@@ -39,13 +39,13 @@ func TestSymbolicCallableArgumentsNormalizeBounds(t *testing.T) {
 func TestUnusedGenericSymbolicErrorBounds(t *testing.T) {
 	registry := `{"active":["app::failed"],"retired":[]}`
 	for _, bound := range []string{"failed<item>, failed<item>", "failed<item[]>, failed<item[]>"} {
-		text := sourceHeader + "error failed<item>(item value)\nfn item work<item>\n    emits [" + bound + "]\n    given\n        item value\n    asserts\n        sample: 1 => ok 1\n    ok value\n"
+		text := sourceHeader + "error failed<item>{item value}\nfn item work<item>\n    emits {" + bound + "}\n    given\n        item value\n    asserts\n        sample: 1 => ok 1\n    ok value\n"
 		b, _ := buildRegisteredSource(t, text, registry)
 		if _, err := CheckDeclarations(b.world); err == nil || !strings.Contains(err.Error(), "duplicate error in bound") {
 			t.Fatalf("dependent bound admitted duplicate: %v", err)
 		}
 	}
-	text := sourceHeader + "error failed<item>(item value)\nrecord holder<item>\n    callable item () emits [failed<item>, failed<item>] callback\n"
+	text := sourceHeader + "error failed<item>{item value}\nrecord holder<item>\n    callable item () emits {failed<item>, failed<item>} callback\n"
 	b, _ := buildRegisteredSource(t, text, registry)
 	if _, err := CheckDeclarations(b.world); err == nil || !strings.Contains(err.Error(), "duplicate error in bound") {
 		t.Fatalf("nested callable bound admitted duplicate: %v", err)

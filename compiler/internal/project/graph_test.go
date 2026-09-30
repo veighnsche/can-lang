@@ -289,14 +289,14 @@ func TestGraphRejectsPackageAndSourceAliases(t *testing.T) {
 func TestGraphRegistrySourceAgreement(t *testing.T) {
 	root := t.TempDir()
 	projectFixture(t, root)
-	writeFixture(t, root, "src/a/shared.can", sourceText("alpha", "error failed()\n"))
+	writeFixture(t, root, "src/a/shared.can", sourceText("alpha", "error failed{}\n"))
 	writeFixture(t, root, "can.errors.json", `{"active":["alpha::failed"],"retired":["alpha::legacy"]}`)
 	if _, err := Load(root); err != nil {
 		t.Fatal(err)
 	}
 	// Retired names stay withdrawn per owner: redeclaring one fails even
 	// though no numeric allocation collides.
-	writeFixture(t, root, "src/a/shared.can", sourceText("alpha", "error failed()\nerror legacy()\n"))
+	writeFixture(t, root, "src/a/shared.can", sourceText("alpha", "error failed{}\nerror legacy{}\n"))
 	writeFixture(t, root, "can.errors.json", `{"active":["alpha::failed","alpha::legacy"],"retired":["alpha::legacy"]}`)
 	if _, err := Load(root); err == nil || !strings.Contains(err.Error(), "still active") {
 		t.Fatalf("retired/active overlap admitted: %v", err)

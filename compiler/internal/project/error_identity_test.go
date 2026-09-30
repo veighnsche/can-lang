@@ -58,7 +58,7 @@ func TestArchivedTwoBuildReportsAttributeAcrossRename(t *testing.T) {
 	root := t.TempDir()
 	writeFixture(t, root, "can.project.json", `{"source_root":"src","error_registry":"can.errors.json"}`)
 	writeFixture(t, root, "can.errors.json", `{"active":["app::renamed"],"retired":["app::legacy"],"predecessors":{"app::renamed":["app::legacy"]}}`)
-	writeFixture(t, root, "src/main.can", "package app\n    provides [renamed]\n    uses []\nerror renamed(str reason)\n")
+	writeFixture(t, root, "src/main.can", "package app\n    provides [renamed]\n    uses []\nerror renamed{str reason}\n")
 	graph, err := Load(root)
 	if err != nil {
 		t.Fatal(err)

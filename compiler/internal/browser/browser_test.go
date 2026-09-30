@@ -53,14 +53,14 @@ func TestBrowserAdmitsPureProgram(t *testing.T) {
     provides []
     uses [text]
 fn int shout
-    emits []
+    emits {}
     given
         int value
     asserts
         sample: 3 => ok 3
     ok value
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -81,7 +81,7 @@ record point
     int x
     int y
 fn point load
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -92,7 +92,7 @@ fn point load
         codec::invalid_data
         ok => ok found
 fn void main
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str[] arguments
     asserts
@@ -114,14 +114,14 @@ func TestBrowserAdmitsErrorIdentityWithoutCapability(t *testing.T) {
     provides []
     uses [files]
 fn str describe
-    emits [files::not_found]
+    emits {files::not_found}
     given
         int missing
     asserts
-        sample: 7 => files::not_found("gone")
-    files::not_found("gone")
+        sample: 7 => files::not_found{"gone"}
+    files::not_found{"gone"}
 fn void main
-    emits [files::not_found]
+    emits {files::not_found}
     given
         str[] arguments
     asserts
@@ -144,7 +144,7 @@ func TestBrowserRejectsDirectServerCapabilities(t *testing.T) {
     provides []
     uses [sql]
 fn void main
-    emits [sql::connection_failed]
+    emits {sql::connection_failed}
     given
         str[] arguments
     asserts
@@ -157,7 +157,7 @@ fn void main
     provides []
     uses [process, files]
 fn void main
-    emits [files::not_found, process::invalid_config]
+    emits {files::not_found, process::invalid_config}
     given
         str[] arguments
     asserts
@@ -171,7 +171,7 @@ fn void main
     provides []
     uses [files, codec]
 fn void main
-    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, codec::invalid_data, files::io_error]
+    emits {files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, codec::invalid_data, files::io_error}
     given
         str[] arguments
     asserts
@@ -190,7 +190,7 @@ fn void main
     provides []
     uses [env, http]
 fn void main
-    emits [env::invalid_name, http::credentials_missing]
+    emits {env::invalid_name, http::credentials_missing}
     given
         str[] arguments
     asserts
@@ -204,7 +204,7 @@ fn void main
     provides []
     uses [crypto, bytes, codec]
 fn void main
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str[] arguments
     asserts
@@ -218,7 +218,7 @@ fn void main
     provides []
     uses [io, bytes, codec]
 fn void main
-    emits [codec::invalid_data, io::write_failed]
+    emits {codec::invalid_data, io::write_failed}
     given
         str[] arguments
     asserts
@@ -233,7 +233,7 @@ fn void main
     provides []
     uses [ws]
 fn void main
-    emits [ws::connect_failed, ws::invalid_url, ws::invalid_protocol, ws::limit_exceeded]
+    emits {ws::connect_failed, ws::invalid_url, ws::invalid_protocol, ws::limit_exceeded}
     given
         str[] arguments
     asserts
@@ -278,7 +278,7 @@ func TestBrowserRejectsTransitiveHelperPath(t *testing.T) {
     provides []
     uses [env, http]
 fn str helper
-    emits [env::invalid_name, http::credentials_missing]
+    emits {env::invalid_name, http::credentials_missing}
     given
         str name
     asserts
@@ -288,14 +288,14 @@ fn str helper
         http::credentials_missing
         ok str value => ok value
 fn str middle
-    emits [env::invalid_name, http::credentials_missing]
+    emits {env::invalid_name, http::credentials_missing}
     given
         str name
     asserts
         sample: "HOME" => ok "fixture"
     relay call helper(name)
 fn void main
-    emits [env::invalid_name, http::credentials_missing]
+    emits {env::invalid_name, http::credentials_missing}
     given
         str[] arguments
     asserts
@@ -321,7 +321,7 @@ func TestBrowserRejectsCallableReferencePath(t *testing.T) {
     provides []
     uses [env, http]
 fn str helper
-    emits [env::invalid_name, http::credentials_missing]
+    emits {env::invalid_name, http::credentials_missing}
     given
         str name
     asserts
@@ -331,12 +331,12 @@ fn str helper
         http::credentials_missing
         ok str value => ok value
 fn void main
-    emits [env::invalid_name, http::credentials_missing]
+    emits {env::invalid_name, http::credentials_missing}
     given
         str[] arguments
     asserts
         empty: [] => ok
-    callable str (str) emits [env::invalid_name, http::credentials_missing] action = callable helper
+    callable str (str) emits {env::invalid_name, http::credentials_missing} action = callable helper
     match call action("HOME")
         env::invalid_name
         http::credentials_missing
@@ -358,7 +358,7 @@ func TestBrowserRejectsGenericSpecializationPath(t *testing.T) {
     provides []
     uses [env, http]
 fn str leak<item>
-    emits [env::invalid_name, http::credentials_missing]
+    emits {env::invalid_name, http::credentials_missing}
     given
         item value
     asserts
@@ -368,7 +368,7 @@ fn str leak<item>
         http::credentials_missing
         ok str found => ok found
 fn void main
-    emits [env::invalid_name, http::credentials_missing]
+    emits {env::invalid_name, http::credentials_missing}
     given
         str[] arguments
     asserts
@@ -394,14 +394,14 @@ func TestBrowserRejectsUnreachableEmittedFunction(t *testing.T) {
     provides []
     uses [http]
 fn http::server_response health
-    emits []
+    emits {}
     given
         http::request req
     asserts
         sample: => ok
     ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "healthy")
 fn http::router table
-    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}
     asserts
         sample: => ok
     match chain
@@ -412,7 +412,7 @@ fn http::router table
         http::ambiguous_route
         ok => ok built
 fn http::server boot
-    emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed]
+    emits {http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed}
     given
         int port
     asserts
@@ -429,7 +429,7 @@ fn http::server boot
                 http::bind_failed
                 ok http::server sturdy => ok sturdy
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -453,12 +453,12 @@ func TestBrowserRejectsDirectOperationCallable(t *testing.T) {
     provides []
     uses [env, http]
 fn void main
-    emits [env::invalid_name, http::credentials_missing]
+    emits {env::invalid_name, http::credentials_missing}
     given
         str[] arguments
     asserts
         empty: [] => ok
-    callable str (str) emits [env::invalid_name, http::credentials_missing] action = callable env::required
+    callable str (str) emits {env::invalid_name, http::credentials_missing} action = callable env::required
     match call action("HOME")
         env::invalid_name
         http::credentials_missing
@@ -587,21 +587,21 @@ owner record email
 record email_wire
     str address
 fn email make_email
-    emits []
+    emits {}
     given
         str address
     asserts
         sample: "a@b" => ok email("a@b")
     ok email(address)
 fn str email_address
-    emits []
+    emits {}
     given
         email mail
     asserts
         sample: email("a@b") => ok "a@b"
     ok mail.address
 fn email_wire load_wire
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -616,7 +616,7 @@ fn email_wire load_wire
     provides []
     uses [mail]
 fn str describe
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -624,7 +624,7 @@ fn str describe
     mail::email held = call mail::make_email(address)
     ok call mail::email_address(held)
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -657,7 +657,7 @@ variant save_outcome
     saved
     rejected
 fn save_outcome save_validated
-    emits []
+    emits {}
     given
         invoice_wire body
     asserts
@@ -672,21 +672,21 @@ action save_invoice
         saved status 200 swap inner
         rejected status 422 swap inner
 fn html::safe render_outcome
-    emits []
+    emits {}
     given
         save_outcome outcome
     asserts
         sample: saved("c") => ok
     ok call html::text_fragment("done")
 fn html::safe render_rejected
-    emits []
+    emits {}
     given
         form::rejected<invoice_wire> bad
     asserts
         sample: form::rejected<invoice_wire>([], []) => ok
     ok call html::text_fragment("bad")
 fn http::router mounted
-    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}
     asserts
         sample: => ok
     match chain
@@ -697,7 +697,7 @@ fn http::router mounted
         http::ambiguous_route
         ok => ok router
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -783,7 +783,7 @@ action load_line
         missing status 403
         unavailable status 503
 fn load_outcome reload_line
-    emits [http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data]
+    emits {http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data}
     given
         str invoice_id
         int line
@@ -796,7 +796,7 @@ fn load_outcome reload_line
         codec::invalid_data
         ok load_outcome got => ok got
 fn save_outcome store_invoice
-    emits [http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data]
+    emits {http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data}
     given
         invoice_wire body
     asserts
@@ -809,7 +809,7 @@ fn save_outcome store_invoice
         codec::invalid_data
         ok save_outcome done => ok done
 fn void main
-    emits [http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data]
+    emits {http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data}
     given
         str[] arguments
     asserts
@@ -843,7 +843,7 @@ func TestBrowserInheritsOwnerWireBoundary(t *testing.T) {
 owner record email
     str address
 fn email load
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -854,7 +854,7 @@ fn email load
         codec::invalid_data
         ok => ok decoded
 fn void main
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str[] arguments
     asserts

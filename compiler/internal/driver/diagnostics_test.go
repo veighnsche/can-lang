@@ -24,7 +24,7 @@ record account_row
 account_row config = account_row(1, "Ann")
 
 fn int helper
-    emits []
+    emits {}
     given
         int seed
     asserts
@@ -32,7 +32,7 @@ fn int helper
     ok seed
 
 fn int tally
-    emits []
+    emits {}
     given
         int seed
     asserts
@@ -45,7 +45,7 @@ const bridgeSecond = `package app
     uses []
 
 fn str describe
-    emits []
+    emits {}
     given
         account_row row
     asserts
@@ -195,7 +195,7 @@ func TestCheckSnapshotCheckErrorSpan(t *testing.T) {
 }
 
 func TestCheckSnapshotResolveErrorSpan(t *testing.T) {
-	duplicate := bridgeMain + "\nfn int helper\n    emits []\n    given\n        int seed\n    asserts\n        sample: 1 => ok 1\n    ok seed\n"
+	duplicate := bridgeMain + "\nfn int helper\n    emits {}\n    given\n        int seed\n    asserts\n        sample: 1 => ok 1\n    ok seed\n"
 	root := writeBridgeProject(t, map[string]string{"src/main.can": duplicate})
 	open := canonical(t, filepath.Join(root, "src/main.can"))
 	snapshot, err := CheckSnapshot(root, open, project.NewOverlay())
@@ -217,7 +217,7 @@ func TestCheckSnapshotResolveErrorSpan(t *testing.T) {
 }
 
 func TestCheckSnapshotAstralSpan(t *testing.T) {
-	astral := "package app\n    provides [describe]\n    uses []\n\nfn str describe\n    emits []\n    given\n        str row\n    asserts\n        sample: \"x\" => ok \"x\"\n    ok \"\U0001D11E\" + missing\n"
+	astral := "package app\n    provides [describe]\n    uses []\n\nfn str describe\n    emits {}\n    given\n        str row\n    asserts\n        sample: \"x\" => ok \"x\"\n    ok \"\U0001D11E\" + missing\n"
 	root := writeBridgeProject(t, map[string]string{"src/main.can": astral})
 	open := canonical(t, filepath.Join(root, "src/main.can"))
 	snapshot, err := CheckSnapshot(root, open, project.NewOverlay())
@@ -279,7 +279,7 @@ connection classifier
         model "jev-latest"
 
 fn float report
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         float probability
         str marker
@@ -288,7 +288,7 @@ fn float report
     ok probability
 
 record choice_weights choice float weights from classifier
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     confidence as certainty
     asks "Weights"
         first "First" => relay call report(% + certainty, "C")
@@ -297,7 +297,7 @@ record choice_weights choice float weights from classifier
 choice_weights tally = choice_weights(0.1, 0.2, 0.3)
 
 fn float show
-    emits []
+    emits {}
     given
         int seed
     asserts

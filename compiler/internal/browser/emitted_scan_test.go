@@ -28,14 +28,14 @@ func TestEmittedBrowserBodiesScanClean(t *testing.T) {
     provides []
     uses [text]
 fn str greet
-    emits []
+    emits {}
     given
         str name
     asserts
         sample: "a" => ok "a"
     ok name
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

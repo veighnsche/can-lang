@@ -865,7 +865,7 @@ func TestContractEditRoute(t *testing.T) {
 	auditNoContractMirror(t, ws)
 	// The audit is live: a planted route copy in consumer code fails it.
 	planted := filepath.Join(ws.grid, "src/web/web.can")
-	contractWriteFile(t, planted, contractReadFile(t, planted)+"\nfn str probe_mirror\n    emits []\n    asserts\n        sample: => ok \"/api/v2/tenants/:tenant_id/invoices/:invoice_id\"\n    ok \"/api/v2/tenants/:tenant_id/invoices/:invoice_id\"\n")
+	contractWriteFile(t, planted, contractReadFile(t, planted)+"\nfn str probe_mirror\n    emits {}\n    asserts\n        sample: => ok \"/api/v2/tenants/:tenant_id/invoices/:invoice_id\"\n    ok \"/api/v2/tenants/:tenant_id/invoices/:invoice_id\"\n")
 	if err := findContractMirror(t, ws); err == nil {
 		t.Fatal("mirror audit passed a planted route copy")
 	} else {
@@ -1276,8 +1276,8 @@ action load_invoice_grid_local
 		ws := contractWorkspaceFor(t)
 		name := filepath.Join(ws.server, "src/web/web.can")
 		contractReplaceOnce(t, name,
-			"fn contract::grid_edit_outcome save_grid\n    emits []\n    given\n        near sql::pool pool\n        near str public_origin\n        near int window\n        http::request req\n        contract::invoice_key key\n        contract::grid_edit_input body\n",
-			"fn contract::grid_edit_outcome save_grid\n    emits []\n    given\n        near sql::pool pool\n        near str public_origin\n        near int window\n        contract::invoice_key key\n        contract::grid_edit_input body\n        http::request req\n")
+			"fn contract::grid_edit_outcome save_grid\n    emits {}\n    given\n        near sql::pool pool\n        near str public_origin\n        near int window\n        http::request req\n        contract::invoice_key key\n        contract::grid_edit_input body\n",
+			"fn contract::grid_edit_outcome save_grid\n    emits {}\n    given\n        near sql::pool pool\n        near str public_origin\n        near int window\n        contract::invoice_key key\n        contract::grid_edit_input body\n        http::request req\n")
 		detail := expectContractFailure(t, ws.server, check.TargetBun, "save_grid")
 		logContractEvidence(t, []contractEvidence{{Edit: "negative", Phase: "request-position", Target: "server", Result: "reject", Detail: detail}})
 	})
@@ -1292,8 +1292,8 @@ action load_invoice_grid_local
 		ws := contractWorkspaceFor(t)
 		name := filepath.Join(ws.server, "src/web/web.can")
 		contractReplaceOnce(t, name,
-			"fn contract::grid_edit_outcome save_grid\n    emits []\n    given\n        near sql::pool pool\n",
-			"fn contract::grid_edit_outcome save_grid\n    emits []\n    given\n")
+			"fn contract::grid_edit_outcome save_grid\n    emits {}\n    given\n        near sql::pool pool\n",
+			"fn contract::grid_edit_outcome save_grid\n    emits {}\n    given\n")
 		detail := expectContractFailure(t, ws.server, check.TargetBun, "save_grid")
 		logContractEvidence(t, []contractEvidence{{Edit: "negative", Phase: "missing-pool", Target: "server", Result: "reject", Detail: detail}})
 	})

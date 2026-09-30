@@ -58,10 +58,10 @@ func writeRawProject(t *testing.T, root string) {
 	t.Helper()
 	writeFixture(t, root, "can.project.json", `{"source_root":"src","error_registry":"can.errors.json"}`)
 	writeFixture(t, root, "can.errors.json", `{"active":[],"retired":[]}`)
-	writeFixture(t, root, "src/a/one.can", "package alpha\n    provides [one]\n    uses []\nrecord item\n    int value\nfn int one\n    emits []\n    given\n        int value\n    asserts\n        sample: 1 => ok 2\n            using raw \"fixtures/one.json\"\n        shared: 1 => ok 2\n            using raw \"../shared/case.json\"\n    ok value + 1\n")
+	writeFixture(t, root, "src/a/one.can", "package alpha\n    provides [one]\n    uses []\nrecord item\n    int value\nfn int one\n    emits {}\n    given\n        int value\n    asserts\n        sample: 1 => ok 2\n            using raw \"fixtures/one.json\"\n        shared: 1 => ok 2\n            using raw \"../shared/case.json\"\n    ok value + 1\n")
 	writeFixture(t, root, "src/a/fixtures/one.json", `{"case":"one"}`)
 	writeFixture(t, root, "src/shared/case.json", `{"case":"shared"}`)
-	writeFixture(t, root, "src/b/two.can", "package beta\n    provides [two]\n    uses []\nrecord item\n    int value\nfn int two\n    emits []\n    given\n        int value\n    asserts\n        sample: 1 => ok 2\n    match call one(value)\n        when\n            sample: 1 => ok 2\n                using raw \"../shared/case.json\"\n        ok int got => match call one(got)\n            when\n                nested: 1 => ok 1\n                    using raw \"fixtures/nested.json\"\n            ok int deep => ok deep\nfixture pair for two\n    given\n        int value\n    cases\n        1 => ok 2\n            using raw \"fixtures/two.json\"\n")
+	writeFixture(t, root, "src/b/two.can", "package beta\n    provides [two]\n    uses []\nrecord item\n    int value\nfn int two\n    emits {}\n    given\n        int value\n    asserts\n        sample: 1 => ok 2\n    match call one(value)\n        when\n            sample: 1 => ok 2\n                using raw \"../shared/case.json\"\n        ok int got => match call one(got)\n            when\n                nested: 1 => ok 1\n                    using raw \"fixtures/nested.json\"\n            ok int deep => ok deep\nfixture pair for two\n    given\n        int value\n    cases\n        1 => ok 2\n            using raw \"fixtures/two.json\"\n")
 	writeFixture(t, root, "src/b/fixtures/two.json", `{"case":"two"}`)
 	writeFixture(t, root, "src/b/fixtures/nested.json", `{"case":"nested"}`)
 }
@@ -113,7 +113,7 @@ func TestCaptureFixturesDedupesSharedReferences(t *testing.T) {
 
 func TestCaptureFixturesRejects(t *testing.T) {
 	row := func(path string) string {
-		return "package alpha\n    provides [one]\n    uses []\nrecord item\n    int value\nfn int one\n    emits []\n    given\n        int value\n    asserts\n        sample: 1 => ok 2\n            using raw \"" + path + "\"\n    ok value + 1\n"
+		return "package alpha\n    provides [one]\n    uses []\nrecord item\n    int value\nfn int one\n    emits {}\n    given\n        int value\n    asserts\n        sample: 1 => ok 2\n            using raw \"" + path + "\"\n    ok value + 1\n"
 	}
 	base := func(t *testing.T) string {
 		t.Helper()
@@ -218,7 +218,7 @@ func writeVendorRawProject(t *testing.T, root, fixtureBytes string) {
 	writeFixture(t, root, "src/main.can", sourceText("alpha", ""))
 	writeFixture(t, root, "vendor/can.project.json", `{"source_root":"src","error_registry":"can.errors.json"}`)
 	writeFixture(t, root, "vendor/can.errors.json", `{"retired":[],"active":[]}`)
-	writeFixture(t, root, "vendor/src/lib.can", "package gamma\n    provides [load]\n    uses []\nrecord item\n    int value\nfn int load\n    emits []\n    given\n        int value\n    asserts\n        decoded: 1 => ok 2\n            using raw \"fixtures/load.json\"\n    ok value + 1\n")
+	writeFixture(t, root, "vendor/src/lib.can", "package gamma\n    provides [load]\n    uses []\nrecord item\n    int value\nfn int load\n    emits {}\n    given\n        int value\n    asserts\n        decoded: 1 => ok 2\n            using raw \"fixtures/load.json\"\n    ok value + 1\n")
 	writeFixture(t, root, "vendor/src/fixtures/load.json", fixtureBytes)
 	writeFixtureLockWith(t, root, map[string]string{"vendor": "vendor"}, map[string][]Fixture{
 		"vendor": {{Relative: "src/fixtures/load.json", Bytes: []byte(fixtureBytes)}},

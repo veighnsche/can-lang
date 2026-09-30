@@ -12,23 +12,23 @@ const missingArmMain = `package app
     provides []
     uses [codec]
 fn str motto
-    emits []
+    emits {}
     asserts
         sample: => ok "𝄞"
     ok "𝄞"
 fn int number
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     asserts
         sample: => ok 1
     ok 1
 fn int handle
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     asserts
         sample: => ok 1
     match call number()
         ok int value => ok value
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

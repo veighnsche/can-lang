@@ -629,7 +629,7 @@ func outputRawProject(t *testing.T) string {
 	files := map[string]string{
 		"can.project.json":      `{"source_root":"src","error_registry":"can.errors.json"}`,
 		"can.errors.json":       `{"active":[],"retired":[]}`,
-		"src/main.can":          "package app\n    provides [one]\n    uses []\nfn int one\n    emits []\n    given\n        int value\n    asserts\n        sample: 1 => ok 2\n            using raw \"fixtures/one.json\"\n    ok value + 1\n",
+		"src/main.can":          "package app\n    provides [one]\n    uses []\nfn int one\n    emits {}\n    given\n        int value\n    asserts\n        sample: 1 => ok 2\n            using raw \"fixtures/one.json\"\n    ok value + 1\n",
 		"src/fixtures/one.json": `{"case":"one"}`,
 	}
 	for name, data := range files {
@@ -684,7 +684,7 @@ func outputVendorRawProject(t *testing.T, fixtureBytes string) string {
 			t.Fatal(err)
 		}
 	}
-	vendorSource := "package gamma\n    provides [load]\n    uses []\nfn int load\n    emits []\n    given\n        int value\n    asserts\n        decoded: 1 => ok 2\n            using raw \"fixtures/load.json\"\n    ok value + 1\n"
+	vendorSource := "package gamma\n    provides [load]\n    uses []\nfn int load\n    emits {}\n    given\n        int value\n    asserts\n        decoded: 1 => ok 2\n            using raw \"fixtures/load.json\"\n    ok value + 1\n"
 	write("can.project.json", `{"source_root":"src","dependencies":{"vendor":"vendor"},"error_registry":"can.errors.json"}`)
 	write("can.errors.json", `{"active":[],"retired":[]}`)
 	write("src/main.can", "package app\n    provides []\n    uses []\nint value = 1\n")
