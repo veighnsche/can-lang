@@ -13,7 +13,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "TBD admission"
+    "f219a318 admission"
   ],
   "changed_paths": [
     "tools/native-test-owner/admission/"
