@@ -1,0 +1,298 @@
+{
+  "schemaVersion": 1,
+  "host": {
+    "goos": "darwin",
+    "nprocSoft": 2666,
+    "nprocHard": 4000,
+    "addrSpaceCapped": false,
+    "fileSizeCapped": false,
+    "memBytes": 17179869184,
+    "tmpFreeBytes": 54108905472
+  },
+  "adapter": "darwin-strict",
+  "envelopes": [
+    {
+      "envelope": {
+        "name": "quick",
+        "maxProcs": 64,
+        "maxMemBytes": 4294967296,
+        "maxTmpBytes": 536870912,
+        "reserve": {
+          "procs": 1,
+          "memBytes": 67108864,
+          "tmpBytes": 1048576
+        }
+      },
+      "mechanisms": [
+        "refuse-before-effect",
+        "resource-limit"
+      ],
+      "overshoot": {
+        "maxProcsOver": 0,
+        "maxMemOver": 0,
+        "maxTmpMediatedOver": 0,
+        "tmpBypassBound": 54108901376,
+        "unbounded": false
+      },
+      "checks": [
+        {
+          "name": "probe-available",
+          "pass": true,
+          "detail": "available: refuse-before-effect+resource-limit"
+        },
+        {
+          "name": "mechanism-declared",
+          "pass": true,
+          "detail": "refuse-before-effect+resource-limit"
+        },
+        {
+          "name": "sync-refusal-proc",
+          "pass": true,
+          "detail": "1 admitted, 2nd refused ErrOverEnvelope, usage stayed 1"
+        },
+        {
+          "name": "sync-refusal-mem",
+          "pass": true,
+          "detail": "96 admitted, +1 refused ErrOverEnvelope, usage stayed 96"
+        },
+        {
+          "name": "sync-refusal-tmp",
+          "pass": true,
+          "detail": "96 admitted, +1 refused ErrOverEnvelope, usage stayed 96"
+        },
+        {
+          "name": "overshoot-finite",
+          "pass": true,
+          "detail": "mediated 0/0/0, bypass bound 54108901376 bytes"
+        },
+        {
+          "name": "detached-charged",
+          "pass": true,
+          "detail": "detached 1 admitted (1/1), 2nd refused ErrOverEnvelope"
+        },
+        {
+          "name": "bypass-caught",
+          "pass": true,
+          "detail": "40 bypass bytes absorbed; 40+57 refused ErrOverEnvelope"
+        },
+        {
+          "name": "bypass-overflow-fail-closed",
+          "pass": true,
+          "detail": "overflow latched ErrOverflow on all charges; Dispose cleared it"
+        },
+        {
+          "name": "disposal-reserve",
+          "pass": true,
+          "detail": "full-ceiling scope disposed; ceiling+reserve==max on all dimensions"
+        },
+        {
+          "name": "host-fit",
+          "pass": true,
+          "detail": "quick: 64 procs<=NPROC 2666; 4294967296 mem<=host 17179869184; 536870912 tmp<=free 54108901376"
+        },
+        {
+          "name": "open-real-envelope",
+          "pass": true,
+          "detail": "quick scope opened and disposed; overshoot {MaxProcsOver:0 MaxMemOver:0 MaxTmpMediatedOver:0 TmpBypassBound:54108901376 Unbounded:false}"
+        },
+        {
+          "name": "kernel-nproc",
+          "pass": true,
+          "detail": "fork refused under ulimit -u 239 (user count 478): /bin/sh: fork: Resource temporarily unavailable"
+        },
+        {
+          "name": "kernel-fsize",
+          "pass": true,
+          "detail": "write refused at 8192/8192 bytes: "
+        },
+        {
+          "name": "mem-backstop-probe",
+          "pass": true,
+          "detail": "no memory backstop (RLIMIT_AS unsettable: /bin/sh: line 0: ulimit: virtual memory: cannot modify limit: Invalid argument); envelope rests on declared-peak ledger plus host-commit fit"
+        }
+      ],
+      "valid": true
+    },
+    {
+      "envelope": {
+        "name": "bounded-job",
+        "maxProcs": 64,
+        "maxMemBytes": 6442450944,
+        "maxTmpBytes": 2147483648,
+        "reserve": {
+          "procs": 1,
+          "memBytes": 67108864,
+          "tmpBytes": 1048576
+        }
+      },
+      "mechanisms": [
+        "refuse-before-effect",
+        "resource-limit"
+      ],
+      "overshoot": {
+        "maxProcsOver": 0,
+        "maxMemOver": 0,
+        "maxTmpMediatedOver": 0,
+        "tmpBypassBound": 54108901376,
+        "unbounded": false
+      },
+      "checks": [
+        {
+          "name": "probe-available",
+          "pass": true,
+          "detail": "available: refuse-before-effect+resource-limit"
+        },
+        {
+          "name": "mechanism-declared",
+          "pass": true,
+          "detail": "refuse-before-effect+resource-limit"
+        },
+        {
+          "name": "sync-refusal-proc",
+          "pass": true,
+          "detail": "1 admitted, 2nd refused ErrOverEnvelope, usage stayed 1"
+        },
+        {
+          "name": "sync-refusal-mem",
+          "pass": true,
+          "detail": "96 admitted, +1 refused ErrOverEnvelope, usage stayed 96"
+        },
+        {
+          "name": "sync-refusal-tmp",
+          "pass": true,
+          "detail": "96 admitted, +1 refused ErrOverEnvelope, usage stayed 96"
+        },
+        {
+          "name": "overshoot-finite",
+          "pass": true,
+          "detail": "mediated 0/0/0, bypass bound 54108901376 bytes"
+        },
+        {
+          "name": "detached-charged",
+          "pass": true,
+          "detail": "detached 1 admitted (1/1), 2nd refused ErrOverEnvelope"
+        },
+        {
+          "name": "bypass-caught",
+          "pass": true,
+          "detail": "40 bypass bytes absorbed; 40+57 refused ErrOverEnvelope"
+        },
+        {
+          "name": "bypass-overflow-fail-closed",
+          "pass": true,
+          "detail": "overflow latched ErrOverflow on all charges; Dispose cleared it"
+        },
+        {
+          "name": "disposal-reserve",
+          "pass": true,
+          "detail": "full-ceiling scope disposed; ceiling+reserve==max on all dimensions"
+        },
+        {
+          "name": "host-fit",
+          "pass": true,
+          "detail": "bounded-job: 64 procs<=NPROC 2666; 6442450944 mem<=host 17179869184; 2147483648 tmp<=free 54108901376"
+        },
+        {
+          "name": "open-real-envelope",
+          "pass": true,
+          "detail": "bounded-job scope opened and disposed; overshoot {MaxProcsOver:0 MaxMemOver:0 MaxTmpMediatedOver:0 TmpBypassBound:54108901376 Unbounded:false}"
+        },
+        {
+          "name": "kernel-nproc",
+          "pass": true,
+          "detail": "fork refused under ulimit -u 239 (user count 478): /bin/sh: fork: Resource temporarily unavailable"
+        },
+        {
+          "name": "kernel-fsize",
+          "pass": true,
+          "detail": "write refused at 8192/8192 bytes: "
+        },
+        {
+          "name": "mem-backstop-probe",
+          "pass": true,
+          "detail": "no memory backstop (RLIMIT_AS unsettable: /bin/sh: line 0: ulimit: virtual memory: cannot modify limit: Invalid argument); envelope rests on declared-peak ledger plus host-commit fit"
+        }
+      ],
+      "valid": true
+    }
+  ],
+  "negatives": [
+    {
+      "name": "lying-labels",
+      "adapter": "lying-test",
+      "valid": false,
+      "failingChecks": [
+        "sync-refusal-proc",
+        "sync-refusal-mem",
+        "sync-refusal-tmp",
+        "detached-charged",
+        "bypass-caught",
+        "bypass-overflow-fail-closed",
+        "kernel-nproc",
+        "kernel-fsize"
+      ]
+    },
+    {
+      "name": "poll-and-kill",
+      "adapter": "poll-kill-test",
+      "valid": false,
+      "failingChecks": [
+        "mechanism-declared",
+        "sync-refusal-proc",
+        "sync-refusal-mem",
+        "sync-refusal-tmp",
+        "overshoot-finite",
+        "detached-charged",
+        "bypass-caught",
+        "bypass-overflow-fail-closed",
+        "kernel-nproc",
+        "kernel-fsize"
+      ]
+    },
+    {
+      "name": "sampled-peak",
+      "adapter": "sampling-test",
+      "valid": false,
+      "failingChecks": [
+        "mechanism-declared",
+        "sync-refusal-proc",
+        "sync-refusal-mem",
+        "sync-refusal-tmp",
+        "overshoot-finite",
+        "detached-charged",
+        "bypass-caught",
+        "bypass-overflow-fail-closed",
+        "kernel-nproc",
+        "kernel-fsize"
+      ]
+    },
+    {
+      "name": "unavailable",
+      "adapter": "unavailable",
+      "valid": false,
+      "failingChecks": [
+        "probe-available",
+        "mechanism-declared",
+        "sync-refusal-proc",
+        "sync-refusal-mem",
+        "sync-refusal-tmp",
+        "overshoot-finite",
+        "detached-charged",
+        "bypass-caught",
+        "bypass-overflow-fail-closed",
+        "disposal-reserve",
+        "host-fit",
+        "open-real-envelope",
+        "kernel-nproc",
+        "kernel-fsize",
+        "mem-backstop-probe"
+      ]
+    }
+  ],
+  "limitations": [
+    "memory is declared-peak ledger only: RLIMIT_AS and RLIMIT_DATA are unsettable on darwin arm64 (EINVAL, shared-cache mapping), so no kernel RSS backstop exists; runtime RSS beyond declaration is bounded only by host commit (hw.memsize fit demonstrated at admission)",
+    "tmp bypass bytes between decision-point reconciles are bounded physically by probed free disk, not by the envelope; no admission or disposal verdict is issued on unreconciled state, and overflow past the max latches fail-closed until disposal",
+    "NPROC fit uses the soft limit at probe time; Admit re-probes fresh facts and refuses on drift, but a limit lowered mid-run is detected only at the next admission",
+    "darwin-only: off darwin the adapter probes unavailable and every envelope stays blocked"
+  ]
+}
