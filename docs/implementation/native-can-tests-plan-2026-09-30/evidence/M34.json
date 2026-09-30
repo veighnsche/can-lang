@@ -9,7 +9,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "TBD prototype-source-and-review records"
+    "547db62a prototype-source-and-review records"
   ],
   "changed_paths": [
     "tests/native-can/migration/m34-prototype-source-and-review-re/"
