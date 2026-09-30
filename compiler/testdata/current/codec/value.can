@@ -2,14 +2,14 @@ package json_values
     provides []
     uses [codec, bytes]
 fn str roundtrip
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
         envelope: "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"params\":{\"name\":\"x\"},\"id\":\"opaque\"}" => ok "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"params\":{\"name\":\"x\"},\"id\":\"opaque\"}"
         notification: "{\"method\":\"notify\"}" => ok "{\"method\":\"notify\"}"
-        malformed: "{" => codec::invalid_data("", "invalid_json")
-        duplicate: "{\"x\":0,\"x\":1}" => codec::invalid_data("/x", "duplicate_member")
+        malformed: "{" => codec::invalid_data{"", "invalid_json"}
+        duplicate: "{\"x\":0,\"x\":1}" => codec::invalid_data{"/x", "duplicate_member"}
         scalar: "9007199254740993" => ok "9007199254740993"
         nested: "[null,true,1.0,-0,{\"extra\":[]}]" => ok "[null,true,1.0,-0,{\"extra\":[]}]"
     match chain
@@ -20,7 +20,7 @@ fn str roundtrip
         codec::invalid_data
         ok => ok encoded
 fn str construct
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str id
     asserts
@@ -32,7 +32,7 @@ fn str construct
         codec::invalid_data
         ok => ok encoded
 fn void main
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str[] args
     asserts
@@ -41,7 +41,7 @@ fn void main
         codec::invalid_data
         ok str text => ok
 fn bool is_null
-    emits []
+    emits {}
     given
         codec::json_value value
     asserts
