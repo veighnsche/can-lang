@@ -228,3 +228,33 @@ test("grouped assertion and fixture labels remain tags across separators", async
   has(scopesAt(lines, tokens, 10, "=>"), "keyword.operator.can");
   has(scopesAt(lines, tokens, 10, "false"), "constant.language.can");
 });
+
+test("grouped labels cover longer groups, scenario template uses and qualified heads", async () => {
+  const lines = [
+    "    asserts",
+    "        alpha | beta | gamma: 0 => ok true",
+    "    match call read()",
+    "        when",
+    "            scenario alpha | beta: use readings(1)",
+    "        sql::connection_failed | sql::query_failed => ok false",
+  ];
+  const tokens = await tokenize(lines);
+  for (const name of ["alpha", "beta", "gamma"]) {
+    has(scopesAt(lines, tokens, 1, name), "entity.name.tag.can");
+  }
+  has(scopesAt(lines, tokens, 1, "|"), "keyword.operator.can");
+  has(scopesAt(lines, tokens, 1, ":"), "punctuation.separator.key-value.can");
+  has(scopesAt(lines, tokens, 4, "scenario"), "keyword.control.assertion.can");
+  for (const name of ["alpha", "beta"]) {
+    has(scopesAt(lines, tokens, 4, name), "entity.name.tag.can");
+  }
+  has(scopesAt(lines, tokens, 4, "|"), "keyword.operator.can");
+  has(scopesAt(lines, tokens, 4, ":"), "punctuation.separator.key-value.can");
+  for (const name of ["connection_failed", "query_failed"]) {
+    has(scopesAt(lines, tokens, 5, name), "entity.name.type.can");
+    lacks(scopesAt(lines, tokens, 5, name), "entity.name.tag.can");
+  }
+  has(scopesAt(lines, tokens, 5, "sql"), "entity.name.namespace.can");
+  has(scopesAt(lines, tokens, 5, "::"), "punctuation.accessor.can");
+  has(scopesAt(lines, tokens, 5, "|"), "keyword.operator.can");
+});

@@ -130,6 +130,9 @@ func (c *regionChecker) completionArmsCall(arms []syntax.MatchArm, call *ir.Invo
 				var bindingType *types.Type
 				var bindingName string
 				var key string
+				// Defensive: the parser already rejects bound, aliased and
+				// non-error group members, so parsed programs never reach
+				// this branch. It guards programmatic AST callers.
 				if grouped && (pattern.Success || pattern.StandardFailure || pattern.Binding != nil || pattern.Alias != nil || pattern.Error == nil) {
 					return c.locate(pattern.Span, fmt.Errorf("grouped completion arms require unbound domain error heads"))
 				}

@@ -36,6 +36,10 @@ import (
 //     fail_second/sample also prove bare-forwarded payloads.
 //   - drain/rep visits one fixture table twice (outer call, then the
 //     recursive inner call) consuming 7 then 8 in FIFO order for 78.
+//   - revisit/both enters one grouped handler twice through different
+//     errors (checks::failed, then codec::invalid_data) and consumes the
+//     one nested marker() table in FIFO order for 78; separate per-error
+//     tables would compute 77 instead.
 //   - picky/flush must fail with "unused fixture" (one visit, two rows);
 //     hungry/starved must fail with "missing fixture" (two visits, one row).
 //   - fetch/customer and fetch/partner each activate their own scenario row
@@ -178,6 +182,26 @@ fn int drain
             _ => do
                 int rest = call drain(depth - 1)
                 ok (value * 10) + rest
+fn int revisit
+    emits {}
+    given
+        int depth
+    asserts
+        both: 1 => ok 78
+    match call wrapped()
+        when
+            both: => checks::failed{"revisit first"}
+            both: => codec::invalid_data{"/revisit", "revisit second"}
+        checks::failed | codec::invalid_data => match call marker()
+            when
+                both: => ok 7
+                both: => ok 8
+            ok int value => match depth
+                0 => ok value
+                _ => do
+                    int rest = call revisit(depth - 1)
+                    ok (value * 10) + rest
+        ok int value => ok value
 fn int hungry
     emits {}
     given
@@ -695,9 +719,12 @@ func TestGroupedForwardingPreservesOccurrenceAtExecution(t *testing.T) {
 	if len(wrapped) != 3 || wrapped[0].Outcome != "domain" || wrapped[1].Outcome != "domain" {
 		t.Fatalf("grouped bare forwarding lost error coverage: %+v", wrapped)
 	}
-	expect := map[string]struct{ identity, payload string }{
-		"first":  {wrapped[0].Error.Identity(), `"first payload"`},
-		"second": {wrapped[1].Error.Identity(), `"second payload"`},
+	expect := map[string]struct {
+		identity string
+		payloads []string
+	}{
+		"first":  {wrapped[0].Error.Identity(), []string{`"first payload"`}},
+		"second": {wrapped[1].Error.Identity(), []string{`"/second"`, `"second payload"`}},
 	}
 	artifacts, err := AssertionModules(program, "runtime", httpDependencies(t))
 	if err != nil {
@@ -725,8 +752,10 @@ func TestGroupedForwardingPreservesOccurrenceAtExecution(t *testing.T) {
 			t.Fatalf("wrapped/%s allocated %s occurrence(s) during the call and %s after return, want exactly the one fixture occurrence",
 				name, result.AllocatedDuringCall, result.AllocatedAfterReturn)
 		}
-		if result.PayloadText == nil || !strings.Contains(*result.PayloadText, expect[name].payload) {
-			t.Fatalf("wrapped/%s forwarded payload %v, want %s", name, result.PayloadText, expect[name].payload)
+		for _, payload := range expect[name].payloads {
+			if result.PayloadText == nil || !strings.Contains(*result.PayloadText, payload) {
+				t.Fatalf("wrapped/%s forwarded payload %v, want %s", name, result.PayloadText, payload)
+			}
 		}
 	}
 }
@@ -789,4 +818,24 @@ func TestGroupedRepeatedSelectorFIFOAndQueueFailures(t *testing.T) {
 	groupedExpectViolation(t, "can.project.root/app::picky/flush", "unused fixture", runner.runRoot(t, flush))
 	_, starved := groupedAssertion(t, program, "can.project.root/app::hungry", "starved")
 	groupedExpectViolation(t, "can.project.root/app::hungry/starved", "missing fixture", runner.runRoot(t, starved))
+}
+
+// TestGroupedSharedHandlerReenteredThroughBothAlternatives proves the one
+// grouped handler keeps a single nested fixture site at execution time. One
+// root enters it twice through different errors; the shared nested table is
+// consumed FIFO for 78. IR pointer sharing alone cannot show this: separate
+// per-alternative tables would each yield 7 for 77 instead.
+func TestGroupedSharedHandlerReenteredThroughBothAlternatives(t *testing.T) {
+	program := groupedSyntaxProgram(t)
+	revisit := groupedArms(t, groupedFunction(t, program, "revisit"))
+	if len(revisit) != 3 || revisit[0].Body == nil || revisit[0].Body != revisit[1].Body {
+		t.Fatalf("grouped handler was not checked once and shared: %+v", revisit)
+	}
+	artifacts, err := AssertionModules(program, "runtime", httpDependencies(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	runner := groupedStage(t, artifacts)
+	_, both := groupedAssertion(t, program, "can.project.root/app::revisit", "both")
+	groupedExpectPass(t, "can.project.root/app::revisit/both", runner.runRoot(t, both))
 }

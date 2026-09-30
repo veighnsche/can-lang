@@ -184,6 +184,30 @@ fn int handle
 	}
 }
 
+// E01: a bare generic alternate with a single specialization in the bound
+// resolves clean through the same gathering path.
+func TestGroupedCompletionResolvesSingleSpecializationAlternate(t *testing.T) {
+	src := strings.Replace(programHeader, "uses []", "uses [codec, text]", 1) + `variant a_failure
+    codec::invalid_data
+    standard_failure
+fn int choose
+    emits {all_failed<a_failure>, text::invalid_number}
+    asserts
+        sample: => ok 1
+    ok 1
+fn int handle
+    emits {}
+    asserts
+        sample: => ok 1
+    match call choose()
+        text::invalid_number | all_failed => ok 0
+        ok int value => ok value
+` + programMain + "    ok\n"
+	if _, err := programFixture(t, map[string]string{"src/main.can": src}); err != nil {
+		t.Fatalf("single-specialization generic alternate rejected: %v", err)
+	}
+}
+
 // E02: grouped handlers bind no error payload while single arms keep
 // their existing implicit and explicit bindings.
 func TestGroupedCompletionArmsCarryNoPayloadBinding(t *testing.T) {
@@ -247,7 +271,47 @@ func TestGroupedCompletionArmsCarryNoPayloadBinding(t *testing.T) {
 	t.Fatal("missing checked handler")
 }
 
-// E02: grouped aliases stay rejected; single-arm aliases keep working.
+// E02 behavioral: the implicit short error-name alias resolves in a single
+// arm but is absent from a grouped body.
+func TestGroupedCompletionBodyHasNoImplicitAlias(t *testing.T) {
+	header := strings.Replace(programHeader, "uses []", "uses [codec]", 1) + "error stale{str key}\n"
+	choose := `fn int choose
+    emits {codec::invalid_data, stale}
+    asserts
+        sample: => ok 1
+    ok 1
+`
+	registry := `{"active":["app::stale"],"retired":[]}`
+	fixture := func(src string) (*Program, error) {
+		return programFixtureRegistry(t, map[string]string{"src/main.can": src}, registry)
+	}
+	single := header + choose + `fn int handle
+    emits {}
+    asserts
+        sample: => ok 1
+    match call choose()
+        stale => ok stale.key.length
+        codec::invalid_data => ok 0
+        ok int value => ok value
+` + programMain + "    ok\n"
+	if _, err := fixture(single); err != nil {
+		t.Fatalf("single arm lost its implicit payload alias: %v", err)
+	}
+	grouped := header + choose + `fn int handle
+    emits {}
+    asserts
+        sample: => ok 1
+    match call choose()
+        stale | codec::invalid_data => ok stale.key.length
+        ok int value => ok value
+` + programMain + "    ok\n"
+	if _, err := fixture(grouped); err == nil || !strings.Contains(err.Error(), `no eligible declaration for "stale"`) {
+		t.Fatalf("grouped body leaked an implicit payload alias: %v", err)
+	}
+}
+
+// E02: grouped aliases stay rejected at parse time; the checker backstop is
+// defensive for programmatic AST callers. Single-arm aliases keep working.
 func TestGroupedCompletionRejectsAliases(t *testing.T) {
 	header := strings.Replace(programHeader, "uses []", "uses [codec, text]", 1)
 	src := header + `fn int choose
@@ -268,12 +332,32 @@ fn int handle
 	if err != nil {
 		t.Fatal(err)
 	}
+	rejected := false
 	for _, diagnostic := range syntax.Parse(file).Diagnostics {
 		if strings.Contains(diagnostic.Message, "grouped completion heads") {
-			return
+			rejected = true
 		}
 	}
-	t.Fatal("grouped alias diagnostic missing")
+	if !rejected {
+		t.Fatal("grouped alias diagnostic missing")
+	}
+	aliased := strings.Replace(programHeader, "uses []", "uses [codec]", 1) + "error stale{str key}\n" + `fn int choose
+    emits {codec::invalid_data, stale}
+    asserts
+        sample: => ok 1
+    ok 1
+fn int handle
+    emits {}
+    asserts
+        sample: => ok 1
+    match call choose()
+        stale as problem => ok problem.key.length
+        codec::invalid_data => ok 0
+        ok int value => ok value
+` + programMain + "    ok\n"
+	if _, err := programFixtureRegistry(t, map[string]string{"src/main.can": aliased}, `{"active":["app::stale"],"retired":[]}`); err != nil {
+		t.Fatalf("single-arm alias rejected: %v", err)
+	}
 }
 
 // E02: every bare member must fit the enclosing bound. The escaping
