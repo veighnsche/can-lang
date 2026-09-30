@@ -9,6 +9,7 @@ import (
 	"github.com/veighnsche/can-lang/compiler/internal/project"
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
 	"github.com/veighnsche/can-lang/compiler/internal/source"
+	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 )
 
 func TestGroupedCompletionChecksOneSharedBody(t *testing.T) {
@@ -262,9 +263,17 @@ fn int handle
         codec::invalid_data | text::invalid_number as merged => ok 0
         ok int value => ok value
 ` + programMain + "    ok\n"
-	if err := mustFixtureError(t, src); !strings.Contains(err.Error(), "grouped") {
-		t.Fatalf("grouped alias admitted: %v", err)
+	mustFixtureError(t, src)
+	file, err := source.New("src/main.can", src)
+	if err != nil {
+		t.Fatal(err)
 	}
+	for _, diagnostic := range syntax.Parse(file).Diagnostics {
+		if strings.Contains(diagnostic.Message, "grouped completion heads") {
+			return
+		}
+	}
+	t.Fatal("grouped alias diagnostic missing")
 }
 
 // E02: every bare member must fit the enclosing bound. The escaping
@@ -329,14 +338,14 @@ fn int handle
 // handlers and settled participant handlers accept groups with one
 // checked body; first-success race keeps single heads.
 func TestGroupedCoordinationHandlers(t *testing.T) {
-	header := strings.Replace(programHeader, "uses []", "uses [codec, text]", 1)
+	header := strings.Replace(programHeader, "uses []", "uses [codec]", 1) + "error stale{str key}\n"
 	declarations := coordinationDeclarations + `fn int other
-    emits {text::invalid_number}
+    emits {stale}
     asserts
         sample: => ok 2
     ok 2
 fn int choose
-    emits {codec::invalid_data, text::invalid_number}
+    emits {codec::invalid_data, stale}
     asserts
         sample: => ok 1
     ok 1
@@ -344,11 +353,15 @@ fn int choose
 	race := header + declarations + programMain + `    int result = match call race with error
         number()
         other()
-        codec::invalid_data | text::invalid_number => ok 0
+        codec::invalid_data | stale => ok 0
         ok int value => ok value
     ok
 `
-	program, err := programFixture(t, map[string]string{"src/main.can": race})
+	registry := `{"active":["app::stale"],"retired":[]}`
+	fixture := func(src string) (*Program, error) {
+		return programFixtureRegistry(t, map[string]string{"src/main.can": src}, registry)
+	}
+	program, err := fixture(race)
 	if err != nil {
 		t.Fatalf("grouped race handler rejected: %v", err)
 	}
@@ -362,13 +375,13 @@ fn int choose
 
 	settled := header + declarations + programMain + `    int[] results = match call concurrent with error
         choose()
-            codec::invalid_data | text::invalid_number => ok 0
+            codec::invalid_data | stale => ok 0
             ok int value => ok value
         text()
             ok str value => ok value.length
     ok
 `
-	program, err = programFixture(t, map[string]string{"src/main.can": settled})
+	program, err = fixture(settled)
 	if err != nil {
 		t.Fatalf("grouped participant handler rejected: %v", err)
 	}
@@ -386,7 +399,7 @@ fn int choose
         all_failed | codec::invalid_data => ok 0
     ok
 `
-	if err := mustFixtureError(t, first); !strings.Contains(err.Error(), "without grouped alternatives") {
+	if _, err := fixture(first); err == nil || !strings.Contains(err.Error(), "without grouped alternatives") {
 		t.Fatalf("grouped first-success arm admitted: %v", err)
 	}
 }
