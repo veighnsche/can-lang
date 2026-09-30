@@ -1,0 +1,94 @@
+{
+  "status": "complete",
+  "executor": "Muse (muse-spark-1.3-contributor) as integrator; K04",
+  "writing_owner": "native-values",
+  "task_id": "K04",
+  "row_or_file_slice": null,
+  "start_prerequisite_receipts": [
+    "K01 complete",
+    "P03 complete",
+    "P04 complete in fdcb8362"
+  ],
+  "acceptance_prerequisite_receipts": [],
+  "commits": [
+    "<this commit> C ingress seam"
+  ],
+  "changed_paths": [
+    "tools/runtime/test-services/native-values/c-ingress.manifest.json",
+    "tools/runtime/test-services/native-values/c-ingress.ts",
+    "tools/runtime/test-services/native-values/c-ingress-check.ts"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "bun tools/runtime/test-services/native-values/c-ingress-check.ts",
+      "deadline": "120s",
+      "result": "19 ingress checks passed; exit 0"
+    },
+    {
+      "command": "bun run lint:fix:runtime + format:runtime",
+      "deadline": "240s",
+      "result": "0 warnings/errors; format applied; self-check re-passes"
+    },
+    {
+      "command": "bun run check:runtime + typecheck:runtime",
+      "deadline": "300s",
+      "result": "format clean; tsc clean; exit 0"
+    }
+  ],
+  "identities": {
+    "reference": null,
+    "owner": null,
+    "candidate": null,
+    "suite": null,
+    "artifact": null,
+    "host_profile": null,
+    "observer": null
+  },
+  "coverage": {
+    "case_check_ids": [],
+    "retained_facets": [],
+    "variants_and_environments": [],
+    "unrun_or_blocked": [
+      "live host-dependent controls wait for qualified profiles per the task card"
+    ]
+  },
+  "boundary_review": {
+    "verdict": "seam closed by construction; closure properties now checked, not merely conventional",
+    "c_artifacts": [
+      "compiler/internal/emit/program_entry.go:19-36 assertion entry edges + body",
+      "compiler/internal/emit/program_entry.go:130-137 executable entry edges + body",
+      "compiler/internal/emit/runtime_core.go:5-22 programImports fixed set",
+      "compiler/internal/emit/modules.go:27-100 relative-only rendering, binding validation",
+      "compiler/internal/emit/program_state.go:14 programStatePath"
+    ],
+    "r_artifacts": [
+      "runtime/entry.ts:61 runEntry supervisor signature",
+      "runtime/assert/runner.ts:215 runAssertionRoot supervisor signature",
+      "runtime/completion.ts success/failure/value/invoke/caught/errorType/errorPayload + Completion types"
+    ],
+    "hook_provenance": "every manifest edge cites its emitter source above; supervisor signatures cite R artifacts; body patterns are byte-exact transcriptions of the emitter templates",
+    "findings": [
+      "relative-only imports enforced by Modules(); bare/absolute specifiers unrenderable",
+      "single runtime root is emitter convention (one threaded runtime param), NOT enforced by Modules(): a second runtime copy would render fine; the manifest single-root rule + checker close this",
+      "no dynamic import() in current bodies, but nothing scanned for it; the checker scans every body",
+      "$can local prefix is emitter convention; the checker enforces it on outputs",
+      "same-realm completion holds via the single root: completion.ts value+type edges ship in every programImports set from the same root as the supervisor edge; runtimeRootsOf verifies closure unity"
+    ],
+    "shared_edits_for_integration_writer": [
+      "OPTIONAL hardening (not required): assert in Modules() that all runtime-rooted targets share one root; predicate: collect first path segments of targets whose remainder is a known runtime module, require count <= 1. The output checker already enforces this per module."
+    ]
+  },
+  "resource_and_cleanup_receipts": [
+    "no /tmp scratch created for K04",
+    "no repo writes outside owned K04 paths (verified via git status scope)"
+  ],
+  "correction_registry_head": null,
+  "relevance_decision": null,
+  "retirement_eligible": false,
+  "retirement_commit": null,
+  "reviewer_disposition": "integrator-built and self-reviewed against emitter sources; two self-check failures during development (self-aliased state import, emitter-exact body spacing) corrected with byte-exact fixtures. Independent final review deferred to Z06.",
+  "limitations": [
+    "manifest pins current-version emitter output; emitter template changes must update the manifest + fixtures in the same commit",
+    "checker parses rendered single-line ESM only (the only shape the renderer emits); it is not a general TS parser"
+  ]
+}

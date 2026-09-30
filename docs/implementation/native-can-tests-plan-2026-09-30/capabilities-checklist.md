@@ -54,7 +54,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K04 — Review generated C ingress seam
 
-- [ ] **K04 accepted** — owner lane: `native-values`.
+- [x] **K04 accepted** — owner lane: `native-values`. Evidence: [evidence/K04.json](evidence/K04.json).
 
 **Start after:** K01, P03, P04. **Additional acceptance prerequisites:** none.
 

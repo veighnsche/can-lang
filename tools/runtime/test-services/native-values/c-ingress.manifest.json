@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "kind": "can.native-test.c-ingress-manifest",
+  "version": "1",
+  "description": "Fixed generated-C ingress seam for the current emitter: entry/export/signature/import shapes plus same-realm completion handling. All runtime edges in one module closure resolve under a single runtime root; a second runtime root, a bare or absolute specifier, or a dynamic import is a seam violation (no private runtime swap, no arbitrary dynamic importer).",
+  "local_prefix": "$can",
+  "allowed_program_roots": ["program/", "assertions/", "packages/"],
+  "runtime_modules": [
+    "assert/context.ts",
+    "assert/fixtures.ts",
+    "assert/policy.ts",
+    "assert/runner.ts",
+    "bytes.ts",
+    "callable.ts",
+    "collections/array.ts",
+    "completion.ts",
+    "coordination.ts",
+    "data.ts",
+    "diagnostics.ts",
+    "entry.ts",
+    "failure.ts",
+    "image.ts",
+    "owner.ts",
+    "platform/crypto/primitives.ts",
+    "primitive.ts"
+  ],
+  "entries": {
+    "executable": {
+      "path": "entry.ts",
+      "fixed_edges": [
+        {"runtime_module": "entry.ts", "type_only": false, "names": {"runEntry": "$canRunEntry"}},
+        {"resolved": "program/state.ts", "type_only": false, "names": {"$canInitialize": "$canInitialize"}},
+        {"runtime_module": "diagnostics.ts", "type_only": false, "names": {"configureDiagnostics": "$canConfigureDiagnostics"}}
+      ],
+      "main_edge": {"names": {"*": "$canMain"}},
+      "body_pattern": "^process\\.exitCode = await \\$canRunEntry\\(\\(\\) => \\{\\$canConfigureDiagnostics\\(import\\.meta\\.url\\); \\$canInitialize\\(\\);\\}, \\$canMain, process\\.argv\\.slice\\(2\\)\\);$",
+      "exports": []
+    },
+    "assertion_root": {
+      "path": "entry.ts",
+      "fixed_edges": [
+        {"runtime_module": "assert/runner.ts", "type_only": false, "names": {"runAssertionRoot": "$canRunAssertionRoot"}},
+        {"resolved": "program/state.ts", "type_only": false, "names": {"$canInitialize": "$canInitialize"}},
+        {"runtime_module": "diagnostics.ts", "type_only": false, "names": {"configureDiagnostics": "$canConfigureDiagnostics"}}
+      ],
+      "case_edge": {"resolved_prefix": "assertions/", "names": {"$canCase": "$canCase\\d+"}, "min_count": 1},
+      "body_pattern": "^process\\.exitCode = await \\$canRunAssertionRoot\\(\\[\\$canCase\\d+(, \\$canCase\\d+)*\\], \\(\\) => \\{\\$canConfigureDiagnostics\\(import\\.meta\\.url\\); \\$canInitialize\\(\\);\\}, process\\.argv\\.slice\\(2\\)\\);$",
+      "exports": []
+    },
+    "assertion_case": {
+      "path_prefix": "assertions/",
+      "required_runtime_edges": [
+        {"runtime_module": "collections/array.ts", "type_only": false},
+        {"runtime_module": "assert/context.ts", "type_only": false},
+        {"runtime_module": "coordination.ts", "type_only": false},
+        {"runtime_module": "owner.ts", "type_only": true},
+        {"runtime_module": "bytes.ts", "type_only": false},
+        {"runtime_module": "image.ts", "type_only": false},
+        {"runtime_module": "callable.ts", "type_only": false},
+        {"runtime_module": "assert/fixtures.ts", "type_only": false},
+        {"runtime_module": "assert/policy.ts", "type_only": false},
+        {"runtime_module": "completion.ts", "type_only": false},
+        {"runtime_module": "completion.ts", "type_only": true},
+        {"runtime_module": "data.ts", "type_only": false},
+        {"runtime_module": "primitive.ts", "type_only": false},
+        {"runtime_module": "failure.ts", "type_only": false},
+        {"runtime_module": "platform/crypto/primitives.ts", "type_only": false}
+      ],
+      "required_resolved_edges": [
+        {"resolved": "program/state.ts", "type_only": false}
+      ],
+      "exports": ["$canCase"]
+    }
+  },
+  "signatures": {
+    "$canMain": "(args: readonly string[]) => Completion<void> | Promise<Completion<void>>",
+    "$canCase": "Object.freeze({root, actual, expected})",
+    "runEntry": "(initialize: () => void, main: Main, applicationArgs: readonly string[]) => Promise<0 | 1>",
+    "runAssertionRoot": "(tests: readonly AssertionCase[], initialize: () => void, argv: readonly string[]) => Promise<number>"
+  },
+  "same_realm_completion": [
+    "Every module closure imports completion.ts value and type edges from the same runtime root as its supervisor edge (entry.ts or assert/runner.ts).",
+    "Completion helpers (success, failure, value, invoke, caught, errorType, errorPayload) are only usable through the $can-aliased completion.ts edge; no module constructs cross-root completions.",
+    "The supervisor awaits the same-realm main/case completions and reports process.exitCode only after they settle."
+  ]
+}

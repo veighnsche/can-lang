@@ -253,7 +253,7 @@
       "acceptance": "Wrong observation, wrong compiler/runtime digest and failing assertion are detected; R acceptance is separate from candidate status and suite-source trust.",
       "evidence": "Save accepted/blocked manifest and review; commit controls/record.",
       "commit": "test(testing): independently accept reference seed",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P04",
         "P25"
@@ -858,7 +858,7 @@
         "P04"
       ],
       "accept_after": [],
-      "status": "planned",
+      "status": "complete",
       "scope": "mechanism code and local controls; no integrated credit"
     },
     {
