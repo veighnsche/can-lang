@@ -7,7 +7,7 @@ package model
 /// indexing; the first occurrence wins and the provider sends exactly one
 /// signature field.
 fn option::value<str> find_header
-    emits []
+    emits {}
     given
         http::header[] headers
         str name
@@ -29,7 +29,7 @@ fn option::value<str> find_header
 /// The carrier envelope reuses this primitive over the exact carrier
 /// body bytes under the carrier secret.
 fn bool signature_valid
-    emits []
+    emits {}
     given
         str secret
         str body
@@ -51,7 +51,7 @@ fn bool signature_valid
 /// bytes share a digest, so a replayed delivery compares equal while
 /// any changed byte conflicts.
 fn str digest_of
-    emits []
+    emits {}
     given
         str body
     asserts
@@ -65,7 +65,7 @@ fn str digest_of
 /// admitted version; anything else answers 400 unsupported_protocol
 /// before any signature or store work.
 fn bool protocol_valid
-    emits []
+    emits {}
     given
         str supplied
     asserts
@@ -81,7 +81,7 @@ fn bool protocol_valid
 /// valid only inside +-300000ms around now; anything older or further
 /// ahead answers 401 stale before any store touch.
 fn bool fresh_timestamp
-    emits []
+    emits {}
     given
         int now_ms
         int ts
@@ -99,7 +99,7 @@ fn bool fresh_timestamp
 /// 1000..600000ms lease ask. Malformed claims answer 400 before any
 /// signature or store work.
 fn bool claim_shape_valid
-    emits []
+    emits {}
     given
         str worker_id
         int lease_ms
@@ -115,7 +115,7 @@ fn bool claim_shape_valid
 /// Check heartbeat request shape: a 1..128 character worker identity, a
 /// nonnegative version, and a 1000..600000ms lease ask.
 fn bool heartbeat_shape_valid
-    emits []
+    emits {}
     given
         str worker_id
         int version
@@ -132,7 +132,7 @@ fn bool heartbeat_shape_valid
 /// Check dead-letter request shape: a 1..128 character worker identity
 /// and one of the three protocol-versioned terminal reasons.
 fn bool dead_shape_valid
-    emits []
+    emits {}
     given
         str worker_id
         str reason
@@ -156,7 +156,7 @@ fn bool dead_shape_valid
 /// without writing; every store failure rolls back to store_unavailable
 /// so the provider retry stays safe.
 fn sql::decision<records::receipt> decide_receive
-    emits []
+    emits {}
     given
         near str delivery_id
         near str digest
@@ -173,10 +173,10 @@ fn sql::decision<records::receipt> decide_receive
     match call sql::transaction_execute<records::ledger_insert>(tx, "ledger_insert", records::ledger_insert(delivery_id, digest, event, subscription, "accepted", now_ms))
         when
             accepted: tx, "ledger_insert", records::ledger_insert("del-1", "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79", "invoice.paid", "sub-9", "accepted", 1000) => ok 1
-            duplicate: tx, "ledger_insert", records::ledger_insert("del-1", "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79", "invoice.paid", "sub-9", "accepted", 1000) => sql::constraint_failed("webhook_ledger_pkey")
-            conflict: tx, "ledger_insert", records::ledger_insert("del-1", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "invoice.paid", "sub-9", "accepted", 1000) => sql::constraint_failed("webhook_ledger_pkey")
-            lost_race: tx, "ledger_insert", records::ledger_insert("del-1", "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79", "invoice.paid", "sub-9", "accepted", 1000) => sql::constraint_failed("webhook_ledger_pkey")
-            store_down: tx, "ledger_insert", records::ledger_insert("del-1", "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79", "invoice.paid", "sub-9", "accepted", 1000) => sql::query_failed("ledger_insert", "SQLITE_IOERR")
+            duplicate: tx, "ledger_insert", records::ledger_insert("del-1", "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79", "invoice.paid", "sub-9", "accepted", 1000) => sql::constraint_failed{"webhook_ledger_pkey"}
+            conflict: tx, "ledger_insert", records::ledger_insert("del-1", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "invoice.paid", "sub-9", "accepted", 1000) => sql::constraint_failed{"webhook_ledger_pkey"}
+            lost_race: tx, "ledger_insert", records::ledger_insert("del-1", "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79", "invoice.paid", "sub-9", "accepted", 1000) => sql::constraint_failed{"webhook_ledger_pkey"}
+            store_down: tx, "ledger_insert", records::ledger_insert("del-1", "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79", "invoice.paid", "sub-9", "accepted", 1000) => sql::query_failed{"ledger_insert", "SQLITE_IOERR"}
         sql::unsupported_value => ok sql::rollback<records::receipt>(records::receipt("store_unavailable"))
         sql::query_failed => ok sql::rollback<records::receipt>(records::receipt("store_unavailable"))
         sql::constraint_failed => match call sql::transaction_query_optional<records::ledger_key, records::ledger_row>(tx, "ledger_by_id", records::ledger_key(delivery_id))
@@ -212,7 +212,7 @@ fn sql::decision<records::receipt> decide_receive
 /// empty so the loser retries honestly; every store failure rolls
 /// back to store_unavailable.
 fn sql::decision<records::claim_page> decide_claim
-    emits []
+    emits {}
     given
         near str worker_id
         near int lease_ms
@@ -231,11 +231,11 @@ fn sql::decision<records::claim_page> decide_claim
         when
             claimed: tx, "nonce_insert", records::nonce_insert("n-1", 1000000) => ok 1
             empty: tx, "nonce_insert", records::nonce_insert("n-2", 1000000) => ok 1
-            replay: tx, "nonce_insert", records::nonce_insert("n-1", 1000000) => sql::constraint_failed("webhook_carrier_nonce_pkey")
+            replay: tx, "nonce_insert", records::nonce_insert("n-1", 1000000) => sql::constraint_failed{"webhook_carrier_nonce_pkey"}
             lost_race: tx, "nonce_insert", records::nonce_insert("n-3", 1000000) => ok 1
             candidate_down: tx, "nonce_insert", records::nonce_insert("n-4", 1000000) => ok 1
             update_down: tx, "nonce_insert", records::nonce_insert("n-5", 1000000) => ok 1
-            store_down: tx, "nonce_insert", records::nonce_insert("n-6", 1000000) => sql::query_failed("nonce_insert", "SQLITE_IOERR")
+            store_down: tx, "nonce_insert", records::nonce_insert("n-6", 1000000) => sql::query_failed{"nonce_insert", "SQLITE_IOERR"}
         sql::unsupported_value => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
         sql::query_failed => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
         sql::constraint_failed => ok sql::rollback<records::claim_page>(records::claim_page("replay", []))
@@ -254,7 +254,7 @@ fn sql::decision<records::claim_page> decide_claim
                     claimed: tx, "claim_candidate", records::claim_scan("pending", 1000000) => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 0, 900000, "", 0, 0))
                     empty: tx, "claim_candidate", records::claim_scan("pending", 1000000) => ok option::none()
                     lost_race: tx, "claim_candidate", records::claim_scan("pending", 1000000) => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 0, 900000, "", 0, 0))
-                    candidate_down: tx, "claim_candidate", records::claim_scan("pending", 1000000) => sql::query_failed("claim_candidate", "SQLITE_IOERR")
+                    candidate_down: tx, "claim_candidate", records::claim_scan("pending", 1000000) => sql::query_failed{"claim_candidate", "SQLITE_IOERR"}
                     update_down: tx, "claim_candidate", records::claim_scan("pending", 1000000) => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 0, 900000, "", 0, 0))
                 sql::unsupported_value => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
                 sql::query_failed => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
@@ -267,7 +267,7 @@ fn sql::decision<records::claim_page> decide_claim
                         when
                             claimed: tx, "claim_update", records::claim_lease("worker-1", 1005000, 1, 1000000, "del-1", 0) => ok 1
                             lost_race: tx, "claim_update", records::claim_lease("worker-1", 1005000, 1, 1000000, "del-1", 0) => ok 0
-                            update_down: tx, "claim_update", records::claim_lease("worker-1", 1005000, 1, 1000000, "del-1", 0) => sql::query_failed("claim_update", "SQLITE_IOERR")
+                            update_down: tx, "claim_update", records::claim_lease("worker-1", 1005000, 1, 1000000, "del-1", 0) => sql::query_failed{"claim_update", "SQLITE_IOERR"}
                         sql::unsupported_value => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
                         sql::query_failed => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
                         sql::constraint_failed => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
@@ -281,7 +281,7 @@ fn sql::decision<records::claim_page> decide_claim
 /// foreign or stale holder answers lease_lost; a duplicate nonce
 /// replays 401.
 fn sql::decision<records::heartbeat_result> decide_heartbeat
-    emits []
+    emits {}
     given
         near str worker_id
         near str delivery_id
@@ -302,13 +302,13 @@ fn sql::decision<records::heartbeat_result> decide_heartbeat
     match call sql::transaction_execute<records::nonce_insert>(tx, "nonce_insert", records::nonce_insert(nonce, now_ms))
         when
             extended: tx, "nonce_insert", records::nonce_insert("n-1", 1000000) => ok 1
-            replay: tx, "nonce_insert", records::nonce_insert("n-1", 1000000) => sql::constraint_failed("webhook_carrier_nonce_pkey")
+            replay: tx, "nonce_insert", records::nonce_insert("n-1", 1000000) => sql::constraint_failed{"webhook_carrier_nonce_pkey"}
             unknown: tx, "nonce_insert", records::nonce_insert("n-2", 1000000) => ok 1
             lease_lost: tx, "nonce_insert", records::nonce_insert("n-3", 1000000) => ok 1
             stale_version: tx, "nonce_insert", records::nonce_insert("n-4", 1000000) => ok 1
             done: tx, "nonce_insert", records::nonce_insert("n-5", 1000000) => ok 1
             dead: tx, "nonce_insert", records::nonce_insert("n-6", 1000000) => ok 1
-            store_down: tx, "nonce_insert", records::nonce_insert("n-7", 1000000) => sql::query_failed("nonce_insert", "SQLITE_IOERR")
+            store_down: tx, "nonce_insert", records::nonce_insert("n-7", 1000000) => sql::query_failed{"nonce_insert", "SQLITE_IOERR"}
         sql::unsupported_value => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("store_unavailable", 0, 0, 0))
         sql::query_failed => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("store_unavailable", 0, 0, 0))
         sql::constraint_failed => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("replay", 0, 0, 0))
@@ -353,7 +353,7 @@ fn sql::decision<records::heartbeat_result> decide_heartbeat
 /// without appending a second attempt, and a duplicate nonce replays
 /// 401.
 fn sql::decision<records::ack_result> decide_ack
-    emits []
+    emits {}
     given
         near str delivery_id
         near bool settled
@@ -375,8 +375,8 @@ fn sql::decision<records::ack_result> decide_ack
             unknown: tx, "nonce_insert", records::nonce_insert("n-3", 2000) => ok 1
             already_done: tx, "nonce_insert", records::nonce_insert("n-4", 2000) => ok 1
             dead_acked: tx, "nonce_insert", records::nonce_insert("n-5", 2000) => ok 1
-            replay: tx, "nonce_insert", records::nonce_insert("n-1", 2000) => sql::constraint_failed("webhook_carrier_nonce_pkey")
-            store_down: tx, "nonce_insert", records::nonce_insert("n-6", 2000) => sql::query_failed("nonce_insert", "SQLITE_IOERR")
+            replay: tx, "nonce_insert", records::nonce_insert("n-1", 2000) => sql::constraint_failed{"webhook_carrier_nonce_pkey"}
+            store_down: tx, "nonce_insert", records::nonce_insert("n-6", 2000) => sql::query_failed{"nonce_insert", "SQLITE_IOERR"}
         sql::unsupported_value => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
         sql::query_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
         sql::constraint_failed => ok sql::rollback<records::ack_result>(records::ack_result("replay", 0))
@@ -432,7 +432,7 @@ fn sql::decision<records::ack_result> decide_ack
 /// replay dead, unknown ids answer unknown, and a duplicate nonce
 /// replays 401.
 fn sql::decision<records::dead_result> decide_dead
-    emits []
+    emits {}
     given
         near str delivery_id
         near str worker_id
@@ -451,12 +451,12 @@ fn sql::decision<records::dead_result> decide_dead
     match call sql::transaction_execute<records::nonce_insert>(tx, "nonce_insert", records::nonce_insert(nonce, now_ms))
         when
             marked: tx, "nonce_insert", records::nonce_insert("n-1", 2000) => ok 1
-            replay: tx, "nonce_insert", records::nonce_insert("n-1", 2000) => sql::constraint_failed("webhook_carrier_nonce_pkey")
+            replay: tx, "nonce_insert", records::nonce_insert("n-1", 2000) => sql::constraint_failed{"webhook_carrier_nonce_pkey"}
             unknown: tx, "nonce_insert", records::nonce_insert("n-2", 2000) => ok 1
             already_done: tx, "nonce_insert", records::nonce_insert("n-3", 2000) => ok 1
             already_dead: tx, "nonce_insert", records::nonce_insert("n-4", 2000) => ok 1
             lease_lost: tx, "nonce_insert", records::nonce_insert("n-5", 2000) => ok 1
-            store_down: tx, "nonce_insert", records::nonce_insert("n-6", 2000) => sql::query_failed("nonce_insert", "SQLITE_IOERR")
+            store_down: tx, "nonce_insert", records::nonce_insert("n-6", 2000) => sql::query_failed{"nonce_insert", "SQLITE_IOERR"}
         sql::unsupported_value => ok sql::rollback<records::dead_result>(records::dead_result("store_unavailable", 0))
         sql::query_failed => ok sql::rollback<records::dead_result>(records::dead_result("store_unavailable", 0))
         sql::constraint_failed => ok sql::rollback<records::dead_result>(records::dead_result("replay", 0))

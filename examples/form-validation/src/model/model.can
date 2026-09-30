@@ -4,7 +4,7 @@ package model
 
 /// Map a decoded signup form to a response view.
 fn records::signup_view validate_signup
-    emits []
+    emits {}
     given
         records::signup_form form
     asserts

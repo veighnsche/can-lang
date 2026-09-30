@@ -3,7 +3,7 @@ package gallery
     uses [text, bytes, codec]
 
 fn int branch_arithmetic
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -18,14 +18,14 @@ record counter
     int value
     str label
 fn counter make_counter
-    emits []
+    emits {}
     given
         int number
     asserts
         sample: 2 => ok counter(2, "stable")
     ok counter(number, "stable")
 fn counter update_counter
-    emits []
+    emits {}
     given
         counter original
         int increment
@@ -33,7 +33,7 @@ fn counter update_counter
         sample: counter(2, "stable"), 3 => ok counter(5, "stable")
     ok original with value = original.value + increment
 fn int project_counter
-    emits []
+    emits {}
     given
         counter original
     asserts
@@ -49,7 +49,7 @@ variant shape
     circle
     rectangle
 fn shape make_shape
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -59,7 +59,7 @@ fn shape make_shape
         true => ok circle(number)
         false => ok rectangle(number, number + 1)
 fn int shape_area
-    emits []
+    emits {}
     given
         shape value
     asserts
@@ -70,7 +70,7 @@ fn int shape_area
         rectangle => ok value.width * value.height
 
 fn item identity<item>
-    emits []
+    emits {}
     given
         item input
     asserts
@@ -78,7 +78,7 @@ fn item identity<item>
         text: "Can" => ok "Can"
     ok input
 fn int[] generic_pass
-    emits []
+    emits {}
     given
         int[] values
     asserts
@@ -87,7 +87,7 @@ fn int[] generic_pass
     ok call values.map(callable identity<int>)
 
 fn int add_offset
-    emits []
+    emits {}
     given
         near int offset
         int number
@@ -95,18 +95,18 @@ fn int add_offset
         sample: 3, 4 => ok 7
     ok offset + number
 fn int[] captured_map
-    emits []
+    emits {}
     given
         int[] values
         int offset
     asserts
         sample: [1, 2], 3 => ok [4, 5]
         empty: [], 7 => ok []
-    callable int (int) emits [] operation = callable add_offset
+    callable int (int) emits {} operation = callable add_offset
     ok call values.map(operation)
 
 fn str normalize_text
-    emits [text::invalid_unicode]
+    emits {text::invalid_unicode}
     given
         str input
     asserts
@@ -116,7 +116,7 @@ fn str normalize_text
         text::invalid_unicode
         ok str normalized => ok normalized
 fn str base64_text
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str input
     asserts

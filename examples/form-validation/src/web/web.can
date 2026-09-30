@@ -4,7 +4,7 @@ package web
 
 /// Serve the signup page.
 fn http::server_response show_signup
-    emits []
+    emits {}
     given
         http::request req
     asserts
@@ -28,7 +28,7 @@ action signup_validation
 
 /// Validate one submitted signup against the shared model.
 fn records::signup_outcome validate_signup
-    emits []
+    emits {}
     given
         http::request req
         records::signup_form form
@@ -42,7 +42,7 @@ fn records::signup_outcome validate_signup
 
 /// Render one signup outcome as the swapped results fragment.
 fn html::safe render_signup_outcome
-    emits []
+    emits {}
     given
         records::signup_outcome outcome
     asserts
@@ -58,7 +58,7 @@ fn html::safe render_signup_outcome
 
 /// Render one structurally rejected signup form as guidance.
 fn html::safe render_signup_rejected
-    emits []
+    emits {}
     given
         form::rejected<records::signup_form> bad
     asserts
@@ -68,7 +68,7 @@ fn html::safe render_signup_rejected
         ok html::safe fragment => ok fragment
 /// Mount the signup callbacks.
 fn http::router signup_routes
-    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}
     asserts
         sample: => ok
     match chain
@@ -82,7 +82,7 @@ fn http::router signup_routes
 
 /// Start the signup server on one port.
 fn http::server boot
-    emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed]
+    emits {http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed}
     given
         int port
     asserts
@@ -101,7 +101,7 @@ fn http::server boot
 
 /// Serve signups until a shutdown signal.
 fn void main
-    emits [codec::invalid_data, io::write_failed, http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed]
+    emits {codec::invalid_data, io::write_failed, http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed}
     given
         str[] args
     asserts

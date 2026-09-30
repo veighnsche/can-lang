@@ -9,7 +9,7 @@ package model
 
 /// Seed one panel with two demo rows under a tag.
 fn records::panel seed_panel
-    emits []
+    emits {}
     given
         str tag
     asserts
@@ -21,7 +21,7 @@ fn records::panel seed_panel
 /// controller. Row storage stays app-owned; the library only ever
 /// sees keys.
 fn str[] row_keys
-    emits []
+    emits {}
     given
         records::dock_line[] rows
         int index
@@ -37,7 +37,7 @@ fn str[] row_keys
 /// Read the key of the row at a known position. Callers only
 /// pass positions below the length.
 fn str row_key
-    emits []
+    emits {}
     given
         records::dock_line[] rows
         int index
@@ -49,7 +49,7 @@ fn str row_key
 /// shared quantity grammar; a miss keeps the text with a zero
 /// count and blocks review until fixed.
 fn records::dock_line make_row
-    emits []
+    emits {}
     given
         str key
         str sku
@@ -67,7 +67,7 @@ fn records::dock_line make_row
 /// valid parse, and the flag records whether the row can be
 /// reviewed.
 fn records::dock_line[] count_rows
-    emits []
+    emits {}
     given
         records::dock_line[] rows
         str key
@@ -93,7 +93,7 @@ fn records::dock_line[] count_rows
 /// Rewrite the sku of the named row front to back, copying the
 /// rest untouched. An unknown key copies every row unchanged.
 fn records::dock_line[] sku_rows
-    emits []
+    emits {}
     given
         records::dock_line[] rows
         str key
@@ -113,7 +113,7 @@ fn records::dock_line[] sku_rows
 
 /// Read the current count text of a known key; unknown keys read "".
 fn str current_count
-    emits []
+    emits {}
     given
         records::dock_line[] rows
         str key
@@ -130,7 +130,7 @@ fn str current_count
 
 /// Read the current sku of a known key; unknown keys read "".
 fn str current_sku
-    emits []
+    emits {}
     given
         records::dock_line[] rows
         str key
@@ -150,7 +150,7 @@ fn str current_sku
 /// alone; a text change always counts as an edit even when it does
 /// not parse, because the screen content changed.
 fn records::panel with_count
-    emits []
+    emits {}
     given
         records::panel panel
         str key
@@ -170,7 +170,7 @@ fn records::panel with_count
 /// Retarget one row sku by key. Unknown keys and unchanged values
 /// leave the sequence alone.
 fn records::panel with_sku
-    emits []
+    emits {}
     given
         records::panel panel
         str key
@@ -186,7 +186,7 @@ fn records::panel with_sku
 
 /// Append one blank row under the first free key.
 fn records::panel row_added
-    emits []
+    emits {}
     given
         records::panel panel
     asserts
@@ -195,7 +195,7 @@ fn records::panel row_added
 
 /// Drop one row by key. Unknown keys leave the sequence alone.
 fn records::panel row_removed
-    emits []
+    emits {}
     given
         records::panel panel
         str key
@@ -211,7 +211,7 @@ fn records::panel row_removed
 /// (1). Unknown keys, edges and other directions are no-ops that
 /// leave the sequence alone.
 fn records::panel row_moved
-    emits []
+    emits {}
     given
         records::panel panel
         str key
@@ -233,7 +233,7 @@ fn records::panel row_moved
 
 /// Report whether any row is unparsable and so blocks review.
 fn bool panel_blocked
-    emits []
+    emits {}
     given
         records::dock_line[] rows
         int index
@@ -250,7 +250,7 @@ fn bool panel_blocked
 
 /// First invalid row key, or "" when every row parses.
 fn str blocked_key
-    emits []
+    emits {}
     given
         records::dock_line[] rows
         int index
@@ -267,7 +267,7 @@ fn str blocked_key
 /// Review-block notice: "" when reviewable, else the first bad row
 /// and field through the shared vocabulary.
 fn str blocked_notice
-    emits []
+    emits {}
     given
         records::panel panel
     asserts
@@ -282,7 +282,7 @@ fn str blocked_notice
 /// Exact total count across the rows in order. Only parsed values
 /// feed the sum.
 fn int total_qty
-    emits []
+    emits {}
     given
         records::dock_line[] rows
         int index
@@ -298,7 +298,7 @@ fn int total_qty
 
 /// Totals line for one panel: row count and exact total.
 fn str totals_text
-    emits []
+    emits {}
     given
         records::panel panel
     asserts
@@ -310,7 +310,7 @@ fn str totals_text
 /// compare app constructs the library problem shape natively: no
 /// contract adapter sits between the rows and the review notice.
 fn notices::field_problem[] bad_problems
-    emits []
+    emits {}
     given
         records::dock_line[] rows
         int index
@@ -332,7 +332,7 @@ fn notices::field_problem[] bad_problems
 /// through the shared 422 vocabulary with the first problem
 /// winning.
 fn str review_notice
-    emits []
+    emits {}
     given
         records::panel panel
     asserts
@@ -350,7 +350,7 @@ fn str review_notice
 /// The detail carries the revision or server message where the
 /// shape takes one; unknown kinds read the empty-rejection notice.
 fn str outcome_notice
-    emits []
+    emits {}
     given
         str kind
         str detail
@@ -389,7 +389,7 @@ fn str outcome_notice
 /// Swap the notice inside a panel, keeping everything else
 /// untouched.
 fn records::panel with_notice
-    emits []
+    emits {}
     given
         records::panel panel
         str notice

@@ -4,7 +4,7 @@ package failing_gallery
 
 /// The expected value is deliberately wrong to show an assertion failure.
 fn int square
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -12,7 +12,7 @@ fn int square
     ok number * number
 
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts

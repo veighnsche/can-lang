@@ -4,7 +4,7 @@ package web
 
 /// Serve the accounts page.
 fn http::server_response show_accounts
-    emits []
+    emits {}
     given
         http::request req
     asserts
@@ -18,7 +18,7 @@ fn http::server_response show_accounts
 
 /// Answer one account search from the query string.
 fn http::server_response search_accounts
-    emits []
+    emits {}
     given
         http::request req
         near sql::pool pool
@@ -27,10 +27,10 @@ fn http::server_response search_accounts
         blank: => ok
         found: => ok
         down: => ok
-    callable records::account_row[] (str) emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch] loader = callable model::pool_loader
+    callable records::account_row[] (str) emits {sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch} loader = callable model::pool_loader
     match call http::query_one(req, "query")
         when
-            missing: req, "query" => http::invalid_request("query_missing")
+            missing: req, "query" => http::invalid_request{"query_missing"}
             blank: req, "query" => ok ""
             found: req, "query" => ok "ann"
             down: req, "query" => ok "ann"
@@ -69,7 +69,7 @@ action account_validation
 
 /// Validate one submitted account name.
 fn records::account_outcome validate_account
-    emits []
+    emits {}
     given
         http::request req
         records::account_form form
@@ -82,7 +82,7 @@ fn records::account_outcome validate_account
 
 /// Render one account outcome as the swapped validation fragment.
 fn html::safe render_account_outcome
-    emits []
+    emits {}
     given
         records::account_outcome outcome
     asserts
@@ -98,7 +98,7 @@ fn html::safe render_account_outcome
 
 /// Render one structurally rejected account form as guidance.
 fn html::safe render_account_rejected
-    emits []
+    emits {}
     given
         form::rejected<records::account_form> bad
     asserts
@@ -108,7 +108,7 @@ fn html::safe render_account_rejected
         ok html::safe fragment => ok fragment
 /// Summarize the dashboard clock reading.
 fn http::server_response dashboard_summary
-    emits []
+    emits {}
     given
         http::request req
     asserts
@@ -123,7 +123,7 @@ fn http::server_response dashboard_summary
 
 /// Mount the four account callbacks, capturing the open pool.
 fn http::router search_routes
-    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}
     given
         near sql::pool pool
     asserts
@@ -141,7 +141,7 @@ fn http::router search_routes
 
 /// Open the pool and start the account server on one port.
 fn http::server boot
-    emits [http::credentials_missing, sql::connection_failed, http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed]
+    emits {http::credentials_missing, sql::connection_failed, http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed}
     given
         int port
     asserts
@@ -165,7 +165,7 @@ fn http::server boot
 
 /// Serve accounts until a shutdown signal, then close the pool.
 fn void main
-    emits [codec::invalid_data, io::write_failed, http::credentials_missing, sql::connection_failed, sql::close_failed, http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed]
+    emits {codec::invalid_data, io::write_failed, http::credentials_missing, sql::connection_failed, sql::close_failed, http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed}
     given
         str[] args
     asserts

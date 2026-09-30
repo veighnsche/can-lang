@@ -2,7 +2,7 @@ package app
     provides []
     uses []
 fn int forwarded
-    emits []
+    emits {}
     given
         int left
         int right
@@ -11,7 +11,7 @@ fn int forwarded
     int total = left + right
     ok total
 fn void main
-    emits []
+    emits {}
     asserts
         sample:  => ok
     ok

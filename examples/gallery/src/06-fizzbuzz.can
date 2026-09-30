@@ -4,7 +4,7 @@ package gallery
 
 /// Ordered matches handle the most specific case first.
 fn str fizzbuzz
-    emits []
+    emits {}
     given
         int number
     asserts

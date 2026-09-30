@@ -4,7 +4,7 @@ package markdown_example
 /// Ordinary display: native HTML stays a plain string, raw markup
 /// included, so callers can preview untrusted documents as text.
 fn str preview
-    emits [markdown::over_limit]
+    emits {markdown::over_limit}
     given
         str source
     asserts
@@ -14,17 +14,17 @@ fn str preview
 /// Safe publishing: the same document becomes an opaque html::safe
 /// fragment with raw markup escaped and links policy-checked.
 fn html::safe publish
-    emits [markdown::over_limit, html::invalid_url]
+    emits {markdown::over_limit, html::invalid_url}
     given
         str source
     asserts
         sample: "# Release" => ok
-        bad_link: "[t](javascript:alert(1))" => html::invalid_url("scheme")
+        bad_link: "[t](javascript:alert(1))" => html::invalid_url{"scheme"}
     relay call markdown::render_safe(source)
 /// Safe HTTP responses accept only the typed safe result; the raw
 /// preview string cannot flow here (see the integration negatives).
 fn http::server_response serve
-    emits [markdown::over_limit, html::invalid_url]
+    emits {markdown::over_limit, html::invalid_url}
     given
         str source
     asserts
@@ -38,7 +38,7 @@ fn http::server_response serve
         html::invalid_url
         ok => ok response
 fn int emit
-    emits [codec::invalid_data, io::write_failed]
+    emits {codec::invalid_data, io::write_failed}
     given
         str text
     asserts
@@ -53,7 +53,7 @@ fn int emit
             io::write_failed
             ok int written => ok written
 fn void main
-    emits [markdown::over_limit, codec::invalid_data, io::write_failed]
+    emits {markdown::over_limit, codec::invalid_data, io::write_failed}
     given
         str[] args
     asserts

@@ -5,7 +5,7 @@ package gallery
 /// Compare the outer characters, then recurse into the middle.
 /// This introductory version uses ASCII input.
 fn bool palindrome
-    emits []
+    emits {}
     given
         str value
     asserts

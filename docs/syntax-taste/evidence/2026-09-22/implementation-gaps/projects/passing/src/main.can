@@ -2,12 +2,12 @@ package app
     provides []
     uses []
 fn int answer
-    emits []
+    emits {}
     asserts
         exact: => ok 1
     ok 1
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts

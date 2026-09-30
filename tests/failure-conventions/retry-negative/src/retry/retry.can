@@ -24,9 +24,9 @@ record traced<failure>
 /// rejection. Standard failures are never caught here: they propagate
 /// untouched with their occurrence intact (see blast_kind).
 fn outcome<item, failure> retry<item, failure, arg>
-    emits []
+    emits {}
     given
-        callable outcome<item, failure> (arg) emits [] operation
+        callable outcome<item, failure> (arg) emits {} operation
         arg input
         int remaining
     asserts
@@ -39,7 +39,7 @@ fn outcome<item, failure> retry<item, failure, arg>
 /// Canned operation for the helper's own rows: deterministic outcomes
 /// without fixtures (one function, two modes).
 fn outcome<int, str> canned
-    emits []
+    emits {}
     given
         str mode
     asserts
@@ -52,7 +52,7 @@ fn outcome<int, str> canned
 /// Callers match the outcome and tag the rejected leaf; completed values
 /// pass through with a plain ok of the narrowed leaf.
 fn traced<failure> tag<failure>
-    emits []
+    emits {}
     given
         str operation
         failure cause

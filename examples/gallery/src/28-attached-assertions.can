@@ -4,7 +4,7 @@ package gallery
 
 /// Each assertion row supplies inputs and an expected result.
 fn int square
-    emits []
+    emits {}
     given
         int number
     asserts

@@ -4,19 +4,19 @@ package utilities_example
 
 /// Host of an absolute URL.
 fn str link_host
-    emits [url::invalid_url]
+    emits {url::invalid_url}
     given
         str text
     asserts
         sample: "https://example.com:8080/x?a=1" => ok "example.com"
-        bad_scheme: "ftp://example.com/x" => url::invalid_url("scheme")
+        bad_scheme: "ftp://example.com/x" => url::invalid_url{"scheme"}
     match call url::parse(text)
         url::invalid_url
         ok url::parts parts => ok parts.host
 
 /// Every "tag" query value in document order.
 fn str[] link_tags
-    emits [url::invalid_url]
+    emits {url::invalid_url}
     given
         str text
     asserts
@@ -28,7 +28,7 @@ fn str[] link_tags
 
 /// Epoch millis formatted for Tokyo with medium/short styles.
 fn str tokyo_time
-    emits [time::out_of_range, time::invalid_zone, time::invalid_option]
+    emits {time::out_of_range, time::invalid_zone, time::invalid_option}
     given
         int millis
     asserts
@@ -42,7 +42,7 @@ fn str tokyo_time
 
 /// First word characters of the text.
 fn str first_word
-    emits [text::invalid_regex, text::invalid_limit]
+    emits {text::invalid_regex, text::invalid_limit}
     given
         str value
     asserts
@@ -55,7 +55,7 @@ fn str first_word
 
 /// Standard base64 of the UTF-8 bytes.
 fn str b64
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -68,7 +68,7 @@ fn str b64
 
 /// Print "host @ tokyo-time" for a URL and epoch millis.
 fn void main
-    emits [url::invalid_url, codec::invalid_data, time::out_of_range, time::invalid_zone, time::invalid_option, io::write_failed]
+    emits {url::invalid_url, codec::invalid_data, time::out_of_range, time::invalid_zone, time::invalid_option, io::write_failed}
     given
         str[] args
     asserts

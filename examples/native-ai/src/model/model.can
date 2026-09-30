@@ -8,7 +8,7 @@ scenario unclosed
 
 /// Wrap one keyword as a dynamic choice option.
 fn choice_option keyword_option
-    emits []
+    emits {}
     given
         str word
     asserts
@@ -17,7 +17,7 @@ fn choice_option keyword_option
 
 /// Transform a generated plan into dynamic choice options.
 fn choice_option[] plan_options
-    emits []
+    emits {}
     given
         records::triage_plan plan
     asserts
@@ -28,7 +28,7 @@ fn choice_option[] plan_options
 
 /// Decide the triage level from an explicit confidence threshold.
 fn str gate
-    emits []
+    emits {}
     given
         float score
     asserts
@@ -41,7 +41,7 @@ fn str gate
 
 /// Count recent accounts through the captured pool.
 fn records::count_value recent_count
-    emits []
+    emits {}
     given
         near sql::pool pool
     asserts
@@ -50,7 +50,7 @@ fn records::count_value recent_count
     match call sql::query_rows<records::search_parameters, records::account_row>(pool, "recent_accounts", records::search_parameters("%"), 25)
         when
             scenario sample: pool, "recent_accounts", records::search_parameters("%"), 25 => ok [records::account_row(1, "Ann"), records::account_row(2, "Bo")]
-            scenario down: pool, "recent_accounts", records::search_parameters("%"), 25 => sql::connection_failed("recent_accounts")
+            scenario down: pool, "recent_accounts", records::search_parameters("%"), 25 => sql::connection_failed{"recent_accounts"}
             scenario triage: pool, "recent_accounts", records::search_parameters("%"), 25 => ok [records::account_row(1, "Ann"), records::account_row(2, "Bo")]
             scenario unclosed: pool, "recent_accounts", records::search_parameters("%"), 25 => ok [records::account_row(1, "Ann"), records::account_row(2, "Bo")]
         sql::unsupported_value => ok records::count_value(0, false)
@@ -63,7 +63,7 @@ fn records::count_value recent_count
 
 /// Read the account total through the captured pool.
 fn records::count_value account_total
-    emits []
+    emits {}
     given
         near sql::pool pool
     asserts
@@ -72,7 +72,7 @@ fn records::count_value account_total
     match call sql::query_one<records::count_params, records::total_row>(pool, "account_total", records::count_params(0))
         when
             scenario sample: pool, "account_total", records::count_params(0) => ok records::total_row(2)
-            scenario down: pool, "account_total", records::count_params(0) => sql::query_failed("account_total", "08006")
+            scenario down: pool, "account_total", records::count_params(0) => sql::query_failed{"account_total", "08006"}
             scenario triage: pool, "account_total", records::count_params(0) => ok records::total_row(2)
             scenario unclosed: pool, "account_total", records::count_params(0) => ok records::total_row(2)
         sql::unsupported_value => ok records::count_value(0, false)

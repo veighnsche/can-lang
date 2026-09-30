@@ -12,7 +12,7 @@ variant shape
     circle
     rectangle
 fn int area_units
-    emits []
+    emits {}
     given
         shape value
     asserts

@@ -4,7 +4,7 @@ package gallery
 
 /// A type parameter preserves the input type.
 fn item identity<item>
-    emits []
+    emits {}
     given
         item value
     asserts

@@ -4,7 +4,7 @@ package render
 
 /// Render one message as a safe single-paragraph fragment.
 fn html::safe feedback
-    emits [html::invalid_structure]
+    emits {html::invalid_structure}
     given
         str message
     asserts
@@ -20,7 +20,7 @@ fn html::safe feedback
 
 /// Render the dashboard summary as a safe fragment.
 fn html::safe summary
-    emits [html::invalid_structure]
+    emits {html::invalid_structure}
     given
         records::dashboard_view view
     asserts
@@ -37,7 +37,7 @@ fn html::safe summary
 
 /// Build the dashboard page with its polling section.
 fn html::safe page
-    emits [html::invalid_structure, html::invalid_url, htmx::invalid_target, htmx::invalid_interval]
+    emits {html::invalid_structure, html::invalid_url, htmx::invalid_target, htmx::invalid_interval}
     asserts
         sample: => ok
     match chain

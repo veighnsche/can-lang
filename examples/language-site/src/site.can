@@ -4,7 +4,7 @@ package site
 
 /// All authored copy enters HTML through the safe text constructor.
 fn html::node text_block
-    emits [html::invalid_structure]
+    emits {html::invalid_structure}
     given
         str tag_name
         str class_name
@@ -21,7 +21,7 @@ fn html::node text_block
         ok => ok block
 
 fn html::node link
-    emits [html::invalid_structure, html::invalid_url]
+    emits {html::invalid_structure, html::invalid_url}
     given
         str destination
         str class_name
@@ -40,7 +40,7 @@ fn html::node link
         ok => ok anchor
 
 fn html::node header
-    emits [html::invalid_structure, html::invalid_url]
+    emits {html::invalid_structure, html::invalid_url}
     asserts
         sample: => ok
     match chain
@@ -58,7 +58,7 @@ fn html::node header
         ok => ok head
 
 fn html::node footer
-    emits [html::invalid_structure, html::invalid_url]
+    emits {html::invalid_structure, html::invalid_url}
     asserts
         sample: => ok
     match chain
@@ -73,7 +73,7 @@ fn html::node footer
 
 /// The landing page is assembled entirely from Can's typed HTML nodes.
 fn html::safe home
-    emits [html::invalid_structure, html::invalid_url]
+    emits {html::invalid_structure, html::invalid_url}
     asserts
         sample: => ok
     match chain
@@ -127,7 +127,7 @@ fn html::safe home
 
 /// A small public guide, distinct from the repository's design archive.
 fn html::safe docs
-    emits [html::invalid_structure, html::invalid_url]
+    emits {html::invalid_structure, html::invalid_url}
     asserts
         sample: => ok
     match chain
@@ -164,7 +164,7 @@ fn html::safe docs
         ok => ok page
 
 fn http::server_response show_home
-    emits []
+    emits {}
     given
         http::request req
     asserts
@@ -175,7 +175,7 @@ fn http::server_response show_home
         ok html::safe page => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), page)
 
 fn http::server_response show_docs
-    emits []
+    emits {}
     given
         http::request req
     asserts
@@ -186,7 +186,7 @@ fn http::server_response show_docs
         ok html::safe page => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), page)
 
 fn http::router routes
-    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}
     asserts
         sample: => ok
     match chain
@@ -200,7 +200,7 @@ fn http::router routes
 
 /// Run the prototype at http://127.0.0.1:18487/.
 fn void main
-    emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed]
+    emits {http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed}
     given
         str[] args
     asserts

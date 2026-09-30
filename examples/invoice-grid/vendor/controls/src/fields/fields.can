@@ -9,7 +9,7 @@ package fields
 
 /// Report whether one scalar is an ASCII digit.
 fn bool digit_ok
-    emits []
+    emits {}
     given
         int scalar
     asserts
@@ -24,7 +24,7 @@ fn bool digit_ok
 /// A leading zero integer part is padded only when another digit
 /// follows it: "0" and "0.5" stay canonical while "05" fails.
 fn bool leading_zero_bad
-    emits []
+    emits {}
     given
         int[] units
         int index
@@ -47,7 +47,7 @@ fn bool leading_zero_bad
 /// units read none. The accumulator never nears int64 range: the
 /// integer part fails fast past one hundred million minor units.
 fn option::value<int> price_scan
-    emits []
+    emits {}
     given
         int[] units
         int index
@@ -106,7 +106,7 @@ fn option::value<int> price_scan
 /// "5", "0.50"). Money is always integer minor units past this
 /// point, so totals are exact by construction.
 fn option::value<int> parse_price
-    emits []
+    emits {}
     given
         str text
     asserts
@@ -132,7 +132,7 @@ fn option::value<int> parse_price
 /// rejects blanks, signs and leading zeros, and the count must fit
 /// 1..1000000 like the server bound.
 fn option::value<int> parse_qty
-    emits []
+    emits {}
     given
         str text
     asserts
@@ -157,7 +157,7 @@ fn option::value<int> parse_qty
 /// still parse here; boot fails them closed through the checked
 /// action path builder before anything mounts or fetches.
 fn option::value<int> parse_key
-    emits []
+    emits {}
     given
         str text
     asserts
@@ -182,7 +182,7 @@ fn option::value<int> parse_key
 /// Render minor units back to canonical wire price: whole units, a
 /// dot, and exactly two fraction digits. Totals are never negative.
 fn str minor_to_price
-    emits []
+    emits {}
     given
         int minor
     asserts

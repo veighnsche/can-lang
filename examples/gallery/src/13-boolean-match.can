@@ -4,7 +4,7 @@ package gallery
 
 /// A Boolean match puts false before true.
 fn str describe_boolean
-    emits []
+    emits {}
     given
         bool value
     asserts

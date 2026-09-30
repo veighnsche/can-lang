@@ -14,7 +14,7 @@ package app
 
 /// Render one verdict word.
 fn str yesno
-    emits []
+    emits {}
     given
         bool verdict
     asserts
@@ -26,7 +26,7 @@ fn str yesno
 
 /// Verdict for one int parse: the canonical spelling or invalid.
 fn str int_verdict
-    emits []
+    emits {}
     given
         str input
     asserts
@@ -42,7 +42,7 @@ fn str int_verdict
 
 /// Append one verdict line under the parent.
 fn void emit_line
-    emits []
+    emits {}
     given
         browser::view view
         browser::node parent
@@ -62,7 +62,7 @@ fn void emit_line
 
 /// Show one boot notice on an otherwise empty root.
 fn void show_notice
-    emits []
+    emits {}
     given
         str notice
     asserts
@@ -90,7 +90,7 @@ fn void show_notice
 /// Render one looked-up query value: some carries the value,
 /// none names the absence.
 fn void emit_found
-    emits []
+    emits {}
     given
         browser::view view
         browser::node parent
@@ -111,7 +111,7 @@ fn void emit_found
 /// reason is attributed by the harness URL, never by failure
 /// fields: match arms cannot bind them.
 fn void run_query
-    emits []
+    emits {}
     given
         browser::view view
         browser::node parent
@@ -127,7 +127,7 @@ fn void run_query
 
 /// Read the absent key, then continue to the duplicate key.
 fn void read_absent
-    emits []
+    emits {}
     given
         browser::view view
         browser::node parent
@@ -143,7 +143,7 @@ fn void read_absent
 
 /// Read the duplicate-probe key, then continue to the huge key.
 fn void read_dup
-    emits []
+    emits {}
     given
         browser::view view
         browser::node parent
@@ -159,7 +159,7 @@ fn void read_dup
 
 /// Read the huge-value key, then mark the scenario done.
 fn void read_huge
-    emits []
+    emits {}
     given
         browser::view view
         browser::node parent
@@ -175,7 +175,7 @@ fn void read_huge
 
 /// First timer mark: the zero-delay callback appends its tick.
 fn void on_first_tick
-    emits []
+    emits {}
     given
         near browser::view view
         near browser::node ticks
@@ -193,7 +193,7 @@ fn void on_first_tick
 /// Second timer mark: the five-millisecond callback appends its
 /// tick, then marks the scenario done.
 fn void on_second_tick
-    emits []
+    emits {}
     given
         near browser::view view
         near browser::node ticks
@@ -214,7 +214,7 @@ fn void on_second_tick
 /// against one list. The done marker lands only from the second
 /// callback, so the harness wait proves both timers fired.
 fn void run_timers
-    emits []
+    emits {}
     given
         browser::view view
         browser::node parent
@@ -233,7 +233,7 @@ fn void run_timers
 /// Disposal probe input: appends one marker per input event while
 /// the view lives.
 fn void on_probe_input
-    emits []
+    emits {}
     given
         browser::event e
         near browser::view view
@@ -252,7 +252,7 @@ fn void on_probe_input
 /// Disposal probe timer: appends one marker when the long timer
 /// fires. Disposal clears it first, so the marker must never land.
 fn void on_probe_tick
-    emits []
+    emits {}
     given
         near browser::view view
         near browser::node marks
@@ -271,7 +271,7 @@ fn void on_probe_tick
 /// listener, clearing its long timer and removing its nodes), then
 /// open the verdict view and report.
 fn void on_dispose_click
-    emits []
+    emits {}
     given
         browser::event e
         near browser::view view
@@ -291,7 +291,7 @@ fn void on_dispose_click
 /// renders only when every registration succeeds, so the harness
 /// knows the disposal press actually releases live resources.
 fn void run_dispose
-    emits []
+    emits {}
     given
         browser::app app
         browser::view view
@@ -327,7 +327,7 @@ fn void run_dispose
 /// one line each. Record equality lowers to a Bun-only host
 /// operation, so the browser profile cannot express it.
 fn void run_equality
-    emits []
+    emits {}
     given
         browser::view view
         browser::node parent
@@ -346,7 +346,7 @@ fn void run_equality
 /// Exact codec verdicts: int64-boundary formatting and strict int
 /// parsing render one line each.
 fn void run_codecs
-    emits []
+    emits {}
     given
         browser::view view
         browser::node parent
@@ -367,7 +367,7 @@ fn void run_codecs
 
 /// Submit cancellation mark: the prevented submit appends one line.
 fn void on_form_submit
-    emits []
+    emits {}
     given
         browser::event e
         near browser::view view
@@ -388,7 +388,7 @@ fn void on_form_submit
 /// only the Enter default; dispatch itself is ungated, so the
 /// callback gates on the snapshot key.
 fn void on_key_save
-    emits []
+    emits {}
     given
         browser::event e
         near browser::view view
@@ -418,7 +418,7 @@ fn void on_key_save
 /// key input with an Enter cancel, one marker list. The armed
 /// line renders only when both registrations succeed.
 fn void run_cancel
-    emits []
+    emits {}
     given
         browser::view view
         browser::node parent
@@ -457,7 +457,7 @@ fn void run_cancel
 /// Post-attach focus: build the input, attach it, then focus it.
 /// The harness asserts the landed active element, never the call.
 fn void run_focus
-    emits []
+    emits {}
     given
         browser::view view
         browser::node parent
@@ -476,7 +476,7 @@ fn void run_focus
 
 /// Dispatch one selected scenario into the mounted view.
 fn void run_selected
-    emits []
+    emits {}
     given
         browser::app app
         browser::view view
@@ -519,7 +519,7 @@ fn void run_selected
 /// key, and run the selected scenario. A missing key, an invalid
 /// search, or an unknown name shows a boot notice instead.
 fn void main
-    emits []
+    emits {}
     asserts
         no_location: => ok
     match call browser::mount("invoice-grid")

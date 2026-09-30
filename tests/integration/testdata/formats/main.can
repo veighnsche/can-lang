@@ -12,7 +12,7 @@ record waypoint
     str name
     int n
 fn int emit
-    emits [codec::invalid_data, io::write_failed]
+    emits {codec::invalid_data, io::write_failed}
     given
         str text
     asserts
@@ -28,7 +28,7 @@ fn int emit
             io::write_failed
             ok int written => ok written
 fn int toml_port
-    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, codec::invalid_data]
+    emits {files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, codec::invalid_data}
     given
         str path
     asserts
@@ -48,7 +48,7 @@ fn int toml_port
                 codec::invalid_data
                 ok service svc => ok svc.primary.port
 fn int yaml_n
-    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, codec::invalid_data]
+    emits {files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, codec::invalid_data}
     given
         str path
     asserts
@@ -68,7 +68,7 @@ fn int yaml_n
                 codec::invalid_data
                 ok waypoint point => ok point.n
 fn int json5_n
-    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, codec::invalid_data]
+    emits {files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, codec::invalid_data}
     given
         str path
     asserts
@@ -88,14 +88,14 @@ fn int json5_n
                 codec::invalid_data
                 ok waypoint point => ok point.n
 fn void tally
-    emits []
+    emits {}
     given
         waypoint point
     asserts
         sample: waypoint("a", 1) => ok
     ok
 fn int jsonl_count
-    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, stream::read_failed, stream::cancelled, stream::close_failed, codec::invalid_data]
+    emits {files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, stream::read_failed, stream::cancelled, stream::close_failed, codec::invalid_data}
     given
         str path
     asserts
@@ -121,7 +121,7 @@ fn int jsonl_count
                 stream::close_failed
                 ok => ok count
 fn void main
-    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, stream::read_failed, stream::cancelled, stream::close_failed, codec::invalid_data, io::write_failed]
+    emits {files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, stream::read_failed, stream::cancelled, stream::close_failed, codec::invalid_data, io::write_failed}
     given
         str[] args
     asserts

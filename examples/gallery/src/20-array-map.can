@@ -4,14 +4,14 @@ package gallery
 
 /// map applies a callable to each element.
 fn int double
-    emits []
+    emits {}
     given
         int value
     asserts
         sample: 2 => ok 4
     ok value * 2
 fn int[] doubled
-    emits []
+    emits {}
     given
         int[] values
     asserts

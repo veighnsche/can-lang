@@ -18,7 +18,7 @@ record field_problem
 /// Render one problem as its status notice. Row problems name the
 /// line; draft-wide problems name the field only.
 fn str problem_notice
-    emits []
+    emits {}
     given
         option::value<str> row
         str field
@@ -33,7 +33,7 @@ fn str problem_notice
 /// The empty-rejection notice: the server refused the draft without
 /// naming a problem, so the notice points at editing and retrying.
 fn str rejected_notice
-    emits []
+    emits {}
     asserts
         sample:  => ok "rejected by server; edit and retry"
     ok "rejected by server; edit and retry"
@@ -41,7 +41,7 @@ fn str rejected_notice
 /// Render the 422 errors as one status notice: the first problem
 /// wins, since the status line holds a single notice.
 fn str invalid_notice
-    emits []
+    emits {}
     given
         field_problem[] errors
     asserts
@@ -55,7 +55,7 @@ fn str invalid_notice
 
 /// Save-block notice for one bad line and field.
 fn str blocked_line_notice
-    emits []
+    emits {}
     given
         str key
         str field
@@ -67,7 +67,7 @@ fn str blocked_line_notice
 /// The nondisclosing denial notice: foreign, nonexistent and
 /// unauthenticated targets share it, and the in-view draft stays.
 fn str denied_notice
-    emits []
+    emits {}
     asserts
         sample:  => ok "access denied; draft kept"
     ok "access denied; draft kept"
@@ -76,7 +76,7 @@ fn str denied_notice
 /// committed, so the identical operation id stays available for
 /// explicit replay or reread.
 fn str save_unknown_notice
-    emits []
+    emits {}
     asserts
         sample:  => ok "save may have committed; replay or reread"
     ok "save may have committed; replay or reread"
@@ -84,7 +84,7 @@ fn str save_unknown_notice
 /// The busy-store load notice: a read never commits, so the retry
 /// is always safe and the state stays a plain failure.
 fn str load_busy_notice
-    emits []
+    emits {}
     asserts
         sample:  => ok "server busy; retry reread"
     ok "server busy; retry reread"
@@ -92,7 +92,7 @@ fn str load_busy_notice
 /// The conflict notice: another writer moved the stored revision,
 /// so the notice points at reread instead of retry.
 fn str conflict_notice
-    emits []
+    emits {}
     given
         str message
     asserts
@@ -101,7 +101,7 @@ fn str conflict_notice
 
 /// The saved notice names the acknowledged revision.
 fn str saved_notice
-    emits []
+    emits {}
     given
         str revision
     asserts
@@ -110,7 +110,7 @@ fn str saved_notice
 
 /// The loaded notice names the adopted revision.
 fn str loaded_notice
-    emits []
+    emits {}
     given
         str revision
     asserts
@@ -120,7 +120,7 @@ fn str loaded_notice
 /// The held-snapshot notice names the waiting revision and promises
 /// the kept edits.
 fn str held_notice
-    emits []
+    emits {}
     given
         str revision
     asserts
@@ -131,7 +131,7 @@ fn str held_notice
 /// page, so the draft waits on an explicit refresh instead of a
 /// retry. Nothing ran on the server, so nothing is unknown.
 fn str stale_notice
-    emits []
+    emits {}
     asserts
         sample:  => ok "app updated; refresh to continue"
     ok "app updated; refresh to continue"
@@ -143,7 +143,7 @@ fn str stale_notice
 /// fails plainly: the server refused before dispatch, so nothing
 /// ran and the draft waits on a refresh.
 fn str save_failure_notice
-    emits []
+    emits {}
     given
         str kind
     asserts
@@ -171,7 +171,7 @@ fn str save_failure_notice
 /// plainly. A generation refusal never reached action logic, so
 /// nothing ran and no replay id is needed.
 fn bool save_failure_uncertain
-    emits []
+    emits {}
     given
         str kind
     asserts
@@ -196,7 +196,7 @@ fn bool save_failure_uncertain
 /// generation refusal is a plain blocking refresh instead of a
 /// retry: the app moved under this page.
 fn str load_failure_notice
-    emits []
+    emits {}
     given
         str kind
     asserts

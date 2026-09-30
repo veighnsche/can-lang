@@ -6,7 +6,7 @@ package gallery
 record counter
     int value
 fn counter increment
-    emits []
+    emits {}
     given
         counter original
     asserts

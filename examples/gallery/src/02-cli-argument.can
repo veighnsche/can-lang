@@ -4,7 +4,7 @@ package gallery
 
 /// A main function receives command-line arguments as strings.
 fn str greet_argument
-    emits []
+    emits {}
     given
         str[] args
     asserts

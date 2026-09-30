@@ -6,7 +6,7 @@ package model
 /// arithmetic only: no float ever touches a total, so totals are
 /// exact by construction. Only parsed values feed the sum.
 fn int total_minor
-    emits []
+    emits {}
     given
         records::draft_line[] lines
         int index
@@ -24,7 +24,7 @@ fn int total_minor
 /// canonical. Parsed values feed the math, so an unparsable edit
 /// keeps the last parsed amount on screen until it is fixed.
 fn str line_amount
-    emits []
+    emits {}
     given
         records::draft_line line
     asserts
@@ -34,7 +34,7 @@ fn str line_amount
 
 /// Totals line for the grid chrome: line count and exact total.
 fn str totals_text
-    emits []
+    emits {}
     given
         records::draft draft
     asserts
@@ -47,7 +47,7 @@ fn str totals_text
 /// sequence. Same content retries reuse the identical id (the sequence
 /// only moves on real edits); a new intent mints a new id.
 fn str operation_id
-    emits []
+    emits {}
     given
         contract::invoice_key key
         str revision
@@ -62,7 +62,7 @@ fn str operation_id
 /// edited texts ride verbatim: a valid line parses, so the server
 /// parses the same text.
 fn contract::grid_line_wire to_wire_line
-    emits []
+    emits {}
     given
         records::draft_line line
     asserts
@@ -71,7 +71,7 @@ fn contract::grid_line_wire to_wire_line
 
 /// Project draft lines onto the wire in order.
 fn contract::grid_line_wire[] to_wire_lines
-    emits []
+    emits {}
     given
         records::draft_line[] lines
     asserts
@@ -83,7 +83,7 @@ fn contract::grid_line_wire[] to_wire_lines
 /// operation id, the base revision the draft was read from, and the
 /// keyed lines in order.
 fn contract::grid_edit_input to_input
-    emits []
+    emits {}
     given
         records::draft draft
         str op
@@ -95,7 +95,7 @@ fn contract::grid_edit_input to_input
 /// canonical, so both texts parse; a defensive miss parses to zero
 /// and blocks the save until the line is fixed.
 fn records::draft_line from_wire_line
-    emits []
+    emits {}
     given
         contract::grid_line_wire line
     asserts
@@ -115,7 +115,7 @@ fn records::draft_line from_wire_line
 /// Adopt one loaded snapshot as a clean draft: the base revision is
 /// the loaded revision and the edit sequence restarts at zero.
 fn records::draft from_snapshot
-    emits []
+    emits {}
     given
         contract::grid_snapshot loaded
     asserts
@@ -128,7 +128,7 @@ fn records::draft from_snapshot
 /// never move validity by themselves: the server validates the id on
 /// save and reports it through the 422 errors.
 fn records::draft_line[] id_lines
-    emits []
+    emits {}
     given
         records::draft_line[] lines
         str key
@@ -150,7 +150,7 @@ fn records::draft_line[] id_lines
 /// Retarget one line id by key. Unknown keys and unchanged values
 /// leave the sequence alone.
 fn records::draft with_id
-    emits []
+    emits {}
     given
         records::draft draft
         str key
@@ -167,7 +167,7 @@ fn records::draft with_id
 /// Read the key of the line at a known position. Callers only
 /// pass positions below the length.
 fn str line_key
-    emits []
+    emits {}
     given
         records::draft_line[] lines
         int index
@@ -178,7 +178,7 @@ fn str line_key
 /// Read the line at a known position. Callers only pass positions
 /// below the length.
 fn records::draft_line line_at
-    emits []
+    emits {}
     given
         records::draft_line[] lines
         int index
@@ -190,7 +190,7 @@ fn records::draft_line line_at
 /// controller. Row storage stays app-owned; the library only ever
 /// sees keys.
 fn str[] line_keys
-    emits []
+    emits {}
     given
         records::draft_line[] lines
         int index
@@ -207,7 +207,7 @@ fn str[] line_keys
 /// boundary. The notice vocabulary lives in the library; this
 /// adapter only re-wraps the wire shape.
 fn notices::field_problem to_problem
-    emits []
+    emits {}
     given
         contract::grid_problem problem
     asserts
@@ -216,7 +216,7 @@ fn notices::field_problem to_problem
 
 /// Read the current id of a known key; unknown keys read "".
 fn str current_id
-    emits []
+    emits {}
     given
         records::draft_line[] lines
         str key
@@ -238,7 +238,7 @@ fn str current_id
 /// text is always kept on screen; the parsed count only moves on a
 /// valid parse, and the flag records whether the line can be sent.
 fn records::draft_line[] quantity_lines
-    emits []
+    emits {}
     given
         records::draft_line[] lines
         str key
@@ -275,7 +275,7 @@ fn records::draft_line[] quantity_lines
 /// counts as an edit even when it does not parse, because the
 /// screen content changed.
 fn records::draft with_quantity
-    emits []
+    emits {}
     given
         records::draft draft
         str key
@@ -294,7 +294,7 @@ fn records::draft with_quantity
 /// Read the current quantity text of a known key; unknown keys
 /// read "".
 fn str current_quantity
-    emits []
+    emits {}
     given
         records::draft_line[] lines
         str key
@@ -315,7 +315,7 @@ fn str current_quantity
 /// digits. The raw text is always kept on screen; the parsed minor
 /// value only moves on a valid parse.
 fn records::draft_line[] price_lines
-    emits []
+    emits {}
     given
         records::draft_line[] lines
         str key
@@ -349,7 +349,7 @@ fn records::draft_line[] price_lines
 /// Retarget one line price text by key. Unknown keys and unchanged
 /// text leave the sequence alone.
 fn records::draft with_price
-    emits []
+    emits {}
     given
         records::draft draft
         str key
@@ -367,7 +367,7 @@ fn records::draft with_price
 
 /// Read the current price text of a known key; unknown keys read "".
 fn str current_price
-    emits []
+    emits {}
     given
         records::draft_line[] lines
         str key
@@ -386,7 +386,7 @@ fn str current_price
 /// starts with quantity 1 and price 0.00; its empty id stays editable
 /// and the server validates it on save.
 fn records::draft added_line
-    emits []
+    emits {}
     given
         records::draft draft
     asserts
@@ -395,7 +395,7 @@ fn records::draft added_line
 
 /// Drop one line by key. Unknown keys leave the sequence alone.
 fn records::draft removed_line
-    emits []
+    emits {}
     given
         records::draft draft
         str key
@@ -411,7 +411,7 @@ fn records::draft removed_line
 /// (1). Unknown keys, edges and other directions are no-ops that
 /// leave the sequence alone.
 fn records::draft moved_line
-    emits []
+    emits {}
     given
         records::draft draft
         str key
@@ -432,7 +432,7 @@ fn records::draft moved_line
 /// Report whether any line is unparsable and so blocks the save:
 /// exact totals need a typed count and typed minor units per line.
 fn bool save_blocked
-    emits []
+    emits {}
     given
         records::draft_line[] lines
         int index
@@ -449,7 +449,7 @@ fn bool save_blocked
 
 /// First invalid line key, or "" when every line parses.
 fn str blocked_key
-    emits []
+    emits {}
     given
         records::draft_line[] lines
         int index
@@ -466,7 +466,7 @@ fn str blocked_key
 /// First bad field of one invalid line: quantity is checked before
 /// price. Callers only pass invalid lines.
 fn str bad_field
-    emits []
+    emits {}
     given
         records::draft_line line
     asserts
@@ -480,7 +480,7 @@ fn str bad_field
 
 /// First bad field of the first invalid line, front to back.
 fn str blocked_field
-    emits []
+    emits {}
     given
         records::draft_line[] lines
         int index
@@ -498,7 +498,7 @@ fn str blocked_field
 /// Save-block notice: "" when sendable, else the first bad line and
 /// field.
 fn str blocked_notice
-    emits []
+    emits {}
     given
         records::draft draft
     asserts
@@ -516,7 +516,7 @@ fn str blocked_notice
 /// checks, and focus returns to the save button after the re-render.
 /// A press while anything flies is ignored (single flight).
 fn records::grid_state save_marked
-    emits []
+    emits {}
     given
         records::grid_state state
         int attempt
@@ -534,7 +534,7 @@ fn records::grid_state save_marked
 /// explicit replay (the load outcome decides adopt-or-hold from
 /// the preserved status). A press while anything flies is ignored.
 fn records::grid_state load_marked
-    emits []
+    emits {}
     given
         records::grid_state state
         int attempt
@@ -550,7 +550,7 @@ fn records::grid_state load_marked
 /// still in flight reconciles against the moved sequence when it
 /// lands, and failure notices survive until the next press).
 fn records::grid_state marked_unsaved
-    emits []
+    emits {}
     given
         records::grid_state state
     asserts
@@ -576,7 +576,7 @@ fn records::grid_state marked_unsaved
 /// Uncertain and failed drafts send: an unchanged press reuses the
 /// identical operation id, which is exactly the safe replay.
 fn str save_notice
-    emits []
+    emits {}
     given
         records::grid_state state
     asserts
@@ -618,7 +618,7 @@ fn str save_notice
 /// keeps its server copy: only the notice refocuses. A stale page
 /// keeps its prompt: only the notice refocuses.
 fn records::grid_state blocked_applied
-    emits []
+    emits {}
     given
         records::grid_state state
         str notice
@@ -645,7 +645,7 @@ fn records::grid_state blocked_applied
 /// the draft unsaved on the new base instead of showing a clean draft
 /// that still holds edits.
 fn records::grid_state saved_applied
-    emits []
+    emits {}
     given
         records::grid_state state
         int attempt
@@ -667,7 +667,7 @@ fn records::grid_state saved_applied
 /// Apply one invalid (422) outcome: the draft stays editable and
 /// the first server problem names the fix.
 fn records::grid_state invalid_applied
-    emits []
+    emits {}
     given
         records::grid_state state
         int attempt
@@ -685,7 +685,7 @@ fn records::grid_state invalid_applied
 /// Apply one conflict (409) outcome: another writer moved the stored
 /// revision, so the notice points at reread instead of retry.
 fn records::grid_state conflict_applied
-    emits []
+    emits {}
     given
         records::grid_state state
         int attempt
@@ -704,7 +704,7 @@ fn records::grid_state conflict_applied
 /// unauthenticated targets share the nondisclosing notice and the
 /// in-view draft stays put.
 fn records::grid_state forbidden_applied
-    emits []
+    emits {}
     given
         records::grid_state state
         int attempt
@@ -723,7 +723,7 @@ fn records::grid_state forbidden_applied
 /// committed, so the state turns uncertain and keeps the identical
 /// operation id for explicit replay.
 fn records::grid_state unavailable_applied
-    emits []
+    emits {}
     given
         records::grid_state state
         int attempt
@@ -747,7 +747,7 @@ fn records::grid_state unavailable_applied
 /// before dispatch, so nothing ran and the draft waits on a
 /// refresh. Late or wrong-flight arrivals are ignored.
 fn records::grid_state save_failed
-    emits []
+    emits {}
     given
         records::grid_state state
         int attempt
@@ -776,7 +776,7 @@ fn records::grid_state save_failed
 /// fetch client returns the whole variant, and each leaf lands in
 /// its own version-checked transition.
 fn records::grid_state save_outcome_applied
-    emits []
+    emits {}
     given
         records::grid_state state
         int attempt
@@ -807,7 +807,7 @@ fn records::grid_state save_outcome_applied
 /// the success proves the generations agree again. Late or
 /// wrong-flight arrivals are ignored.
 fn records::grid_state loaded_applied
-    emits []
+    emits {}
     given
         records::grid_state state
         int attempt
@@ -842,7 +842,7 @@ fn records::grid_state loaded_applied
 /// the loaded revision, the snapshot becomes the acknowledged
 /// state, and both sequences restart at zero.
 fn records::grid_state adopt_snapshot
-    emits []
+    emits {}
     given
         records::grid_state state
         contract::grid_snapshot loaded
@@ -855,7 +855,7 @@ fn records::grid_state adopt_snapshot
 /// The draft, the acknowledged snapshot, the pending attempt record
 /// and the sequences stay untouched.
 fn records::grid_state hold_snapshot
-    emits []
+    emits {}
     given
         records::grid_state state
         contract::grid_snapshot loaded
@@ -867,7 +867,7 @@ fn records::grid_state hold_snapshot
 /// Apply one forbidden load: the draft stays put behind the
 /// nondisclosing notice.
 fn records::grid_state load_forbidden_applied
-    emits []
+    emits {}
     given
         records::grid_state state
         int attempt
@@ -885,7 +885,7 @@ fn records::grid_state load_forbidden_applied
 /// Apply one unavailable load: a read never commits, so the retry is
 /// always safe and the state stays a plain failure.
 fn records::grid_state load_unavailable_applied
-    emits []
+    emits {}
     given
         records::grid_state state
         int attempt
@@ -902,7 +902,7 @@ fn records::grid_state load_unavailable_applied
 
 /// Dispatch one load outcome onto the matching applier.
 fn records::grid_state load_outcome_applied
-    emits []
+    emits {}
     given
         records::grid_state state
         int attempt
@@ -924,7 +924,7 @@ fn records::grid_state load_outcome_applied
 /// generation refusal lands stale instead: the app moved, so the
 /// draft waits on a refresh.
 fn records::grid_state load_failed
-    emits []
+    emits {}
     given
         records::grid_state state
         int attempt
@@ -950,7 +950,7 @@ fn records::grid_state load_failed
 /// edit after the press mints a new intent instead. A stale page
 /// never replays: only a refresh resolves the prompt.
 fn bool replay_ready
-    emits []
+    emits {}
     given
         records::grid_state state
     asserts
@@ -979,7 +979,7 @@ fn bool replay_ready
 /// reconciliation: the user chose the server copy explicitly).
 /// Outside a conflict the state is untouched.
 fn records::grid_state adopted_server
-    emits []
+    emits {}
     given
         records::grid_state state
     asserts
@@ -999,7 +999,7 @@ fn records::grid_state adopted_server
 /// Dismiss the held server copy and keep editing the draft.
 /// Outside a conflict the state is untouched.
 fn records::grid_state dismissed_held
-    emits []
+    emits {}
     given
         records::grid_state state
     asserts
@@ -1018,7 +1018,7 @@ fn records::grid_state dismissed_held
 /// The boot cell: an empty draft waiting on its first authorized
 /// load. The boot press marks the load flight before fetching.
 fn records::grid_state boot_state
-    emits []
+    emits {}
     given
         contract::invoice_key key
     asserts
@@ -1029,7 +1029,7 @@ fn records::grid_state boot_state
 /// result: arm-local narrowing only follows resolved bindings,
 /// never a second field access into the state.
 fn records::grid_status status_of
-    emits []
+    emits {}
     given
         records::grid_state state
     asserts
@@ -1038,7 +1038,7 @@ fn records::grid_status status_of
 
 /// Read the status-line notice out of any status leaf.
 fn str status_notice
-    emits []
+    emits {}
     given
         records::grid_status status
     asserts
@@ -1058,7 +1058,7 @@ fn str status_notice
 /// Swap the draft inside a state, keeping key, attempt, flight,
 /// pending record, acknowledgement, status and focus untouched.
 fn records::grid_state with_current
-    emits []
+    emits {}
     given
         records::grid_state state
         records::draft draft
@@ -1068,7 +1068,7 @@ fn records::grid_state with_current
 
 /// Retarget the focus intent, keeping everything else untouched.
 fn records::grid_state refocused
-    emits []
+    emits {}
     given
         records::grid_state state
         str focus
@@ -1080,7 +1080,7 @@ fn records::grid_state refocused
 /// (same text) returns the state untouched: no phantom unsaved,
 /// no focus jump.
 fn records::grid_state id_edited
-    emits []
+    emits {}
     given
         records::grid_state state
         str key
@@ -1098,7 +1098,7 @@ fn records::grid_state id_edited
 /// text passes through (an unparsable change still counts: the
 /// screen content changed and the line now blocks the save).
 fn records::grid_state quantity_edited
-    emits []
+    emits {}
     given
         records::grid_state state
         str key
@@ -1115,7 +1115,7 @@ fn records::grid_state quantity_edited
 /// Apply one price-text edit to the whole state; unchanged text
 /// passes through.
 fn records::grid_state price_edited
-    emits []
+    emits {}
     given
         records::grid_state state
         str key
@@ -1131,7 +1131,7 @@ fn records::grid_state price_edited
 
 /// Append one blank line and move focus to its id field.
 fn records::grid_state line_added
-    emits []
+    emits {}
     given
         records::grid_state state
     asserts
@@ -1144,7 +1144,7 @@ fn records::grid_state line_added
 /// Drop one line and move focus to the add-line button. Unknown
 /// keys pass the state through untouched.
 fn records::grid_state line_removed
-    emits []
+    emits {}
     given
         records::grid_state state
         str key
@@ -1162,7 +1162,7 @@ fn records::grid_state line_removed
 /// button. Edges, unknown keys and other directions pass the
 /// state through untouched.
 fn records::grid_state line_moved
-    emits []
+    emits {}
     given
         records::grid_state state
         str key
@@ -1186,7 +1186,7 @@ fn records::grid_state line_moved
 /// present rows. The render focuses the built row target only then;
 /// a stale intent (its row is gone) focuses nothing.
 fn bool rows_focused
-    emits []
+    emits {}
     given
         records::draft_line[] lines
         str focus

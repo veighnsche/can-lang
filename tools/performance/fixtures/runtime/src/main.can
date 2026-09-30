@@ -3,7 +3,7 @@ package gallery
     uses []
 
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts

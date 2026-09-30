@@ -2,16 +2,16 @@ package app
     provides []
     uses []
 fn int pending
-    emits []
+    emits {}
     asserts
         never: => ok 0
-    callable int () emits [][] actions = []
+    callable int () emits {}[] actions = []
     int result = match call race with error
         ...actions
         ok int value => ok value
     ok result
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts

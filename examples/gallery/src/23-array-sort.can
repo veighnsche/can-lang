@@ -4,14 +4,14 @@ package gallery
 
 /// sort_by returns a sorted copy using each item's key.
 fn int key
-    emits []
+    emits {}
     given
         int value
     asserts
         sample: 3 => ok 3
     ok value
 fn int[] sorted
-    emits []
+    emits {}
     given
         int[] values
     asserts

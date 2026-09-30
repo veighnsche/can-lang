@@ -4,7 +4,7 @@ package web
 
 /// Serve the dashboard page.
 fn http::server_response show_dashboard
-    emits []
+    emits {}
     given
         http::request req
     asserts
@@ -18,7 +18,7 @@ fn http::server_response show_dashboard
 
 /// Answer one dashboard poll from two coordinated reads.
 fn http::server_response dashboard_data
-    emits []
+    emits {}
     given
         http::request req
         near sql::pool pool
@@ -44,7 +44,7 @@ fn http::server_response dashboard_data
 
 /// Mount the dashboard callbacks, capturing the open pool.
 fn http::router dashboard_routes
-    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}
     given
         near sql::pool pool
     asserts
@@ -60,7 +60,7 @@ fn http::router dashboard_routes
 
 /// Open the pool and start the dashboard server on one port.
 fn http::server boot
-    emits [http::credentials_missing, sql::connection_failed, http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed]
+    emits {http::credentials_missing, sql::connection_failed, http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed}
     given
         int port
     asserts
@@ -84,7 +84,7 @@ fn http::server boot
 
 /// Serve the dashboard until a shutdown signal, then close the pool.
 fn void main
-    emits [codec::invalid_data, io::write_failed, http::credentials_missing, sql::connection_failed, sql::close_failed, http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed]
+    emits {codec::invalid_data, io::write_failed, http::credentials_missing, sql::connection_failed, sql::close_failed, http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed}
     given
         str[] args
     asserts

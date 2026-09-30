@@ -4,7 +4,7 @@ package gallery
 
 /// A recursive call consumes a smaller nonnegative input.
 fn int factorial
-    emits []
+    emits {}
     given
         int number
     asserts

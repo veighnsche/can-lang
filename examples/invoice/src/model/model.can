@@ -21,7 +21,7 @@ owner record invoice_guard
 /// order is caller-controlled, so the scan walks the array instead of
 /// indexing; the first occurrence wins.
 fn option::value<str> find_header
-    emits []
+    emits {}
     given
         http::header[] headers
         str name
@@ -40,7 +40,7 @@ fn option::value<str> find_header
 /// unparsable cookie and missing session name all read none; the
 /// protected operations map none to the shared nondisclosing denial.
 fn option::value<str> session_of
-    emits []
+    emits {}
     given
         http::header[] headers
     asserts
@@ -58,7 +58,7 @@ fn option::value<str> session_of
 /// or more matches read none; security comparisons must never see a
 /// first-match pick between duplicates.
 fn option::value<str> unique_scan
-    emits []
+    emits {}
     given
         http::header[] headers
         str name
@@ -82,7 +82,7 @@ fn option::value<str> unique_scan
 /// Read the single value of a header field, or none when the field
 /// is absent or repeated.
 fn option::value<str> unique_header
-    emits []
+    emits {}
     given
         http::header[] headers
         str name
@@ -100,7 +100,7 @@ fn option::value<str> unique_header
 /// lookup uses the exact lowercase field name. A live mixed-case
 /// Origin leg proves the snapshot guarantee end to end.
 fn bool exact_origin
-    emits []
+    emits {}
     given
         http::header[] headers
         str public_origin
@@ -125,7 +125,7 @@ fn bool exact_origin
 
 /// Match scalar prefix bytes front to back.
 fn bool scalars_prefix
-    emits []
+    emits {}
     given
         int[] units
         int[] prefix
@@ -146,7 +146,7 @@ fn bool scalars_prefix
 
 /// One hostname scalar: ASCII letters, digits, dot or dash.
 fn bool host_char_ok
-    emits []
+    emits {}
     given
         int scalar
     asserts
@@ -171,7 +171,7 @@ fn bool host_char_ok
 /// Scan hostname scalars in [start, bound): every scalar must be a
 /// hostname character.
 fn bool host_chars_ok
-    emits []
+    emits {}
     given
         int[] units
         int start
@@ -191,7 +191,7 @@ fn bool host_chars_ok
 /// Find the first colon at or after start, or -1 when the rest of
 /// the origin carries no port separator.
 fn int colon_at
-    emits []
+    emits {}
     given
         int[] units
         int start
@@ -208,7 +208,7 @@ fn int colon_at
 
 /// Compare the scalar slice [start, bound) against a literal.
 fn bool scalars_equal
-    emits []
+    emits {}
     given
         int[] units
         int start
@@ -230,7 +230,7 @@ fn bool scalars_equal
 
 /// Validate an explicit port slice: 1-5 canonical digits in range.
 fn bool port_ok
-    emits []
+    emits {}
     given
         int[] units
         int start
@@ -256,7 +256,7 @@ fn bool port_ok
 /// Validate one host slice: nonempty hostname characters with no
 /// leading or trailing dot.
 fn bool host_ok
-    emits []
+    emits {}
     given
         int[] units
         int start
@@ -278,7 +278,7 @@ fn bool host_ok
 /// origins admit exactly 127.0.0.1 or localhost; anything else must
 /// fail closed at startup rather than serve under HTTP.
 fn bool hostport_ok
-    emits []
+    emits {}
     given
         int[] units
         int start
@@ -323,7 +323,7 @@ fn bool hostport_ok
 /// else fails closed before serving; request Origins later compare
 /// byte-equal against the accepted string.
 fn bool valid_public_origin
-    emits []
+    emits {}
     given
         str origin
     asserts
@@ -356,7 +356,7 @@ fn bool valid_public_origin
 /// milliseconds. Startup fails closed on anything else; helpers
 /// never shorten the guarantee on a non-positive window.
 fn bool valid_window
-    emits []
+    emits {}
     given
         int w_ms
     asserts
@@ -372,7 +372,7 @@ fn bool valid_window
 /// well-formed, so the invalid arm is an unreachable-safe fallback
 /// that validation treats as a failure.
 fn int byte_len
-    emits []
+    emits {}
     given
         str text
     asserts
@@ -388,7 +388,7 @@ fn int byte_len
 /// Stored keys mint checked form row names, so only keys that
 /// round-trip through the keyed-row wire shape validate.
 fn bool key_char_ok
-    emits []
+    emits {}
     given
         int scalar
     asserts
@@ -414,7 +414,7 @@ fn bool key_char_ok
 /// row-key shape, and the empty scan accepts vacuously (emptiness is
 /// rejected separately by the line check).
 fn bool key_chars_ok
-    emits []
+    emits {}
     given
         int[] scalars
         int index
@@ -434,7 +434,7 @@ fn bool key_chars_ok
 /// text fails closed; only mintable keys reach the store, so the
 /// server-rendered form can always name every stored row.
 fn bool key_shape_ok
-    emits []
+    emits {}
     given
         str key
     asserts
@@ -448,7 +448,7 @@ fn bool key_shape_ok
 
 /// One decimal digit scalar.
 fn bool digit_ok
-    emits []
+    emits {}
     given
         int scalar
     asserts
@@ -463,7 +463,7 @@ fn bool digit_ok
 /// A leading zero integer part is padded only when another digit
 /// follows it: "0" and "0.5" stay canonical while "05" fails.
 fn bool leading_zero_bad
-    emits []
+    emits {}
     given
         int[] units
         int index
@@ -486,7 +486,7 @@ fn bool leading_zero_bad
 /// units read none. The accumulator never nears int64 range: the
 /// integer part fails fast past one hundred million minor units.
 fn option::value<int> price_scan
-    emits []
+    emits {}
     given
         int[] units
         int index
@@ -545,7 +545,7 @@ fn option::value<int> price_scan
 /// stored and computed money is always integer minor units, so
 /// totals are exact by construction.
 fn option::value<int> parse_price
-    emits []
+    emits {}
     given
         str text
     asserts
@@ -571,7 +571,7 @@ fn option::value<int> parse_price
 /// dot, and exactly two fraction digits. Total formatting for both
 /// channels goes through this one exact function.
 fn str minor_to_price
-    emits []
+    emits {}
     given
         int minor
     asserts
@@ -590,7 +590,7 @@ fn str minor_to_price
 /// Validate one normalized save line. None accepts; some carries the
 /// single finite reason and wire field the save reports.
 fn option::value<records::flawed_save> check_line
-    emits []
+    emits {}
     given
         records::line_draft draft
     asserts
@@ -621,7 +621,7 @@ fn option::value<records::flawed_save> check_line
 /// Pairwise duplicate line-key scan. Keys compare by exact string
 /// equality; order is the submitted draft order.
 fn bool has_duplicate
-    emits []
+    emits {}
     given
         records::line_draft[] drafts
         int outer
@@ -644,7 +644,7 @@ fn bool has_duplicate
 /// first failure in submitted order wins; duplicates report only
 /// when every line is otherwise valid.
 fn records::save_check check_lines
-    emits []
+    emits {}
     given
         records::line_draft[] drafts
         int revision
@@ -668,7 +668,7 @@ fn records::save_check check_lines
 /// lines in order. The base revision arrives validated by the
 /// channel check and passes through untouched.
 fn records::save_check check_drafts
-    emits []
+    emits {}
     given
         records::line_draft[] drafts
         int revision
@@ -687,7 +687,7 @@ fn records::save_check check_drafts
 /// are text on the wire; unparsable text fails the whole save with
 /// the same reason an out-of-range value reports.
 fn records::save_check json_parse_lines
-    emits []
+    emits {}
     given
         contract::grid_line_wire[] lines
         int revision
@@ -713,7 +713,7 @@ fn records::save_check json_parse_lines
 /// positive canonical integer, then shared content validation runs
 /// over parsed drafts.
 fn records::save_check check_json_save
-    emits []
+    emits {}
     given
         contract::grid_edit_input body
     asserts
@@ -732,7 +732,7 @@ fn records::save_check check_json_save
 /// the client-stable wire identity; quantities and prices parse
 /// from text exactly like the JSON channel.
 fn records::save_check parse_form_lines
-    emits []
+    emits {}
     given
         int revision
         form::row_item<contract::line_wire>[] items
@@ -757,7 +757,7 @@ fn records::save_check parse_form_lines
 /// Validate seats and details, then wrap parsed line content into
 /// the form save both renderers retain.
 fn records::form_check check_form_content
-    emits []
+    emits {}
     given
         int seats
         str details
@@ -782,7 +782,7 @@ fn records::form_check check_form_content
 /// A missing optional details reads empty; a present empty string
 /// stays empty through the same path.
 fn records::form_check check_form_save
-    emits []
+    emits {}
     given
         contract::invoice_form body
     asserts
@@ -815,7 +815,7 @@ fn records::form_check check_form_save
 /// only: no float ever touches a total, and validated bounds keep
 /// every partial sum far inside int64 range.
 fn int total_drafts
-    emits []
+    emits {}
     given
         records::line_draft[] drafts
         int index
@@ -830,7 +830,7 @@ fn int total_drafts
 
 /// Fold stored rows into exact minor-unit totals.
 fn int total_rows
-    emits []
+    emits {}
     given
         records::line_row[] rows
         int index
@@ -845,7 +845,7 @@ fn int total_rows
 
 /// Project one draft into its grid wire shape.
 fn contract::grid_line_wire to_grid_line
-    emits []
+    emits {}
     given
         records::line_draft draft
     asserts
@@ -854,7 +854,7 @@ fn contract::grid_line_wire to_grid_line
 
 /// Project drafts front to back into grid wire order.
 fn contract::grid_line_wire[] to_grid_lines
-    emits []
+    emits {}
     given
         records::line_draft[] drafts
         int index
@@ -872,7 +872,7 @@ fn contract::grid_line_wire[] to_grid_lines
 /// channels normalize here, so identical content digests identically
 /// however it was encoded.
 fn str digest_lines
-    emits []
+    emits {}
     given
         records::line_draft[] drafts
         int index
@@ -888,7 +888,7 @@ fn str digest_lines
 /// Hash one canonical digest input. The invalid arm is an
 /// unreachable-safe fallback: Can strings always encode.
 fn str digest_hash
-    emits []
+    emits {}
     given
         str canonical
     asserts
@@ -902,7 +902,7 @@ fn str digest_hash
 /// session and operation id stay out (authentication and keying, not
 /// content). Seats and details stay out too: JSON preserves them.
 fn str digest_of_grid
-    emits []
+    emits {}
     given
         int tenant
         int invoice_id
@@ -915,7 +915,7 @@ fn str digest_of_grid
 /// Digest one form save intent. The digest covers captured
 /// tenant/invoice, base revision, seats, details and ordered lines.
 fn str digest_of_form
-    emits []
+    emits {}
     given
         int tenant
         int invoice_id
@@ -931,7 +931,7 @@ fn str digest_of_form
 /// positions in submitted order. True commits the batch; any store
 /// failure rolls the whole save back to busy.
 fn bool insert_lines
-    emits []
+    emits {}
     given
         records::line_draft[] drafts
         int invoice_id
@@ -948,7 +948,7 @@ fn bool insert_lines
                 insert_one: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
                 insert_two: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
                 insert_two: tx, "line_insert", records::line_insert(7, "k2", "b", 1, 199, 1) => ok 1
-                insert_store_down: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => sql::query_failed("line_insert", "SQLITE_IOERR")
+                insert_store_down: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => sql::query_failed{"line_insert", "SQLITE_IOERR"}
                 save_granted: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
                 save_form_stored: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
                 save_lost_race: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
@@ -957,7 +957,7 @@ fn bool insert_lines
                 apply_form: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
                 commit_ok: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
                 writes_ok: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
-                apply_lines_down: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => sql::query_failed("line_insert", "SQLITE_IOERR")
+                apply_lines_down: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => sql::query_failed{"line_insert", "SQLITE_IOERR"}
                 apply_replay_down: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
                 apply_cleanup_down: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
             sql::unsupported_value => ok false
@@ -970,7 +970,7 @@ fn bool insert_lines
 /// Project one stored row into its draft shape. Positions order the
 /// read; the projection keeps key, id and exact parsed values.
 fn records::line_draft to_draft
-    emits []
+    emits {}
     given
         records::line_row row
     asserts
@@ -979,7 +979,7 @@ fn records::line_draft to_draft
 
 /// Project stored rows front to back into drafts.
 fn records::line_draft[] to_drafts
-    emits []
+    emits {}
     given
         records::line_row[] rows
         int index
@@ -1002,7 +1002,7 @@ fn records::line_draft[] to_drafts
 /// replays or conflicts without writing; a lost revision race
 /// rereads the current revision and conflicts.
 fn sql::decision<records::write_outcome> apply_save
-    emits []
+    emits {}
     given
         invoice_guard guard
         int seats
@@ -1032,7 +1032,7 @@ fn sql::decision<records::write_outcome> apply_save
 /// neutral result, expire the retention tail, predicate the invoice
 /// bump, replace lines and record the replay row.
 fn sql::decision<records::write_outcome> apply_commit
-    emits []
+    emits {}
     given
         invoice_guard guard
         int seats
@@ -1077,7 +1077,7 @@ fn sql::decision<records::write_outcome> apply_commit
                                 apply_predicate_gone: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
                                 apply_lines_down: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
                                 apply_replay_down: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
-                                apply_cleanup_down: tx, "replay_cleanup", records::replay_cutoff(1000) => sql::query_failed("replay_cleanup", "SQLITE_IOERR")
+                                apply_cleanup_down: tx, "replay_cleanup", records::replay_cutoff(1000) => sql::query_failed{"replay_cleanup", "SQLITE_IOERR"}
                                 save_granted: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
                                 save_form_stored: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
                                 save_lost_race: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
@@ -1092,7 +1092,7 @@ fn sql::decision<records::write_outcome> apply_commit
 /// encoded commit. A zero-row bump rereads the current revision and
 /// conflicts instead of clobbering a concurrent commit.
 fn sql::decision<records::write_outcome> apply_writes
-    emits []
+    emits {}
     given
         invoice_guard guard
         int seats
@@ -1161,11 +1161,11 @@ fn sql::decision<records::write_outcome> apply_writes
                                 commit_ok: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-9", "dx", "", 2, 2000) => ok 1
                                 apply_ok: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-9", "dx", "", 2, 2000) => ok 1
                                 apply_form: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-9", "dx", "", 2, 2000) => ok 1
-                                apply_replay_down: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-9", "dx", "", 2, 2000) => sql::query_failed("replay_insert", "SQLITE_IOERR")
+                                apply_replay_down: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-9", "dx", "", 2, 2000) => sql::query_failed{"replay_insert", "SQLITE_IOERR"}
                                 save_granted: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-1", "dx", "", 2, 2000) => ok 1
                                 save_form_stored: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-2", "dx", "", 2, 2000) => ok 1
-                                save_lost_race: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-7", "d1", "", 2, 2000) => sql::constraint_failed("invoice_replay_pkey")
-                                save_conflict_race: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-7", "d9", "", 2, 2000) => sql::constraint_failed("invoice_replay_pkey")
+                                save_lost_race: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-7", "d1", "", 2, 2000) => sql::constraint_failed{"invoice_replay_pkey"}
+                                save_conflict_race: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-7", "d9", "", 2, 2000) => sql::constraint_failed{"invoice_replay_pkey"}
                             sql::unsupported_value => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
                             sql::query_failed => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
                             sql::constraint_failed => match call sql::transaction_query_optional<records::replay_key, records::replay_row>(tx, "replay_lookup", records::replay_key(guard.actor, guard.tenant, guard.invoice_id, operation_id))
@@ -1216,7 +1216,7 @@ fn sql::decision<records::write_outcome> apply_writes
 /// retention cutoff stays positive and readable; the deployed
 /// default is seven days and the code treats W uniformly.
 fn sql::decision<records::write_outcome> decide_save
-    emits []
+    emits {}
     given
         near str session_token
         near str operation_id
@@ -1263,7 +1263,7 @@ fn sql::decision<records::write_outcome> decide_save
             save_denied_missing: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
             save_denied_foreign: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
             save_stale: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
-            save_busy: tx, "session_by_token", records::session_key("tok-alice") => sql::query_failed("session_by_token", "SQLITE_IOERR")
+            save_busy: tx, "session_by_token", records::session_key("tok-alice") => sql::query_failed{"session_by_token", "SQLITE_IOERR"}
             save_lost_race: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
             save_conflict_race: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
         sql::unsupported_value => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
@@ -1352,7 +1352,7 @@ fn sql::decision<records::write_outcome> decide_save
                                             true => match call sql::transaction_execute<records::replay_expire>(tx, "replay_expire", records::replay_expire(session.value.actor, tenant, invoice_id, operation_id, now_ms - w_ms))
                                                 when
                                                     save_replay_expired: tx, "replay_expire", records::replay_expire("alice", 1, 7, "op-8", 1000) => ok 1
-                                                    save_expire_down: tx, "replay_expire", records::replay_expire("alice", 1, 7, "op-8", 1000) => sql::query_failed("replay_expire", "SQLITE_IOERR")
+                                                    save_expire_down: tx, "replay_expire", records::replay_expire("alice", 1, 7, "op-8", 1000) => sql::query_failed{"replay_expire", "SQLITE_IOERR"}
                                                 sql::unsupported_value => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
                                                 sql::query_failed => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
                                                 sql::constraint_failed => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
@@ -1370,7 +1370,7 @@ fn sql::decision<records::write_outcome> decide_save
 /// prove invoice and membership, then load. Denials match the save
 /// shape exactly; store failures read busy.
 fn sql::decision<records::read_outcome> decide_load
-    emits []
+    emits {}
     given
         near str session_token
         near int tenant
@@ -1388,7 +1388,7 @@ fn sql::decision<records::read_outcome> decide_load
             load_denied_session: tx, "session_by_token", records::session_key("tok-ghost") => ok option::none()
             load_denied_missing: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
             load_denied_foreign: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
-            load_busy: tx, "session_by_token", records::session_key("tok-alice") => sql::query_failed("session_by_token", "SQLITE_IOERR")
+            load_busy: tx, "session_by_token", records::session_key("tok-alice") => sql::query_failed{"session_by_token", "SQLITE_IOERR"}
         sql::unsupported_value => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
         sql::query_failed => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
         sql::constraint_failed => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
@@ -1438,7 +1438,7 @@ fn sql::decision<records::read_outcome> decide_load
 /// older than the cutoff go; a non-positive window never reaches
 /// this callback.
 fn sql::decision<int> decide_cleanup
-    emits []
+    emits {}
     given
         near int now_ms
         near int w_ms
@@ -1451,7 +1451,7 @@ fn sql::decision<int> decide_cleanup
         when
             clean_some: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 2
             clean_none: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
-            clean_down: tx, "replay_cleanup", records::replay_cutoff(1000) => sql::query_failed("replay_cleanup", "SQLITE_IOERR")
+            clean_down: tx, "replay_cleanup", records::replay_cutoff(1000) => sql::query_failed{"replay_cleanup", "SQLITE_IOERR"}
         sql::unsupported_value => ok sql::rollback<int>(0)
         sql::query_failed => ok sql::rollback<int>(0)
         sql::constraint_failed => ok sql::rollback<int>(0)
@@ -1459,7 +1459,7 @@ fn sql::decision<int> decide_cleanup
 
 /// Project one committed write into its grid snapshot.
 fn contract::grid_snapshot written_to_snapshot
-    emits []
+    emits {}
     given
         records::written done
     asserts
@@ -1468,7 +1468,7 @@ fn contract::grid_snapshot written_to_snapshot
 
 /// Project drafts front to back into keyed form rows.
 fn form::rows<contract::line_wire> to_form_rows
-    emits []
+    emits {}
     given
         records::line_draft[] drafts
         int index
@@ -1486,7 +1486,7 @@ fn form::rows<contract::line_wire> to_form_rows
 /// empty details read back as missing: the acknowledged form is
 /// canonical, never a byte echo of the submission.
 fn contract::invoice_form written_to_form
-    emits []
+    emits {}
     given
         records::written done
     asserts
@@ -1498,7 +1498,7 @@ fn contract::invoice_form written_to_form
 
 /// Project one loaded invoice into its grid snapshot.
 fn contract::grid_snapshot read_to_snapshot
-    emits []
+    emits {}
     given
         records::read_found found
     asserts
@@ -1508,7 +1508,7 @@ fn contract::grid_snapshot read_to_snapshot
 /// Map one neutral write to its JSON outcome. Denials carry no
 /// protected data or echoed draft; conflicts keep the draft.
 fn contract::grid_edit_outcome map_write_grid
-    emits []
+    emits {}
     given
         records::write_outcome outcome
         contract::grid_edit_input draft
@@ -1526,7 +1526,7 @@ fn contract::grid_edit_outcome map_write_grid
 /// Map one neutral write to its HTML outcome. The raw form is the
 /// submitted draft the writer keeps; denials echo nothing.
 fn contract::edit_outcome map_write_html
-    emits []
+    emits {}
     given
         records::write_outcome outcome
         contract::invoice_form raw
@@ -1543,7 +1543,7 @@ fn contract::edit_outcome map_write_html
 
 /// Map one neutral read to its JSON load outcome.
 fn contract::grid_load_outcome map_read
-    emits []
+    emits {}
     given
         records::read_outcome outcome
     asserts
@@ -1559,7 +1559,7 @@ fn contract::grid_load_outcome map_read
 /// transaction decides, transport failures read unavailable, and an
 /// uncertain read reads unavailable because the GET retry is safe.
 fn contract::grid_load_outcome load_authorized
-    emits []
+    emits {}
     given
         sql::pool pool
         str token
@@ -1578,8 +1578,8 @@ fn contract::grid_load_outcome load_authorized
                 when
                     load_ok: pool, callable decide_load => ok records::read_found(1, 7, 1, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
                     load_route_denied: pool, callable decide_load => ok records::read_denied(1, 7)
-                    load_tx_down: pool, callable decide_load => sql::transaction_failed("commit")
-                    load_uncertain: pool, callable decide_load => sql::commit_unknown("tx-1")
+                    load_tx_down: pool, callable decide_load => sql::transaction_failed{"commit"}
+                    load_uncertain: pool, callable decide_load => sql::commit_unknown{"tx-1"}
                 sql::connection_failed => ok contract::grid_load_unavailable("store unavailable")
                 sql::transaction_failed => ok contract::grid_load_unavailable("store unavailable")
                 sql::commit_unknown => ok contract::grid_load_unavailable("store unavailable")
@@ -1591,7 +1591,7 @@ fn contract::grid_load_outcome load_authorized
 /// reconciles through the ledger; every other transport failure
 /// reads unavailable and the identical retry replays safely.
 fn contract::grid_edit_outcome save_authorized
-    emits []
+    emits {}
     given
         sql::pool pool
         str token
@@ -1635,9 +1635,9 @@ fn contract::grid_edit_outcome save_authorized
                             json_saved: pool, callable decide_save => ok records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
                             json_denied: pool, callable decide_save => ok records::write_denied(1, 7)
                             json_stale: pool, callable decide_save => ok records::write_conflict(1, 7, 2)
-                            json_busy: pool, callable decide_save => sql::transaction_failed("commit")
-                            json_conn_down: pool, callable decide_save => sql::connection_failed("begin")
-                            json_uncertain_replay: pool, callable decide_save => sql::commit_unknown("tx-1")
+                            json_busy: pool, callable decide_save => sql::transaction_failed{"commit"}
+                            json_conn_down: pool, callable decide_save => sql::connection_failed{"begin"}
+                            json_uncertain_replay: pool, callable decide_save => sql::commit_unknown{"tx-1"}
                         sql::connection_failed => ok contract::grid_unavailable(body.operation_id, "store unavailable")
                         sql::transaction_failed => ok contract::grid_unavailable(body.operation_id, "store unavailable")
                         sql::commit_unknown => match call reconcile_save(pool, token, key, body, call digest_of_grid(key.tenant_id, key.invoice_id, checked.revision, checked.lines), window)
@@ -1650,7 +1650,7 @@ fn contract::grid_edit_outcome save_authorized
 /// replays: an uncertain commit reads unavailable and the writer
 /// rereads before another mutation.
 fn contract::edit_outcome save_html_authorized
-    emits []
+    emits {}
     given
         sql::pool pool
         str token
@@ -1701,9 +1701,9 @@ fn contract::edit_outcome save_html_authorized
                                 form_saved: pool, callable decide_save => ok records::written(1, 7, 2, 3, "x", [records::line_draft("k1", "a", 2, 500)], 1000)
                                 form_denied: pool, callable decide_save => ok records::write_denied(1, 7)
                                 form_stale: pool, callable decide_save => ok records::write_conflict(1, 7, 2)
-                                form_busy: pool, callable decide_save => sql::transaction_failed("commit")
-                                form_conn_down: pool, callable decide_save => sql::connection_failed("begin")
-                                form_uncertain: pool, callable decide_save => sql::commit_unknown("tx-1")
+                                form_busy: pool, callable decide_save => sql::transaction_failed{"commit"}
+                                form_conn_down: pool, callable decide_save => sql::connection_failed{"begin"}
+                                form_uncertain: pool, callable decide_save => sql::commit_unknown{"tx-1"}
                             sql::connection_failed => ok contract::unavailable(form, "store unavailable")
                             sql::transaction_failed => ok contract::unavailable(form, "store unavailable")
                             sql::commit_unknown => ok contract::unavailable(form, "store unavailable")
@@ -1718,7 +1718,7 @@ fn contract::edit_outcome save_html_authorized
 /// disclosed: a revoked actor or lost membership denies without
 /// seeing the prior saved snapshot.
 fn contract::grid_edit_outcome reconcile_save
-    emits []
+    emits {}
     given
         sql::pool pool
         str token
@@ -1797,7 +1797,7 @@ fn contract::grid_edit_outcome reconcile_save
                                         rec_conflict: pool, "replay_lookup", records::replay_key("alice", 1, 7, "op-7") => ok option::some(records::replay_row("alice", 1, 7, "op-7", "d1", "rs", 2, 1500))
                                         rec_expired: pool, "replay_lookup", records::replay_key("alice", 1, 7, "op-8") => ok option::some(records::replay_row("alice", 1, 7, "op-8", "d8", "rx", 2, 500))
                                         rec_missing: pool, "replay_lookup", records::replay_key("alice", 1, 7, "op-9") => ok option::none()
-                                        rec_lookup_down: pool, "replay_lookup", records::replay_key("alice", 1, 7, "op-7") => sql::query_failed("replay_lookup", "SQLITE_IOERR")
+                                        rec_lookup_down: pool, "replay_lookup", records::replay_key("alice", 1, 7, "op-7") => sql::query_failed{"replay_lookup", "SQLITE_IOERR"}
                                         json_uncertain_replay: pool, "replay_lookup", records::replay_key("alice", 1, 7, "op-7") => ok option::some(records::replay_row("alice", 1, 7, "op-7", "4d46b9de513aede4b424a717d32c48e056994a5b34af329b7a88421aee399210", "rj", 2, 1500))
                                     sql::unsupported_value => ok contract::grid_unavailable(body.operation_id, "store unavailable")
                                     sql::connection_failed => ok contract::grid_unavailable(body.operation_id, "store unavailable")
@@ -1830,7 +1830,7 @@ fn contract::grid_edit_outcome reconcile_save
 /// deleted count. A non-positive window deletes nothing and touches
 /// no clock or store.
 fn int cleanup_expired
-    emits []
+    emits {}
     given
         sql::pool pool
         int window
@@ -1853,8 +1853,8 @@ fn int cleanup_expired
                 match call sql::with_transaction<int>(pool, callable decide_cleanup)
                     when
                         clean_run: pool, callable decide_cleanup => ok 2
-                        clean_down: pool, callable decide_cleanup => sql::transaction_failed("commit")
-                        clean_unknown: pool, callable decide_cleanup => sql::commit_unknown("tx-9")
+                        clean_down: pool, callable decide_cleanup => sql::transaction_failed{"commit"}
+                        clean_unknown: pool, callable decide_cleanup => sql::commit_unknown{"tx-9"}
                     sql::connection_failed => ok 0
                     sql::transaction_failed => ok 0
                     sql::commit_unknown => ok 0

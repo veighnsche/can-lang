@@ -4,7 +4,7 @@ package crypto_example
 
 /// SHA-256 digest bytes of the input.
 fn int[] fingerprint
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         int[] values
     asserts
@@ -18,13 +18,13 @@ fn int[] fingerprint
 
 /// HMAC-SHA-256 tag bytes of the message under the key.
 fn int[] tag
-    emits [codec::invalid_data, crypto::invalid_key]
+    emits {codec::invalid_data, crypto::invalid_key}
     given
         int[] key
         int[] message
     asserts
         rfc4231: [11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11], [72, 105, 32, 84, 104, 101, 114, 101] => ok [176, 52, 76, 97, 216, 219, 56, 83, 92, 168, 175, 206, 175, 11, 241, 43, 136, 29, 194, 0, 201, 131, 61, 167, 38, 233, 55, 108, 46, 50, 207, 247]
-        empty_key: [], [1] => crypto::invalid_key("empty_hmac_key")
+        empty_key: [], [1] => crypto::invalid_key{"empty_hmac_key"}
     match chain
         call bytes::from_ints(key) as bytes::buffer raw_key
         call bytes::from_ints(message) as bytes::buffer raw_message
@@ -36,7 +36,7 @@ fn int[] tag
 
 /// Verify a password against the fixed preset-0 argon2id hash of "correct horse".
 fn bool check_password
-    emits [password::invalid_hash]
+    emits {password::invalid_hash}
     given
         str password
     asserts
@@ -48,7 +48,7 @@ fn bool check_password
 
 /// Verify an Ed25519 signature against the fixed 32-byte public key.
 fn bool check_signature
-    emits [codec::invalid_data, crypto::invalid_key, crypto::key_misuse]
+    emits {codec::invalid_data, crypto::invalid_key, crypto::key_misuse}
     given
         int[] message
         int[] signature
@@ -68,7 +68,7 @@ fn bool check_signature
 
 /// Check the first argument against the fixed hash, then print match or mismatch.
 fn void main
-    emits [password::invalid_hash, codec::invalid_data, io::write_failed]
+    emits {password::invalid_hash, codec::invalid_data, io::write_failed}
     given
         str[] args
     asserts

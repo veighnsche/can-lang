@@ -4,7 +4,7 @@ package gallery
 
 /// Match a named error and turn it into a normal value.
 fn bool is_positive
-    emits []
+    emits {}
     given
         int number
     asserts

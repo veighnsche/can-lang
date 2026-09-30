@@ -9,17 +9,17 @@ package stream_example
 /// replaces the primary error. Fixture transcripts replay per-read
 /// rows in order across the recursion.
 fn int pump
-    emits [stream::read_failed, stream::cancelled, files::limit_exceeded, stream::close_failed]
+    emits {stream::read_failed, stream::cancelled, files::limit_exceeded, stream::close_failed}
     given
         int count
         stream::reader<str> input
     asserts
         end: 5 => ok 5
         more: 0 => ok 2
-        failed_read: 0 => stream::read_failed("EIO")
-        failed_close: 0 => stream::read_failed("EIO")
-        cancelled: 0 => stream::cancelled("deadline")
-        limited: 0 => files::limit_exceeded(4)
+        failed_read: 0 => stream::read_failed{"EIO"}
+        failed_close: 0 => stream::read_failed{"EIO"}
+        cancelled: 0 => stream::cancelled{"deadline"}
+        limited: 0 => files::limit_exceeded{4}
     match call stream::read_many(input, 2)
         when
             end: input, 2 => ok []
@@ -27,26 +27,26 @@ fn int pump
             more: input, 2 => ok []
             sample: input, 2 => ok ["a", "b"]
             sample: input, 2 => ok []
-            failed_read: input, 2 => stream::read_failed("EIO")
-            failed_close: input, 2 => stream::read_failed("EIO")
-            cancelled: input, 2 => stream::cancelled("deadline")
-            limited: input, 2 => files::limit_exceeded(4)
+            failed_read: input, 2 => stream::read_failed{"EIO"}
+            failed_close: input, 2 => stream::read_failed{"EIO"}
+            cancelled: input, 2 => stream::cancelled{"deadline"}
+            limited: input, 2 => files::limit_exceeded{4}
         stream::read_failed => match call stream::close_reader(input)
             when
                 failed_read: input => ok
-                failed_close: input => stream::close_failed("close")
-            stream::close_failed => stream::read_failed(read_failed.reason)
-            ok => stream::read_failed(read_failed.reason)
+                failed_close: input => stream::close_failed{"close"}
+            stream::close_failed => stream::read_failed{read_failed.reason}
+            ok => stream::read_failed{read_failed.reason}
         stream::cancelled => match call stream::close_reader(input)
             when
                 cancelled: input => ok
-            stream::close_failed => stream::cancelled(cancelled.reason)
-            ok => stream::cancelled(cancelled.reason)
+            stream::close_failed => stream::cancelled{cancelled.reason}
+            ok => stream::cancelled{cancelled.reason}
         files::limit_exceeded => match call stream::close_reader(input)
             when
                 limited: input => ok
-            stream::close_failed => files::limit_exceeded(limit_exceeded.limit)
-            ok => files::limit_exceeded(limit_exceeded.limit)
+            stream::close_failed => files::limit_exceeded{limit_exceeded.limit}
+            ok => files::limit_exceeded{limit_exceeded.limit}
         ok str[] batch => match batch.length is 0
             false => match call pump(count + batch.length, input)
                 stream::read_failed
@@ -64,7 +64,7 @@ fn int pump
 
 /// Count the lines of the file named by the first argument.
 fn void main
-    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, stream::read_failed, stream::cancelled, stream::close_failed, codec::invalid_data, io::write_failed]
+    emits {files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, stream::read_failed, stream::cancelled, stream::close_failed, codec::invalid_data, io::write_failed}
     given
         str[] args
     asserts

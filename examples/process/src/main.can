@@ -4,7 +4,7 @@ package process_example
 
 /// Label an exit as "ok", "code <n>" or "signal <s>".
 fn str exit_label
-    emits []
+    emits {}
     given
         int code
         str signal
@@ -20,7 +20,7 @@ fn str exit_label
 
 /// Echo a word through a bounded child process and label its exit.
 fn str run_shout
-    emits [files::not_found, files::denied, process::spawn_failed, process::timeout, process::output_limit, process::invalid_config, process::io_error]
+    emits {files::not_found, files::denied, process::spawn_failed, process::timeout, process::output_limit, process::invalid_config, process::io_error}
     given
         str word
     asserts
@@ -41,7 +41,7 @@ fn str run_shout
 
 /// Shout the first argument through a child process.
 fn void main
-    emits [files::not_found, files::denied, process::spawn_failed, process::timeout, process::output_limit, process::invalid_config, process::io_error, codec::invalid_data, io::write_failed]
+    emits {files::not_found, files::denied, process::spawn_failed, process::timeout, process::output_limit, process::invalid_config, process::io_error, codec::invalid_data, io::write_failed}
     given
         str[] args
     asserts

@@ -4,14 +4,14 @@ package app
 
 /// Triage one account through the native pipeline and print the report.
 fn void main
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response, ai::invalid_question, ai::invalid_answer, http::request_failed, sql::connection_failed, sql::close_failed, io::write_failed]
+    emits {http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response, ai::invalid_question, ai::invalid_answer, http::request_failed, sql::connection_failed, sql::close_failed, io::write_failed}
     given
         str[] args
     asserts
         empty: [] => ok
         triage: ["Ann"] => ok link model::triage
         down: ["Ann"] => ok link model::down
-        unclosed: ["Ann"] => sql::close_failed("drain") link model::unclosed
+        unclosed: ["Ann"] => sql::close_failed{"drain"} link model::unclosed
     match args.length is 0
         false => match call oracles::draft_account(args[0])
             when
@@ -68,7 +68,7 @@ fn void main
                                             ok int written => match call sql::pool_close(pool, 1000)
                                                 when
                                                     triage: pool, 1000 => ok
-                                                    unclosed: pool, 1000 => sql::close_failed("drain")
+                                                    unclosed: pool, 1000 => sql::close_failed{"drain"}
                                                 sql::close_failed
                                                 ok => ok
         true => match call bytes::from_utf8("usage: native-ai <account> [names...]")
@@ -81,7 +81,7 @@ fn void main
 
 /// Read the recent count and account total together.
 fn records::count_value[] concurrent_counts
-    emits []
+    emits {}
     given
         near sql::pool pool
     asserts

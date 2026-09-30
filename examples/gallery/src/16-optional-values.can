@@ -4,7 +4,7 @@ package gallery
 
 /// Option values make absence explicit.
 fn option::value<str> first_word
-    emits []
+    emits {}
     given
         str[] words
     asserts

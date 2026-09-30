@@ -4,7 +4,7 @@ package gallery
 
 /// Recursion follows the mathematical definition for small nonnegative inputs.
 fn int fibonacci
-    emits []
+    emits {}
     given
         int position
     asserts

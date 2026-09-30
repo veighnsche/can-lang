@@ -11,7 +11,7 @@ variant color
     red
     blue
 fn str color_name
-    emits []
+    emits {}
     given
         color value
     asserts

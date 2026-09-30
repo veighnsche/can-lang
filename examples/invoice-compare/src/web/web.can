@@ -13,7 +13,7 @@ package web
 /// is gone or the swap loses, so late folds after disposal mutate
 /// nothing.
 fn option::value<records::panel> finish_edit
-    emits []
+    emits {}
     given
         browser::state<records::panel> cell
         str key
@@ -25,14 +25,14 @@ fn option::value<records::panel> finish_edit
     match call browser::read_state(cell)
         when
             applied: cell => ok browser::snapshot<records::panel>(3, records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", ""))
-            gone: cell => browser::disposed()
+            gone: cell => browser::disposed{}
             stale: cell => ok browser::snapshot<records::panel>(3, records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", ""))
         browser::disposed => ok option::none()
         ok browser::snapshot<records::panel> snap => match call model::with_count(snap.value, key, count)
             ok records::panel next => match call browser::replace_state(cell, snap.version, next)
                 when
                     applied: cell, 3, records::panel("left", [records::dock_line("k1", "a", "4", 4, true)], 3, "", "") => ok 4
-                    stale: cell, 3, records::panel("left", [records::dock_line("k1", "a", "4", 4, true)], 3, "", "") => browser::stale_version(3, 4)
+                    stale: cell, 3, records::panel("left", [records::dock_line("k1", "a", "4", 4, true)], 3, "", "") => browser::stale_version{3, 4}
                 browser::disposed => ok option::none()
                 browser::stale_version => ok option::none()
                 ok int version => ok option::some<records::panel>(next)
@@ -43,7 +43,7 @@ fn option::value<records::panel> finish_edit
 /// cross-instance fold never mutates a disposed panel and never
 /// touches the source.
 fn option::value<records::panel> mirror_notice
-    emits []
+    emits {}
     given
         browser::state<records::panel> source
         browser::state<records::panel> target
@@ -55,21 +55,21 @@ fn option::value<records::panel> mirror_notice
     match call browser::read_state(source)
         when
             mirrored: source => ok browser::snapshot<records::panel>(2, records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 1, "ready to review", ""))
-            source_gone: source => browser::disposed()
+            source_gone: source => browser::disposed{}
             target_gone: source => ok browser::snapshot<records::panel>(2, records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 1, "ready to review", ""))
             target_stale: source => ok browser::snapshot<records::panel>(2, records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 1, "ready to review", ""))
         browser::disposed => ok option::none()
         ok browser::snapshot<records::panel> from => match call browser::read_state(target)
             when
                 mirrored: target => ok browser::snapshot<records::panel>(5, records::panel("right", [records::dock_line("k1", "a", "1", 1, true)], 1, "", ""))
-                target_gone: target => browser::disposed()
+                target_gone: target => browser::disposed{}
                 target_stale: target => ok browser::snapshot<records::panel>(5, records::panel("right", [records::dock_line("k1", "a", "1", 1, true)], 1, "", ""))
             browser::disposed => ok option::none()
             ok browser::snapshot<records::panel> snap => match call model::with_notice(snap.value, from.value.notice)
                 ok records::panel next => match call browser::replace_state(target, snap.version, next)
                     when
                         mirrored: target, 5, records::panel("right", [records::dock_line("k1", "a", "1", 1, true)], 1, "ready to review", "") => ok 6
-                        target_stale: target, 5, records::panel("right", [records::dock_line("k1", "a", "1", 1, true)], 1, "ready to review", "") => browser::stale_version(5, 6)
+                        target_stale: target, 5, records::panel("right", [records::dock_line("k1", "a", "1", 1, true)], 1, "ready to review", "") => browser::stale_version{5, 6}
                     browser::disposed => ok option::none()
                     browser::stale_version => ok option::none()
                     ok int version => ok option::some<records::panel>(next)
@@ -78,7 +78,7 @@ fn option::value<records::panel> mirror_notice
 /// name comes from the shared focus matcher, so "" never arrives;
 /// it selects the last control to keep the function total.
 fn browser::node focus_node
-    emits []
+    emits {}
     given
         str control
         browser::node sku_in
@@ -110,7 +110,7 @@ fn browser::node focus_node
 /// row matching the focus intent resolves to its control; nothing
 /// focuses during construction.
 fn browser::node build_rows
-    emits []
+    emits {}
     given
         browser::view view
         browser::node tbody
@@ -200,7 +200,7 @@ fn browser::node build_rows
 /// captures the handles it needs from this scope; nothing is
 /// queried back afterwards. Returns the resolved row focus target.
 fn browser::node build_panel
-    emits []
+    emits {}
     given
         browser::view view
         browser::node parent
@@ -286,7 +286,7 @@ fn browser::node build_panel
 /// build nothing: dropping the left instance leaves a right-only
 /// render. The complete tree attaches before any focus runs.
 fn void build_view
-    emits []
+    emits {}
     given
         browser::app app
         browser::view left_view
@@ -385,7 +385,7 @@ fn void build_view
 /// abort), then build fresh from the latest open panels. Closed
 /// panels build nothing; their instances stay disposed.
 fn void render_replace
-    emits []
+    emits {}
     given
         browser::app app
         browser::view left_view
@@ -400,7 +400,7 @@ fn void render_replace
         ok => match call browser::read_state(left_cell)
             when
                 both: left_cell => ok browser::snapshot<records::panel>(2, records::panel("left", [], 0, "", ""))
-                closed: left_cell => browser::disposed()
+                closed: left_cell => browser::disposed{}
             browser::disposed => match call browser::read_state(right_cell)
                 when
                     closed: right_cell => ok browser::snapshot<records::panel>(2, records::panel("right", [], 0, "", ""))
@@ -422,7 +422,7 @@ fn void render_replace
 
 /// Render the first view from the latest open panels.
 fn void render_fresh
-    emits []
+    emits {}
     given
         browser::app app
         browser::view left_view
@@ -435,7 +435,7 @@ fn void render_fresh
     match call browser::read_state(left_cell)
         when
             fresh: left_cell => ok browser::snapshot<records::panel>(1, records::panel("left", [], 0, "", ""))
-            closed: left_cell => browser::disposed()
+            closed: left_cell => browser::disposed{}
         browser::disposed => match call browser::read_state(right_cell)
             when
                 closed: right_cell => ok browser::snapshot<records::panel>(1, records::panel("right", [], 0, "", ""))
@@ -460,7 +460,7 @@ fn void render_fresh
 /// place, without re-rendering, so the caret never jumps while
 /// typing.
 fn void on_count_input
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::panel> cell
@@ -485,7 +485,7 @@ fn void on_count_input
 /// Sku edit on one keyed row: fold the typed value into the panel
 /// and refresh the status line in place, without re-rendering.
 fn void on_sku_input
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::panel> cell
@@ -505,7 +505,7 @@ fn void on_sku_input
 
 /// Add-row press on one panel: append a blank row, then re-render.
 fn void on_add_row
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::panel> cell
@@ -528,7 +528,7 @@ fn void on_add_row
 
 /// Remove-row press on one panel row, then re-render.
 fn void on_remove_row
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::panel> cell
@@ -552,7 +552,7 @@ fn void on_remove_row
 
 /// Move-up press on one panel row, then re-render.
 fn void on_move_up
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::panel> cell
@@ -576,7 +576,7 @@ fn void on_move_up
 
 /// Move-down press on one panel row, then re-render.
 fn void on_move_down
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::panel> cell
@@ -601,7 +601,7 @@ fn void on_move_down
 /// Review press on one panel: post the shared-vocabulary review
 /// notice, then re-render.
 fn void on_review_click
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::panel> cell
@@ -626,7 +626,7 @@ fn void on_review_click
 /// Mirror press: fold the left panel notice into the right panel,
 /// then re-render on success. A closed left panel mirrors nothing.
 fn void on_mirror_click
-    emits []
+    emits {}
     given
         browser::event e
         near browser::app app
@@ -647,7 +647,7 @@ fn void on_mirror_click
 /// right-only. The right instance keeps its own cell and view and
 /// is unaffected.
 fn void on_dispose_left
-    emits []
+    emits {}
     given
         browser::event e
         near browser::app app
@@ -666,7 +666,7 @@ fn void on_dispose_left
 /// instance, mint both cells from seeds, then render. A failed
 /// mount or view disposes the app; nothing renders half-built.
 fn void boot
-    emits []
+    emits {}
     asserts
         ready:  => ok
     match call browser::mount("invoice-compare")
@@ -689,7 +689,7 @@ fn void boot
 /// Compare entry: the compiler-owned zero-argument main runs once
 /// after DOM readiness and boots both seeded panels.
 fn void main
-    emits []
+    emits {}
     asserts
         ready:  => ok
     match call boot()

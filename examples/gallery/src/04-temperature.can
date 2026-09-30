@@ -4,7 +4,7 @@ package gallery
 
 /// Use float when a calculation needs fractions.
 fn float celsius_to_fahrenheit
-    emits []
+    emits {}
     given
         float celsius
     asserts

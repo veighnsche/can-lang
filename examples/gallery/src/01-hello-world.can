@@ -4,7 +4,7 @@ package gallery
 
 /// A function can return text; its assertion is a runnable example.
 fn str hello
-    emits []
+    emits {}
     asserts
         greeting: => ok "Hello, world!"
     ok "Hello, world!"

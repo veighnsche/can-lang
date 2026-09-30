@@ -14,7 +14,7 @@ package app
 
 /// Render one verdict word.
 fn str yesno
-    emits []
+    emits {}
     given
         bool verdict
     asserts
@@ -26,7 +26,7 @@ fn str yesno
 
 /// Render one caret record as start,end,direction.
 fn str caret_verdict
-    emits []
+    emits {}
     given
         browser::selection caret
     asserts
@@ -37,7 +37,7 @@ fn str caret_verdict
 
 /// Render one modifiers record as alt/ctrl/meta/shift words.
 fn str mods_verdict
-    emits []
+    emits {}
     given
         browser::modifiers held
     asserts
@@ -47,7 +47,7 @@ fn str mods_verdict
 
 /// Render one file selection as count plus first-file details.
 fn str files_verdict
-    emits []
+    emits {}
     given
         browser::file[] picked
     asserts
@@ -59,7 +59,7 @@ fn str files_verdict
 
 /// Text input echo: live value, composition flag and caret.
 fn void on_text_input
-    emits []
+    emits {}
     given
         browser::event e
         near browser::node echo_text
@@ -72,7 +72,7 @@ fn void on_text_input
 
 /// Key echo: key plus held modifiers.
 fn void on_text_key
-    emits []
+    emits {}
     given
         browser::event e
         near browser::node echo_key
@@ -85,7 +85,7 @@ fn void on_text_key
 
 /// Checkbox echo: checked state plus the raw value field.
 fn void on_check_change
-    emits []
+    emits {}
     given
         browser::event e
         near browser::node echo_check
@@ -97,7 +97,7 @@ fn void on_check_change
 
 /// Multiselect echo: selected values joined.
 fn void on_multi_change
-    emits []
+    emits {}
     given
         browser::event e
         near browser::node echo_multi
@@ -109,7 +109,7 @@ fn void on_multi_change
 
 /// File echo: selection count plus first-file details.
 fn void on_files_change
-    emits []
+    emits {}
     given
         browser::event e
         near browser::node echo_files
@@ -122,7 +122,7 @@ fn void on_files_change
 
 /// Live value write then read.
 fn void on_setvalue_click
-    emits []
+    emits {}
     given
         browser::event e
         near browser::node field
@@ -141,7 +141,7 @@ fn void on_setvalue_click
 
 /// Live checked write then read.
 fn void on_setchecked_click
-    emits []
+    emits {}
     given
         browser::event e
         near browser::node check
@@ -160,7 +160,7 @@ fn void on_setchecked_click
 
 /// Multiselect write then read on multi and single controls.
 fn void on_setselected_click
-    emits []
+    emits {}
     given
         browser::event e
         near browser::node multi
@@ -186,7 +186,7 @@ fn void on_setselected_click
 
 /// Caret write then read.
 fn void on_setcaret_click
-    emits []
+    emits {}
     given
         browser::event e
         near browser::node field
@@ -205,7 +205,7 @@ fn void on_setcaret_click
 
 /// Save-time live reads across every control.
 fn void on_readall_click
-    emits []
+    emits {}
     given
         browser::event e
         near browser::node field
@@ -235,7 +235,7 @@ fn void on_readall_click
 
 /// Dirty reset: restore Can-held defaults through live writes.
 fn void on_reset_click
-    emits []
+    emits {}
     given
         browser::event e
         near browser::node field
@@ -272,7 +272,7 @@ fn void on_reset_click
 /// Denial verdicts: value read and caret write reject on the
 /// wrong controls, while caret reads stay total with neutral.
 fn void on_reject_click
-    emits []
+    emits {}
     given
         browser::event e
         near browser::node panel
@@ -299,7 +299,7 @@ fn void on_reject_click
 /// buttons and their listeners. Near captures bind each handler
 /// to its echo line and target controls by scope name.
 fn void run_controls
-    emits []
+    emits {}
     given
         browser::view view
         browser::node parent
@@ -490,7 +490,7 @@ fn void run_controls
 /// Fixture entry: mount the served grid shell and build the
 /// controls page.
 fn void main
-    emits []
+    emits {}
     asserts
         boot:  => ok
     match call browser::mount("invoice-grid")

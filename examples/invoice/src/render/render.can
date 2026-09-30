@@ -9,13 +9,13 @@ package render
 /// serialization and money renders through the shared exact
 /// formatter.
 fn html::node line_row
-    emits [html::invalid_structure, form::unknown_field, form::invalid_name]
+    emits {html::invalid_structure, form::unknown_field, form::invalid_name}
     given
         records::line_draft line
     asserts
         sample: records::line_draft("k1", "a", 2, 500) => ok
         hostile: records::line_draft("k2", "</td><script>bad()</script>", 3, 199) => ok
-        bad_key: records::line_draft("k 1", "a", 2, 500) => form::invalid_name("k 1")
+        bad_key: records::line_draft("k 1", "a", 2, 500) => form::invalid_name{"k 1"}
     match chain
         call form::named_collection<contract::invoice_form>("lines") as form::collection coll
         call form::named_field<contract::line_wire>("id") as form::field id_field
@@ -65,14 +65,14 @@ fn html::node line_row
 /// the draft or steals focus; the region starts with a plain waiting
 /// note and each swapped fragment carries its own role.
 fn html::safe edit_page
-    emits [html::invalid_structure, html::invalid_url, htmx::invalid_target, form::unknown_field, form::invalid_name, action::invalid_path]
+    emits {html::invalid_structure, html::invalid_url, htmx::invalid_target, form::unknown_field, form::invalid_name, action::invalid_path}
     given
         contract::invoice_key key
         records::read_found invoice
     asserts
         sample: contract::invoice_key(1, 7), records::read_found(1, 7, 1, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000) => ok
         hostile: contract::invoice_key(1, 7), records::read_found(1, 7, 1, 2, "</form><script>bad()</script>", [records::line_draft("k1", "</td><script>bad()</script>", 2, 500)], 1000) => ok
-        bad_key: contract::invoice_key(1, 7), records::read_found(1, 7, 1, 2, "rush", [records::line_draft("k 1", "a", 2, 500)], 1000) => form::invalid_name("k 1")
+        bad_key: contract::invoice_key(1, 7), records::read_found(1, 7, 1, 2, "rush", [records::line_draft("k 1", "a", 2, 500)], 1000) => form::invalid_name{"k 1"}
     match call action::url(contract::save_invoice_html, key)
         action::invalid_path
         ok str post_target => match chain
@@ -170,7 +170,7 @@ fn html::safe edit_page
 /// spliced by the server from the build report, never rendered here.
 /// The mount id matches the grid application's browser mount.
 fn html::safe grid_page
-    emits [html::invalid_structure]
+    emits {html::invalid_structure}
     asserts
         sample:  => ok
     match chain
@@ -193,7 +193,7 @@ fn html::safe grid_page
 /// input; the mount id matches the compare application's browser
 /// mount.
 fn html::safe compare_page
-    emits [html::invalid_structure]
+    emits {html::invalid_structure}
     asserts
         sample:  => ok
     match chain
@@ -215,7 +215,7 @@ fn html::safe compare_page
 /// the route's truthful status. Notices carry no invoice content
 /// beyond the caller-sent key already present in the message.
 fn html::safe notice_page
-    emits [html::invalid_structure]
+    emits {html::invalid_structure}
     given
         str title
         str message

@@ -4,7 +4,7 @@ package oracles
 
 /// Pass a native score through for relay arms.
 fn float tap
-    emits []
+    emits {}
     given
         float value
     asserts
@@ -31,7 +31,7 @@ connection classifier
 
 /// Draft a triage plan for one account name.
 llm records::triage_plan draft from generator
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response]
+    emits {http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response}
     state
         str account
     asserts
@@ -41,7 +41,7 @@ llm records::triage_plan draft from generator
 
 /// Pick one keyword from the plan's dynamic options.
 choice str pick from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     given
         choice_option[] options
     asks "Pick"
@@ -52,14 +52,14 @@ choice str pick from classifier
 
 /// Judge whether the batch merits attention.
 noul float likely from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     asks "Likely"
         true "Yes" => relay call tap(%)
         false "No" => relay call tap(%)
 
 /// Rate the batch quality.
 score float rate from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     score as measured
     asks "Rate"
         low "Low"
@@ -69,7 +69,7 @@ score float rate from classifier
 
 /// Review one bundle through the batched natives.
 judge records::triage_scored review from classifier
-    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
+    emits {http::request_failed, ai::invalid_question, ai::invalid_answer}
     state
         records::triage_bundle bundle
     asserts
@@ -82,16 +82,16 @@ judge records::triage_scored review from classifier
 
 /// Draft a triage plan for one account name.
 fn records::triage_plan draft_account
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response]
+    emits {http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response}
     given
         str account
     asserts
         sample: "Ann" => ok records::triage_plan(["vip", "new"], true)
-        garbage: "Ann" => llm::invalid_response("shape")
+        garbage: "Ann" => llm::invalid_response{"shape"}
     match call draft((account))
         when
             sample: ("Ann") => ok records::triage_plan(["vip", "new"], true)
-            garbage: ("Ann") => llm::invalid_response("shape")
+            garbage: ("Ann") => llm::invalid_response{"shape"}
         http::invalid_request
         http::credentials_missing
         http::transport_failed
@@ -106,16 +106,16 @@ fn records::triage_plan draft_account
 
 /// Review one bundle of options and names.
 fn records::triage_scored review_bundle
-    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
+    emits {http::request_failed, ai::invalid_question, ai::invalid_answer}
     given
         records::triage_bundle bundle
     asserts
         sample: records::triage_bundle([choice_option("vip", "vip")], ["Ann"]) => ok records::triage_scored("vip", 0.9)
-        garbage: records::triage_bundle([choice_option("vip", "vip")], ["Ann"]) => ai::invalid_answer("q1", "range")
+        garbage: records::triage_bundle([choice_option("vip", "vip")], ["Ann"]) => ai::invalid_answer{"q1", "range"}
     match call review((bundle))
         when
             sample: (records::triage_bundle([choice_option("vip", "vip")], ["Ann"])) => ok records::triage_scored("vip", 0.9)
-            garbage: (records::triage_bundle([choice_option("vip", "vip")], ["Ann"])) => ai::invalid_answer("q1", "range")
+            garbage: (records::triage_bundle([choice_option("vip", "vip")], ["Ann"])) => ai::invalid_answer{"q1", "range"}
         http::request_failed
         ai::invalid_question
         ai::invalid_answer

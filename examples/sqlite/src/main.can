@@ -16,7 +16,7 @@ record note_rename
 
 /// Label a note as "7: remember".
 fn str note_label
-    emits []
+    emits {}
     given
         int id
         str body
@@ -27,7 +27,7 @@ fn str note_label
 
 /// Rename a note on an open pool; returns affected rows.
 fn int rename_note
-    emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed]
+    emits {sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed}
     given
         str body
         int id
@@ -45,7 +45,7 @@ fn int rename_note
 
 /// Fetch one note from an open pool.
 fn note_row fetch_note
-    emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch]
+    emits {sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch}
     given
         int id
         sql::pool pool
@@ -65,7 +65,7 @@ fn note_row fetch_note
 
 /// Rename note 7 in the file named by the first argument, then print it.
 fn void main
-    emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::close_failed, codec::invalid_data, io::write_failed]
+    emits {sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::close_failed, codec::invalid_data, io::write_failed}
     given
         str[] args
     asserts

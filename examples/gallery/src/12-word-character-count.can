@@ -8,7 +8,7 @@ record counts
     int words
     int characters
 fn bool nonempty
-    emits []
+    emits {}
     given
         str word
     asserts
@@ -16,7 +16,7 @@ fn bool nonempty
         word: "one" => ok true
     ok word.length > 0
 fn counts count_text
-    emits [text::empty_separator, text::invalid_unicode]
+    emits {text::empty_separator, text::invalid_unicode}
     given
         str value
     asserts

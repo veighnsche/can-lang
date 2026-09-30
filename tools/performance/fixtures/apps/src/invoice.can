@@ -16,7 +16,7 @@ record invoice_result
     int total_minor
     int invalid_lines
 fn invoice_line make_invoice_line
-    emits []
+    emits {}
     given
         str sku
         int quantity
@@ -25,7 +25,7 @@ fn invoice_line make_invoice_line
         sample: "A", 2, 150 => ok invoice_line("A", 2, 150)
     ok invoice_line(sku, quantity, unit_minor)
 fn checked_line check_invoice_line
-    emits []
+    emits {}
     given
         invoice_line line
     asserts
@@ -38,7 +38,7 @@ fn checked_line check_invoice_line
             true => ok checked_line(line.sku, 0, false)
             false => ok checked_line(line.sku, line.quantity * line.unit_minor, true)
 fn invoice_result accumulate_invoice
-    emits []
+    emits {}
     given
         invoice_result previous
         checked_line line
@@ -49,7 +49,7 @@ fn invoice_result accumulate_invoice
         false => ok invoice_result(false, previous.total_minor, previous.invalid_lines + 1)
         true => ok invoice_result(previous.accepted, previous.total_minor + line.total_minor, previous.invalid_lines)
 fn invoice_result summarize_invoice
-    emits []
+    emits {}
     given
         invoice_line[] lines
     asserts

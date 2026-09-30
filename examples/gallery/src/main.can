@@ -4,7 +4,7 @@ package gallery
 
 /// Run `canlc run examples/gallery -- Ada` to print a greeting.
 fn void main
-    emits [codec::invalid_data, io::write_failed]
+    emits {codec::invalid_data, io::write_failed}
     given
         str[] args
     asserts

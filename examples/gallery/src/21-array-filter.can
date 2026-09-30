@@ -4,7 +4,7 @@ package gallery
 
 /// filter keeps values for which the predicate is true.
 fn bool even
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -12,7 +12,7 @@ fn bool even
         no: 3 => ok false
     ok value % 2 is 0
 fn int[] evens
-    emits []
+    emits {}
     given
         int[] values
     asserts

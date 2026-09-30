@@ -2,7 +2,7 @@ package app
     provides []
     uses []
 fn int combine
-    emits []
+    emits {}
     given
         near int prefix
         int value
@@ -11,17 +11,17 @@ fn int combine
         sample: 3, 4, 5 => ok 12
     ok prefix + value + suffix
 fn int compute
-    emits []
+    emits {}
     given
         int seed
     asserts
         first: 4 => ok 12
     int prefix = 99
     int suffix = 99
-    callable int (int) emits [] action = callable combine
+    callable int (int) emits {} action = callable combine
     ok call action(seed)
 fn void main
-    emits []
+    emits {}
     asserts
         sample:  => ok
     ok

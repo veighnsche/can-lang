@@ -4,7 +4,7 @@ package gallery
 
 /// Ordinary arithmetic uses int operators.
 fn int arithmetic
-    emits []
+    emits {}
     given
         int left
         int right

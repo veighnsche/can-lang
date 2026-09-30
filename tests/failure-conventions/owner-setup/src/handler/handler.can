@@ -8,7 +8,7 @@ record tier_view
 /// Extracted owner-accepting helper: pure tier mapping over a validated
 /// score. Tested through the private factory; never sees raw input.
 fn tier_view tier_for
-    emits []
+    emits {}
     given
         ids::user_id id
     asserts
@@ -24,14 +24,14 @@ fn tier_view tier_for
 /// After extraction: parse once, then relay to the helper. Retained
 /// end-to-end roots pin the handler contract.
 fn tier_view handle_tier
-    emits [ids::invalid]
+    emits {ids::invalid}
     given
         int raw
     asserts
         gold: 90 => ok tier_view("gold", true)
         silver: 50 => ok tier_view("silver", false)
         bronze: 10 => ok tier_view("bronze", false)
-        bad: 0 => ids::invalid(0)
+        bad: 0 => ids::invalid{0}
     match call ids::parse(raw)
         ids::invalid
         ok ids::user_id id => relay call tier_for(id)
@@ -39,7 +39,7 @@ fn tier_view handle_tier
 /// Unexpected rejection fails closed through the arithmetic trap (the
 /// relay argument faults before any call happens), never a forged value.
 fn ids::user_id fixture_id
-    emits []
+    emits {}
     given
         int raw
     asserts
@@ -49,7 +49,7 @@ fn ids::user_id fixture_id
         ok ids::user_id id => ok id
 /// Specification probe: the trap surfaces as kind arithmetic.
 fn str trap_kind
-    emits []
+    emits {}
     asserts
         kind: => ok "arithmetic"
     match call fixture_id(0)
@@ -57,7 +57,7 @@ fn str trap_kind
         ok ids::user_id id => ok "no-fault"
 /// Specification probe: the trap message is the fixed division template.
 fn str trap_message
-    emits []
+    emits {}
     asserts
         text: => ok "arithmetic: integer division by zero"
     match call fixture_id(0)

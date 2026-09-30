@@ -6,9 +6,9 @@ record profile
     int id
     str name
 /// The directory answered but has no such key.
-error unavailable(str key)
+error unavailable{str key}
 /// The directory refused the lookup.
-error forbidden(str key)
+error forbidden{str key}
 /// The faithful failure set: both load errors as data, identity and
 /// payloads intact, for round-trip through the generic outcome.
 variant load_failure
@@ -17,78 +17,78 @@ variant load_failure
 /// Deterministic loader stub: real logic (key dispatch), no live calls.
 /// Oracle roots substitute its outcomes per attempt via when rows.
 fn profile load
-    emits [unavailable, forbidden]
+    emits {unavailable, forbidden}
     given
         str key
     asserts
         hit: "ann" => ok profile(7, "Ann")
-        gone: "bob" => unavailable("bob")
-        shut: "root" => forbidden("root")
+        gone: "bob" => unavailable{"bob"}
+        shut: "root" => forbidden{"root"}
     match key is "ann"
         false => match key is "root"
-            false => unavailable(key)
-            true => forbidden(key)
+            false => unavailable{key}
+            true => forbidden{key}
         true => ok profile(7, "Ann")
 /// Boundary adapter, emitted errors to result data. Each arm rebuilds its
 /// error value into the faithful set; the annotated local defeats generic
 /// inference friction (a member value never infers its variant).
 fn retry::outcome<profile, load_failure> load_outcome
-    emits []
+    emits {}
     given
         str key
     asserts
         hit: "ann" => ok retry::completed(profile(7, "Ann"))
-        gone: "bob" => ok retry::rejected<load_failure>(unavailable("bob"))
-        shut: "root" => ok retry::rejected<load_failure>(forbidden("root"))
+        gone: "bob" => ok retry::rejected<load_failure>(unavailable{"bob"})
+        shut: "root" => ok retry::rejected<load_failure>(forbidden{"root"})
     match call load(key)
         when
             hit: "ann" => ok profile(7, "Ann")
-            gone: "bob" => unavailable("bob")
-            shut: "root" => forbidden("root")
-            flaky: "ann" => unavailable("ann")
+            gone: "bob" => unavailable{"bob"}
+            shut: "root" => forbidden{"root"}
+            flaky: "ann" => unavailable{"ann"}
             flaky: "ann" => ok profile(7, "Ann")
-            down: "bob" => unavailable("bob")
-            down: "bob" => unavailable("bob")
+            down: "bob" => unavailable{"bob"}
+            down: "bob" => unavailable{"bob"}
             first_try: "ann" => ok profile(7, "Ann")
             steady: "ann" => ok profile(7, "Ann")
-            locked: "root" => forbidden("root")
-            locked: "root" => forbidden("root")
-            recover: "ann" => unavailable("ann")
+            locked: "root" => forbidden{"root"}
+            locked: "root" => forbidden{"root"}
+            recover: "ann" => unavailable{"ann"}
             recover: "ann" => ok profile(7, "Ann")
-            traced_ok: "ann" => forbidden("ann")
+            traced_ok: "ann" => forbidden{"ann"}
             traced_ok: "ann" => ok profile(7, "Ann")
-            traced_down: "bob" => unavailable("bob")
-            traced_down: "bob" => unavailable("bob")
-            roundtrip: "ann" => forbidden("ann")
+            traced_down: "bob" => unavailable{"bob"}
+            traced_down: "bob" => unavailable{"bob"}
+            roundtrip: "ann" => forbidden{"ann"}
             roundtrip: "ann" => ok profile(7, "Ann")
-            roundtrip_denied: "bob" => unavailable("bob")
-            roundtrip_denied: "bob" => unavailable("bob")
+            roundtrip_denied: "bob" => unavailable{"bob"}
+            roundtrip_denied: "bob" => unavailable{"bob"}
         unavailable as failure => do
-            load_failure leaf = unavailable(failure.key)
+            load_failure leaf = unavailable{failure.key}
             ok retry::rejected(leaf)
         forbidden as failure => do
-            load_failure leaf = forbidden(failure.key)
+            load_failure leaf = forbidden{failure.key}
             ok retry::rejected(leaf)
         ok profile found => ok retry::completed(found)
 /// Retry consumer: one shared helper over this domain's failure set.
 fn retry::outcome<profile, load_failure> fetch_profile
-    emits []
+    emits {}
     given
         str key
     asserts
         flaky: "ann" => ok retry::completed(profile(7, "Ann"))
-        down: "bob" => ok retry::rejected<load_failure>(unavailable("bob"))
+        down: "bob" => ok retry::rejected<load_failure>(unavailable{"bob"})
         first_try: "ann" => ok retry::completed(profile(7, "Ann"))
     relay call retry::retry(callable load_outcome, key, 2)
 /// Re-raise consumer: result data back to emitted errors. Success values
 /// and terminal errors both round-trip exactly.
 fn profile read_profile
-    emits [unavailable, forbidden]
+    emits {unavailable, forbidden}
     given
         str key
     asserts
         steady: "ann" => ok profile(7, "Ann")
-        locked: "root" => forbidden("root")
+        locked: "root" => forbidden{"root"}
         recover: "ann" => ok profile(7, "Ann")
     match call fetch_profile(key)
         ok retry::outcome<profile, load_failure> out => match out
@@ -96,17 +96,17 @@ fn profile read_profile
             retry::rejected<load_failure> => do
                 load_failure cause = out.reason
                 match cause
-                    unavailable => unavailable(cause.key)
-                    forbidden => forbidden(cause.key)
+                    unavailable => unavailable{cause.key}
+                    forbidden => forbidden{cause.key}
 /// Wrapper-around-wrapper: two trace shells around the fetched outcome.
 /// Completed values pass through; rejections nest operation paths.
 fn retry::outcome<profile, retry::traced<retry::traced<load_failure>>> fetch_traced
-    emits []
+    emits {}
     given
         str key
     asserts
         traced_ok: "ann" => ok retry::completed(profile(7, "Ann"))
-        traced_down: "bob" => ok retry::rejected<retry::traced<retry::traced<load_failure>>>(retry::traced<retry::traced<load_failure>>("directory.lookup", retry::traced<load_failure>("profiles.load", unavailable("bob"))))
+        traced_down: "bob" => ok retry::rejected<retry::traced<retry::traced<load_failure>>>(retry::traced<retry::traced<load_failure>>("directory.lookup", retry::traced<load_failure>("profiles.load", unavailable{"bob"})))
     match call fetch_profile(key)
         ok retry::outcome<profile, load_failure> inner => match inner
             retry::completed<profile> => ok inner
@@ -114,24 +114,24 @@ fn retry::outcome<profile, retry::traced<retry::traced<load_failure>>> fetch_tra
 /// Re-raise through both trace shells: the original error value emerges
 /// identical (provenance preserved across wrapper-around-wrapper).
 fn profile read_traced
-    emits [unavailable, forbidden]
+    emits {unavailable, forbidden}
     given
         str key
     asserts
         roundtrip: "ann" => ok profile(7, "Ann")
-        roundtrip_denied: "bob" => unavailable("bob")
+        roundtrip_denied: "bob" => unavailable{"bob"}
     match call fetch_traced(key)
         ok retry::outcome<profile, retry::traced<retry::traced<load_failure>>> out => match out
             retry::completed<profile> => ok out.value
             retry::rejected<retry::traced<retry::traced<load_failure>>> => do
                 load_failure cause = out.reason.cause.cause
                 match cause
-                    unavailable => unavailable(cause.key)
-                    forbidden => forbidden(cause.key)
+                    unavailable => unavailable{cause.key}
+                    forbidden => forbidden{cause.key}
 /// Operation that really faults on zero: proves the helper never swallows
 /// or translates standard failures.
 fn retry::outcome<int, str> blast
-    emits []
+    emits {}
     given
         int divisor
     asserts
@@ -139,7 +139,7 @@ fn retry::outcome<int, str> blast
     ok retry::completed(1 / divisor)
 /// The fault kind propagates through the helper intact.
 fn str blast_kind
-    emits []
+    emits {}
     asserts
         kind: => ok "arithmetic"
     match call retry::retry(callable blast, 0, 2)

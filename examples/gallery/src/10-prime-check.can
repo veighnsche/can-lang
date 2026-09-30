@@ -4,7 +4,7 @@ package gallery
 
 /// A trial divisor tests whether a number has a smaller factor.
 fn bool has_divisor
-    emits []
+    emits {}
     given
         int number
         int divisor
@@ -17,7 +17,7 @@ fn bool has_divisor
             true => ok true
         true => ok false
 fn bool is_prime
-    emits []
+    emits {}
     given
         int number
     asserts

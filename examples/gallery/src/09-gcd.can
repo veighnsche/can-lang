@@ -4,7 +4,7 @@ package gallery
 
 /// Euclid's algorithm stops when the remainder is zero; use nonnegative inputs.
 fn int gcd
-    emits []
+    emits {}
     given
         int left
         int right

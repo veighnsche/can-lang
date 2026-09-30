@@ -4,7 +4,7 @@ package files_example
 
 /// Label one directory entry as "<kind> <basename>".
 fn str entry_label
-    emits []
+    emits {}
     given
         files::entry item
     asserts
@@ -14,7 +14,7 @@ fn str entry_label
 
 /// Render entries from an index onward, one label per line.
 fn str render_entries
-    emits []
+    emits {}
     given
         files::entry[] entries
         int index
@@ -27,16 +27,16 @@ fn str render_entries
 
 /// List a directory, propagating every filesystem failure to the caller.
 fn files::entry[] catalog
-    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error]
+    emits {files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error}
     given
         str dir
     asserts
         sample: "/tmp/reports" => ok [files::entry("/tmp/reports/a.txt", "file")]
-        missing: "/tmp/gone" => files::not_found("/tmp/gone")
+        missing: "/tmp/gone" => files::not_found{"/tmp/gone"}
     match call files::list(dir, 100)
         when
             sample: dir, 100 => ok [files::entry("/tmp/reports/a.txt", "file")]
-            missing: dir, 100 => files::not_found("/tmp/gone")
+            missing: dir, 100 => files::not_found{"/tmp/gone"}
         files::not_found
         files::denied
         files::invalid_path
@@ -47,7 +47,7 @@ fn files::entry[] catalog
 
 /// Report a directory listing to standard output.
 fn void main
-    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, codec::invalid_data, io::write_failed]
+    emits {files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, codec::invalid_data, io::write_failed}
     given
         str[] args
     asserts

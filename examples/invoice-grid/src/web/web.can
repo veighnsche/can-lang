@@ -7,20 +7,20 @@ package web
 /// and the three finite load cases. Transport, unexpected-status and
 /// codec failures propagate for the caller to map.
 fn contract::grid_load_outcome fetch_load
-    emits [http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data]
+    emits {http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data}
     given
         contract::invoice_key key
     asserts
         loaded: contract::invoice_key(1, 7) => ok contract::grid_loaded(contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000))
         forbidden: contract::invoice_key(1, 9) => ok contract::grid_load_forbidden("request denied")
         unavailable: contract::invoice_key(1, 7) => ok contract::grid_load_unavailable("store unavailable")
-        offline: contract::invoice_key(1, 9) => http::transport_failed("connect")
+        offline: contract::invoice_key(1, 9) => http::transport_failed{"connect"}
     match call action::request(contract::load_invoice_grid, key)
         when
             loaded: contract::invoice_key(1, 7) => ok contract::grid_loaded(contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000))
             forbidden: contract::invoice_key(1, 9) => ok contract::grid_load_forbidden("request denied")
             unavailable: contract::invoice_key(1, 7) => ok contract::grid_load_unavailable("store unavailable")
-            offline: contract::invoice_key(1, 9) => http::transport_failed("connect")
+            offline: contract::invoice_key(1, 9) => http::transport_failed{"connect"}
         http::transport_failed
         http::invalid_request
         http::status_error
@@ -32,7 +32,7 @@ fn contract::grid_load_outcome fetch_load
 /// session cookie carries authentication, and the five finite save
 /// cases come back.
 fn contract::grid_edit_outcome fetch_save
-    emits [http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data]
+    emits {http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data}
     given
         contract::invoice_key key
         contract::grid_edit_input body
@@ -42,7 +42,7 @@ fn contract::grid_edit_outcome fetch_save
         conflict: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", []) => ok contract::grid_conflict("t1/i7/r1/e1", contract::grid_edit_input("t1/i7/r1/e1", "1", []), "stale revision")
         forbidden: contract::invoice_key(1, 9), contract::grid_edit_input("t1/i9/r0/e0", "0", []) => ok contract::grid_forbidden("t1/i9/r0/e0", "request denied")
         unavailable: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", []) => ok contract::grid_unavailable("t1/i7/r1/e1", "store unavailable")
-        offline: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", []) => http::transport_failed("connect")
+        offline: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", []) => http::transport_failed{"connect"}
     match call action::post(contract::save_invoice_grid, key, body)
         when
             saved: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", []) => ok contract::grid_saved("t1/i7/r1/e1", contract::grid_snapshot("2", [], 0))
@@ -50,7 +50,7 @@ fn contract::grid_edit_outcome fetch_save
             conflict: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", []) => ok contract::grid_conflict("t1/i7/r1/e1", contract::grid_edit_input("t1/i7/r1/e1", "1", []), "stale revision")
             forbidden: contract::invoice_key(1, 9), contract::grid_edit_input("t1/i9/r0/e0", "0", []) => ok contract::grid_forbidden("t1/i9/r0/e0", "request denied")
             unavailable: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", []) => ok contract::grid_unavailable("t1/i7/r1/e1", "store unavailable")
-            offline: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", []) => http::transport_failed("connect")
+            offline: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", []) => http::transport_failed{"connect"}
         http::transport_failed
         http::invalid_request
         http::body_limit
@@ -63,7 +63,7 @@ fn contract::grid_edit_outcome fetch_save
 /// version-checked transition, and compare-and-swap it in.
 /// Returns none when the view is gone or the swap loses.
 fn option::value<records::grid_state> finish_save
-    emits []
+    emits {}
     given
         browser::state<records::grid_state> cell
         int attempt
@@ -93,7 +93,7 @@ fn option::value<records::grid_state> finish_save
                     conflict: cell, 3, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::failed_state("stale revision; reread to compare"), "status") => ok 4
                     forbidden: cell, 3, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::denied_state("access denied; draft kept"), "status") => ok 4
                     unavailable: cell, 3, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("save may have committed; replay or reread"), "status") => ok 4
-                    replace_stale: cell, 3, records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("2", [], 0), records::clean_state("saved revision 2"), "") => browser::stale_version(3, 4)
+                    replace_stale: cell, 3, records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("2", [], 0), records::clean_state("saved revision 2"), "") => browser::stale_version{3, 4}
                 browser::disposed => ok option::none()
                 browser::stale_version => ok option::none()
                 ok int version => ok option::some<records::grid_state>(next)
@@ -102,7 +102,7 @@ fn option::value<records::grid_state> finish_save
 /// and undecodable answers turn uncertain with the replay id
 /// intact, while requests that never left fail plainly.
 fn option::value<records::grid_state> finish_save_fail
-    emits []
+    emits {}
     given
         browser::state<records::grid_state> cell
         int attempt
@@ -135,7 +135,7 @@ fn option::value<records::grid_state> finish_save_fail
                     limit: cell, 3, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::failed_state("save too large; remove lines and retry"), "status") => ok 4
                     request: cell, 3, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::failed_state("request invalid; reread and retry"), "status") => ok 4
                     generation: cell, 3, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::stale_state("app updated; refresh to continue"), "status") => ok 4
-                    replace_stale: cell, 3, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("connection lost; save may have committed"), "status") => browser::stale_version(3, 4)
+                    replace_stale: cell, 3, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("connection lost; save may have committed"), "status") => browser::stale_version{3, 4}
                 browser::disposed => ok option::none()
                 browser::stale_version => ok option::none()
                 ok int version => ok option::some<records::grid_state>(next)
@@ -143,7 +143,7 @@ fn option::value<records::grid_state> finish_save_fail
 /// Fold one load outcome into the cell: a clean draft adopts the
 /// server copy, anything else holds it for an explicit choice.
 fn option::value<records::grid_state> finish_load
-    emits []
+    emits {}
     given
         browser::state<records::grid_state> cell
         int attempt
@@ -167,7 +167,7 @@ fn option::value<records::grid_state> finish_load
                     loaded: cell, 1, records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::clean_state("loaded revision 2"), "") => ok 2
                     forbidden: cell, 1, records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::denied_state("access denied; draft kept"), "status") => ok 2
                     unavailable: cell, 1, records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::failed_state("server busy; retry reread"), "status") => ok 2
-                    replace_stale: cell, 1, records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::clean_state("loaded revision 2"), "") => browser::stale_version(1, 2)
+                    replace_stale: cell, 1, records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::clean_state("loaded revision 2"), "") => browser::stale_version{1, 2}
                 browser::disposed => ok option::none()
                 browser::stale_version => ok option::none()
                 ok int version => ok option::some<records::grid_state>(next)
@@ -176,7 +176,7 @@ fn option::value<records::grid_state> finish_load
 /// line. Best effort: a disposed view skips the paint and the save
 /// still flies; the outcome render replaces the notice either way.
 fn void paint_pending
-    emits []
+    emits {}
     given
         browser::node status_line
     asserts
@@ -196,7 +196,7 @@ fn void paint_pending
 /// when the view is gone, a swap loses, or the press is ignored
 /// mid-flight; callers render on some.
 fn option::value<records::grid_state> send_save
-    emits []
+    emits {}
     given
         browser::state<records::grid_state> cell
         browser::node status_line
@@ -228,7 +228,7 @@ fn option::value<records::grid_state> send_save
                         when
                             blocked: cell, 5, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)), "status") => ok 6
                             invalid: cell, 3, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "many", "1.00", 1, 100, false)], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::failed_state("line k1: bad quantity"), "status") => ok 4
-                            blocked_stale: cell, 5, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)), "status") => browser::stale_version(5, 6)
+                            blocked_stale: cell, 5, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)), "status") => browser::stale_version{5, 6}
                         browser::disposed => ok option::none()
                         browser::stale_version => ok option::none()
                         ok int version => ok option::some<records::grid_state>(held)
@@ -241,7 +241,7 @@ fn option::value<records::grid_state> send_save
                                     sent_saved: cell, 3, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 1), 2, 1, contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save") => ok 4
                                     sent_transport: cell, 3, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 1), 2, 1, contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save") => ok 4
                                     sent_generation: cell, 3, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 1), 2, 1, contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save") => ok 4
-                                    replace_stale: cell, 3, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 1), 2, 1, contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save") => browser::stale_version(3, 4)
+                                    replace_stale: cell, 3, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 1), 2, 1, contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save") => browser::stale_version{3, 4}
                                 browser::disposed => ok option::none()
                                 browser::stale_version => ok option::none()
                                 ok int version => match call paint_pending(status_line)
@@ -253,8 +253,8 @@ fn option::value<records::grid_state> send_save
                                         ok contract::grid_edit_input wire => match call fetch_save(marked.key, wire)
                                             when
                                                 sent_saved: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]) => ok contract::grid_saved("t1/i7/r1/e1", contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000))
-                                                sent_transport: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]) => http::transport_failed("connect")
-                                                sent_generation: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]) => http::transport_failed("generation")
+                                                sent_transport: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]) => http::transport_failed{"connect"}
+                                                sent_generation: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]) => http::transport_failed{"generation"}
                                             http::transport_failed as failure => match failure.phase is "generation"
                                                 false => match call finish_save_fail(cell, marked.attempt, "transport")
                                                     when
@@ -282,7 +282,7 @@ fn option::value<records::grid_state> send_save
 /// press while anything flies is ignored without rendering, so the
 /// in-flight outcome render stays the single next render.
 fn option::value<records::grid_state> load_pressed
-    emits []
+    emits {}
     given
         browser::state<records::grid_state> cell
     asserts
@@ -308,14 +308,14 @@ fn option::value<records::grid_state> load_pressed
                         loaded: cell, 4, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), "") => ok 5
                         load_transport: cell, 4, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), "") => ok 5
                         load_generation: cell, 4, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), "") => ok 5
-                        replace_stale: cell, 4, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), "") => browser::stale_version(4, 5)
+                        replace_stale: cell, 4, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), "") => browser::stale_version{4, 5}
                     browser::disposed => ok option::none()
                     browser::stale_version => ok option::none()
                     ok int version => match call fetch_load(marked.key)
                         when
                             loaded: contract::invoice_key(1, 7) => ok contract::grid_loaded(contract::grid_snapshot("2", [], 0))
-                            load_transport: contract::invoice_key(1, 7) => http::transport_failed("connect")
-                            load_generation: contract::invoice_key(1, 7) => http::transport_failed("generation")
+                            load_transport: contract::invoice_key(1, 7) => http::transport_failed{"connect"}
+                            load_generation: contract::invoice_key(1, 7) => http::transport_failed{"generation"}
                         http::transport_failed as failure => match failure.phase is "generation"
                             false => match call finish_load_fail(cell, marked.attempt, "transport")
                                 when
@@ -339,7 +339,7 @@ fn option::value<records::grid_state> load_pressed
 /// Fold one load transport failure into the cell: reads never
 /// commit, so every load failure stays a plain retryable failure.
 fn option::value<records::grid_state> finish_load_fail
-    emits []
+    emits {}
     given
         browser::state<records::grid_state> cell
         int attempt
@@ -366,7 +366,7 @@ fn option::value<records::grid_state> finish_load_fail
                     status: cell, 1, records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::failed_state("unexpected response; retry reread"), "status") => ok 2
                     codec: cell, 1, records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::failed_state("unreadable response; retry reread"), "status") => ok 2
                     generation: cell, 1, records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::stale_state("app updated; refresh to continue"), "status") => ok 2
-                    replace_stale: cell, 1, records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::failed_state("connection lost; retry reread"), "status") => browser::stale_version(1, 2)
+                    replace_stale: cell, 1, records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::failed_state("connection lost; retry reread"), "status") => browser::stale_version{1, 2}
                 browser::disposed => ok option::none()
                 browser::stale_version => ok option::none()
                 ok int version => ok option::some<records::grid_state>(next)
@@ -375,7 +375,7 @@ fn option::value<records::grid_state> finish_load_fail
 /// nothing. Renders call this at every chrome site after the tree
 /// attaches, so keyboard focus survives view swaps.
 fn void maybe_focus
-    emits []
+    emits {}
     given
         browser::node node
         str focus
@@ -394,7 +394,7 @@ fn void maybe_focus
 /// Disable one button unless the grid is idle. The press guard
 /// stays authoritative; this is progressive enhancement.
 fn void set_disabled
-    emits []
+    emits {}
     given
         browser::node node
         bool idle
@@ -413,7 +413,7 @@ fn void set_disabled
 /// Disable the replay button unless an explicit identical-id
 /// replay is actually available.
 fn void set_replay_disabled
-    emits []
+    emits {}
     given
         browser::node node
         records::grid_state state
@@ -434,7 +434,7 @@ fn void set_replay_disabled
 /// other status builds nothing: the choice only exists while a
 /// conflict holds a server copy aside.
 fn void build_conflict_buttons
-    emits []
+    emits {}
     given
         browser::view view
         browser::node parent
@@ -475,7 +475,7 @@ fn void build_conflict_buttons
 /// name comes from the focus matcher, so "" never arrives; it
 /// selects the last control to keep the function total.
 fn browser::node focus_node
-    emits []
+    emits {}
     given
         str control
         browser::node id_in
@@ -508,7 +508,7 @@ fn browser::node focus_node
 /// call this after the tree attaches and after any row focus, so
 /// every focus lands on an attached control.
 fn void focus_chrome
-    emits []
+    emits {}
     given
         browser::node status_line
         browser::node save_btn
@@ -534,7 +534,7 @@ fn void focus_chrome
 /// table body when no row matches; the render focuses it after
 /// attaching the complete tree.
 fn browser::node build_rows
-    emits []
+    emits {}
     given
         browser::view view
         browser::node tbody
@@ -640,7 +640,7 @@ fn browser::node build_rows
 /// the resolved control (plus the chrome intents) focuses after
 /// the attach, so focus always lands on an attached control.
 fn void build_view
-    emits []
+    emits {}
     given
         browser::app app
         browser::state<records::grid_state> cell
@@ -763,7 +763,7 @@ fn void build_view
 /// attempt-owned pending record intact: disposing render views
 /// never erases app-owned identified saves.
 fn void render_replace
-    emits []
+    emits {}
     given
         browser::app app
         browser::state<records::grid_state> cell
@@ -783,7 +783,7 @@ fn void render_replace
 
 /// Render the first view from the latest snapshot.
 fn void render_fresh
-    emits []
+    emits {}
     given
         browser::app app
         browser::state<records::grid_state> cell
@@ -803,7 +803,7 @@ fn void render_fresh
 /// and refresh the status line in place, without re-rendering, so
 /// the caret never jumps while typing.
 fn void on_id_input
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::grid_state> cell
@@ -826,7 +826,7 @@ fn void on_id_input
 /// or not) and refreshes the status line and the exact totals
 /// in place.
 fn void on_qty_input
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::grid_state> cell
@@ -852,7 +852,7 @@ fn void on_qty_input
 /// Price-text edit on one keyed row: same in-place shape as the
 /// quantity edit.
 fn void on_price_input
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::grid_state> cell
@@ -883,7 +883,7 @@ fn void on_price_input
 /// without touching state or the tree, leaving typing, caret and
 /// tab order to the document.
 fn void on_field_key
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::grid_state> cell
@@ -904,7 +904,7 @@ fn void on_field_key
 /// Move one keyed row up, then re-render with focus kept on the
 /// moved button.
 fn void on_move_up
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::grid_state> cell
@@ -924,7 +924,7 @@ fn void on_move_up
 
 /// Move one keyed row down, then re-render.
 fn void on_move_down
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::grid_state> cell
@@ -945,7 +945,7 @@ fn void on_move_down
 /// Remove one keyed row, then re-render with focus on the
 /// add-line button.
 fn void on_remove_line
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::grid_state> cell
@@ -966,7 +966,7 @@ fn void on_remove_line
 /// Append one blank line, then re-render with focus on its id
 /// field.
 fn void on_add_line
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::grid_state> cell
@@ -987,7 +987,7 @@ fn void on_add_line
 /// on every state the press returns. An ignored mid-flight press
 /// returns none and renders nothing.
 fn void on_save_click
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::grid_state> cell
@@ -1007,7 +1007,7 @@ fn void on_save_click
 /// clobbering newer edits. An ignored mid-flight press returns
 /// none and renders nothing.
 fn void on_reread_click
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::grid_state> cell
@@ -1026,7 +1026,7 @@ fn void on_reread_click
 /// guard recomputes the identical operation id and the press
 /// replays it.
 fn void on_replay_click
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::grid_state> cell
@@ -1049,7 +1049,7 @@ fn void on_replay_click
 /// Adopt the held server copy as the clean draft (authorized
 /// reconciliation), then re-render.
 fn void on_adopt_click
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::grid_state> cell
@@ -1069,7 +1069,7 @@ fn void on_adopt_click
 /// Dismiss the held server copy and keep editing, then
 /// re-render.
 fn void on_dismiss_click
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<records::grid_state> cell
@@ -1091,7 +1091,7 @@ fn void on_dismiss_click
 /// selected, or the link is invalid). A failed mount or view
 /// disposes the app; a failed node build leaves the empty view.
 fn void show_boot_notice
-    emits []
+    emits {}
     given
         str notice
     asserts
@@ -1124,7 +1124,7 @@ fn void show_boot_notice
 /// server, and the grid promises no queue — one flight at a time,
 /// explicit presses.
 fn void boot
-    emits []
+    emits {}
     given
         contract::invoice_key key
     asserts
@@ -1152,7 +1152,7 @@ fn void boot
 /// values are never permissions: the server reauthorizes every
 /// action from the session cookie.
 fn void main
-    emits []
+    emits {}
     asserts
         no_tenant:  => ok
         bad_tenant:  => ok
@@ -1167,7 +1167,7 @@ fn void main
             bad_tenant: "tenant" => ok option::some("x")
             no_invoice: "tenant" => ok option::some("1")
             bad_invoice: "tenant" => ok option::some("1")
-            tenant_invalid: "tenant" => browser::invalid_query("tenant", "duplicate")
+            tenant_invalid: "tenant" => browser::invalid_query{"tenant", "duplicate"}
             invoice_invalid: "tenant" => ok option::some("1")
             ready: "tenant" => ok option::some("1")
         browser::invalid_query => match call show_boot_notice("Invalid invoice link")
@@ -1183,7 +1183,7 @@ fn void main
                 when
                     no_invoice: "invoice" => ok option::none()
                     bad_invoice: "invoice" => ok option::some("x")
-                    invoice_invalid: "invoice" => browser::invalid_query("invoice", "malformed")
+                    invoice_invalid: "invoice" => browser::invalid_query{"invoice", "malformed"}
                     ready: "invoice" => ok option::some("7")
                 browser::invalid_query => match call show_boot_notice("Invalid invoice link")
                     when

@@ -8,7 +8,7 @@ scenario ready
 /// row is queued twice so the redundant race below supplies both of its
 /// identical branches.
 fn records::account_row[] read_recent
-    emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch]
+    emits {sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch}
     given
         near sql::pool pool
     asserts
@@ -18,8 +18,8 @@ fn records::account_row[] read_recent
             unit: pool, "recent_accounts", records::search_parameters("%"), 25 => ok [records::account_row(1, "Ann"), records::account_row(2, "Bo")]
             sample: pool, "recent_accounts", records::search_parameters("%"), 25 => ok [records::account_row(1, "Ann"), records::account_row(2, "Bo")]
             sample: pool, "recent_accounts", records::search_parameters("%"), 25 => ok [records::account_row(1, "Ann"), records::account_row(2, "Bo")]
-            scenario down: pool, "recent_accounts", records::search_parameters("%"), 25 => sql::connection_failed("recent_accounts")
-            scenario down: pool, "recent_accounts", records::search_parameters("%"), 25 => sql::connection_failed("recent_accounts")
+            scenario down: pool, "recent_accounts", records::search_parameters("%"), 25 => sql::connection_failed{"recent_accounts"}
+            scenario down: pool, "recent_accounts", records::search_parameters("%"), 25 => sql::connection_failed{"recent_accounts"}
             scenario ready: pool, "recent_accounts", records::search_parameters("%"), 25 => ok [records::account_row(1, "Ann"), records::account_row(2, "Bo")]
             scenario ready: pool, "recent_accounts", records::search_parameters("%"), 25 => ok [records::account_row(1, "Ann"), records::account_row(2, "Bo")]
         sql::unsupported_value
@@ -34,7 +34,7 @@ fn records::account_row[] read_recent
 /// The first success wins with the same rows either way; only all_failed,
 /// when both branches fail, maps the count to unknown.
 fn records::count_value recent_count
-    emits []
+    emits {}
     given
         near sql::pool pool
     asserts
@@ -49,7 +49,7 @@ fn records::count_value recent_count
 
 /// Read the account total through the captured pool.
 fn records::count_value account_total
-    emits []
+    emits {}
     given
         near sql::pool pool
     asserts
@@ -58,7 +58,7 @@ fn records::count_value account_total
     match call sql::query_one<records::count_params, records::total_row>(pool, "account_total", records::count_params(0))
         when
             sample: pool, "account_total", records::count_params(0) => ok records::total_row(2)
-            scenario down: pool, "account_total", records::count_params(0) => sql::query_failed("account_total", "08006")
+            scenario down: pool, "account_total", records::count_params(0) => sql::query_failed{"account_total", "08006"}
             scenario ready: pool, "account_total", records::count_params(0) => ok records::total_row(2)
         sql::unsupported_value => ok records::count_value(0, false)
         sql::connection_failed => ok records::count_value(0, false)
