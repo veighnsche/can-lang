@@ -10,7 +10,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "<this commit> seed acceptance"
+    "e0191df1 seed acceptance"
   ],
   "changed_paths": [
     "tests/native-can/bootstrap/reference/"
