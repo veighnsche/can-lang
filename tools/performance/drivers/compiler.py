@@ -50,10 +50,10 @@ def fixture(directory, size):
     (directory / "src").mkdir(parents=True, exist_ok=True)
     (directory / "can.project.json").write_text('{"source_root":"src","error_registry":"can.errors.json"}')
     (directory / "can.errors.json").write_text('{"active":[],"retired":[]}')
-    text = 'package audit\n    provides [main]\n    uses []\n\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        smoke: [] => ok\n    match chain\n'
+    text = 'package audit\n    provides [main]\n    uses []\n\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        smoke: [] => ok\n    match chain\n'
     text += ''.join(f'        call f{i}() as int v{i}\n' for i in range(size))
     text += '        ok => ok\n'
-    text += ''.join(f'\nfn int f{i}\n    emits []\n    asserts\n        sample: => ok {i}\n    ok {i}\n' for i in range(size))
+    text += ''.join(f'\nfn int f{i}\n    emits {{}}\n    asserts\n        sample: => ok {i}\n    ok {i}\n' for i in range(size))
     (directory / "src/main.can").write_text(text)
     return text
 
@@ -213,7 +213,7 @@ def apply_workspace_edits(text, edits):
 
 
 def expected_hover(name, call_line):
-    return {'contents': {'kind': 'markdown', 'value': '```can\nfn int ' + name + '\nemits []\n```\n\npackage audit'},
+    return {'contents': {'kind': 'markdown', 'value': '```can\nfn int ' + name + '\nemits {}\n```\n\npackage audit'},
             'range': {'start': {'line': call_line, 'character': 13}, 'end': {'line': call_line, 'character': 13 + len(name)}}}
 
 

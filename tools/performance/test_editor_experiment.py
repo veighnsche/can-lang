@@ -70,9 +70,9 @@ class FakeLSP:
         self.closed = True
 
 
-FLAT_TEXT = ('package audit\n    provides [main]\n    uses []\n\nfn void main\n    emits []\n    given\n'
+FLAT_TEXT = ('package audit\n    provides [main]\n    uses []\n\nfn void main\n    emits {}\n    given\n'
              '        str[] args\n    asserts\n        smoke: [] => ok\n    match chain\n'
-             '        call f0() as int v0\n        ok => ok\n\nfn int f0\n    emits []\n    asserts\n'
+             '        call f0() as int v0\n        ok => ok\n\nfn int f0\n    emits {}\n    asserts\n'
              '        sample: => ok 0\n    ok 0\n')
 
 
