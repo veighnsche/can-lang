@@ -1,5 +1,7 @@
 # Completion regions and protected async values
 
+> Grouped error heads and grouped assertion/fixture labels described here are a pending draft. Implementation stopped before validation; see the [handoff plan](../syntax-taste/grouped-errors-and-labels-implementation-plan-2026-09-30.md). Other existing contracts are unaffected by this status note.
+
 `check.CheckRegion` checks one named function or one selected handler against
 sealed declaration types, file-scoped eligible-name resolution and an explicit
 success/error contract. Functions have no parent; handlers name their enclosing
@@ -9,17 +11,32 @@ its region. The emitter refuses a terminal node owned by a different region.
 Nested ordinary matches, call/chain matches, relay and `do` retain that identity.
 Ordinary value matches produce synchronous value temporaries and cannot contain
 completion arms. Terminal constructs cannot initialize locals; void success uses
-bare `ok`, and a standalone call step requires void with `emits []`. The parser
+bare `ok`, and a standalone call step requires void with `emits {}`. The parser
 rejects statements after completion; the checker also rejects missing terminals
 and malformed region/context evidence.
 
-A completion match has exactly one success arm, one arm for every concrete domain
-error in the complete call or chain bound, and at most one optional standard arm.
+A completion match has exactly one success arm, exact coverage of every concrete
+domain error in the complete call or chain bound, and at most one optional standard arm.
 Bare error names resolve against that exact bound, so multiple specializations of
 one error declaration cannot be merged by a bare arm. Forwarding preserves the
 original completion and occurrence. A constructed error creates a new occurrence;
-`ok error(...)` remains successful error data when admitted by the success type.
+`ok error{...}` remains successful error data when admitted by the success type.
 Standard failures never enter a domain bound.
+
+Named error heads may share a body with `error_a | error_b => body`, or forward
+unchanged with a bare `error_a | error_b`. Each member keeps its own exact bound
+obligation and forwarding escape check. Groups introduce no payload aliases;
+use an individual arm when its payload is needed. Success, standard catches,
+aliases and wrapper policy keys remain separate. A common body is checked once,
+then referenced by the existing exact-error IR arms, so nested call and fixture
+sites keep their lexical identity. No new completion carrier or runtime helper
+is introduced.
+
+Use `relay call operation(...)` when every result should leave unchanged and fits
+the enclosing contract. Use `match chain` to sequence dependent calls and handle
+their combined error bound once. Grouped handlers cover errors with identical
+recovery behavior; grouped bare arms cover a subset forwarded unchanged. These
+forms compose without another error-handling control-flow construct.
 
 Locals become visible after initialization. Each block/arm receives a child scope;
 chain success bindings are visible to subsequent calls and the success arm only.

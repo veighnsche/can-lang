@@ -1,5 +1,7 @@
 # Emitted assertions
 
+> Grouped error heads and grouped assertion/fixture labels described here are a pending draft. Implementation stopped before validation; see the [handoff plan](../syntax-taste/grouped-errors-and-labels-implementation-plan-2026-09-30.md). Other existing contracts are unaffected by this status note.
+
 This document describes the current implementation. The LF03/LF04/LF15
 [completion records](evidence/2026-09-22/language-fixes/) cover nonpublishing
 assertions, supervised roots and verified build publication under
@@ -43,6 +45,17 @@ must match the declared success type or a declared domain error specialization.
 Duplicate names within a declaration fail; equal names in different declarations
 remain distinct roots. Generic assertions are checked for each reachable concrete
 specialization by the specialization pass.
+
+Labels may share a row with `|`, for example
+`absent | configured: "ASSET_ROOT" => ok`. This expands into separately named
+assertion roots with the same written inputs, expectation, links and execution
+mode. Each root keeps its own execution context and fixture selection. The same
+notation in `when` expands into one row per selector, in source order; repeated
+selectors on later rows still form their existing FIFO queues. A `scenario a | b:`
+prefix selects two separate declared scenarios. Grouped `when` rows may also use
+one fixture template, expanded independently for each selector. Template use on
+assertion roots remains invalid. Grouping does not create additional behavioral
+coverage when every input and fixture is otherwise identical.
 
 An assertion has separate checked regions for its actual invocation and expected
 completion. Both execute in emitted Bun code. The runner evaluates the expected

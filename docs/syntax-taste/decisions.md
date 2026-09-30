@@ -1,5 +1,7 @@
 # Can surface design — current decisions
 
+> Grouped error heads and grouped assertion/fixture labels described here are a pending draft. Implementation stopped before validation; see the [handoff plan](grouped-errors-and-labels-implementation-plan-2026-09-30.md). Other existing contracts are unaffected by this status note.
+
 This is the authoritative record of current design choices for Can's AI
 coding-agent audience, including syntax and the Can-to-Bun architecture. It takes
 precedence over conflicting rules in other design documents. These are design
@@ -1266,6 +1268,12 @@ declaration order, checking the expected whole completion:
 small_sum: 1, 2 => ok 3
 ```
 
+Several labels may share the same row text, for example
+`missing | configured: "ASSET_ROOT" => ok`. Each label remains a distinct
+assertion root and retains its own nested fixture selection, report entry,
+scenario links and execution mode. Duplicate names are still rejected. This is
+source compression, not merged execution or additional coverage by renaming.
+
 Each assertion input/expectation row occupies one source line. Native assertion rows may have the separate indented mode line specified in P4.1. There are no grouping parentheses around the input list.
 Record and error constructor parentheses remain. Success expectations use
 `ok expression`, or bare `ok` for void; error expectations use the error
@@ -1292,6 +1300,12 @@ between the colon and arrow empty. The row name identifies the assertion for
 which that dependency outcome is supplied. In that assertion, the table supplies
 the outcome instead of executing the dependency. Normal execution invokes the
 real dependency.
+
+`when` accepts the same grouped-label notation and expands labels in source
+order into separate fixture selectors. Repeated rows for a selector retain FIFO
+order. `scenario first | second:` applies the scenario prefix to each name;
+each must resolve as a declared scenario. A grouped template use expands the
+template separately for each selector. It does not share queues between roots.
 
 The following excerpt uses the catalogue `clock::wall_millis()` operation,
 which returns `int` with `emits {}`:
