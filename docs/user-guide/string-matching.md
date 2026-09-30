@@ -4,6 +4,15 @@ Use an ordinary value match when several literal values choose a result. Match
 the value itself, join equivalent cases with `|`, and use `_` for the fallback.
 This keeps the case table flat and makes the accepted values explicit.
 
+The built-in checker reports `CAN-CHECK-STRING-MATCH-LADDER` for two or more
+consecutive boolean matches that compare the same bound string with distinct
+literal strings and continue directly through `false`. It recognizes OR groups,
+parentheses and either boolean arm order, and reports once at the first condition.
+The warning recommends ordinary value matching and does not prevent compilation.
+Single predicates, calls or field/index reads, different subjects, intervening
+statements and overlapping literal cases do not qualify. It supplies advice rather
+than an automatic edit.
+
 For example, put this complete library in `src/main.can`:
 
 ```can
