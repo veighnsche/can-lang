@@ -343,7 +343,7 @@
       "acceptance": "Early `ok`, missing/duplicate check, malformed report, forged terminal, caught mismatch and cleanup failure cannot pass; true behavior failure remains visible beside cleanup error.",
       "evidence": "Save vector fixtures and assertion outcomes; commit reducer.",
       "commit": "feat(testing): reduce can evidence and outcomes",
-      "status": "active",
+      "status": "complete",
       "start_after": [
         "P15",
         "P16"

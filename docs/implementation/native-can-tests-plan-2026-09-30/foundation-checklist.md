@@ -294,7 +294,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P17 — Reduce Can evidence and outcomes
 
-- [ ] **P17 accepted** — owner lane: `can-suite-cli`.
+- [x] **P17 accepted** — owner lane: `can-suite-cli`. Evidence: [evidence/P17.json](evidence/P17.json).
 
 **Start after:** P15, P16. **Additional acceptance prerequisites:** none.
 

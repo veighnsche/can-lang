@@ -1,0 +1,645 @@
+package reducer
+    provides [check_row, unit_report, scope, reduced_ok, reduced_failed, reduced_incomplete, reduced_rejected, reduced, reduce_unit, reduce_terminal, reduce_combine, first_mismatch, missing_checks, row_index, count_matched, rows_known, exec_terminal, scope_full]
+    uses [option, registry, spec, text]
+
+/// Pure Can evidence validation and reduction (P17). One unit report is
+/// validated and reduced to a verdict: sequence and identity checks reject
+/// malformed reports, the first behavior mismatch sticks, checks never
+/// reached after a failure stay listed, and behavior, execution and cleanup
+/// form three independent failure dimensions. Only full scope with
+/// full-roots verification can yield a full pass; every other outcome is
+/// failed, incomplete or rejected. Every diagnostic carries source
+/// reducer::reduce_unit and the exact reduction selector of the planned
+/// unit. Static checks here are provisional until P26/P23, like P15/P16.
+
+/// One sequenced check comparison: position, check identity, expected and
+/// observed texts, and whether they matched.
+record check_row
+    int seq
+    str check
+    str expected
+    str observed
+    bool matched
+/// One unit report under reduction: wire identities, the execution,
+/// behavior and cleanup dimensions, the body-terminal claim and the
+/// sequenced check rows.
+record unit_report
+    str schema_version
+    str case_id
+    str variant_id
+    str run_id
+    int attempt
+    str execution
+    str behavior
+    str cleanup
+    str cleanup_detail
+    bool body_terminal
+    check_row[] rows
+/// Reduction scope: full mode with full-roots verification is the only
+/// scope that can yield a full pass; anything partial caps at incomplete.
+record scope
+    str mode
+    str verification
+/// Clean reduction: every required check matched once, in full scope.
+record reduced_ok
+    int matched
+/// Failed reduction: first behavior mismatch ("" when behavior is clean),
+/// terminal execution state ("" when completed), cleanup detail ("" when
+/// clean) and required checks never reached after the failure. A true
+/// behavior failure stays visible beside a cleanup error.
+record reduced_failed
+    str behavior_check
+    str execution
+    str cleanup_detail
+    str[] not_reached
+/// Incomplete evidence: execution or cleanup still pending, checks
+/// missing, the body never terminal, or scope partial. Never a pass.
+record reduced_incomplete
+    str detail
+/// Rejected report: malformed, forged or self-contradictory. Never a pass.
+record reduced_rejected
+    spec::diagnostic[] problems
+/// Evidence reduction outcome: pass, sticky failure, incomplete or reject.
+variant reduced
+    reduced_ok
+    reduced_failed
+    reduced_incomplete
+    reduced_rejected
+/// Build one reduction diagnostic: fixed reducer source plus the exact
+/// reduction selector of the planned unit under test.
+fn spec::diagnostic reduce_problem
+    emits {}
+    given
+        spec::context ctx
+        str kind
+        str detail
+    asserts
+        sample: spec::context("a", "v", "", "r"), "bad-version", "2" => ok spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "bad-version", "2")
+        drift: spec::context("a", "v", "", "r"), "identity-drift", "case:a:z" => ok spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "identity-drift", "case:a:z")
+    ok spec::diagnostic("reducer::reduce_unit", call spec::reproduction_selector(ctx, "reduce"), kind, detail)
+/// Membership of a word in a vocabulary list from an index.
+fn bool word_member
+    emits {}
+    given
+        str[] words
+        str word
+        int index
+    asserts
+        hit: ["a", "b"], "b", 0 => ok true
+        miss: ["a"], "z", 0 => ok false
+        empty: [], "a", 0 => ok false
+        offset: ["a", "b"], "a", 1 => ok false
+    match index >= words.length
+        true => ok false
+        false => match words[index] is word
+            false => relay call word_member(words, word, index + 1)
+            true => ok true
+/// Position of a check's row at or after an index, or -1 when absent.
+fn int row_index
+    emits {}
+    given
+        check_row[] rows
+        str check
+        int from
+    asserts
+        hit: [check_row(0, "a", "1", "1", true), check_row(1, "b", "2", "3", false)], "b", 0 => ok 1
+        miss: [check_row(0, "a", "1", "1", true)], "z", 0 => ok -1
+        empty: [], "a", 0 => ok -1
+        offset: [check_row(0, "a", "1", "1", true), check_row(1, "b", "2", "2", true)], "a", 1 => ok -1
+    match from >= rows.length
+        true => ok -1
+        false => match rows[from].check is check
+            false => relay call row_index(rows, check, from + 1)
+            true => ok from
+/// Whether a check already occurs in rows within [at, end): duplicate-row
+/// detection that reports once per distinct repeated check.
+fn bool row_seen_before
+    emits {}
+    given
+        check_row[] rows
+        str check
+        int at
+        int end
+    asserts
+        seen: [check_row(0, "a", "1", "1", true), check_row(1, "b", "2", "2", true)], "a", 0, 2 => ok true
+        absent: [check_row(0, "a", "1", "1", true)], "b", 0, 1 => ok false
+        outside: [check_row(0, "a", "1", "1", true), check_row(1, "b", "2", "2", true)], "b", 0, 1 => ok false
+    match at >= end
+        true => ok false
+        false => match rows[at].check is check
+            false => relay call row_seen_before(rows, check, at + 1, end)
+            true => ok true
+/// Whether a check reappears at or after an index: the duplicate-row scan.
+fn bool check_seen_from
+    emits {}
+    given
+        check_row[] rows
+        str check
+        int from
+    asserts
+        seen: [check_row(0, "a", "1", "1", true), check_row(1, "b", "2", "2", true), check_row(2, "a", "1", "1", true)], "a", 1 => ok true
+        absent: [check_row(0, "a", "1", "1", true), check_row(1, "b", "2", "2", true)], "a", 1 => ok false
+        empty: [], "a", 0 => ok false
+    match from >= rows.length
+        true => ok false
+        false => match rows[from].check is check
+            false => relay call check_seen_from(rows, check, from + 1)
+            true => ok true
+/// First mismatched check from an index: the sticky behavior failure, or
+/// none when every scanned row matched.
+fn option::value<str> first_mismatch
+    emits {}
+    given
+        check_row[] rows
+        int index
+    asserts
+        clean: [check_row(0, "a", "1", "1", true)], 0 => ok option::none()
+        second: [check_row(0, "a", "1", "1", true), check_row(1, "b", "2", "3", false)], 0 => ok option::some("b")
+        first: [check_row(0, "a", "1", "2", false)], 0 => ok option::some("a")
+        empty: [], 0 => ok option::none()
+        offset: [check_row(0, "a", "1", "2", false)], 1 => ok option::none()
+    match index >= rows.length
+        true => ok option::none()
+        false => match rows[index].matched
+            false => ok option::some(rows[index].check)
+            true => relay call first_mismatch(rows, index + 1)
+/// Count matched rows from an index: the clean-verdict match count.
+fn int count_matched
+    emits {}
+    given
+        check_row[] rows
+        int index
+    asserts
+        pair: [check_row(0, "a", "1", "1", true), check_row(1, "b", "2", "2", true)], 0 => ok 2
+        mixed: [check_row(0, "a", "1", "1", true), check_row(1, "b", "2", "3", false)], 0 => ok 1
+        empty: [], 0 => ok 0
+        done: [check_row(0, "a", "1", "1", true)], 1 => ok 0
+    match index >= rows.length
+        true => ok 0
+        false => match rows[index].matched
+            false => relay call count_matched(rows, index + 1)
+            true => ok 1 + call count_matched(rows, index + 1)
+/// Required checks with no row, in required order: missing evidence, or
+/// not-reached checks once a failure dimension is set.
+fn str[] missing_checks
+    emits {}
+    given
+        spec::check_ref[] required
+        check_row[] rows
+        int index
+        str[] gathered
+    asserts
+        none: [spec::check_ref("a")], [check_row(0, "a", "1", "1", true)], 0, [] => ok []
+        one: [spec::check_ref("a"), spec::check_ref("b")], [check_row(0, "a", "1", "1", true)], 0, [] => ok ["b"]
+        all: [spec::check_ref("a")], [], 0, [] => ok ["a"]
+        tail: [spec::check_ref("a"), spec::check_ref("b")], [], 1, ["a"] => ok ["a", "b"]
+        done: [spec::check_ref("a")], [check_row(0, "a", "1", "1", true)], 1, [] => ok []
+    match index >= required.length
+        true => ok gathered
+        false => match call row_index(rows, required[index].id, 0)
+            ok int at => match at is -1
+                true => relay call missing_checks(required, rows, index + 1, call append(gathered, required[index].id))
+                false => relay call missing_checks(required, rows, index + 1, gathered)
+/// Whether every row names a required check: surplus rows are extra
+/// evidence, never silently accepted.
+fn bool rows_known
+    emits {}
+    given
+        check_row[] rows
+        spec::check_ref[] required
+        int index
+    asserts
+        known: [check_row(0, "a", "1", "1", true)], [spec::check_ref("a")], 0 => ok true
+        unknown: [check_row(0, "z", "1", "1", true)], [spec::check_ref("a")], 0 => ok false
+        empty: [], [spec::check_ref("a")], 0 => ok true
+        done: [check_row(0, "a", "1", "1", true)], [spec::check_ref("a")], 1 => ok true
+    match index >= rows.length
+        true => ok true
+        false => match call registry::ref_member(required, rows[index].check, 0)
+            ok bool hit => match hit
+                false => ok false
+                true => relay call rows_known(rows, required, index + 1)
+/// Reject a duplicated required check: the plan input itself must list
+/// each check once, or row accounting cannot be trusted.
+fn spec::diagnostic[] required_problems
+    emits {}
+    given
+        spec::check_ref[] required
+        spec::context ctx
+        int index
+        spec::diagnostic[] problems
+    asserts
+        clean: [spec::check_ref("a"), spec::check_ref("b")], spec::context("a", "v", "", "r"), 0, [] => ok []
+        duplicate: [spec::check_ref("a"), spec::check_ref("a")], spec::context("a", "v", "", "r"), 0, [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "duplicate-required", "a")]
+        done: [spec::check_ref("a")], spec::context("a", "v", "", "r"), 1, [] => ok []
+    match index >= required.length
+        true => ok problems
+        false => match call registry::ref_seen_before(required, required[index].id, 0, index)
+            ok bool dup => match dup
+                false => relay call required_problems(required, ctx, index + 1, problems)
+                true => relay call required_problems(required, ctx, index + 1, call append(problems, call reduce_problem(ctx, "duplicate-required", required[index].id)))
+/// Identity checks: the report must name the planned case, variant and
+/// run with a non-negative attempt, or it cannot reduce against the plan.
+/// Reports the first drift; one is already enough to reject.
+fn spec::diagnostic[] identity_problems
+    emits {}
+    given
+        unit_report unit
+        str exp_case
+        str exp_variant
+        str exp_run
+        spec::context ctx
+        spec::diagnostic[] problems
+    asserts
+        clean: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []), "a", "v", "r", spec::context("a", "v", "", "r"), [] => ok []
+        case_drift: unit_report("1", "z", "v", "r", 0, "completed", "matched", "ok", "", true, []), "a", "v", "r", spec::context("a", "v", "", "r"), [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "identity-drift", "case:a:z")]
+        variant_drift: unit_report("1", "a", "w", "r", 0, "completed", "matched", "ok", "", true, []), "a", "v", "r", spec::context("a", "v", "", "r"), [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "identity-drift", "variant:v:w")]
+        run_drift: unit_report("1", "a", "v", "s", 0, "completed", "matched", "ok", "", true, []), "a", "v", "r", spec::context("a", "v", "", "r"), [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "identity-drift", "run:r:s")]
+        negative_attempt: unit_report("1", "a", "v", "r", -1, "completed", "matched", "ok", "", true, []), "a", "v", "r", spec::context("a", "v", "", "r"), [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "malformed-attempt", "-1")]
+        threaded: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []), "a", "v", "r", spec::context("a", "v", "", "r"), [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "identity-drift", "case:a:z")] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "identity-drift", "case:a:z")]
+    match unit.case_id is exp_case
+        false => ok call append(problems, call reduce_problem(ctx, "identity-drift", call text::join(["case", exp_case, unit.case_id], ":")))
+        true => match unit.variant_id is exp_variant
+            false => ok call append(problems, call reduce_problem(ctx, "identity-drift", call text::join(["variant", exp_variant, unit.variant_id], ":")))
+            true => match unit.run_id is exp_run
+                false => ok call append(problems, call reduce_problem(ctx, "identity-drift", call text::join(["run", exp_run, unit.run_id], ":")))
+                true => match unit.attempt >= 0
+                    false => ok call append(problems, call reduce_problem(ctx, "malformed-attempt", call text::from_int(unit.attempt)))
+                    true => ok problems
+/// A failed cleanup must name its cause: an empty detail on a failed
+/// cleanup is itself malformed.
+fn bool cleanup_detail_ok
+    emits {}
+    given
+        str cleanup
+        str detail
+    asserts
+        ok_word: "ok", "" => ok true
+        failed_full: "failed", "rm: busy" => ok true
+        failed_empty: "failed", "" => ok false
+        pending: "pending", "" => ok true
+    match cleanup is "failed"
+        false => ok true
+        true => match detail is ""
+            false => ok true
+            true => ok false
+/// Word checks: schema version, execution, behavior and cleanup words,
+/// the cleanup-detail rule, and the scope vocabulary. Reports the first
+/// malformed field; one is already enough to reject.
+fn spec::diagnostic[] word_problems
+    emits {}
+    given
+        unit_report unit
+        scope limits
+        spec::context ctx
+        spec::diagnostic[] problems
+    asserts
+        clean: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []), scope("full", "full-roots"), spec::context("a", "v", "", "r"), [] => ok []
+        bad_version: unit_report("2", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []), scope("full", "full-roots"), spec::context("a", "v", "", "r"), [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "bad-version", "2")]
+        bad_execution: unit_report("1", "a", "v", "r", 0, "flying", "matched", "ok", "", true, []), scope("full", "full-roots"), spec::context("a", "v", "", "r"), [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "malformed-execution", "flying")]
+        bad_behavior: unit_report("1", "a", "v", "r", 0, "completed", "maybe", "ok", "", true, []), scope("full", "full-roots"), spec::context("a", "v", "", "r"), [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "malformed-behavior", "maybe")]
+        bad_cleanup: unit_report("1", "a", "v", "r", 0, "completed", "matched", "later", "", true, []), scope("full", "full-roots"), spec::context("a", "v", "", "r"), [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "malformed-cleanup", "later")]
+        missing_detail: unit_report("1", "a", "v", "r", 0, "completed", "matched", "failed", "", true, []), scope("full", "full-roots"), spec::context("a", "v", "", "r"), [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "missing-cleanup-detail", "failed")]
+        bad_mode: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []), scope("half", "full-roots"), spec::context("a", "v", "", "r"), [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "malformed-scope", "half")]
+        bad_verification: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []), scope("full", "some"), spec::context("a", "v", "", "r"), [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "malformed-verification", "some")]
+    match unit.schema_version is "1"
+        false => ok call append(problems, call reduce_problem(ctx, "bad-version", unit.schema_version))
+        true => match call word_member(["not-started", "running", "completed", "broken", "cancelled"], unit.execution, 0)
+            ok bool execution_ok => match execution_ok
+                false => ok call append(problems, call reduce_problem(ctx, "malformed-execution", unit.execution))
+                true => match call word_member(["matched", "mismatched", "undetermined"], unit.behavior, 0)
+                    ok bool behavior_ok => match behavior_ok
+                        false => ok call append(problems, call reduce_problem(ctx, "malformed-behavior", unit.behavior))
+                        true => match call word_member(["ok", "failed", "pending"], unit.cleanup, 0)
+                            ok bool cleanup_ok => match cleanup_ok
+                                false => ok call append(problems, call reduce_problem(ctx, "malformed-cleanup", unit.cleanup))
+                                true => match call cleanup_detail_ok(unit.cleanup, unit.cleanup_detail)
+                                    ok bool detail_ok => match detail_ok
+                                        false => ok call append(problems, call reduce_problem(ctx, "missing-cleanup-detail", "failed"))
+                                        true => match call word_member(["full", "partial"], limits.mode, 0)
+                                            ok bool mode_ok => match mode_ok
+                                                false => ok call append(problems, call reduce_problem(ctx, "malformed-scope", limits.mode))
+                                                true => match call word_member(["full-roots", "focused-closure", "incomplete"], limits.verification, 0)
+                                                    ok bool verification_ok => match verification_ok
+                                                        false => ok call append(problems, call reduce_problem(ctx, "malformed-verification", limits.verification))
+                                                        true => ok problems
+/// Sequence checks: row positions must run 0, 1, 2 without gaps,
+/// repeats or reordering, or the report order cannot be trusted.
+fn spec::diagnostic[] sequence_problems
+    emits {}
+    given
+        check_row[] rows
+        spec::context ctx
+        int index
+        spec::diagnostic[] problems
+    asserts
+        clean: [check_row(0, "a", "1", "1", true), check_row(1, "b", "2", "2", true)], spec::context("a", "v", "", "r"), 0, [] => ok []
+        gap: [check_row(0, "a", "1", "1", true), check_row(5, "b", "2", "2", true)], spec::context("a", "v", "", "r"), 0, [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "bad-sequence", "1:b:5")]
+        repeat: [check_row(0, "a", "1", "1", true), check_row(0, "b", "2", "2", true)], spec::context("a", "v", "", "r"), 0, [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "bad-sequence", "1:b:0")]
+        empty: [], spec::context("a", "v", "", "r"), 0, [] => ok []
+        done: [check_row(0, "a", "1", "1", true)], spec::context("a", "v", "", "r"), 1, [] => ok []
+    match index >= rows.length
+        true => ok problems
+        false => match rows[index].seq is index
+            true => relay call sequence_problems(rows, ctx, index + 1, problems)
+            false => relay call sequence_problems(rows, ctx, index + 1, call append(problems, call reduce_problem(ctx, "bad-sequence", call text::join([call text::from_int(index), rows[index].check, call text::from_int(rows[index].seq)], ":"))))
+/// Duplicate checks: each check may appear once. A repeated check
+/// reports once at its first occurrence, so a caught mismatch that a
+/// later row tries to paper over still rejects exactly once.
+fn spec::diagnostic[] duplicate_problems
+    emits {}
+    given
+        check_row[] rows
+        spec::context ctx
+        int index
+        spec::diagnostic[] problems
+    asserts
+        clean: [check_row(0, "a", "1", "1", true), check_row(1, "b", "2", "2", true)], spec::context("a", "v", "", "r"), 0, [] => ok []
+        duplicate: [check_row(0, "a", "1", "1", true), check_row(1, "a", "1", "1", true)], spec::context("a", "v", "", "r"), 0, [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "duplicate-check", "a")]
+        triple: [check_row(0, "a", "1", "1", true), check_row(1, "a", "1", "1", true), check_row(2, "a", "1", "1", true)], spec::context("a", "v", "", "r"), 0, [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "duplicate-check", "a")]
+        empty: [], spec::context("a", "v", "", "r"), 0, [] => ok []
+        done: [check_row(0, "a", "1", "1", true)], spec::context("a", "v", "", "r"), 1, [] => ok []
+    match index >= rows.length
+        true => ok problems
+        false => match call check_seen_from(rows, rows[index].check, index + 1)
+            ok bool later => match later
+                false => relay call duplicate_problems(rows, ctx, index + 1, problems)
+                true => match call row_seen_before(rows, rows[index].check, 0, index)
+                    ok bool earlier => match earlier
+                        false => relay call duplicate_problems(rows, ctx, index + 1, call append(problems, call reduce_problem(ctx, "duplicate-check", rows[index].check)))
+                        true => relay call duplicate_problems(rows, ctx, index + 1, problems)
+/// Behavior-claim agreement: the claimed behavior must match the rows.
+/// A matched claim over a mismatched row is a caught mismatch; a
+/// mismatched claim with no mismatched row, and an undetermined claim
+/// over fully clean completed evidence, are malformed summaries.
+fn spec::diagnostic[] behavior_problems
+    emits {}
+    given
+        unit_report unit
+        spec::check_ref[] required
+        spec::context ctx
+        spec::diagnostic[] problems
+    asserts
+        matched_clean: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], spec::context("a", "v", "", "r"), [] => ok []
+        caught: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [check_row(0, "a", "1", "1", true), check_row(1, "b", "2", "3", false)]), [spec::check_ref("a"), spec::check_ref("b")], spec::context("a", "v", "", "r"), [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "caught-mismatch", "b")]
+        mismatched_consistent: unit_report("1", "a", "v", "r", 0, "completed", "mismatched", "ok", "", true, [check_row(0, "b", "2", "3", false)]), [spec::check_ref("b")], spec::context("a", "v", "", "r"), [] => ok []
+        disagree: unit_report("1", "a", "v", "r", 0, "completed", "mismatched", "ok", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], spec::context("a", "v", "", "r"), [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "behavior-disagree", "mismatched-claimed")]
+        undetermined_open: unit_report("1", "a", "v", "r", 0, "broken", "undetermined", "ok", "", false, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a"), spec::check_ref("b")], spec::context("a", "v", "", "r"), [] => ok []
+        undetermined_clean: unit_report("1", "a", "v", "r", 0, "completed", "undetermined", "ok", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], spec::context("a", "v", "", "r"), [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "behavior-disagree", "undetermined-clean")]
+    match call first_mismatch(unit.rows, 0)
+        ok option::value<str> gap => match gap
+            option::some => match unit.behavior is "matched"
+                false => ok problems
+                true => ok call append(problems, call reduce_problem(ctx, "caught-mismatch", gap.value))
+            option::none => match unit.behavior is "mismatched"
+                true => ok call append(problems, call reduce_problem(ctx, "behavior-disagree", "mismatched-claimed"))
+                false => match unit.behavior is "undetermined"
+                    false => ok problems
+                    true => match call missing_checks(required, unit.rows, 0, [])
+                        ok str[] missing => match missing.length is 0
+                            false => ok problems
+                            true => match unit.execution is "completed"
+                                false => ok problems
+                                true => ok call append(problems, call reduce_problem(ctx, "behavior-disagree", "undetermined-clean"))
+/// Terminal-claim agreement: a terminal body requires completed
+/// execution with every required check accounted. Anything else behind
+/// a terminal flag is a forged terminal.
+fn spec::diagnostic[] terminal_problems
+    emits {}
+    given
+        unit_report unit
+        spec::check_ref[] required
+        spec::context ctx
+        spec::diagnostic[] problems
+    asserts
+        clean_terminal: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], spec::context("a", "v", "", "r"), [] => ok []
+        no_terminal: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", false, []), [spec::check_ref("a")], spec::context("a", "v", "", "r"), [] => ok []
+        forged_state: unit_report("1", "a", "v", "r", 0, "broken", "undetermined", "ok", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], spec::context("a", "v", "", "r"), [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "forged-terminal", "broken")]
+        forged_missing: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []), [spec::check_ref("a")], spec::context("a", "v", "", "r"), [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "forged-terminal", "missing:a")]
+        failed_terminal: unit_report("1", "a", "v", "r", 0, "completed", "mismatched", "ok", "", true, [check_row(0, "b", "2", "3", false)]), [spec::check_ref("b")], spec::context("a", "v", "", "r"), [] => ok []
+    match unit.body_terminal
+        false => ok problems
+        true => match unit.execution is "completed"
+            false => ok call append(problems, call reduce_problem(ctx, "forged-terminal", unit.execution))
+            true => match call missing_checks(required, unit.rows, 0, [])
+                ok str[] missing => match missing.length is 0
+                    true => ok problems
+                    false => ok call append(problems, call reduce_problem(ctx, "forged-terminal", call text::join(["missing", missing[0]], ":")))
+/// Early-ok rejection: completed execution claiming matched behavior
+/// while required checks have no rows declares success before the
+/// evidence exists. A real mismatch takes the failure path instead.
+fn spec::diagnostic[] earlyok_problems
+    emits {}
+    given
+        unit_report unit
+        spec::check_ref[] required
+        spec::context ctx
+        spec::diagnostic[] problems
+    asserts
+        complete: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], spec::context("a", "v", "", "r"), [] => ok []
+        early: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", false, []), [spec::check_ref("a")], spec::context("a", "v", "", "r"), [] => ok [spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "early-ok", "a")]
+        failed_not_early: unit_report("1", "a", "v", "r", 0, "completed", "mismatched", "ok", "", true, [check_row(0, "b", "2", "3", false)]), [spec::check_ref("a"), spec::check_ref("b")], spec::context("a", "v", "", "r"), [] => ok []
+        open_run: unit_report("1", "a", "v", "r", 0, "running", "matched", "ok", "", false, []), [spec::check_ref("a")], spec::context("a", "v", "", "r"), [] => ok []
+        undetermined_not_early: unit_report("1", "a", "v", "r", 0, "completed", "undetermined", "ok", "", false, []), [spec::check_ref("a")], spec::context("a", "v", "", "r"), [] => ok []
+    match unit.execution is "completed"
+        false => ok problems
+        true => match unit.behavior is "matched"
+            false => ok problems
+            true => match call first_mismatch(unit.rows, 0)
+                ok option::value<str> gap => match gap
+                    option::some => ok problems
+                    option::none => match call missing_checks(required, unit.rows, 0, [])
+                        ok str[] missing => match missing.length is 0
+                            true => ok problems
+                            false => ok call append(problems, call reduce_problem(ctx, "early-ok", missing[0]))
+/// Whether execution reached a terminal state: only completed, broken
+/// and cancelled executions carry a final verdict.
+fn bool exec_terminal
+    emits {}
+    given
+        str execution
+    asserts
+        completed: "completed" => ok true
+        broken: "broken" => ok true
+        cancelled: "cancelled" => ok true
+        running: "running" => ok false
+        not_started: "not-started" => ok false
+    match execution is "completed"
+        true => ok true
+        false => match execution is "broken"
+            true => ok true
+            false => match execution is "cancelled"
+                true => ok true
+                false => ok false
+/// Execution failure part of a failed verdict: "" when completed, the
+/// state otherwise. Unknown words fail closed; word validation rejects
+/// them before combination, and non-terminal states never reach it.
+fn str exec_failed_part
+    emits {}
+    given
+        str execution
+    asserts
+        completed: "completed" => ok ""
+        broken: "broken" => ok "broken"
+        cancelled: "cancelled" => ok "cancelled"
+        running: "running" => ok "running"
+        unknown: "flying" => ok "flying"
+    match execution is "completed"
+        true => ok ""
+        false => match execution is "broken"
+            true => ok execution
+            false => match execution is "cancelled"
+                true => ok execution
+                false => ok execution
+/// Cleanup failure part of a failed verdict: the detail when failed,
+/// "" otherwise.
+fn str cleanup_failed_part
+    emits {}
+    given
+        str cleanup
+        str cleanup_detail
+    asserts
+        ok_word: "ok", "" => ok ""
+        failed: "failed", "rm: busy" => ok "rm: busy"
+        pending: "pending", "" => ok ""
+    match cleanup is "failed"
+        true => ok cleanup_detail
+        false => ok ""
+/// Whether the scope admits a full pass: full mode with full-roots
+/// verification only. Partial scope caps clean evidence at incomplete.
+fn bool scope_full
+    emits {}
+    given
+        scope limits
+    asserts
+        full: scope("full", "full-roots") => ok true
+        partial_mode: scope("partial", "full-roots") => ok false
+        focused: scope("full", "focused-closure") => ok false
+        incomplete: scope("full", "incomplete") => ok false
+    match limits.mode is "full"
+        false => ok false
+        true => match limits.verification is "full-roots"
+            false => ok false
+            true => ok true
+/// Terminal gate after rejection checks: non-terminal execution stays
+/// incomplete, surplus rows are extra evidence, terminal executions
+/// with known rows delegate to dimension combination.
+fn reduced reduce_terminal
+    emits {}
+    given
+        unit_report unit
+        spec::check_ref[] required
+        scope limits
+        spec::context ctx
+    asserts
+        clean: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_ok(1)
+        running: unit_report("1", "a", "v", "r", 0, "running", "matched", "ok", "", false, []), [spec::check_ref("a")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_incomplete("execution-not-completed:running")
+        not_started: unit_report("1", "a", "v", "r", 0, "not-started", "undetermined", "ok", "", false, []), [spec::check_ref("a")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_incomplete("execution-not-completed:not-started")
+        extra: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [check_row(0, "a", "1", "1", true), check_row(1, "z", "9", "9", true)]), [spec::check_ref("a")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_incomplete("extra-evidence:2:1")
+        broken_delegates: unit_report("1", "a", "v", "r", 0, "broken", "undetermined", "ok", "", false, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_failed("", "broken", "", [])
+    match call exec_terminal(unit.execution)
+        ok bool terminal => match terminal
+            false => ok reduced_incomplete(call text::join(["execution-not-completed", unit.execution], ":"))
+            true => match call rows_known(unit.rows, required, 0)
+                ok bool known => match known
+                    false => ok reduced_incomplete(call text::join(["extra-evidence", call text::from_int(unit.rows.length), call text::from_int(required.length)], ":"))
+                    true => relay call reduce_combine(unit, required, limits, ctx)
+/// Dimension combination: the first mismatch sticks as the behavior
+/// failure with unreached checks listed; execution and cleanup failures
+/// join it on the same verdict so no failure hides another. Clean
+/// evidence still needs accounted checks, settled cleanup, a terminal
+/// body and full scope before it can pass.
+fn reduced reduce_combine
+    emits {}
+    given
+        unit_report unit
+        spec::check_ref[] required
+        scope limits
+        spec::context ctx
+    asserts
+        pass: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_ok(1)
+        behavior_failed: unit_report("1", "a", "v", "r", 0, "completed", "mismatched", "ok", "", true, [check_row(0, "a", "1", "1", true), check_row(1, "b", "2", "3", false)]), [spec::check_ref("a"), spec::check_ref("b")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_failed("b", "", "", [])
+        sticky_mismatch: unit_report("1", "a", "v", "r", 0, "completed", "mismatched", "ok", "", true, [check_row(0, "b", "2", "3", false), check_row(1, "c", "4", "4", true)]), [spec::check_ref("b"), spec::check_ref("c")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_failed("b", "", "", [])
+        behavior_and_cleanup: unit_report("1", "a", "v", "r", 0, "completed", "mismatched", "failed", "rm: busy", true, [check_row(0, "b", "2", "3", false)]), [spec::check_ref("b")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_failed("b", "", "rm: busy", [])
+        not_reached: unit_report("1", "a", "v", "r", 0, "completed", "mismatched", "ok", "", true, [check_row(0, "b", "2", "3", false)]), [spec::check_ref("b"), spec::check_ref("c")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_failed("b", "", "", ["c"])
+        broken: unit_report("1", "a", "v", "r", 0, "broken", "undetermined", "ok", "", false, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_failed("", "broken", "", [])
+        broken_not_reached: unit_report("1", "a", "v", "r", 0, "broken", "undetermined", "ok", "", false, []), [spec::check_ref("a")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_failed("", "broken", "", ["a"])
+        cancelled: unit_report("1", "a", "v", "r", 0, "cancelled", "undetermined", "ok", "", false, []), [spec::check_ref("a")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_failed("", "cancelled", "", ["a"])
+        cleanup_failed: unit_report("1", "a", "v", "r", 0, "completed", "matched", "failed", "rm: busy", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_failed("", "", "rm: busy", [])
+        cleanup_not_reached: unit_report("1", "a", "v", "r", 0, "completed", "undetermined", "failed", "rm: busy", false, []), [spec::check_ref("a")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_failed("", "", "rm: busy", ["a"])
+        missing_open: unit_report("1", "a", "v", "r", 0, "completed", "undetermined", "ok", "", false, []), [spec::check_ref("a")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_incomplete("missing-check:a")
+        cleanup_pending: unit_report("1", "a", "v", "r", 0, "completed", "matched", "pending", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_incomplete("cleanup-pending")
+        no_terminal: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", false, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_incomplete("body-not-terminal")
+        partial_scope: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("partial", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_incomplete("partial-scope:partial:full-roots")
+        focused_scope: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "focused-closure"), spec::context("a", "v", "", "r") => ok reduced_incomplete("partial-scope:full:focused-closure")
+        empty_pass: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []), [], scope("full", "full-roots"), spec::context("a", "v", "", "r") => ok reduced_ok(0)
+    match call missing_checks(required, unit.rows, 0, [])
+        ok str[] missing => match call first_mismatch(unit.rows, 0)
+            ok option::value<str> gap => match gap
+                option::some => ok reduced_failed(gap.value, call exec_failed_part(unit.execution), call cleanup_failed_part(unit.cleanup, unit.cleanup_detail), missing)
+                option::none => match call exec_failed_part(unit.execution)
+                    ok str exec_part => match exec_part is ""
+                        false => ok reduced_failed("", exec_part, call cleanup_failed_part(unit.cleanup, unit.cleanup_detail), missing)
+                        true => match unit.cleanup is "failed"
+                            true => ok reduced_failed("", "", unit.cleanup_detail, missing)
+                            false => match missing.length is 0
+                                false => ok reduced_incomplete(call text::join(["missing-check", missing[0]], ":"))
+                                true => match unit.cleanup is "pending"
+                                    true => ok reduced_incomplete("cleanup-pending")
+                                    false => match unit.body_terminal
+                                        false => ok reduced_incomplete("body-not-terminal")
+                                        true => match call scope_full(limits)
+                                            ok bool full => match full
+                                                false => ok reduced_incomplete(call text::join(["partial-scope", limits.mode, limits.verification], ":"))
+                                                true => ok reduced_ok(call count_matched(unit.rows, 0))
+/// Reduce one unit report against its required checks in scope: every
+/// rejection check runs and accumulates, any problem rejects the report,
+/// and clean reports reduce through the terminal gate to a verdict.
+/// Early ok, missing and duplicate checks, malformed reports, forged
+/// terminals, caught mismatches and cleanup failures all land outside
+/// reduced_ok; a true behavior failure stays on the verdict beside a
+/// cleanup error.
+fn reduced reduce_unit
+    emits {}
+    given
+        unit_report unit
+        spec::check_ref[] required
+        scope limits
+        str exp_case
+        str exp_variant
+        str exp_run
+    asserts
+        pass: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_ok(1)
+        early_ok: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", false, []), [spec::check_ref("a")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_rejected([spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "early-ok", "a")])
+        missing_open: unit_report("1", "a", "v", "r", 0, "completed", "undetermined", "ok", "", false, []), [spec::check_ref("a")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_incomplete("missing-check:a")
+        duplicate: unit_report("1", "a", "v", "r", 0, "completed", "mismatched", "ok", "", true, [check_row(0, "a", "1", "2", false), check_row(1, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_rejected([spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "duplicate-check", "a")])
+        duplicate_required: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a"), spec::check_ref("a")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_rejected([spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "duplicate-required", "a")])
+        malformed_version: unit_report("2", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_rejected([spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "bad-version", "2")])
+        drift: unit_report("1", "z", "v", "r", 0, "completed", "matched", "ok", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_rejected([spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "identity-drift", "case:a:z")])
+        forged_terminal: unit_report("1", "a", "v", "r", 0, "broken", "undetermined", "ok", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_rejected([spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "forged-terminal", "broken")])
+        forged_and_early: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []), [spec::check_ref("a")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_rejected([spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "forged-terminal", "missing:a"), spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "early-ok", "a")])
+        caught_mismatch: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [check_row(0, "b", "2", "3", false)]), [spec::check_ref("b")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_rejected([spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "caught-mismatch", "b")])
+        disagree: unit_report("1", "a", "v", "r", 0, "completed", "mismatched", "ok", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_rejected([spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "behavior-disagree", "mismatched-claimed")])
+        cleanup_failure: unit_report("1", "a", "v", "r", 0, "completed", "matched", "failed", "rm: busy", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_failed("", "", "rm: busy", [])
+        behavior_and_cleanup: unit_report("1", "a", "v", "r", 0, "completed", "mismatched", "failed", "rm: busy", true, [check_row(0, "b", "2", "3", false)]), [spec::check_ref("b")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_failed("b", "", "rm: busy", [])
+        not_reached: unit_report("1", "a", "v", "r", 0, "completed", "mismatched", "ok", "", true, [check_row(0, "b", "2", "3", false)]), [spec::check_ref("b"), spec::check_ref("c")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_failed("b", "", "", ["c"])
+        broken_run: unit_report("1", "a", "v", "r", 0, "broken", "undetermined", "ok", "", false, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_failed("", "broken", "", [])
+        running_open: unit_report("1", "a", "v", "r", 0, "running", "matched", "ok", "", false, []), [spec::check_ref("a")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_incomplete("execution-not-completed:running")
+        extra: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [check_row(0, "a", "1", "1", true), check_row(1, "z", "9", "9", true)]), [spec::check_ref("a")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_incomplete("extra-evidence:2:1")
+        bad_sequence: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [check_row(5, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_rejected([spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "bad-sequence", "0:a:5")])
+        partial_scope: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("partial", "full-roots"), "a", "v", "r" => ok reduced_incomplete("partial-scope:partial:full-roots")
+        no_terminal: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", false, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_incomplete("body-not-terminal")
+        pending_cleanup: unit_report("1", "a", "v", "r", 0, "completed", "matched", "pending", "", true, [check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], scope("full", "full-roots"), "a", "v", "r" => ok reduced_incomplete("cleanup-pending")
+        empty_pass: unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []), [], scope("full", "full-roots"), "a", "v", "r" => ok reduced_ok(0)
+    match call spec::context_for(exp_case, exp_variant, "", exp_run)
+        ok spec::context ctx => match call identity_problems(unit, exp_case, exp_variant, exp_run, ctx, [])
+            ok spec::diagnostic[] shaped => match call word_problems(unit, limits, ctx, shaped)
+                ok spec::diagnostic[] worded => match call required_problems(required, ctx, 0, worded)
+                    ok spec::diagnostic[] planned => match call sequence_problems(unit.rows, ctx, 0, planned)
+                        ok spec::diagnostic[] sequenced => match call duplicate_problems(unit.rows, ctx, 0, sequenced)
+                            ok spec::diagnostic[] deduped => match call behavior_problems(unit, required, ctx, deduped)
+                                ok spec::diagnostic[] behaved => match call terminal_problems(unit, required, ctx, behaved)
+                                    ok spec::diagnostic[] terminated => match call earlyok_problems(unit, required, ctx, terminated)
+                                        ok spec::diagnostic[] all => match all.length is 0
+                                            false => ok reduced_rejected(all)
+                                            true => relay call reduce_terminal(unit, required, limits, ctx)

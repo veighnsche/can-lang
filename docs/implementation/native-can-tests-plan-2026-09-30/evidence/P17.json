@@ -1,0 +1,79 @@
+{
+  "status": "complete",
+  "executor": "Muse (muse-spark-1.3-contributor) via worker-g-p17; integrator review/commit",
+  "writing_owner": "can-suite-cli",
+  "task_id": "P17",
+  "row_or_file_slice": null,
+  "start_prerequisite_receipts": [
+    "P15 complete in 1762c2db12929bdd01c065e3cbb92af825b4579b",
+    "P16 complete"
+  ],
+  "acceptance_prerequisite_receipts": [],
+  "commits": [
+    "<this commit> reducer"
+  ],
+  "changed_paths": [
+    "tests/native-can/src/report/reducer/reducer.can"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "go run ./compiler parse tests/native-can/src/report/reducer/reducer.can",
+      "deadline": "120s",
+      "result": "package reducer, 33 declarations; exit 0 (integrator re-run)"
+    },
+    {
+      "command": "cancheck (repo-local CheckSnapshot driver) on reducer.can",
+      "deadline": "240s",
+      "result": "diagnostics: 0; exit 0 (integrator re-run)"
+    },
+    {
+      "command": "cancheck negative control (int+str mutation)",
+      "deadline": "240s",
+      "result": "1 error CAN-CHECK operator type; reverted to 0 diagnostics"
+    },
+    {
+      "command": "fn/assert/root/emits audit",
+      "deadline": "60s",
+      "result": "25 fns, 25 assert blocks, 141 roots, all emits {}; worker counts confirmed"
+    },
+    {
+      "command": "go run ./compiler assert (worker attempt)",
+      "deadline": "120s",
+      "result": "CAN-DIST-UNBUNDLED; not pursued (broad build out of scope)"
+    }
+  ],
+  "identities": {
+    "reference": null,
+    "owner": null,
+    "candidate": null,
+    "suite": "tests/native-can snapshot (S/A acceptance is P23 work)",
+    "artifact": null,
+    "host_profile": null,
+    "observer": null
+  },
+  "coverage": {
+    "case_check_ids": [],
+    "retained_facets": [
+      "early-ok/missing/duplicate/malformed/forged-terminal/caught-mismatch rejection",
+      "cleanup-failure and behavior+cleanup failed verdicts with not_reached lists",
+      "partial-scope and pending-state incomplete verdicts"
+    ],
+    "unrun_or_blocked": [
+      "assertion execution (canlc assert needs a dist build; P04/P23 territory); all 141 roots hand-derived, acceptance-critical roots re-traced, execution pending"
+    ],
+    "variants_and_environments": []
+  },
+  "executor_note": "no integrator code fixes; worker output accepted as-is after full read",
+  "resource_and_cleanup_receipts": [
+    "worker /tmp scratch gone; integrator removed repo-local compiler/.tmp-cancheck after verification",
+    "no repo writes outside owned P17 paths (verified via git status scope)"
+  ],
+  "correction_registry_head": null,
+  "relevance_decision": null,
+  "retirement_eligible": false,
+  "retirement_commit": null,
+  "reviewer_disposition": "integrator accepted: read all 645 lines; independently re-ran parse, checks, negative control and counts; hand-traced forged_and_early, duplicate-supersedes-mismatch and behavior_and_cleanup roots. Observed but accepted: undetermined-claim over mismatched rows lands failed (never ok) without a behavior-disagree problem; empty requirements pass vacuously as pinned reduced_ok(0) with coverage guarding the plan side. Provisional status explicit. Independent final review deferred to Z06.",
+  "limitations": [
+    "static checks provisional until P26 (R-core) and P23 (runner/suite acceptance), per task card"
+  ]
+}
