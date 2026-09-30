@@ -1,0 +1,36 @@
+{
+  "installed_binary": "/Users/vince/.cursor/extensions/can-lang.can-lang-0.2.0/bin/canlc",
+  "version": "canlc 0.2.0+baaead7af94e.50dced1a0dd6",
+  "sha256": "487fa182428cafcf64f2aefe25ca26c0774cad276687e3300d167ea7d91750c4",
+  "lsp_probes": {
+    "ladder": {
+      "exit": 0,
+      "diagnostics": [
+        {
+          "code": "CAN-CHECK-STRING-MATCH-LADDER",
+          "message": "nested string comparisons on ext; use match ext with literal arms, | for shared cases, and _ for the fallback",
+          "range": {
+            "end": {
+              "character": 24,
+              "line": 9
+            },
+            "start": {
+              "character": 10,
+              "line": 9
+            }
+          },
+          "severity": 2,
+          "source": "canlc"
+        }
+      ]
+    },
+    "flat": {
+      "exit": 0,
+      "diagnostics": []
+    }
+  },
+  "temporary_project_reclaimed": true,
+  "temporary_vsix_reclaimed": true,
+  "runtime_assertions": "not run; this change adds only advisory checking",
+  "editor_activation": "installation confirmed and installed server protocol tested; restart Can language server in existing windows"
+}
