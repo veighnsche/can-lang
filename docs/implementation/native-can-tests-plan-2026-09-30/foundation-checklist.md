@@ -102,7 +102,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P05 — Independently accept reference seed
 
-- [ ] **P05 accepted** — owner lane: `shared-reference`.
+- [x] **P05 accepted** — owner lane: `shared-reference`. Evidence: [evidence/P05.json](evidence/P05.json).
 
 **Start after:** P04, P25. **Additional acceptance prerequisites:** none.
 

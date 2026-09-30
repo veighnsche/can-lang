@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "kind": "can.declaration-types",
+  "types": [
+    {
+      "identity": "9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71",
+      "declaration": "int",
+      "kind": "primitive",
+      "equality": true
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+package probe
+    provides [answer]
+    uses []
+
+fn int answer
+    emits {}
+    asserts
+        value:  => ok 43
+    ok 42
