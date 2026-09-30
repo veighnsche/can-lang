@@ -1,9 +1,8 @@
 # Grouped errors and test labels: parallel implementation tasks
 
-Status: **implementation and bounded validation complete 30 September 2026; independent
-review (R01) blocked by environment fd exhaustion, corrections (F01) and closure (F02)
-pending.** Tasks P01-P02, S01-S03, E01-E03, A01-A03, X01-X02, U01-U02, D01 (draft),
-V01-V04 are done with evidence in the
+Status: **complete 30 September 2026: implementation, bounded validation (V01-V04),
+independent review (R01), corrections (F01) and closure (F02) all done.** All 23
+tasks are done with evidence in the
 [completion record](grouped-errors-and-labels-completion-record-2026-09-30.md).
 This file is the execution order and progress ledger; the
 [design and handoff](grouped-errors-and-labels-implementation-plan-2026-09-30.md)
@@ -400,8 +399,9 @@ Previous partial edits and their validation limitations are in the design plan.
 | U01-U02 | done, V04 pass | `driver/{diagnostics.go,grouped_syntax_test.go}`, `can.tmGrammar.json`, `grammar.test.js` | Driver pkg ok; grammar 11/11 |
 | D01 | draft done | Four language docs with pending-status notes | Reconcile at F01 |
 | V01-V04 | done | See completion record | All gates pass; emit G80 w/o `CAN_BUN` fails identically on base (pre-existing) |
-| R01 | **blocked** | Review requested, not run | Workflow children + subagent fallback failed: `Too many open files (os error 24)`; shell also unusable |
-| F01-F02 | pending | — | Await R01; docs-pending notes, ledger commit, cleanup verification outstanding |
+| R01 | done | 8 findings (1 HIGH + 7 LOW/coverage) across check, syntax/exec, editor/docs scopes | Fresh review contexts; first attempts blocked by fd exhaustion, rerun clean |
+| F01 | done | `aa419fd5` corrections + `dc9ee3f0` docs reconciliation | Invalidated suites green; independent verification round: all 8 resolved, no new findings |
+| F02 | done | This ledger, completion record, plan status; tree clean of task artifacts | No temp dirs/bundles/caches/sessions left; foreign `M AGENTS.md` + untracked docs preserved |
 
 ## Instruction for the implementation executor
 

@@ -10,21 +10,26 @@ Checklist: `grouped-errors-and-labels-implementation-tasks-2026-09-30.md`.
 ## Review base and commits
 
 - Review base (verified clean of feature code): `5804b6865897d34952c93429ac0feb10d63105b9`
-- Final HEAD at validation: `8f6e884f3d57f88b2959a7e52d9d86c6e6175afd`
+- Final HEAD: `dc9ee3f074f19f1e2d19864f43b0ddc5dda1c842`
 - Checkpoint (design evidence): `d6d5e6b1` (`docs(grouped-errors): checkpoint design evidence and pending language docs`)
 - Sequence after base: `d6d5e6b1` docs checkpoint, `4e0dc54f` syntax, `fd7567d0`
   check, `6330400e` emit tests, `a8cc5624` editor, `92abe670` V01 fixes,
-  `447f2273` V02 fixes, `6515b2de` V03 fixes, `8f6e884f` V04 fix.
-- Working tree at handoff: clean except pre-existing unrelated untracked docs
-  (`manolea-experience-review-2026-09-30.md`, `native-can-test*`, `preparation/`);
-  plus this record and the ledger/status updates below, committed or pending as noted.
+  `447f2273` V02 fixes, `6515b2de` V03 fixes, `8f6e884f` V04 fix, `fd5093aa`
+  completion record, `aa419fd5` F01 finding resolutions, `dc9ee3f0` docs
+  reconciliation, plus this F02 record commit.
+- Working tree at handoff: only foreign `M AGENTS.md` (2 lines, not task-owned)
+  and pre-existing unrelated untracked docs (`manolea-*`, `native-can-*`,
+  `preparation/`); all task-owned changes committed.
 
 ## Tasks completed
 
-P01, P02, S01-S03, E01-E03, A01-A03, X01-X02, U01-U02, D01 (draft; pending-status
-notes kept until acceptance), V01-V04. R01 attempted twice via workflow plus one
-native-subagent fallback; all failed before start with environment
-`Too many open files (os error 24)`. F01/F02 pending on review.
+P01, P02, S01-S03, E01-E03, A01-A03, X01-X02, U01-U02, D01 (reconciled; pending
+notes removed), V01-V04, R01 (8 findings: 1 HIGH + 7 LOW/coverage, all resolved),
+F01 (corrections committed and independently verified), F02 (this record).
+R01 was first blocked by environment `Too many open files (os error 24)`
+(two workflow attempts + one subagent fallback failed before start); after the
+environment recovered, a fresh three-scope review plus a scope-C redo and an
+F01 verification round all completed.
 
 ## Validation results (all observed, serial queue, shared cache)
 
@@ -69,9 +74,9 @@ native-subagent fallback; all failed before start with environment
 
 ## Known limitations and residual risks
 
-- R01 independent review in a fresh context has NOT run (environment fd
-  exhaustion blocked workflow children, native subagents, and shell). The
-  copy-pasteable review request below is the handoff for that gate.
+- R01 completed after an environment outage: 8 findings (1 HIGH: single-site
+  execution proof; 7 LOW/coverage), all resolved in `aa419fd5`/`dc9ee3f0` and
+  verified by an independent follow-up round with no new findings.
 - Parser recovery after a rejected grouped alias emits a leading generic
   `expected name` diagnostic before the correct grouped-heads diagnostic;
   pre-existing recovery behavior, out of scope, noted for the reviewer.

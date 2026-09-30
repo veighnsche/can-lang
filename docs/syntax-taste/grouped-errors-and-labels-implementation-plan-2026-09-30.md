@@ -1,11 +1,11 @@
 # Grouped errors and test labels: implementation handoff
 
-Status: implementation and bounded validation finished 30 September 2026
-(commits `d6d5e6b1`..`8f6e884f` on top of `5804b686`); independent review R01 is
-blocked by environment fd exhaustion and F01/F02 are pending. See the
+Status: complete 30 September 2026. Implementation, bounded validation (V01-V04),
+independent review (8 findings, all resolved and verified) and docs
+reconciliation are committed on top of `5804b686` (final HEAD `dc9ee3f0` plus
+the F02 record commit). See the
 [completion record](grouped-errors-and-labels-completion-record-2026-09-30.md)
-and the task ledger progress log. Do not treat the feature as accepted until R01
-findings are resolved.
+and the task ledger progress log.
 
 Workspace: `/Users/vince/Projects/can-lang`. The implementation started from
 `5804b686`, with only the preceding Manolea review/evidence untracked. No branch,
