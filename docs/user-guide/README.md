@@ -55,7 +55,7 @@ flags from another tool or historical document.
 | Bootstrap and iteration | Select a usable toolchain; create a project; inspect, assert, build, and run a small slice; clean owned output | Recipe pending |
 | CLI and native platform operations | Handle arguments, files, bytes, processes, declared capabilities, and resource lifecycle | Recipe pending |
 | Domain modeling | Use current records, variants, optionals, immutable updates, collections, generics, and callables correctly | Recipe pending |
-| Contracts and failures | Author meaningful assertions; distinguish domain outcomes and platform failures; interpret supplied versus real-native evidence | Recipe pending |
+| Contracts and failures | Author meaningful assertions; distinguish domain outcomes and platform failures; interpret supplied versus real-native evidence | Partial: nested native-call fixtures and explicit failure mapping below |
 | Server pages and forms | Compose safe HTML, typed requests, validation feedback, routes, and assets | Partial: safe email actions and upload attribute/response notes; full form recipe pending |
 | Persistence and authorization | Use typed SQL descriptors, transactions, credentials, and access checks; sessions are an optional web example | Partial: exact SQLite execute-count note; full persistence recipe pending |
 | Browser applications | Keep server capabilities private; build and serve the qualified browser/server pair where needed | Recipe pending |
@@ -92,6 +92,72 @@ runtime/test/http-request.test.ts runtime/test/browser-dom.test.ts` passed 60/60
 ./compiler/internal/emit/` passed. These checks establish the attribute admission,
 typed response behavior, and compiler binding. An end-to-end upload/storage flow
 has not been demonstrated by this note.
+
+## Verified contract recipe: map a file failure and fixture nested calls
+
+Use this pattern when a function turns one platform failure into a domain result.
+`files::list` can emit several domain errors. Here `files::not_found` becomes
+`ok false`; every other escaping error remains in `emits` and is handled by the
+caller. An assertion on `inspect` reaches `files::list` through `has_entries`, so
+the `when` rows at that native call use the **same assertion names** as the
+outer assertion. Omitting a nested row can leave the check without conclusive
+evidence for that path.
+
+For a fresh project, place the following in `src/main.can`:
+
+```can
+package file_check
+    provides [has_entries, inspect]
+    uses [files]
+
+fn bool has_entries
+    emits [files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error]
+    given
+        str dir
+    asserts
+        present: "/private/tmp/sample" => ok true
+        missing: "/private/tmp/absent" => ok false
+    match call files::list(dir, 10)
+        when
+            present: dir, 10 => ok [files::entry("/private/tmp/sample/a.txt", "file")]
+            missing: dir, 10 => files::not_found(dir)
+        files::not_found => ok false
+        files::denied
+        files::invalid_path
+        files::unexpected_kind
+        files::limit_exceeded
+        files::io_error
+        ok files::entry[] entries => ok entries.length > 0
+
+fn bool inspect
+    emits [files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error]
+    given
+        str dir
+    asserts
+        present: "/private/tmp/sample" => ok true
+        missing: "/private/tmp/absent" => ok false
+    match call has_entries(dir)
+        files::denied
+        files::invalid_path
+        files::unexpected_kind
+        files::limit_exceeded
+        files::io_error
+        ok bool result => ok result
+```
+
+The project also needs `can.project.json` containing
+`{"source_root":"src","error_registry":"can.errors.json"}` and
+`can.errors.json` containing `{"active":[],"retired":[]}`. Run
+`canlc assert <absolute-project-directory>` with a bundled Can development
+distribution. On 2026-09-30, a bundled development distribution at Can
+revision `2031f6ee` passed all four
+assertions with `complete: true` and `scope: "full"` in a fresh temporary
+project; that project was removed immediately. The report listed
+`real-can` and `supplied-completion` evidence. This proves the declared mapping
+and nested fixture behavior under the tested distribution; it does not test a live
+filesystem read. The [file example](../../examples/files/src/main.can) and
+[assertion reference](../implementation/assertions.md) show the underlying
+declarations and fixture semantics.
 
 ## Verified HTML note: construct an email action
 
