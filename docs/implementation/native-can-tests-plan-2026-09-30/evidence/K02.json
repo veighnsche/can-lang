@@ -11,7 +11,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "TBD hostile native values"
+    "0bb57596 hostile native values"
   ],
   "changed_paths": [
     "tools/runtime/test-services/native-values/session.ts",
