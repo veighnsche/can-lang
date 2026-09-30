@@ -82,7 +82,7 @@ func TestCurrentBundledCallables(t *testing.T) {
     provides []
     uses [bytes, codec, io]
 fn void write
-    emits [codec::invalid_data, io::write_failed]
+    emits {codec::invalid_data, io::write_failed}
     given
         near str message
     asserts
@@ -94,11 +94,11 @@ fn void write
         io::write_failed
         ok => ok
 fn void guarded
-    emits [codec::invalid_data, io::write_failed]
+    emits {codec::invalid_data, io::write_failed}
     asserts
         sample: => ok
     str message = "must-not-be-written"
-    callable void () emits [codec::invalid_data, io::write_failed] action = callable write
+    callable void () emits {codec::invalid_data, io::write_failed} action = callable write
     relay call action()
 `
 	write("src/main.can", boundary)

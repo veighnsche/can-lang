@@ -202,7 +202,7 @@ func TestCurrentBundledAssertions(t *testing.T) {
     provides []
     uses [bytes, codec, io]
 fn void boundary
-    emits [codec::invalid_data, io::write_failed]
+    emits {codec::invalid_data, io::write_failed}
     asserts
         guarded: => ok
     match call bytes::from_utf8("must-not-be-written")
@@ -227,21 +227,21 @@ fn void boundary
 	write("src/main.can", `package errors
     provides []
     uses []
-error failed(int code)
+error failed{int code}
 fn int failure
-    emits [failed]
+    emits {failed}
     given
         int code
     asserts
-        domain: 7 => failed(7)
-    failed(code)
+        domain: 7 => failed{7}
+    failed{code}
 fn int consume
-    emits []
+    emits {}
     asserts
         supplied: => ok 7
     match call failure(1)
         when
-            supplied: 1 => failed(7)
+            supplied: 1 => failed{7}
         failed => ok failed.code
         ok
 `)
@@ -347,7 +347,7 @@ func TestAssertionFailureLocations(t *testing.T) {
     uses []
 int broken = 1 / 0
 fn int sample
-    emits []
+    emits {}
     asserts
         works: => ok 1
         also_works: => ok 1
@@ -357,7 +357,7 @@ fn int sample
     provides []
     uses [bytes, codec, io]
 fn void sample
-    emits [codec::invalid_data, io::write_failed]
+    emits {codec::invalid_data, io::write_failed}
     asserts
         guarded: => ok
     match call bytes::from_utf8("must-not-write")

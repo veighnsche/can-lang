@@ -173,7 +173,7 @@ func TestCurrentBundledWrappers(t *testing.T) {
 	mu.Lock()
 	mode = "missing"
 	mu.Unlock()
-	dropped := strings.Replace(source, "        absorbed: (9007199254740993, -0.0) => ok 0.0\n            using failure emitted ai::invalid_answer(\"q2\", \"out of range\")\n", "", 1)
+	dropped := strings.Replace(source, "        absorbed: (9007199254740993, -0.0) => ok 0.0\n            using failure emitted ai::invalid_answer{\"q2\", \"out of range\"}\n", "", 1)
 	if dropped == source {
 		t.Fatal("coverage mutation did not match")
 	}

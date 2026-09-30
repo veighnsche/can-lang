@@ -556,7 +556,7 @@ const pairedEmptyBrowser = `package app
     provides []
     uses []
 fn void main
-    emits []
+    emits {}
     asserts
         empty: => ok
     ok

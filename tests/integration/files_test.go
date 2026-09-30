@@ -19,7 +19,7 @@ const filesLiveProgramTmpl = `package files_live
     provides [main]
     uses [bytes, codec, files, io, path, text]
 fn void main
-    emits [files::not_found, files::already_exists, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, codec::invalid_data, io::write_failed]
+    emits {files::not_found, files::already_exists, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, codec::invalid_data, io::write_failed}
     given
         str[] args
     asserts
@@ -155,11 +155,11 @@ func TestCurrentBundledFiles(t *testing.T) {
 		program  string
 		fragment []string
 	}{
-		{"wrong-type", "package neg\n    provides [main]\n    uses [files, bytes]\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        run: [] => ok\n    match call files::read_bytes(123, 10)\n        ok bytes::buffer data => ok\n",
+		{"wrong-type", "package neg\n    provides [main]\n    uses [files, bytes]\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        run: [] => ok\n    match call files::read_bytes(123, 10)\n        ok bytes::buffer data => ok\n",
 			[]string{"main.can", "expression type does not fit expected type"}},
-		{"unhandled-error", "package neg\n    provides [main]\n    uses [files, bytes]\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        run: [] => ok\n    match call files::read_bytes(\"a.txt\", 10)\n        ok bytes::buffer data => ok\n",
+		{"unhandled-error", "package neg\n    provides [main]\n    uses [files, bytes]\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        run: [] => ok\n    match call files::read_bytes(\"a.txt\", 10)\n        ok bytes::buffer data => ok\n",
 			[]string{"main.can", "missing completion arm", "can.std.files@1::read_bytes requires an arm for each bound member"}},
-		{"unknown-operation", "package neg\n    provides [main]\n    uses [files]\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        run: [] => ok\n    match call files::dance(\"a.txt\")\n        ok str done => ok\n",
+		{"unknown-operation", "package neg\n    provides [main]\n    uses [files]\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        run: [] => ok\n    match call files::dance(\"a.txt\")\n        ok str done => ok\n",
 			[]string{"main.can", "no eligible call files::dance"}},
 	} {
 		root := stage(fixture.program)

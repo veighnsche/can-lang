@@ -52,7 +52,7 @@ func TestBrowserBuildRejectsUnadmittedCapabilities(t *testing.T) {
 					"    provides []\n" +
 					"    uses [" + capability + "]\n" +
 					"fn void main\n" +
-					"    emits []\n" +
+					"    emits {}\n" +
 					"    given\n" +
 					"        str[] arguments\n" +
 					"    asserts\n" +

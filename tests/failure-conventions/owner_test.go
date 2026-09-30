@@ -109,7 +109,7 @@ func TestFactoryPrivateToPackage(t *testing.T) {
 	defer cancel()
 	bundle := resolveBundle(t, ctx)
 	project := stageProject(t, "owner-setup")
-	sneak := "package sneak\n    provides []\n    uses [handler]\nfn int grab\n    emits []\n    asserts\n        sample: => ok 1\n    ok call handler::fixture_id(1)\n"
+	sneak := "package sneak\n    provides []\n    uses [handler]\nfn int grab\n    emits {}\n    asserts\n        sample: => ok 1\n    ok call handler::fixture_id(1)\n"
 	dir := filepath.Join(project, "src/sneak")
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		t.Fatal(err)
@@ -139,30 +139,30 @@ func retireConstructor(t *testing.T, project string, withFactoryArm bool) {
 		"provides [user_id, invalid, retired, parse, value]")
 	replaceOnce(t, project, "src/ids/ids.can",
 		`/// The presented raw score is not a member score.
-error invalid(int raw)`,
+error invalid{int raw}`,
 		`/// The presented raw score is not a member score.
-error invalid(int raw)
+error invalid{int raw}
 /// Scores above the member bound are retired, not invalid.
-error retired(int raw)`)
+error retired{int raw}`)
 	replaceOnce(t, project, "src/ids/ids.can",
 		`fn user_id parse
-    emits [invalid]`,
+    emits {invalid}`,
 		`fn user_id parse
-    emits [invalid, retired]`)
+    emits {invalid, retired}`)
 	replaceOnce(t, project, "src/ids/ids.can",
 		`        good: 1 => ok user_id(1)
-        bad: 0 => invalid(0)
+        bad: 0 => invalid{0}
     match raw > 0
-        false => invalid(raw)
+        false => invalid{raw}
         true => ok user_id(raw)`,
 		`        good: 1 => ok user_id(1)
-        bad: 0 => invalid(0)
-        big: 150 => retired(150)
+        bad: 0 => invalid{0}
+        big: 150 => retired{150}
     match raw > 0
-        false => invalid(raw)
+        false => invalid{raw}
         true => match raw > 100
             false => ok user_id(raw)
-            true => retired(raw)`)
+            true => retired{raw}`)
 	if withFactoryArm {
 		replaceOnce(t, project, "src/handler/handler.can",
 			`        ids::invalid => relay call fixture_id(1 / 0)`,
@@ -171,15 +171,15 @@ error retired(int raw)`)
 	}
 	replaceOnce(t, project, "src/handler/handler.can",
 		`fn tier_view handle_tier
-    emits [ids::invalid]`,
+    emits {ids::invalid}`,
 		`fn tier_view handle_tier
-    emits [ids::invalid, ids::retired]`)
+    emits {ids::invalid, ids::retired}`)
 	replaceOnce(t, project, "src/handler/handler.can",
 		`        bronze: 10 => ok tier_view("bronze", false)
-        bad: 0 => ids::invalid(0)`,
+        bad: 0 => ids::invalid{0}`,
 		`        bronze: 10 => ok tier_view("bronze", false)
-        bad: 0 => ids::invalid(0)
-        retired: 150 => ids::retired(150)`)
+        bad: 0 => ids::invalid{0}
+        retired: 150 => ids::retired{150}`)
 	replaceOnce(t, project, "src/handler/handler.can",
 		`    match call ids::parse(raw)
         ids::invalid

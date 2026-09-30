@@ -138,11 +138,11 @@ func addSuspendedToResultData(t *testing.T, ctx context.Context, bundle, project
 		"provides [profile, unavailable, forbidden, suspended, load_failure, load, load_outcome, fetch_profile, read_profile, fetch_traced, read_traced, blast_kind]")
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`/// The directory refused the lookup.
-error forbidden(str key)`,
+error forbidden{str key}`,
 		`/// The directory refused the lookup.
-error forbidden(str key)
+error forbidden{str key}
 /// The directory holds the key but it is suspended.
-error suspended(str key)`)
+error suspended{str key}`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`variant load_failure
     unavailable
@@ -153,128 +153,128 @@ error suspended(str key)`)
     suspended`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`fn profile load
-    emits [unavailable, forbidden]`,
+    emits {unavailable, forbidden}`,
 		`fn profile load
-    emits [unavailable, forbidden, suspended]`)
+    emits {unavailable, forbidden, suspended}`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`        hit: "ann" => ok profile(7, "Ann")
-        gone: "bob" => unavailable("bob")
-        shut: "root" => forbidden("root")
+        gone: "bob" => unavailable{"bob"}
+        shut: "root" => forbidden{"root"}
     match key is "ann"
         false => match key is "root"
-            false => unavailable(key)
-            true => forbidden(key)
+            false => unavailable{key}
+            true => forbidden{key}
         true => ok profile(7, "Ann")`,
 		`        hit: "ann" => ok profile(7, "Ann")
-        gone: "bob" => unavailable("bob")
-        shut: "root" => forbidden("root")
-        paused: "zed" => suspended("zed")
+        gone: "bob" => unavailable{"bob"}
+        shut: "root" => forbidden{"root"}
+        paused: "zed" => suspended{"zed"}
     match key is "ann"
         false => match key is "root"
             false => match key is "zed"
-                false => unavailable(key)
-                true => suspended(key)
-            true => forbidden(key)
+                false => unavailable{key}
+                true => suspended{key}
+            true => forbidden{key}
         true => ok profile(7, "Ann")`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
-		`        shut: "root" => ok retry::rejected<load_failure>(forbidden("root"))`,
-		`        shut: "root" => ok retry::rejected<load_failure>(forbidden("root"))
-        paused: "zed" => ok retry::rejected<load_failure>(suspended("zed"))`)
+		`        shut: "root" => ok retry::rejected<load_failure>(forbidden{"root"})`,
+		`        shut: "root" => ok retry::rejected<load_failure>(forbidden{"root"})
+        paused: "zed" => ok retry::rejected<load_failure>(suspended{"zed"})`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
-		`            shut: "root" => forbidden("root")`,
-		`            shut: "root" => forbidden("root")
-            paused: "zed" => suspended("zed")`)
+		`            shut: "root" => forbidden{"root"}`,
+		`            shut: "root" => forbidden{"root"}
+            paused: "zed" => suspended{"zed"}`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`        forbidden as failure => do
-            load_failure leaf = forbidden(failure.key)
+            load_failure leaf = forbidden{failure.key}
             ok retry::rejected(leaf)`,
 		`        forbidden as failure => do
-            load_failure leaf = forbidden(failure.key)
+            load_failure leaf = forbidden{failure.key}
             ok retry::rejected(leaf)
         suspended as failure => do
-            load_failure leaf = suspended(failure.key)
+            load_failure leaf = suspended{failure.key}
             ok retry::rejected(leaf)`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`        flaky: "ann" => ok retry::completed(profile(7, "Ann"))
-        down: "bob" => ok retry::rejected<load_failure>(unavailable("bob"))
+        down: "bob" => ok retry::rejected<load_failure>(unavailable{"bob"})
         first_try: "ann" => ok retry::completed(profile(7, "Ann"))`,
 		`        flaky: "ann" => ok retry::completed(profile(7, "Ann"))
-        down: "bob" => ok retry::rejected<load_failure>(unavailable("bob"))
+        down: "bob" => ok retry::rejected<load_failure>(unavailable{"bob"})
         first_try: "ann" => ok retry::completed(profile(7, "Ann"))
-        on_hold: "zed" => ok retry::rejected<load_failure>(suspended("zed"))`)
+        on_hold: "zed" => ok retry::rejected<load_failure>(suspended{"zed"})`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`            first_try: "ann" => ok profile(7, "Ann")`,
 		`            first_try: "ann" => ok profile(7, "Ann")
-            on_hold: "zed" => suspended("zed")
-            on_hold: "zed" => suspended("zed")`)
+            on_hold: "zed" => suspended{"zed"}
+            on_hold: "zed" => suspended{"zed"}`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
-		`    emits [unavailable, forbidden]
+		`    emits {unavailable, forbidden}
     given
         str key
     asserts
         steady: "ann" => ok profile(7, "Ann")
-        locked: "root" => forbidden("root")
+        locked: "root" => forbidden{"root"}
         recover: "ann" => ok profile(7, "Ann")`,
-		`    emits [unavailable, forbidden, suspended]
+		`    emits {unavailable, forbidden, suspended}
     given
         str key
     asserts
         steady: "ann" => ok profile(7, "Ann")
-        locked: "root" => forbidden("root")
+        locked: "root" => forbidden{"root"}
         recover: "ann" => ok profile(7, "Ann")
-        shelved: "zed" => suspended("zed")`)
+        shelved: "zed" => suspended{"zed"}`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
-		`            locked: "root" => forbidden("root")
-            locked: "root" => forbidden("root")`,
-		`            locked: "root" => forbidden("root")
-            locked: "root" => forbidden("root")
-            shelved: "zed" => suspended("zed")
-            shelved: "zed" => suspended("zed")`)
+		`            locked: "root" => forbidden{"root"}
+            locked: "root" => forbidden{"root"}`,
+		`            locked: "root" => forbidden{"root"}
+            locked: "root" => forbidden{"root"}
+            shelved: "zed" => suspended{"zed"}
+            shelved: "zed" => suspended{"zed"}`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`            retry::rejected<load_failure> => do
                 load_failure cause = out.reason
                 match cause
-                    unavailable => unavailable(cause.key)
-                    forbidden => forbidden(cause.key)`,
+                    unavailable => unavailable{cause.key}
+                    forbidden => forbidden{cause.key}`,
 		`            retry::rejected<load_failure> => do
                 load_failure cause = out.reason
                 match cause
-                    unavailable => unavailable(cause.key)
-                    forbidden => forbidden(cause.key)
-                    suspended => suspended(cause.key)`)
+                    unavailable => unavailable{cause.key}
+                    forbidden => forbidden{cause.key}
+                    suspended => suspended{cause.key}`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
-		`    emits [unavailable, forbidden]
+		`    emits {unavailable, forbidden}
     given
         str key
     asserts
         roundtrip: "ann" => ok profile(7, "Ann")
-        roundtrip_denied: "bob" => unavailable("bob")`,
-		`    emits [unavailable, forbidden, suspended]
+        roundtrip_denied: "bob" => unavailable{"bob"}`,
+		`    emits {unavailable, forbidden, suspended}
     given
         str key
     asserts
         roundtrip: "ann" => ok profile(7, "Ann")
-        roundtrip_denied: "bob" => unavailable("bob")
-        shelved_deep: "zed" => suspended("zed")`)
+        roundtrip_denied: "bob" => unavailable{"bob"}
+        shelved_deep: "zed" => suspended{"zed"}`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
-		`            roundtrip_denied: "bob" => unavailable("bob")
-            roundtrip_denied: "bob" => unavailable("bob")`,
-		`            roundtrip_denied: "bob" => unavailable("bob")
-            roundtrip_denied: "bob" => unavailable("bob")
-            shelved_deep: "zed" => suspended("zed")
-            shelved_deep: "zed" => suspended("zed")`)
+		`            roundtrip_denied: "bob" => unavailable{"bob"}
+            roundtrip_denied: "bob" => unavailable{"bob"}`,
+		`            roundtrip_denied: "bob" => unavailable{"bob"}
+            roundtrip_denied: "bob" => unavailable{"bob"}
+            shelved_deep: "zed" => suspended{"zed"}
+            shelved_deep: "zed" => suspended{"zed"}`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`            retry::rejected<retry::traced<retry::traced<load_failure>>> => do
                 load_failure cause = out.reason.cause.cause
                 match cause
-                    unavailable => unavailable(cause.key)
-                    forbidden => forbidden(cause.key)`,
+                    unavailable => unavailable{cause.key}
+                    forbidden => forbidden{cause.key}`,
 		`            retry::rejected<retry::traced<retry::traced<load_failure>>> => do
                 load_failure cause = out.reason.cause.cause
                 match cause
-                    unavailable => unavailable(cause.key)
-                    forbidden => forbidden(cause.key)
-                    suspended => suspended(cause.key)`)
+                    unavailable => unavailable{cause.key}
+                    forbidden => forbidden{cause.key}
+                    suspended => suspended{cause.key}`)
 	return requireGreen(t, runAssert(t, ctx, bundle, project))
 }
 
@@ -316,82 +316,82 @@ func addSuspendedToFixed(t *testing.T, ctx context.Context, bundle, project stri
 		"provides [profile, unavailable, forbidden, suspended, load, retry_load, read_via_service]")
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`/// The directory refused the lookup.
-error forbidden(str key)`,
+error forbidden{str key}`,
 		`/// The directory refused the lookup.
-error forbidden(str key)
+error forbidden{str key}
 /// The directory holds the key but it is suspended.
-error suspended(str key)`)
+error suspended{str key}`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`fn profile load
-    emits [unavailable, forbidden]`,
+    emits {unavailable, forbidden}`,
 		`fn profile load
-    emits [unavailable, forbidden, suspended]`)
+    emits {unavailable, forbidden, suspended}`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`        hit: "ann" => ok profile(7, "Ann")
-        gone: "bob" => unavailable("bob")
-        shut: "root" => forbidden("root")
+        gone: "bob" => unavailable{"bob"}
+        shut: "root" => forbidden{"root"}
     match key is "ann"
         false => match key is "root"
-            false => unavailable(key)
-            true => forbidden(key)
+            false => unavailable{key}
+            true => forbidden{key}
         true => ok profile(7, "Ann")`,
 		`        hit: "ann" => ok profile(7, "Ann")
-        gone: "bob" => unavailable("bob")
-        shut: "root" => forbidden("root")
-        paused: "zed" => suspended("zed")
+        gone: "bob" => unavailable{"bob"}
+        shut: "root" => forbidden{"root"}
+        paused: "zed" => suspended{"zed"}
     match key is "ann"
         false => match key is "root"
             false => match key is "zed"
-                false => unavailable(key)
-                true => suspended(key)
-            true => forbidden(key)
+                false => unavailable{key}
+                true => suspended{key}
+            true => forbidden{key}
         true => ok profile(7, "Ann")`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`fn profile retry_load
-    emits [unavailable, forbidden]`,
+    emits {unavailable, forbidden}`,
 		`fn profile retry_load
-    emits [unavailable, forbidden, suspended]`)
+    emits {unavailable, forbidden, suspended}`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`        flaky: "ann", 2 => ok profile(7, "Ann")
-        down: "bob", 2 => unavailable("bob")
+        down: "bob", 2 => unavailable{"bob"}
         first_try: "ann", 2 => ok profile(7, "Ann")`,
 		`        flaky: "ann", 2 => ok profile(7, "Ann")
-        down: "bob", 2 => unavailable("bob")
+        down: "bob", 2 => unavailable{"bob"}
         first_try: "ann", 2 => ok profile(7, "Ann")
-        paused: "zed", 2 => suspended("zed")`)
+        paused: "zed", 2 => suspended{"zed"}`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`            first_try: "ann" => ok profile(7, "Ann")`,
 		`            first_try: "ann" => ok profile(7, "Ann")
-            paused: "zed" => suspended("zed")
-            paused: "zed" => suspended("zed")`)
+            paused: "zed" => suspended{"zed"}
+            paused: "zed" => suspended{"zed"}`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`        forbidden as failure => match remaining > 1
-            false => forbidden(failure.key)
+            false => forbidden{failure.key}
             true => relay call retry_load(key, remaining - 1)`,
 		`        forbidden as failure => match remaining > 1
-            false => forbidden(failure.key)
+            false => forbidden{failure.key}
             true => relay call retry_load(key, remaining - 1)
         suspended as failure => match remaining > 1
-            false => suspended(failure.key)
+            false => suspended{failure.key}
             true => relay call retry_load(key, remaining - 1)`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`fn profile read_via_service
-    emits [unavailable, forbidden]`,
+    emits {unavailable, forbidden}`,
 		`fn profile read_via_service
-    emits [unavailable, forbidden, suspended]`)
+    emits {unavailable, forbidden, suspended}`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`        steady: "ann" => ok profile(7, "Ann")
-        locked: "root" => forbidden("root")`,
+        locked: "root" => forbidden{"root"}`,
 		`        steady: "ann" => ok profile(7, "Ann")
-        locked: "root" => forbidden("root")
-        shelved: "zed" => suspended("zed")`)
+        locked: "root" => forbidden{"root"}
+        shelved: "zed" => suspended{"zed"}`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
-		`            locked: "root" => forbidden("root")
-            locked: "root" => forbidden("root")`,
-		`            locked: "root" => forbidden("root")
-            locked: "root" => forbidden("root")
-            shelved: "zed" => suspended("zed")
-            shelved: "zed" => suspended("zed")`)
+		`            locked: "root" => forbidden{"root"}
+            locked: "root" => forbidden{"root"}`,
+		`            locked: "root" => forbidden{"root"}
+            locked: "root" => forbidden{"root"}
+            shelved: "zed" => suspended{"zed"}
+            shelved: "zed" => suspended{"zed"}`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		`    match call retry_load(key, 2)
         unavailable

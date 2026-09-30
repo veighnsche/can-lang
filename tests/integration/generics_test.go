@@ -512,10 +512,10 @@ func TestCurrentBundledGenericChain(t *testing.T) {
 	failedWrite("can.project.json", `{"source_root":"src","error_registry":"can.errors.json"}`)
 	failedWrite("can.errors.json", `{"active":[],"retired":[]}`)
 	failedWrite("src/app/main.can", "package app\n    provides [a, b, c]\n    uses []\n"+
-		"fn item a<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call b<item>(value, true)\n        true => ok value\n"+
-		"fn item b<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call a<item>(value, true)\n        true => ok value + value\n"+
-		"fn item c<item>\n    emits []\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    ok call a<item>(value, true)\n"+
-		"fn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n")
+		"fn item a<item>\n    emits {}\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call b<item>(value, true)\n        true => ok value\n"+
+		"fn item b<item>\n    emits {}\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call a<item>(value, true)\n        true => ok value + value\n"+
+		"fn item c<item>\n    emits {}\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    ok call a<item>(value, true)\n"+
+		"fn void main\n    emits {}\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n")
 	for _, command := range []string{"assert", "build"} {
 		status, out, diag = runAt(failed, command)
 		if status == 0 || !strings.Contains(diag, "exported generic function") ||
@@ -546,9 +546,9 @@ func TestCurrentBundledGenericChain(t *testing.T) {
 		negWrite("can.errors.json", `{"active":[],"retired":[]}`)
 		negWrite("src/mail/mail.can", fixture("chain-mail"))
 		negWrite("src/app/main.can", "package app\n    provides [suspect]\n    uses [mail]\n"+
-			"fn mail::email suspect<item>\n    emits []\n    given\n        item value\n    asserts\n        number: 3 => ok call mail::make_email(\"a@b\")\n"+
+			"fn mail::email suspect<item>\n    emits {}\n    given\n        item value\n    asserts\n        number: 3 => ok call mail::make_email(\"a@b\")\n"+
 			negative.body+
-			"fn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n")
+			"fn void main\n    emits {}\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n")
 		status, out, diag = runAt(neg, "assert")
 		if status == 0 {
 			t.Fatalf("owner %s admitted: %d %s %s", negative.name, status, out, diag)

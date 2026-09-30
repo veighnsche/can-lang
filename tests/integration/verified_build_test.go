@@ -277,7 +277,7 @@ func TestCurrentBundledVerifiedBuild(t *testing.T) {
 
 	// Missing required native coverage fails at check with no staging.
 	uncovered := copyFrozen("passing")
-	write(uncovered, "src/main.can", "package app\n    provides []\n    uses [http, codec]\nrecord receipt\n    int count\nconnection service\n    endpoint \"http://127.0.0.1:1/\"\n    timeout_ms 5000\n    max_body_bytes 8192\nfetch receipt load from service\n    emits [http::request_failed]\n    get \"/load\"\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        empty: [] => ok\n    ok\n")
+	write(uncovered, "src/main.can", "package app\n    provides []\n    uses [http, codec]\nrecord receipt\n    int count\nconnection service\n    endpoint \"http://127.0.0.1:1/\"\n    timeout_ms 5000\n    max_body_bytes 8192\nfetch receipt load from service\n    emits {http::request_failed}\n    get \"/load\"\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        empty: [] => ok\n    ok\n")
 	if code, _, diag := runAt(uncovered, "build"); code == 0 {
 		t.Fatal("uncovered native published")
 	} else if !strings.Contains(strings.ToLower(diag), "assert") {
@@ -289,7 +289,7 @@ func TestCurrentBundledVerifiedBuild(t *testing.T) {
 
 	// A sticky harness violation (unused fixture row) fails verification.
 	sticky := copyFrozen("passing")
-	write(sticky, "src/main.can", "package app\n    provides []\n    uses []\nfn int double\n    emits []\n    given\n        int value\n    asserts\n        sample: 2 => ok 4\n    ok value + value\nfixture doubled for double\n    given\n        int base\n    cases\n        base => ok base + base\n        3 => ok 6\nfn int consumer\n    emits []\n    asserts\n        sample: => ok 4\n    match call double(2)\n        when\n            sample: use doubled(2)\n        ok int got => ok got\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        empty: [] => ok\n    ok\n")
+	write(sticky, "src/main.can", "package app\n    provides []\n    uses []\nfn int double\n    emits {}\n    given\n        int value\n    asserts\n        sample: 2 => ok 4\n    ok value + value\nfixture doubled for double\n    given\n        int base\n    cases\n        base => ok base + base\n        3 => ok 6\nfn int consumer\n    emits {}\n    asserts\n        sample: => ok 4\n    match call double(2)\n        when\n            sample: use doubled(2)\n        ok int got => ok got\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        empty: [] => ok\n    ok\n")
 	if code, _, diag := runAt(sticky, "build"); code == 0 || !strings.Contains(diag, "harness violation") {
 		t.Fatalf("sticky violation published: %d %s", code, diag)
 	}
@@ -304,10 +304,10 @@ func TestCurrentBundledVerifiedBuild(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	vendorSource := "package helpers\n    provides [double]\n    uses []\nfn int double\n    emits []\n    given\n        int value\n    asserts\n        sample: 2 => ok 4\n        triple: 3 => ok 6\n    ok value + value\n"
+	vendorSource := "package helpers\n    provides [double]\n    uses []\nfn int double\n    emits {}\n    given\n        int value\n    asserts\n        sample: 2 => ok 4\n        triple: 3 => ok 6\n    ok value + value\n"
 	write(dep, "can.project.json", `{"source_root":"src","dependencies":{"vendor":"vendor"},"error_registry":"can.errors.json"}`)
 	write(dep, "can.errors.json", `{"active":[],"retired":[]}`)
-	write(dep, "src/main.can", "package app\n    provides []\n    uses [vendor::helpers]\nfn int consumer\n    emits []\n    asserts\n        sample: => ok 4\n    relay call helpers::double(2)\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        empty: [] => ok\n    ok\n")
+	write(dep, "src/main.can", "package app\n    provides []\n    uses [vendor::helpers]\nfn int consumer\n    emits {}\n    asserts\n        sample: => ok 4\n    relay call helpers::double(2)\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        empty: [] => ok\n    ok\n")
 	write(dep, "vendor/can.project.json", `{"source_root":"src","error_registry":"can.errors.json"}`)
 	write(dep, "vendor/can.errors.json", `{"active":[],"retired":[]}`)
 	write(dep, "vendor/src/lib.can", vendorSource)
@@ -381,7 +381,7 @@ func TestCurrentBundledVerifiedBuild(t *testing.T) {
 	}))
 	defer server.Close()
 	live := copyFrozen("passing")
-	write(live, "src/main.can", "package app\n    provides []\n    uses [http, codec]\nrecord receipt\n    int count\nconnection service\n    endpoint \""+server.URL+"/\"\n    timeout_ms 5000\n    max_body_bytes 8192\nfetch receipt load from service\n    emits [http::request_failed]\n    asserts\n        decoded: => ok receipt(7)\n            using raw \"fixtures/load.json\"\n    get \"/load\"\nfn void main\n    emits [http::request_failed]\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    match call load()\n        when\n            sample: => ok receipt(7)\n        http::request_failed\n        ok receipt got => ok\n")
+	write(live, "src/main.can", "package app\n    provides []\n    uses [http, codec]\nrecord receipt\n    int count\nconnection service\n    endpoint \""+server.URL+"/\"\n    timeout_ms 5000\n    max_body_bytes 8192\nfetch receipt load from service\n    emits {http::request_failed}\n    asserts\n        decoded: => ok receipt(7)\n            using raw \"fixtures/load.json\"\n    get \"/load\"\nfn void main\n    emits {http::request_failed}\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    match call load()\n        when\n            sample: => ok receipt(7)\n        http::request_failed\n        ok receipt got => ok\n")
 	write(live, "src/fixtures/load.json", `{"schema":"can.native-fixture.v1","target":"can.project.root/app::load","environment":{},"exchange":{"request":{"method":"GET","url":"`+server.URL+`/load","headers":[],"body":{"bytes_base64":""}},"outcome":{"response":{"status":200,"headers":[["content-type","application/json"]],"body_base64":"eyJjb3VudCI6N30="}}}}`)
 	if code, _, diag := runAt(live, "build"); code != 0 {
 		t.Fatalf("live build: %d %s", code, diag)

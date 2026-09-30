@@ -211,7 +211,7 @@ func TestCurrentBundledMixedQuestions(t *testing.T) {
 	}
 	// A later request may depend on the fully completed first judge.
 	followup := `judge void complete from classifier
-    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
+    emits {http::request_failed, ai::invalid_question, ai::invalid_answer}
     state
         float previous
     asserts

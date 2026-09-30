@@ -17,7 +17,7 @@ const processLiveProgram = `package process_live
     provides [main]
     uses [bytes, codec, files, io, process]
 fn void main
-    emits [files::not_found, files::denied, process::spawn_failed, process::timeout, process::output_limit, process::invalid_config, process::io_error, codec::invalid_data, io::write_failed]
+    emits {files::not_found, files::denied, process::spawn_failed, process::timeout, process::output_limit, process::invalid_config, process::io_error, codec::invalid_data, io::write_failed}
     given
         str[] args
     asserts
@@ -134,11 +134,11 @@ func TestCurrentBundledProcess(t *testing.T) {
 		program  string
 		fragment []string
 	}{
-		{"wrong-type", "package neg\n    provides [main]\n    uses [process]\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        run: [] => ok\n    match call process::which(123)\n        ok str found => ok\n",
+		{"wrong-type", "package neg\n    provides [main]\n    uses [process]\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        run: [] => ok\n    match call process::which(123)\n        ok str found => ok\n",
 			[]string{"main.can", "expression type does not fit expected type"}},
-		{"unhandled-error", "package neg\n    provides [main]\n    uses [bytes, process]\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        run: [] => ok\n    bytes::buffer empty = call bytes::empty()\n    match call process::run(\"/bin/echo\", [], process::options(\"\", true, [], empty, 10, 10, 0, 0))\n        ok process::result got => ok\n",
+		{"unhandled-error", "package neg\n    provides [main]\n    uses [bytes, process]\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        run: [] => ok\n    bytes::buffer empty = call bytes::empty()\n    match call process::run(\"/bin/echo\", [], process::options(\"\", true, [], empty, 10, 10, 0, 0))\n        ok process::result got => ok\n",
 			[]string{"main.can", "missing completion arm", "can.std.process@1::run requires an arm for each bound member"}},
-		{"unknown-operation", "package neg\n    provides [main]\n    uses [process]\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        run: [] => ok\n    match call process::dance(\"x\")\n        ok str done => ok\n",
+		{"unknown-operation", "package neg\n    provides [main]\n    uses [process]\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        run: [] => ok\n    match call process::dance(\"x\")\n        ok str done => ok\n",
 			[]string{"main.can", "no eligible call process::dance"}},
 	} {
 		root := stage(fixture.program)

@@ -100,7 +100,7 @@ func TestCurrentBundledCLI(t *testing.T) {
 	if !errors.As(writeErr, &writeExit) || writeExit.ExitCode() != 1 || !strings.Contains(writeDiagnostic.String(), `"identity":"can.error.v2:can.std.io@1::write_failed"`) {
 		t.Fatalf("native broken-pipe mapping: %v %q", writeErr, writeDiagnostic.String())
 	}
-	write("src/helper.can", "package app\n    provides []\n    uses []\nstr suffix = later\nstr later = \"!\"\nfn str decorate\n    emits []\n    given\n        str text\n    asserts\n        sample: \"hello\" => ok \"hello!\"\n    ok text + suffix\n")
+	write("src/helper.can", "package app\n    provides []\n    uses []\nstr suffix = later\nstr later = \"!\"\nfn str decorate\n    emits {}\n    given\n        str text\n    asserts\n        sample: \"hello\" => ok \"hello!\"\n    ok text + suffix\n")
 	write("src/main.can", strings.Replace(string(echo), "args[0]", "call decorate(args[0])", 1))
 	if status, out, diag := run("run", root, "--", "multi-file"); status != 0 || out != "multi-file!" || diag != "" {
 		t.Fatalf("cross-module call and forward initializer: %d %q %q", status, out, diag)
@@ -154,7 +154,7 @@ func TestCurrentBundledCLI(t *testing.T) {
 		t.Fatalf("startup failure: %d %q %q", code, out, diag)
 	}
 	write("can.errors.json", `{"active":["app::failed"],"retired":[]}`)
-	write("src/main.can", "package app\n    provides []\n    uses []\nerror failed(str secret)\nfn void main\n    emits [failed]\n    given\n        str[] argv\n    asserts\n        sample: [] => failed(\"must-not-disclose\")\n    failed(\"must-not-disclose\")\n")
+	write("src/main.can", "package app\n    provides []\n    uses []\nerror failed{str secret}\nfn void main\n    emits {failed}\n    given\n        str[] argv\n    asserts\n        sample: [] => failed{\"must-not-disclose\"}\n    failed{\"must-not-disclose\"}\n")
 	code, out, diag = run("run", root)
 	if code != 1 || out != "" || !strings.Contains(diag, `"identity":"can.error.v2:can.project.root/app::failed"`) || strings.Contains(diag, "must-not-disclose") {
 		t.Fatalf("domain failure: %d %q %q", code, out, diag)

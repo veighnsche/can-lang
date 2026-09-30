@@ -19,7 +19,7 @@ const streamsPumpProgram = `package streams_pump
     provides [pump, main]
     uses [stream, files]
 fn int pump
-    emits [stream::read_failed, stream::cancelled, files::limit_exceeded, stream::close_failed]
+    emits {stream::read_failed, stream::cancelled, files::limit_exceeded, stream::close_failed}
     given
         int count
         stream::reader<str> input
@@ -48,7 +48,7 @@ fn int pump
                 stream::close_failed
                 ok => ok count
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts
@@ -60,7 +60,7 @@ const streamsLiveProgramTmpl = `package streams_live
     provides [main]
     uses [bytes, codec, files, io, path, stream, text]
 fn void main
-    emits [files::not_found, files::already_exists, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, stream::read_failed, stream::cancelled, stream::close_failed, stream::write_failed, codec::invalid_data, io::write_failed]
+    emits {files::not_found, files::already_exists, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, stream::read_failed, stream::cancelled, stream::close_failed, stream::write_failed, codec::invalid_data, io::write_failed}
     given
         str[] args
     asserts
@@ -132,7 +132,7 @@ const streamsOverrunProgram = `package streams_over
     provides [drain, main]
     uses [stream, files]
 fn void drain
-    emits [stream::read_failed, stream::cancelled, files::limit_exceeded, stream::close_failed]
+    emits {stream::read_failed, stream::cancelled, files::limit_exceeded, stream::close_failed}
     given
         stream::reader<str> input
     asserts
@@ -150,7 +150,7 @@ fn void drain
             stream::close_failed
             ok => ok
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts
@@ -162,7 +162,7 @@ const streamsUnderrunProgram = `package streams_under
     provides [pump, main]
     uses [stream, files]
 fn int pump
-    emits [stream::read_failed, stream::cancelled, files::limit_exceeded, stream::close_failed]
+    emits {stream::read_failed, stream::cancelled, files::limit_exceeded, stream::close_failed}
     given
         int count
         stream::reader<str> input
@@ -185,7 +185,7 @@ fn int pump
                 stream::close_failed
                 ok => ok count
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts
@@ -315,13 +315,13 @@ func TestCurrentBundledStreams(t *testing.T) {
 		program  string
 		fragment []string
 	}{
-		{"wrong-type", "package neg\n    provides [drain, main]\n    uses [stream, files]\nfn void drain\n    emits [stream::read_failed, stream::cancelled, files::limit_exceeded]\n    asserts\n        run: => ok\n    match call stream::read_many(\"nope\", 1)\n        stream::read_failed\n        stream::cancelled\n        files::limit_exceeded\n        ok str[] batch => ok\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    ok\n",
+		{"wrong-type", "package neg\n    provides [drain, main]\n    uses [stream, files]\nfn void drain\n    emits {stream::read_failed, stream::cancelled, files::limit_exceeded}\n    asserts\n        run: => ok\n    match call stream::read_many(\"nope\", 1)\n        stream::read_failed\n        stream::cancelled\n        files::limit_exceeded\n        ok str[] batch => ok\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    ok\n",
 			[]string{"main.can", "inference shape mismatch"}},
-		{"unhandled-error", "package neg\n    provides [drain, main]\n    uses [stream, files]\nfn void drain\n    emits [stream::read_failed, stream::cancelled, files::limit_exceeded]\n    given\n        stream::reader<str> input\n    asserts\n        run: => ok\n    match call stream::read_many(input, 1)\n        stream::read_failed\n        ok str[] batch => ok\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    ok\n",
+		{"unhandled-error", "package neg\n    provides [drain, main]\n    uses [stream, files]\nfn void drain\n    emits {stream::read_failed, stream::cancelled, files::limit_exceeded}\n    given\n        stream::reader<str> input\n    asserts\n        run: => ok\n    match call stream::read_many(input, 1)\n        stream::read_failed\n        ok str[] batch => ok\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    ok\n",
 			[]string{"main.can", "missing completion arm", "requires an arm for each bound member"}},
-		{"result-type", "package neg\n    provides [drain, main]\n    uses [stream, files]\nfn void drain\n    emits [stream::read_failed, stream::cancelled, files::limit_exceeded]\n    given\n        stream::reader<str> input\n    asserts\n        run: => ok\n    match call stream::read_many(input, 1)\n        stream::read_failed\n        stream::cancelled\n        files::limit_exceeded\n        ok int total => ok\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    ok\n",
+		{"result-type", "package neg\n    provides [drain, main]\n    uses [stream, files]\nfn void drain\n    emits {stream::read_failed, stream::cancelled, files::limit_exceeded}\n    given\n        stream::reader<str> input\n    asserts\n        run: => ok\n    match call stream::read_many(input, 1)\n        stream::read_failed\n        stream::cancelled\n        files::limit_exceeded\n        ok int total => ok\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    ok\n",
 			[]string{"main.can", "completion arm binding type mismatch"}},
-		{"unknown-operation", "package neg\n    provides [main]\n    uses [stream]\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        run: [] => ok\n    match call stream::dance(\"x\")\n        ok str done => ok\n",
+		{"unknown-operation", "package neg\n    provides [main]\n    uses [stream]\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        run: [] => ok\n    match call stream::dance(\"x\")\n        ok str done => ok\n",
 			[]string{"main.can", "no eligible call stream::dance"}},
 	} {
 		root := stage(fixture.program)

@@ -150,12 +150,12 @@ variant failure
     codec::invalid_data
     standard_failure
 fn int boom
-    emits []
+    emits {}
     asserts
         sample: => ok 0
     ok 1 / 0
 fn bool identical
-    emits []
+    emits {}
     asserts
         sample: => ok true
     match call boom()
@@ -167,7 +167,7 @@ fn bool identical
                 standard_failure => ok caught.occurrence_id is leaf.occurrence_id and caught.kind is leaf.kind and caught.message is leaf.message
         ok int value => ok false
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

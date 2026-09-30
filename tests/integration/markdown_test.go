@@ -107,7 +107,7 @@ func TestCurrentMarkdownRender(t *testing.T) {
 		want string
 	}{
 		{"raw string is not safe", strings.Replace(string(fixture), `call markdown::render_safe("# Hello") as html::safe sheet`, `call markdown::render_text_html("# Hello") as html::safe sheet`, 1), "chain binding type mismatch"},
-		{"missing emits", strings.Replace(string(fixture), "fn html::safe page\n    emits [markdown::over_limit, html::invalid_url]", "fn html::safe page\n    emits [markdown::over_limit]", 1), "undeclared escaping domain error html::invalid_url"},
+		{"missing emits", strings.Replace(string(fixture), "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}", "fn html::safe page\n    emits {markdown::over_limit}", 1), "undeclared escaping domain error html::invalid_url"},
 	}
 	for _, negative := range negatives {
 		if negative.text == string(fixture) {

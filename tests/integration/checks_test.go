@@ -144,7 +144,7 @@ func TestChecksMismatchSpan(t *testing.T) {
 	}
 	write("can.project.json", `{"source_root":"src","error_registry":"can.errors.json"}`)
 	write("can.errors.json", `{"active":[],"retired":[]}`)
-	text := "package app\n    provides []\n    uses [bytes, codec, checks]\nfn void guarded\n    emits [checks::failed, codec::invalid_data]\n    asserts\n        sample: => ok\n    match call bytes::from_utf8(\"A\")\n        codec::invalid_data\n        ok bytes::buffer raw => do\n            int[] values = call bytes::to_ints(raw)\n            relay call checks::require(values is [66], \"explicit condition reason\")\nfn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n"
+	text := "package app\n    provides []\n    uses [bytes, codec, checks]\nfn void guarded\n    emits {checks::failed, codec::invalid_data}\n    asserts\n        sample: => ok\n    match call bytes::from_utf8(\"A\")\n        codec::invalid_data\n        ok bytes::buffer raw => do\n            int[] values = call bytes::to_ints(raw)\n            relay call checks::require(values is [66], \"explicit condition reason\")\nfn void main\n    emits {}\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n"
 	write("src/main.can", text)
 	expression := `checks::require(values is [66], "explicit condition reason")`
 	command := exec.CommandContext(ctx, "/usr/bin/sandbox-exec", "-p", "(version 1)(allow default)(deny network*)", filepath.Join(bundle, "bin/canlc"), "assert", root)

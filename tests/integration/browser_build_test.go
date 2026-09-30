@@ -26,7 +26,7 @@ record point
     int x
     int y
 fn point load
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -37,7 +37,7 @@ fn point load
         codec::invalid_data
         ok => ok found
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -58,7 +58,7 @@ record point
     int x
     int y
 fn point load
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -69,7 +69,7 @@ fn point load
         codec::invalid_data
         ok => ok found
 fn void main
-    emits []
+    emits {}
     asserts
         empty: => ok
     match call load(call strings::join(["{\"x\":1", "\"y\":2}"], ","))
@@ -81,7 +81,7 @@ const browserHelperPackage = `package strings
     provides [join]
     uses [text]
 fn str join
-    emits []
+    emits {}
     given
         str[] parts
         str separator
@@ -307,7 +307,7 @@ func TestBrowserBuildTarget(t *testing.T) {
     provides []
     uses [env, http]
 fn str probe_home
-    emits [env::invalid_name, http::credentials_missing]
+    emits {env::invalid_name, http::credentials_missing}
     asserts
         empty: => ok "fixture"
     match call env::required("HOME")
@@ -317,7 +317,7 @@ fn str probe_home
         http::credentials_missing
         ok str value => ok value
 fn void main
-    emits []
+    emits {}
     asserts
         empty: => ok
     match call probe_home()
@@ -344,7 +344,7 @@ fn void main
     provides []
     uses []
 fn void main
-    emits []
+    emits {}
     asserts
         empty: => ok
     ok
@@ -546,7 +546,7 @@ fn void main
     provides []
     uses [cookie, option]
 fn option::value<str> session_id
-    emits []
+    emits {}
     given
         str header
     asserts
@@ -555,7 +555,7 @@ fn option::value<str> session_id
         ok cookie::collection found => match call cookie::get(found, "session")
             ok option::value<str> id => ok id
 fn void main
-    emits []
+    emits {}
     asserts
         empty: => ok
     match call session_id("session=A")

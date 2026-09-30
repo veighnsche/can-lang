@@ -169,7 +169,7 @@ func TestCurrentCryptoCommands(t *testing.T) {
 		want string
 	}{
 		{"argument type", strings.Replace(string(fixture), "match call bytes::from_ints(plaintext)", `match call bytes::from_ints("nope")`, 1), "expression type does not fit expected type"},
-		{"missing emits", strings.Replace(string(fixture), "fn int seal_size\n    emits [codec::invalid_data, crypto::key_misuse]", "fn int seal_size\n    emits [codec::invalid_data]", 1), "undeclared escaping domain error crypto::key_misuse"},
+		{"missing emits", strings.Replace(string(fixture), "fn int seal_size\n    emits {codec::invalid_data, crypto::key_misuse}", "fn int seal_size\n    emits {codec::invalid_data}", 1), "undeclared escaping domain error crypto::key_misuse"},
 	}
 	for _, negative := range negatives {
 		if negative.text == string(fixture) {
