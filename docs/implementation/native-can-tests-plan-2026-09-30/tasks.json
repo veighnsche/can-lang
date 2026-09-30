@@ -384,7 +384,7 @@
       "acceptance": "Worker/controller/N death with intact T, old unknown schema, replaced directory, active foreign process and incomplete liveness proof never authorize a signal/deletion or old-run pass. A later safe cleanup preserves the old incomplete outcome.",
       "evidence": "Save crash/recovery receipts; commit lifecycle owner.",
       "commit": "feat(testing): drain, recover and receipt owned resources",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P07",
         "P08",
@@ -838,7 +838,7 @@
         "K02"
       ],
       "accept_after": [],
-      "status": "planned",
+      "status": "active",
       "scope": "mechanism code and local controls; no integrated credit"
     },
     {
@@ -1110,7 +1110,7 @@
         "P10"
       ],
       "accept_after": [],
-      "status": "planned",
+      "status": "active",
       "scope": "mechanism code and local controls; no integrated credit"
     },
     {
