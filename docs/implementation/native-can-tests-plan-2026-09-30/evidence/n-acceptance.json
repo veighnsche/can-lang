@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "complete": true,
+  "n": {
+    "name": "n-subject",
+    "version": "1.0.0-test",
+    "executable": "/private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/go-build1313233711/b001/acceptance.test",
+    "digest": "sha256:ec7eeea1d6a0d4e0436479e7659601e907e67401687c9deaa78eec62b9988a97"
+  },
+  "t": {
+    "pid": 48279,
+    "startToken": "aa440aae4558e05f9d87e38a5fd6e006"
+  },
+  "host": {
+    "adapter": "darwin-strict",
+    "envelope": "quick",
+    "facts": {
+      "goos": "darwin",
+      "nprocSoft": 2666,
+      "nprocHard": 4000,
+      "addrSpaceCapped": false,
+      "fileSizeCapped": false,
+      "memBytes": 17179869184,
+      "tmpFreeBytes": 53303742464
+    }
+  },
+  "checks": [
+    {
+      "name": "witness",
+      "pass": true,
+      "detail": "T pid 48279 holds its journal, lease and lanes"
+    },
+    {
+      "name": "host-scope",
+      "pass": true,
+      "detail": "admitted on darwin-strict/quick: GOOS darwin NPROC 2666 mem 17179869184"
+    },
+    {
+      "name": "protocol",
+      "pass": true,
+      "detail": "codec status frame accepted plus clean EOF; version facts bound in snapshot sha256:e27821427c7bfb4d"
+    },
+    {
+      "name": "enforcement",
+      "pass": true,
+      "detail": "quick scope charged 1 proc (1048576 mem declared), released, disposed; lane grant completed"
+    },
+    {
+      "name": "journal",
+      "pass": true,
+      "detail": "spawn intent closed in T journal"
+    },
+    {
+      "name": "recovery",
+      "pass": true,
+      "detail": "drain complete, live 0, scan allows artifact1-cleanup"
+    },
+    {
+      "name": "receipt",
+      "pass": true,
+      "detail": "artifact1-cleanup records a complete pass (cleanup-complete)"
+    }
+  ],
+  "release": {
+    "offered": true,
+    "writerDone": true,
+    "accepted": true,
+    "malformed": false,
+    "eof": true,
+    "reaped": true,
+    "exitCode": 0,
+    "signaled": false,
+    "leaseHeld": true,
+    "leaseReleased": true,
+    "orphan": false,
+    "clean": true
+  },
+  "receipt": {
+    "operationId": "artifact1-cleanup",
+    "outcome": "pass",
+    "reason": "cleanup-complete",
+    "removed": false,
+    "complete": true
+  }
+}
