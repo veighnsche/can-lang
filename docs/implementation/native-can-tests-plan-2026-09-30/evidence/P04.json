@@ -1,0 +1,79 @@
+{
+  "acceptance_prerequisite_receipts": [],
+  "changed_paths": [
+    "tools/native-test-reference/",
+    "run/acceptance/can-r-seed-626bf037-bun-1.4.2-darwin-arm64-v1/ (untracked by design)",
+    ".gitignore"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "gofmt -l + go vet + go test -count=1 ./tools/native-test-reference/",
+      "deadline": "180s",
+      "result": "clean; ok 0.639s; exit 0"
+    },
+    {
+      "command": "git worktree add --detach /tmp/p04-seedsrc 626bf037 (54M tracked-only)",
+      "deadline": "180s",
+      "result": "HEAD at 626bf037, status clean; exit 0"
+    },
+    {
+      "command": "worktree cataloguegen --check --root . (selection's own tool)",
+      "deadline": "240s",
+      "result": "exit 0, mirrors byte-identical"
+    },
+    {
+      "command": "temp driver: SelectFiles + VerifyPristine + DistbuildDriftFree + Build + Seal",
+      "deadline": "300s",
+      "result": "333 runtime files / 4071877 bytes; pristine; drift-free; staged can-r-seed-626bf037-bun-1.4.2-darwin-arm64-v1 (101M); manifest written; exit 0"
+    },
+    {
+      "command": "staged bin/canlc version (inspection, not run)",
+      "deadline": "60s",
+      "result": "canlc r-seed-626bf037; exit 0"
+    },
+    {
+      "command": "seed manifest audit (bundle math + hashes)",
+      "deadline": "60s",
+      "result": "337 bundle files = 333 runtime + tsconfig + target.json + bun exec + canlc; go1.27.1 matches proposal observation"
+    }
+  ],
+  "commits": [
+    "<this commit> seed materialization support"
+  ],
+  "correction_registry_head": null,
+  "coverage": {
+    "case_check_ids": [],
+    "retained_facets": [],
+    "unrun_or_blocked": [
+      "seed qualification for judge features is P05 work; this task materializes and seals only, never judges"
+    ],
+    "variants_and_environments": []
+  },
+  "evidence_note": "Build manifest: evidence/P04-manifest.json (copy of the sealed acceptance manifest). Disposal receipt: evidence/P04-disposal.json.",
+  "executor": "Muse (muse-spark-1.3-contributor) as integrator; P04",
+  "limitations": [
+    "seed pinned at selection head 626bf037 (pre-P20 compiler reports); R stays fixed while C evolves, per the seal semantics",
+    "proposal aggregates reconciled as 333 tracked files (336 minus 3 ignored .DS_Store strays, never identity) and 4071877 bytes (20492 stray bytes excluded); per-file hashes seal forward identity",
+    "Go toolchain and host are observed (go1.27.1 darwin/arm64), not pinned, per the proposal",
+    "DisposeWorktree covers plain dirs; git worktrees additionally need worktree remove/prune (used for this disposal)"
+  ],
+  "manifest_sha256": "51a5f65363aabca0871816b1a37f296e796b15c1505e4909a3e986e3cff65c3c",
+  "relevance_decision": null,
+  "resource_and_cleanup_receipts": [
+    "disposed /tmp/p04-seedsrc worktree + tools/.tmp-materialize driver with receipt (evidence/P04-disposal.json); verified gone",
+    "staged seed (101M) retained under run/acceptance ownership; run/ added to .gitignore",
+    "no repo writes outside owned P04 paths (verified via git status scope)"
+  ],
+  "retirement_commit": null,
+  "retirement_eligible": false,
+  "reviewer_disposition": "integrator-built: chose pristine-selection worktree over live-tree re-selection because the plan's 'mutation after selection invalidates' rule fixes R at selection; verified bootstrap-tool drift-free status in code before running the current tree's distbuild. Independent final review deferred to Z06.",
+  "row_or_file_slice": null,
+  "seed_root": "run/acceptance/can-r-seed-626bf037-bun-1.4.2-darwin-arm64-v1",
+  "start_prerequisite_receipts": [
+    "P03 complete in 1a78fbc1",
+    "P25 complete"
+  ],
+  "status": "complete",
+  "task_id": "P04",
+  "writing_owner": "shared-reference"
+}

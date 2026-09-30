@@ -31,6 +31,9 @@ __pycache__/
 # test / coverage artifacts (root-level tool output only; the
 # tests/native-can/src/coverage/ package is tracked source)
 /coverage/
+
+# Acceptance staging: sealed reference seeds live here untracked by design.
+/run/
 *.coverprofile
 playwright-report/
 test-results/

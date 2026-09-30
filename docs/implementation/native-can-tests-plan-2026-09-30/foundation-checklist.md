@@ -86,7 +86,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P04 — Materialize reference seed
 
-- [ ] **P04 accepted** — owner lane: `shared-reference`.
+- [x] **P04 accepted** — owner lane: `shared-reference`. Evidence: [evidence/P04.json](evidence/P04.json).
 
 **Start after:** P03, P25. **Additional acceptance prerequisites:** none.
 

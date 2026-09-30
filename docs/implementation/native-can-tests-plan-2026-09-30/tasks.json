@@ -234,7 +234,7 @@
       "acceptance": "Exact compiler/runtime/Bun contents and input graph are sealed; mutation after selection invalidates.",
       "evidence": "Save build manifest and disposal receipt; commit seed materialization support.",
       "commit": "feat(testing): materialize reference seed",
-      "status": "planned",
+      "status": "complete",
       "start_after": [
         "P03",
         "P25"
@@ -327,7 +327,7 @@
       "acceptance": "Same ID/same arguments joins; changed arguments reject; lost acknowledgment reports indeterminate without redispatch. Subject stdout cannot forge a supervisor message.",
       "evidence": "Save frame/dispatch controls; commit service core.",
       "commit": "feat(testing): implement grants and idempotent dispatch",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P07",
         "P02"
@@ -510,7 +510,7 @@
       "acceptance": "Early `ok`, missing/duplicate check, malformed report, forged terminal, caught mismatch and cleanup failure cannot pass; true behavior failure remains visible beside cleanup error.",
       "evidence": "Save vector fixtures and assertion outcomes; commit reducer.",
       "commit": "feat(testing): reduce can evidence and outcomes",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P15",
         "P16"
@@ -1091,7 +1091,7 @@
         "P01"
       ],
       "accept_after": [],
-      "status": "planned",
+      "status": "active",
       "scope": "mechanism code and local controls; no integrated credit"
     },
     {
