@@ -38,7 +38,7 @@
     }
   ],
   "commits": [
-    "<this commit> seed materialization support"
+    "fdcb8362 seed materialization support"
   ],
   "correction_registry_head": null,
   "coverage": {
