@@ -1,0 +1,10 @@
+{
+  "schema_version": "1",
+  "run_id": "run-20260930-001",
+  "launch_id": "launch-0002",
+  "entry": "direct-entry",
+  "argv": [],
+  "env_names": [],
+  "env_digest": "sha256:d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2",
+  "log_sink": "none"
+}

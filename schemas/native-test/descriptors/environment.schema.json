@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://can-lang.org/schemas/native-test/1/descriptors/environment",
+  "title": "Native-test launch environment",
+  "description": "K17 contract: distinguishes the C CLI environment from the direct-entry environment for one launch. The environment carries argv and env names only plus a binding digest of the materialized environment; values, secrets and log paths are unrepresentable (log routing is an fd enum, unknown fields rejected), so no secret argv/log can ride the wire.",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "arg": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "envName": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{0,63}$"
+    }
+  },
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1"
+    },
+    "run_id": {
+      "$ref": "#/$defs/id"
+    },
+    "launch_id": {
+      "$ref": "#/$defs/id"
+    },
+    "entry": {
+      "type": "string",
+      "enum": ["c-cli", "direct-entry"]
+    },
+    "argv": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/arg"
+      },
+      "maxItems": 64
+    },
+    "env_names": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/envName"
+      },
+      "maxItems": 128
+    },
+    "env_digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "log_sink": {
+      "type": "string",
+      "enum": ["fd1", "fd2", "none"]
+    }
+  },
+  "required": ["schema_version", "run_id", "launch_id", "entry", "argv", "env_names", "env_digest", "log_sink"],
+  "additionalProperties": false
+}

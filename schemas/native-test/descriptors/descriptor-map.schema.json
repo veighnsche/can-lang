@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://can-lang.org/schemas/native-test/1/descriptors/descriptor-map",
+  "title": "Native-test launch descriptor map",
+  "description": "K17 contract: pins the exact fd 0/1/2/3/4 wiring for one fresh launch. Every descriptor is N-owned (N owns ExtraFiles); fd numbers above 4 are unrepresentable so no private owner fd can appear. Each launch carries its own launch_id and a fresh snapshot binding; reused snapshot state is unrepresentable.",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "descriptor": {
+      "type": "object",
+      "properties": {
+        "fd": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "owner": {
+          "const": "N"
+        },
+        "direction": {
+          "type": "string",
+          "enum": ["in", "out", "hold"]
+        },
+        "byte_state": {
+          "type": "string",
+          "enum": ["none", "streaming", "exhausted"]
+        },
+        "eof_state": {
+          "type": "string",
+          "enum": ["none", "open", "eof-sent", "eof-observed", "closed"]
+        },
+        "lifetime": {
+          "type": "string",
+          "enum": ["active", "released"]
+        },
+        "bytes_offered": {
+          "$ref": "#/$defs/count"
+        },
+        "bytes_accepted": {
+          "$ref": "#/$defs/count"
+        }
+      },
+      "required": ["fd", "owner", "direction", "byte_state", "eof_state", "lifetime", "bytes_offered", "bytes_accepted"],
+      "additionalProperties": false
+    },
+    "snapshot": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "const": "fresh"
+        },
+        "generation_digest": {
+          "$ref": "#/$defs/digest"
+        }
+      },
+      "required": ["state", "generation_digest"],
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1"
+    },
+    "run_id": {
+      "$ref": "#/$defs/id"
+    },
+    "launch_id": {
+      "$ref": "#/$defs/id"
+    },
+    "snapshot": {
+      "$ref": "#/$defs/snapshot"
+    },
+    "descriptors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/descriptor"
+      },
+      "minItems": 5,
+      "maxItems": 5
+    }
+  },
+  "required": ["schema_version", "run_id", "launch_id", "snapshot", "descriptors"],
+  "additionalProperties": false
+}

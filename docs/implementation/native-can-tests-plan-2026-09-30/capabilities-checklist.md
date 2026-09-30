@@ -262,7 +262,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K17 — Specify descriptor and environment contract
 
-- [ ] **K17 accepted** — owner lane: `descriptor`.
+- [x] **K17 accepted** — owner lane: `descriptor`. Evidence: [evidence/K17.json](evidence/K17.json).
 
 **Start after:** P01. **Additional acceptance prerequisites:** none.
 

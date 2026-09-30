@@ -1,0 +1,61 @@
+{
+  "schema_version": "1",
+  "run_id": "run-20260930-001",
+  "launch_id": "launch-0009",
+  "snapshot": {
+    "state": "fresh",
+    "generation_digest": "sha256:a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3"
+  },
+  "descriptors": [
+    {
+      "fd": 0,
+      "owner": "N",
+      "direction": "in",
+      "byte_state": "streaming",
+      "eof_state": "open",
+      "lifetime": "active",
+      "bytes_offered": 0,
+      "bytes_accepted": 0
+    },
+    {
+      "fd": 1,
+      "owner": "N",
+      "direction": "in",
+      "byte_state": "streaming",
+      "eof_state": "open",
+      "lifetime": "active",
+      "bytes_offered": 0,
+      "bytes_accepted": 0
+    },
+    {
+      "fd": 2,
+      "owner": "N",
+      "direction": "out",
+      "byte_state": "streaming",
+      "eof_state": "open",
+      "lifetime": "active",
+      "bytes_offered": 0,
+      "bytes_accepted": 0
+    },
+    {
+      "fd": 3,
+      "owner": "N",
+      "direction": "in",
+      "byte_state": "streaming",
+      "eof_state": "open",
+      "lifetime": "active",
+      "bytes_offered": 0,
+      "bytes_accepted": 0
+    },
+    {
+      "fd": 4,
+      "owner": "N",
+      "direction": "hold",
+      "byte_state": "none",
+      "eof_state": "none",
+      "lifetime": "active",
+      "bytes_offered": 0,
+      "bytes_accepted": 0
+    }
+  ]
+}
