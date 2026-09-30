@@ -14,8 +14,8 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "TBD N acceptance",
-    "TBD P10 status-pipe fix (shared owner code)"
+    "e2945168 N acceptance",
+    "6bc0915b P10 status-pipe fix (shared owner code)"
   ],
   "changed_paths": [
     "tools/native-test-owner/acceptance/",
@@ -61,7 +61,7 @@
     "suite": "re-exec test-binary N subjects (version-attested) + /bin/sh fixtures; t.TempDir only; no live suite, no network",
     "artifact": "n-acceptance.json committed separately (complete, 7/7 checks, pass receipt)",
     "host_profile": "darwin-strict/quick re-probed at selection; drift refuses",
-    "observer": "T: own journal, process owner, lease, admission lanes, recovery gate — separate graph from N"
+    "observer": "T: own journal, process owner, lease, admission lanes, recovery gate \u2014 separate graph from N"
   },
   "coverage": {
     "case_check_ids": [],
@@ -84,7 +84,7 @@
     ]
   },
   "integrator_fixes": [
-    "P10 status-pipe race (worker-V's finding, proven + fixed by integrator): Spawn used cmd.StdoutPipe with an eager cmd.Wait goroutine, and Go's Wait closes StdoutPipe read ends once the child exits — late collection on perfect fast-child behavior failed deterministically with 'file already closed' (proven by TestCollectAfterChildExit failing pre-fix). Spawn now uses a manual os.Pipe with owner-held lifetime (parent drops its write copy after Start; read end held until EOF/abort). All 11 consumer packages re-verified green",
+    "P10 status-pipe race (worker-V's finding, proven + fixed by integrator): Spawn used cmd.StdoutPipe with an eager cmd.Wait goroutine, and Go's Wait closes StdoutPipe read ends once the child exits \u2014 late collection on perfect fast-child behavior failed deterministically with 'file already closed' (proven by TestCollectAfterChildExit failing pre-fix). Spawn now uses a manual os.Pipe with owner-held lifetime (parent drops its write copy after Start; read end held until EOF/abort). All 11 consumer packages re-verified green",
     "removed P14 helper's 1s status hold (the in-scope mitigation is no longer needed; the suite passing without it, happy in 0.09s, proves the P10 fix end-to-end) and corrected its stale comment",
     "refuse() now passes the reserved cleanup-target path to the denial request: previously every refusal with a target misreported replaced-path (authority mismatch on empty path) and dropped the operative denial; pinned by TestRefuseCarriesDenialWithTarget"
   ],
