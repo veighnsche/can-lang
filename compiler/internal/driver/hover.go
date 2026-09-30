@@ -340,7 +340,7 @@ func formatHoverBound(bound syntax.ErrorBound) (string, bool) {
 		}
 		parts[i] = rendered
 	}
-	return "emits [" + strings.Join(parts, ", ") + "]", true
+	return "emits {" + strings.Join(parts, ", ") + "}", true
 }
 
 // formatHoverParameters renders one canonical type-parameter suffix.

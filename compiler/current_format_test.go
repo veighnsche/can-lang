@@ -14,7 +14,7 @@ const formatMain = `package app
 
 // total with tip
 fn   int   tally
-    emits []
+    emits {}
     given
         int seed  // per cover
     asserts

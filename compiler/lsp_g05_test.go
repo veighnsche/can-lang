@@ -29,7 +29,7 @@ const g05Fallback = `package app
     uses []
 
 fn int combine
-    emits []
+    emits {}
     given
         near int prefix
         int value
@@ -38,13 +38,13 @@ fn int combine
     ok prefix + value
 
 fn int run
-    emits []
+    emits {}
     given
         int seed
     asserts
         sample: 1 => ok 3
     int prefix = seed + 1
-    callable int (int) emits [] action = callable combine
+    callable int (int) emits {} action = callable combine
     ok call action(seed)
 `
 

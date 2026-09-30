@@ -21,13 +21,13 @@ const g03Main = `package app
     uses []
 
 record holder
-    callable int (int) emits [] action
+    callable int (int) emits {} action
     int tag
 
 holder shared = holder(callable helper, 0)
 
 fn int helper
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -35,7 +35,7 @@ fn int helper
     ok value
 
 fn int combine
-    emits []
+    emits {}
     given
         near int prefix
         int value
@@ -44,17 +44,17 @@ fn int combine
     ok prefix + value
 
 fn int run
-    emits []
+    emits {}
     given
         int seed
     asserts
         sample: 1 => ok 4
     int doubled = seed + seed
-    callable int (int) emits [] action = callable combine with prefix = doubled
+    callable int (int) emits {} action = callable combine with prefix = doubled
     ok call action(doubled) + shared.tag
 
 fn int shadowed
-    emits []
+    emits {}
     given
         int seed
     asserts
@@ -71,7 +71,7 @@ const g03Second = `package app
     uses []
 
 fn int describe
-    emits []
+    emits {}
     given
         int seed
     asserts

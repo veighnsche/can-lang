@@ -24,13 +24,13 @@ const g02Main = `package app
     uses []
 
 record holder
-    callable int (int) emits [] action
+    callable int (int) emits {} action
     int tag
 
 holder shared = holder(callable helper, 0)
 
 fn int helper
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -38,7 +38,7 @@ fn int helper
     ok value
 
 fn int run
-    emits []
+    emits {}
     given
         int seed
     asserts
@@ -132,7 +132,7 @@ func TestG02InitializeAdvertisesHover(t *testing.T) {
 func TestG02HoverCallbackCallee(t *testing.T) {
 	_, frames := g02Exchange(t, g02Main, "callable help|er", 2)
 	result := g02Result(t, frames, 2)
-	want := "```can\nfn int helper\nemits []\ngiven\n    int value\n```\n\npackage app"
+	want := "```can\nfn int helper\nemits {}\ngiven\n    int value\n```\n\npackage app"
 	if got := g02Contents(t, result); got != want {
 		t.Fatalf("hover contents:\n%s\nwant:\n%s", got, want)
 	}
@@ -146,7 +146,7 @@ func TestG02HoverCallbackCallee(t *testing.T) {
 func TestG02HoverDeclarationName(t *testing.T) {
 	_, frames := g02Exchange(t, g02Main, "fn int r|un", 2)
 	result := g02Result(t, frames, 2)
-	want := "```can\nfn int run\nemits []\ngiven\n    int seed\n```\n\npackage app"
+	want := "```can\nfn int run\nemits {}\ngiven\n    int seed\n```\n\npackage app"
 	if got := g02Contents(t, result); got != want {
 		t.Fatalf("hover contents:\n%s\nwant:\n%s", got, want)
 	}
@@ -174,7 +174,7 @@ func TestG02HoverSharedRecordField(t *testing.T) {
 func TestG02HoverCallbackField(t *testing.T) {
 	_, frames := g02Exchange(t, g02Main, "shared.act|ion", 2)
 	result := g02Result(t, frames, 2)
-	want := "```can\ncallable int (int) emits [] holder.action\n```\n\npackage app"
+	want := "```can\ncallable int (int) emits {} holder.action\n```\n\npackage app"
 	if got := g02Contents(t, result); got != want {
 		t.Fatalf("hover contents:\n%s\nwant:\n%s", got, want)
 	}
@@ -188,7 +188,7 @@ func TestG02HoverCallbackField(t *testing.T) {
 func TestG02HoverRecordName(t *testing.T) {
 	_, frames := g02Exchange(t, g02Main, "hold|er shared", 2)
 	result := g02Result(t, frames, 2)
-	want := "```can\nrecord holder\n    callable int (int) emits [] action\n    int tag\n```\n\npackage app"
+	want := "```can\nrecord holder\n    callable int (int) emits {} action\n    int tag\n```\n\npackage app"
 	if got := g02Contents(t, result); got != want {
 		t.Fatalf("hover contents:\n%s\nwant:\n%s", got, want)
 	}
@@ -279,7 +279,7 @@ func TestG02HoverWarnedFile(t *testing.T) {
 		`{"jsonrpc":"2.0","method":"exit"}`,
 	})
 	result := g02Result(t, frames, 2)
-	want := "```can\nfn int forwarded\nemits []\ngiven\n    int left\n    int right\n```\n\npackage app"
+	want := "```can\nfn int forwarded\nemits {}\ngiven\n    int left\n    int right\n```\n\npackage app"
 	if got := g02Contents(t, result); got != want {
 		t.Fatalf("hover contents:\n%s\nwant:\n%s", got, want)
 	}

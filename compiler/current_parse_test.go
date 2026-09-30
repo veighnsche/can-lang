@@ -15,7 +15,7 @@ func TestCurrentParseNeverEvaluatesBodiesOrAssertions(t *testing.T) {
     provides [run]
     uses [network]
 fn int run
-    emits []
+    emits {}
     asserts
         explosive: => ok (1 / 0)
     int value = call network::must_not_run()
@@ -53,7 +53,7 @@ func TestCurrentParseRejectsLegacySyntaxAndHasNoPartialOutput(t *testing.T) {
 		"rev/extern":  "rev 1\nextern fetch\n",
 		"mod header":  "mod scalars\n    provides [thing]\n",
 		"effects":     "package app\n    provides []\n    uses []\nfn int bump\n    effects [total.read]\n    ok 1\n",
-		"given table": "package app\n    provides []\n    uses []\nfn int f\n    emits []\n    given\n        int x\n    asserts\n        sample: 1 => ok 1\n    ok x\n    given\n        sample: 1 => ok 1\n",
+		"given table": "package app\n    provides []\n    uses []\nfn int f\n    emits {}\n    given\n        int x\n    asserts\n        sample: 1 => ok 1\n    ok x\n    given\n        sample: 1 => ok 1\n",
 		"decreases":   "fn int loop\n    decreases n\n    ok 1\n",
 	}
 	for name, source := range cases {

@@ -22,7 +22,7 @@ const serverMain = `package app
     uses []
 
 fn int helper
-    emits []
+    emits {}
     given
         int seed
     asserts
@@ -30,7 +30,7 @@ fn int helper
     ok seed
 
 fn int tally
-    emits []
+    emits {}
     given
         int seed
     asserts
@@ -43,7 +43,7 @@ const serverSecond = `package app
     uses []
 
 fn str describe
-    emits []
+    emits {}
     given
         int seed
     asserts
@@ -56,7 +56,7 @@ const serverPoison = `package offline
     uses []
 
 fn int run_poison
-    emits []
+    emits {}
     asserts
         explosive: => ok (1 / 0)
     ok (1 / 0)
@@ -434,7 +434,7 @@ connection classifier
         model "jev-latest"
 
 fn float report
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         float probability
         str marker
@@ -443,7 +443,7 @@ fn float report
     ok probability
 
 record choice_weights choice float weights from classifier
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     confidence as certainty
     asks "Weights"
         first "First" => relay call report(% + certainty, "C")
@@ -452,7 +452,7 @@ record choice_weights choice float weights from classifier
 choice_weights tally = choice_weights(0.1, 0.2, 0.3)
 
 fn float show
-    emits []
+    emits {}
     given
         int seed
     asserts

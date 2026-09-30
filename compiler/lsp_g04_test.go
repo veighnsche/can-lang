@@ -32,7 +32,7 @@ var g04Main = strings.Replace(g03Main,
 	1) + `
 fn int describe
     on holder self
-    emits []
+    emits {}
     given
         int extra
     asserts
@@ -190,7 +190,7 @@ func TestG04InitializeAdvertisesCompletion(t *testing.T) {
 func TestG04CompletionLocalScope(t *testing.T) {
 	items := g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", "ok call action(doub|led)", 2)
 	g04WantKindLabels(t, items, compVariable, []string{"action", "doubled", "seed"})
-	if item := g04Find(t, items, "action"); item["detail"] != "callable int (int) emits []" || item["documentation"] != "local binding" {
+	if item := g04Find(t, items, "action"); item["detail"] != "callable int (int) emits {}" || item["documentation"] != "local binding" {
 		t.Fatalf("action candidate wrong: %v", item)
 	}
 	if item := g04Find(t, items, "doubled"); item["detail"] != "int" || item["documentation"] != "local binding" {
@@ -340,7 +340,7 @@ func TestG04CompletionMemberFields(t *testing.T) {
 	if item := g04Find(t, items, "tag"); item["kind"] != float64(compField) || item["detail"] != "int" || item["documentation"] != "field of holder" {
 		t.Fatalf("tag candidate wrong: %v", item)
 	}
-	if item := g04Find(t, items, "action"); item["kind"] != float64(compField) || item["detail"] != "callable int (int) emits []" || item["documentation"] != "field of holder" {
+	if item := g04Find(t, items, "action"); item["kind"] != float64(compField) || item["detail"] != "callable int (int) emits {}" || item["documentation"] != "field of holder" {
 		t.Fatalf("action candidate wrong: %v", item)
 	}
 	missing := strings.Replace(g04Main, "shared.tag", "missing.tag", 1)
@@ -401,12 +401,12 @@ func TestG04CompletionTypeContext(t *testing.T) {
 // TestG04CompletionErrorBound pins emits precision: an empty bound
 // completes to error-eligible names only, with no keywords.
 func TestG04CompletionErrorBound(t *testing.T) {
-	items := g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", "emits [|]", 2)
+	items := g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", "emits {|}", 2)
 	g04WantLabels(t, items, []string{"all_failed"})
 	if keywords := g04Kind(t, items, compKeyword); len(keywords) != 0 {
 		t.Fatalf("keywords in emits position: %v", keywords)
 	}
-	items = g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", "fn int helper\n    emits [|]", 2)
+	items = g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", "fn int helper\n    emits {|}", 2)
 	g04WantLabels(t, items, []string{"all_failed"})
 }
 
@@ -458,7 +458,7 @@ const g04Browser = `package app
     uses [browser]
 
 fn int boot
-    emits []
+    emits {}
     given
         int seed
     asserts

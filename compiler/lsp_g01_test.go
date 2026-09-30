@@ -24,7 +24,7 @@ const g01TrueFirst = `package app
     uses []
 
 fn int pick
-    emits []
+    emits {}
     given
         bool flag
     asserts
@@ -41,7 +41,7 @@ const g01FinalLocal = `package app
     uses []
 
 fn int forwarded
-    emits []
+    emits {}
     given
         int left
         int right
