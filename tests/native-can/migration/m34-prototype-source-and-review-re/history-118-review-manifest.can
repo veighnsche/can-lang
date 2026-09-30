@@ -1,0 +1,34 @@
+package m34history118
+    provides [decide]
+    uses []
+
+/// M34 HISTORY-118 "REVIEW-MANIFEST.json".
+/// Source: tests/host-discrimination/REVIEW-MANIFEST.json.
+/// Related fixtures: the six prototype sources it pins (adapters/*.ts,
+/// companions/*.ts) plus tests/host-discrimination/admission_test.go.
+/// Disposition: PRESERVE. The manifest is the unadmitted-prototype inventory:
+/// status UNREVIEWED-PROTOTYPE with all six prototype sources listed exactly
+/// once as unreviewed. It stays as the selection-context record; the M34
+/// HISTORY-121..126 dispositions and the admission legs cite it. Preserved
+/// history is not execution evidence.
+/// Protects: records unadmitted prototype inventory, tier comparison and
+/// selection context; stored document/manifest observation.
+/// Variants: none.
+/// Environment: none (stored document; no run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (preserved record; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_118: "HISTORY-118" => ok disposition("HISTORY-118", "preserve", "tests/host-discrimination/REVIEW-MANIFEST.json; M34 HISTORY-121..126", "Unadmitted-prototype inventory retained as the selection-context record; history, not execution evidence.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-118"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-118", "preserve", "tests/host-discrimination/REVIEW-MANIFEST.json; M34 HISTORY-121..126", "Unadmitted-prototype inventory retained as the selection-context record; history, not execution evidence.")

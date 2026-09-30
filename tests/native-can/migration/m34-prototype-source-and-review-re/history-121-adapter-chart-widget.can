@@ -1,0 +1,36 @@
+package m34history121
+    provides [decide]
+    uses []
+
+/// M34 HISTORY-121 "adapters/chart-widget.ts".
+/// Source: tests/host-discrimination/adapters/chart-widget.ts.
+/// Related fixtures: tests/host-discrimination/adapters/chart-widget.test.ts
+/// (associated Bun declarations, M32 HISTORY-064..075) and
+/// REVIEW-MANIFEST.json (pins this source unreviewed).
+/// Disposition: OBSOLETE. T2 chart adapter prototype never selected: X-R01-1
+/// assigns Widget C to T3, all M32 HISTORY-064..075 declarations over this
+/// source are obsolete, and the live lifecycle is render/select/release under
+/// d02.chart/1. No caller outside the prototype dir imports it. Conditional
+/// retirement for the integrator once linked rows and callers resolve.
+/// Protects: unadmitted adapter prototype implementation exercised by
+/// associated Bun test declarations; must not be mistaken for production
+/// Can coverage; fake host implementation observation.
+/// Variants: none.
+/// Environment: none (unadmitted source; no run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (no retained behavior; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_121: "HISTORY-121" => ok disposition("HISTORY-121", "obsolete", "M33 HISTORY-091; host/companions/chart.ts", "T2 chart prototype never selected; Widget C lives in the T3 companion under d02.chart/1. Conditional retirement.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-121"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-121", "obsolete", "M33 HISTORY-091; host/companions/chart.ts", "T2 chart prototype never selected; Widget C lives in the T3 companion under d02.chart/1. Conditional retirement.")

@@ -1,0 +1,78 @@
+{
+  "status": "complete",
+  "executor": "Muse (muse-spark-1.3-contributor) via worker-x-m34; integrator review/commit",
+  "writing_owner": "migration-history",
+  "task_id": "M34",
+  "row_or_file_slice": null,
+  "start_prerequisite_receipts": [
+    "P15 complete"
+  ],
+  "acceptance_prerequisite_receipts": [],
+  "commits": [
+    "TBD prototype-source-and-review records"
+  ],
+  "changed_paths": [
+    "tests/native-can/migration/m34-prototype-source-and-review-re/"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "go run ./compiler parse on all 9 .can files (repo root)",
+      "deadline": "300s",
+      "result": "9 parsed, 0 failures (integrator re-run)"
+    },
+    {
+      "command": "python REVIEW-MANIFEST.json status/sources check",
+      "deadline": "60s",
+      "result": "status UNREVIEWED-PROTOTYPE, 6 sources (integrator re-run)"
+    },
+    {
+      "command": "grep x-r01-1.md assignment table (Op A/B T2, Widget C T3)",
+      "deadline": "60s",
+      "result": "confirmed verbatim (integrator re-run)"
+    },
+    {
+      "command": "bounded search for outside importers of the six prototype sources (host/tools/runtime/compiler/tests-native-can)",
+      "deadline": "60s",
+      "result": "zero matches: no code outside tests/host-discrimination imports them (integrator re-run)"
+    }
+  ],
+  "identities": {
+    "reference": null,
+    "owner": null,
+    "candidate": null,
+    "suite": "9 standalone Can disposition packages (m34history118..126); provides [decide], uses []",
+    "artifact": null,
+    "host_profile": null,
+    "observer": null
+  },
+  "coverage": {
+    "case_check_ids": [],
+    "retained_facets": [
+      "HISTORY-118..120 preserved as selection-context records (manifest inventory, tier comparison, T1 sketches); verdict preserve matches the coverage-map preserve_record disposition",
+      "HISTORY-121..126 obsolete with conditional retirement (never-selected T2 chart, verbatim-superseded T2 clipboard/storage, delivered T3 chart companion, excluded T3 clipboard/storage)",
+      "no duplicate Can ports: 122/123/124 behavior already ported by M32/M33 cases (P23 binds there); records need no port",
+      "live-owner cross-references close against retained M32/M33 rows and delivered host sources in both directions"
+    ],
+    "unrun_or_blocked": [
+      "no Can cases here by design; execution credit for the underlying ports waits for P23"
+    ],
+    "variants_and_environments": [
+      "stored documents; no run; no environments"
+    ]
+  },
+  "integrator_fixes": [],
+  "resource_and_cleanup_receipts": [
+    "no live runs, no R-seed use (relevance decisions need no live qualification)",
+    "no repo writes outside the owned M34 prefix; shared old files untouched; no deletions",
+    "no /tmp scratch created"
+  ],
+  "correction_registry_head": null,
+  "relevance_decision": null,
+  "retirement_eligible": false,
+  "retirement_commit": null,
+  "reviewer_disposition": "integrator accepted as-is: re-ran all 9 parses; read every file (323 lines); verified the manifest status/count, the assignment table, the zero-outside-caller sweep, and every M32/M33 live-owner cross-reference. The new preserve verdict is faithful: the coverage-map disposition for 118..120 is preserve_record, the row_gates retain/migrate/obsolete triple governs live behavior (these records are not behavior), and the retirement policy preserves historical records where useful; M33 used preserve only in prose, so this introduces the verdict string deliberately and consistently. Conditional retirement of the six sources is ready whenever linked M32/M33 rows resolve (prototype-test callers all dispositioned; no outside importers) but stays gated on Z02/Z04, not this task. Independent final review deferred to Z06.",
+  "limitations": [
+    "dispositions only: no Can case/check mapping here (records need none; ports live in M32/M33)",
+    "preserve is a new verdict string in the migration corpus, grounded in the coverage-map preserve_record disposition rather than the row_gates triple"
+  ]
+}

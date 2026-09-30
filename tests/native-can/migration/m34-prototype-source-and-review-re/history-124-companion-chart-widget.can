@@ -1,0 +1,38 @@
+package m34history124
+    provides [decide]
+    uses []
+
+/// M34 HISTORY-124 "companions/chart-widget.ts".
+/// Source: tests/host-discrimination/companions/chart-widget.ts.
+/// Related fixtures: tests/host-discrimination/companions/chart-widget.test.ts
+/// (associated Bun declarations, M33 HISTORY-091..098) and
+/// REVIEW-MANIFEST.json (pins this source unreviewed).
+/// Disposition: OBSOLETE. T3 chart companion prototype superseded by the
+/// delivered reviewed companion: host/companions/chart.ts inherits its
+/// validators, codecs and failure leaves verbatim under the d02.chart/1
+/// contract, and the retained behavior is already ported by the M33
+/// HISTORY-091..098 Can cases (P23 qualification binds there). No caller
+/// outside the prototype dir imports it. Conditional retirement for the
+/// integrator once linked rows and callers resolve; no duplicate Can port.
+/// Protects: unadmitted companion prototype implementation exercised by
+/// associated Bun test declarations; must not be mistaken for production
+/// Can coverage; fake host implementation observation.
+/// Variants: none.
+/// Environment: none (unadmitted source; no run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: bound in the M33 HISTORY-091..098 ports at P23; state not bound here.
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_124: "HISTORY-124" => ok disposition("HISTORY-124", "obsolete", "host/companions/chart.ts; M33 HISTORY-091..098", "Superseded by the reviewed T3 companion under d02.chart/1; behavior already ported by M33 Can cases. Conditional retirement.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-124"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-124", "obsolete", "host/companions/chart.ts; M33 HISTORY-091..098", "Superseded by the reviewed T3 companion under d02.chart/1; behavior already ported by M33 Can cases. Conditional retirement.")

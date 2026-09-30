@@ -1,0 +1,37 @@
+package m34history125
+    provides [decide]
+    uses []
+
+/// M34 HISTORY-125 "companions/clipboard.ts".
+/// Source: tests/host-discrimination/companions/clipboard.ts.
+/// Related fixtures: tests/host-discrimination/companions/clipboard.test.ts
+/// (associated Bun declarations, M33 HISTORY-099..105) and
+/// REVIEW-MANIFEST.json (pins this source unreviewed).
+/// Disposition: OBSOLETE. T3 clipboard companion prototype never selected:
+/// X-R01-1 excludes T3 for Op B by measurement, all M33 HISTORY-099..105
+/// declarations over this source are obsolete, and Op B lives in the T2
+/// reviewed adapter host/adapters/clipboard.ts. No caller outside the
+/// prototype dir imports it. Conditional retirement for the integrator once
+/// linked rows and callers resolve.
+/// Protects: unadmitted companion prototype implementation exercised by
+/// associated Bun test declarations; must not be mistaken for production
+/// Can coverage; fake host implementation observation.
+/// Variants: none.
+/// Environment: none (unadmitted source; no run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (no retained behavior; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_125: "HISTORY-125" => ok disposition("HISTORY-125", "obsolete", "M32 HISTORY-076..083; host/adapters/clipboard.ts", "T3 clipboard prototype excluded by measurement; Op B lives in the T2 reviewed adapter. Conditional retirement.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-125"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-125", "obsolete", "M32 HISTORY-076..083; host/adapters/clipboard.ts", "T3 clipboard prototype excluded by measurement; Op B lives in the T2 reviewed adapter. Conditional retirement.")

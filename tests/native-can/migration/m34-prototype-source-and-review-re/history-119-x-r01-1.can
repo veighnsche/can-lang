@@ -1,0 +1,33 @@
+package m34history119
+    provides [decide]
+    uses []
+
+/// M34 HISTORY-119 "x-r01-1.md".
+/// Source: tests/host-discrimination/x-r01-1.md.
+/// Related fixtures: catalogue/t1-sketches.md, REVIEW-MANIFEST.json and the
+/// six prototype sources it compares (adapters/*.ts, companions/*.ts).
+/// Disposition: PRESERVE. The X-R01-1 comparison record assigns Op A to T2,
+/// Op B to T2 (T3 excluded by measurement) and Widget C to T3; every M32/M33
+/// retain/obsolete rationale cites it. It stays as the selection-context
+/// record. Preserved history is not execution evidence.
+/// Protects: records unadmitted prototype inventory, tier comparison and
+/// selection context; stored document/manifest observation.
+/// Variants: none.
+/// Environment: none (stored document; no run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (preserved record; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_119: "HISTORY-119" => ok disposition("HISTORY-119", "preserve", "tests/host-discrimination/x-r01-1.md; M32/M33 dispositions", "Tier comparison and selection record retained as history; grounds M32/M33 dispositions, not execution evidence.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-119"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-119", "preserve", "tests/host-discrimination/x-r01-1.md; M32/M33 dispositions", "Tier comparison and selection record retained as history; grounds M32/M33 dispositions, not execution evidence.")
