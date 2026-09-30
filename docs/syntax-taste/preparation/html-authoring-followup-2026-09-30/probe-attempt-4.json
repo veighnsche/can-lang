@@ -1,0 +1,19 @@
+{
+  "scope": "Disposable one-page development check, not release or browser qualification",
+  "source_commit": "6d5435baf453bec4f5c85b89cbdff1ebaaa5e45c",
+  "shared_fixture_correction": "Removed prepared_editor/prepare layer and inlined identical typed preparation in both candidates; prior record-return bare-ok assertions fail build.",
+  "inputs": {
+    "baseline": "5d6b8ce30335fe41fa13155b77d498f554ce5cb6d37b74d338f68f4da9f13126",
+    "components": "c19fccf0a1dbf5a1c704c05d5571090dcf13b115aa1dc36f03c364af6808c950",
+    "tree": "bda7a988a34cd7b635530ba56fdd8e2f2fcc4ab73a31f37f1e5a9da169648a3c",
+    "components_edit": "15ad7384213618fc973ea97b53c29d20c5a7d7f127037b4ec9da20de78130dfc",
+    "tree_edit": "d5e5d2bf0cee69caecf3ffffc8c4d60d5154a2c2e24e23fe024e346a665dcc77"
+  },
+  "compiler": "canlc html-research",
+  "build": {
+    "exit": 1,
+    "stdout": "",
+    "stderr": "concrete function can.project.root/tree::editor: $EVIDENCE/html-authoring-1h_firjq/page/src/tree/page.can region can.project.root/tree::editor: no eligible declaration for \"parts\"\n"
+  },
+  "temporary_builds_reclaimed": true
+}

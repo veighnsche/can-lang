@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "evidence": "The decision concerns an investigation of one Manolea draft-service page in Can, which is intended for AI coding. Judge generation correctness, explicit typing, parent-child reasoning, error localization and edit preservation ahead of compactness. This screen has limited text inputs, a CSRF hidden input, a save POST, and a sibling publish POST for an existing ID; the no-ID branch substitutes an empty paragraph. Baseline code already calls reusable control builders. C introduces typed slot data for input metadata plus dedicated heading and paragraph functions. T keeps that same typed preparation but spells the layout as an indented tree compiled into the existing safe constructor API. No production language adoption is authorized by this comparison. During execution, the common prototype failed because bare ok is not a valid expectation for an opaque-containing record and because domain-fallible attribute calls cannot be used directly as assertion arguments. Inline preparation removed both extra helper layers, after which 131 roots passed. C and T each produce byte-identical baseline HTML for blank, saved and hostile samples. A matched pair of independent agents (identical model, low effort) performed one combined edit apiece: wrap title and notice in section, then put publication immediately ahead of the edit form. Following the shared fixture fixes, both original edit attempts satisfy the exact three-state output oracle. That tiny sample supplies no general success-rate claim. Slot members remain string-typed; choosing another string field still typechecks. T's early rules cover literal nested forms, unknown tags, children of void elements and reuse of an identical attribute expression. A misplaced opaque publication splice is accepted statically; runtime validation catches it for saved records but allows the blank paragraph case. Escaping, opaque trusted values and runtime checking are unchanged across approaches. The external tree experiment only partly validates structure, lacks native editor support and full mapped diagnostics, and cannot see inside opaque splices. Neither multi-page reuse nor broad AI generation and repair costs were tested. No shipping application or compiler implementation was edited."
+  },
+  "questions": {
+    "html_authoring_direction": {
+      "type": "choice",
+      "instructions": "Which development direction is warranted by these observations while avoiding unsupported claims of generation superiority?",
+      "criteria": {
+        "components_only": "Retain components as the final approach with no further tree work, expressing nesting using the existing Can value composition API.",
+        "adopt_tree_now": "Proceed directly to a shipping tree-and-components model, adding integrated language tooling and diagnostic mapping.",
+        "components_now_tree_candidate": "Favor usable components for present work while continuing to regard trees as an unadopted composition proposal; native-location diagnostic proof and more controlled semantic authoring trials should precede a shipping decision."
+      }
+    }
+  }
+}

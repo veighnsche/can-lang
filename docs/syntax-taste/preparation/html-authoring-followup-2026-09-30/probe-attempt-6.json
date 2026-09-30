@@ -1,0 +1,31 @@
+{
+  "scope": "Disposable one-page development check, not release or browser qualification",
+  "source_commit": "6d5435baf453bec4f5c85b89cbdff1ebaaa5e45c",
+  "shared_fixture_correction": "Removed prepared_editor/prepare layer and inlined identical typed preparation in both candidates; prior record-return bare-ok assertions fail build.",
+  "inputs": {
+    "baseline": "5d6b8ce30335fe41fa13155b77d498f554ce5cb6d37b74d338f68f4da9f13126",
+    "components": "c19fccf0a1dbf5a1c704c05d5571090dcf13b115aa1dc36f03c364af6808c950",
+    "tree": "493746281636f57d2912a41da1dc475893dbe608ff90fc6b6b4e7964641e43a6",
+    "components_edit": "15ad7384213618fc973ea97b53c29d20c5a7d7f127037b4ec9da20de78130dfc",
+    "tree_edit": "d6b750ea9195e2e36a229b00fe19d4eb142f4319abb119306ce4f73940d211b6"
+  },
+  "compiler": "canlc html-research",
+  "build": {
+    "kind": "can.build",
+    "assertions": {
+      "roots": 131,
+      "passed": 131,
+      "failed": 0,
+      "evidence": [
+        "real-can"
+      ]
+    },
+    "exit": 0
+  },
+  "render": {
+    "exit": 1,
+    "stdout": "",
+    "stderr": "1 | // Startup controls never reach Bun. Approved env/auth adapters read the caller\n2 | // snapshot instead of process.env, whose HOME/config values belong to the driver.\n3 | import { readFileSync, closeSync } from \"node:fs\";\n4 | const source = JSON.parse(readFileSync(3, \"utf8\"));\n                              ^\nENXIO: no such device or address, read\n syscall: \"read\",\n   errno: -6,\n    code: \"ENXIO\"\n\n      at $EVIDENCE/html-authoring-ptmh8yrx/page/dist/builds/9878a07a224f52ab7cacc8676eda9cf17595b6b55416e6d59edd12acc361d872/runtime/r-53873558f87dbaebcd2a6a7226c19d2e2f39ed7b62a7ff2d41e18aeb4c4c561d/environment.ts:4:27\n\nBun v1.4.2 (macOS arm64)\n"
+  },
+  "temporary_builds_reclaimed": true
+}

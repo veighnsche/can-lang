@@ -1,0 +1,7 @@
+{
+  "rendered_cases": 15,
+  "field_values_limits_labels_csrf_actions_methods_and_hierarchy": "pass",
+  "hostile_inputs_remain_data": "pass",
+  "synthetic_wrong_field_output_rejected": true,
+  "scope": "HTMLParser and exact attribute/text expectations; no browser execution"
+}

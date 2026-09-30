@@ -1,0 +1,34 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "result": "Rejected probe package layout/uses declaration"
+    },
+    {
+      "attempt": 2,
+      "result": "Rejected inherited prepare record-return bare-ok assertions"
+    },
+    {
+      "attempt": 3,
+      "result": "Rejected inherited post_form fallible assertion arguments"
+    },
+    {
+      "attempt": 4,
+      "result": "Rejected stale parts.controls introduced by probe transformation"
+    },
+    {
+      "attempt": 5,
+      "result": "131 assertions passed; observer looked in program instead of packages and found no functions"
+    },
+    {
+      "attempt": 6,
+      "result": "131 assertions passed; observer omitted required FD 3 empty environment input"
+    },
+    {
+      "attempt": 7,
+      "result": "Final run: 131 assertions passed, exact rendering and mutations observed"
+    }
+  ],
+  "first_network_attempt": "Sandbox DNS resolution failed before any Jev response; same reviewed requests succeeded with allowed network access.",
+  "cleanup": "All seven task-owned temporary sidecars/projects removed."
+}

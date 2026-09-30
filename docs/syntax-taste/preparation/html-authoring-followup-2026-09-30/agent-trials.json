@@ -1,0 +1,10 @@
+{
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "low",
+  "attempts_each": 1,
+  "scope": "Independent agents received the semantic edit requirement below; component agent read only components.can; tree agent read only editor.tree and lower_tree.py. No writes/checks by agents. Coordinator executed checks and made two common fixture corrections. Not preregistered population benchmarking.",
+  "requirement": "Group heading and notice inside a section. Put publication immediately before the edit form, as a sibling outside it. Preserve field names/ids/limits, CSRF, action/method, escaping and blank/saved behavior.",
+  "component_result": "Add make_tag(section)/element with [heading,notice_node]; change document children to [section,parts.publication,form]. No helper added.",
+  "tree_result": "Insert section around h1/p subtrees and move node parts.publication before element form at the body-child depth.",
+  "trial_limit": "Authoring edits were first-attempt correct; fixture preparation was not first-attempt buildable. No token-efficiency or comparative reliability inference."
+}

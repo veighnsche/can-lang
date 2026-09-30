@@ -1,0 +1,19 @@
+{
+  "scope": "Disposable one-page development check, not release or browser qualification",
+  "source_commit": "6d5435baf453bec4f5c85b89cbdff1ebaaa5e45c",
+  "shared_fixture_correction": "Removed prepared_editor/prepare layer and inlined identical typed preparation in both candidates; prior record-return bare-ok assertions fail build.",
+  "inputs": {
+    "baseline": "5d6b8ce30335fe41fa13155b77d498f554ce5cb6d37b74d338f68f4da9f13126",
+    "components": "9fd723ace3db44f0674a38548f51f3cf974abeb2eef1d315c8373d6ae150526d",
+    "tree": "d16e4b91f937b3cd91d26a01badcdf38762500e723391ef96b5537cf8a6ea47c",
+    "components_edit": "5ce8e974c0ebfca8ad918558fdbe26a93e0481b848669a17d6c21e00169a9e2f",
+    "tree_edit": "2a3a9528d811c5fab3d61217319610cdd5ab61c2e4cc7e5d5fe74c48f60118e0"
+  },
+  "compiler": "canlc html-research",
+  "build": {
+    "exit": 1,
+    "stdout": "",
+    "stderr": "assertion empty arguments: $EVIDENCE/html-authoring-ryx09qu0/page/src/components/page.can region can.project.root/components::post_form/assert/empty/actual: domain-fallible call requires explicit completion handling\n"
+  },
+  "temporary_builds_reclaimed": true
+}

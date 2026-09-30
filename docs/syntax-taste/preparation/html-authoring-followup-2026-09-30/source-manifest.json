@@ -1,0 +1,87 @@
+{
+  "purpose": "Bounded self-contained comparison fixtures; no production changes or dependency copies.",
+  "source_revision": {
+    "can_lang": "a679b51a24a23aadd84f3be26c7c9b1a55219ae5",
+    "manolea_2": "9405dd995f8b5d2502901bbfaa6a69f077c6c982"
+  },
+  "sources": [
+    {
+      "path": "manolea-2/src/services/services.can",
+      "sha256": "2b251237a1b66fc448f29d5a62b76661134c82ea6fb0766a538712846d4689df",
+      "revision_scope": "Current working-tree file, hash is authoritative if different from recorded commit."
+    },
+    {
+      "path": "manolea-2/src/jobs/jobs.can",
+      "sha256": "7475eeed567c858103e49563632cd933c3c5dd18a68081556b7fab38797e7049",
+      "revision_scope": "Current working-tree file, hash is authoritative if different from recorded commit."
+    }
+  ],
+  "copied_snippets": [
+    {
+      "symbol": "service_fields",
+      "source": "src/services/services.can",
+      "start_line": 60,
+      "end_line": 65,
+      "sha256_original": "d354bab4c5dbeba12f16f700d5de0456c3fa7873f7930d3066f34c386ae5cf9c"
+    },
+    {
+      "symbol": "publish_control",
+      "source": "src/services/services.can",
+      "start_line": 168,
+      "end_line": 186,
+      "sha256_original": "0b5b74f7fe4f1db2bfca1798f10699ab91b22026277bd7459654b33e0b376126"
+    },
+    {
+      "symbol": "state_form",
+      "source": "src/services/services.can",
+      "start_line": 188,
+      "end_line": 210,
+      "sha256_original": "a8654ff9f9d7aee6fe9ca6e5d9cb88c8b8717d5f65a711c1e1b3eb9da7df3d5b"
+    },
+    {
+      "symbol": "editor",
+      "source": "src/services/services.can",
+      "start_line": 249,
+      "end_line": 282,
+      "sha256_original": "5a6e06989bea543c0c7946f385559481f881604e856c0d5c36c189b96c3efe6a"
+    },
+    {
+      "symbol": "input_control",
+      "source": "src/jobs/jobs.can",
+      "start_line": 128,
+      "end_line": 155,
+      "sha256_original": "2291624eaf74f8927966552911d082d0ec31be62188027f684020b4f0f92840b"
+    },
+    {
+      "symbol": "textarea_control",
+      "source": "src/jobs/jobs.can",
+      "start_line": 158,
+      "end_line": 182,
+      "sha256_original": "015be02a88871d4f21f0181ee3aaec7d8fd67b901234140be703bc12f7ea34a0"
+    },
+    {
+      "symbol": "hidden_control",
+      "source": "src/jobs/jobs.can",
+      "start_line": 185,
+      "end_line": 201,
+      "sha256_original": "f93003267a6de9d4f4866823d038c8c1345e22a021541e1a68dbeba661883aeb"
+    },
+    {
+      "symbol": "submit_control",
+      "source": "src/jobs/jobs.can",
+      "start_line": 204,
+      "end_line": 216,
+      "sha256_original": "3f8b2835158af441bcafa111a69f6580dde50125e139af9b14fccfba41eaa0ba"
+    }
+  ],
+  "can_execution_commit": "6d5435baf453bec4f5c85b89cbdff1ebaaa5e45c",
+  "scope": "Original Manolea source provenance; replay uses exact tested components-current.can/editor-current.tree snapshots, avoiding a dependency on mutable untracked preparations.",
+  "files": {
+    "runtime/platform/html.ts": "97f4a63c6aaaac1f8d28be1d749ff22934ce49a7fb9a88f28ad33d2dce0b1786",
+    "compiler/internal/check/completions.go": "aac51dfb1e4817898290c812f5f5d6ccbc304e5c838bc13d5f70c67fbe9e7baa",
+    "compiler/current_types.go": "d0d4573b13db0d228429a7c017417f20032715498f72d2a5e4b1181a7a6a5b7d"
+  },
+  "input_hashes": {
+    "baseline.can": "5d6b8ce30335fe41fa13155b77d498f554ce5cb6d37b74d338f68f4da9f13126"
+  }
+}

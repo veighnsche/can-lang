@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "evidence": "Can targets AI authors; prioritize reliable generation, explicit contracts, hierarchy, precise diagnostics and safe edits over brevity. Compare one real Manolea service-draft editor: named text controls with limits, CSRF, save POST and a separate publication form present only for saved records (blank records have an empty paragraph). The existing page already reuses control helpers. Candidate C adds typed field-slot records and fixed heading/paragraph helpers. Candidate T reuses the same typed preparation and places HTML layout in an indentation tree lowered to current safe constructors. This is an investigation, not authorization to ship a language change. Two initial shared prototype helpers did not build: bare ok cannot assert a record containing opaque values; an assertion argument cannot directly call domain-fallible attribute constructors. Removing those helper layers and inlining ordinary typed preparation allowed 131 assertions to pass. Both corrected candidates render exactly the baseline for blank, saved and hostile data. One independent same-model low-effort agent per notation grouped heading/notice in a section and moved publication before the edit form; both edits preserve exact expected output in all three states after the shared fixture repairs. This n=1 trial per notation is not a reliability estimate. Typed slots still contain strings and do not prevent a same-type wrong field binding. The tree detects literal nested forms, void children, unknown tags and repeated identical attribute expressions early. Opaque publication moved inside the save form passes static checking but fails at runtime for saved records; blank passes. Both share opaque HTML tokens, escaping and runtime validation. The tree is a small external prototype with incomplete checking and no integrated editor or compiler-to-tree diagnostics; its source map is partial. It cannot statically inspect an opaque node's subtree. There is no evidence on broad generation success rates, repair cost or multi-page reuse, and no production source changed."
+  },
+  "questions": {
+    "html_authoring_direction": {
+      "type": "choice",
+      "instructions": "Given only this evidence, what next step best serves dependable AI HTML authoring without assuming an unmeasured advantage?",
+      "criteria": {
+        "components_only": "Use ordinary typed components as the lasting authoring model and close the tree experiment; accept hierarchy expressed through named nodes and child arrays.",
+        "adopt_tree_now": "Adopt tree syntax alongside typed components now, implementing its compiler and editor integration plus mapped diagnostics as production work.",
+        "components_now_tree_candidate": "Use the buildable typed components now and retain the tree as a candidate layout layer. Require original-source diagnostics and further matched semantic edit/repair evidence before deciding on production syntax."
+      }
+    }
+  }
+}

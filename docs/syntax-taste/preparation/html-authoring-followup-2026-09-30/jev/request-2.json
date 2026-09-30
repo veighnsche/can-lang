@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "evidence": "Evaluate HTML writing for an AI-oriented Can language using semantic accuracy, clearly stated contracts, visible nesting, actionable errors and safe transformations, not line savings. The chosen application screen is Manolea's service editor, whose bounded text fields, hidden CSRF, draft POST and conditional publication POST must survive unchanged; without an existing ID, the publication position contains an empty p. Reusable control functions exist in the original implementation. In alternative C, field metadata is collected into typed slots and h1/p construction becomes fixed helpers. Alternative T consumes identical typed preparation through an indented layout notation that emits the established trusted HTML calls. We are investigating and have not approved a production syntax addition. The initial common scaffolding had two invalid assertion patterns: a record wrapping opaque values was expected with bare ok, and fallible attribute creation appeared directly in assertion inputs. Replacing that scaffolding with ordinary local bindings made all 131 assertion roots pass. Three rendered states (empty record, persisted record and hostile text) are byte-equal to the original for C and T. Separate agents with the same model and low reasoning each attempted the same section-wrapping/publication-reordering edit. After the common scaffolding corrections, each first edit matches its expected output across the three states; one sample each cannot establish comparative AI reliability. Ordinary strings remain inside the slot record, so a type-correct value from the wrong field is still possible. Prototype T rejects known literal bad tags, nested forms, void children and an attribute expression repeated verbatim. It accepts a publication node spliced into the draft form; the runtime refuses that nesting only when the publication node actually contains a form, while the empty case succeeds. Trusted tokens, text encoding and runtime structure checks are common to both alternatives. T is an external partial checker/lowerer rather than implemented Can syntax; editor integration and complete source-location diagnostics are missing, and opaque child trees cannot be inspected statically. Broader AI completion rates, repair expenditure and reuse across pages have not been measured. Application and compiler production files remain unchanged."
+  },
+  "questions": {
+    "html_authoring_direction": {
+      "type": "choice",
+      "instructions": "Select the justified follow-up for reliable AI page construction, accounting for the demonstrated limits and untested benefits.",
+      "criteria": {
+        "components_only": "Commit to function-and-record composition alone, discontinue tree exploration, and keep structural relationships in bindings and arrays.",
+        "adopt_tree_now": "Choose the hybrid for immediate production development: build native parsing, checking, editor support and source errors for tree layouts while reusing typed helpers.",
+        "components_now_tree_candidate": "Keep current delivery on valid typed helpers, but leave the declarative layout option open. First demonstrate source-local errors and additional equivalent generation/edit/repair tasks, then decide adoption."
+      }
+    }
+  }
+}

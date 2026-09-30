@@ -114,6 +114,8 @@ Authentication has reusable mechanisms and variable policy. Sessions, credential
 
 HTML is a stronger candidate for a dedicated authoring surface. A [form page](/Users/vince/Projects/manolea-2/src/jobs/jobs.can:219) uses roughly 26 calls to construct tags, attributes, text and nodes despite already using `match chain`. Another kind of chain may shorten prefixes without making the page hierarchy visible. Compare reusable components with a checked tree notation on that exact page, including dynamic lists and conditionals. Preserve [opaque tokens, escaping and validation](/Users/vince/Projects/can-lang/runtime/platform/html.ts:23), typed URLs and useful error locations. Decide from the prototype rather than introducing an HTML-only control-flow mechanism immediately.
 
+The subsequent [service-editor HTML authoring investigation](html-authoring-investigation-2026-09-30.md) compares executable typed components and a checked-tree prototype, including rendered-output checks, independent edits and diagnostic counterexamples.
+
 ## Indentation, option names and generated output
 
 One space is the user's recorded preference. It is feasible with no compatibility obligation, but changes [lexing](/Users/vince/Projects/can-lang/compiler/internal/syntax/lexer.go:88), [formatting](/Users/vince/Projects/can-lang/compiler/internal/syntax/format.go:161), trivia handling, editor settings and the source corpus. Use one canonical format rather than mixed conventions. Flattening the MIME ladder removes depth; changing indentation only reduces its displayed width.

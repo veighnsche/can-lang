@@ -1,0 +1,18 @@
+{
+  "scope": "Disposable one-page development check, not release or browser qualification",
+  "source_commit": "6d5435baf453bec4f5c85b89cbdff1ebaaa5e45c",
+  "inputs": {
+    "baseline": "5d6b8ce30335fe41fa13155b77d498f554ce5cb6d37b74d338f68f4da9f13126",
+    "components": "44a101f2527d4e76b717d44f0c141d185a9d0a063b33778235de7bebf7b40c4e",
+    "tree": "7e5a77ececebfd2bfbee230a8fbee2872a810a68c4b642feee3825c6b6871fb5",
+    "components_edit": "51eedcf43e101535a2e5287f40353efdb7bc219841f40b4c1b7fc42c61768518",
+    "tree_edit": "45180aa731a68b87df53df818331c80ccd121ac54de7717f6f2f7a43dc934cf5"
+  },
+  "compiler": "canlc html-research",
+  "build": {
+    "exit": 1,
+    "stdout": "",
+    "stderr": "assertion blank expected completion: $EVIDENCE/html-authoring-6frzvc8q/page/src/components/page.can region can.project.root/components::prepare/assert/blank/expected: nonvoid success requires a value\n"
+  },
+  "temporary_builds_reclaimed": true
+}

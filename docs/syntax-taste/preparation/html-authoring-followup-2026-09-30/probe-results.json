@@ -1,0 +1,1269 @@
+{
+  "scope": "Disposable one-page development check, not release or browser qualification",
+  "source_commit": "6d5435baf453bec4f5c85b89cbdff1ebaaa5e45c",
+  "shared_fixture_correction": "Removed prepared_editor/prepare layer and inlined identical typed preparation in both candidates; prior record-return bare-ok assertions fail build.",
+  "inputs": {
+    "baseline": "5d6b8ce30335fe41fa13155b77d498f554ce5cb6d37b74d338f68f4da9f13126",
+    "components": "c19fccf0a1dbf5a1c704c05d5571090dcf13b115aa1dc36f03c364af6808c950",
+    "tree": "493746281636f57d2912a41da1dc475893dbe608ff90fc6b6b4e7964641e43a6",
+    "components_edit": "15ad7384213618fc973ea97b53c29d20c5a7d7f127037b4ec9da20de78130dfc",
+    "tree_edit": "d6b750ea9195e2e36a229b00fe19d4eb142f4319abb119306ce4f73940d211b6"
+  },
+  "compiler": "canlc html-research",
+  "build": {
+    "kind": "can.build",
+    "assertions": {
+      "roots": 131,
+      "passed": 131,
+      "failed": 0,
+      "evidence": [
+        "real-can"
+      ]
+    },
+    "exit": 0
+  },
+  "equivalence": {
+    "blank": true,
+    "saved": true,
+    "hostile": true
+  },
+  "edit_equivalence": {
+    "blank": true,
+    "saved": true,
+    "hostile": true
+  },
+  "independent_edits": {
+    "components": "first attempt passes exact expected HTML in three states",
+    "tree": "first attempt passes exact expected HTML in three states",
+    "samples_per_approach": 1,
+    "candidate_edit_repairs": 0,
+    "shared_fixture_repairs": 2,
+    "not_a_statistical_reliability_estimate": true
+  },
+  "static_diagnostics": {
+    "component_wrong_text_type": {
+      "exit": 1,
+      "diagnostics": "concrete function can.project.root/html_components::editor: $PROJECT/src/page.can region can.project.root/html_components::editor: expression type does not fit expected type\n",
+      "report": ""
+    },
+    "tree_wrong_text_type": {
+      "exit": 1,
+      "diagnostics": "concrete function can.project.root/html_components::editor: $PROJECT/src/page.can region can.project.root/html_components::editor: expression type does not fit expected type\n",
+      "report": ""
+    },
+    "tree_wrong_splice_type": {
+      "exit": 1,
+      "diagnostics": "concrete function can.project.root/html_components::editor: $PROJECT/src/page.can region can.project.root/html_components::editor: array spread requires array\n",
+      "report": ""
+    },
+    "component_same_type_wrong_field": {
+      "exit": 0,
+      "diagnostics": "",
+      "report": {
+        "assertions": [
+          {
+            "elapsedMs": 52,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::deliverable_slot",
+              "name": "value",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 58,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::editor",
+              "name": "blank",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 56,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::editor",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 56,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::editor",
+              "name": "saved",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 50,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::heading",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 48,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::heading",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 63,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::hidden_control",
+              "name": "csrf",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 63,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::hidden_control",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 60,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::hidden_control",
+              "name": "id",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 53,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::input_control",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 53,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::input_control",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 50,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::paragraph",
+              "name": "blank",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 52,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::paragraph",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 45,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::paragraph",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 46,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::publish_control",
+              "name": "blank",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 47,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::publish_control",
+              "name": "saved",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 51,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::slug_slot",
+              "name": "value",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 53,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::state_form",
+              "name": "publish",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 49,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::state_form",
+              "name": "unpublish",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 47,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::submit_control",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 48,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::text_control",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 47,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::text_control",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 51,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::textarea_control",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 44,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::textarea_control",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 41,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::title_slot",
+              "name": "value",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          }
+        ],
+        "complete": true,
+        "kind": "can.assertion-report",
+        "passed": true,
+        "schemaVersion": 1,
+        "scope": "full",
+        "timeoutMs": 5000
+      }
+    },
+    "component_nested_publication": {
+      "exit": 1,
+      "diagnostics": "",
+      "report": {
+        "assertions": [
+          {
+            "elapsedMs": 55,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::deliverable_slot",
+              "name": "value",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 60,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::editor",
+              "name": "blank",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 80,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": false,
+            "reason": "outcome mismatch",
+            "root": {
+              "declaration": "can.project.root/html_components::editor",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 77,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": false,
+            "reason": "outcome mismatch",
+            "root": {
+              "declaration": "can.project.root/html_components::editor",
+              "name": "saved",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 56,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::heading",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 53,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::heading",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 59,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::hidden_control",
+              "name": "csrf",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 59,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::hidden_control",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 56,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::hidden_control",
+              "name": "id",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 56,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::input_control",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 57,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::input_control",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 54,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::paragraph",
+              "name": "blank",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 57,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::paragraph",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 55,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::paragraph",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 52,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::publish_control",
+              "name": "blank",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 53,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::publish_control",
+              "name": "saved",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 68,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::slug_slot",
+              "name": "value",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 65,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::state_form",
+              "name": "publish",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 55,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::state_form",
+              "name": "unpublish",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 52,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::submit_control",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 54,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::text_control",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 58,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::text_control",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 50,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::textarea_control",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 49,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::textarea_control",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 44,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::title_slot",
+              "name": "value",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          }
+        ],
+        "complete": true,
+        "kind": "can.assertion-report",
+        "passed": false,
+        "schemaVersion": 1,
+        "scope": "full",
+        "timeoutMs": 5000
+      }
+    },
+    "tree_nested_publication": {
+      "exit": 1,
+      "diagnostics": "",
+      "report": {
+        "assertions": [
+          {
+            "elapsedMs": 60,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::deliverable_slot",
+              "name": "value",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 65,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::editor",
+              "name": "blank",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 57,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": false,
+            "reason": "outcome mismatch",
+            "root": {
+              "declaration": "can.project.root/html_components::editor",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 60,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": false,
+            "reason": "outcome mismatch",
+            "root": {
+              "declaration": "can.project.root/html_components::editor",
+              "name": "saved",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 53,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::heading",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 47,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::heading",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 49,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::hidden_control",
+              "name": "csrf",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 50,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::hidden_control",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 49,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::hidden_control",
+              "name": "id",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 45,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::input_control",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 46,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::input_control",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 42,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::paragraph",
+              "name": "blank",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 49,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::paragraph",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 43,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::paragraph",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 49,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::publish_control",
+              "name": "blank",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 46,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::publish_control",
+              "name": "saved",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 52,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::slug_slot",
+              "name": "value",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 46,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::state_form",
+              "name": "publish",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 51,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::state_form",
+              "name": "unpublish",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 52,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::submit_control",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 54,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::text_control",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 51,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::text_control",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 62,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::textarea_control",
+              "name": "hostile",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 61,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::textarea_control",
+              "name": "sample",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          },
+          {
+            "elapsedMs": 43,
+            "evidence": [
+              "real-can"
+            ],
+            "fixturePaths": [],
+            "frames": [],
+            "passed": true,
+            "root": {
+              "declaration": "can.project.root/html_components::title_slot",
+              "name": "value",
+              "package": "can.project.root/html_components"
+            },
+            "violations": []
+          }
+        ],
+        "complete": true,
+        "kind": "can.assertion-report",
+        "passed": false,
+        "schemaVersion": 1,
+        "scope": "full",
+        "timeoutMs": 5000
+      }
+    }
+  },
+  "tree_diagnostics": {
+    "literal_nested_form": {
+      "code": "HTML-TREE-NESTED-FORM",
+      "line": 10,
+      "message": "literal form is inside another form",
+      "related": 9
+    },
+    "void_child": {
+      "code": "HTML-TREE-VOID",
+      "line": 10,
+      "message": "void element cannot have children",
+      "related": 9
+    },
+    "duplicate_attribute": {
+      "code": "HTML-TREE-DUPLICATE",
+      "line": 9,
+      "message": "the same immutable attribute appears twice",
+      "related": null
+    },
+    "unknown_tag": {
+      "code": "HTML-TREE-TAG",
+      "line": 5,
+      "message": "expected an admitted literal HTML tag and attribute list",
+      "related": null
+    }
+  },
+  "nested_publication_runtime": {
+    "21": {
+      "kind": "domain",
+      "error": "html::invalid_structure"
+    },
+    "blank": {
+      "kind": "ok"
+    }
+  },
+  "assertions_do_not_prove_field_binding": "same-typed field mutation passed actual assertions; output binding requires semantic oracle",
+  "all_comparison_checks_passed": true,
+  "temporary_builds_reclaimed": true
+}
