@@ -1,0 +1,41 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "project": "Can serves AI coding agents, with no external users or compatibility obligation. Judge authoring by dependable generation, explicit contracts, local reasoning, precise diagnostics and safe mechanical edits. Human typing comfort and brevity alone are not objectives. Native JavaScript/Bun equivalents should implement operations, with only necessary contract/immutability adapters. Jev cannot research; assess only this supplied evidence and treat classifications as advice rather than proof.",
+    "comparison": "A real service-draft page is copied into baseline.can, components.can and editor.tree. The component and tree cases share inline preparation and a local prepared_editor record. input_slot provides named typed slots, although label/name/id remain interchangeable str fields. heading and paragraph use fixed tags. Form construction stays inline because assertion fixtures with opaque inputs were rejected. Both composition surfaces consume exactly parts.method_attr and parts.action_attr. Blank publication renders the original empty p; saved publication remains a separate state form.",
+    "contracts": "All variants retain opaque html::node, html::attribute, html::url and html::safe contracts, existing escaping, explicit effect bounds and the runtime’s partial structural validation. There is no raw-HTML bypass. Tree literal checks use the runtime’s closed tag inventory and reject literal nested forms, void children, repeated identical attribute references, empty attribute slots and calls in splices. Matched ordinary-component tag-typo, void-child and duplicated method_attr controls pass full checks but fail at runtime as tag, void_children and duplicate_attribute across all four datasets. Literal-constructor static checking could be added without new syntax. Dynamic nodes may hide nested forms or head-only nodes: these fail only at runtime with nested_element or document_context. All observed domain failures retain coarse can:html origins at 0..0.",
+    "observations": "Thirteen candidates passed full checking and TypeScript emission. Fifty-two direct editor renders covered blank, saved and two hostile inputs: 28 exactly matched independent explicit markup (4 baseline, 4 components, 4 tree, 16 edited), 22 produced expected domain failures and 2 blank-publication mutations succeeded because no form was present. The three matched component controls account for 12 of those domain failures. Attached assertion programs were fully checked/emitted but not run. Snapshot controls reject a record-returning helper’s bare ok and domain-fallible opaque assertion arguments; these expose assertion constraints, not general impossibility of helpers.",
+    "pilot": "Two fresh independent Sol medium agents received one surface each. Both grouped the introduction and reordered publication siblings. The component grouping extracts a component helper; tree grouping adds a literal section, so these are equivalent markup changes rather than identical extraction tasks. Root fixed inherited executable fixture support by removing post_form and narrowing the inner error arm; target edits remained untouched. Original blocked-template attempts are retained. This is neither a broad first-pass benchmark nor a timing/token comparison.",
+    "limits": "The structured checker reports zero-based UTF-16 locations. Normalizing these precisely remapped the two ASCII wrong node/nodes expressions to authored tree positions. Compiler/LSP source-span integration and general Unicode mapping are untested. The lowerer handles document roots only, not reusable node/fragment trees; values are pure ASCII references or a common string-literal subset. Full HTML content models, label association and CSRF semantics are unchecked. Original error ordering differs, and global failure equivalence is unproven. Checks were bounded and serial, reused shared build cache and reclaimed owned temporary work. No benchmark or production change occurred. Fail-fast error text lacks line positions, while the structured driver exposes exact spans."
+  },
+  "questions": {
+    "authoring_direction": {
+      "type": "choice",
+      "instructions": "Which next HTML authoring direction is best supported by this bounded evidence and the project objectives? Compare all scopes without presuming adoption or general agent superiority.",
+      "criteria": {
+        "COMPONENTS": "Continue existing ordinary Can component functions and ordinary Can composition only; investigate helper and diagnostic constraints within that language surface.",
+        "TREE": "Investigate tree roots for all literal HTML shapes, including reusable components once node/fragment roots exist; keep ordinary Can for dynamic preparation.",
+        "HYBRID": "Investigate ordinary Can component functions that may construct HTML plus optional tree notation for layout; support both ordinary Can and tree composition.",
+        "UNDECIDED": "Leave the authoring direction open until discriminating evidence supports selection, preserving each alternative for investigation."
+      }
+    },
+    "next_evidence_step": {
+      "type": "choice",
+      "instructions": "Which single next evidence step would most usefully inform this decision, considering the demonstrated capabilities and remaining uncertainties?",
+      "criteria": {
+        "SHARED_DIAGNOSTICS": "Investigate shared assertion, error-location and helper diagnostics across ordinary components and tree authoring before widening the surface comparison.",
+        "TREE_FRAGMENT_GATE": "Prototype reusable node/fragment tree roots, typed composition and accurate source mapping, using bounded correctness gates before further adoption.",
+        "BROADER_AGENT_TRIAL": "Run a broader controlled agent edit trial with comparable tasks and corrected fixtures to estimate reliability beyond this small pilot.",
+        "ADOPT_GRAMMAR_NOW": "Adopt a tree grammar from the present evidence and resolve remaining expressiveness, diagnostics and integration questions during implementation."
+      }
+    },
+    "general_ai_reliability_superiority": {
+      "type": "noul",
+      "instructions": "Does the supplied experiment establish general AI authoring reliability superiority for any tested surface?",
+      "criteria": {
+        "true": "The supplied evidence establishes a general AI authoring reliability advantage for at least one examined surface beyond this page, corrected fixtures and two-agent pilot.",
+        "false": "The evidence does not establish a general reliability advantage; its page-specific tests and small repaired-fixture pilot leave that claim unresolved."
+      }
+    }
+  }
+}

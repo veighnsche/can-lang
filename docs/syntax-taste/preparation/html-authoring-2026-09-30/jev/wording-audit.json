@@ -1,0 +1,35 @@
+{
+  "schema_same": true,
+  "prose_pairs": [
+    {
+      "requests": [
+        1,
+        2
+      ],
+      "all_corresponding_explanatory_fields_different": true,
+      "fields": 19
+    },
+    {
+      "requests": [
+        1,
+        3
+      ],
+      "all_corresponding_explanatory_fields_different": true,
+      "fields": 19
+    },
+    {
+      "requests": [
+        2,
+        3
+      ],
+      "all_corresponding_explanatory_fields_different": true,
+      "fields": 19
+    }
+  ],
+  "request_sha256": {
+    "1": "f68c53c5a377c810ff8492e1c8c62e1c6cbf36e1093e6fbc6e2d9ad9bab9570e",
+    "2": "3c0dc70b2a1357347d0fd596b9eca57f6c7996af11eb6066c49a86438a429645",
+    "3": "c6d90031ff3837f9d99ba8ab23cd3653e23390ec9dbd0e4711a3d839c510289a"
+  },
+  "semantic_review": "PASS: root inspected full requests and independent html_contracts agent re-audited the final saved versions before submission. Same facts, constraints and distinct alternatives; all explanatory prose differs; exact technical identifiers retained."
+}

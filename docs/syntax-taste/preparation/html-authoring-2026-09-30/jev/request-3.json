@@ -1,0 +1,41 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "project": "Can’s intended writers are AI coding agents, and it has no external user population. Backward compatibility is unnecessary. Evaluate dependable code generation, explicit contracts, local reasoning, precise error reporting and safe mechanical changes; neither compactness nor hand-authoring ease is itself a goal. Generated TypeScript should use equivalent native JavaScript/Bun operations with just the contract/immutability glue needed. Jev has no research capability; consider this record alone and use its output as guidance, not a correctness guarantee.",
+    "comparison": "Three samples reconstruct the real service-draft page: baseline.can, components.can, editor.tree. The last two reuse inline preparation through a local prepared_editor value. input_slot supplies named typed slot records, yet its label/name/id values all remain str. Heading and paragraph helpers hardcode their tags. The form stays in the caller because opaque argument assertion fixtures were rejected. Composition uses identical parts.method_attr and parts.action_attr tokens in both cases. Original blank publication is an empty p; saved publication uses its own separate state form.",
+    "contracts": "Opaque HTML values html::node, html::attribute, html::url and html::safe remain in force, alongside escaping, bounded explicit effects and existing partial runtime structure checks. No raw HTML route is introduced. Static tree checking admits a closed runtime tag inventory and catches literal nested form, void child, identical repeated attribute, empty attribute entry and splice-call defects. Matching component defects—tag misspelling, children on a void element and duplicate method_attr—survive full validation and emit TypeScript, then fail on all four data cases with tag, void_children and duplicate_attribute. Checking ordinary literal constructors statically would not require tree syntax. Opaque dynamic nodes can conceal nested forms or head-only elements, causing runtime nested_element/document_context failures. Observed domain locations remain coarse can:html at 0..0.",
+    "observations": "All 13 candidate programs passed full checks and emitted TypeScript. Direct invocation of editor functions produced 52 observations from blank/saved/two hostile datasets: 28 independently specified markup matches, distributed as 4 baseline, 4 component, 4 tree and 16 modified-page cases; 22 expected domain rejections, of which 12 come from the matched component mutations; 2 successful blank-publication mutations lacking an embedded form. Assertion programs were checked and emitted rather than executed. Stored negative snapshots reject bare ok for a record helper and fallible calls creating opaque assertion arguments. These are fixture restrictions, not evidence that helpers cannot exist.",
+    "pilot": "The edit pilot dispatched two independent fresh Sol medium agents, assigning one authoring surface to each. They grouped the intro and changed publication sibling order. The component solution extracts a helper; the tree solution nests a literal section. Output equivalence therefore coexists with different extraction work. Root repaired inherited fixture scaffolding by deleting post_form and restricting the inner error arm, without altering the requested edits. Initial attempts carrying the blocked template are preserved. There is no broad first-pass benchmark, elapsed-time comparison or token-cost comparison.",
+    "limits": "Precise authored positions were recovered for two wrong ASCII node/nodes splices by normalizing structured checker locations from zero-based UTF-16. Integrated compiler/LSP locations and arbitrary Unicode mapping have not been tested. Lowering accepts a document root, not reusable node/fragment roots; expression coverage is pure ASCII references plus a common string subset. Complete content models, label linkage and CSRF checks are missing. Failures may occur in a different order from baseline; overall failure equivalence is unverified. Work used serial bounded checks, a shared build cache and cleaned owned temporary storage. It did not benchmark performance or modify production code. The fail-fast text has no line coordinates; the structured diagnostic driver does provide precise spans."
+  },
+  "questions": {
+    "authoring_direction": {
+      "type": "choice",
+      "instructions": "What authoring direction should receive the next investigation on the strength of this evidence and these objectives? Evaluate the alternatives without assuming the winning architecture or extrapolating agent reliability.",
+      "criteria": {
+        "COMPONENTS": "Investigate HTML components and composition exclusively through existing ordinary Can functions, evaluating their diagnostic and helper behavior.",
+        "TREE": "Investigate expressing all literal markup with tree roots, extending to reusable components when node/fragment roots are supported; perform dynamic preparation in ordinary Can.",
+        "HYBRID": "Investigate normal Can functions that still build component HTML together with optional tree composition for layout, maintaining both composition styles.",
+        "UNDECIDED": "Reserve the direction decision while collecting evidence that distinguishes these authoring scopes, without eliminating any candidate."
+      }
+    },
+    "next_evidence_step": {
+      "type": "choice",
+      "instructions": "Which one follow-up would supply the most useful evidence for the authoring choice, given this scope and its untested areas?",
+      "criteria": {
+        "SHARED_DIAGNOSTICS": "Examine cross-surface helper/assertion constraints and diagnostic locations first, to understand foundations common to components and tree notation.",
+        "TREE_FRAGMENT_GATE": "Extend the prototype to reusable node/fragment roots and typed composition with faithful positions, checking bounded correctness before adoption expands.",
+        "BROADER_AGENT_TRIAL": "Collect a larger controlled set of matched agent edits with corrected fixtures, to examine reliability outside the current two-agent example.",
+        "ADOPT_GRAMMAR_NOW": "Choose and implement tree grammar using this evidence now, resolving remaining fragment, diagnostic and integration gaps during that work."
+      }
+    },
+    "general_ai_reliability_superiority": {
+      "type": "noul",
+      "instructions": "Does this bounded comparison establish a general advantage in AI authoring reliability for any surface considered?",
+      "criteria": {
+        "true": "The observations substantiate a broadly applicable reliability benefit for AI writers on some tested surface, beyond these page cases, fixture repairs and paired agent runs.",
+        "false": "The reported checks and agent edits do not substantiate broadly superior AI reliability; wider evidence is still needed outside the tested page and repaired pilot."
+      }
+    }
+  }
+}

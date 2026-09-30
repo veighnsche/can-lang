@@ -1,0 +1,41 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "project": "The language targets code written by AI agents. There are zero outside users, so legacy syntax or ABI preservation has no product value. Relevant priorities are reliable generation, explicit contracts, locally understandable code, accurate diagnostics and mechanical edit safety; short source and human keystroke convenience do not suffice. Lower operations to matching native JavaScript/Bun behavior, adding adapters only for contracts and immutability. This packet is Jev’s complete evidence; its judgments remain advisory and cannot substitute for validation. Jev cannot independently research this problem and must judge using the supplied facts.",
+    "comparison": "The comparison reproduces an actual service editor in baseline.can, components.can and editor.tree. Inline setup and the local prepared_editor record are common to components and tree. Named input_slot records improve slot typing but keep label, name and id as same-type str members. Fixed-tag heading/paragraph helpers are usable. Forms are assembled inline after opaque-input assertion fixtures failed. Exact method/action tokens parts.method_attr and parts.action_attr are shared. For empty ids publication preserves an empty p, while existing ids render a distinct state-change form.",
+    "contracts": "Existing opaque html::node/html::attribute/html::url/html::safe types, escaping, declared effects and limited runtime structural checks survive each candidate. Raw markup injection is absent. The tree prototype statically checks its runtime-derived finite tag set, literal form nesting, void-element children, duplicate identical attribute references, missing attribute slots and attempted splice calls. Comparable component mutations for an incorrect tag, a void child and a repeated method_attr are accepted by full checking, then return tag, void_children and duplicate_attribute respectively on each of four inputs. Ordinary literal constructors could receive static validation without introducing grammar. Hidden nested forms or head nodes in opaque splices remain runtime-only rejections as nested_element/document_context. Domain origins are can:html source ranges 0..0.",
+    "observations": "Full validation plus TypeScript emission succeeded for 13 candidates. The 52 direct render cases use blank, saved and two hostile datasets. There are 28 independent exact-markup successes: baseline 4, components 4, tree 4 and edits 16. Twenty-two domain failures were expected, including 12 from matched component controls; two blank publication mutation cases succeed since the empty p contains no form. Assertions were validated and emitted, without execution. Separate saved rejections cover bare ok for a record result and domain-fallible calls supplying opaque assertion inputs. These findings constrain fixtures without ruling out helper abstractions generally.",
+    "pilot": "One freshly dispatched Sol agent at medium effort edited components, and another independently edited tree. Assignments were introduction grouping and sibling publication movement. Components introduce a reusable grouping helper, whereas tree introduces literal section nesting; identical output does not make the extraction work identical. Root mechanically removed inherited post_form support and narrowed the inner error branch in executable fixtures, leaving requested edits intact. Earlier blocked-template attempts remain available. No broad first-attempt reliability measurement, timing comparison or token comparison was performed.",
+    "limits": "Checker spans use zero-based UTF-16 coordinates; conversion successfully located both ASCII mistyped node/nodes expressions in tree source. There is no compiler/LSP span integration or general Unicode test. Only document-root lowering exists: reusable node and fragment trees are absent. Expressions support pure ASCII names/fields and shared string-literal escapes. The probe omits complete HTML content validation, label relationships and CSRF checking. Error order changes from the original, so universal failure equivalence is not established. Serial bounded checks share the build cache and remove their owned temporary directories. Production behavior and performance were not changed or benchmarked. Exact spans are available through the structured driver even though fail-fast messages omit source lines."
+  },
+  "questions": {
+    "authoring_direction": {
+      "type": "choice",
+      "instructions": "Given the reported results and Can’s authoring priorities, select the most justified direction to investigate next. Treat the available scopes as viable alternatives and distinguish local evidence from general claims.",
+      "criteria": {
+        "COMPONENTS": "Pursue the current normal Can mechanism for both reusable HTML functions and every composition, assessing its helper and error-reporting limits.",
+        "TREE": "Pursue tree-root authoring of every literal HTML shape and, after node/fragment support, reusable components; reserve normal Can for dynamic setup.",
+        "HYBRID": "Pursue HTML-building component helpers in normal Can alongside optional tree layout notation, retaining composition through either mechanism.",
+        "UNDECIDED": "Postpone architectural selection pending a comparison that better separates the candidates, keeping all scopes available."
+      }
+    },
+    "next_evidence_step": {
+      "type": "choice",
+      "instructions": "Select the next evidence-producing action with greatest decision value under these findings and constraints. Choose one action rather than assuming the final language direction.",
+      "criteria": {
+        "SHARED_DIAGNOSTICS": "Study assertion usability, helper behavior and error-source precision shared by component and tree routes before extending comparative coverage.",
+        "TREE_FRAGMENT_GATE": "Test tree roots for reusable nodes/fragments and typed reuse, including precise mapping, with bounded gates prior to expanding adoption.",
+        "BROADER_AGENT_TRIAL": "Expand the controlled agent task sample using repaired scaffolding and matched edits, estimating reliability across more than this pilot.",
+        "ADOPT_GRAMMAR_NOW": "Commit to tree grammar on the current record, handling outstanding reuse, mapping and toolchain issues as implementation proceeds."
+      }
+    },
+    "general_ai_reliability_superiority": {
+      "type": "noul",
+      "instructions": "Has this record demonstrated that one examined authoring surface is generally more reliable for AI agents?",
+      "criteria": {
+        "true": "This record supports superiority in AI editing reliability that extends past the service editor, repaired scaffolding and the two individual agents.",
+        "false": "General AI reliability superiority remains unestablished by these observations, which cover one editor and a limited pilot using corrected support code."
+      }
+    }
+  }
+}
