@@ -1,0 +1,125 @@
+package m32history082
+    provides [checks, expected_vector, observe, case_body, descriptor]
+    uses [text]
+
+/// M32 HISTORY-082 "reentrancy: concurrent writes settle independently in host order".
+/// Source: tests/host-discrimination/adapters/clipboard.test.ts.
+/// Related fixture: tests/host-discrimination/adapters/clipboard.ts (fake host + adapter).
+/// Disposition: RETAIN (partial). Independent settlement of concurrent writes is live in
+/// the delivered reviewed adapter (explicit no-ordering rule). The fake-order readback
+/// assertion (value "b") is OBSOLETE: the leg itself documents that the contract promises
+/// no order across implementations, so no read-value check is ported.
+/// Protects: reentrancy; concurrent writes settle independently in host order; operations
+/// readText, writeText.
+/// Variants: all values/host faults enumerated in this declaration (one concurrent pair here).
+/// Environment: Bun prototype test environment; requires bun-prototype-env. Logical gates
+/// N1, N2, BROWSER and C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (if_retained_accept_after P23).
+/// Case clipboard/concurrent-writes-settle checks: first-ok, second-ok.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool first_ok
+    bool second_ok
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("clipboard/concurrent-writes-settle", "default", "", "offline"), "first-ok" => ok "case clipboard/concurrent-writes-settle variant default root first-ok run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("clipboard/concurrent-writes-settle", "default", "", "offline"), "first-ok" => ok evidence("first-ok", "true", "true", true, "case clipboard/concurrent-writes-settle variant default root first-ok run offline")
+        different: false, true, context("clipboard/concurrent-writes-settle", "default", "", "offline"), "first-ok" => failed{"first-ok"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true)
+        seed_first_fail: "seed-first-fail" => ok observation(false, true)
+        seed_second_fail: "seed-second-fail" => ok observation(true, false)
+    match variant_id
+        "seed-first-fail" => ok observation(false, true)
+        "seed-second-fail" => ok observation(true, false)
+        _ => ok observation(true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m32: "m32" => ok [check("first-ok", "first concurrent write settles ok"), check("second-ok", "second concurrent write settles ok")]
+        other: "nope" => ok []
+    match scope is "m32"
+        false => ok []
+        true => ok [check("first-ok", "first concurrent write settles ok"), check("second-ok", "second concurrent write settles ok")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "clipboard/concurrent-writes-settle" => ok [expected_check("first-ok", "true"), expected_check("second-ok", "true")]
+        unknown: "nope" => ok []
+    match case is "clipboard/concurrent-writes-settle"
+        false => ok []
+        true => ok [expected_check("first-ok", "true"), expected_check("second-ok", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("clipboard/concurrent-writes-settle", "default", "", "offline") => ok
+        seed_first_fail: context("clipboard/concurrent-writes-settle", "seed-first-fail", "", "offline") => failed{"first-ok"}
+        seed_second_fail: context("clipboard/concurrent-writes-settle", "seed-second-fail", "", "offline") => failed{"second-ok"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.first_ok, true, c, "first-ok")
+            failed
+            ok evidence first_evidence => match call require_bool(got.second_ok, true, c, "second-ok")
+                failed
+                ok evidence second_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m32: "m32" => ok test_case("clipboard/concurrent-writes-settle", ["clipboard", "m32"], ["bun-prototype-env"], 15000, [check_ref("first-ok"), check_ref("second-ok")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m32"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("clipboard/concurrent-writes-settle", ["clipboard", "m32"], ["bun-prototype-env"], 15000, [check_ref("first-ok"), check_ref("second-ok")], callable case_body)

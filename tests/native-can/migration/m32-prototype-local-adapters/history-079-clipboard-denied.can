@@ -1,0 +1,142 @@
+package m32history079
+    provides [checks, expected_vector, observe, case_body, descriptor]
+    uses [text]
+
+/// M32 HISTORY-079 "denied permission fails closed before clipboard contact".
+/// Source: tests/host-discrimination/adapters/clipboard.test.ts.
+/// Related fixture: tests/host-discrimination/adapters/clipboard.ts (fake host + adapter).
+/// Disposition: RETAIN. Permission gating is live in the delivered reviewed adapter:
+/// host/adapters/clipboard.ts inherits the denied verdict fail-closed rule verbatim.
+/// Protects: denied permission fails closed before clipboard contact; operations
+/// readText, writeText; expected leaves clipboard::denied.
+/// Variants: all values/host faults enumerated in this declaration (read+write denied here).
+/// Environment: Bun prototype test environment; requires bun-prototype-env. Logical gates
+/// N1, N2, BROWSER and C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (if_retained_accept_after P23).
+/// Case clipboard/denied-permission-fails-closed checks: read-denied, write-denied, permission-only-contact.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str read_code
+    str write_code
+    int non_permission_calls
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("clipboard/denied-permission-fails-closed", "default", "", "offline"), "read-denied" => ok "case clipboard/denied-permission-fails-closed variant default root read-denied run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "clipboard::denied", "clipboard::denied", context("clipboard/denied-permission-fails-closed", "default", "", "offline"), "read-denied" => ok evidence("read-denied", "clipboard::denied", "clipboard::denied", true, "case clipboard/denied-permission-fails-closed variant default root read-denied run offline")
+        different: "clipboard::empty", "clipboard::denied", context("clipboard/denied-permission-fails-closed", "default", "", "offline"), "read-denied" => failed{"read-denied"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("clipboard/denied-permission-fails-closed", "default", "", "offline"), "permission-only-contact" => ok evidence("permission-only-contact", "0", "0", true, "case clipboard/denied-permission-fails-closed variant default root permission-only-contact run offline")
+        different: 1, 0, context("clipboard/denied-permission-fails-closed", "default", "", "offline"), "permission-only-contact" => failed{"permission-only-contact"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("clipboard::denied", "clipboard::denied", 0)
+        seed_read_leak: "seed-read-leak" => ok observation("clipboard::empty", "clipboard::denied", 0)
+        seed_write_leak: "seed-write-leak" => ok observation("clipboard::denied", "clipboard::unavailable", 0)
+        seed_clipboard_contact: "seed-clipboard-contact" => ok observation("clipboard::denied", "clipboard::denied", 1)
+    match variant_id
+        "seed-read-leak" => ok observation("clipboard::empty", "clipboard::denied", 0)
+        "seed-write-leak" => ok observation("clipboard::denied", "clipboard::unavailable", 0)
+        "seed-clipboard-contact" => ok observation("clipboard::denied", "clipboard::denied", 1)
+        _ => ok observation("clipboard::denied", "clipboard::denied", 0)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m32: "m32" => ok [check("read-denied", "denied read fails with clipboard::denied"), check("write-denied", "denied write fails with clipboard::denied"), check("permission-only-contact", "only permission queries precede the fail-closed")]
+        other: "nope" => ok []
+    match scope is "m32"
+        false => ok []
+        true => ok [check("read-denied", "denied read fails with clipboard::denied"), check("write-denied", "denied write fails with clipboard::denied"), check("permission-only-contact", "only permission queries precede the fail-closed")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "clipboard/denied-permission-fails-closed" => ok [expected_check("read-denied", "clipboard::denied"), expected_check("write-denied", "clipboard::denied"), expected_check("permission-only-contact", "0")]
+        unknown: "nope" => ok []
+    match case is "clipboard/denied-permission-fails-closed"
+        false => ok []
+        true => ok [expected_check("read-denied", "clipboard::denied"), expected_check("write-denied", "clipboard::denied"), expected_check("permission-only-contact", "0")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("clipboard/denied-permission-fails-closed", "default", "", "offline") => ok
+        seed_read_leak: context("clipboard/denied-permission-fails-closed", "seed-read-leak", "", "offline") => failed{"read-denied"}
+        seed_write_leak: context("clipboard/denied-permission-fails-closed", "seed-write-leak", "", "offline") => failed{"write-denied"}
+        seed_clipboard_contact: context("clipboard/denied-permission-fails-closed", "seed-clipboard-contact", "", "offline") => failed{"permission-only-contact"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.read_code, "clipboard::denied", c, "read-denied")
+            failed
+            ok evidence read_evidence => match call require_text(got.write_code, "clipboard::denied", c, "write-denied")
+                failed
+                ok evidence write_evidence => match call require_int(got.non_permission_calls, 0, c, "permission-only-contact")
+                    failed
+                    ok evidence contact_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m32: "m32" => ok test_case("clipboard/denied-permission-fails-closed", ["clipboard", "m32"], ["bun-prototype-env"], 15000, [check_ref("read-denied"), check_ref("write-denied"), check_ref("permission-only-contact")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m32"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("clipboard/denied-permission-fails-closed", ["clipboard", "m32"], ["bun-prototype-env"], 15000, [check_ref("read-denied"), check_ref("write-denied"), check_ref("permission-only-contact")], callable case_body)

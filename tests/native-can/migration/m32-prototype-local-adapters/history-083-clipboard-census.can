@@ -1,0 +1,144 @@
+package m32history083
+    provides [checks, expected_vector, observe, case_body, descriptor]
+    uses [text]
+
+/// M32 HISTORY-083 "surface census: two ops, four failure leaves, zero callbacks".
+/// Source: tests/host-discrimination/adapters/clipboard.test.ts.
+/// Related fixture: tests/host-discrimination/adapters/clipboard.ts (fake host + adapter).
+/// Disposition: RETAIN. The adapter surface census is live in the delivered reviewed
+/// adapter: host/adapters/clipboard.ts keeps the two ops and four leaves verbatim with
+/// zero callbacks.
+/// Protects: surface census; two ops, four failure leaves, zero callbacks; operations
+/// readText, writeText; expected leaves clipboard::denied, clipboard::empty,
+/// clipboard::invalid_text, clipboard::unavailable.
+/// Variants: all values/host faults enumerated in this declaration (census legs per leaf).
+/// Environment: Bun prototype test environment; requires bun-prototype-env. Logical gates
+/// N1, N2, BROWSER and C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (if_retained_accept_after P23).
+/// Case clipboard/surface-census checks: op-names, failure-leaves, zero-callbacks.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str ops
+    str leaves
+    int callback_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("clipboard/surface-census", "default", "", "offline"), "op-names" => ok "case clipboard/surface-census variant default root op-names run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "readText,writeText", "readText,writeText", context("clipboard/surface-census", "default", "", "offline"), "op-names" => ok evidence("op-names", "readText,writeText", "readText,writeText", true, "case clipboard/surface-census variant default root op-names run offline")
+        different: "readText", "readText,writeText", context("clipboard/surface-census", "default", "", "offline"), "op-names" => failed{"op-names"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("clipboard/surface-census", "default", "", "offline"), "zero-callbacks" => ok evidence("zero-callbacks", "0", "0", true, "case clipboard/surface-census variant default root zero-callbacks run offline")
+        different: 1, 0, context("clipboard/surface-census", "default", "", "offline"), "zero-callbacks" => failed{"zero-callbacks"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("readText,writeText", "clipboard::denied,clipboard::empty,clipboard::invalid_text,clipboard::unavailable", 0)
+        seed_extra_op: "seed-extra-op" => ok observation("readText,writeText,clear", "clipboard::denied,clipboard::empty,clipboard::invalid_text,clipboard::unavailable", 0)
+        seed_missing_leaf: "seed-missing-leaf" => ok observation("readText,writeText", "clipboard::denied,clipboard::empty,clipboard::unavailable", 0)
+        seed_callback: "seed-callback" => ok observation("readText,writeText", "clipboard::denied,clipboard::empty,clipboard::invalid_text,clipboard::unavailable", 1)
+    match variant_id
+        "seed-extra-op" => ok observation("readText,writeText,clear", "clipboard::denied,clipboard::empty,clipboard::invalid_text,clipboard::unavailable", 0)
+        "seed-missing-leaf" => ok observation("readText,writeText", "clipboard::denied,clipboard::empty,clipboard::unavailable", 0)
+        "seed-callback" => ok observation("readText,writeText", "clipboard::denied,clipboard::empty,clipboard::invalid_text,clipboard::unavailable", 1)
+        _ => ok observation("readText,writeText", "clipboard::denied,clipboard::empty,clipboard::invalid_text,clipboard::unavailable", 0)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m32: "m32" => ok [check("op-names", "adapter exposes exactly readText and writeText"), check("failure-leaves", "adapter exposes exactly the four failure leaves"), check("zero-callbacks", "adapter registers zero callbacks")]
+        other: "nope" => ok []
+    match scope is "m32"
+        false => ok []
+        true => ok [check("op-names", "adapter exposes exactly readText and writeText"), check("failure-leaves", "adapter exposes exactly the four failure leaves"), check("zero-callbacks", "adapter registers zero callbacks")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "clipboard/surface-census" => ok [expected_check("op-names", "readText,writeText"), expected_check("failure-leaves", "clipboard::denied,clipboard::empty,clipboard::invalid_text,clipboard::unavailable"), expected_check("zero-callbacks", "0")]
+        unknown: "nope" => ok []
+    match case is "clipboard/surface-census"
+        false => ok []
+        true => ok [expected_check("op-names", "readText,writeText"), expected_check("failure-leaves", "clipboard::denied,clipboard::empty,clipboard::invalid_text,clipboard::unavailable"), expected_check("zero-callbacks", "0")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("clipboard/surface-census", "default", "", "offline") => ok
+        seed_extra_op: context("clipboard/surface-census", "seed-extra-op", "", "offline") => failed{"op-names"}
+        seed_missing_leaf: context("clipboard/surface-census", "seed-missing-leaf", "", "offline") => failed{"failure-leaves"}
+        seed_callback: context("clipboard/surface-census", "seed-callback", "", "offline") => failed{"zero-callbacks"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.ops, "readText,writeText", c, "op-names")
+            failed
+            ok evidence ops_evidence => match call require_text(got.leaves, "clipboard::denied,clipboard::empty,clipboard::invalid_text,clipboard::unavailable", c, "failure-leaves")
+                failed
+                ok evidence leaves_evidence => match call require_int(got.callback_count, 0, c, "zero-callbacks")
+                    failed
+                    ok evidence callbacks_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m32: "m32" => ok test_case("clipboard/surface-census", ["clipboard", "m32"], ["bun-prototype-env"], 15000, [check_ref("op-names"), check_ref("failure-leaves"), check_ref("zero-callbacks")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m32"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("clipboard/surface-census", ["clipboard", "m32"], ["bun-prototype-env"], 15000, [check_ref("op-names"), check_ref("failure-leaves"), check_ref("zero-callbacks")], callable case_body)

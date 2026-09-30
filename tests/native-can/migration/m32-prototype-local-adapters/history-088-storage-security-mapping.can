@@ -1,0 +1,137 @@
+package m32history088
+    provides [checks, expected_vector, observe, case_body, descriptor]
+    uses [text]
+
+/// M32 HISTORY-088 "native security failure maps to unavailable with no native text".
+/// Source: tests/host-discrimination/adapters/storage.test.ts.
+/// Related fixture: tests/host-discrimination/adapters/storage.ts (fake host + adapter).
+/// Disposition: RETAIN. Security-error mapping without native text leaks is live in the
+/// delivered reviewed adapter: host/adapters/storage.ts inherits the mapping verbatim.
+/// Protects: native security failure maps to unavailable with no native text; operations
+/// localGet; expected leaves storage::unavailable; native exception text does not leak.
+/// Variants: all values/host faults enumerated in this declaration: injected SecurityError
+/// on localGet.
+/// Environment: Bun prototype test environment; requires bun-prototype-env. Logical gates
+/// N1, N2, BROWSER and C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (if_retained_accept_after P23).
+/// Case storage/security-failure-mapping checks: unavailable-code, no-native-text.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str failure_code
+    bool leaked
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("storage/security-failure-mapping", "default", "", "offline"), "unavailable-code" => ok "case storage/security-failure-mapping variant default root unavailable-code run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: false, false, context("storage/security-failure-mapping", "default", "", "offline"), "no-native-text" => ok evidence("no-native-text", "false", "false", true, "case storage/security-failure-mapping variant default root no-native-text run offline")
+        different: true, false, context("storage/security-failure-mapping", "default", "", "offline"), "no-native-text" => failed{"no-native-text"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "storage::unavailable", "storage::unavailable", context("storage/security-failure-mapping", "default", "", "offline"), "unavailable-code" => ok evidence("unavailable-code", "storage::unavailable", "storage::unavailable", true, "case storage/security-failure-mapping variant default root unavailable-code run offline")
+        different: "storage::invalid_key", "storage::unavailable", context("storage/security-failure-mapping", "default", "", "offline"), "unavailable-code" => failed{"unavailable-code"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("storage::unavailable", false)
+        seed_mapped_wrong: "seed-mapped-wrong" => ok observation("storage::invalid_key", false)
+        seed_native_leak: "seed-native-leak" => ok observation("storage::unavailable", true)
+    match variant_id
+        "seed-mapped-wrong" => ok observation("storage::invalid_key", false)
+        "seed-native-leak" => ok observation("storage::unavailable", true)
+        _ => ok observation("storage::unavailable", false)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m32: "m32" => ok [check("unavailable-code", "security failure maps to storage::unavailable"), check("no-native-text", "security result carries no native text")]
+        other: "nope" => ok []
+    match scope is "m32"
+        false => ok []
+        true => ok [check("unavailable-code", "security failure maps to storage::unavailable"), check("no-native-text", "security result carries no native text")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "storage/security-failure-mapping" => ok [expected_check("unavailable-code", "storage::unavailable"), expected_check("no-native-text", "false")]
+        unknown: "nope" => ok []
+    match case is "storage/security-failure-mapping"
+        false => ok []
+        true => ok [expected_check("unavailable-code", "storage::unavailable"), expected_check("no-native-text", "false")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("storage/security-failure-mapping", "default", "", "offline") => ok
+        seed_mapped_wrong: context("storage/security-failure-mapping", "seed-mapped-wrong", "", "offline") => failed{"unavailable-code"}
+        seed_native_leak: context("storage/security-failure-mapping", "seed-native-leak", "", "offline") => failed{"no-native-text"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.failure_code, "storage::unavailable", c, "unavailable-code")
+            failed
+            ok evidence code_evidence => match call require_bool(got.leaked, false, c, "no-native-text")
+                failed
+                ok evidence text_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m32: "m32" => ok test_case("storage/security-failure-mapping", ["storage", "m32"], ["bun-prototype-env"], 15000, [check_ref("unavailable-code"), check_ref("no-native-text")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m32"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("storage/security-failure-mapping", ["storage", "m32"], ["bun-prototype-env"], 15000, [check_ref("unavailable-code"), check_ref("no-native-text")], callable case_body)

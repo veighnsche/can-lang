@@ -1,0 +1,30 @@
+package m32history068
+    provides [decide]
+    uses []
+
+/// M32 HISTORY-068 "deep copies: caller mutation cannot reach the widget or callbacks".
+/// Source: tests/host-discrimination/adapters/chart-widget.test.ts.
+/// Related fixture: tests/host-discrimination/adapters/chart-widget.ts.
+/// Disposition: OBSOLETE. Adapter deep-copy rules (create, update, every callback
+/// point) superseded: T3 crosses twice per call with a frozen table and has no callbacks.
+/// Protects: deep copies; caller mutation cannot reach the widget or callbacks;
+/// operations protocol/packaging; frozen/opaque output.
+/// Variants: all values/host faults enumerated in this declaration.
+/// Environment: Bun prototype test environment (no live run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (no retained behavior; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_068: "HISTORY-068" => ok disposition("HISTORY-068", "obsolete", "M33 HISTORY-091/HISTORY-098; host/companions/chart.ts", "Adapter deep-copy rules superseded by companion two-crossing frozen-table shape.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-068"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-068", "obsolete", "M33 HISTORY-091/HISTORY-098; host/companions/chart.ts", "Adapter deep-copy rules superseded by companion two-crossing frozen-table shape.")

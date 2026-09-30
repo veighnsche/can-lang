@@ -1,0 +1,30 @@
+package m32history069
+    provides [decide]
+    uses []
+
+/// M32 HISTORY-069 "callback throw is sealed: one diagnostic, SDK never sees it".
+/// Source: tests/host-discrimination/adapters/chart-widget.test.ts.
+/// Related fixture: tests/host-discrimination/adapters/chart-widget.ts.
+/// Disposition: OBSOLETE. Sealed callback-report rule superseded: T3 has zero
+/// callbacks because select is request/response, so no throw can reach any SDK.
+/// Protects: callback throw is sealed; one diagnostic, SDK never sees it; operations
+/// protocol/packaging; native exception or secret text does not leak.
+/// Variants: all values/host faults enumerated in this declaration.
+/// Environment: Bun prototype test environment (no live run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (no retained behavior; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_069: "HISTORY-069" => ok disposition("HISTORY-069", "obsolete", "M33 (T3 zero-callback construction); x-r01-1.md Widget C table", "Sealed callback rule vacated: T3 select is request/response with zero callbacks.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-069"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-069", "obsolete", "M33 (T3 zero-callback construction); x-r01-1.md Widget C table", "Sealed callback rule vacated: T3 select is request/response with zero callbacks.")

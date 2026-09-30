@@ -1,0 +1,31 @@
+package m32history075
+    provides [decide]
+    uses []
+
+/// M32 HISTORY-075 "surface census: three ops, three failure leaves, one callback".
+/// Source: tests/host-discrimination/adapters/chart-widget.test.ts.
+/// Related fixture: tests/host-discrimination/adapters/chart-widget.ts.
+/// Disposition: OBSOLETE. T2 census (3 sync ops, leaves invalid_spec/disposed/
+/// unavailable, 1 callback) superseded by the T3 census (3 async ops, 7 leaves,
+/// 0 callbacks) pinned in the X-R01-1 comparison table.
+/// Protects: surface census; three ops, three failure leaves, one callback; operations
+/// create, dispose, update; expected leaves chart::disposed, chart::invalid_spec, chart::unavailable.
+/// Variants: all values/host faults enumerated in this declaration.
+/// Environment: Bun prototype test environment (no live run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (no retained behavior; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_075: "HISTORY-075" => ok disposition("HISTORY-075", "obsolete", "M33 HISTORY-091..098; x-r01-1.md Widget C table", "T2 surface census superseded by the T3 census: 3 async ops, 7 leaves, 0 callbacks.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-075"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-075", "obsolete", "M33 HISTORY-091..098; x-r01-1.md Widget C table", "T2 surface census superseded by the T3 census: 3 async ops, 7 leaves, 0 callbacks.")
