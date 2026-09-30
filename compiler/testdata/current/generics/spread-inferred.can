@@ -2,7 +2,7 @@ package app
     provides []
     uses []
 fn item pick<item>
-    emits []
+    emits {}
     given
         item first
         item second
@@ -10,7 +10,7 @@ fn item pick<item>
         sample: 1, 2 => ok 1
     ok first
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

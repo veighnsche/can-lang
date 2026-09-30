@@ -11,7 +11,7 @@ connection classifier
         model "jev-latest"
 
 fn float report
-    emits [codec::invalid_data, io::write_failed]
+    emits {codec::invalid_data, io::write_failed}
     given
         float probability
         str marker
@@ -29,7 +29,7 @@ fn float report
             ok int written => ok probability
 
 noul float likelihood from classifier
-    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    emits {ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed}
     given
         str description
     asks description
@@ -38,7 +38,7 @@ noul float likelihood from classifier
         false "No" => relay call report(%, "F")
 
 judge float assess from classifier
-    emits [http::request_failed, ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    emits {http::request_failed, ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed}
     state
         int amount
         float signed_zero
@@ -51,7 +51,7 @@ judge float assess from classifier
     ok => ok first + second
 
 fn void main
-    emits [http::request_failed, ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    emits {http::request_failed, ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed}
     given
         str[] args
     asserts

@@ -5,7 +5,7 @@ package app
 /// Every pump exit funnels through here so a stop-prompted read fails
 /// clean instead of abandoning the session.
 fn int halt
-    emits []
+    emits {}
     given
         ws::session session
         stream::reader<ws::event> events
@@ -27,7 +27,7 @@ fn int halt
 /// Echo every inbound message until the peer closes. Text and binary echo
 /// through their own send; drain retries the read and close ends the pump.
 fn int pump
-    emits []
+    emits {}
     given
         ws::session session
         stream::reader<ws::event> events
@@ -72,14 +72,14 @@ fn int pump
 /// shapes the refusal paths; the upgrade itself is live-tested because no
 /// Can expression can construct the connection the fixture would need.
 fn http::server_response socket
-    emits []
+    emits {}
     given
         http::request req
     asserts
         refused: => ok
     match call ws::accept(req, "", 65536, 16, 65536)
         when
-            refused: req, "", 65536, 16, 65536 => ws::upgrade_failed("refused")
+            refused: req, "", 65536, 16, 65536 => ws::upgrade_failed{"refused"}
         ws::upgrade_failed => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
         ws::unsupported_protocol => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
         ws::invalid_protocol => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
@@ -87,7 +87,7 @@ fn http::server_response socket
         ok ws::connection conn => match call pump(conn.session, conn.events)
             ok int echoed => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "upgraded")
 fn http::router table
-    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}
     asserts
         sample: => ok
     match chain
@@ -98,7 +98,7 @@ fn http::router table
         http::ambiguous_route
         ok => ok built
 fn http::server boot
-    emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed]
+    emits {http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed}
     given
         int port
     asserts
@@ -115,7 +115,7 @@ fn http::server boot
                 http::bind_failed
                 ok http::server sturdy => ok sturdy
 fn void serve
-    emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed]
+    emits {http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed}
     given
         int port
     asserts
@@ -143,14 +143,14 @@ fn void serve
 /// drives the unreachable path; the handshake is live-tested because no
 /// Can expression can construct the connection the fixture would need.
 fn ws::connection link
-    emits [ws::connect_failed, ws::invalid_url, ws::invalid_protocol, ws::limit_exceeded]
+    emits {ws::connect_failed, ws::invalid_url, ws::invalid_protocol, ws::limit_exceeded}
     given
         str url
     asserts
-        dark: "ws://127.0.0.1:9/none" => ws::connect_failed("unreachable")
+        dark: "ws://127.0.0.1:9/none" => ws::connect_failed{"unreachable"}
     match call ws::connect(url, [], 65536, 16, 65536, 5000, false)
         when
-            dark: "ws://127.0.0.1:9/none", [], 65536, 16, 65536, 5000, false => ws::connect_failed("unreachable")
+            dark: "ws://127.0.0.1:9/none", [], 65536, 16, 65536, 5000, false => ws::connect_failed{"unreachable"}
         ws::connect_failed
         ws::invalid_url
         ws::invalid_protocol
@@ -158,7 +158,7 @@ fn ws::connection link
         ok ws::connection conn => ok conn
 /// Queue one text message on a session.
 fn int push
-    emits [ws::send_failed]
+    emits {ws::send_failed}
     given
         ws::session session
         str text
@@ -171,7 +171,7 @@ fn int push
         ok int sent => ok sent
 /// Queue one binary message on a session.
 fn int push_raw
-    emits [codec::invalid_data, ws::send_failed]
+    emits {codec::invalid_data, ws::send_failed}
     given
         ws::session session
         int[] data
@@ -186,7 +186,7 @@ fn int push_raw
             ok int sent => ok sent
 /// Pull up to count queued events.
 fn ws::event[] drain
-    emits [stream::read_failed, stream::cancelled, files::limit_exceeded]
+    emits {stream::read_failed, stream::cancelled, files::limit_exceeded}
     given
         stream::reader<ws::event> events
         int count
@@ -201,7 +201,7 @@ fn ws::event[] drain
         ok ws::event[] batch => ok batch
 /// Close a session with a normal code.
 fn void bye
-    emits [ws::invalid_close]
+    emits {ws::invalid_close}
     given
         ws::session session
     asserts
@@ -213,7 +213,7 @@ fn void bye
         ok => ok
 /// Release an event reader.
 fn void release
-    emits [stream::close_failed]
+    emits {stream::close_failed}
     given
         stream::reader<ws::event> events
     asserts
@@ -224,7 +224,7 @@ fn void release
         stream::close_failed
         ok => ok
 fn void main
-    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}
     given
         str[] args
     asserts

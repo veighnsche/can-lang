@@ -12,25 +12,25 @@ record waypoint
     str name
     int n
 fn service load_toml
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
         sample: "title = \"edge\"\nports = [80, 443]\n[primary]\nhost = \"h\"\nport = 8080\n" => ok service("edge", endpoint("h", 8080), [80, 443])
-        unsafe: "title = \"edge\"\nports = [9007199254740993]\n[primary]\nhost = \"h\"\nport = 1\n" => codec::invalid_data("", "invalid_toml")
-        duplicate: "title = \"a\"\ntitle = \"b\"\nports = []\n[primary]\nhost = \"h\"\nport = 1\n" => codec::invalid_data("", "invalid_toml")
+        unsafe: "title = \"edge\"\nports = [9007199254740993]\n[primary]\nhost = \"h\"\nport = 1\n" => codec::invalid_data{"", "invalid_toml"}
+        duplicate: "title = \"a\"\ntitle = \"b\"\nports = []\n[primary]\nhost = \"h\"\nport = 1\n" => codec::invalid_data{"", "invalid_toml"}
     match chain
         call bytes::from_utf8(text) as bytes::buffer encoded
         call codec::decode_toml<service>(encoded) as service decoded
         codec::invalid_data
         ok => ok decoded
 fn waypoint load_yaml
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
         sample: "name: r\nn: 7\n" => ok waypoint("r", 7)
-        unsafe: "name: r\nn: 9007199254740993\n" => codec::invalid_data("/n", "integer_token")
+        unsafe: "name: r\nn: 9007199254740993\n" => codec::invalid_data{"/n", "integer_token"}
         duplicate: "name: a\nname: b\nn: 1\n" => ok waypoint("b", 1)
     match chain
         call bytes::from_utf8(text) as bytes::buffer encoded
@@ -38,12 +38,12 @@ fn waypoint load_yaml
         codec::invalid_data
         ok => ok decoded
 fn waypoint load_json5
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
         sample: "{/* c */name: 'r', // d\nn: 7,}" => ok waypoint("r", 7)
-        unsafe: "{name: 'r', n: 9007199254740993}" => codec::invalid_data("/n", "integer_token")
+        unsafe: "{name: 'r', n: 9007199254740993}" => codec::invalid_data{"/n", "integer_token"}
         duplicate: "{name: 'a', name: 'b', n: 1}" => ok waypoint("b", 1)
     match chain
         call bytes::from_utf8(text) as bytes::buffer encoded
@@ -51,21 +51,21 @@ fn waypoint load_json5
         codec::invalid_data
         ok => ok decoded
 fn waypoint[] load_jsonl
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
         sample: "{\"name\":\"a\",\"n\":9007199254740993}\n\n{\"name\":\"b\",\"n\":-0}\n" => ok [waypoint("a", 9007199254740993), waypoint("b", 0)]
-        garbage: "{\"name\":\"a\",\"n\":1}\nng\n" => codec::invalid_data("/1", "invalid_json")
-        truncated: "{\"name\":\"a\",\"n\":1}\n{\"name\":\"b\",\"n\":" => codec::invalid_data("/1", "invalid_json")
-        member: "{\"name\":\"a\",\"n\":1}\n{\"name\":\"b\",\"n\":\"x\"}\n" => codec::invalid_data("/1/n", "type")
+        garbage: "{\"name\":\"a\",\"n\":1}\nng\n" => codec::invalid_data{"/1", "invalid_json"}
+        truncated: "{\"name\":\"a\",\"n\":1}\n{\"name\":\"b\",\"n\":" => codec::invalid_data{"/1", "invalid_json"}
+        member: "{\"name\":\"a\",\"n\":1}\n{\"name\":\"b\",\"n\":\"x\"}\n" => codec::invalid_data{"/1/n", "type"}
     match chain
         call bytes::from_utf8(text) as bytes::buffer encoded
         call codec::decode_jsonl<waypoint>(encoded) as waypoint[] decoded
         codec::invalid_data
         ok => ok decoded
 fn void main
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str[] args
     asserts
@@ -78,14 +78,14 @@ fn void main
                 int invalid = 1 / 0
                 ok
 fn void handle_waypoint
-    emits []
+    emits {}
     given
         waypoint point
     asserts
         sample: waypoint("a", 1) => ok
     ok
 fn int count_jsonl
-    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, stream::read_failed, stream::cancelled, stream::close_failed, codec::invalid_data]
+    emits {files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, stream::read_failed, stream::cancelled, stream::close_failed, codec::invalid_data}
     given
         str path
     asserts

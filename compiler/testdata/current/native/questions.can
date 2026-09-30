@@ -11,7 +11,7 @@ connection classifier
         model "jev-latest"
 
 fn float report
-    emits [codec::invalid_data, io::write_failed]
+    emits {codec::invalid_data, io::write_failed}
     given
         float probability
         str marker
@@ -38,13 +38,13 @@ fn float report
             ok int written => ok probability
 
 noul float likelihood from classifier
-    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    emits {ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed}
     asks "Noul"
         true "Yes" => relay call report(%, "N")
         false "No" => relay call report(%, "n")
 
 choice float choose from classifier
-    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    emits {ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed}
     confidence as certainty
     asks "Choice"
     minimum 0.5 => relay call report(certainty, "f")
@@ -52,7 +52,7 @@ choice float choose from classifier
         second "Second" => relay call report(% + certainty, "B")
 
 choice str dynamic from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     given
         choice_option[] first
         choice_option[] second
@@ -64,7 +64,7 @@ choice str dynamic from classifier
             true => ok selected
 
 score float rate from classifier
-    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    emits {ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed}
     score as measured
     confidence as certainty
     minimum 0.5 => relay call report(certainty, "g")
@@ -75,14 +75,14 @@ score float rate from classifier
         ok => relay call report(measured + certainty, "S")
 
 record choice_weights choice float weights from classifier
-    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    emits {ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed}
     confidence as certainty
     asks "Weights"
         first "First" => relay call report(% + certainty, "C")
         second "Second" => relay call report(%, "D")
 
 record score_weights score float levels from classifier
-    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    emits {ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed}
     score as measured
     confidence as certainty
     asks "Levels"
@@ -90,32 +90,32 @@ record score_weights score float levels from classifier
         high "High" => relay call report(% + measured, "F")
 
 choice_arm float left_arm
-    emits [codec::invalid_data, io::write_failed]
+    emits {codec::invalid_data, io::write_failed}
     describes arm_description
     relay call report(%, "L")
 
 choice_arm float right_arm
-    emits [codec::invalid_data, io::write_failed]
+    emits {codec::invalid_data, io::write_failed}
     describes "Right"
     relay call report(%, "R")
 
 str arm_description = "Left"
 
 record arms
-    choice_arm<float> emits [codec::invalid_data, io::write_failed] left
-    choice_arm<float> emits [codec::invalid_data, io::write_failed] right
+    choice_arm<float> emits {codec::invalid_data, io::write_failed} left
+    choice_arm<float> emits {codec::invalid_data, io::write_failed} right
 
 arms stored = arms(left_arm, right_arm)
 
 choice float spread from classifier
-    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    emits {ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed}
     given
         arms choices
     asks "Spread"
         ...call identity(box(call keep_after_index(1 + 0, call keep(call identity([]), choices)))).unwrap()
 
 record arm_weights choice float spread_weights from classifier
-    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    emits {ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed}
     given
         arms choices
     confidence as certainty
@@ -125,7 +125,7 @@ record arm_weights choice float spread_weights from classifier
         after "After" => relay call report(%, "H")
 
 judge float assess from classifier
-    emits [http::request_failed, ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    emits {http::request_failed, ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed}
     state
         str message
     asserts
@@ -144,7 +144,7 @@ judge float assess from classifier
         true => ok n + c + s + w.first + w.second + w.certainty + l.low + l.high + l.measured + l.certainty + a + r.before + r.left + r.right + r.after + r.certainty
 
 fn choice_weights roundtrip
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         choice_weights original
     asserts
@@ -156,7 +156,7 @@ fn choice_weights roundtrip
         ok => ok decoded
 
 fn void main
-    emits [http::request_failed, ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    emits {http::request_failed, ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed}
     given
         str[] args
     asserts
@@ -176,7 +176,7 @@ fn void main
             true => ok
 
 fn item identity<item>
-    emits []
+    emits {}
     given
         item value
     asserts
@@ -184,7 +184,7 @@ fn item identity<item>
     ok value
 
 fn item keep<item>
-    emits []
+    emits {}
     given
         item[] ignored
         item value
@@ -193,7 +193,7 @@ fn item keep<item>
     ok value
 
 fn item keep_after_index<item>
-    emits []
+    emits {}
     given
         int index
         item value
@@ -206,7 +206,7 @@ record box<item>
 
 fn item unwrap<item>
     on box<item> self
-    emits []
+    emits {}
     asserts
         sample: box<int>(1) => => ok 1
     ok self.value

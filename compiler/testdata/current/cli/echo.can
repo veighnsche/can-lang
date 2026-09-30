@@ -2,7 +2,7 @@ package app
     provides []
     uses [bytes, codec, io]
 fn void main
-    emits [codec::invalid_data, io::write_failed]
+    emits {codec::invalid_data, io::write_failed}
     given
         str[] args
     asserts

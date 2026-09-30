@@ -18,7 +18,7 @@ connection generator
         model "fixture-model"
 
 noul bool question from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     given
         str description
     asks description
@@ -28,7 +28,7 @@ noul bool question from classifier
         false "No" => ok false
 
 judge bool assess from classifier
-    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
+    emits {http::request_failed, ai::invalid_question, ai::invalid_answer}
     state
         str message
     asserts
@@ -39,25 +39,25 @@ judge bool assess from classifier
     ok => ok first and second
 
 record weights choice float weighted from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     confidence as certainty
     asks "Choose"
         first "First" => ok % * certainty
         second "Second" => ok %
 
 record arms
-    choice_arm<float> emits [] left
-    choice_arm<float> emits [] right
+    choice_arm<float> emits {} left
+    choice_arm<float> emits {} right
 
 record variadic_weights choice float variadic_weighted from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     given
         arms ...choices
     asks "Choose"
         ...choices[0]
 
 fn str describe
-    emits []
+    emits {}
     given
         float value
     asserts
@@ -65,7 +65,7 @@ fn str describe
     ok "Description"
 
 llm str generate from generator
-    emits [http::invalid_request, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response]
+    emits {http::invalid_request, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response}
     state
         str message
     asserts
@@ -74,7 +74,7 @@ llm str generate from generator
     asks "Describe the message"
 
 fetch str retrieve from classifier
-    emits [http::request_failed]
+    emits {http::request_failed}
     asserts
         fetched: => ok "resource"
             using raw "fixtures/declarations_retrieve.json"
@@ -83,7 +83,7 @@ fetch str retrieve from classifier
         q = ["one", "two"]
 
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

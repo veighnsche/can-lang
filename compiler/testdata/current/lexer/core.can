@@ -12,7 +12,7 @@ str poem = """
    /* a nested comment */
 */
 fn str take
-    emits []
+    emits {}
     given
         str score
     asserts

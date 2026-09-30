@@ -4,7 +4,7 @@ package app
 /// Scan response headers for the Cookie field. Request header order is
 /// caller-controlled, so the scan walks the array instead of indexing.
 fn option::value<str> find_cookie
-    emits []
+    emits {}
     given
         http::header[] headers
     asserts
@@ -20,7 +20,7 @@ fn option::value<str> find_cookie
 /// Project the session out of a Cookie header. Parsing runs for real:
 /// duplicates keep every pair while lookup takes the first.
 fn option::value<str> session_id
-    emits []
+    emits {}
     given
         str header
     asserts
@@ -33,13 +33,13 @@ fn option::value<str> session_id
 /// for real, so the field string and the name rejection pin the native
 /// shape directly.
 fn str bake
-    emits [cookie::invalid_cookie]
+    emits {cookie::invalid_cookie}
     given
         str name
         str value
     asserts
         sample: "session", "A" => ok "session=A; Path=/; Secure; HttpOnly; SameSite=Lax"
-        evil: "a;b", "1" => cookie::invalid_cookie("name")
+        evil: "a;b", "1" => cookie::invalid_cookie{"name"}
     match call cookie::make(name, value, cookie::attributes("/", option::none(), true, true, cookie::lax(), option::none(), option::none()))
         cookie::invalid_cookie
         ok cookie::cookie jar => match call cookie::serialize(jar)
@@ -47,12 +47,12 @@ fn str bake
 /// Render the tombstone that clears a cookie. The epoch expiry and
 /// empty value match native deletion exactly.
 fn str forget
-    emits [cookie::invalid_cookie]
+    emits {cookie::invalid_cookie}
     given
         str name
     asserts
         sample: "session" => ok "session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax"
-        evil: "a;b" => cookie::invalid_cookie("name")
+        evil: "a;b" => cookie::invalid_cookie{"name"}
     match call cookie::expire(name, "/", option::none())
         cookie::invalid_cookie
         ok cookie::cookie tomb => match call cookie::serialize(tomb)
@@ -61,7 +61,7 @@ fn str forget
 /// stands in for the random mint, and no assertion compares a whole
 /// real token string.
 fn str mint
-    emits [csrf::invalid_config]
+    emits {csrf::invalid_config}
     given
         str secret
         str session
@@ -76,7 +76,7 @@ fn str mint
 /// the real verification, which proves the plumbing without pinning
 /// random output; true round-trips are loopback-tested.
 fn bool roundtrip
-    emits [csrf::invalid_config]
+    emits {csrf::invalid_config}
     given
         str secret
         str session
@@ -90,7 +90,7 @@ fn bool roundtrip
 /// Verify one token against its session. Verification runs for real,
 /// so bogus tokens answer false natively.
 fn bool guarded
-    emits [csrf::invalid_config]
+    emits {csrf::invalid_config}
     given
         str secret
         str session
@@ -105,7 +105,7 @@ fn bool guarded
 /// assertion cases refuse (missing session, bogus token); welcome is
 /// loopback-tested with a minted token.
 fn http::server_response login
-    emits []
+    emits {}
     given
         http::request req
     asserts
@@ -134,7 +134,7 @@ fn http::server_response login
 /// Establish a session cookie on the response. The Set-Cookie field
 /// stays a separate entry through headers into the native response.
 fn http::server_response establish
-    emits []
+    emits {}
     given
         http::request req
     asserts
@@ -146,7 +146,7 @@ fn http::server_response establish
                 http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
                 ok http::server_headers headers => ok call http::response_text(call http::status_ok(), headers, "established")
 fn http::router table
-    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}
     asserts
         sample: => ok
     match chain
@@ -158,7 +158,7 @@ fn http::router table
         http::ambiguous_route
         ok => ok built
 fn http::server boot
-    emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed]
+    emits {http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed}
     given
         int port
     asserts
@@ -175,7 +175,7 @@ fn http::server boot
                 http::bind_failed
                 ok http::server sturdy => ok sturdy
 fn void main
-    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}
     given
         str[] args
     asserts

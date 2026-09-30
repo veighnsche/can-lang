@@ -4,7 +4,7 @@ package offline
 
 /// Parsing must neither evaluate this assertion nor invoke this operation.
 fn void main
-    emits []
+    emits {}
     asserts
         explosive: => ok (1 / 0)
     int value = call http::must_not_run("https://invalid.example/", "😀")

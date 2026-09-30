@@ -2,7 +2,7 @@ package app
     provides []
     uses [env, option, http, io, bytes, codec]
 fn void main
-    emits [env::invalid_name, http::credentials_missing, io::write_failed, codec::invalid_data]
+    emits {env::invalid_name, http::credentials_missing, io::write_failed, codec::invalid_data}
     given
         str[] args
     asserts

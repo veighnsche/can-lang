@@ -9,11 +9,11 @@ connection service
     timeout_ms 5000
     max_body_bytes 8192
 fetch receipt load_json from service
-    emits [http::request_failed]
+    emits {http::request_failed}
     asserts
         decoded: => ok receipt(7)
             using raw "fixtures/load_json.json"
-        unauthenticated: => http::request_failed(http::credentials_missing("CAN_I26_TOKEN"))
+        unauthenticated: => http::request_failed{http::credentials_missing{"CAN_I26_TOKEN"}}
             using raw "fixtures/load_json_unauthenticated.json"
     get (call [["/json"]].map(callable extract))[0]
     query
@@ -23,13 +23,13 @@ fetch receipt load_json from service
         x_probe = call [["yes"]].map(callable extract)
         x_omitted = ([...([])])
 fetch http::response<bytes::buffer> load_envelope from service
-    emits [http::request_failed]
+    emits {http::request_failed}
     asserts
         delivered: => ok http::response<bytes::buffer>(418, [], call bytes::empty())
             using raw "fixtures/load_envelope.json"
     get "/envelope"
 fetch str send_text from service
-    emits [http::request_failed]
+    emits {http::request_failed}
     given
         str payload
     asserts
@@ -38,7 +38,7 @@ fetch str send_text from service
     post "/text"
     body text (call [[payload]].map(callable extract))[0]
 fetch receipt send_json from service
-    emits [http::request_failed]
+    emits {http::request_failed}
     given
         receipt payload
     asserts
@@ -49,7 +49,7 @@ fetch receipt send_json from service
         content_type = ([...([("application/json")])])
     body json payload
 fetch bytes::buffer send_bytes from service
-    emits [http::request_failed]
+    emits {http::request_failed}
     given
         bytes::buffer payload
     asserts
@@ -58,25 +58,25 @@ fetch bytes::buffer send_bytes from service
     patch "/bytes"
     body bytes payload
 fetch str head_text from service
-    emits [http::request_failed]
+    emits {http::request_failed}
     asserts
         probed: => ok ""
             using raw "fixtures/head_text.json"
     head "/head"
 fetch str delete_text from service
-    emits [http::request_failed]
+    emits {http::request_failed}
     asserts
         removed: => ok "delete"
             using raw "fixtures/delete_text.json"
     delete "/delete"
 fetch str options_text from service
-    emits [http::request_failed]
+    emits {http::request_failed}
     asserts
         allowed: => ok "options"
             using raw "fixtures/options_text.json"
     options "/options"
 fn void main
-    emits [http::request_failed, checks::failed]
+    emits {http::request_failed, checks::failed}
     given
         str[] args
     asserts
@@ -135,10 +135,10 @@ fn void main
                                                                         checks::failed
                                                                         ok => ok
 fn str referenced
-    emits [http::request_failed]
+    emits {http::request_failed}
     asserts
         sample: => ok "fixture"
-    callable str (str) emits [http::request_failed] action = callable send_text
+    callable str (str) emits {http::request_failed} action = callable send_text
     match call action("value")
         when
             sample: "value" => ok "fixture"
@@ -146,36 +146,36 @@ fn str referenced
         ok str output => ok output
 
 fn str extract
-    emits []
+    emits {}
     given
         str[] values
     asserts
         first: ["value"] => ok "value"
     ok values[0]
 fn receipt load_or_default
-    emits [http::request_failed]
+    emits {http::request_failed}
     asserts
         recovered: => ok receipt(0)
-        status: => http::request_failed(http::status_error(429, []))
-        timeout: => http::request_failed(http::timeout(5))
-        transport: => http::request_failed(http::transport_failed("connect"))
-        invalid: => http::request_failed(http::invalid_request("url"))
-        credential: => http::request_failed(http::credentials_missing("TOKEN"))
-        limit: => http::request_failed(http::body_limit(3))
-        codec: => http::request_failed(codec::invalid_data("/0", "invalid_json"))
+        status: => http::request_failed{http::status_error{429, []}}
+        timeout: => http::request_failed{http::timeout{5}}
+        transport: => http::request_failed{http::transport_failed{"connect"}}
+        invalid: => http::request_failed{http::invalid_request{"url"}}
+        credential: => http::request_failed{http::credentials_missing{"TOKEN"}}
+        limit: => http::request_failed{http::body_limit{3}}
+        codec: => http::request_failed{codec::invalid_data{"/0", "invalid_json"}}
     match call load_json()
         when
-            recovered: => http::request_failed(http::status_error(404, []))
-            status: => http::request_failed(http::status_error(429, []))
-            timeout: => http::request_failed(http::timeout(5))
-            transport: => http::request_failed(http::transport_failed("connect"))
-            invalid: => http::request_failed(http::invalid_request("url"))
-            credential: => http::request_failed(http::credentials_missing("TOKEN"))
-            limit: => http::request_failed(http::body_limit(3))
-            codec: => http::request_failed(codec::invalid_data("/0", "invalid_json"))
+            recovered: => http::request_failed{http::status_error{404, []}}
+            status: => http::request_failed{http::status_error{429, []}}
+            timeout: => http::request_failed{http::timeout{5}}
+            transport: => http::request_failed{http::transport_failed{"connect"}}
+            invalid: => http::request_failed{http::invalid_request{"url"}}
+            credential: => http::request_failed{http::credentials_missing{"TOKEN"}}
+            limit: => http::request_failed{http::body_limit{3}}
+            codec: => http::request_failed{codec::invalid_data{"/0", "invalid_json"}}
         http::request_failed as failed => match failed.detail
             http::status_error => match status_error.status
                 404 => ok receipt(0)
-                _ => http::request_failed(failed.detail)
-            _ => http::request_failed(failed.detail)
+                _ => http::request_failed{failed.detail}
+            _ => http::request_failed{failed.detail}
         ok receipt found => ok found

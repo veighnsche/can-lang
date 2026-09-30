@@ -2,14 +2,14 @@ package app
     provides []
     uses [http, bytes, codec]
 fn http::server_response health
-    emits []
+    emits {}
     given
         http::request req
     asserts
         sample: => ok
     ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "healthy")
 fn http::router table
-    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}
     asserts
         sample: => ok
     match chain
@@ -20,7 +20,7 @@ fn http::router table
         http::ambiguous_route
         ok => ok built
 fn bool tls_material
-    emits [http::invalid_server_config, codec::invalid_data]
+    emits {http::invalid_server_config, codec::invalid_data}
     asserts
         sample: => ok true
     match chain
@@ -30,7 +30,7 @@ fn bool tls_material
         codec::invalid_data => ok false
         ok => ok false
 fn http::server boot_tls
-    emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, codec::invalid_data]
+    emits {http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, codec::invalid_data}
     given
         int port
         str cert
@@ -55,7 +55,7 @@ fn http::server boot_tls
                             http::bind_failed
                             ok http::server sturdy => ok sturdy
 fn void main
-    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}
     given
         str[] args
     asserts

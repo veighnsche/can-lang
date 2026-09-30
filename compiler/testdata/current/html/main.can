@@ -2,12 +2,12 @@ package app
     provides []
     uses [html, htmx]
 fn html::safe render
-    emits [html::invalid_structure, html::invalid_url, htmx::invalid_target, htmx::invalid_interval]
+    emits {html::invalid_structure, html::invalid_url, htmx::invalid_target, htmx::invalid_interval}
     given
         str message
         str tag_name
     asserts
-        invalid_tag: "text", "script" => html::invalid_structure("tag")
+        invalid_tag: "text", "script" => html::invalid_structure{"tag"}
     match chain
         call html::make_tag(tag_name) as html::tag section
         call html::make_tag("p") as html::tag paragraph
@@ -35,14 +35,14 @@ fn html::safe render
         htmx::invalid_interval
         ok => ok document
 fn html::safe fragment
-    emits [html::invalid_structure]
+    emits {html::invalid_structure}
     given
         html::node[] nodes
     asserts
-        invalid_head: [call html::meta_viewport()] => html::invalid_structure("head_context")
+        invalid_head: [call html::meta_viewport()] => html::invalid_structure{"head_context"}
     relay call html::fragment(nodes)
 fn void main
-    emits [html::invalid_structure, html::invalid_url, htmx::invalid_target, htmx::invalid_interval]
+    emits {html::invalid_structure, html::invalid_url, htmx::invalid_target, htmx::invalid_interval}
     given
         str[] args
     asserts

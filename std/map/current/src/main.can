@@ -2,7 +2,7 @@ package maps
     provides []
     uses [collections]
 fn collections::entry<int,str>[] sample
-    emits [collections::key_exists]
+    emits {collections::key_exists}
     asserts
         ordered: => ok [collections::entry<int,str>(3, "three"), collections::entry<int,str>(2, "two")]
     collections::map<int,str> empty = call collections::empty_map<int,str>()
@@ -12,7 +12,7 @@ fn collections::entry<int,str>[] sample
             collections::key_exists
             ok collections::map<int,str> second => ok call collections::entries(second)
 fn bool sets
-    emits []
+    emits {}
     asserts
         sample: => ok true
     collections::set<int> empty = call collections::empty_set<int>()
@@ -22,7 +22,7 @@ fn bool sets
     collections::set<int> shared = call collections::intersection(second, right)
     ok call collections::contains(shared, 2)
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts
@@ -45,23 +45,23 @@ fn void main
                 int invalid = 1 / 0
                 ok
 fn str absent
-    emits [collections::key_absent]
+    emits {collections::key_absent}
     asserts
-        sample: => collections::key_absent()
+        sample: => collections::key_absent{}
     collections::map<int,str> empty = call collections::empty_map()
     match call collections::get(empty, 1)
         collections::key_absent
         ok str output => ok output
 fn collections::entry<int,str>[] changed
-    emits [collections::key_exists, collections::key_absent]
+    emits {collections::key_exists, collections::key_absent}
     given
         int operation
     asserts
         replacement: 0 => ok [collections::entry<int,str>(3, "changed")]
         removal: 1 => ok []
-        duplicate: 2 => collections::key_exists()
-        absent_replace: 3 => collections::key_absent()
-        absent_remove: 4 => collections::key_absent()
+        duplicate: 2 => collections::key_exists{}
+        absent_replace: 3 => collections::key_absent{}
+        absent_remove: 4 => collections::key_absent{}
     collections::map<int,str> empty = call collections::empty_map()
     match call collections::insert(empty, 3, "original")
         collections::key_exists
@@ -82,7 +82,7 @@ fn collections::entry<int,str>[] changed
                 collections::key_absent
                 ok collections::map<int,str> updated => ok call collections::entries(updated)
 fn str alias
-    emits [collections::key_exists, collections::key_absent]
+    emits {collections::key_exists, collections::key_absent}
     asserts
         sample: => ok "original"
     collections::map<int,str> empty = call collections::empty_map<int,str>()
@@ -94,7 +94,7 @@ fn str alias
                 collections::key_absent
                 ok str original => ok original
 fn bool set_operations
-    emits []
+    emits {}
     given
         int operation
     asserts
@@ -115,7 +115,7 @@ fn bool set_operations
         2 => ok call collections::contains(first, "a")
         _ => ok call collections::contains(empty, "a")
 fn bool bool_keys
-    emits []
+    emits {}
     asserts
         sample: => ok true
     collections::set<bool> empty = call collections::empty_set<bool>()
@@ -123,16 +123,16 @@ fn bool bool_keys
     collections::set<bool> second = call collections::add(first, true)
     ok call collections::contains(second, true)
 fn bool reference
-    emits []
+    emits {}
     asserts
         sample: => ok true
-    callable collections::set<int> () emits [] empty_factory = callable collections::empty_set<int>
-    callable collections::set<int> (collections::set<int>, int) emits [] add = callable collections::add
+    callable collections::set<int> () emits {} empty_factory = callable collections::empty_set<int>
+    callable collections::set<int> (collections::set<int>, int) emits {} add = callable collections::add
     collections::set<int> empty = call empty_factory()
     collections::set<int> first = call add(empty, 1)
     ok call collections::contains(first, 1)
 fn str fixture
-    emits [collections::key_absent]
+    emits {collections::key_absent}
     asserts
         sample: => ok "fixture"
     collections::map<int,str> empty = call collections::empty_map()
@@ -142,14 +142,14 @@ fn str fixture
         collections::key_absent
         ok str output => ok output
 fn bool folded
-    emits []
+    emits {}
     asserts
         sample: => ok true
     collections::set<int> empty = call collections::empty_set()
     collections::set<int> result = call [1, 2, 3].fold(empty, callable collections::add)
     ok call collections::contains(...[result], 2)
 fn collections::entry<int,str>[][] mapped_entries
-    emits []
+    emits {}
     asserts
         sample: => ok [[]]
     collections::map<int,str> empty = call collections::empty_map()

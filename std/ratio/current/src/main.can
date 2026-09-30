@@ -5,7 +5,7 @@ record account
     int minor_units
     str currency
 fn number::division truncating
-    emits [number::zero_divisor]
+    emits {number::zero_divisor}
     given
         int numerator
         int denominator
@@ -14,12 +14,12 @@ fn number::division truncating
         negative: -7, 3 => ok number::division(-2, -1)
         divisor_negative: 7, -3 => ok number::division(-2, 1)
         both_negative: -7, -3 => ok number::division(2, -1)
-        zero: 7, 0 => number::zero_divisor()
+        zero: 7, 0 => number::zero_divisor{}
     match call number::divmod(numerator, denominator)
         number::zero_divisor
         ok number::division output => ok output
 fn number::division euclidean
-    emits [number::zero_divisor]
+    emits {number::zero_divisor}
     given
         int numerator
         int denominator
@@ -28,12 +28,12 @@ fn number::division euclidean
         both_negative: -7, -3 => ok number::division(3, 2)
         positive: 7, -3 => ok number::division(-2, 1)
         exact: -6, 3 => ok number::division(-2, 0)
-        zero: 7, 0 => number::zero_divisor()
+        zero: 7, 0 => number::zero_divisor{}
     match call number::euclidean_divmod(numerator, denominator)
         number::zero_divisor
         ok number::division output => ok output
 fn number::rounded rounded
-    emits [number::zero_divisor]
+    emits {number::zero_divisor}
     given
         int numerator
         int denominator
@@ -46,12 +46,12 @@ fn number::rounded rounded
         denominator_negative: 5, -2 => ok number::rounded(-2, -1, 2)
         both_negative: -5, -2 => ok number::rounded(2, 1, 2)
         unreduced: 2, 4 => ok number::rounded(0, 2, 4)
-        zero: 7, 0 => number::zero_divisor()
+        zero: 7, 0 => number::zero_divisor{}
     match call number::round_ratio_half_even(numerator, denominator)
         number::zero_divisor
         ok number::rounded output => ok output
 fn account deposit
-    emits []
+    emits {}
     given
         account balance
         int increment
@@ -59,7 +59,7 @@ fn account deposit
         large: account(9007199254740993, "EUR"), 2 => ok account(9007199254740995, "EUR")
     ok balance with minor_units = balance.minor_units + increment
 fn str encoded_share
-    emits [number::zero_divisor, codec::invalid_data]
+    emits {number::zero_divisor, codec::invalid_data}
     given
         account balance
     asserts
@@ -72,15 +72,15 @@ fn str encoded_share
                 codec::invalid_data
                 ok str text => ok text
 fn number::division reference
-    emits [number::zero_divisor]
+    emits {number::zero_divisor}
     asserts
         sample: => ok number::division(-3, 2)
-    callable number::division (int, int) emits [number::zero_divisor] operation = callable number::euclidean_divmod
+    callable number::division (int, int) emits {number::zero_divisor} operation = callable number::euclidean_divmod
     match call operation(-7, 3)
         number::zero_divisor
         ok number::division output => ok output
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts

@@ -3,23 +3,23 @@ package contracts
     uses [codec]
 record payload
     int value
-    callable void () emits [] then
+    callable void () emits {} then
 record offset
     int amount
 fn void noop
-    emits []
+    emits {}
     asserts
         unit: => ok
     ok
 fn item identity<item>
-    emits []
+    emits {}
     given
         item input
     asserts
         unit: 1 => ok 1
     ok input
 fn int add_near
-    emits []
+    emits {}
     given
         near int amount
         int value
@@ -28,14 +28,14 @@ fn int add_near
     ok amount + value
 fn item echo<item>
     on offset self
-    emits []
+    emits {}
     given
         item input
     asserts
         unit: offset(5) => 2 => ok 2
     ok input
 fn int captured
-    emits []
+    emits {}
     given
         int amount
     asserts
@@ -43,19 +43,19 @@ fn int captured
     int[] output = call [1, 2].map(callable add_near)
     ok output[0] + output[1]
 fn int generic_bound
-    emits []
+    emits {}
     asserts
         sample: => ok 3
     int[] output = call [1, 2].map(callable (offset(5)).echo)
     ok output[0] + output[1]
 fn int protected_payloads
-    emits []
+    emits {}
     asserts
         sample: => ok 3
     payload[] output = call [payload(1, callable noop), payload(2, callable noop)].map(callable identity)
     ok output[0].value + output[1].value
 fn item accumulate<item>
-    emits []
+    emits {}
     given
         item total
         int value
@@ -63,62 +63,62 @@ fn item accumulate<item>
         unit: 1, 2 => ok 1
     ok total
 fn int protected_fold
-    emits []
+    emits {}
     asserts
         sample: => ok 10
     payload output = call [1, 2].fold(payload(10, callable noop), callable accumulate)
     ok output.value
 fn int fallible
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         int value
     asserts
         good: 1 => ok 1
-        bad: 2 => codec::invalid_data("array", "stop")
+        bad: 2 => codec::invalid_data{"array", "stop"}
     match value
-        2 => codec::invalid_data("array", "stop")
+        2 => codec::invalid_data{"array", "stop"}
         3 => do
             int invalid = 1 / 0
             ok invalid
         _ => ok value
 fn int[] stops
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     asserts
-        sample: => codec::invalid_data("array", "stop")
+        sample: => codec::invalid_data{"array", "stop"}
     match call [1, 2, 3].map(callable fallible)
         codec::invalid_data
         ok int[] output => ok output
 fn int[] referenced_stops
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     asserts
-        sample: => codec::invalid_data("array", "stop")
-    callable int[] (callable int (int) emits [codec::invalid_data]) emits [codec::invalid_data] action = callable ([1, 2, 3]).map
+        sample: => codec::invalid_data{"array", "stop"}
+    callable int[] (callable int (int) emits {codec::invalid_data}) emits {codec::invalid_data} action = callable ([1, 2, 3]).map
     match call action(callable fallible)
         codec::invalid_data
         ok int[] output => ok output
 fn int quotient
-    emits []
+    emits {}
     given
         int value
     asserts
         unit: 1 => ok 10
     ok 10 / value
 fn str standard_stop
-    emits []
+    emits {}
     asserts
         sample: => ok "arithmetic: integer division by zero"
     match call [1, 0, 3].map(callable quotient)
         [_] as standard_failure failure => ok failure.message
         ok int[] output => ok "unexpected"
 fn int source
-    emits []
+    emits {}
     given
         int value
     asserts
         unit: 0 => ok 0
     ok value
 fn int queued
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -130,12 +130,12 @@ fn int queued
             sample: 2 => ok 30
         ok int output => ok output
 fn int[] mapped_queue
-    emits []
+    emits {}
     asserts
         unit: => ok [0, 1]
     ok call [0, 1].map(callable queued)
 fn int[] concurrent_queue
-    emits []
+    emits {}
     asserts
         sample: => ok [30, 30]
     int[] output = match call concurrent
@@ -145,14 +145,14 @@ fn int[] concurrent_queue
             ok int value => ok value
     ok output
 fn int immutable_copies
-    emits []
+    emits {}
     asserts
         sample: => ok 6
     int[] source = [1, 2]
     int[] changed = call append(source, 3).to_reversed()
     ok source[0] + source[1] + changed[0]
 fn int sort_key
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -164,19 +164,19 @@ fn int sort_key
             sample: 2 => ok 1
         ok int output => ok output
 fn int[] stable_sort
-    emits []
+    emits {}
     asserts
         sample: => ok [1, 2, 0]
     ok call [0, 1, 2].sort_by(callable sort_key)
 fn str nonfinite_sort
-    emits []
+    emits {}
     asserts
         sample: => ok "arithmetic: nonfinite sort key"
     match call [1.0, 1.0 / 0.0, 2.0].sort_by(callable identity)
         [_] as standard_failure failure => ok failure.message
         ok float[] output => ok "unexpected"
 fn int once
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -186,27 +186,27 @@ fn int once
             sample: 1 => ok 9
         ok int output => ok output
 fn int[] spread_once
-    emits []
+    emits {}
     asserts
         sample: => ok [1, 9]
     ok call append([1], ...[call once(1)])
 fn int map
     on offset self
-    emits []
+    emits {}
     given
         int ...values
     asserts
         unit: offset(1) => 2, 3 => ok 3
     ok self.amount + values.length
 fn int nominal_map
-    emits []
+    emits {}
     given
         int[] values
     asserts
         sample: [2, 3] => ok 3
     ok call (offset(1)).map(...values)
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts

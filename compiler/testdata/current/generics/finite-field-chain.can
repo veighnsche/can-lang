@@ -8,7 +8,7 @@ record step<item>
 record done<item>
     done<item>[] next
 fn int walk<item>
-    emits []
+    emits {}
     given
         item value
         int count
@@ -18,7 +18,7 @@ fn int walk<item>
         false => relay call walk(value.next[0], count - 1)
         true => ok 0
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

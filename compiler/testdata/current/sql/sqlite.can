@@ -14,7 +14,7 @@ record note_insert
     str body
 /// Memory pools open and close with no file.
 fn str memory_roundtrip
-    emits [sql::connection_failed, sql::close_failed]
+    emits {sql::connection_failed, sql::close_failed}
     asserts
         sample: => ok "memory-ok"
     match call sql::sqlite_open_memory()
@@ -28,7 +28,7 @@ fn str memory_roundtrip
             ok => ok "memory-ok"
 /// Insert one note into the file database.
 fn int add_note
-    emits [sql::connection_failed, sql::unsupported_value, sql::query_failed, sql::constraint_failed, sql::close_failed]
+    emits {sql::connection_failed, sql::unsupported_value, sql::query_failed, sql::constraint_failed, sql::close_failed}
     given
         str path
         int id
@@ -53,7 +53,7 @@ fn int add_note
                 ok => ok affected
 /// Fetch one note through a fresh file connection.
 fn note_row get_note
-    emits [sql::connection_failed, sql::unsupported_value, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::close_failed]
+    emits {sql::connection_failed, sql::unsupported_value, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::close_failed}
     given
         str path
         int id
@@ -80,7 +80,7 @@ fn note_row get_note
                 ok => ok row
 /// Insert, then commit the write.
 fn sql::decision<int> decide_commit
-    emits []
+    emits {}
     given
         near int id
         near str body
@@ -96,7 +96,7 @@ fn sql::decision<int> decide_commit
         ok int affected => ok sql::commit<int>(affected)
 /// Insert, then roll the write back.
 fn sql::decision<int> decide_abort
-    emits []
+    emits {}
     given
         near int id
         near str body
@@ -112,7 +112,7 @@ fn sql::decision<int> decide_abort
         ok int affected => ok sql::rollback<int>(affected)
 /// Run the committing transaction on the file database.
 fn int run_commit
-    emits [sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed]
+    emits {sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed}
     given
         str path
         int id
@@ -136,7 +136,7 @@ fn int run_commit
                 ok => ok total
 /// Run the aborting transaction on the file database.
 fn int run_abort
-    emits [sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed]
+    emits {sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed}
     given
         str path
         int id
@@ -159,7 +159,7 @@ fn int run_abort
                 sql::close_failed
                 ok => ok total
 fn void main
-    emits [codec::invalid_data, io::write_failed, sql::connection_failed, sql::unsupported_value, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::transaction_failed, sql::commit_unknown, sql::close_failed]
+    emits {codec::invalid_data, io::write_failed, sql::connection_failed, sql::unsupported_value, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::transaction_failed, sql::commit_unknown, sql::close_failed}
     given
         str[] args
     asserts

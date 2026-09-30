@@ -17,7 +17,7 @@ record cover_row
     bytes::buffer payload
     option::value<str> note
 fn sql::pool open_pool
-    emits [http::credentials_missing, sql::connection_failed]
+    emits {http::credentials_missing, sql::connection_failed}
     asserts
         sample: => ok
     match call sql::pool_open("CAN_TEST_POSTGRES", 5)
@@ -27,7 +27,7 @@ fn sql::pool open_pool
         sql::connection_failed
         ok sql::pool pool => ok pool
 fn account_row account_by_id
-    emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::close_failed]
+    emits {http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::close_failed}
     given
         int id
     asserts
@@ -53,7 +53,7 @@ fn account_row account_by_id
                 sql::close_failed
                 ok => ok row
 fn option::value<account_row> account_by_term
-    emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_count, sql::schema_mismatch, sql::close_failed]
+    emits {http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_count, sql::schema_mismatch, sql::close_failed}
     given
         str term
     asserts
@@ -78,7 +78,7 @@ fn option::value<account_row> account_by_term
                 sql::close_failed
                 ok => ok found
 fn account_row[] accounts_by_term
-    emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch, sql::close_failed]
+    emits {http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch, sql::close_failed}
     given
         str term
         int max
@@ -104,7 +104,7 @@ fn account_row[] accounts_by_term
                 sql::close_failed
                 ok => ok rows
 fn int add_account
-    emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::close_failed]
+    emits {http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::close_failed}
     given
         str term
     asserts
@@ -127,7 +127,7 @@ fn int add_account
                 sql::close_failed
                 ok => ok affected
 fn void close_pool
-    emits [http::credentials_missing, sql::connection_failed, sql::close_failed]
+    emits {http::credentials_missing, sql::connection_failed, sql::close_failed}
     asserts
         sample: => ok
     match call sql::pool_open("CAN_TEST_POSTGRES", 5)
@@ -141,11 +141,11 @@ fn void close_pool
             sql::close_failed
             ok => ok
 fn cover_row cover_by_id
-    emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::close_failed]
+    emits {http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::close_failed}
     given
         int id
     asserts
-        missing: 999 => sql::row_missing("cover_by_id")
+        missing: 999 => sql::row_missing{"cover_by_id"}
     match call sql::pool_open("CAN_TEST_POSTGRES", 5)
         when
             missing: "CAN_TEST_POSTGRES", 5 => ok
@@ -153,7 +153,7 @@ fn cover_row cover_by_id
         sql::connection_failed
         ok sql::pool pool => match call sql::query_one<id_parameters, cover_row>(pool, "cover_by_id", id_parameters(id))
             when
-                missing: pool, "cover_by_id", id_parameters(999) => sql::row_missing("cover_by_id")
+                missing: pool, "cover_by_id", id_parameters(999) => sql::row_missing{"cover_by_id"}
             sql::unsupported_value
             sql::connection_failed
             sql::query_failed
@@ -167,7 +167,7 @@ fn cover_row cover_by_id
                 sql::close_failed
                 ok => ok row
 fn void main
-    emits [codec::invalid_data, io::write_failed, http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::row_limit, sql::schema_mismatch, sql::close_failed]
+    emits {codec::invalid_data, io::write_failed, http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::row_limit, sql::schema_mismatch, sql::close_failed}
     given
         str[] args
     asserts

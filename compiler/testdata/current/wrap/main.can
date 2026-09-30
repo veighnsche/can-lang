@@ -17,9 +17,9 @@ wrap cached from load
     emits calculated
     asserts
         absent: => ok receipt(0)
-            using failure native http::status_error(404, [])
-        busy: => http::request_failed(http::status_error(429, []))
-            using failure native http::status_error(429, [])
+            using failure native http::status_error{404, []}
+        busy: => http::request_failed{http::status_error{429, []}}
+            using failure native http::status_error{429, []}
     handles native
         http::status_error as failed => match failed.status
             404 => ok receipt(0)
@@ -28,16 +28,16 @@ wrap settled from cached
     emits calculated
     asserts
         gone: => ok receipt(0)
-            using failure native http::status_error(404, [])
-        slow: => http::request_failed(http::status_error(503, []))
-            using failure native http::status_error(503, [])
-        stalled: => http::request_failed(http::timeout(5000))
+            using failure native http::status_error{404, []}
+        slow: => http::request_failed{http::status_error{503, []}}
+            using failure native http::status_error{503, []}
+        stalled: => http::request_failed{http::timeout{5000}}
             using raw "fixtures/load_timeout.json"
     handles native
         http::status_error as failed => match failed.status
             404 => ok receipt(0)
             429 => inherit
-            _ => http::request_failed(failed)
+            _ => http::request_failed{failed}
 connection classifier
     endpoint "http://127.0.0.1:1/systemone"
     auth bearer env "CAN_I17_TOKEN"
@@ -86,9 +86,9 @@ wrap guarded from assess
     emits calculated
     asserts
         absorbed: (9007199254740993, -0.0) => ok 0.0
-            using failure emitted ai::invalid_answer("q2", "out of range")
+            using failure emitted ai::invalid_answer{"q2", "out of range"}
         missing: (9007199254740993, -0.0) => ok 0.0
-            using failure native http::status_error(404, [])
+            using failure native http::status_error{404, []}
     handles native
         http::status_error as failed => match failed.status
             404 => ok 0.0

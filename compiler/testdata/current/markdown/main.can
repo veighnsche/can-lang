@@ -2,7 +2,7 @@ package md_cli
     provides []
     uses [markdown, html, http, bytes, io, codec]
 fn int emit
-    emits [codec::invalid_data, io::write_failed]
+    emits {codec::invalid_data, io::write_failed}
     given
         str text
     asserts
@@ -18,7 +18,7 @@ fn int emit
             io::write_failed
             ok int written => ok written
 fn str raw
-    emits [markdown::over_limit]
+    emits {markdown::over_limit}
     given
         str source
     asserts
@@ -26,15 +26,15 @@ fn str raw
         hostile: "<script>alert(1)</script>" => ok "<script>alert(1)</script>\n"
     relay call markdown::render_text_html(source)
 fn html::safe page
-    emits [markdown::over_limit, html::invalid_url]
+    emits {markdown::over_limit, html::invalid_url}
     given
         str source
     asserts
         sample: "# Hi" => ok
-        bad_link: "[t](javascript:alert(1))" => html::invalid_url("scheme")
+        bad_link: "[t](javascript:alert(1))" => html::invalid_url{"scheme"}
     relay call markdown::render_safe(source)
 fn bool served
-    emits [markdown::over_limit, html::invalid_url]
+    emits {markdown::over_limit, html::invalid_url}
     asserts
         sample: => ok true
     match chain
@@ -46,7 +46,7 @@ fn bool served
         html::invalid_url
         ok => ok true
 fn void main
-    emits [markdown::over_limit, codec::invalid_data, io::write_failed]
+    emits {markdown::over_limit, codec::invalid_data, io::write_failed}
     given
         str[] args
     asserts

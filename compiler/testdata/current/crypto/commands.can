@@ -3,7 +3,7 @@ package app
     uses [bytes, codec, crypto, io, password]
 /// HMAC-SHA-256 tag bytes of the message under the key.
 fn int[] hmac_tag
-    emits [codec::invalid_data, crypto::invalid_key]
+    emits {codec::invalid_data, crypto::invalid_key}
     given
         int[] key
         int[] message
@@ -19,7 +19,7 @@ fn int[] hmac_tag
         ok => ok out
 /// Verify a password against the fixed preset-0 argon2id hash of "correct horse".
 fn bool check_password
-    emits [password::invalid_hash]
+    emits {password::invalid_hash}
     given
         str password
     asserts
@@ -30,7 +30,7 @@ fn bool check_password
         ok bool matched => ok matched
 /// Verify an Ed25519 signature against the fixed 32-byte public key.
 fn bool check_signature
-    emits [codec::invalid_data, crypto::invalid_key, crypto::key_misuse]
+    emits {codec::invalid_data, crypto::invalid_key, crypto::key_misuse}
     given
         int[] message
         int[] signature
@@ -50,7 +50,7 @@ fn bool check_signature
 /// key elides from the assert inputs; the fixture binds the harness
 /// token and answers the sealed record.
 fn int seal_size
-    emits [codec::invalid_data, crypto::key_misuse]
+    emits {codec::invalid_data, crypto::key_misuse}
     given
         crypto::key key
         int[] plaintext
@@ -70,7 +70,7 @@ fn int seal_size
                         crypto::key_misuse
                         ok crypto::sealed sealed => ok sealed.ciphertext.length
 fn void main
-    emits [codec::invalid_data, io::write_failed, password::invalid_hash, crypto::invalid_key, crypto::key_misuse, crypto::invalid_nonce, crypto::decrypt_failed]
+    emits {codec::invalid_data, io::write_failed, password::invalid_hash, crypto::invalid_key, crypto::key_misuse, crypto::invalid_nonce, crypto::decrypt_failed}
     given
         str[] args
     asserts

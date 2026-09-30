@@ -2,7 +2,7 @@ package octets
     provides []
     uses [bytes, codec]
 fn str roundtrip
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -14,20 +14,20 @@ fn str roundtrip
         codec::invalid_data
         ok => ok decoded
 fn int[] integers
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         int[] values
     asserts
         edges: [0, 255, 128] => ok [0, 255, 128]
-        negative: [-1] => codec::invalid_data("/0", "byte_range")
-        too_large: [256] => codec::invalid_data("/0", "byte_range")
+        negative: [-1] => codec::invalid_data{"/0", "byte_range"}
+        too_large: [256] => codec::invalid_data{"/0", "byte_range"}
     match chain
         call bytes::from_ints(values) as bytes::buffer original
         call bytes::to_ints(original) as int[] decoded
         codec::invalid_data
         ok => ok decoded
 fn str base64_of_text
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -39,19 +39,19 @@ fn str base64_of_text
         codec::invalid_data
         ok => ok encoded
 fn str text_of_base64
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
         sample: "aMOpbGxvIPCfmIA=" => ok "héllo 😀"
-        bad_padding: "QQ" => codec::invalid_data("", "base64")
+        bad_padding: "QQ" => codec::invalid_data{"", "base64"}
     match chain
         call bytes::decode_base64(text) as bytes::buffer raw
         call bytes::to_utf8(raw) as str decoded
         codec::invalid_data
         ok => ok decoded
 fn str hex_of_text
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -63,32 +63,32 @@ fn str hex_of_text
         codec::invalid_data
         ok => ok encoded
 fn str text_of_hex
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
         sample: "68C3A96C6C6F20F09F9880" => ok "héllo 😀"
-        bad_digit: "0g" => codec::invalid_data("", "hex")
+        bad_digit: "0g" => codec::invalid_data{"", "hex"}
     match chain
         call bytes::decode_hex(text) as bytes::buffer raw
         call bytes::to_utf8(raw) as str decoded
         codec::invalid_data
         ok => ok decoded
 fn int empty_size
-    emits []
+    emits {}
     asserts
         sample: => ok 0
     bytes::buffer empty = call bytes::empty()
     ok empty.length
 fn str captured
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         near bytes::buffer original
     asserts
         sample: call bytes::empty() => ok ""
     relay call bytes::to_utf8(original)
 fn str callable_roundtrip
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -96,10 +96,10 @@ fn str callable_roundtrip
     match call bytes::from_utf8(text)
         codec::invalid_data
         ok bytes::buffer original => do
-            callable str () emits [codec::invalid_data] action = callable captured
+            callable str () emits {codec::invalid_data} action = callable captured
             relay call action()
 fn void main
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str[] args
     asserts

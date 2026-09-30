@@ -2,14 +2,14 @@ package queues
     provides []
     uses []
 fn int source
-    emits []
+    emits {}
     given
         int index
     asserts
         unit: 0 => ok 0
     ok index
 fn int helper
-    emits []
+    emits {}
     given
         near int index
     asserts
@@ -22,7 +22,7 @@ fn int helper
             identical: 0 => ok 20
         ok int value => ok value
 fn int transitive
-    emits []
+    emits {}
     given
         int index
     asserts
@@ -30,14 +30,14 @@ fn int transitive
     match call helper(index)
         ok int value => ok value
 fn int repeated
-    emits []
+    emits {}
     asserts
         sample: => ok 30
     int first = call helper(0)
     int second = call transitive(1)
     ok first + second
 fn int[] concurrent
-    emits []
+    emits {}
     asserts
         sample: => ok [10, 20]
     int[] result = match call concurrent
@@ -47,7 +47,7 @@ fn int[] concurrent
             ok int value => ok value
     ok result
 fn int[] settled
-    emits []
+    emits {}
     asserts
         sample: => ok [10, 20]
     int[] result = match call concurrent with error
@@ -57,7 +57,7 @@ fn int[] settled
             ok int value => ok value
     ok result
 fn int any
-    emits []
+    emits {}
     asserts
         sample: => ok 10
     int result = match call race
@@ -67,7 +67,7 @@ fn int any
         ok int value => ok value
     ok result
 fn int race
-    emits []
+    emits {}
     asserts
         sample: => ok 10
     int result = match call race with error
@@ -76,41 +76,41 @@ fn int race
         ok int value => ok value
     ok result
 fn int captured
-    emits []
+    emits {}
     given
         int index
     asserts
         unit: 0 => ok 0
-    callable int () emits [] action = callable helper
+    callable int () emits {} action = callable helper
     ok call action()
 fn int captured_pair
-    emits []
+    emits {}
     asserts
         sample: => ok 30
     int first = call captured(0)
     int second = call captured(1)
     ok first + second
 fn int entry_zero
-    emits []
+    emits {}
     asserts
         unit: => ok 0
     ok call captured(0)
 fn int entry_one
-    emits []
+    emits {}
     asserts
         unit: => ok 1
     ok call captured(1)
 fn int[] spread
-    emits []
+    emits {}
     asserts
         sample: => ok [10, 20]
-    callable int () emits [][] actions = [callable entry_zero, callable entry_one]
+    callable int () emits {}[] actions = [callable entry_zero, callable entry_one]
     int[] result = match call concurrent
         ...actions
             ok int value => ok value
     ok result
 fn int recursive
-    emits []
+    emits {}
     given
         int remaining
     asserts
@@ -122,12 +122,12 @@ fn int recursive
             int tail = call recursive(remaining - 1)
             ok head + tail
 fn int recursion_root
-    emits []
+    emits {}
     asserts
         sample: => ok 30
     ok call recursive(2)
 fn int left
-    emits []
+    emits {}
     given
         int remaining
     asserts
@@ -139,7 +139,7 @@ fn int left
             int tail = call right(remaining - 1)
             ok head + tail
 fn int right
-    emits []
+    emits {}
     given
         int remaining
     asserts
@@ -151,7 +151,7 @@ fn int right
             int tail = call left(remaining - 1)
             ok head + tail
 fn int mutual_root
-    emits []
+    emits {}
     asserts
         sample: => ok 30
     ok call left(2)
@@ -159,31 +159,31 @@ record item
     int index
 fn int read
     on item self
-    emits []
+    emits {}
     given
         near int offset
     asserts
         unit: item(0) => 0 => ok 0
     ok call helper(self.index + offset)
 fn int receivers
-    emits []
+    emits {}
     asserts
         sample: => ok 30
     int offset = 0
-    callable int () emits [] first = callable (item(0)).read
-    callable int () emits [] second = callable (item(1)).read
+    callable int () emits {} first = callable (item(0)).read
+    callable int () emits {} second = callable (item(1)).read
     int a = call first()
     int b = call second()
     ok a + b
 fn int identical_arguments
-    emits []
+    emits {}
     asserts
         identical: => ok 30
     int first = call helper(0)
     int second = call helper(0)
     ok first + second
 fn int direct_receivers
-    emits []
+    emits {}
     asserts
         sample: => ok 30
     int a = call (item(0)).read(0)

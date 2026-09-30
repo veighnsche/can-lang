@@ -2,14 +2,14 @@ package app
     provides [top]
     uses [vendor::helpers as helpers, vendor::core as core, vendor::mail as mail]
 fn helpers::box<item> top<item>
-    emits []
+    emits {}
     given
         item value
     asserts
         number: 3 => ok helpers::box(3)
     ok call helpers::wrap<item>(value)
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

@@ -6,7 +6,7 @@ package app
 /// write is supplied. Assertion rows pin the fault mapping; the stored
 /// size is live-tested.
 fn str put_object
-    emits [s3::invalid_config, s3::access_denied, s3::service_error, time::out_of_range, codec::invalid_data]
+    emits {s3::invalid_config, s3::access_denied, s3::service_error, time::out_of_range, codec::invalid_data}
     given
         str endpoint
         str region
@@ -17,8 +17,8 @@ fn str put_object
         str body
     asserts
         sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "doc.txt", "hello" => ok "5"
-        denied: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "doc.txt", "hello" => s3::access_denied("write_bytes")
-        badkey: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "", "hello" => s3::invalid_config("key")
+        denied: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "doc.txt", "hello" => s3::access_denied{"write_bytes"}
+        badkey: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "", "hello" => s3::invalid_config{"key"}
     match call time::instant_from_epoch_millis(1727000000000)
         time::out_of_range
         ok time::instant now => match call s3::client_open(endpoint, region, bucket, access, secret)
@@ -28,8 +28,8 @@ fn str put_object
                 ok bytes::buffer payload => match call s3::write_bytes(handle, key, payload, s3::write_options(option::none()))
                     when
                         sample: handle, "doc.txt", payload, s3::write_options(option::none()) => ok s3::metadata(5, "\"e\"", "text/plain", now)
-                        denied: handle, "doc.txt", payload, s3::write_options(option::none()) => s3::access_denied("write_bytes")
-                        badkey: handle, "", payload, s3::write_options(option::none()) => s3::invalid_config("key")
+                        denied: handle, "doc.txt", payload, s3::write_options(option::none()) => s3::access_denied{"write_bytes"}
+                        badkey: handle, "", payload, s3::write_options(option::none()) => s3::invalid_config{"key"}
                     s3::invalid_config
                     s3::access_denied
                     s3::service_error
@@ -37,7 +37,7 @@ fn str put_object
 /// Fetch one object as text. The missing-key fault is assertion-pinned;
 /// live runs prove the bytes.
 fn str get_object
-    emits [s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, s3::over_limit, codec::invalid_data]
+    emits {s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, s3::over_limit, codec::invalid_data}
     given
         str endpoint
         str region
@@ -47,7 +47,7 @@ fn str get_object
         str key
     asserts
         sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "doc.txt" => ok "hi"
-        absent: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "missing.txt" => s3::missing_key("missing.txt")
+        absent: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "missing.txt" => s3::missing_key{"missing.txt"}
     match call bytes::from_utf8("hi")
         codec::invalid_data
         ok bytes::buffer chunk => match call s3::client_open(endpoint, region, bucket, access, secret)
@@ -55,7 +55,7 @@ fn str get_object
             ok s3::client handle => match call s3::read_bytes(handle, key, 65536)
                 when
                     sample: handle, "doc.txt", 65536 => ok chunk
-                    absent: handle, "missing.txt", 65536 => s3::missing_key("missing.txt")
+                    absent: handle, "missing.txt", 65536 => s3::missing_key{"missing.txt"}
                 s3::invalid_config
                 s3::missing_key
                 s3::access_denied
@@ -68,7 +68,7 @@ fn str get_object
 /// instant crosses inside the metadata record and converts back at
 /// the boundary.
 fn str stat_object
-    emits [s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, time::out_of_range]
+    emits {s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, time::out_of_range}
     given
         str endpoint
         str region
@@ -78,7 +78,7 @@ fn str stat_object
         str key
     asserts
         sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "doc.txt" => ok "8@1727000000000"
-        absent: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "missing.txt" => s3::missing_key("missing.txt")
+        absent: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "missing.txt" => s3::missing_key{"missing.txt"}
     match call time::instant_from_epoch_millis(1727000000000)
         time::out_of_range
         ok time::instant now => match call s3::client_open(endpoint, region, bucket, access, secret)
@@ -86,7 +86,7 @@ fn str stat_object
             ok s3::client handle => match call s3::stat(handle, key)
                 when
                     sample: handle, "doc.txt" => ok s3::metadata(8, "\"e\"", "text/plain", now)
-                    absent: handle, "missing.txt" => s3::missing_key("missing.txt")
+                    absent: handle, "missing.txt" => s3::missing_key{"missing.txt"}
                 s3::invalid_config
                 s3::missing_key
                 s3::access_denied
@@ -95,7 +95,7 @@ fn str stat_object
 /// Answer whether one key exists. Booleans cross directly, so both
 /// outcomes pin in assertions.
 fn bool exists_object
-    emits [s3::invalid_config, s3::access_denied, s3::service_error]
+    emits {s3::invalid_config, s3::access_denied, s3::service_error}
     given
         str endpoint
         str region
@@ -118,7 +118,7 @@ fn bool exists_object
             ok bool found => ok found
 /// Delete one key idempotently and confirm with a label.
 fn str delete_object
-    emits [s3::invalid_config, s3::access_denied, s3::service_error]
+    emits {s3::invalid_config, s3::access_denied, s3::service_error}
     given
         str endpoint
         str region
@@ -140,7 +140,7 @@ fn str delete_object
 /// Count the entries of one page. Assertion rows cover a populated
 /// page and an empty one; continuation threading is live-tested.
 fn int list_first
-    emits [s3::invalid_config, s3::access_denied, s3::service_error, time::out_of_range]
+    emits {s3::invalid_config, s3::access_denied, s3::service_error, time::out_of_range}
     given
         str endpoint
         str region
@@ -152,7 +152,7 @@ fn int list_first
     asserts
         sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "d/", 10 => ok 2
         empty: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "d/", 10 => ok 0
-        denied: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "d/", 10 => s3::access_denied("list")
+        denied: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "d/", 10 => s3::access_denied{"list"}
     match call time::instant_from_epoch_millis(1727000000000)
         time::out_of_range
         ok time::instant now => match call s3::client_open(endpoint, region, bucket, access, secret)
@@ -161,7 +161,7 @@ fn int list_first
                 when
                     sample: handle, s3::list_options("d/", 10, option::none(), option::none()) => ok s3::page([s3::entry("d/a", 1, "\"e\"", now), s3::entry("d/b", 2, "\"f\"", now)], [], false, option::none())
                     empty: handle, s3::list_options("d/", 10, option::none(), option::none()) => ok s3::page([], [], false, option::none())
-                    denied: handle, s3::list_options("d/", 10, option::none(), option::none()) => s3::access_denied("list")
+                    denied: handle, s3::list_options("d/", 10, option::none(), option::none()) => s3::access_denied{"list"}
                 s3::invalid_config
                 s3::access_denied
                 s3::service_error
@@ -171,7 +171,7 @@ fn int list_first
 /// end. Continuation tokens have no fixture literal, so only the
 /// terminal branch asserts; threading is live-tested.
 fn int list_rest
-    emits [s3::invalid_config, s3::access_denied, s3::service_error]
+    emits {s3::invalid_config, s3::access_denied, s3::service_error}
     given
         str endpoint
         str region
@@ -202,7 +202,7 @@ fn int list_rest
 /// have no fixture literal, so only the single-page shape asserts;
 /// the threaded branch is live-tested.
 fn int list_all
-    emits [s3::invalid_config, s3::access_denied, s3::service_error, time::out_of_range]
+    emits {s3::invalid_config, s3::access_denied, s3::service_error, time::out_of_range}
     given
         str endpoint
         str region
@@ -234,7 +234,7 @@ fn int list_all
 /// The URL stays inside the opaque handle until described; assertion
 /// rows pin the plumbing while live runs mint real signatures.
 fn str sign_object
-    emits [s3::invalid_config, time::out_of_range]
+    emits {s3::invalid_config, time::out_of_range}
     given
         str endpoint
         str region
@@ -246,7 +246,7 @@ fn str sign_object
         int expires
     asserts
         sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", s3::method_get(), "doc.txt", 300 => ok "https://signed.invalid/doc.txt"
-        badexp: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", s3::method_get(), "doc.txt", 0 => s3::invalid_config("expires")
+        badexp: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", s3::method_get(), "doc.txt", 0 => s3::invalid_config{"expires"}
     match call time::instant_from_epoch_millis(1727000000000)
         time::out_of_range
         ok time::instant now => match call s3::client_open(endpoint, region, bucket, access, secret)
@@ -254,7 +254,7 @@ fn str sign_object
             ok s3::client handle => match call s3::presign(handle, method, key, expires, option::none())
                 when
                     sample: handle, s3::method_get(), "doc.txt", 300, option::none() => ok
-                    badexp: handle, s3::method_get(), "doc.txt", 0, option::none() => s3::invalid_config("expires")
+                    badexp: handle, s3::method_get(), "doc.txt", 0, option::none() => s3::invalid_config{"expires"}
                 s3::invalid_config
                 ok s3::presigned token => match call token.describe()
                     when
@@ -264,7 +264,7 @@ fn str sign_object
 /// size. The part size arrives as an option so the floor stays
 /// assertion-pinned.
 fn str upload_object
-    emits [s3::invalid_config, s3::access_denied, s3::service_error, s3::upload_closed, time::out_of_range, codec::invalid_data]
+    emits {s3::invalid_config, s3::access_denied, s3::service_error, s3::upload_closed, time::out_of_range, codec::invalid_data}
     given
         str endpoint
         str region
@@ -276,7 +276,7 @@ fn str upload_object
         option::value<int> part
     asserts
         sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "big.bin", "hello", option::none() => ok "5"
-        badpart: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "big.bin", "hello", option::some(1024) => s3::invalid_config("part_size")
+        badpart: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "big.bin", "hello", option::some(1024) => s3::invalid_config{"part_size"}
     match call time::instant_from_epoch_millis(1727000000000)
         time::out_of_range
         ok time::instant now => match call s3::client_open(endpoint, region, bucket, access, secret)
@@ -284,7 +284,7 @@ fn str upload_object
             ok s3::client handle => match call s3::begin_upload(handle, key, s3::upload_options(option::none(), part))
                 when
                     sample: handle, "big.bin", s3::upload_options(option::none(), option::none()) => ok
-                    badpart: handle, "big.bin", s3::upload_options(option::none(), option::some(1024)) => s3::invalid_config("part_size")
+                    badpart: handle, "big.bin", s3::upload_options(option::none(), option::some(1024)) => s3::invalid_config{"part_size"}
                 s3::invalid_config
                 ok s3::upload upload => match call bytes::from_utf8(body)
                     codec::invalid_data
@@ -303,7 +303,7 @@ fn str upload_object
                             ok s3::metadata meta => ok call text::from_int(meta.size)
 /// Fetch one byte window as text.
 fn str read_range_text
-    emits [s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, codec::invalid_data]
+    emits {s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, codec::invalid_data}
     given
         str endpoint
         str region
@@ -315,7 +315,7 @@ fn str read_range_text
         int length
     asserts
         sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "doc.txt", 0, 2 => ok "hi"
-        absent: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "missing.txt", 0, 2 => s3::missing_key("missing.txt")
+        absent: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "missing.txt", 0, 2 => s3::missing_key{"missing.txt"}
     match call bytes::from_utf8("hi")
         codec::invalid_data
         ok bytes::buffer chunk => match call s3::client_open(endpoint, region, bucket, access, secret)
@@ -323,7 +323,7 @@ fn str read_range_text
             ok s3::client handle => match call s3::read_range(handle, key, offset, length)
                 when
                     sample: handle, "doc.txt", 0, 2 => ok chunk
-                    absent: handle, "missing.txt", 0, 2 => s3::missing_key("missing.txt")
+                    absent: handle, "missing.txt", 0, 2 => s3::missing_key{"missing.txt"}
                 s3::invalid_config
                 s3::missing_key
                 s3::access_denied
@@ -337,7 +337,7 @@ fn str read_range_text
 /// Small objects arrive in one batch; larger transfers reassemble in
 /// the runtime pump instead.
 fn str stream_text
-    emits [s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, s3::over_limit, stream::read_failed, stream::cancelled, files::limit_exceeded, stream::close_failed, codec::invalid_data]
+    emits {s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, s3::over_limit, stream::read_failed, stream::cancelled, files::limit_exceeded, stream::close_failed, codec::invalid_data}
     given
         str endpoint
         str region
@@ -390,7 +390,7 @@ fn str stream_text
 /// Copy one object through a reader pump: the download reader flows
 /// into the streaming write, so bytes never collect in one buffer.
 fn str copy_object
-    emits [s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, s3::over_limit, stream::read_failed, stream::cancelled, time::out_of_range]
+    emits {s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, s3::over_limit, stream::read_failed, stream::cancelled, time::out_of_range}
     given
         str endpoint
         str region
@@ -401,7 +401,7 @@ fn str copy_object
         str target
     asserts
         sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "a.txt", "b.txt" => ok "3"
-        absent: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "missing.txt", "b.txt" => s3::missing_key("missing.txt")
+        absent: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "missing.txt", "b.txt" => s3::missing_key{"missing.txt"}
     match call time::instant_from_epoch_millis(1727000000000)
         time::out_of_range
         ok time::instant now => match call s3::client_open(endpoint, region, bucket, access, secret)
@@ -409,7 +409,7 @@ fn str copy_object
             ok s3::client handle => match call s3::read_stream(handle, source, 64)
                 when
                     sample: handle, "a.txt", 64 => ok
-                    absent: handle, "missing.txt", 64 => s3::missing_key("missing.txt")
+                    absent: handle, "missing.txt", 64 => s3::missing_key{"missing.txt"}
                 s3::invalid_config
                 s3::missing_key
                 s3::access_denied
@@ -429,7 +429,7 @@ fn str copy_object
 /// upload and then deletes the key, so a pre-existing key is briefly
 /// overwritten and visible before removal.
 fn str abort_upload
-    emits [s3::invalid_config, s3::upload_closed, s3::access_denied, s3::service_error]
+    emits {s3::invalid_config, s3::upload_closed, s3::access_denied, s3::service_error}
     given
         str endpoint
         str region
@@ -455,7 +455,7 @@ fn str abort_upload
 /// Print one line of text. Command arms share this so usage and
 /// results funnel through one supplied boundary.
 fn int emit
-    emits [codec::invalid_data, io::write_failed]
+    emits {codec::invalid_data, io::write_failed}
     given
         str text
     asserts
@@ -473,7 +473,7 @@ fn int emit
 /// snapshot, never from argv: each arm reads the five variables once
 /// and every command opens its own client.
 fn void main
-    emits [env::invalid_name, http::credentials_missing, codec::invalid_data, io::write_failed, text::invalid_number, s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, s3::over_limit, s3::upload_closed, stream::read_failed, stream::cancelled, files::limit_exceeded, stream::close_failed, time::out_of_range]
+    emits {env::invalid_name, http::credentials_missing, codec::invalid_data, io::write_failed, text::invalid_number, s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, s3::over_limit, s3::upload_closed, stream::read_failed, stream::cancelled, files::limit_exceeded, stream::close_failed, time::out_of_range}
     given
         str[] args
     asserts

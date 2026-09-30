@@ -2,7 +2,7 @@ package app
     provides []
     uses [clock, random, crypto, log, bytes, codec]
 fn int[] hash_empty
-    emits []
+    emits {}
     asserts
         sample: => ok [227, 176, 196, 66, 152, 252, 28, 20, 154, 251, 244, 200, 153, 111, 185, 36, 39, 174, 65, 228, 100, 155, 147, 76, 164, 149, 153, 27, 120, 82, 184, 85]
         native_expected: => ok call bytes::to_ints(call crypto::sha256(call bytes::empty()))
@@ -10,14 +10,14 @@ fn int[] hash_empty
     bytes::buffer hashed = call crypto::sha256(empty)
     ok call bytes::to_ints(hashed)
 fn void main
-    emits [clock::invalid_duration, random::invalid_length, log::write_failed]
+    emits {clock::invalid_duration, random::invalid_length, log::write_failed}
     given
         str[] args
     asserts
         sample: [] => ok
-    callable void (int) emits [clock::invalid_duration] sleep = callable clock::sleep_millis
-    callable void (str) emits [log::write_failed] write_info = callable log::write_info
-    callable void (str) emits [log::write_failed] write_error = callable log::write_error
+    callable void (int) emits {clock::invalid_duration} sleep = callable clock::sleep_millis
+    callable void (str) emits {log::write_failed} write_info = callable log::write_info
+    callable void (str) emits {log::write_failed} write_error = callable log::write_error
     bytes::buffer empty = call bytes::empty()
     match call clock::wall_millis()
         when

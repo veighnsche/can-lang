@@ -2,14 +2,14 @@ package app
     provides []
     uses [http]
 fn http::server_response health
-    emits []
+    emits {}
     given
         http::request req
     asserts
         sample: => ok
     ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "healthy")
 fn http::router table
-    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}
     asserts
         sample: => ok
     match chain
@@ -20,14 +20,14 @@ fn http::router table
         http::ambiguous_route
         ok => ok built
 fn bool settings
-    emits []
+    emits {}
     asserts
         sample: => ok true
     match call http::make_server_config("127.0.0.1", 0, 0, 1000)
         http::invalid_server_config => ok true
         ok http::server_config config => ok false
 fn bool bounds
-    emits [http::invalid_server_config]
+    emits {http::invalid_server_config}
     asserts
         sample: => ok true
     match chain
@@ -35,7 +35,7 @@ fn bool bounds
         http::invalid_server_config
         ok => ok true
 fn http::server boot
-    emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed]
+    emits {http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed}
     given
         int port
     asserts
@@ -52,7 +52,7 @@ fn http::server boot
                 http::bind_failed
                 ok http::server sturdy => ok sturdy
 fn void serve
-    emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed]
+    emits {http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed}
     given
         int port
     asserts
@@ -77,7 +77,7 @@ fn void serve
                         http::shutdown_failed
                         ok => ok
 fn void main
-    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}
     given
         str[] args
     asserts

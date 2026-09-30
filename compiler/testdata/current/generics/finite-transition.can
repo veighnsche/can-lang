@@ -2,7 +2,7 @@ package app
     provides []
     uses []
 fn int fixed<item>
-    emits []
+    emits {}
     given
         item value
         int count
@@ -12,7 +12,7 @@ fn int fixed<item>
         false => relay call fixed<int[]>([1], count - 1)
         true => ok 0
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

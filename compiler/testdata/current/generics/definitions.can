@@ -5,7 +5,7 @@ record box<item>
     item value
     box<item>[] children
 fn item identity<item>
-    emits []
+    emits {}
     given
         item value
     asserts
@@ -14,7 +14,7 @@ fn item identity<item>
     ok value
 fn item read<item>
     on box<item> self
-    emits []
+    emits {}
     asserts
         integer: box(3, []) => => ok 3
         text: box("x", []) => => ok "x"

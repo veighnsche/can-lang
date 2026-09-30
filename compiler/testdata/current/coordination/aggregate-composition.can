@@ -11,94 +11,94 @@ variant combined_failure
     codec::invalid_data
     standard_failure
 fn int original_a
-    emits [all_failed<a_failure>]
+    emits {all_failed<a_failure>}
     asserts
-        sample: => all_failed<a_failure>([codec::invalid_data("a", "type")])
-    all_failed<a_failure>([codec::invalid_data("a", "type")])
+        sample: => all_failed<a_failure>{[codec::invalid_data{"a", "type"}]}
+    all_failed<a_failure>{[codec::invalid_data{"a", "type"}]}
 fn combined_failure widen_one
-    emits []
+    emits {}
     given
         a_failure item
     asserts
-        data: codec::invalid_data("a", "type") => ok codec::invalid_data("a", "type")
-        other: codec::invalid_data("b", "reason") => ok codec::invalid_data("b", "reason")
+        data: codec::invalid_data{"a", "type"} => ok codec::invalid_data{"a", "type"}
+        other: codec::invalid_data{"b", "reason"} => ok codec::invalid_data{"b", "reason"}
     ok item
 fn int normalized_a
-    emits [all_failed<combined_failure>]
+    emits {all_failed<combined_failure>}
     asserts
-        sample: => all_failed<combined_failure>([codec::invalid_data("a", "type")])
+        sample: => all_failed<combined_failure>{[codec::invalid_data{"a", "type"}]}
     match call original_a()
         all_failed => do
             combined_failure[] values = call all_failed.failures.map(callable widen_one)
-            all_failed<combined_failure>(values)
+            all_failed<combined_failure>{values}
         ok
 fn int normalize_many_a
-    emits [all_failed<combined_failure>]
+    emits {all_failed<combined_failure>}
     given
         a_failure[] failures
     asserts
-        empty: [] => all_failed<combined_failure>([])
-        singleton: [codec::invalid_data("solo", "type")] => all_failed<combined_failure>([codec::invalid_data("solo", "type")])
-        repeated: [codec::invalid_data("a", "type"), codec::invalid_data("a", "type")] => all_failed<combined_failure>([codec::invalid_data("a", "type"), codec::invalid_data("a", "type")])
-        mixed: [codec::invalid_data("a", "type"), codec::invalid_data("b", "reason"), codec::invalid_data("c", "type")] => all_failed<combined_failure>([codec::invalid_data("a", "type"), codec::invalid_data("b", "reason"), codec::invalid_data("c", "type")])
-        large: [codec::invalid_data("a0", "type"), codec::invalid_data("b0", "reason"), codec::invalid_data("c0", "type"), codec::invalid_data("d0", "witness"), codec::invalid_data("a1", "type"), codec::invalid_data("b1", "reason"), codec::invalid_data("c1", "type"), codec::invalid_data("d1", "witness"), codec::invalid_data("a2", "type"), codec::invalid_data("b2", "reason"), codec::invalid_data("c2", "type"), codec::invalid_data("d2", "witness")] => all_failed<combined_failure>([codec::invalid_data("a0", "type"), codec::invalid_data("b0", "reason"), codec::invalid_data("c0", "type"), codec::invalid_data("d0", "witness"), codec::invalid_data("a1", "type"), codec::invalid_data("b1", "reason"), codec::invalid_data("c1", "type"), codec::invalid_data("d1", "witness"), codec::invalid_data("a2", "type"), codec::invalid_data("b2", "reason"), codec::invalid_data("c2", "type"), codec::invalid_data("d2", "witness")])
+        empty: [] => all_failed<combined_failure>{[]}
+        singleton: [codec::invalid_data{"solo", "type"}] => all_failed<combined_failure>{[codec::invalid_data{"solo", "type"}]}
+        repeated: [codec::invalid_data{"a", "type"}, codec::invalid_data{"a", "type"}] => all_failed<combined_failure>{[codec::invalid_data{"a", "type"}, codec::invalid_data{"a", "type"}]}
+        mixed: [codec::invalid_data{"a", "type"}, codec::invalid_data{"b", "reason"}, codec::invalid_data{"c", "type"}] => all_failed<combined_failure>{[codec::invalid_data{"a", "type"}, codec::invalid_data{"b", "reason"}, codec::invalid_data{"c", "type"}]}
+        large: [codec::invalid_data{"a0", "type"}, codec::invalid_data{"b0", "reason"}, codec::invalid_data{"c0", "type"}, codec::invalid_data{"d0", "witness"}, codec::invalid_data{"a1", "type"}, codec::invalid_data{"b1", "reason"}, codec::invalid_data{"c1", "type"}, codec::invalid_data{"d1", "witness"}, codec::invalid_data{"a2", "type"}, codec::invalid_data{"b2", "reason"}, codec::invalid_data{"c2", "type"}, codec::invalid_data{"d2", "witness"}] => all_failed<combined_failure>{[codec::invalid_data{"a0", "type"}, codec::invalid_data{"b0", "reason"}, codec::invalid_data{"c0", "type"}, codec::invalid_data{"d0", "witness"}, codec::invalid_data{"a1", "type"}, codec::invalid_data{"b1", "reason"}, codec::invalid_data{"c1", "type"}, codec::invalid_data{"d1", "witness"}, codec::invalid_data{"a2", "type"}, codec::invalid_data{"b2", "reason"}, codec::invalid_data{"c2", "type"}, codec::invalid_data{"d2", "witness"}]}
     combined_failure[] values = call failures.map(callable widen_one)
-    all_failed<combined_failure>(values)
+    all_failed<combined_failure>{values}
 fn int original_b
-    emits [all_failed<b_failure>]
+    emits {all_failed<b_failure>}
     asserts
-        sample: => all_failed<b_failure>([codec::invalid_data("b", "type")])
-    all_failed<b_failure>([codec::invalid_data("b", "type")])
+        sample: => all_failed<b_failure>{[codec::invalid_data{"b", "type"}]}
+    all_failed<b_failure>{[codec::invalid_data{"b", "type"}]}
 fn combined_failure widen_b_one
-    emits []
+    emits {}
     given
         b_failure item
     asserts
-        data: codec::invalid_data("b", "type") => ok codec::invalid_data("b", "type")
-        other: codec::invalid_data("a", "reason") => ok codec::invalid_data("a", "reason")
+        data: codec::invalid_data{"b", "type"} => ok codec::invalid_data{"b", "type"}
+        other: codec::invalid_data{"a", "reason"} => ok codec::invalid_data{"a", "reason"}
     ok item
 fn int normalized_b
-    emits [all_failed<combined_failure>]
+    emits {all_failed<combined_failure>}
     asserts
-        sample: => all_failed<combined_failure>([codec::invalid_data("b", "type")])
+        sample: => all_failed<combined_failure>{[codec::invalid_data{"b", "type"}]}
     match call original_b()
         all_failed => do
             combined_failure[] values = call all_failed.failures.map(callable widen_b_one)
-            all_failed<combined_failure>(values)
+            all_failed<combined_failure>{values}
         ok
 fn int normalize_many_b
-    emits [all_failed<combined_failure>]
+    emits {all_failed<combined_failure>}
     given
         b_failure[] failures
     asserts
-        empty: [] => all_failed<combined_failure>([])
-        singleton: [codec::invalid_data("solo", "type")] => all_failed<combined_failure>([codec::invalid_data("solo", "type")])
-        repeated: [codec::invalid_data("b", "type"), codec::invalid_data("b", "type")] => all_failed<combined_failure>([codec::invalid_data("b", "type"), codec::invalid_data("b", "type")])
-        mixed: [codec::invalid_data("a", "reason"), codec::invalid_data("b", "type"), codec::invalid_data("c", "witness")] => all_failed<combined_failure>([codec::invalid_data("a", "reason"), codec::invalid_data("b", "type"), codec::invalid_data("c", "witness")])
-        large: [codec::invalid_data("a0", "reason"), codec::invalid_data("b0", "type"), codec::invalid_data("c0", "witness"), codec::invalid_data("d0", "type"), codec::invalid_data("a1", "reason"), codec::invalid_data("b1", "type"), codec::invalid_data("c1", "witness"), codec::invalid_data("d1", "type"), codec::invalid_data("a2", "reason"), codec::invalid_data("b2", "type"), codec::invalid_data("c2", "witness"), codec::invalid_data("d2", "type")] => all_failed<combined_failure>([codec::invalid_data("a0", "reason"), codec::invalid_data("b0", "type"), codec::invalid_data("c0", "witness"), codec::invalid_data("d0", "type"), codec::invalid_data("a1", "reason"), codec::invalid_data("b1", "type"), codec::invalid_data("c1", "witness"), codec::invalid_data("d1", "type"), codec::invalid_data("a2", "reason"), codec::invalid_data("b2", "type"), codec::invalid_data("c2", "witness"), codec::invalid_data("d2", "type")])
+        empty: [] => all_failed<combined_failure>{[]}
+        singleton: [codec::invalid_data{"solo", "type"}] => all_failed<combined_failure>{[codec::invalid_data{"solo", "type"}]}
+        repeated: [codec::invalid_data{"b", "type"}, codec::invalid_data{"b", "type"}] => all_failed<combined_failure>{[codec::invalid_data{"b", "type"}, codec::invalid_data{"b", "type"}]}
+        mixed: [codec::invalid_data{"a", "reason"}, codec::invalid_data{"b", "type"}, codec::invalid_data{"c", "witness"}] => all_failed<combined_failure>{[codec::invalid_data{"a", "reason"}, codec::invalid_data{"b", "type"}, codec::invalid_data{"c", "witness"}]}
+        large: [codec::invalid_data{"a0", "reason"}, codec::invalid_data{"b0", "type"}, codec::invalid_data{"c0", "witness"}, codec::invalid_data{"d0", "type"}, codec::invalid_data{"a1", "reason"}, codec::invalid_data{"b1", "type"}, codec::invalid_data{"c1", "witness"}, codec::invalid_data{"d1", "type"}, codec::invalid_data{"a2", "reason"}, codec::invalid_data{"b2", "type"}, codec::invalid_data{"c2", "witness"}, codec::invalid_data{"d2", "type"}] => all_failed<combined_failure>{[codec::invalid_data{"a0", "reason"}, codec::invalid_data{"b0", "type"}, codec::invalid_data{"c0", "witness"}, codec::invalid_data{"d0", "type"}, codec::invalid_data{"a1", "reason"}, codec::invalid_data{"b1", "type"}, codec::invalid_data{"c1", "witness"}, codec::invalid_data{"d1", "type"}, codec::invalid_data{"a2", "reason"}, codec::invalid_data{"b2", "type"}, codec::invalid_data{"c2", "witness"}, codec::invalid_data{"d2", "type"}]}
     combined_failure[] values = call failures.map(callable widen_b_one)
-    all_failed<combined_failure>(values)
+    all_failed<combined_failure>{values}
 fn str describe
-    emits []
+    emits {}
     given
         combined_failure value
     asserts
-        sample: codec::invalid_data("payload", "type") => ok "payload"
+        sample: codec::invalid_data{"payload", "type"} => ok "payload"
     match value
         codec::invalid_data => ok value.path
         standard_failure => ok value.message
 fn int pick
-    emits [all_failed<a_failure>, all_failed<b_failure>]
+    emits {all_failed<a_failure>, all_failed<b_failure>}
     given
         int which
     asserts
-        first: 1 => all_failed<a_failure>([codec::invalid_data("a", "type")])
-        second: 2 => all_failed<b_failure>([codec::invalid_data("b", "type")])
+        first: 1 => all_failed<a_failure>{[codec::invalid_data{"a", "type"}]}
+        second: 2 => all_failed<b_failure>{[codec::invalid_data{"b", "type"}]}
     match which is 1
-        false => all_failed<b_failure>([codec::invalid_data("b", "type")])
-        true => all_failed<a_failure>([codec::invalid_data("a", "type")])
+        false => all_failed<b_failure>{[codec::invalid_data{"b", "type"}]}
+        true => all_failed<a_failure>{[codec::invalid_data{"a", "type"}]}
 fn str dispatch_exact
-    emits []
+    emits {}
     given
         int which
     asserts
@@ -109,36 +109,36 @@ fn str dispatch_exact
         all_failed<b_failure> as second => ok "b"
         ok int value => ok "unexpected"
 fn int summarize_a
-    emits []
+    emits {}
     given
         a_failure[] failures
     asserts
         empty: [] => ok 0
-        one: [codec::invalid_data("a", "type")] => ok 1
+        one: [codec::invalid_data{"a", "type"}] => ok 1
     ok failures.length
 fn int relay_a
-    emits []
+    emits {}
     asserts
         sample: => ok 1
     match call original_a()
         all_failed<a_failure> as first => relay call summarize_a(first.failures)
         ok int value => ok value
 fn int relay_exact
-    emits [all_failed<a_failure>]
+    emits {all_failed<a_failure>}
     asserts
-        sample: => all_failed<a_failure>([codec::invalid_data("a", "type")])
+        sample: => all_failed<a_failure>{[codec::invalid_data{"a", "type"}]}
     match call original_a()
         all_failed<a_failure>
         ok int value => ok value
 fn int relay_bare
-    emits [all_failed<a_failure>]
+    emits {all_failed<a_failure>}
     asserts
-        sample: => all_failed<a_failure>([codec::invalid_data("a", "type")])
+        sample: => all_failed<a_failure>{[codec::invalid_data{"a", "type"}]}
     match call original_a()
         all_failed
         ok int value => ok value
 fn str chain_exact
-    emits []
+    emits {}
     asserts
         sample: => ok "a"
     match chain
@@ -148,7 +148,7 @@ fn str chain_exact
         all_failed<b_failure> as second => ok "b"
         ok => ok "unexpected"
 fn str[] concurrent_exact
-    emits []
+    emits {}
     asserts
         sample: => ok ["a", "b"]
     str[] ordered = match call concurrent with error
@@ -160,7 +160,7 @@ fn str[] concurrent_exact
             ok int value => ok "unexpected"
     ok ordered
 fn str race_single
-    emits []
+    emits {}
     asserts
         sample: => ok "a"
     str single = match call race with error
@@ -173,17 +173,17 @@ variant outer_failure
     all_failed<b_failure>
     standard_failure
 fn int gather
-    emits [all_failed<outer_failure>]
+    emits {all_failed<outer_failure>}
     asserts
-        sample: => all_failed<outer_failure>([all_failed<a_failure>([codec::invalid_data("a", "type")]), all_failed<b_failure>([codec::invalid_data("b", "type")])])
+        sample: => all_failed<outer_failure>{[all_failed<a_failure>{[codec::invalid_data{"a", "type"}]}, all_failed<b_failure>{[codec::invalid_data{"b", "type"}]}]}
     int result = match call race
         original_a()
         original_b()
-        all_failed<outer_failure> as agg => all_failed<outer_failure>(agg.failures)
+        all_failed<outer_failure> as agg => all_failed<outer_failure>{agg.failures}
         ok int value => ok value
     ok result
 fn str classify
-    emits []
+    emits {}
     given
         int which
     asserts
@@ -195,7 +195,7 @@ fn str classify
         all_failed<b_failure> as second => ok "b"
         ok int value => ok "unexpected"
 fn str via_supplied
-    emits []
+    emits {}
     given
         int which
     asserts
@@ -203,13 +203,13 @@ fn str via_supplied
         sub_b: 2 => ok "b"
     match call pick(which)
         when
-            sub_a: 1 => all_failed<a_failure>([codec::invalid_data("a", "type")])
-            sub_b: 2 => all_failed<b_failure>([codec::invalid_data("b", "type")])
+            sub_a: 1 => all_failed<a_failure>{[codec::invalid_data{"a", "type"}]}
+            sub_b: 2 => all_failed<b_failure>{[codec::invalid_data{"b", "type"}]}
         all_failed<a_failure> as first => ok "a"
         all_failed<b_failure> as second => ok "b"
         ok int value => ok "unexpected"
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

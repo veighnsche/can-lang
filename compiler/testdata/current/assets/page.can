@@ -4,7 +4,7 @@ package app
 record account_form
     str name
 fn html::safe feedback
-    emits [html::invalid_structure]
+    emits {html::invalid_structure}
     given
         str message
     asserts
@@ -18,7 +18,7 @@ fn html::safe feedback
         html::invalid_structure
         ok => ok body
 fn html::safe page
-    emits [html::invalid_structure, html::invalid_url, htmx::invalid_target, htmx::invalid_interval]
+    emits {html::invalid_structure, html::invalid_url, htmx::invalid_target, htmx::invalid_interval}
     asserts
         sample: => ok
     match chain
@@ -84,7 +84,7 @@ fn html::safe page
         htmx::invalid_interval
         ok => ok document
 fn http::server_response show
-    emits []
+    emits {}
     given
         http::request req
     asserts
@@ -96,7 +96,7 @@ fn http::server_response show
         htmx::invalid_interval => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
         ok html::safe document => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), document)
 fn http::server_response validate
-    emits []
+    emits {}
     given
         http::request req
     asserts
@@ -123,7 +123,7 @@ fn http::server_response validate
                 html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
                 ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
 fn http::server_response quiet
-    emits []
+    emits {}
     given
         http::request req
     asserts
@@ -132,14 +132,14 @@ fn http::server_response quiet
         http::invalid_request => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
         ok http::status status => ok call http::response_empty(status, call http::empty_server_headers())
 fn http::server_response boom
-    emits []
+    emits {}
     given
         http::request req
     asserts
         sample: => ok
     ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "nope")
 fn http::server_response dashboard
-    emits []
+    emits {}
     given
         http::request req
     asserts
@@ -152,7 +152,7 @@ fn http::server_response dashboard
                 html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
                 ok html::safe fragment => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), fragment)
 fn http::router routes
-    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}
     asserts
         sample: => ok
     match chain
@@ -167,7 +167,7 @@ fn http::router routes
         http::ambiguous_route
         ok => ok built
 fn http::server boot
-    emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed]
+    emits {http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed}
     given
         int port
     asserts
@@ -184,7 +184,7 @@ fn http::server boot
                 http::bind_failed
                 ok http::server sturdy => ok sturdy
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts

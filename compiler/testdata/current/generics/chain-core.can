@@ -1,18 +1,18 @@
 package core
     provides [identity, refuse, denied]
     uses []
-error denied(str reason)
+error denied{str reason}
 fn item identity<item>
-    emits []
+    emits {}
     given
         item value
     asserts
         number: 3 => ok 3
     ok value
 fn int refuse<item>
-    emits [denied]
+    emits {denied}
     given
         item value
     asserts
-        sample: 1 => denied("no")
-    denied("no")
+        sample: 1 => denied{"no"}
+    denied{"no"}

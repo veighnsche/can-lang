@@ -4,14 +4,14 @@ package mail
 owner record email
     str address
 fn email make_email
-    emits []
+    emits {}
     given
         str address
     asserts
         sample: "a@b" => ok email("a@b")
     ok email(address)
 fn str email_address
-    emits []
+    emits {}
     given
         email mail
     asserts

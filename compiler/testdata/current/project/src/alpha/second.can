@@ -6,7 +6,7 @@ record holder
     item value
 
 fn value identity<value>
-    emits []
+    emits {}
     given
         value input
     asserts

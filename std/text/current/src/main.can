@@ -2,7 +2,7 @@ package texts
     provides []
     uses [text]
 fn bool includes
-    emits []
+    emits {}
     given
         str value
         str part
@@ -11,7 +11,7 @@ fn bool includes
         empty: "abc", "" => ok true
     ok call value.includes(part)
 fn bool starts
-    emits []
+    emits {}
     given
         str value
         str part
@@ -19,7 +19,7 @@ fn bool starts
         sample: "abc", "ab" => ok true
     ok call value.starts_with(part)
 fn bool ends
-    emits []
+    emits {}
     given
         str value
         str part
@@ -27,59 +27,59 @@ fn bool ends
         sample: "abc", "bc" => ok true
     ok call value.ends_with(part)
 fn str lower
-    emits []
+    emits {}
     given
         str value
     asserts
         sample: "ABC" => ok "abc"
     ok call value.to_lower_case()
 fn str upper
-    emits []
+    emits {}
     given
         str value
     asserts
         sample: "ß" => ok "SS"
     ok call value.to_upper_case()
 fn str trimmed
-    emits []
+    emits {}
     given
         str value
     asserts
         sample: "  hi  " => ok "hi"
     ok call value.trim()
 fn str sliced
-    emits []
+    emits {}
     given
         str value
     asserts
         sample: "A😀B" => ok "😀"
     ok call value.slice(1, 3)
 fn str[] split
-    emits [text::empty_separator]
+    emits {text::empty_separator}
     given
         str value
         str separator
     asserts
         sample: ",a,,", "," => ok ["", "a", "", ""]
         empty: "", "," => ok [""]
-        bad: "a", "" => text::empty_separator()
+        bad: "a", "" => text::empty_separator{}
     match call value.split(separator)
         text::empty_separator
         ok str[] output => ok output
 fn str replace
-    emits [text::empty_pattern]
+    emits {text::empty_pattern}
     given
         str value
         str search
         str replacement
     asserts
         sample: "aba", "a", "$&" => ok "$&b$&"
-        bad: "abc", "", "x" => text::empty_pattern()
+        bad: "abc", "", "x" => text::empty_pattern{}
     match call value.replace_all(search, replacement)
         text::empty_pattern
         ok str output => ok output
 fn str joined
-    emits []
+    emits {}
     given
         str[] items
     asserts
@@ -87,64 +87,64 @@ fn str joined
         empty: [] => ok ""
     ok call text::join(items, ",")
 fn int[] scalars
-    emits [text::invalid_unicode]
+    emits {text::invalid_unicode}
     given
         str value
     asserts
         sample: "A😀" => ok [65, 128512]
         empty: "" => ok []
-        bad: "😀"[0] => text::invalid_unicode("unpaired surrogate")
+        bad: "😀"[0] => text::invalid_unicode{"unpaired surrogate"}
     match call text::scalars(value)
         text::invalid_unicode
         ok int[] output => ok output
 fn str from_scalars
-    emits [text::invalid_unicode]
+    emits {text::invalid_unicode}
     given
         int[] items
     asserts
         sample: [65, 128512] => ok "A😀"
         empty: [] => ok ""
-        surrogate: [55296] => text::invalid_unicode("invalid scalar value")
-        range: [1114112] => text::invalid_unicode("invalid scalar value")
+        surrogate: [55296] => text::invalid_unicode{"invalid scalar value"}
+        range: [1114112] => text::invalid_unicode{"invalid scalar value"}
     match call text::from_scalars(items)
         text::invalid_unicode
         ok str output => ok output
 fn str[] graphemes
-    emits [text::invalid_unicode]
+    emits {text::invalid_unicode}
     given
         str value
     asserts
         sample: "A😀é👩‍👩‍👧‍👦" => ok ["A", "😀", "é", "👩‍👩‍👧‍👦"]
-        bad: "😀"[0] => text::invalid_unicode("unpaired surrogate")
+        bad: "😀"[0] => text::invalid_unicode{"unpaired surrogate"}
     match call text::graphemes(value)
         text::invalid_unicode
         ok str[] output => ok output
 fn str normalized
-    emits [text::invalid_unicode]
+    emits {text::invalid_unicode}
     given
         str value
     asserts
         sample: "é" => ok "é"
-        bad: "😀"[0] => text::invalid_unicode("unpaired surrogate")
+        bad: "😀"[0] => text::invalid_unicode{"unpaired surrogate"}
     match call text::normalize_nfc(value)
         text::invalid_unicode
         ok str output => ok output
 fn bool[] references
-    emits []
+    emits {}
     given
         str[] values
     asserts
         sample: ["A", "😀", "Z"] => ok [true, true, false]
-    callable bool (str) emits [] operation = callable ("A😀B").includes
+    callable bool (str) emits {} operation = callable ("A😀B").includes
     ok call values.map(operation)
 fn str slice_reference
-    emits []
+    emits {}
     asserts
         sample: => ok "😀"
-    callable str (int, int) emits [] operation = callable ("A😀B").slice
+    callable str (int, int) emits {} operation = callable ("A😀B").slice
     ok call operation(1, 3)
 fn str supplied
-    emits []
+    emits {}
     asserts
         sample: => ok "fixture"
     match call "abc".to_upper_case()
@@ -152,14 +152,14 @@ fn str supplied
             sample: => ok "fixture"
         ok str output => ok output
 fn str spread_replace
-    emits [text::empty_pattern]
+    emits {text::empty_pattern}
     asserts
         sample: => ok "$&b$&"
     match call "aba".replace_all(...["a", "$&"])
         text::empty_pattern
         ok str output => ok output
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts
@@ -171,34 +171,34 @@ fn void main
                 int invalid = 1 / 0
                 ok
 fn str nested_join
-    emits []
+    emits {}
     asserts
         sample: => ok ""
     ok call text::join(...[...[[]]], ",")
 fn item[] retain<item>
-    emits []
+    emits {}
     given
         item[] values
     asserts
         sample: ["x"] => ok ["x"]
     ok values
 fn str[] nested_explicit
-    emits []
+    emits {}
     asserts
         sample: => ok []
     ok call retain<str>(...[...[[]]])
 fn str[] nested_inferred
-    emits []
+    emits {}
     asserts
         sample: => ok []
     ok call retain(...[...[[]]])
 fn str[][] nested_construction
-    emits []
+    emits {}
     asserts
         sample: => ok [[]]
     ok [...([...[[]]])]
 fn str first_match
-    emits [text::invalid_regex, text::invalid_limit]
+    emits {text::invalid_regex, text::invalid_limit}
     given
         str pattern
         str value
@@ -213,7 +213,7 @@ fn str first_match
                 false => ok hits[0].text
                 true => ok ""
 fn str[] first_groups
-    emits [text::invalid_regex, text::invalid_limit]
+    emits {text::invalid_regex, text::invalid_limit}
     given
         str pattern
         str value
@@ -226,26 +226,26 @@ fn str[] first_groups
             text::invalid_limit
             ok text::regex_match[] hits => ok hits[0].groups
 fn bool compiles
-    emits [text::invalid_regex]
+    emits {text::invalid_regex}
     given
         str pattern
         str flags
     asserts
         valid: "a+", "i" => ok true
-        bad_syntax: "(a", "" => text::invalid_regex("syntax")
-        bad_flags: "a", "g" => text::invalid_regex("flags")
+        bad_syntax: "(a", "" => text::invalid_regex{"syntax"}
+        bad_flags: "a", "g" => text::invalid_regex{"flags"}
     match call text::compile_regex(pattern, flags)
         text::invalid_regex
         ok text::regex compiled => ok true
 fn int capped_count
-    emits [text::invalid_regex, text::invalid_limit]
+    emits {text::invalid_regex, text::invalid_limit}
     given
         str pattern
         str value
         int limit
     asserts
         capped: "x*", "ab", 2 => ok 2
-        over: "x*", "ab", 10001 => text::invalid_limit(10001)
+        over: "x*", "ab", 10001 => text::invalid_limit{10001}
     match call text::compile_regex(pattern, "")
         text::invalid_regex
         ok text::regex compiled => match call text::matches(compiled, value, limit)

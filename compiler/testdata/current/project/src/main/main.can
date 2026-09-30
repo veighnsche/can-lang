@@ -6,7 +6,7 @@ package main
 int not_executed = 1 / 0
 
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

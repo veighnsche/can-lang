@@ -9,7 +9,7 @@ record account_row
     int id
     str display_name
 fn sql::decision<int> decide_add
-    emits []
+    emits {}
     given
         near str term
         sql::transaction tx
@@ -23,7 +23,7 @@ fn sql::decision<int> decide_add
         sql::constraint_failed => ok sql::rollback<int>(0)
         ok int affected => ok sql::commit<int>(affected)
 fn sql::decision<int> decide_rollback
-    emits []
+    emits {}
     given
         near str term
         sql::transaction tx
@@ -37,7 +37,7 @@ fn sql::decision<int> decide_rollback
         sql::constraint_failed => ok sql::rollback<int>(0)
         ok int affected => ok sql::rollback<int>(affected)
 fn sql::decision<int> decide_fetch
-    emits []
+    emits {}
     given
         near int id
         sql::transaction tx
@@ -47,7 +47,7 @@ fn sql::decision<int> decide_fetch
     match call sql::transaction_query_one<id_parameters, account_row>(tx, "tx_get", id_parameters(id))
         when
             sample: tx, "tx_get", id_parameters(4) => ok account_row(4, "Bob")
-            missing: tx, "tx_get", id_parameters(999) => sql::row_missing("tx_get")
+            missing: tx, "tx_get", id_parameters(999) => sql::row_missing{"tx_get"}
         sql::unsupported_value => ok sql::rollback<int>(0)
         sql::query_failed => ok sql::rollback<int>(0)
         sql::constraint_failed => ok sql::rollback<int>(0)
@@ -56,14 +56,14 @@ fn sql::decision<int> decide_fetch
         sql::schema_mismatch => ok sql::rollback<int>(0)
         ok account_row row => ok sql::commit<int>(row.id)
 fn sql::decision<int> decide_inner
-    emits []
+    emits {}
     given
         sql::transaction tx
     asserts
         sample: => ok sql::commit<int>(7)
     ok sql::commit<int>(7)
 fn sql::decision<int> decide_nested
-    emits []
+    emits {}
     given
         sql::transaction tx
     asserts
@@ -94,7 +94,7 @@ fn sql::decision<int> decide_nested
                 sql::close_failed => ok sql::rollback<int>(-3)
                 ok => ok sql::commit<int>(inner)
 fn int run_add
-    emits [http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed]
+    emits {http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed}
     given
         str term
     asserts
@@ -116,7 +116,7 @@ fn int run_add
                 sql::close_failed
                 ok => ok total
 fn int run_rollback
-    emits [http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed]
+    emits {http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed}
     given
         str term
     asserts
@@ -138,7 +138,7 @@ fn int run_rollback
                 sql::close_failed
                 ok => ok total
 fn int run_fetch
-    emits [http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed]
+    emits {http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed}
     given
         int id
     asserts
@@ -160,7 +160,7 @@ fn int run_fetch
                 sql::close_failed
                 ok => ok total
 fn int run_nested
-    emits [http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed]
+    emits {http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed}
     asserts
         sample: => ok -1
     match call sql::pool_open("CAN_TEST_POSTGRES", 5)
@@ -180,7 +180,7 @@ fn int run_nested
                 sql::close_failed
                 ok => ok total
 fn void main
-    emits [codec::invalid_data, io::write_failed, http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed]
+    emits {codec::invalid_data, io::write_failed, http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed}
     given
         str[] args
     asserts

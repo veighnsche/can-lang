@@ -9,7 +9,7 @@
     "can.project.dependency/sample": {
       "lineage": "",
       "manifest_sha256": "308c9b8ebb362476e4118612b55e4f1e87d9ea96659f3af0c73b38058a8a96e0",
-      "source_sha256": "95185db94200a3d66eff5a60346fe2f2e1452023f9673f396a1989163d2972ef",
+      "source_sha256": "9ca0733b6facad386db279889ae583ad88b55ca4fddc7ebddd389bed61c12f7e",
       "fixtures_sha256": "91833b6e6a0c79195d19797bc5f4a358d75030d8d94948078b52935b2f840e5b",
       "error_registry": {
         "active": [

@@ -2,48 +2,48 @@ package coordination
     provides []
     uses [codec]
 fn int one
-    emits []
+    emits {}
     asserts
         sample: => ok 1
     ok 1
 fn str text
-    emits []
+    emits {}
     asserts
         sample: => ok "two"
     ok "two"
 fn int unavailable
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     asserts
-        sample: => codec::invalid_data("", "type")
-    codec::invalid_data("", "type")
+        sample: => codec::invalid_data{"", "type"}
+    codec::invalid_data{"", "type"}
 variant failure
     codec::invalid_data
     standard_failure
 fn int fail_all
-    emits [all_failed<failure>]
+    emits {all_failed<failure>}
     asserts
-        sample: => all_failed<failure>([codec::invalid_data("", "type")])
+        sample: => all_failed<failure>{[codec::invalid_data{"", "type"}]}
     int result = match call race
         unavailable()
         all_failed
         ok int value => ok value
     ok result
 fn int aggregate_size
-    emits []
+    emits {}
     asserts
         sample: => ok 1
     match call fail_all()
         all_failed => ok all_failed.failures.length
         ok int value => ok value
 fn int summarize
-    emits []
+    emits {}
     given
         failure[] failures
     asserts
         empty: [] => ok 0
     ok failures.length
 fn int observe
-    emits []
+    emits {}
     asserts
         sample: => ok 2
     int result = match call race
@@ -55,7 +55,7 @@ fn int observe
         ok int value => ok value
     ok result
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -87,7 +87,7 @@ fn void main
         unavailable()
         all_failed => ok 5
         ok int value => ok value
-    callable int () emits [][] empty_operations = []
+    callable int () emits {}[] empty_operations = []
     int[] empty_all = match call concurrent
         ...empty_operations
             ok int value => ok value
@@ -98,7 +98,7 @@ fn void main
         ...empty_operations
         ok int value => ok value
         all_failed => ok 7
-    callable int () emits [][] operations = [callable one, callable one]
+    callable int () emits {}[] operations = [callable one, callable one]
     int[] spread = match call concurrent
         ...operations
             ok int value => ok value

@@ -30,7 +30,7 @@ record pair
     str a
     str b
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts

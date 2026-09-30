@@ -10,7 +10,7 @@ package keyed
 
 /// Locate a key index; an unknown key reads past the end.
 fn int key_index
-    emits []
+    emits {}
     given
         str[] keys
         str key
@@ -29,7 +29,7 @@ fn int key_index
 
 /// Report whether a key is already taken.
 fn bool key_taken
-    emits []
+    emits {}
     given
         str[] keys
         str key
@@ -48,7 +48,7 @@ fn bool key_taken
 /// First free k<n> key at or after n, so added rows never clash
 /// with kept or removed keys.
 fn str free_key
-    emits []
+    emits {}
     given
         str[] keys
         int n
@@ -65,7 +65,7 @@ fn str free_key
 /// Copy every row except the index, front to back. Callers only
 /// pass positions below the length.
 fn item[] cut_at<item>
-    emits []
+    emits {}
     given
         item[] rows
         int at
@@ -86,7 +86,7 @@ fn item[] cut_at<item>
 /// Copy rows front to back, splicing the carried row at the target
 /// position. Callers only pass positions at or below the length.
 fn item[] insert_at<item>
-    emits []
+    emits {}
     given
         item[] rows
         int at
@@ -112,7 +112,7 @@ fn item[] insert_at<item>
 /// known position. Edges and other directions read back the same
 /// position, so callers treat "target is position" as the no-op.
 fn int step_index
-    emits []
+    emits {}
     given
         int count
         int at
@@ -139,7 +139,7 @@ fn int step_index
 /// the intent names this row's control, else "". Chrome intents
 /// ("save", "status", ...) never match a row.
 fn str row_focus_control
-    emits []
+    emits {}
     given
         str focus
         str row
@@ -171,7 +171,7 @@ fn str row_focus_control
 /// present keys. The render focuses the built row target only then;
 /// a stale intent (its row is gone) focuses nothing.
 fn bool any_row_focused
-    emits []
+    emits {}
     given
         str[] keys
         str focus

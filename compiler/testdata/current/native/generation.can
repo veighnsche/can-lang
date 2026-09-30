@@ -25,7 +25,7 @@ connection classifier
         protocol "typesafe_systemone_v1"
         model "jev-latest"
 llm str describe from generator
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response]
+    emits {http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response}
     given
         str private_setting
     state
@@ -35,7 +35,7 @@ llm str describe from generator
             using raw "fixtures/generation_describe.json"
     asks "Describe"
 llm plan generate from generator
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response]
+    emits {http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response}
     state
         str description
     asserts
@@ -43,14 +43,14 @@ llm plan generate from generator
             using raw "fixtures/generation_generate.json"
     asks "Plan"
 choice str select from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     given
         str description
     asks "Choose"
         first description => ok "chosen"
         second "Other" => ok "other"
 judge str decide from classifier
-    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
+    emits {http::request_failed, ai::invalid_question, ai::invalid_answer}
     state
         plan generated
     asserts
@@ -59,7 +59,7 @@ judge str decide from classifier
     call select(generated.choices[0].label + " transformed") as str selected
     ok => ok selected
 fn void main
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response, ai::invalid_question, ai::invalid_answer, http::request_failed]
+    emits {http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response, ai::invalid_question, ai::invalid_answer, http::request_failed}
     given
         str[] args
     asserts

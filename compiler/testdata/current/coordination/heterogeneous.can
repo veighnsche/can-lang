@@ -9,27 +9,27 @@ variant result
     left
     right
 fn left make_left
-    emits []
+    emits {}
     asserts
         sample: => ok left(1)
     ok left(1)
 fn right make_right
-    emits []
+    emits {}
     asserts
         sample: => ok right("two")
     ok right("two")
 fn result normalized_left
-    emits []
+    emits {}
     asserts
         sample: => ok left(1)
     ok call make_left()
 fn result normalized_right
-    emits []
+    emits {}
     asserts
         sample: => ok right("two")
     ok call make_right()
 fn str describe
-    emits []
+    emits {}
     given
         result value
     asserts
@@ -39,7 +39,7 @@ fn str describe
         left => ok "left"
         right => ok value.value
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

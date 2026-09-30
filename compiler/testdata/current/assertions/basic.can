@@ -2,7 +2,7 @@ package arithmetic
     provides []
     uses []
 fn int square
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -10,7 +10,7 @@ fn int square
         large: 9007199254740993 => ok 81129638414606699710187514626049
     ok value * value
 fn int adjusted
-    emits []
+    emits {}
     asserts
         supplied: => ok 8
     match call square(3)
