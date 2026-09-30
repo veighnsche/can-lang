@@ -1517,8 +1517,8 @@ fn int lookup_or_zero
         ok int number => ok number
 ```
 
-Here `lookup` has success type `int` and declared error set `[missing]`, returning
-`ok 42` for `"answer"` and `missing()` for `"other"`. `missing` is a payload-free
+Here `lookup` has success type `int` and declared error set `{missing}`, returning
+`ok 42` for `"answer"` and `missing{}` for `"other"`. `missing` is a payload-free
 declared error with its own qualified identity.
 
 A bare `ok` arm forwards the matched success and its whole payload unchanged:
@@ -1554,7 +1554,7 @@ fn int find_number
         str key
     asserts
         known_key: "answer" => ok 42
-        unknown_key: "other" => missing()
+        unknown_key: "other" => missing{}
     relay call lookup(key)
 ```
 
@@ -1572,8 +1572,8 @@ match chain
     call find_user(user_id) as user found_user
     call load_account(found_user.account_id) as account found_account
     call check_balance(found_account) as account checked_account
-    user_not_found => access_denied()
-    account_not_found => access_denied()
+    user_not_found => access_denied{}
+    account_not_found => access_denied{}
     insufficient_balance
     ok => ok checked_account
 ```
@@ -1774,10 +1774,10 @@ fn int require_minimum
         int minimum
     asserts
         accepted: 5, 3 => ok 5
-        rejected: 2, 3 => below_minimum(2, 3)
+        rejected: 2, 3 => below_minimum{2, 3}
     match value < minimum
         false => ok value
-        true => below_minimum(value, minimum)
+        true => below_minimum{value, minimum}
 
 fn int clamp_minimum
     emits {}

@@ -111,7 +111,7 @@ package file_check
     uses [files]
 
 fn bool has_entries
-    emits [files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error]
+    emits {files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error}
     given
         str dir
     asserts
@@ -120,7 +120,7 @@ fn bool has_entries
     match call files::list(dir, 10)
         when
             present: dir, 10 => ok [files::entry("/private/tmp/sample/a.txt", "file")]
-            missing: dir, 10 => files::not_found(dir)
+            missing: dir, 10 => files::not_found{dir}
         files::not_found => ok false
         files::denied
         files::invalid_path
@@ -130,7 +130,7 @@ fn bool has_entries
         ok files::entry[] entries => ok entries.length > 0
 
 fn bool inspect
-    emits [files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error]
+    emits {files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error}
     given
         str dir
     asserts
@@ -171,7 +171,7 @@ package app
     uses [html]
 
 fn html::safe contact
-    emits [html::invalid_structure, html::invalid_url]
+    emits {html::invalid_structure, html::invalid_url}
     asserts
         sample: => ok
     match chain

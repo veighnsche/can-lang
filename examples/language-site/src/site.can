@@ -92,7 +92,7 @@ fn html::safe home
         call html::text_attribute("class", "hero-content") as html::attribute hero_content_class
         call html::element(section_tag, [hero_content_class], [eyebrow, headline, intro, actions]) as html::node hero_content
         call text_block("p", "code-caption", "01 / A FUNCTION THAT MAKES A CLAIM") as html::node code_caption
-        call text_block("code", "code-text", "fn int square\n    emits []\n    given\n        int number\n    asserts\n        zero: 0 => ok 0\n        positive: 4 => ok 16\n    ok number * number") as html::node code
+        call text_block("code", "code-text", "fn int square\n    emits {}\n    given\n        int number\n    asserts\n        zero: 0 => ok 0\n        positive: 4 => ok 16\n    ok number * number") as html::node code
         call html::make_tag("pre") as html::tag pre_tag
         call html::text_attribute("class", "code-window") as html::attribute pre_class
         call html::element(pre_tag, [pre_class], [code]) as html::node pre
@@ -139,7 +139,7 @@ fn html::safe docs
         call text_block("p", "docs-lead", "This short guide uses the current Can syntax. The repository contains a runnable gallery with more examples.") as html::node lead
         call text_block("h2", "docs-heading", "1. Read a Can function") as html::node first_heading
         call text_block("p", "docs-copy", "A function declares its result, possible errors, inputs, and assertion rows before its body. The assertions are executable examples.") as html::node first_copy
-        call text_block("code", "code-text", "fn str hello\n    emits []\n    asserts\n        greeting: => ok \"Hello, world!\"\n    ok \"Hello, world!\"") as html::node first_code
+        call text_block("code", "code-text", "fn str hello\n    emits {}\n    asserts\n        greeting: => ok \"Hello, world!\"\n    ok \"Hello, world!\"") as html::node first_code
         call html::make_tag("pre") as html::tag pre_tag
         call html::text_attribute("class", "docs-code") as html::attribute pre_class
         call html::element(pre_tag, [pre_class], [first_code]) as html::node first_pre

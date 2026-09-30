@@ -102,7 +102,7 @@ Consequently, in this entry:
 save(call load_account(account_id))
 ```
 
-Assuming `load_account` has `emits []`, it finishes during prepare. `save` does
+Assuming `load_account` has `emits {}`, it finishes during prepare. `save` does
 not begin until every entry's arguments are prepared. This rule preserves
 ordinary written argument order, prevents a later argument failure from leaving
 an accidentally launched prefix, and needs no wrapper solely to make the launch
@@ -193,7 +193,7 @@ Callable compatibility for coordination is:
 The whole-callable array spelling is:
 
 ```text
-callable receipt () emits [postgres_failed, redis_failed][] operations
+callable receipt () emits {postgres_failed, redis_failed}[] operations
 ```
 
 The `[]` applies to the complete callable type after its `emits` list. An
@@ -279,9 +279,9 @@ match failure
 ```
 
 Error-constructor syntax is disambiguated by expected context. In a completion
-position `primary_unavailable("offline")` produces that domain completion. In
+position `primary_unavailable{"offline"}` produces that domain completion. In
 an ordinary value position expecting `lookup_failure`, the same constructor
-creates its nominal error data value. `ok primary_unavailable("offline")`
+creates its nominal error data value. `ok primary_unavailable{"offline"}`
 therefore succeeds with error data rather than producing an error completion.
 
 ### Finite inference and coverage
@@ -292,7 +292,7 @@ For one `race`, the checker computes a closed internal leaf set `U`:
 2. retain complete generic specializations;
 3. collapse only identical exact error types; retain distinct generic specializations, including nested `all_failed` values;
 4. add `standard_failure`, because standard failure remains possible even for
-   `emits []`.
+   `emits {}`.
 
 The runtime array still contains one entry per failed participant. Type-level
 deduplication never removes duplicate runtime occurrences.
@@ -310,7 +310,7 @@ An explicit `all_failed<F>` head selects F directly, subject to complete leaf in
   `call summarize_failures(all_failed.failures)`, whose parameter is
   `lookup_failure[]`;
 - forwarding under an enclosing function declaration containing
-  `emits [all_failed<lookup_failure>]`.
+  `emits {all_failed<lookup_failure>}`.
 
 If the handler ignores `failures` and returns a fallback, the internal closed
 set need not acquire a source name. If source observes the field without one
@@ -333,7 +333,7 @@ variant lookup_failure
     standard_failure
 
 fn lookup_result summarize_failures
-    emits []
+    emits {}
     given
         lookup_failure[] failures
     // Mandatory assertions and body are omitted from this signature fragment.
@@ -615,8 +615,8 @@ Repeat with a standard failure first, both with and without `[_]`.
 
 ### Trace 5: prepare is all-or-nothing
 
-Entry `A` has a nested `emits []` argument call that succeeds; entry `B` has a
-nested `emits []` argument call that produces a standard failure. Neither `A`
+Entry `A` has a nested `emits {}` argument call that succeeds; entry `B` has a
+nested `emits {}` argument call that produces a standard failure. Neither `A`
 nor `B` participant launches. With both arguments successful, the trace must
 show both argument calls completing in written order, followed by launching
 `A` then `B` without awaiting `A`.

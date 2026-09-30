@@ -47,6 +47,6 @@ runtime migration API.
 - SIGINT/SIGTERM stops the server, closes the pool, and exits zero.
 
 Callback error mapping is total, so mounted callbacks carry
-`emits []`. Diagnostic logging is intentionally absent: every outcome
+`emits {}`. Diagnostic logging is intentionally absent: every outcome
 is a fixed safe response, and the sanitized boundary 500 remains the
 fallback for standard failures.

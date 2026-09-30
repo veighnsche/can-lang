@@ -51,13 +51,15 @@ rows are proposed evidence.
 
 ## R1 — Delimiters
 
-- No curly braces outside string literals, including comments.
+- Curly braces are error-only outside string literals, including comments.
   (a45: `{`/`}` inside `"..."` literals are data — JSON, CSS,
-  templates — never delimiters. The ban scans string-aware; quotes
+  templates — never delimiters. The scan is string-aware; quotes
   inside comments never open a string.)
 - `()` = application and records: calls `db__get_user(id)`, construction
   `Ok(id = "u_01")`, empty record `db.down()`, grouping.
 - `[]` = enumerations only: mod lists, `given` outcome sequences.
+- `{}` = errors only: declarations `error E{fields}`, finite bounds
+  `emits {E}`, and error construction `E{value}`. Records never use braces.
 - `:` declares (type fields `(id: str)`). `=` binds (record fields
   `(id = "u_01")`).
 - Match arms are single expressions; nesting is indentation, including an
@@ -66,7 +68,7 @@ rows are proposed evidence.
 ## R2 — Modules
 
 - Every file opens with
-  `mod <domain> provides [...] uses [...] emits [...]`.
+  `mod <domain> provides [...] uses [...] emits {...}`.
 - `provides` names what the file defines; `uses` names external can items;
   `emits` is the union of errors the module can produce.
 - Every `uses` entry must resolve to exactly one provider module. Unresolved
@@ -107,16 +109,17 @@ rows are proposed evidence.
 
 ## R5 — Errors
 
-- Errors are scoped values, declared as `error <domain>.<name>(fields)`,
-  e.g. `error auth.login_failed(user_id: str)`.
+- Errors are scoped values, declared as `error <domain>.<name>{fields}`,
+  e.g. `error auth.login_failed{user_id: str}`.
 - No hand-picked global numbers. The compiler assigns stable ids recorded
   in `ai-lock.json`. Agents grep qualified names, never magic numbers.
-- Every function declares `emits [...]`. Raising anything else = error.
+- Every function declares `emits {...}`. Raising anything else = error.
   Entries are a conservative upper bound (a12): unrealized entries are
   allowed, but every entry must name a declared error.
 - Errors are returned as values in expression position, never thrown.
-  Exhaustive `match`/`on` handling of every declared outcome is required;
-  no catch-all.
+  Constructing `E{...}` builds an immutable error value; only a terminal
+  completion position emits it as a failure. Exhaustive `match`/`on`
+  handling of every declared outcome is required; no catch-all.
 
 ## R6 — Functions
 

@@ -243,7 +243,7 @@ They do not require new row syntax.
 
 ```text
 when
-    eventually: "42" => unavailable()
+    eventually: "42" => unavailable{}
     eventually: "42" => ok profile("Sam")
 ```
 
@@ -331,7 +331,7 @@ fixture absent_receipt for find_receipt
     given
         str key
     cases
-        key => missing_receipt(key)
+        key => missing_receipt{key}
 
 // Fragment at one lexical invocation; sample is still a local root selector.
 match call find_receipt(requested)
@@ -412,7 +412,7 @@ Fetch, judge, LLM and `wrap` declarations now require a nonempty attached `asser
 
 ```can
 fetch receipt load_json from service
-    emits [http::request_failed]
+    emits {http::request_failed}
     asserts
         decoded: => ok receipt(7)
             using raw "fixtures/receipt-7.json"
@@ -606,7 +606,7 @@ when the authored `main` result was `ok`.
 At an HTTP callback boundary:
 
 - declared domain errors have already been mapped by the mounted callback,
-  whose type is `callable http::server_response (http::request) emits []`;
+  whose type is `callable http::server_response (http::request) emits {}`;
 - an unhandled standard failure is logged with its stable diagnostic identity
   and becomes a fixed sanitized 500 response;
 - the failure text and stack are never placed in the response; and
@@ -625,38 +625,38 @@ namespaces.
 ### Technical contract
 
 ```text
-error io::read_failed(str operation)
-error io::write_failed(str operation)
-error io::limit_exceeded(int limit)
+error io::read_failed{str operation}
+error io::write_failed{str operation}
+error io::limit_exceeded{int limit}
 
-error html::invalid_structure(str reason)
-error html::invalid_url(str reason)
-error htmx::invalid_target(str reason)
-error htmx::invalid_interval(int milliseconds)
+error html::invalid_structure{str reason}
+error html::invalid_url{str reason}
+error htmx::invalid_target{str reason}
+error htmx::invalid_interval{int milliseconds}
 
-error http::invalid_route(str reason)
-error http::duplicate_route(str method, str path)
-error http::ambiguous_route(str first, str second)
-error http::invalid_server_config(str reason)
-error http::bind_failed(str address)
-error http::shutdown_failed(str phase)
+error http::invalid_route{str reason}
+error http::duplicate_route{str method, str path}
+error http::ambiguous_route{str first, str second}
+error http::invalid_server_config{str reason}
+error http::bind_failed{str address}
+error http::shutdown_failed{str phase}
 
-error sql::connection_failed(str phase)
-error sql::query_failed(str operation, str code)
-error sql::row_missing(str query)
-error sql::row_count(str query, int actual)
-error sql::schema_mismatch(str path, str reason)
-error sql::constraint_failed(str constraint)
-error sql::transaction_failed(str phase)
-error sql::commit_unknown(str transaction_id)
-error sql::close_failed(str reason)
-error sql::row_limit(int limit)
-error sql::unsupported_value(str path, str reason)
+error sql::connection_failed{str phase}
+error sql::query_failed{str operation, str code}
+error sql::row_missing{str query}
+error sql::row_count{str query, int actual}
+error sql::schema_mismatch{str path, str reason}
+error sql::constraint_failed{str constraint}
+error sql::transaction_failed{str phase}
+error sql::commit_unknown{str transaction_id}
+error sql::close_failed{str reason}
+error sql::row_limit{int limit}
+error sql::unsupported_value{str path, str reason}
 
-error clock::invalid_duration(int milliseconds)
-error random::invalid_length(int length)
-error env::invalid_name(str name)
-error log::write_failed(str level)
+error clock::invalid_duration{int milliseconds}
+error random::invalid_length{int length}
+error env::invalid_name{str name}
+error log::write_failed{str level}
 ```
 
 This block is registry notation: declarations live in their named packages and
@@ -689,10 +689,10 @@ It excludes the Bun executable, generated program path, and Bun runtime flags.
 
 | Operation | Contract | Bun emission |
 | --- | --- | --- |
-| `io::stdin_bytes` | `(int max_bytes) -> bytes::buffer emits [io::limit_exceeded, io::read_failed]` | bounded read from `Bun.stdin` |
-| `io::stdin_text` | `(int max_bytes) -> str emits [io::limit_exceeded, io::read_failed, codec::invalid_data]` | bounded bytes plus UTF-8 decoder |
-| `io::stdout_write` | `(bytes::buffer) -> int emits [io::write_failed]` | `Bun.write(Bun.stdout, bytes)` |
-| `io::stderr_write` | `(bytes::buffer) -> int emits [io::write_failed]` | `Bun.write(Bun.stderr, bytes)` |
+| `io::stdin_bytes` | `(int max_bytes) -> bytes::buffer emits {io::limit_exceeded, io::read_failed}` | bounded read from `Bun.stdin` |
+| `io::stdin_text` | `(int max_bytes) -> str emits {io::limit_exceeded, io::read_failed, codec::invalid_data}` | bounded bytes plus UTF-8 decoder |
+| `io::stdout_write` | `(bytes::buffer) -> int emits {io::write_failed}` | `Bun.write(Bun.stdout, bytes)` |
+| `io::stderr_write` | `(bytes::buffer) -> int emits {io::write_failed}` | `Bun.write(Bun.stderr, bytes)` |
 
 Runtime file paths, directory traversal, deletion, watching, file descriptors,
 subprocesses, and shell execution are deferred. Static web assets use the build
@@ -704,7 +704,7 @@ native view before it crosses into Can or by proving exclusive ownership of a
 fresh native buffer.
 
 `max_bytes` is an exact nonnegative integer; a negative argument yields
-`io::limit_exceeded(max_bytes)` before reading. Zero accepts only empty input.
+`io::limit_exceeded{max_bytes}` before reading. Zero accepts only empty input.
 Read incrementally and reject before retaining bytes beyond the caller's budget;
 cancel the reader on overflow. No additional fixed byte ceiling is implied.
 Unexpected native allocation defects remain standard failures. Text decoding is
@@ -715,22 +715,22 @@ to the declared read/write failures; unrelated runtime defects do not.
 
 | Operation | Contract and native emission |
 | --- | --- |
-| `clock::wall_millis` | `() -> int emits []`; `BigInt(Date.now())` |
-| `clock::monotonic_millis` | `() -> float emits []`; native `performance.now()` |
-| `clock::sleep_millis` | `(int milliseconds) -> void emits [clock::invalid_duration]`; 0--2147483647 then `await Bun.sleep(Number(milliseconds))` |
-| `random::secure_bytes` | `(int length) -> bytes::buffer emits [random::invalid_length]`; 0--65536 then native `crypto.getRandomValues` on a fresh `Uint8Array` |
-| `random::uuid_v4` | `() -> str emits []`; native `crypto.randomUUID()` |
-| `crypto::sha256` | `(bytes::buffer) -> bytes::buffer emits []`; fresh `Bun.CryptoHasher("sha256")`, `update`, `digest` |
-| `env::required` | `(str name) -> str emits [env::invalid_name, http::credentials_missing]`; exact lookup in `Bun.env` |
-| `env::optional` | `(str name) -> option::value<str> emits [env::invalid_name]`; exact lookup in `Bun.env` |
-| `log::write_info` | `(str message) -> void emits [log::write_failed]`; one JSON line through `Bun.write(Bun.stderr, ...)` |
-| `log::write_error` | `(str message) -> void emits [log::write_failed]`; same with fixed `error` level |
+| `clock::wall_millis` | `() -> int emits {}`; `BigInt(Date.now())` |
+| `clock::monotonic_millis` | `() -> float emits {}`; native `performance.now()` |
+| `clock::sleep_millis` | `(int milliseconds) -> void emits {clock::invalid_duration}`; 0--2147483647 then `await Bun.sleep(Number(milliseconds))` |
+| `random::secure_bytes` | `(int length) -> bytes::buffer emits {random::invalid_length}`; 0--65536 then native `crypto.getRandomValues` on a fresh `Uint8Array` |
+| `random::uuid_v4` | `() -> str emits {}`; native `crypto.randomUUID()` |
+| `crypto::sha256` | `(bytes::buffer) -> bytes::buffer emits {}`; fresh `Bun.CryptoHasher("sha256")`, `update`, `digest` |
+| `env::required` | `(str name) -> str emits {env::invalid_name, http::credentials_missing}`; exact lookup in `Bun.env` |
+| `env::optional` | `(str name) -> option::value<str> emits {env::invalid_name}`; exact lookup in `Bun.env` |
+| `log::write_info` | `(str message) -> void emits {log::write_failed}`; one JSON line through `Bun.write(Bun.stderr, ...)` |
+| `log::write_error` | `(str message) -> void emits {log::write_failed}`; same with fixed `error` level |
 
 Environment names match `[A-Z_][A-Z0-9_]*`; the catalogue exposes no enumeration
 or mutation. Optional lookup returns `option::none()` only for absence and
 `option::some<str>(value)` for a present entry, including an empty string. Required
 lookup likewise returns an empty present value; only absence yields
-`http::credentials_missing(name)`. These operations read the launcher snapshot of
+`http::credentials_missing{name}`. These operations read the launcher snapshot of
 the caller environment, not the driver's rewritten runtime environment. Log JSON has exactly string fields `level` and `message`, uses
 native `JSON.stringify`, and never invokes value inspection. Clock, random,
 environment, sleep, and log operations require deterministic assertion
@@ -751,29 +751,29 @@ The initial opaque types are `html::node`, `html::safe`, `html::url`,
 
 | Operation | Contract |
 | --- | --- |
-| `html::make_tag` | `(str) -> html::tag emits [html::invalid_structure]`; accepts only the closed author-tag inventory below |
-| `html::text` | `(str) -> html::node emits []`; escapes for text context |
-| `html::parse_url` | `(str) -> html::url emits [html::invalid_url]`; accepts same-origin relative HTTP paths and approved `https` URLs |
-| `html::text_attribute` | `(str name, str value) -> html::attribute emits [html::invalid_structure]`; permits only the text-attribute inventory below |
-| `html::url_attribute` | `(str name, html::url) -> html::attribute emits [html::invalid_structure]`; permits the tag-checked URL-attribute inventory |
-| `html::element` | `(html::tag, html::attribute[], html::node[]) -> html::node emits [html::invalid_structure]` |
-| `html::fragment` | `(html::node[]) -> html::safe emits [html::invalid_structure]` |
-| `html::text_fragment` | `(str) -> html::safe emits []`; one escaped text node for fallback responses |
-| `html::stylesheet` | `(html::url) -> html::node emits [html::invalid_url]`; one head-only stylesheet link |
-| `html::meta_viewport` | `() -> html::node emits []`; one fixed head-only viewport element |
-| `html::document` | `(str title, html::node[] head, html::node[] body) -> html::safe emits [html::invalid_structure]` |
-| `htmx::get` | `(html::url) -> html::attribute emits [html::invalid_url]`; URL must be same-origin relative |
-| `htmx::post` | `(html::url) -> html::attribute emits [html::invalid_url]`; URL must be same-origin relative |
-| `htmx::target_id` | `(str id) -> htmx::target emits [htmx::invalid_target]` |
-| `htmx::target_attribute` | `(htmx::target) -> html::attribute emits []` |
-| `htmx::swap_inner` | `() -> html::attribute emits []` |
-| `htmx::swap_outer` | `() -> html::attribute emits []` |
-| `htmx::trigger_change` | `() -> html::attribute emits []` |
-| `htmx::trigger_input_changed` | `(int delay_ms) -> html::attribute emits [htmx::invalid_interval]`; emits `input changed delay:<n>ms` |
-| `htmx::trigger_every` | `(int interval_ms) -> html::attribute emits [htmx::invalid_interval]`; emits `every <n>ms` |
-| `htmx::indicator_id` | `(str id) -> html::attribute emits [htmx::invalid_target]` |
-| `htmx::disable_this` | `() -> html::attribute emits []`; emits `hx-disable="this"` |
-| `htmx::runtime_head` | `() -> html::node emits []`; emits the pinned local script and response policy |
+| `html::make_tag` | `(str) -> html::tag emits {html::invalid_structure}`; accepts only the closed author-tag inventory below |
+| `html::text` | `(str) -> html::node emits {}`; escapes for text context |
+| `html::parse_url` | `(str) -> html::url emits {html::invalid_url}`; accepts same-origin relative HTTP paths and approved `https` URLs |
+| `html::text_attribute` | `(str name, str value) -> html::attribute emits {html::invalid_structure}`; permits only the text-attribute inventory below |
+| `html::url_attribute` | `(str name, html::url) -> html::attribute emits {html::invalid_structure}`; permits the tag-checked URL-attribute inventory |
+| `html::element` | `(html::tag, html::attribute[], html::node[]) -> html::node emits {html::invalid_structure}` |
+| `html::fragment` | `(html::node[]) -> html::safe emits {html::invalid_structure}` |
+| `html::text_fragment` | `(str) -> html::safe emits {}`; one escaped text node for fallback responses |
+| `html::stylesheet` | `(html::url) -> html::node emits {html::invalid_url}`; one head-only stylesheet link |
+| `html::meta_viewport` | `() -> html::node emits {}`; one fixed head-only viewport element |
+| `html::document` | `(str title, html::node[] head, html::node[] body) -> html::safe emits {html::invalid_structure}` |
+| `htmx::get` | `(html::url) -> html::attribute emits {html::invalid_url}`; URL must be same-origin relative |
+| `htmx::post` | `(html::url) -> html::attribute emits {html::invalid_url}`; URL must be same-origin relative |
+| `htmx::target_id` | `(str id) -> htmx::target emits {htmx::invalid_target}` |
+| `htmx::target_attribute` | `(htmx::target) -> html::attribute emits {}` |
+| `htmx::swap_inner` | `() -> html::attribute emits {}` |
+| `htmx::swap_outer` | `() -> html::attribute emits {}` |
+| `htmx::trigger_change` | `() -> html::attribute emits {}` |
+| `htmx::trigger_input_changed` | `(int delay_ms) -> html::attribute emits {htmx::invalid_interval}`; emits `input changed delay:<n>ms` |
+| `htmx::trigger_every` | `(int interval_ms) -> html::attribute emits {htmx::invalid_interval}`; emits `every <n>ms` |
+| `htmx::indicator_id` | `(str id) -> html::attribute emits {htmx::invalid_target}` |
+| `htmx::disable_this` | `() -> html::attribute emits {}`; emits `hx-disable="this"` |
+| `htmx::runtime_head` | `() -> html::node emits {}`; emits the pinned local script and response policy |
 
 The closed author-tag inventory is `main`, `header`, `footer`, `nav`, `section`,
 `article`, `aside`, `h1`--`h6`,
@@ -868,36 +868,36 @@ Opaque server types are `http::request`, `http::server_response`, `http::status`
 `http::server`, and `http::server_config`. The exact mounted callback type is:
 
 ```text
-callable http::server_response (http::request) emits []
+callable http::server_response (http::request) emits {}
 ```
 
 | Operation | Contract |
 | --- | --- |
-| `http::request_method` | `(http::request) -> str emits []` |
-| `http::request_path` | `(http::request) -> str emits []`; decoded normalized path |
-| `http::query_one` | `(http::request, str name) -> str emits [http::invalid_request]`; missing or repeated is an error |
-| `http::query_all` | `(http::request, str name) -> str[] emits [http::invalid_request]` |
-| `http::request_headers` | `(http::request) -> http::header[] emits []` |
-| `http::request_body` | `(http::request, int max_bytes) -> bytes::buffer emits [http::body_limit]` |
-| `http::request_json<T>` | `(http::request, int max_bytes) -> T emits [http::body_limit, http::invalid_request, codec::invalid_data]` |
-| `http::request_form<T>` | `(http::request, int max_bytes) -> T emits [http::body_limit, http::invalid_request, codec::invalid_data]` |
-| `http::make_status` | `(int) -> http::status emits [http::invalid_request]` |
-| `http::make_body_status` | `(int) -> http::body_status emits [http::invalid_request]`; excludes 204, 205, 304 |
-| `http::status_ok`, `http::status_unprocessable`, `http::status_internal`, `http::status_unavailable` | `() -> http::body_status emits []` |
-| `http::make_server_headers` | `(http::header[]) -> http::server_headers emits [http::invalid_request]` |
-| `http::empty_server_headers` | `() -> http::server_headers emits []` |
-| `http::response_empty` | `(http::status, http::server_headers) -> http::server_response emits []` |
-| `http::response_bytes` | `(http::body_status, http::server_headers, bytes::buffer) -> http::server_response emits []` |
-| `http::response_text` | `(http::body_status, http::server_headers, str) -> http::server_response emits []` |
-| `http::response_html` | `(http::body_status, http::server_headers, html::safe) -> http::server_response emits []` |
-| `http::response_json<T>` | `(http::body_status, http::server_headers, T) -> http::server_response emits [codec::invalid_data]`; T must satisfy the shared wire subset |
-| `http::route_get` | `(static str path, mounted_callback) -> http::route emits [http::invalid_route]` |
-| `http::route_post` | `(static str path, mounted_callback) -> http::route emits [http::invalid_route]` |
-| `http::make_router` | `(http::route[]) -> http::router emits [http::duplicate_route, http::ambiguous_route]` |
-| `http::make_server_config` | `(str host, int port, int body_limit, int shutdown_ms) -> http::server_config emits [http::invalid_server_config]` |
-| `http::server_start` | `(http::server_config, http::router) -> http::server emits [http::bind_failed]` |
-| `http::server_wait` | `(http::server) -> void emits [http::shutdown_failed]`; stale handle is standard `resource_state` |
-| `http::server_stop` | `(http::server) -> void emits [http::shutdown_failed]`; stale handle is standard `resource_state` |
+| `http::request_method` | `(http::request) -> str emits {}` |
+| `http::request_path` | `(http::request) -> str emits {}`; decoded normalized path |
+| `http::query_one` | `(http::request, str name) -> str emits {http::invalid_request}`; missing or repeated is an error |
+| `http::query_all` | `(http::request, str name) -> str[] emits {http::invalid_request}` |
+| `http::request_headers` | `(http::request) -> http::header[] emits {}` |
+| `http::request_body` | `(http::request, int max_bytes) -> bytes::buffer emits {http::body_limit}` |
+| `http::request_json<T>` | `(http::request, int max_bytes) -> T emits {http::body_limit, http::invalid_request, codec::invalid_data}` |
+| `http::request_form<T>` | `(http::request, int max_bytes) -> T emits {http::body_limit, http::invalid_request, codec::invalid_data}` |
+| `http::make_status` | `(int) -> http::status emits {http::invalid_request}` |
+| `http::make_body_status` | `(int) -> http::body_status emits {http::invalid_request}`; excludes 204, 205, 304 |
+| `http::status_ok`, `http::status_unprocessable`, `http::status_internal`, `http::status_unavailable` | `() -> http::body_status emits {}` |
+| `http::make_server_headers` | `(http::header[]) -> http::server_headers emits {http::invalid_request}` |
+| `http::empty_server_headers` | `() -> http::server_headers emits {}` |
+| `http::response_empty` | `(http::status, http::server_headers) -> http::server_response emits {}` |
+| `http::response_bytes` | `(http::body_status, http::server_headers, bytes::buffer) -> http::server_response emits {}` |
+| `http::response_text` | `(http::body_status, http::server_headers, str) -> http::server_response emits {}` |
+| `http::response_html` | `(http::body_status, http::server_headers, html::safe) -> http::server_response emits {}` |
+| `http::response_json<T>` | `(http::body_status, http::server_headers, T) -> http::server_response emits {codec::invalid_data}`; T must satisfy the shared wire subset |
+| `http::route_get` | `(static str path, mounted_callback) -> http::route emits {http::invalid_route}` |
+| `http::route_post` | `(static str path, mounted_callback) -> http::route emits {http::invalid_route}` |
+| `http::make_router` | `(http::route[]) -> http::router emits {http::duplicate_route, http::ambiguous_route}` |
+| `http::make_server_config` | `(str host, int port, int body_limit, int shutdown_ms) -> http::server_config emits {http::invalid_server_config}` |
+| `http::server_start` | `(http::server_config, http::router) -> http::server emits {http::bind_failed}` |
+| `http::server_wait` | `(http::server) -> void emits {http::shutdown_failed}`; stale handle is standard `resource_state` |
+| `http::server_stop` | `(http::server) -> void emits {http::shutdown_failed}`; stale handle is standard `resource_state` |
 
 The initial router accepts normalized exact static paths. Capture segments,
 wildcards, middleware, cookies, streaming, WebSockets, TLS configuration, and
@@ -917,8 +917,8 @@ uses native `URLSearchParams` after rejecting malformed percent escapes, and
 derives its closed schema from `T`. The initial field types are `str`,
 `option::value<str>`, and `str[]`. Missing/repeated scalar fields use the finite
 `form_missing` and `form_repeated` reasons. A malformed percent escape uses
-`http::invalid_request("invalid_form_encoding")`; invalid UTF-8 uses
-`codec::invalid_data(path, "utf8")`; and a value that does not fit the derived
+`http::invalid_request{"invalid_form_encoding"}`; invalid UTF-8 uses
+`codec::invalid_data{path, "utf8"}`; and a value that does not fit the derived
 shape uses the shared codec `type` reason. Multipart upload is deferred.
 
 `http::server_start` emits `Bun.serve({ fetch: async (...) => ... })`. The fetch
@@ -1111,7 +1111,7 @@ For approved native fetch declarations, any final status 200--599 completes an
 automatically. To inspect any status independent of a JSON shape, request
 `http::response<bytes::buffer>` and explicitly call `codec::decode_json<T>`.
 The body-only convenience succeeds only for 200--299 and maps another final
-status to `http::status_error(status, headers)`. Transport, timeout, body-limit,
+status to `http::status_error{status, headers}`. Transport, timeout, body-limit,
 and decode errors remain distinct declared errors.
 
 ## P11. HTMX distribution and browser boundary
@@ -1160,7 +1160,7 @@ catalogue and conformance decision.
 Project static assets are build inputs listed in the compiler asset manifest.
 The compiler hashes them, assigns `/__can/project/<digest>/<name>`, and emits
 `Bun.file` response operations. `asset::url` has contract
-`(static str name) -> html::url emits [html::invalid_url]` and resolves a
+`(static str name) -> html::url emits {html::invalid_url}` and resolves a
 declared asset name at compile time. Runtime
 path selection and arbitrary asset reads are absent.
 
@@ -1218,13 +1218,13 @@ fields at the scanner-confirmed interpolation sites. It never emits
 
 | Operation | Contract |
 | --- | --- |
-| `sql::pool_open` | `(str connection_variable, int max_connections) -> sql::pool emits [http::credentials_missing, sql::connection_failed]` |
-| `sql::pool_close` | `(sql::pool, int timeout_ms) -> void emits [sql::close_failed]`; stale handle is standard `resource_state` |
-| `sql::query_one<P,R>` | `(sql::pool, static str descriptor, P) -> R emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::constraint_failed]`; stale handle is standard `resource_state` |
-| `sql::query_optional<P,R>` | `(sql::pool, static str descriptor, P) -> option::value<R> emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::row_count, sql::schema_mismatch, sql::constraint_failed]`; stale handle is standard `resource_state` |
-| `sql::query_rows<P,R>` | `(sql::pool, static str descriptor, P, int max_rows) -> R[] emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch]`; stale handle is standard `resource_state` |
-| `sql::execute<P>` | `(sql::pool, static str descriptor, P) -> int emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed]`; result is affected rows; stale handle is standard `resource_state` |
-| `sql::with_transaction<T>` | `(sql::pool, callable sql::decision<T> (sql::transaction) emits []) -> T emits [sql::connection_failed, sql::transaction_failed, sql::commit_unknown]`; stale handle is standard `resource_state` |
+| `sql::pool_open` | `(str connection_variable, int max_connections) -> sql::pool emits {http::credentials_missing, sql::connection_failed}` |
+| `sql::pool_close` | `(sql::pool, int timeout_ms) -> void emits {sql::close_failed}`; stale handle is standard `resource_state` |
+| `sql::query_one<P,R>` | `(sql::pool, static str descriptor, P) -> R emits {sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::constraint_failed}`; stale handle is standard `resource_state` |
+| `sql::query_optional<P,R>` | `(sql::pool, static str descriptor, P) -> option::value<R> emits {sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::row_count, sql::schema_mismatch, sql::constraint_failed}`; stale handle is standard `resource_state` |
+| `sql::query_rows<P,R>` | `(sql::pool, static str descriptor, P, int max_rows) -> R[] emits {sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch}`; stale handle is standard `resource_state` |
+| `sql::execute<P>` | `(sql::pool, static str descriptor, P) -> int emits {sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed}`; result is affected rows; stale handle is standard `resource_state` |
+| `sql::with_transaction<T>` | `(sql::pool, callable sql::decision<T> (sql::transaction) emits {}) -> T emits {sql::connection_failed, sql::transaction_failed, sql::commit_unknown}`; stale handle is standard `resource_state` |
 
 The transaction versions of `query_one`, `query_optional`, `query_rows`, and
 `execute` have the same contracts with `sql::transaction` as their first input
@@ -1254,9 +1254,9 @@ does not implement transaction or rollback algorithms.
 
 If `begin` rejects after the Can callback produced `commit`, the adapter cannot
 prove whether the server committed. It returns
-`sql::commit_unknown(transaction_id)`. Before callback entry, connection errors
+`sql::commit_unknown{transaction_id}`. Before callback entry, connection errors
 map to `sql::connection_failed`; during the callback, query failures use their
-query contract; rollback failure maps to `sql::transaction_failed("rollback")`.
+query contract; rollback failure maps to `sql::transaction_failed{"rollback"}`.
 
 The transaction handle is valid only within its owning callback scope and the
 existing owners being drained for that scope. A transaction with a nonsettling
@@ -1309,10 +1309,10 @@ The program defines ordinary records `search_parameters { str term }` and
 named mounted callbacks:
 
 ```text
-show_accounts  : callable http::server_response (http::request) emits []
-search_accounts: callable http::server_response (http::request) emits []
-validate_account: callable http::server_response (http::request) emits []
-dashboard_summary: callable http::server_response (http::request) emits []
+show_accounts  : callable http::server_response (http::request) emits {}
+search_accounts: callable http::server_response (http::request) emits {}
+validate_account: callable http::server_response (http::request) emits {}
+dashboard_summary: callable http::server_response (http::request) emits {}
 ```
 
 The mounted callbacks that query data capture one open `sql::pool` through
@@ -1382,7 +1382,7 @@ record search_view
 
 /// Supply a named loader value for consumer assertions.
 fn account_row[] sample_loader
-    emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch]
+    emits {sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch}
     given
         str query
     asserts
@@ -1391,17 +1391,17 @@ fn account_row[] sample_loader
 
 /// Map the loader's complete domain bound to response data.
 fn search_view search_accounts_model
-    emits []
+    emits {}
     given
         str query
-        callable account_row[] (str) emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch] loader
+        callable account_row[] (str) emits {sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch} loader
     asserts
         found: "ann", callable sample_loader => ok search_view(200, [account_row(7, "Ann")], "")
         unavailable: "ann", callable sample_loader => ok search_view(503, [], "Temporarily unavailable.")
     match call loader(query)
         when
             found: "ann" => ok [account_row(7, "Ann")]
-            unavailable: "ann" => sql::query_failed("search_accounts", "08006")
+            unavailable: "ann" => sql::query_failed{"search_accounts", "08006"}
         sql::connection_failed => ok search_view(503, [], "Temporarily unavailable.")
         sql::query_failed => ok search_view(503, [], "Temporarily unavailable.")
         sql::unsupported_value => ok search_view(500, [], "Internal error.")
@@ -1464,7 +1464,7 @@ All alternate outcomes close:
 | SIGINT/SIGTERM | stop accepting, await in-flight requests, close pool | clean zero exit if both closes succeed |
 | shutdown or pool close failure | sanitized stderr diagnostic | nonzero process exit |
 
-The mounted callback itself has `emits []` because it explicitly maps every
+The mounted callback itself has `emits {}` because it explicitly maps every
 declared input, SQL, and HTML domain error to a complete response. Application
 mapping can deliberately return 500 for a caught domain error; the boundary's
 sanitized 500 remains the fallback for standard failures and adapter invariant

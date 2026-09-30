@@ -247,7 +247,7 @@ The selected target must provide native `Array.fromAsync`; absence is a target-c
 
 String methods with `emits {}`: `.includes(str)`, `.starts_with(str)`, `.ends_with(str)` return bool; `.to_lower_case()`/`.to_upper_case()` return str using native Unicode casing; `.trim()` uses native ECMAScript whitespace; `.slice(int,int)` follows C6. `.split(str) -> str[]` rejects empty separator with `text::empty_separator{}`; otherwise native split with no limit and preserved empty pieces. `.replace_all(str,str) -> str` rejects an empty search with `text::empty_pattern{}` and uses native literal replacement; replacement `$` sequences are literal data, requiring native function-replacement adaptation rather than native replacement-template interpretation. `text::join(str[],str) -> str` uses native join. No regexp or arbitrary prototype surface is implied. Allocations:1004 empty_separator,1005 empty_pattern.
 
-Named Unicode operations supplement native code-unit syntax: `text::scalars(str)->int[]`, `text::from_scalars(int[])->str`, `text::graphemes(str)->str[]`, `text::normalize_nfc(str)->str`. The first three validate scalar well-formedness and emit `text::invalid_unicode(str reason)` (1006); NFC also rejects unpaired surrogates. Use native string iteration/codePointAt/fromCodePoint, Intl.Segmenter with locale `und` and grapheme granularity, and `.normalize('NFC')`, with native bulk conversion chunking where argument limits require it. Segmentation/casing/normalization behavior is tied to the packaged Bun Unicode/ICU revision. Code-unit indexing and scalar access are intentionally distinct. Full Unicode casefolding is not confused with lowercase; its advanced catalogue status is recorded in P.
+Named Unicode operations supplement native code-unit syntax: `text::scalars(str)->int[]`, `text::from_scalars(int[])->str`, `text::graphemes(str)->str[]`, `text::normalize_nfc(str)->str`. The first three validate scalar well-formedness and emit `text::invalid_unicode{str reason}` (1006); NFC also rejects unpaired surrogates. Use native string iteration/codePointAt/fromCodePoint, Intl.Segmenter with locale `und` and grapheme granularity, and `.normalize('NFC')`, with native bulk conversion chunking where argument limits require it. Segmentation/casing/normalization behavior is tied to the packaged Bun Unicode/ICU revision. Code-unit indexing and scalar access are intentionally distinct. Full Unicode casefolding is not confused with lowercase; its advanced catalogue status is recorded in P.
 
 Immutable map/set keys are initially int, bool or str. Opaque catalogue `collections::map<key,value>` and `collections::set<key>` use native Map/Set internally; iteration is insertion order. Equality uses native key equality (same as C6 for these key types). `empty_map<K,V>()`, `empty_set<K>()` return empty values. `get(map,key)->V` emits `collections::key_absent{}`(1007); `insert(map,key,value)->map` emits `key_exists{}`(1008), `replace`/`remove` emit key_absent. Return fresh native Map copies; aliases remain unchanged. `entries(map)->entry<K,V>[]` preserves insertion order, where ordinary catalogue record `collections::entry<K,V>` has ordered fields `K key`, `V value`. `contains(set,key)->bool`, `add(set,key)->set`, `union`, `intersection`, `difference` have empty bounds; add duplicate is a no-op value result, union retains left order followed by unseen right entries, intersection/difference retain left order. Use native immutable copies and supported Set operations. Map/set decoding does not bypass opacity; convert through ordinary entry arrays with explicit duplicate validation. Structural record-key hashing and arbitrary equality callbacks are outside this initial contract.
 
@@ -439,11 +439,11 @@ fn str route_email
         str email
     asserts
         routed: "Refund please." => ok "billing"
-        refused: "Cannot summarize." => llm::refused("provider_refusal")
+        refused: "Cannot summarize." => llm::refused{"provider_refusal"}
     match call propose((email))
         when
             routed: ("Refund please.") => ok suggestion("Which team?", [candidate("billing", "Payments."), candidate("technical", "Product faults.")])
-            refused: ("Cannot summarize.") => llm::refused("provider_refusal")
+            refused: ("Cannot summarize.") => llm::refused{"provider_refusal"}
         http::invalid_request
         http::credentials_missing
         http::transport_failed

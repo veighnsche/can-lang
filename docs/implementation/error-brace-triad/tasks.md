@@ -238,7 +238,7 @@ appropriate to protect laptop load.
 
 ## Lane P — catalogue, editor, LSP, and current docs
 
-- [ ] **P01 · early editor and spec update.** Depends: G00. Files:
+- [x] **P01 · early editor and spec update.** Depends: G00. Files:
   `editors/vscode/{language-configuration.json,syntaxes/can.tmGrammar.json}`,
   `tools/gramcheck/main.go`, `docs/syntax-taste/technical-spec.md`,
   `compiler/internal/syntax/README.md`, and uncontested live spec text.
@@ -246,7 +246,7 @@ appropriate to protect laptop load.
   `emits calculated`, arrays, headers, calls and matches. Done when these
   files describe the chosen contract without treating a plan as shipped code.
   Evidence (window 1 interim): `{}` pairing + `punctuation.definition.error.can` grammar rule (gramcheck OK); syntax README one-line rule; technical-spec prose + LD29 block migrated (executed C10/Consumer blocks deferred to F02 window); decisions.md pre-654 migrated. Gramcheck brace/error samples + executed snippets converge in window 2.
-  Evidence (window 2): executed C10/Consumer bounds + all 24 decisions bounds + `error below_minimum` decl migrated; gramcheck samples pinned to `error unavailable{str reason}` + new brace scope samples; shared.can decl migrated to keep the sample in-fixture. Error-value `E(...)` spellings in spec text remain until N01/P05.
+  Evidence (window 2): executed C10/Consumer bounds + all 24 decisions bounds + `error below_minimum` decl migrated; gramcheck samples pinned to `error unavailable{str reason}` + new brace scope samples; shared.can decl migrated to keep the sample in-fixture. Error-value `E(...)` spellings closed in P05; `go run ./tools/gramcheck` OK.
 - [x] **P02 · authored catalogue presentation.** Depends: F02. Files:
   `compiler/internal/catalogue/types.go`, `generate.go`, and catalogue tests
   after resolving any pre-existing owner. Render concrete callable/choice
@@ -280,12 +280,18 @@ appropriate to protect laptop load.
   `current_*_test.go` + `package_instance_test.go` migrated.
   `go test -p 1 -count=1 ./compiler/` passes with the M01 corpus;
   `go run ./tools/gramcheck` reports grammar OK.
-- [ ] **P05 · remaining live documentation.** Depends: M01,M02 and G00
+- [x] **P05 · remaining live documentation.** Depends: M01,M02 and G00
   owner release. Files: `README.md`, `REQUIREMENTS.md`, current user guides
   and other live prose/examples; leave generated catalogue README to P03.
   Correct the claim that Can has no braces. Keep dated research and Jev
   evidence historical. Done when current docs distinguish error data from
-  emitted completion and agree with migrated examples. Evidence: pending.
+  emitted completion and agree with migrated examples. Evidence:
+  REQUIREMENTS R1/R2/R5 (braces rule, `emits {...}`, `error E{...}`, data-vs-
+  completion bullet); user-guide snippets syntax-spans only (foreign writer
+  prose preserved); 4 FC/example READMEs; site display strings; 5 live specs
+  (109 bounds incl. `emits {...}[]`, 29 decls, 12 values, all catalogue-
+  classified; dated reviews/evidence untouched). Zero old-spelling residuals
+  in scope; syntax suite + gramcheck green.
 
 ## Gate V — serialized verification and handback
 

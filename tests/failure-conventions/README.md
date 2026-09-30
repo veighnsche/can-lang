@@ -50,7 +50,7 @@ implementation: `retry/src/retry/retry.can`.
 - **R1 shapes.** Use the nominal `completed<item>` / `rejected<failure>`
   records under `variant outcome<item, failure>`. No ad-hoc tuples.
 - **R2 helper purity.** The helper takes
-  `callable outcome<item, failure> (arg) emits []` plus its input and a
+  `callable outcome<item, failure> (arg) emits {}` plus its input and a
   remaining-attempts bound, and returns the first completion or the last
   rejection. It never catches standard failures: they propagate with
   occurrence intact (`blast_kind` pins this).
@@ -105,7 +105,7 @@ implementation: `retry/src/retry/retry.can`.
 One private factory per fallible-constructor input shape feeds owner
 values to assertion rows. Reference: `owner-setup/`.
 
-- **F1 shape.** `fn <owner> fixture_<name>(<raw inputs>) emits []`:
+- **F1 shape.** `fn <owner> fixture_<name>(<raw inputs>) emits {}`:
   match the constructor call, forward the `ok` value, trap unexpected
   rejection. Never in `provides` (foreign calls reject at check).
 - **F2 trap idiom.** `ids::invalid => relay call fixture_id(1 / 0)`.

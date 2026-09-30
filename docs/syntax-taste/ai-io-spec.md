@@ -4,7 +4,7 @@
 
 This is the selected AI/I/O specification, reconciled 22 September 2026, completing technical contracts recorded in [the current decisions](decisions.md) and findings F01, F04–F08, F12–F13 of [the deep review](deep-design-review-2026-09-20.md). It is not an implementation claim. The complete current decision record, review, project AGENTS.md, and ASTRA_STDLIB capability catalogue were read. Historical syntax, adapters, decimal arithmetic, uncertainty bands, and proof machinery are not inherited.
 
-**User-selected surface:** native `emits` sections; typed `choice_arm<T> emits [...]` values; `llm str` and record results; ordinary `given` inputs followed by grouped `state` arguments; named fetch method/query/headers, explicit `body json`, immutable `http::response<T>`; explicit numeric-to-string library calls. The error names, numeric IDs, data fields, metadata keys, protocol profiles, validation limits, and operational policies below are **technical specification choices**, not additional user taste selections. Body encoding names `text` and `bytes` complete the previously approved encoding-slot design. Examples labeled fragments omit surrounding declarations deliberately.
+**User-selected surface:** native `emits` sections; typed `choice_arm<T> emits {...}` values; `llm str` and record results; ordinary `given` inputs followed by grouped `state` arguments; named fetch method/query/headers, explicit `body json`, immutable `http::response<T>`; explicit numeric-to-string library calls. The error names, numeric IDs, data fields, metadata keys, protocol profiles, validation limits, and operational policies below are **technical specification choices**, not additional user taste selections. Body encoding names `text` and `bytes` complete the previously approved encoding-slot design. Examples labeled fragments omit surrounding declarations deliberately.
 
 Can executes on Bun. Server-rendered HTML and upstream HTMX supply the initial web interaction model. This specification does not introduce a browser compiler, project-authored backend adapters, embedded executable code, or executable generated descriptions. LLM tool calling is entirely out of scope. It is not deferred work or an adapter capability to implement.
 
@@ -37,14 +37,14 @@ The predeclared `choice_option` type is an ordinary immutable record with positi
 
 | Operation | Signature and declared domain errors |
 |---|---|
-| `bytes::empty` | `() -> bytes::buffer`, `emits []` |
-| `bytes::from_ints` | `(int[]) -> bytes::buffer`, `emits [codec::invalid_data]`; each element must be 0–255 |
-| `bytes::to_ints` | `(bytes::buffer) -> int[]`, `emits []`; returns a new immutable collection |
-| `bytes::from_utf8` | `(str) -> bytes::buffer`, `emits [codec::invalid_data]`; rejects unpaired surrogates |
-| `bytes::to_utf8` | `(bytes::buffer) -> str`, `emits [codec::invalid_data]`; fatal UTF-8 decoding, no replacement characters |
+| `bytes::empty` | `() -> bytes::buffer`, `emits {}` |
+| `bytes::from_ints` | `(int[]) -> bytes::buffer`, `emits {codec::invalid_data}`; each element must be 0–255 |
+| `bytes::to_ints` | `(bytes::buffer) -> int[]`, `emits {}`; returns a new immutable collection |
+| `bytes::from_utf8` | `(str) -> bytes::buffer`, `emits {codec::invalid_data}`; rejects unpaired surrogates |
+| `bytes::to_utf8` | `(bytes::buffer) -> str`, `emits {codec::invalid_data}`; fatal UTF-8 decoding, no replacement characters |
 | `buffer.length` | exact Can int byte count; no call marker |
-| `codec::encode_json<T>` | `(T) -> bytes::buffer`, `emits [codec::invalid_data]`; T must satisfy A6 |
-| `codec::decode_json<T>` | `(bytes::buffer) -> T`, `emits [codec::invalid_data]`; T must satisfy A6 |
+| `codec::encode_json<T>` | `(T) -> bytes::buffer`, `emits {codec::invalid_data}`; T must satisfy A6 |
+| `codec::decode_json<T>` | `(bytes::buffer) -> T`, `emits {codec::invalid_data}`; T must satisfy A6 |
 
 Type parameters here are ordinary type parameters, not schema objects or a new JSON type. Unsupported static T is a compile diagnostic. Runtime-invalid values/bytes use the declared error. Byte adapters use native Uint8Array/Buffer/TextEncoder/TextDecoder operations with range, immutability, and Unicode checks; they do not expose backing aliases.
 
@@ -54,25 +54,25 @@ The `http`, `codec`, `ai` and `llm` catalogue namespaces are reserved for this s
 
 | Identity | Error and payload | Precisely covers |
 |---|---|---|
-| `can.std.http@1::invalid_request` | `http::invalid_request(str reason)` | Dynamic URL/path/origin/header/body-mode/config-value validation fails before sending. |
-| `can.std.http@1::credentials_missing` | `http::credentials_missing(str variable)` | A selected credential environment variable is absent or empty at request preparation. |
-| `can.std.http@1::transport_failed` | `http::transport_failed(str phase)` | A recognized native transport/body failure; phase is `connect`, `body`, `protocol`, or `cancelled`. No complete usable result is available; headers may already have arrived. |
-| `can.std.http@1::timeout` | `http::timeout(int timeout_ms)` | This request's A4 deadline expires. |
-| `can.std.http@1::body_limit` | `http::body_limit(int limit)` | Encoded outbound bytes or consumed inbound bytes exceed the selected byte bound. |
-| `can.std.http@1::status_error` | `http::status_error(int status, http::header[] headers)` | Raw final non-2xx response in body-only fetch or an AI protocol request; fetch/judge normalize it under A2.4. No arbitrary response-body text is included. |
-| `can.std.http@1::request_failed` | `http::request_failed(http::failure_detail detail)` | Public fetch/judge infrastructure failure; A2.4 fixes its seven typed detail alternatives and origin boundary. |
-| `can.std.codec@1::invalid_data` | `codec::invalid_data(str path, str reason)` | Invalid UTF-8/JSON, duplicate member, schema mismatch, unsupported runtime value, nonfinite numeric input, depth/node/byte budget, or exact numeric representation failure. |
-| `can.std.ai@1::invalid_question` | `ai::invalid_question(str reason)` | Invalid evaluated instructions, criteria, option/level support, threshold, or batch count. |
-| `can.std.ai@1::invalid_answer` | `ai::invalid_answer(str question, str reason)` | Valid JSON fails the selected judgment envelope/answer/distribution contract. `question` is the stable registration identifier, or empty for a whole-envelope defect. |
-| `can.std.llm@1::refused` | `llm::refused(str reason)` | Recognized refusal or provider content-filter termination, rather than a value of the declared output type. |
-| `can.std.llm@1::truncated` | `llm::truncated()` | Recognized output-token termination; no partial success payload is exposed. |
-| `can.std.llm@1::invalid_response` | `llm::invalid_response(str reason)` | Generation envelope/output structure or completion state violates A10, including provider-declared failed/cancelled responses. |
+| `can.std.http@1::invalid_request` | `http::invalid_request{str reason}` | Dynamic URL/path/origin/header/body-mode/config-value validation fails before sending. |
+| `can.std.http@1::credentials_missing` | `http::credentials_missing{str variable}` | A selected credential environment variable is absent or empty at request preparation. |
+| `can.std.http@1::transport_failed` | `http::transport_failed{str phase}` | A recognized native transport/body failure; phase is `connect`, `body`, `protocol`, or `cancelled`. No complete usable result is available; headers may already have arrived. |
+| `can.std.http@1::timeout` | `http::timeout{int timeout_ms}` | This request's A4 deadline expires. |
+| `can.std.http@1::body_limit` | `http::body_limit{int limit}` | Encoded outbound bytes or consumed inbound bytes exceed the selected byte bound. |
+| `can.std.http@1::status_error` | `http::status_error{int status, http::header[] headers}` | Raw final non-2xx response in body-only fetch or an AI protocol request; fetch/judge normalize it under A2.4. No arbitrary response-body text is included. |
+| `can.std.http@1::request_failed` | `http::request_failed{http::failure_detail detail}` | Public fetch/judge infrastructure failure; A2.4 fixes its seven typed detail alternatives and origin boundary. |
+| `can.std.codec@1::invalid_data` | `codec::invalid_data{str path, str reason}` | Invalid UTF-8/JSON, duplicate member, schema mismatch, unsupported runtime value, nonfinite numeric input, depth/node/byte budget, or exact numeric representation failure. |
+| `can.std.ai@1::invalid_question` | `ai::invalid_question{str reason}` | Invalid evaluated instructions, criteria, option/level support, threshold, or batch count. |
+| `can.std.ai@1::invalid_answer` | `ai::invalid_answer{str question, str reason}` | Valid JSON fails the selected judgment envelope/answer/distribution contract. `question` is the stable registration identifier, or empty for a whole-envelope defect. |
+| `can.std.llm@1::refused` | `llm::refused{str reason}` | Recognized refusal or provider content-filter termination, rather than a value of the declared output type. |
+| `can.std.llm@1::truncated` | `llm::truncated{}` | Recognized output-token termination; no partial success payload is exposed. |
+| `can.std.llm@1::invalid_response` | `llm::invalid_response{str reason}` | Generation envelope/output structure or completion state violates A10, including provider-declared failed/cancelled responses. |
 
 Reasons are finite catalogue tokens defined at their production sites below; they are not raw provider messages, arbitrary thrown-value strings, credentials, state, request bodies, or model text. Paths use RFC 6901 escaping, with empty string for the root; a duplicate member points to the duplicate key. AI registration identifiers are `q0`, `q1`, etc. Error matching exposes ordinary payload fields; callers handle/forward each declared kind explicitly. Catching `[_]` does not catch these errors.
 
 ### A2.3 Full authored bounds and standard failures
 
-Every question, arm, fetch, judge and LLM declaration writes `emits [...]`; derived `wrap` declarations use the explicit `emits calculated` rule in A3.2. It is the **entire exported finite domain-error upper bound**, including applicable intrinsic errors and escaping handler errors. The compiler checks the required set is a subset; it never silently adds an error. Extra declared kinds remain part of the public bound and must be handled by callers even when a particular implementation cannot currently produce them. Examples with `emits []` on network declarations in earlier sketches are not complete valid signatures under this rule.
+Every question, arm, fetch, judge and LLM declaration writes `emits {...}`; derived `wrap` declarations use the explicit `emits calculated` rule in A3.2. It is the **entire exported finite domain-error upper bound**, including applicable intrinsic errors and escaping handler errors. The compiler checks the required set is a subset; it never silently adds an error. Extra declared kinds remain part of the public bound and must be handled by callers even when a particular implementation cannot currently produce them. Examples with `emits {}` on network declarations in earlier sketches are not complete valid signatures under this rule.
 
 Required exported obligations, before adding escaping authored errors, are:
 
@@ -109,10 +109,10 @@ variant failure_detail
     http::status_error
     codec::invalid_data
 
-error request_failed(http::failure_detail detail)
+error request_failed{http::failure_detail detail}
 ```
 
-The qualified variant is `http::failure_detail`. Its leaves are the existing nominal error values, not new copies of their record types. `http::request_failed(detail)` is ordinary constructible error data; construction alone does not prove a request occurred. Existing error construction/forwarding rules distinguish data from failure completion. The finite variant is an infrastructure-detail contract, not a closed union of all application failures.
+The qualified variant is `http::failure_detail`. Its leaves are the existing nominal error values, not new copies of their record types. `http::request_failed{detail}` is ordinary constructible error data; construction alone does not prove a request occurred. Existing error construction/forwarding rules distinguish data from failure completion. The finite variant is an infrastructure-detail contract, not a closed union of all application failures.
 
 | Detail leaf | Public fields retained unchanged |
 | --- | --- |
@@ -147,17 +147,17 @@ Classification is determined by the executing boundary, not by an error's name o
 
 Compiler-owned encoding of values returned by descriptor expressions is inside normalization; evaluation of authored code that produces those values is outside the **native-origin** set even though it executes inside the declaration. The emitted-origin wrapper table in [A3.2](ai-io-spec.md#a32-operation-wrappers) can handle such authored domain failures after target entry.
 
-The raw intrinsic set `N` is computed by declaration mode using A2.3: credential failure only with selected authentication; no intrinsic status failure for envelope fetch; codec obligations only for applicable encoding/decoding. Do not infer absence from constant-success speculation. Each member of `N` has default handler `e => http::request_failed(e)`.
+The raw intrinsic set `N` is computed by declaration mode using A2.3: credential failure only with selected authentication; no intrinsic status failure for envelope fetch; codec obligations only for applicable encoding/decoding. Do not infer absence from constant-success speculation. Each member of `N` has default handler `e => http::request_failed{e}`.
 
 Ordinary fetch/judge source explicitly declares the normalized upper bound, including all additional AI/authored errors:
 
 ```can
 // Signature fragments: bodies and P4.1 assertions omitted.
 fetch receipt load_json from service
-    emits [http::request_failed]
+    emits {http::request_failed}
 
 judge float assess from classifier
-    emits [http::request_failed, ai::invalid_question, ai::invalid_answer, output_failed]
+    emits {http::request_failed, ai::invalid_question, ai::invalid_answer, output_failed}
 ```
 
 An explicitly declared surplus error remains public. Raw infrastructure names are no longer required solely because native transport can produce them. Question `emits` bounds remain explicit and unchanged; they are not normalized independently. Judge still prepares the batch, sends once, validates all answers before any handler, then runs handlers in registration order. Earlier authored effects are not rolled back on later failure.
@@ -218,9 +218,9 @@ wrap cached_load from load_json
     emits calculated
     asserts
         absent: => ok receipt(0)
-            using failure native http::status_error(404, [])
-        busy: => http::request_failed(http::status_error(429, []))
-            using failure native http::status_error(429, [])
+            using failure native http::status_error{404, []}
+        busy: => http::request_failed{http::status_error{429, []}}
+            using failure native http::status_error{429, []}
     handles native
         http::status_error => match http::status_error.status
             404 => ok receipt(0)
@@ -256,7 +256,7 @@ A bare terminal error alias forwards that error under existing completion rules.
 
 #### Calculated public errors
 
-`emits calculated` is mandatory **only for `wrap`**. An explicit marker and target make the contract dependency visible; the compiler publishes the exact expanded finite upper bound and its provenance. Ordinary functions, questions, fetches, judges and LLMs still write `emits [...]`. An omitted wrapper marker, an explicit list on a wrapper, or `emits calculated` elsewhere is rejected. There is one source rule, not two equivalent wrapper spellings.
+`emits calculated` is mandatory **only for `wrap`**. An explicit marker and target make the contract dependency visible; the compiler publishes the exact expanded finite upper bound and its provenance. Ordinary functions, questions, fetches, judges and LLMs still write `emits {...}`. An omitted wrapper marker, an explicit list on a wrapper, or `emits calculated` elsewhere is rejected. There is one source rule, not two equivalent wrapper spellings.
 
 For each effective rule `h(k)`, calculate `escape(h)` from checked completion control flow:
 
@@ -323,7 +323,7 @@ The following request/transport clauses name raw failures at their production si
 
 The finite method inventory is `get`, `head`, `post`, `put`, `patch`, `delete`, `options`, mapped to uppercase HTTP tokens. There is exactly one method/path line. GET/HEAD cannot have a body. Other methods may omit it or have exactly one `body json expression`, `body text expression`, or `body bytes expression`. JSON accepts an A6-admissible concrete type, text requires str, bytes requires bytes::buffer. There is no implicit form encoding, multipart encoding, query-from-record conversion or body serialization inferred from an arbitrary value. A body expression is evaluated once before launch; request expressions follow written order after inputs.
 
-A present JSON body has Content-Type `application/json`; a supplied Content-Type must equal that media type, optionally with `charset=utf-8`. A text body defaults to `text/plain; charset=utf-8`, bytes to `application/octet-stream`. Explicit text/bytes Content-Type overrides are permitted as ordinary validated header values, since media type does not change their encoding. Text always encodes UTF-8 with no BOM. Absent body adds no Content-Type. Header conflicts statically knowable from literals are compile errors; dynamic conflicts produce `http::invalid_request("content_type")`. A5 does not silently serialize text as a JSON string.
+A present JSON body has Content-Type `application/json`; a supplied Content-Type must equal that media type, optionally with `charset=utf-8`. A text body defaults to `text/plain; charset=utf-8`, bytes to `application/octet-stream`. Explicit text/bytes Content-Type overrides are permitted as ordinary validated header values, since media type does not change their encoding. Text always encodes UTF-8 with no BOM. Absent body adds no Content-Type. Header conflicts statically knowable from literals are compile errors; dynamic conflicts produce `http::invalid_request{"content_type"}`. A5 does not silently serialize text as a JSON string.
 
 The declared result selects decoding without another source clause:
 
@@ -376,7 +376,7 @@ Integer decoding accepts mathematically integral JSON number tokens by the follo
 4. The canonical signed decimal length is D+s, where D = L+e−f. Compare e to the upper bound R−s−L+f in the same bounded way. A larger exponent fails `byte_limit` before output allocation. Perform the integrality check before this budget check, so a nonintegral token consistently fails `integer_token`. Threshold magnitudes are at most 2B+1 for effective byte budget B, and therefore exactly representable as native integer counts on the bounded target.
 5. Only an exponent between the two bounds is converted to an exactly representable native index count. For shift e−f >= 0 append that many zeros to C; otherwise remove exactly f−e trailing zeros. The preceding checks prove the removal is exact and leaves at least one digit. Prefix the original negative sign if needed, then use native BigInt on those canonical decimal digits. Charge D+s against the remaining budget. There is no rounding, truncation of a nonzero digit, or source-level int/float coercion.
 
-The effective byte budget B is the existing standalone/connection codec budget. In addition to bounding input bytes, each decode operation shares an initially B-byte budget across the sum of all decoded int values' canonical decimal lengths, including minus signs and one digit for zero. This prevents many short exponent tokens from each expanding independently to B bytes. Traversal consumes this budget in the existing deterministic schema/array order. Coefficient/token inspection stays within bounded input storage; zero padding, canonical output allocation, and BigInt conversion occur only after the checks above. Budget exhaustion is `codec::invalid_data(path, "byte_limit")`; a nonintegral number is `codec::invalid_data(path, "integer_token")`; a quoted number is the ordinary `type` mismatch. No new numeric setting, error kind or authored syntax is added.
+The effective byte budget B is the existing standalone/connection codec budget. In addition to bounding input bytes, each decode operation shares an initially B-byte budget across the sum of all decoded int values' canonical decimal lengths, including minus signs and one digit for zero. This prevents many short exponent tokens from each expanding independently to B bytes. Traversal consumes this budget in the existing deterministic schema/array order. Coefficient/token inspection stays within bounded input storage; zero padding, canonical output allocation, and BigInt conversion occur only after the checks above. Budget exhaustion is `codec::invalid_data{path, "byte_limit"}`; a nonintegral number is `codec::invalid_data{path, "integer_token"}`; a quoted number is the ordinary `type` mismatch. No new numeric setting, error kind or authored syntax is added.
 
 Examples: `9007199254740993.0` and `90071992547409930e-1` both decode exactly to 9007199254740993; `1.25e2` becomes 125; `100e-2` becomes 1; `1.25`, `100e-3`, and nonzero `1e-999999999999999999999` fail `integer_token`. Nonzero `1e999999999999999999999` fails `byte_limit` before expansion. For a single root int with fresh budget B, `1e(B−1)` denotes the explanatory token whose exponent is B−1 and occupies exactly B canonical digits; increasing that exponent by one fails `byte_limit`. A negative sign consumes another byte. These are exact decimal-value decisions, independent of native binary64 overflow or rounding.
 
@@ -384,7 +384,7 @@ Encoding first performs a schema-directed budget walk, alongside scalar/depth/no
 
 Before calling native String on an int, let s be 1 for a negative value and 0 otherwise. If R−s < 1, fail the applicable byte-limit completion. Otherwise compute native bigint threshold `10n ** BigInt(R−s)`, whose exponent is already bounded by B. Reject a nonnegative value >= threshold or a negative value <= −threshold **before decimal formatting**. Compare signed values directly: do not allocate an absolute-value copy of an arbitrarily large incoming bigint. The guarded String(value) is then at most R ASCII bytes; charge its actual length. Threshold intermediates are bounded by O(B) and are not retained in an unbounded cache. Zero follows the same one-digit budget rule. This uses native bigint comparison/exponentiation and native decimal formatting, not a decimal digit formatter. An equivalent cheaper native bound may prove a value fits before threshold construction: for example, when R >= 20, the strict range −10^19 < value < 10^19 guarantees the signed decimal representation fits. This avoids computing a budget-sized threshold for ordinary small integers; every path still proves the bound before formatting.
 
-For a str or field key, first require its UTF-16 code-unit length <= remaining R, then validate scalar well-formedness and obtain native JSON.stringify(string) plus its UTF-8 byte count. Reject an actual escaped length beyond R before retaining that formatted fragment. This necessary precheck bounds temporary escaping/encoding storage by a constant multiple of the remaining budget even when every character needs escaping. Finite floats, bools and the explicit float-negative-zero token have bounded native formatted lengths, which are charged too. Formatted primitive fragments may be cached for the final pass only within the same total B-byte accounting; do not retain rejected fragments or per-node threshold caches. A failed budget check is `codec::invalid_data(path, "byte_limit")` for standalone encoding and `http::body_limit(B)` when preparing an HTTP/AI request body, as below.
+For a str or field key, first require its UTF-16 code-unit length <= remaining R, then validate scalar well-formedness and obtain native JSON.stringify(string) plus its UTF-8 byte count. Reject an actual escaped length beyond R before retaining that formatted fragment. This necessary precheck bounds temporary escaping/encoding storage by a constant multiple of the remaining budget even when every character needs escaping. Finite floats, bools and the explicit float-negative-zero token have bounded native formatted lengths, which are charged too. Formatted primitive fragments may be cached for the final pass only within the same total B-byte accounting; do not retain rejected fragments or per-node threshold caches. A failed budget check is `codec::invalid_data{path, "byte_limit"}` for standalone encoding and `http::body_limit{B}` when preparing an HTTP/AI request body, as below.
 
 After successful preflight, use JSON.stringify with generated schema-directed replacer/access adapters as the final formatter; encode int through native JSON.rawJSON(the guarded decimal bigint String(value)), and float negative zero through JSON.rawJSON("-0"). Never convert bigint to Number. Native JSON.stringify's default bigint exception and negative-zero erasure are not Can policy. Strings use native escaping after scalar validation. Unsupported nonfinite floats fail before native stringify can replace them with null. The resulting complete UTF-8 output is checked against the counted budget before exposure. A logical output limit is not a zero-extra-memory guarantee: bounded native intermediates and the final output may coexist, and an unrelated native allocation failure remains a standard failure. Generated compiler callbacks are backend machinery, not authored anonymous Can functions.
 
@@ -450,7 +450,7 @@ TypeSafe's current [API reference](https://docs.typesafe.ai/api), [Choice](https
 
 A named choice_arm is a capture-free top-level executable value. It has no given/near/state section, implicit selected-key/confidence value, or free caller-local capture. `describes` is a nonempty scalar str constant expression under the core top-level initialization rules; its handler may refer to package declarations and `%`. There is no anonymous arm constructor or ordinary `call arm()` operation. Bare named arm values can be stored, passed and selected through ordinary typed data. Storing them does not execute a handler. The compiler represents them by a constant description and a generated native closure receiving its contextual probability; no generated user code is evaluated.
 
-An arm's declared result type must exactly equal the expected stored field/handler type, and its declared error set must be a subset of the expected stored arm bound. A `choice_arm<T> emits [E]` field is invariant in T. To return different admitted leaves, declare each arm's result as the same named variant and use ordinary completion inclusion inside its handler; storing a narrower-result arm is not an implicit wrapper. An expanded question exports the full declared error bounds of every stored arm field, including arms whose implementation happens not to fail. A wider field contract remains wider after storing a narrower named arm.
+An arm's declared result type must exactly equal the expected stored field/handler type, and its declared error set must be a subset of the expected stored arm bound. A `choice_arm<T> emits {E}` field is invariant in T. To return different admitted leaves, declare each arm's result as the same named variant and use ordinary completion inclusion inside its handler; storing a narrower-result arm is not an implicit wrapper. An expanded question exports the full declared error bounds of every stored arm field, including arms whose implementation happens not to fail. A wider field contract remains wider after storing a narrower named arm.
 
 A record spread of executable arms expands **static record field names** in their declaration order. Every field must have a compatible choice_arm type. Literal inline arms and multiple static record spreads can mix; reject duplicate expanded names and metadata collisions. Record expressions are evaluated once during descriptor preparation, and their selected arm values are retained for handler execution. They can select among already named compatible arms at runtime, but cannot create new field names or captures. Arrays of executable arms are not admitted: no name-generation policy was selected.
 
@@ -480,13 +480,13 @@ HTTP/UTF-8/JSON/size/deadline failures use A2/A4 before generation extraction. T
 
 For a bounded valid JSON response, apply these checks in order:
 
-1. Missing/ill-typed envelope fields give `llm::invalid_response("envelope")`.
-2. `status:"incomplete"` with incomplete_details.reason `max_output_tokens` gives `llm::truncated()`. Reason `content_filter` gives `llm::refused("content_filter")`. An unknown/missing reason gives invalid_response `incomplete_reason`. Never expose a partial output as success.
+1. Missing/ill-typed envelope fields give `llm::invalid_response{"envelope"}`.
+2. `status:"incomplete"` with incomplete_details.reason `max_output_tokens` gives `llm::truncated{}`. Reason `content_filter` gives `llm::refused{"content_filter"}`. An unknown/missing reason gives invalid_response `incomplete_reason`. Never expose a partial output as success.
 3. `failed` or `cancelled` gives invalid_response `provider_failed` or `provider_cancelled`; `queued`/`in_progress` gives `nonterminal_response` because this profile requests synchronous nonbackground completion. A completed response with a nonnull `error` gives `provider_failed`.
-4. A completed output must contain exactly one completed assistant message, whose content is a nonempty array. Known reasoning items may accompany it and are ignored as provider envelope data; any other output item kind gives `unsupported_output`. Refusal content with a string refusal gives `llm::refused("provider_refusal")`, discarding its text from the error payload. Unknown content kinds or wrong types give `output_shape`.
+4. A completed output must contain exactly one completed assistant message, whose content is a nonempty array. Known reasoning items may accompany it and are ignored as provider envelope data; any other output item kind gives `unsupported_output`. Refusal content with a string refusal gives `llm::refused{"provider_refusal"}`, discarding its text from the error payload. Unknown content kinds or wrong types give `output_shape`.
 5. Concatenate that message's output_text string parts in content order; require at least one text part when no refusal exists. No separators, whitespace trimming, fence stripping, JSON substring search or retry is inserted. Text result returns this scalar-valid string; record result decodes this exact string through A6. Invalid structured text is codec::invalid_data with its exact path/reason. Plain text may be empty if an output_text part exists.
 
-Reasoning items are accepted only with `type:"reasoning"`, nonempty string id, and array summary; they never execute or become the user result. Unknown envelope fields in these ignored items need no recursive Can shape projection, but still count toward raw JSON budgets. Output text annotations/logprob metadata likewise do not alter decoded text. Refusal detection validates the complete content array's kinds/types before choosing refusal, preventing a malformed sibling from bypassing envelope checks. A content array mixing a valid refusal and valid text yields refusal. The finite 1130 reasons are exactly `provider_refusal`, `content_filter`; 1132 reasons are `envelope`, `incomplete_reason`, `provider_failed`, `provider_cancelled`, `nonterminal_response`, `unsupported_output`, `output_shape`. Invalid evaluated asks text is `codec::invalid_data("/instructions", "unicode_scalar")` for invalid Unicode and `http::invalid_request("instructions")` for empty text; add `instructions` to A5's 1100 vocabulary for this LLM-only producer.
+Reasoning items are accepted only with `type:"reasoning"`, nonempty string id, and array summary; they never execute or become the user result. Unknown envelope fields in these ignored items need no recursive Can shape projection, but still count toward raw JSON budgets. Output text annotations/logprob metadata likewise do not alter decoded text. Refusal detection validates the complete content array's kinds/types before choosing refusal, preventing a malformed sibling from bypassing envelope checks. A content array mixing a valid refusal and valid text yields refusal. The finite 1130 reasons are exactly `provider_refusal`, `content_filter`; 1132 reasons are `envelope`, `incomplete_reason`, `provider_failed`, `provider_cancelled`, `nonterminal_response`, `unsupported_output`, `output_shape`. Invalid evaluated asks text is `codec::invalid_data{"/instructions", "unicode_scalar"}` for invalid Unicode and `http::invalid_request{"instructions"}` for empty text; add `instructions` to A5's 1100 vocabulary for this LLM-only producer.
 
 A raw fixture that violates provider schema still reaches the runtime output validator; this is required defense, not evidence that normal provider responses will violate their contract. Provider refusal and token truncation are expected distinct error completions. Every LLM declaration must author the full relevant error list including these cases. There is no return-record fabricated from a refusal or failed schema parse.
 
@@ -512,7 +512,7 @@ Read-only local probes used Bun 1.4.2. The native parse reviver received origina
 
 ## A12. Closed execution traces
 
-These are specification examples for the selected compiler, not claims that the current compiler accepts the syntax. Catalogue imports and error-qualified names follow the core/package specification. No native declaration hides transport failures behind `emits []`. Native declaration fragments omit the mandatory P4.1 attached assertions and raw files; complete declarations must include them. Source blocks are declaration fragments inside a package whose `uses` imports the shown catalogue packages; they are not standalone source files.
+These are specification examples for the selected compiler, not claims that the current compiler accepts the syntax. Catalogue imports and error-qualified names follow the core/package specification. No native declaration hides transport failures behind `emits {}`. Native declaration fragments omit the mandatory P4.1 attached assertions and raw files; complete declarations must include them. Source blocks are declaration fragments inside a package whose `uses` imports the shown catalogue packages; they are not standalone source files.
 
 ### A12.1 Generated data followed by runtime Choice
 
@@ -544,13 +544,13 @@ connection classifier
         model "jev-latest"
 
 llm suggestion propose from generator
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response]
+    emits {http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response}
     state
         str email
     asks "Propose a routing question and two to five distinct department candidates with useful descriptions."
 
 choice str select_route from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     given
         str question
         choice_option[] candidates
@@ -559,7 +559,7 @@ choice str select_route from classifier
         ok str selected_key => ok selected_key
 
 judge str route from classifier
-    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
+    emits {http::request_failed, ai::invalid_question, ai::invalid_answer}
     given
         str question
         choice_option[] candidates
@@ -570,7 +570,7 @@ judge str route from classifier
 
 /// Copy one generated data candidate into the catalogue shape.
 fn choice_option to_option
-    emits []
+    emits {}
     given
         candidate value
     asserts
@@ -591,13 +591,13 @@ Failure traces close at explicit completions:
 
 | Changed fixture/input | Exact terminal result and stopped work |
 |---|---|
-| OpenAI completed message contains a well-formed refusal part | `llm::refused("provider_refusal")`; no suggestion, mapping, or TypeSafe request |
-| OpenAI status incomplete, reason max_output_tokens | `llm::truncated()`; no partial suggestion |
-| Generated JSON omits candidates | `codec::invalid_data("/candidates", "missing_member")`; no map/judge |
-| Generated two candidates have the same key | suggestion decoding succeeds because keys are ordinary str data; later judge preparation returns `ai::invalid_question("duplicate_option")`; no TypeSafe request |
-| TypeSafe q0 selects billing but gives technical probability 0.9 and billing 0.1 | `ai::invalid_answer("q0", "selected_probability")`; no handler |
-| HTTP 429 from the generation provider | `http::status_error(429, normalized_headers)`; no hidden retry |
-| HTTP 429 from the judge provider | `http::request_failed(http::status_error(429, normalized_headers))`; no hidden retry |
+| OpenAI completed message contains a well-formed refusal part | `llm::refused{"provider_refusal"}`; no suggestion, mapping, or TypeSafe request |
+| OpenAI status incomplete, reason max_output_tokens | `llm::truncated{}`; no partial suggestion |
+| Generated JSON omits candidates | `codec::invalid_data{"/candidates", "missing_member"}`; no map/judge |
+| Generated two candidates have the same key | suggestion decoding succeeds because keys are ordinary str data; later judge preparation returns `ai::invalid_question{"duplicate_option"}`; no TypeSafe request |
+| TypeSafe q0 selects billing but gives technical probability 0.9 and billing 0.1 | `ai::invalid_answer{"q0", "selected_probability"}`; no handler |
+| HTTP 429 from the generation provider | `http::status_error{429, normalized_headers}`; no hidden retry |
+| HTTP 429 from the judge provider | `http::request_failed{http::status_error{429, normalized_headers}}`; no hidden retry |
 
 ### A12.2 Envelope fetch and exact integer trace
 
@@ -615,14 +615,14 @@ connection service
     timeout_ms 5000
 
 fetch http::response<receipt> save_receipt from service
-    emits [http::request_failed]
+    emits {http::request_failed}
     given
         receipt_request payload
     post "receipts"
     body json payload
 ```
 
-For payload receipt_request(9007199254740993), the one request is POST `https://example.test/api/receipts`, Content-Type application/json, raw body `{"amount_minor":9007199254740993}`. A fixture status 201, Content-Type application/json and body `{"id":9007199254740993}` returns `http::response<receipt>(201, normalized_headers, receipt(9007199254740993))` exactly. A status 409 with that same valid body also returns an envelope with status 409. Status 409 with `{"message":"duplicate"}` instead returns `http::request_failed(codec::invalid_data("/id", "missing_member"))`; use a bytes envelope for arbitrary error shapes. No raw status_error belongs to this envelope mode; an otherwise identical body-only fetch stops at 409 before decoding and exposes `http::request_failed` with status-error detail.
+For payload receipt_request(9007199254740993), the one request is POST `https://example.test/api/receipts`, Content-Type application/json, raw body `{"amount_minor":9007199254740993}`. A fixture status 201, Content-Type application/json and body `{"id":9007199254740993}` returns `http::response<receipt>(201, normalized_headers, receipt(9007199254740993))` exactly. A status 409 with that same valid body also returns an envelope with status 409. Status 409 with `{"message":"duplicate"}` instead returns `http::request_failed{codec::invalid_data{"/id", "missing_member"}}`; use a bytes envelope for arbitrary error shapes. No raw status_error belongs to this envelope mode; an otherwise identical body-only fetch stops at 409 before decoding and exposes `http::request_failed` with status-error detail.
 
 ### A12.3 Full distribution and phase failure trace
 
