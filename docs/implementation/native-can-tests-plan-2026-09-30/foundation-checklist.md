@@ -166,7 +166,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P09 — Own bounded workspaces
 
-- [ ] **P09 accepted** — owner lane: `native-owner`.
+- [x] **P09 accepted** — owner lane: `native-owner`. Evidence: [evidence/P09.json](evidence/P09.json).
 
 **Start after:** P07. **Additional acceptance prerequisites:** none.
 

@@ -9,7 +9,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "<P15-SHA recorded after commit>"
+    "1762c2db12929bdd01c065e3cbb92af825b4579b"
   ],
   "changed_paths": [
     "tests/native-can/"

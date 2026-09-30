@@ -346,7 +346,7 @@
       "acceptance": "Partial allocation, symlink replacement, foreign/active lease, exceeded byte/entry/depth and failed deletion remain charged/unresolved.",
       "evidence": "Save bounded filesystem controls; commit workspace owner.",
       "commit": "feat(testing): own bounded workspaces",
-      "status": "active",
+      "status": "complete",
       "start_after": [
         "P07"
       ],
