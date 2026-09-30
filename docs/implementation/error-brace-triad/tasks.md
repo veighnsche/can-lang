@@ -295,21 +295,25 @@ appropriate to protect laptop load.
 
 ## Gate V — serialized verification and handback
 
-- [ ] **V01 · front-end and corpus gate.** Depends: F04,N05,M04.
+- [x] **V01 · front-end and corpus gate.** Depends: F04,N05,M04.
   Run focused lexer/parser/formatter/resolve tests, then bounded
   `go test -p 1 ./compiler/internal/syntax ./compiler/internal/resolve`.
   Confirm all current positive fixtures reach a format fixpoint, including
   the existing 59-file round-trip walker. Record commands, timeouts, skips
   and any remaining old-form hits in `evidence/verification.md`.
-  Evidence: pending.
-- [ ] **V02 · semantics and product gate.** Depends: V01,N04,P03,P04.
+  Evidence: focused brace tests + both packages ok; walker 60/60 pass/skip,
+  0 fail; no unexplained old forms. See `evidence/verification.md`.
+- [x] **V02 · semantics and product gate.** Depends: V01,N04,P03,P04.
   Run focused constructor, bound, origin, catalogue and LSP tests; then
   bounded checks for `./compiler/internal/check`, `./compiler/internal/emit`,
   `./compiler/internal/catalogue`, `./compiler`, and `./tools/gramcheck`.
   Run `make catalogue-check` and `go run ./tools/gramcheck`. Serialize
   heavier commands. Done when checker/emitter contracts and displayed syntax
-  agree. Evidence: pending.
-- [ ] **V03 · integration and runtime gate.** Depends: V02,M03,P05.
+  agree. Evidence: check/emit/catalogue/compiler all ok with CAN_BUN;
+  catalogue-check + gramcheck pass. Foreign `bbd888b5` image-syntax miss
+  fixed (`8292f985`); `TestW4MeasuredLegs` load flake diagnosed pre-existing
+  (timing band), suite re-ran green. See `evidence/verification.md`.
+- [x] **V03 · integration and runtime gate.** Depends: V02,M03,P05.
   Run relevant failure-conventions and selective integration cases using an
   already configured Bun archive. If authored `runtime/` or `tools/runtime/`
   TypeScript changed, run `bun run lint:fix:runtime` and
@@ -318,7 +322,10 @@ appropriate to protect laptop load.
   compact diagnostics and only relevant Bun tests if runtime behavior changed.
   No performance measurements or full distribution bundle. Done when the
   bounded end-to-end cases pass or an actual environment skip is recorded.
-  Evidence: pending.
+  Evidence: FC 11/11 skip (no archive — recorded skip); integration 7 pass /
+  106 skip / 2 chromium-env fails in untouched setup; host/conformance ok;
+  check:runtime + lint:runtime clean, module-inventory Bun test passes.
+  See `evidence/verification.md`.
 - [ ] **V04 · independent diff review and cleanup.** Depends: V01–V03.
   Codex reviews the complete diff and evidence against the design: no old
   compatibility path, unintended call/record change, generated-file hand
