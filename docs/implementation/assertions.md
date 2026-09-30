@@ -1,7 +1,5 @@
 # Emitted assertions
 
-> Grouped error heads and grouped assertion/fixture labels described here are a pending draft. Implementation stopped before validation; see the [handoff plan](../syntax-taste/grouped-errors-and-labels-implementation-plan-2026-09-30.md). Other existing contracts are unaffected by this status note.
-
 This document describes the current implementation. The LF03/LF04/LF15
 [completion records](evidence/2026-09-22/language-fixes/) cover nonpublishing
 assertions, supervised roots and verified build publication under

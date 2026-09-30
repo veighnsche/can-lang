@@ -1,7 +1,5 @@
 # Can surface design — current decisions
 
-> Grouped error heads and grouped assertion/fixture labels described here are a pending draft. Implementation stopped before validation; see the [handoff plan](grouped-errors-and-labels-implementation-plan-2026-09-30.md). Other existing contracts are unaffected by this status note.
-
 This is the authoritative record of current design choices for Can's AI
 coding-agent audience, including syntax and the Can-to-Bun architecture. It takes
 precedence over conflicting rules in other design documents. These are design

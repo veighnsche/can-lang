@@ -1,7 +1,5 @@
 # Can technical specification
 
-> Grouped error heads and grouped assertion/fixture labels described here are a pending draft. Implementation stopped before validation; see the [handoff plan](grouped-errors-and-labels-implementation-plan-2026-09-30.md). Other existing contracts are unaffected by this status note.
-
 Reconciled 22 September 2026. Selected design specification; no implementation claim or authorization.
 
 <a id="c1"></a>

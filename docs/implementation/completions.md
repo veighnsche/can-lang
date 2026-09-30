@@ -1,7 +1,5 @@
 # Completion regions and protected async values
 
-> Grouped error heads and grouped assertion/fixture labels described here are a pending draft. Implementation stopped before validation; see the [handoff plan](../syntax-taste/grouped-errors-and-labels-implementation-plan-2026-09-30.md). Other existing contracts are unaffected by this status note.
-
 `check.CheckRegion` checks one named function or one selected handler against
 sealed declaration types, file-scoped eligible-name resolution and an explicit
 success/error contract. Functions have no parent; handlers name their enclosing
