@@ -10,7 +10,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "TBD strict host enforcement"
+    "f481e36e strict host enforcement"
   ],
   "changed_paths": [
     "tools/native-test-owner/host/"
@@ -46,7 +46,7 @@
     "reference": null,
     "owner": null,
     "candidate": null,
-    "suite": "bounded local controls only (small control envelopes, 1 real Setsid sleep, ≤200-byte tmp writes, live ulimit demos); no live suite, no network, no 64-proc/GiB effects",
+    "suite": "bounded local controls only (small control envelopes, 1 real Setsid sleep, \u2264200-byte tmp writes, live ulimit demos); no live suite, no network, no 64-proc/GiB effects",
     "artifact": "host-profile acceptance record committed separately per the card (evidence/P13-profile.json)",
     "host_profile": "darwin arm64: NPROC 2666/4000, hw.memsize 16GiB, AS/FSIZE uncapped, ~54GB tmp free",
     "observer": "15-check Qualify battery + per-lane P12 probes + live kernel demos"
