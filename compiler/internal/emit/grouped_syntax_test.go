@@ -204,9 +204,9 @@ fn int picky
 fn str fetch
     emits {}
     asserts
-        customer: => ok "served" link app::alpha
-        partner: => ok "served" link app::beta
-        guest | visitor: => ok "served" link app::alpha
+        customer: => ok "served" link alpha
+        partner: => ok "served" link beta
+        guest | visitor: => ok "served" link alpha
     match call text::from_int(7)
         when
             scenario alpha | beta: 7 => ok "served"
@@ -290,8 +290,14 @@ func TestGroupedErrorBodiesAndForwardingEmission(t *testing.T) {
 	}
 	// A forwarded domain completion must be the very same object, retaining
 	// its full payload and occurrence ID. Both branches return the one call's
-	// completion; neither reconstructs a domain failure.
-	if strings.Contains(emitted, ".create(") {
+	// completion; neither reconstructs a domain failure. Fixture-row
+	// expectations above the dispatch legitimately construct errors, so scope
+	// the absence check to the dispatch region.
+	dispatch := emitted
+	if i := strings.Index(emitted, "=== 'domain'"); i >= 0 {
+		dispatch = emitted[i:]
+	}
+	if strings.Contains(dispatch, ".create(") {
 		t.Fatalf("grouped forwarding created a fresh occurrence:\n%s", emitted)
 	}
 	forwarded := regexp.MustCompile(`return (\$can[A-Za-z0-9]+) as \$canCompletion<`).FindAllStringSubmatch(emitted, -1)
