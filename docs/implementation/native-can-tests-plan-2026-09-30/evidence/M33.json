@@ -9,7 +9,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "TBD prototype-companion-surfaces cases"
+    "fc367efb prototype-companion-surfaces cases"
   ],
   "changed_paths": [
     "tests/native-can/migration/m33-prototype-companion-surfaces-a/"
@@ -81,7 +81,7 @@
   "relevance_decision": null,
   "retirement_eligible": false,
   "retirement_commit": null,
-  "reviewer_disposition": "integrator accepted as-is: re-ran all 27 parses; read 3 files in full plus header/sweep coverage over all 27 (unique packages, uses restricted, no spec refs, no credit claims, every case file has positive plus seeded-negative roots failing the right checks); independently verified every grounding claim (Op B exclusion + disjoint-cell gap + dated pins in x-r01-1.md; D02 repin + twice-identical bundling in d02-record.md and host/conformance; all 7 cited failure codes in the delivered companion union); verified M32↔M33 handoff closure in both directions and the absence of absolute pins from retained checks. No old-harness deletions. Independent final review deferred to Z06.",
+  "reviewer_disposition": "integrator accepted as-is: re-ran all 27 parses; read 3 files in full plus header/sweep coverage over all 27 (unique packages, uses restricted, no spec refs, no credit claims, every case file has positive plus seeded-negative roots failing the right checks); independently verified every grounding claim (Op B exclusion + disjoint-cell gap + dated pins in x-r01-1.md; D02 repin + twice-identical bundling in d02-record.md and host/conformance; all 7 cited failure codes in the delivered companion union); verified M32\u2194M33 handoff closure in both directions and the absence of absolute pins from retained checks. No old-harness deletions. Independent final review deferred to Z06.",
   "limitations": [
     "parse-gated only: Can bodies are unaudited by execution; P23 qualification binds PEER/WIRE/N1 + C/R/N/S/A before any execution credit",
     "case files avoid uses [spec] (outside src/ source root); at P23 the local test_case/check/evidence shapes map onto spec:: equivalents",
