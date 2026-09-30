@@ -9,7 +9,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "TBD refresh machinery"
+    "7f4c2e72 refresh machinery"
   ],
   "changed_paths": [
     "tools/native-test-reference/refresh.go",
