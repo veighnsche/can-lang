@@ -11,7 +11,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "TBD C adapter witness"
+    "b0f071d6 C adapter witness"
   ],
   "changed_paths": [
     "tools/runtime/test-services/native-values/c-witness.ts",
