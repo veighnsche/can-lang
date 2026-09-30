@@ -258,13 +258,17 @@ appropriate to protect laptop load.
   descriptors migrated (`emits [][]` → `emits {}[]`); JSON unchanged.
   Targeted catalogue tests pass; generator preview diff brace-only with
   `html::email_href` preserved (mirrors regenerate in P03).
-- [ ] **P03 · regenerate catalogue mirrors.** Depends: P02,F03 and G00 owner
+- [x] **P03 · regenerate catalogue mirrors.** Depends: P02,F03 and G00 owner
   release for every output. The generator alone writes
   `compiler/internal/catalogue/generated.go`, `runtime/catalogue.ts`,
   `std/catalogue/README.md`, `std/catalogue/errors.json`. Inspect all four
   diffs against the dirty baseline; never hand-edit mirrors or discard
   unrelated catalogue work. Done when `make catalogue-check` passes and
-  generated outputs are coherent. Evidence: pending.
+  generated outputs are coherent. Evidence: generator run wrote only
+  `std/catalogue/README.md` (303/303 paired delimiter-only lines, 0
+  unpaired); `html::email_href` row preserved (bound brackets only);
+  `generated.go`, `runtime/catalogue.ts`, `errors.json` byte-identical;
+  `make catalogue-check` passes; catalogue suite fully green.
 - [x] **P04 · LSP rendering and completion.** Depends: F03,N02,N03,P01.
   Files: all `compiler/lsp*_test.go` and `compiler/internal/driver/hover.go`
   only if needed. Migrate hover/format/completion snippets and cursor
