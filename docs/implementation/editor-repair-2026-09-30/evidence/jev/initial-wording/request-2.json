@@ -1,0 +1,31 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "goal": "The user authorized completing Can editor support and installing the reviewed result in Cursor. Coverage must include all independent static findings at their true source ranges, up-to-date syntax coloring, and semantic assistance for unfinished buffers. There are zero external consumers to protect through old interfaces or expected outputs. Editing must not run Can programs, execute assertions or perform network effects.",
+    "architecture": "The inspected revision 9c283544 has first-failure lexer, parser and project loader behavior; the parser recovery loses its partially built File. Resolution mutates a common world through name/export/import/signature phases, and a failed types.Builder remains failed. Program checking reuses mutable bindings, specialization data, registry, warnings and SQL records. Continuing blindly after an error is unsafe. The current snapshot duplicates resolution and delivers either its first error or the successful check warnings.",
+    "positions": "Tested coordinate conversion handles original bytes, UTF-16, BOM, CRLF, astral characters and combining marks. The AST already locates qualified names and callees but drops operator token ranges. Diagnostic producers sometimes choose full expressions/declarations or omit location entirely; syntax conversion broadens cross-line spans. Verified affected cases include repeated assertion labels, type/native/SQL contracts, configuration errors and notes wrongly classified as warnings.",
+    "editor": "Existing editor code implements navigation, hover, references, completion, safe rename and trivia-preserving formatting; refWalker and compWalker each encode scope knowledge. Graph/World loss after a malformed sibling disables assistance, with incomplete-buffer completion and local hover/definition already missing. The authorized additions are signatures, both document and workspace symbol views, semantic coloring, folds, hints, validated actions, and safe formatting of selected ranges or triggered during typing. Derive those from compiler evidence; speculative types/imports and temporary source repairs cannot become diagnostic or emitted-program facts.",
+    "resources": "The host has a 256GB disk and approximately 9.6GiB available; do not run deferred performance measurements or broad build matrices. Keep checks bounded, use shared standard caches, reclaim owned temporaries and isolate this assignment in its managed worktree because another Muse session exists. Rechecking the entire project for each error or query feature is unacceptable. Reuse version-bound analysis and invalidate it whenever source or configuration dependencies change.",
+    "correctness": "A failure in one unit must not erase trustworthy diagnostics in independent units. Missing prerequisites should block dependent evaluation instead of generating spurious unknown symbols. Broken headers or unclosed lexical structure can prevent dependent semantic results. Compilation remains unsuccessful whenever errors exist, with no partial invalid emission. Recovery must share Can parsing and validation logic, and healthy unrelated functions must not be skipped merely because an earlier global phase failed."
+  },
+  "questions": {
+    "recovery": {
+      "type": "choice",
+      "instructions": "Select the strongest recovery implementation for all independent static diagnostics under the described compiler-state hazards and host constraints. Compare sound coverage, engineering risk and semantic reuse; the result is advice that still requires code review and tests.",
+      "criteria": {
+        "canonical_recovery": "Add sound collection within the compiler itself: preserve validated partial results, mark invalid or blocked units, and commit declaration/checker state only after successful validation. Both editor and CLI use those routines, with compilation gated on zero errors. This is a larger change but supports comprehensive recovery without project replay.",
+        "closure_isolation": "Discover independent source dependency closures and check each using isolated state with the current validators; retain common prerequisite caches and preserve all source text. Combine positioned outcomes, blocking contaminated dependents. Potentially less invasive changes still require per-closure validation entry points and partitioning of the currently global state, alongside dependency-graph complexity, repeated state and global consistency joins.",
+        "focused_prototype_first": "Withhold architectural commitment until a small correctness prototype tests isolation of failed type construction and valid dependency commits. Do not reduce the authorized feature/diagnostic scope or launch performance work."
+      }
+    },
+    "scheduling": {
+      "type": "choice",
+      "instructions": "Choose the editor request execution model to pair with correct recovered analysis. Consider timely cancellation, version coherence and implementation complexity on this constrained host; no benchmark benefit has been established.",
+      "criteria": {
+        "single_worker": "Decouple message intake from a single compiler worker using immutable version snapshots and one current job per root. Replace obsolete queued edits, observe cancellation between stages, serve queries from reusable completed analysis and discard stale publications. Do not run parallel mutable checks; verify ordering with deterministic tests.",
+        "synchronous_cache": "Continue reading and executing requests serially, caching results by complete root/version identity for every feature. Invalidate on edits and observe cancellation at request boundaries. It has simpler state ownership but cannot react to new input during a lengthy check.",
+        "focused_evidence_first": "Postpone the scheduler choice until small correctness probes establish stage cancellation and queued-edit behavior; keep benchmarks and extra parallelism out of the probe."
+      }
+    }
+  }
+}

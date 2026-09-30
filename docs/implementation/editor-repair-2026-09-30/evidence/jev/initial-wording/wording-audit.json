@@ -1,0 +1,8 @@
+{
+  "distinct_explanatory_fields": true,
+  "manual_semantic_review": "All three packets preserve the same revision, architecture, observed failures, feature scope, resource facts, correctness requirements and alternatives. Objective, context, evidence, constraints, instructions, questions and every option were rewritten; stable schema keys and technical identifiers remain. No candidate or constraint was omitted in a rewrite. Agreement is advisory, not proof or guaranteed bias removal.",
+  "external_docs": [
+    "https://docs.typesafe.ai/api.md",
+    "https://docs.typesafe.ai/primitives/choice.md"
+  ]
+}

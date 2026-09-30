@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "One compiler overlay entry is keyed by resolved filesystem path, while Can keeps an individual LSP document for each URI. Opening the canonical filename and a symbolic-link alias can consequently produce separate versions and disagreeing in-memory source for the same entry. The existing close operation drops that entry regardless of other aliases, and the chosen publication URI depends on map order. The architecture serializes compiler work and bounds root snapshot retention. Correctness demands coordinates for the actual current text, atomic version-bound edits, and preservation of every unsaved buffer. Historical compatibility is unnecessary because there are no outside users. Matching alias text may reuse analysis; diverging text leaves project interpretation ambiguous. An actionable project-status explanation is acceptable for that conflict, while normal one-document operation must continue. Use limited correctness checks only, never benchmarks or parallel analyses."
+  },
+  "questions": {
+    "alias_policy": {
+      "type": "choice",
+      "instructions": "What treatment of aliased open documents most reliably meets this project's correctness and resource requirements? Recommend an approach to test and review rather than certifying it.",
+      "criteria": {
+        "conflict_status": "Preserve the full set of URI buffers and deterministically restore the shared path entry whenever one closes. Freshness covers every alias and version as well as its text. Identical contents use common facts with URI-specific diagnostic versions. Unequal contents yield explicit root-level ambiguity status and cleared old diagnostics instead of semantic answers. Editing operations on duplicated URI documents are declined with a resolution message so no buffer is implicitly authoritative.",
+        "latest_event": "Use event recency to select one canonical buffer, promoting the most recent survivor after close. The selected text supplies analysis and only agreeing URIs receive its diagnostics; conflicting earlier aliases get query refusals. Show the conflict while allowing atomic versioned edits on the selected document, with all alias events participating in identity checks.",
+        "per_uri_projects": "Maintain an independent project interpretation per alias by substituting its source at the common path. Check the views one at a time and fingerprint all inputs separately. Return view-specific diagnostics and verified edits, while specifying how shared dependencies and operations spanning aliases are owned. This preserves assistance for divergent buffers but adds cache state and coordination rules."
+      }
+    }
+  }
+}

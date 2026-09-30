@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "Can's language-server analysis uses ordinary compiler passes under a single worker. Independent errors and advisories need their actual token coordinates, editor evidence must be validated, and invalid units together with dependent callers may expose no executable IR. Strict compilation still rejects every erroneous program. There are no compatibility users; resource limits permit small correctness checks but forbid benchmarks, whole-project retries and source masking. Existing recovery can roll back individual statements and operands. Annotation collection remains a barrier: program.go calls gatherBody before publishing ProgramFunction, and the traversal stops at its first failure. The sequence missing_type broken = 1 then int other = call missing_later(), under a valid header, thus conceals the independent call error and useful signature information. A candidate contract is already present in c.bindings and FinishRecovering subsequently seals successful types. The new ProgramFunction.Signature stores only sealed header evidence, separately from whether Region can execute. TypeBuilder.Resolve undoes failed-node mutations. An ordinary pre-seal cache keyed by exact failed AST TypeNode objects could make later c.annotation uses return source.BlockedError without another primary report, provided generic instances never share that cache. Recording body gathering as declaration invalidity while leaving its proved callable symbol available permits independent later body/caller diagnostics; final closure still removes invalid runnable regions. Tests need multiple annotation failures, a later unrelated call error, retained headers, exact spans, restored state, invalid-dependent blocking and strict failure. Make an advisory classification from these facts only, without assuming code inspection or research."
+  },
+  "questions": {
+    "annotation_recovery": {
+      "type": "choice",
+      "instructions": "What approach should be evaluated to preserve independent diagnostics and sealed header evidence within these limits? The choice guides engineering review rather than guaranteeing safety.",
+      "criteria": {
+        "staged_annotation_recovery": "Repair the existing prepass to gather independent annotation findings and keep header-only function candidates. Save failed ordinary pre-seal node identities, seal valid types and continue canonical statement recovery without duplicate missing-type reports. Header evidence stays separate, while strict compilation and final dependent-region invalidation prevent bad executable output.",
+        "lazy_statement_types": "Move editor body type resolution into statement processing, using isolated builder forks and merging only sealed successes. Retain separately proved headers and the strict gate. This larger pipeline change also requires fresh invariants for generic specialization and aggregate evidence across the revised discovery sequence.",
+        "retain_prepass_stop": "Preserve the current early exit, display the initial annotation problem and defer the function's remaining semantic analysis until correction. This minimizes implementation changes while still suppressing independent subsequent findings and valid header assistance."
+      }
+    }
+  }
+}

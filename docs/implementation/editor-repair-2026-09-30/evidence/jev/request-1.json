@@ -1,0 +1,31 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "goal": "Can needs the entire authorized editor repair: every independently diagnosable static error and warning with an accurate source token or expression range, current grammar, useful semantic features during typing, and a verified current installation in Cursor. No external users require compatibility with former APIs, spellings or goldens. Runtime execution, assertion execution and network operations must remain outside keystroke analysis.",
+    "architecture": "At 9c283544, syntax.Lex stops at its first diagnostic and syntax.Parse catches one panic, discarding the partial File. project.LoadWithOverlay returns the first bad source. resolve.Build defines names then exports/imports/signatures in shared mutable state. types.Builder retains a sticky failure. checkProgramForTarget shares bindings, specializations, registry, warnings and SQL sites across passes. A bare append-and-continue can consume corrupt or absent state. CheckSnapshot currently resolves twice and publishes only one error, or warnings after success.",
+    "positions": "Original-byte to UTF-16 conversion already passes BOM/CRLF/emoji/combining-character tests. Qualified names and call callees retain spans; operator AST fields only retain text. Some semantic failures use the entire call/declaration, others are unlocated and land on line one, and multiline syntax spans are widened to a line. Duplicate assertion names, type/native/SQL contract failures and project configuration attribution are concrete gaps. Notes become warnings.",
+    "editor": "The source has definition, hover, references, completion, rename and comment-preserving formatting. Independent refWalker and compWalker code already knows many scopes. A sibling syntax error can remove the Graph/World needed by features. Completion currently declines malformed buffers; hover/definition omit locals. New signature help, symbols for documents and workspaces, semantic tokens, folding, inlays, code actions and safe range/on-type formatting should reuse compiler facts. No guessed types/imports or synthetic repairs may enter published diagnostics or executable output.",
+    "resources": "This is a 256GB MacBook with about 9.6GiB free. Broad builds and benchmarks remain deferred. Use one shared checkout per owner, bounded correctness tests, ordinary shared dependency caches and automatic temporary cleanup. A managed worktree isolates this repair from another Muse session. There must be no repeated full-project compiler run per discovered error or per editor feature. Analysis identity must fingerprint every relevant open-document version plus manifest, lock, registry, asset and dependency disk inputs, and invalidate on changes to any of them.",
+    "correctness": "All independent units should keep their own valid errors/warnings when another unit fails; dependent units with unavailable prerequisite facts must be marked blocked rather than emitting invented unknown-name cascades. Malformed project headers and unterminated lexical constructs may legitimately prevent dependent semantic checks. Strict compilation must reject any errors and never emit partial invalid programs. Error recovery must use the canonical Can grammar/validators. No global phase shortcut may permanently omit healthy unrelated functions."
+  },
+  "questions": {
+    "recovery": {
+      "type": "choice",
+      "instructions": "Which architecture best satisfies the complete multi-diagnostic repair given the mutable compiler prerequisites and laptop limits? Weigh implementation risk, sound independence and long-term shared semantics. This classification advises a reviewed design; it is not correctness proof.",
+      "criteria": {
+        "canonical_recovery": "Refactor canonical compiler stages to accumulate positioned diagnostics and retain partial valid state. Track declaration/dependency validity, isolate failed mutable work before committing, and continue independent units. CLI and editor share validators; CLI never emits when errors remain. Higher refactor cost buys systematic coverage without repeated full builds.",
+        "closure_isolation": "Partition the real dependency graph into independent validation closures and invoke the existing strict validators on isolated in-memory compiler states, caching shared prerequisites and never rewriting source. Merge located findings and block tainted dependents. This may reduce shared-state surgery, but existing global validators still require new per-closure entry points and state partitioning, exact dependency closure, duplicated compiler state and careful cross-closure global checks.",
+        "focused_prototype_first": "The supplied evidence is not enough to select safely; perform a bounded recovery prototype focused on shared type-builder failure and dependency commits before committing to either architecture. Keep the entire requested repair scope and avoid benchmarks."
+      }
+    },
+    "scheduling": {
+      "type": "choice",
+      "instructions": "Which request scheduling design should accompany the repair, assuming the chosen sound compiler recovery and required version correctness? Compare responsiveness and race complexity on one laptop without assuming unmeasured speedups.",
+      "criteria": {
+        "single_worker": "Keep protocol input responsive while one analysis worker processes immutable versioned snapshots. Coalesce superseded edits, cancel/check staleness at compiler stage boundaries, reuse completed snapshot/index data for queries, and publish only snapshots whose entire dependency fingerprint is current. Serialize mutable compiler work; add deterministic race/lifecycle tests.",
+        "synchronous_cache": "Retain the synchronous protocol loop with one cached immutable analysis per root and complete dependency fingerprint. All diagnostics/features reuse it; edits invalidate it and cancellation takes effect only between complete requests. This avoids worker races but input cannot be consumed while a long analysis runs.",
+        "focused_evidence_first": "Neither scheduling choice is justified yet; first exercise bounded cancellation/edit ordering correctness scenarios and inspect existing stage boundaries, without performance measurements or expanding concurrency."
+      }
+    }
+  }
+}

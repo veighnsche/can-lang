@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "The Can editor serializes its normal compiler pipeline. Its contract preserves unrelated findings at exact source locations and accepts semantic facts only when proved; bad declarations and affected consumers retain no runnable representation. The strict path fails on any error. Compatibility with old consumers is unnecessary, and bounded laptop checks exclude performance runs, repeated project analysis and damaged-source masking. Statements and sibling expressions already have rollback. The remaining early exit is gatherBody in program.go, which checks assertion/body annotations before adding ProgramFunction. With a sound header, missing_type broken = 1 preceding int other = call missing_later() consequently hides the latter failure and the signature's useful evidence. The callable candidate enters c.bindings first and surviving types are sealed by FinishRecovering. ProgramFunction.Signature represents just that header proof, not Region validity. Failed TypeBuilder.Resolve operations restore their additions. Remembering failed ordinary pre-seal AST TypeNode objects would let c.annotation classify dependent work as source.BlockedError instead of repeating the original diagnostic; entries cannot be shared between generic instances. A body-gather fault may invalidate its declaration without poisoning the callable symbol, so remaining body/caller checks continue before executable validity closes transitively. Regression coverage must include two annotation faults, an independent later call, retained header facts, precise positions, rollback, caller blocking and strict refusal. Assess this supplied material alone; the classifier has no repository or research access."
+  },
+  "questions": {
+    "annotation_recovery": {
+      "type": "choice",
+      "instructions": "Choose the most suitable implementation direction for this annotation-stage failure under the supplied invariants. Your recommendation remains subject to validation.",
+      "criteria": {
+        "staged_annotation_recovery": "Keep current phase order while recovering per annotation child, retaining each successful header candidate and recording unavailable ordinary pre-seal nodes. Publish only sealed header contracts, then reuse body transactions for unrelated statements with blocked failed-type consumers. Original failures remain unique and the existing strict and transitive executable gates still reject invalid code.",
+        "lazy_statement_types": "Replace the recovery prepass with on-demand statement annotation checking. Each statement receives a type-builder transaction; successful sealed evidence is combined and failures discarded. Headers and strict rejection remain independent, while the new ordering needs broader validation of generic and aggregate type coherence.",
+        "retain_prepass_stop": "Leave gathering's first-error return in place and exclude that function from semantic assistance until the annotation is fixed. No new machinery or guessed facts are introduced, but unrelated later errors and sound signature information stay absent."
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "goal": "The requested endpoint is a repaired and verified Cursor extension: precise underlines for every statically ascertainable independent error/warning, grammar matching current Can, and working semantic editor operations while code is incomplete. Historical syntax, APIs and golden results impose no compatibility duty because Can has no external users. Keep automatic analysis inert, excluding application, test-case and network execution.",
+    "architecture": "Evidence from 9c283544: lexing exits after a diagnostic, parsing recovers a single panic without keeping the partial File, and overlay loading aborts on the first invalid source. Resolver passes share mutable symbols; type construction has a persistent failure field; checker passes share bindings, registry, specializations, warning collection and SQL-site data. These dependencies prevent safe naive continuation. Snapshot diagnosis performs resolution twice and exposes one failure unless checking completes and supplies warnings.",
+    "positions": "The byte/UTF-16 boundary has passing coverage for BOM and CRLF plus emoji and combining code points. Callee and qualified-name locations exist, whereas operators survive only as text in the AST. Remaining failures include overbroad expression/declaration underlines, spanless messages at the first line, cross-line syntax ranges replaced by whole-line ranges, misplaced duplicate assertion/type/native/SQL/configuration errors, and informational notes rendered as warnings.",
+    "editor": "Current facilities include formatting that retains comments alongside completion, references, rename, hover and definitions, using separate reference and completion walkers for scope information. Invalid sibling syntax can eliminate the shared graph/world. Local navigation/hover and completion on broken text are known gaps. Complete signature help, document/workspace symbols, semantic tokens, folds, inlays, compiler-validated fixes, selection-range formatting and on-type formatting using the same semantic facts. Never promote invented types, imports or repair text into errors or generated execution.",
+    "resources": "Laptop limits are material: 256GB capacity, around 9.6GiB remaining, no authorized benchmarks or large build sweeps. Run bounded verification with shared caches and owned-artifact cleanup; this task has a managed worktree separate from a pre-existing Muse session. Avoid whole-project repeats driven by error count or feature requests. Snapshot caching requires all relevant document versions together with manifest/lock/registry/asset/dependency disk fingerprints, and refresh after every change to those inputs.",
+    "correctness": "Preserve independent findings despite errors elsewhere while recording blocked dependencies instead of manufacturing follow-on name errors. Semantic work can be unavailable where malformed headers or unterminated syntax remove essential facts. An error forbids successful compilation and partial invalid output. Canonical parser/checker logic remains authoritative; global early failure must not silently hide independent healthy-function diagnostics."
+  },
+  "questions": {
+    "recovery": {
+      "type": "choice",
+      "instructions": "Choose the recovery strategy most suitable for delivering the entire diagnostic contract with these dependency and resource facts. Balance reliable independence against change risk and maintenance; your selection cannot establish correctness by itself.",
+      "criteria": {
+        "canonical_recovery": "Use a unified compiler analysis that records exact issues, commits valid unit state transactionally and propagates explicit invalid/blocked dependencies while unrelated checks proceed. Reuse it for editor and strict compile, refusing emission after any error. Accept the substantial refactor to avoid per-error whole-project execution.",
+        "closure_isolation": "Keep validation routines mostly strict and execute them in separate in-memory contexts for genuine independent dependency closures, sharing cached prerequisites without masking or editing source. Aggregate accurate diagnostics and block dependent failures. This could limit refactoring, but adapting the global validators requires new closure-scoped entry points and state partitioning as well as closure discovery, state duplication and reconciliation of project-wide invariants.",
+        "focused_prototype_first": "First resolve the uncertain failure-state boundary with a tightly scoped type-builder/dependency-commit experiment, then choose the design. The full repair remains required and measurement runs remain excluded."
+      }
+    },
+    "scheduling": {
+      "type": "choice",
+      "instructions": "Select how the server should schedule its repaired analysis and queries, given the need for fresh versions, bounded laptop work and no measured performance claims. Judge responsiveness against concurrency failure risk.",
+      "criteria": {
+        "single_worker": "Use responsive protocol reading plus one serialized analysis executor. Freeze all input versions and disk-dependency fingerprints, merge newer edits into pending work, honor cancellation at safe stage points and reject out-of-date results. Reuse snapshot/index facts for features and test scheduling/lifecycle deterministically instead of parallelizing compiler mutation.",
+        "synchronous_cache": "Leave protocol dispatch synchronous and share an analysis cache keyed by the complete version vector and disk-input fingerprint across queries. Refresh after relevant changes and handle cancellation between requests only. This reduces concurrency risk at the cost of blocking message intake for the duration of compilation analysis.",
+        "focused_evidence_first": "Obtain targeted correctness evidence for interruptible stages and edit ordering before selecting either request model, without timing studies or additional concurrency."
+      }
+    }
+  }
+}

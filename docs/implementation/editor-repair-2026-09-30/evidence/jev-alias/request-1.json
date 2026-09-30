@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "Can's LSP stores documents by URI but canonicalizes filesystem paths before writing a shared compiler overlay. A real file URI and a symlink URI can therefore name one path while retaining different unsaved text and independent versions. Closing either currently deletes the other buffer's overlay; selecting a result URI by map iteration is nondeterministic. Analysis uses one serialized worker and a bounded root cache. Every result must refer to exact current bytes, every edit must be atomic and versioned, and buffers must never be overwritten. There are zero external users or compatibility obligations. Duplicate aliases with identical text can share facts, but different text has no unique project meaning. The task permits a clear, actionable project status for an ambiguous context; ordinary one-URI behavior must remain intact. Only bounded correctness tests are allowed, with no benchmark or parallel compiler checks."
+  },
+  "questions": {
+    "alias_policy": {
+      "type": "choice",
+      "instructions": "Which alias policy best preserves source and edit correctness within these constraints? Select an engineering direction for independent review, not a claim of proof.",
+      "criteria": {
+        "conflict_status": "Retain every URI buffer, reconcile the canonical overlay deterministically when aliases close, and include each URI/version/text in freshness checks. Share results only when alias text agrees; publish to each matching URI with its own version. Conflicting text blocks semantic results for the affected root with visible status and clears stale findings. Decline source-changing actions while a file has duplicate URI buffers, explaining how to resolve them; never choose text silently.",
+        "latest_event": "Choose the most recently opened or changed URI as authoritative for the canonical path and restore the next newest buffer on close. Analyze that text, publish only to matching aliases, and reject requests from conflicting older aliases. Warn about divergence, but permit versioned edits to the current winner. Include all alias events in cache freshness.",
+        "per_uri_projects": "Create separate project snapshots for each alias, overriding that physical file with the requesting URI's bytes. Run them sequentially and key caches by the entire URI-specific project input. Diagnose each alias independently and validate edits against its own project interpretation; define cross-alias edits and dependency publication ownership explicitly. This supports conflicting buffers but increases cache and semantic-ownership complexity."
+      }
+    }
+  }
+}

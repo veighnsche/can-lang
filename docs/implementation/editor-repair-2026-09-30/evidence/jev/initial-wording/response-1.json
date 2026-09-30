@@ -1,0 +1,29 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "recovery": {
+      "type": "choice",
+      "choice": "canonical_recovery",
+      "confidence": 0.86,
+      "probabilities": {
+        "focused_prototype_first": 0.02,
+        "canonical_recovery": 0.91,
+        "closure_isolation": 0.07
+      }
+    },
+    "scheduling": {
+      "type": "choice",
+      "choice": "single_worker",
+      "confidence": 0.86,
+      "probabilities": {
+        "synchronous_cache": 0.01,
+        "single_worker": 0.91,
+        "focused_evidence_first": 0.08
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 1420,
+    "output_tokens": 99
+  }
+}

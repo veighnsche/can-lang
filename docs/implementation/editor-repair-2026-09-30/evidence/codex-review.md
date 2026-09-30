@@ -1,0 +1,11 @@
+# Codex source review
+
+Independent review covered the compiler recovery and strict emission boundary, server snapshots/concurrency/configuration, grammar/client/provenance, and editor occurrence-based providers. Reviewers read the actual source and tests; fixes were checked by the coordinator and then reviewed again. All source writers are explicitly released. There are no unresolved material source findings.
+
+Concrete corrections included transactional rollback, independent annotation/expression/argument/arm findings, assertion and nested-call invalid-IR closure, duplicate metadata and recursive type locations, exact alias-warning names, sealed callable headers independent of body success, exact failed annotation/constructor identity, local receiver facts, constructor/method/with/incomplete callback signatures, local shadowing, canonical detailed hover, exact code-action diagnostic association, formatting scope, URI alias ambiguity, cancellation/exit lifecycle, lexical color ownership and complete build inputs.
+
+The final integrated gate passed: `go test -p 1 ./compiler ./compiler/internal/project -run '^Test(LSP|Server|Publish|G0[1-5]|Editor|RenameDiagnostic|Config)' -count=1 -timeout=90s` (compiler 2.851s, project 0.074s). A prior run correctly detected five G02 hover information regressions; those were repaired and reviewed before this passing rerun, without weakening the existing expectations.
+
+Full checker and driver suites after final annotation repair passed (13.105s and 11.260s); shared staged-annotation, constructor provenance, Signature and shadowed-callee checks also passed. Earlier full source/syntax/project/resolve/types gates and the 24 actual tokenizer/client/provenance tests are documented in the lane evidence. Final targeted concurrency race check passed (compiler 1.861s): paused intake/cancellation, exit/shutdown, alias conflicts/agreement and transient diagnostic retry. Host package and actual Cursor activation are still delivery gates, not inferred from these source tests.
+
+The main checkout remains at the source baseline with only the user's AGENTS.md modification and task-owned untracked documentation. Its AGENTS.md SHA256 before integration is `2af55e4dcfd80e472a5af91a4b13596a4a3515cc693f9e34f7b4db7ff01369ae`. The unrelated Muse session has no observed active child writer and remains untouched.

@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "The editor server indexes open buffers under their LSP URI and feeds the compiler through canonical-path overlay entries. Two URIs, including a symlink spelling and its real path, may share a physical file yet carry unequal unsaved contents and unrelated version counters. Present code can erase the remaining buffer when one alias closes, and unordered iteration decides which URI receives results. A single analysis worker serves a size-limited per-root cache. Outputs need exact buffer identity; edits require atomic version checks; preserving all unsaved data is mandatory. No external consumers impose backward compatibility. Equal alias contents permit common semantic facts, whereas conflicting contents cannot describe one unambiguous project. Explaining that ambiguity through visible project status is allowed, without disrupting normal single-URI use. Verification must stay bounded and exclude performance runs or concurrent checking."
+  },
+  "questions": {
+    "alias_policy": {
+      "type": "choice",
+      "instructions": "Choose the most suitable handling of multiple URIs for one file, prioritizing faithful buffer identity and sound edits under the stated limits. Your classification is advisory and still needs validation.",
+      "criteria": {
+        "conflict_status": "Keep all per-URI contents and rebuild a stable canonical overlay from remaining aliases after close. Track the complete alias version/content identity. For equal texts, reuse analysis and stamp publications separately for each URI. If aliases disagree, suspend semantic output in that root, remove obsolete diagnostics, and show an actionable conflict message. Refuse edits to multiply opened files with an explanation until the aliases are resolved, avoiding implicit winner selection.",
+        "latest_event": "Let the latest open/change event own the single overlay entry, falling back to the next recent alias when it closes. Compute facts for that chosen content and send findings only to aliases with matching bytes. Older conflicting documents cannot request results; a visible divergence warning explains the choice. Versioned edits may target the winner, and the cache incorporates every alias event.",
+        "per_uri_projects": "Model each URI as a distinct project view whose overlay uses that alias's contents for the shared file. Serialize those analyses and retain identities for every input of each view. Each buffer receives its own results and edit validation, with explicit rules needed for cross-view edits and dependent-file diagnostics. Conflicting aliases remain usable at the cost of more snapshot and ownership machinery."
+      }
+    }
+  }
+}

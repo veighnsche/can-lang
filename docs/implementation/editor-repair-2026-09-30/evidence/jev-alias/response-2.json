@@ -1,0 +1,19 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "alias_policy": {
+      "type": "choice",
+      "choice": "conflict_status",
+      "confidence": 0.98,
+      "probabilities": {
+        "latest_event": 0.0,
+        "per_uri_projects": 0.01,
+        "conflict_status": 0.99
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 747,
+    "output_tokens": 46
+  }
+}

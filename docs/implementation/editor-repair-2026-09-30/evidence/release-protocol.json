@@ -1,0 +1,135 @@
+{
+  "serverInfo": {
+    "name": "canlc",
+    "version": "0.2.0+611ca5e5c336.3235131f0ffc"
+  },
+  "capabilities": [
+    "codeActionProvider",
+    "completionProvider",
+    "definitionProvider",
+    "documentFormattingProvider",
+    "documentOnTypeFormattingProvider",
+    "documentRangeFormattingProvider",
+    "documentSymbolProvider",
+    "foldingRangeProvider",
+    "hoverProvider",
+    "inlayHintProvider",
+    "positionEncoding",
+    "referencesProvider",
+    "renameProvider",
+    "semanticTokensProvider",
+    "signatureHelpProvider",
+    "textDocumentSync",
+    "workspace",
+    "workspaceSymbolProvider"
+  ],
+  "diagnostics": [
+    {
+      "severity": 2,
+      "code": "CAN-CHECK-UNNECESSARY-LOCAL",
+      "range": {
+        "end": {
+          "character": 13,
+          "line": 30
+        },
+        "start": {
+          "character": 8,
+          "line": 30
+        }
+      },
+      "token": "alias"
+    },
+    {
+      "severity": 1,
+      "code": "CAN-CHECK",
+      "range": {
+        "end": {
+          "character": 23,
+          "line": 37
+        },
+        "start": {
+          "character": 12,
+          "line": 37
+        }
+      },
+      "token": "missing_one"
+    },
+    {
+      "severity": 1,
+      "code": "CAN-CHECK",
+      "range": {
+        "end": {
+          "character": 44,
+          "line": 37
+        },
+        "start": {
+          "character": 33,
+          "line": 37
+        }
+      },
+      "token": "missing_two"
+    }
+  ],
+  "hover": {
+    "contents": {
+      "kind": "markdown",
+      "value": "`int value`"
+    },
+    "range": {
+      "end": {
+        "character": 17,
+        "line": 23
+      },
+      "start": {
+        "character": 12,
+        "line": 23
+      }
+    }
+  },
+  "definition": {
+    "range": {
+      "end": {
+        "character": 13,
+        "line": 7
+      },
+      "start": {
+        "character": 8,
+        "line": 7
+      }
+    },
+    "uri": "file:///private/tmp/can-editor-repair-b6201821-3921-4d14-950c-c1447ac17b96/cursor-probe/src/editor-probe.can"
+  },
+  "completionLabels": [
+    "value"
+  ],
+  "signature": {
+    "activeParameter": 0,
+    "activeSignature": 0,
+    "signatures": [
+      {
+        "label": "record_value(int value)",
+        "parameters": [
+          {
+            "label": "int value"
+          }
+        ]
+      }
+    ]
+  },
+  "renameEditCount": 2,
+  "references": 2,
+  "documentSymbols": 6,
+  "workspaceSymbols": 1,
+  "semanticTokens": 28,
+  "folds": 10,
+  "formattingEdits": 1,
+  "currentVersion": 8,
+  "status": "passed",
+  "realProject": {
+    "path": "compiler/testdata/current/project",
+    "documentSymbols": 2,
+    "errorCount": 0,
+    "dependency": "vendor/sample",
+    "inspectionOnly": true
+  }
+}

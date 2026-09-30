@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "Can runs canonical compiler analysis on one worker. Recovery must report independent errors and warnings at original token spans, retain only proven facts, and publish no invalid executable IR or dependent callers. Strict compilation rejects errors. No backward compatibility is required; laptop resources prohibit benchmarks, project replay and source masking. Transactional statement/operand recovery already exists. In program.go, gatherBody scans assertions and body annotations before ProgramFunction is appended and returns its first error. A valid header followed by missing_type broken = 1 and int other = call missing_later() therefore loses the independent call finding and usable header facts. c.bindings already holds the signature candidate; FinishRecovering later seals valid types. ProgramFunction.Signature exposes a sealed header independently of executable Region. TypeBuilder.Resolve rolls back failed nodes. The ordinary pre-seal gather can record exact failed AST TypeNode identities so later c.annotation requests return source.BlockedError without duplicate primary errors; that failure cache must not mix generic instances. Body-gather errors can mark the declaration invalid while keeping its valid callable symbol resolvable, allowing independent body/caller checks before final invalid-IR closure. Tests must verify paired type errors plus a later call error, header facts, exact ranges, rollback, blocked dependents and strict rejection. Jev cannot inspect code or research and should use only this evidence."
+  },
+  "questions": {
+    "annotation_recovery": {
+      "type": "choice",
+      "instructions": "Which repair best satisfies these recovery, proof and resource constraints? Select advice to independently review and test, not a correctness certificate.",
+      "criteria": {
+        "staged_annotation_recovery": "Extend canonical gathering to accumulate independent child failures, retain functions whose headers gathered, and remember failed ordinary pre-seal annotation nodes. After sealing surviving types, expose header facts and run existing transactional body recovery; failed-type consumers are blocked without duplicate diagnostics. Preserve strict rejection and final invalid-IR/caller closure.",
+        "lazy_statement_types": "Remove eager body gathering for editor analysis and discover types during each statement. Add builder forks that seal and merge successful statement facts while dropping failures. Keep independent header proof and strict error rejection, but revalidate specialization and aggregate constraints under the changed discovery ordering.",
+        "retain_prepass_stop": "Keep the fail-fast annotation prepass and omit the affected function, reporting only its first type error until repaired. This is conservative and small, but continues to hide later independent diagnostics and already usable header evidence."
+      }
+    }
+  }
+}

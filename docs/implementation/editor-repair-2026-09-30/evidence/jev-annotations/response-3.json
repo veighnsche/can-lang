@@ -1,0 +1,19 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "annotation_recovery": {
+      "type": "choice",
+      "choice": "staged_annotation_recovery",
+      "confidence": 1.0,
+      "probabilities": {
+        "retain_prepass_stop": 0.0,
+        "lazy_statement_types": 0.0,
+        "staged_annotation_recovery": 1.0
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 829,
+    "output_tokens": 56
+  }
+}

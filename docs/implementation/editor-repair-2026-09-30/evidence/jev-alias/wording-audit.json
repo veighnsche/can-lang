@@ -1,0 +1,4 @@
+{
+  "distinct_all_explanatory_fields": true,
+  "semantic_review": "Three rewrites preserve identical facts, constraints and the same three policy alternatives. Context, judgment instructions and every option description differ in full prose; technical identifiers and JSON schema stay stable. Choices are advice, not proof or guaranteed bias removal."
+}
