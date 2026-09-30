@@ -9,7 +9,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "<P07-SHA recorded after commit>"
+    "84f391e756377075626afb18abe6a2609d83f917"
   ],
   "changed_paths": [
     "tools/native-test-owner/journal/"

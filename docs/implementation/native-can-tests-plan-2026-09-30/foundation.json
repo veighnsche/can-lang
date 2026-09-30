@@ -179,7 +179,7 @@
       "acceptance": "Partial allocation, symlink replacement, foreign/active lease, exceeded byte/entry/depth and failed deletion remain charged/unresolved.",
       "evidence": "Save bounded filesystem controls; commit workspace owner.",
       "commit": "feat(testing): own bounded workspaces",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P07"
       ],
@@ -306,7 +306,7 @@
       "acceptance": "Complete canonical package with arbitrary ordinary helper functions, context construction, typed check references and attached assertions; static/type/fixture controls are provisional until P26/P23. No missing-assertion exemption or canned whole-case success. Seed duplicate IDs, wrong effect, missing/exhausted fixture and altered observation; diagnostics identify source and exact reproduction selector.",
       "evidence": "Save source-check receipt; commit skeleton.",
       "commit": "feat(testing): create ordinary can suite skeleton",
-      "status": "active",
+      "status": "complete",
       "start_after": [
         "P01"
       ],
@@ -409,7 +409,7 @@
       "acceptance": "Paired valid/invalid controls distinguish source rejection from missing root/dependency/I/O; Unicode, spanless, related locations, warnings and report overflow behave as specified.",
       "evidence": "Save CLI vectors; commit diagnostics driver before shared CLI dispatch.",
       "commit": "feat(testing): expose structured product diagnostics",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P01"
       ],

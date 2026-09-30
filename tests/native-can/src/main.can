@@ -1,0 +1,80 @@
+package suite
+    provides [registry, join_refs, describe_case, render, main]
+    uses [bytes, codec, io, spec, text]
+
+/// Skeleton suite entry (P15). The registry is an asserted pure function
+/// returning descriptors with typed check references and uniform-slot
+/// bodies: package values cannot hold callables under the current inert
+/// initialization rule. Selection, planning and reduction live in spec;
+/// this package only renders the registry answer. Listing never executes
+/// a subject.
+
+/// Skeleton case registry per scope: deterministic data, no live I/O.
+fn spec::test_case[] registry
+    emits {}
+    given
+        str scope
+    asserts
+        skeleton: "skeleton" => ok [spec::test_case("process/nonzero-result", ["process"], ["posix-false"], 15000, [spec::check_ref("exit-code"), spec::check_ref("signal"), spec::check_ref("stdout"), spec::check_ref("stderr")], callable spec::nonzero_result)]
+        other: "nope" => ok []
+    match scope is "skeleton"
+        false => ok []
+        true => ok [spec::test_case("process/nonzero-result", ["process"], ["posix-false"], 15000, [spec::check_ref("exit-code"), spec::check_ref("signal"), spec::check_ref("stdout"), spec::check_ref("stderr")], callable spec::nonzero_result)]
+/// Join required-check ids from an index: "a,b" or "" when empty.
+fn str join_refs
+    emits {}
+    given
+        spec::check_ref[] refs
+        int index
+    asserts
+        empty: [], 0 => ok ""
+        single: [spec::check_ref("a")], 0 => ok "a"
+        pair: [spec::check_ref("a"), spec::check_ref("b")], 0 => ok "a,b"
+    match index >= refs.length
+        true => ok ""
+        false => match call join_refs(refs, index + 1)
+            ok str rest => match rest is ""
+                false => ok call text::join([refs[index].id, rest], ",")
+                true => ok refs[index].id
+/// One-line descriptor summary: id, required checks, deadline.
+fn str describe_case
+    emits {}
+    given
+        spec::test_case candidate
+    asserts
+        sample: spec::test_case("process/nonzero-result", ["process"], ["posix-false"], 15000, [spec::check_ref("exit-code"), spec::check_ref("signal"), spec::check_ref("stdout"), spec::check_ref("stderr")], callable spec::nonzero_result) => ok "process/nonzero-result exit-code,signal,stdout,stderr 15000"
+    ok call text::join([candidate.id, call join_refs(candidate.required_checks, 0), call text::from_int(candidate.timeout_ms)], " ")
+/// Render the registry answer for argv: usage, one descriptor, or an
+/// unknown-case notice. Pure selection executes for real; no subject runs.
+fn str render
+    emits {}
+    given
+        str[] args
+    asserts
+        empty: [] => ok "usage: suite <case-id>"
+        known: ["process/nonzero-result"] => ok "process/nonzero-result exit-code,signal,stdout,stderr 15000"
+        unknown: ["nope"] => ok "unknown case: nope"
+    match args.length is 0
+        false => match call spec::select_case(call registry("skeleton"), args[0], 0)
+            ok spec::select_outcome found => match found
+                spec::selected => ok call describe_case(found.descriptor)
+                spec::unselected => ok call text::join(["unknown case", found.problem.detail], ": ")
+        true => ok "usage: suite <case-id>"
+/// Print the registry answer for argv.
+fn void main
+    emits {codec::invalid_data, io::write_failed}
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        known: ["process/nonzero-result"] => ok
+        unknown: ["nope"] => ok
+    match call bytes::from_utf8(call render(args))
+        codec::invalid_data
+        ok bytes::buffer message => match call io::stdout_write(message)
+            when
+                empty: message => ok 0
+                known: message => ok 0
+                unknown: message => ok 0
+            io::write_failed
+            ok int written => ok

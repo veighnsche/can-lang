@@ -262,7 +262,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P15 — Create ordinary Can suite skeleton
 
-- [ ] **P15 accepted** — owner lane: `can-suite-cli`.
+- [x] **P15 accepted** — owner lane: `can-suite-cli`. Evidence: [evidence/P15.json](evidence/P15.json).
 
 **Start after:** P01. **Additional acceptance prerequisites:** none.
 
