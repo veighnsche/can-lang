@@ -879,6 +879,37 @@ func TestConcurrentLeaseCloseHammer(t *testing.T) {
 	wg.Wait()
 }
 
+// TestCollectAfterChildExit proves the status channel survives the
+// child: a fast N that acks and exits immediately must still have its
+// ack and EOF collected when T arrives late. The owner must not let
+// the eager reaper close the status pipe out from under collection
+// (Go's cmd.Wait closes StdoutPipe read ends).
+func TestCollectAfterChildExit(t *testing.T) {
+	o := testOwner(t)
+	l := testLease(t, "latecollect")
+	opID := "latecollect1"
+	frame := OctalEscape(ackFrameFor(t, opID, testEnv()))
+	id, err := o.Spawn(opID, Spec{Executable: testShell, Args: shArgs(fmt.Sprintf(`printf '%%b' '%s'; exit 0`, frame)), Env: testEnv(), WithLease: true}, l)
+	if err != nil {
+		t.Fatalf("Spawn: %v", err)
+	}
+	// Let the child exit and the reaper run long before T collects.
+	time.Sleep(500 * time.Millisecond)
+	if err := o.CollectStatus(id, 5*time.Second, 5*time.Second); err != nil {
+		t.Fatalf("CollectStatus after exit: %v", err)
+	}
+	if _, err := o.Wait(id, 5*time.Second); err != nil {
+		t.Fatalf("Wait: %v", err)
+	}
+	rep, err := o.Release(id)
+	if err != nil {
+		t.Fatalf("Release: %v", err)
+	}
+	if !rep.Clean {
+		t.Fatalf("Clean=false reason=%q facts=%+v lease=%+v", rep.Reason, rep.Facts, rep.Lease)
+	}
+}
+
 func TestSnapshotOrdering(t *testing.T) {
 	got, err := snapshotEnv(map[string]string{"B": "2", "A": "1"})
 	if err != nil {

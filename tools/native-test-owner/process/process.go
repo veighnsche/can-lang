@@ -361,10 +361,16 @@ func (o *Owner) Spawn(opID string, spec Spec, lease *Lease) (Identity, error) {
 	cmd.Stdin = null
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
-	status, err := cmd.StdoutPipe()
+	// The status channel is a manual pipe, never cmd.StdoutPipe: Go's
+	// cmd.Wait closes StdoutPipe read ends once the child exits, which
+	// would fail late collection on perfect child behavior with "file
+	// already closed". The owner holds the read end until EOF is
+	// observed or the child is aborted, however late that comes.
+	statusRead, statusWrite, err := os.Pipe()
 	if err != nil {
 		return fail("status pipe unavailable")
 	}
+	cmd.Stdout = statusWrite
 	cmd.ExtraFiles = []*os.File{envRead}
 	if spec.WithLease {
 		cmd.ExtraFiles = append(cmd.ExtraFiles, lease.File())
@@ -373,9 +379,15 @@ func (o *Owner) Spawn(opID string, spec Spec, lease *Lease) (Identity, error) {
 		cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 	}
 	if err := cmd.Start(); err != nil {
-		status.Close()
+		statusRead.Close()
+		statusWrite.Close()
 		return fail("child failed to start")
 	}
+	// The parent drops its copy of the status write end so the
+	// child's close delivers EOF; the read end stays open until the
+	// owner observes EOF or aborts.
+	statusWrite.Close()
+	status := statusRead
 	// The owner keeps the write end for delivery; the read end belongs
 	// to the child now.
 	envRead.Close()
