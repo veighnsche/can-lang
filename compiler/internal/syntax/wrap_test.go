@@ -8,7 +8,7 @@ const wrapSource = `wrap cached_load from load_json
     emits calculated
     asserts
         absent: => ok receipt(0)
-            using failure native http::status_error(404, [])
+            using failure native http::status_error{404, []}
         stored: receipt(7) => ok receipt(7)
             using raw "fixtures/cached.json"
     handles native
@@ -16,7 +16,7 @@ const wrapSource = `wrap cached_load from load_json
             404 => ok receipt(0)
             _ => inherit
     handles emitted
-        cache_failed => http::request_failed(http::status_error(429, []))
+        cache_failed => http::request_failed{http::status_error{429, []}}
 `
 
 func TestWrapDeclarationParsing(t *testing.T) {
@@ -58,7 +58,7 @@ func TestWrapDeclarationParsing(t *testing.T) {
 	for _, want := range []string{
 		"wrap cached_load from load_json",
 		"emits calculated",
-		"using failure native http::status_error(404, [])",
+		"using failure native http::status_error{404, []}",
 		"handles native",
 		"http::status_error as failed => match",
 		"_ => inherit",
@@ -83,9 +83,9 @@ func TestWrapDeclarationRejects(t *testing.T) {
 	}
 	for name, tables := range cases {
 		t.Run(name, func(t *testing.T) {
-			text := "wrap cached_load from load_json\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error(404, [])\n" + tables
+			text := "wrap cached_load from load_json\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error{404, []}\n" + tables
 			if name == "missing origin" {
-				text = "wrap cached_load from load_json\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure http::status_error(404, [])\n" + tables
+				text = "wrap cached_load from load_json\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure http::status_error{404, []}\n" + tables
 			}
 			if nativeParse(t, text).OK() {
 				t.Fatalf("invalid wrap admitted: %s", name)

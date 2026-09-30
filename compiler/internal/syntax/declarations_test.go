@@ -213,7 +213,7 @@ fn int run
                 1..5 => 10
                 _ => 20
             ok result
-        missing => missing("x")
+        missing => missing{"x"}
         [_] as str message => ok 0
 `
 	file := parseFile(t, program)
@@ -399,13 +399,11 @@ error boxed<item>{item value}
 }
 
 func TestFiniteErrorBoundBraces(t *testing.T) {
-	// The terminal keeps paren construction until N01 admits braces; F04
-	// migrates it to missing{"x"}.
 	file := parseFile(t, testHeader+`fn int load
     emits {missing, other}
     asserts
         sample: => ok 1
-    missing("x")
+    missing{"x"}
 fn void quiet
     emits {}
     asserts
