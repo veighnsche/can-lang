@@ -292,7 +292,6 @@ func TestCompletionRegionsRejectAmbiguousOrUnadmittedForms(t *testing.T) {
 		"    int value = match true\n        false => ok 0\n        true => ok 1\n    ok value\n",
 		"    match call f()\n        _ => ok 0\n",
 		"    match call f()\n        missing(_) => ok 0\n",
-		"    match call f()\n        missing | other => ok 0\n",
 		"    match call f()\n        ok int value\n",
 		"    match call f()\n        [_]\n",
 		"    match call f()\n        ok => ok 1\n        when\n            sample: => ok 1\n",

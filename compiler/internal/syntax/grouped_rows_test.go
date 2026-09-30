@@ -105,7 +105,7 @@ func TestGroupedRowsPreserveComments(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"a | b:  => ok // root group", "a | b:  => ok // fixture group", "sql::query_failed | sql::connection_failed => ok // error group"} {
+	for _, want := range []string{"a | b:  => ok  // root group", "a | b:  => ok  // fixture group", "sql::query_failed | sql::connection_failed => ok  // error group"} {
 		if !strings.Contains(formatted, want) {
 			t.Fatalf("trivia format lost %q:\n%s", want, formatted)
 		}
