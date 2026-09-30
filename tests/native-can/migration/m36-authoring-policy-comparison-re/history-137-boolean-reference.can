@@ -1,0 +1,37 @@
+package m36history137
+    provides [decide]
+    uses []
+
+/// M36 HISTORY-137 "boolean reference main.can".
+/// Source: tests/authoring-policies/boolean/reference/src/main.can
+/// (260 bytes, sha256 07726a6b...).
+/// Related fixtures: boolean baseline (M36 HISTORY-136), registry.json
+/// boolean-arm-repair entry, x-r08-comparison X-R08-1 record.
+/// Disposition: RETAIN-FIXTURE. Owner reference repair: false-first arm
+/// order, byte-identical to `canlc format` output (REF-EQ-FORMAT) and
+/// fixpoint-stable. Named consumer: hidden-check validation (repaired
+/// asserts green, canonical order, format fixpoint, duplicate mutant
+/// diagnosed). Starting state: reference proves the checks pass; it is
+/// NOT agent output and is never shown in a trial prompt. Kept as data;
+/// not a Can-authored scenario and not execution evidence.
+/// Protects: boolean reference Can source is a comparison subject for the
+/// authoring-policy baseline/reference leg.
+/// Variants: boolean, reference.
+/// Environment: none (static fixture; no run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (retained fixture; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_137: "HISTORY-137" => ok disposition("HISTORY-137", "retain-fixture", "tests/authoring-policies/boolean/reference/src/main.can; M36 HISTORY-134", "Owner reference repair kept as hidden-check validation data; not an authored scenario.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-137"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-137", "retain-fixture", "tests/authoring-policies/boolean/reference/src/main.can; M36 HISTORY-134", "Owner reference repair kept as hidden-check validation data; not an authored scenario.")

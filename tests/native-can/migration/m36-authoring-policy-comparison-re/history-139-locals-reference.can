@@ -1,0 +1,37 @@
+package m36history139
+    provides [decide]
+    uses []
+
+/// M36 HISTORY-139 "locals reference main.can".
+/// Source: tests/authoring-policies/locals/reference/src/main.can
+/// (244 bytes, sha256 fa5dbbd3...).
+/// Related fixtures: locals baseline (M36 HISTORY-138), registry.json
+/// local-warning-repair entry, x-r08-comparison X-R08-2 record.
+/// Disposition: RETAIN-FIXTURE. Owner reference repair: alias inlined to
+/// `ok left + right`, asserts green with silent stderr. Named consumer:
+/// hidden-check validation (repaired asserts green with identical roots,
+/// warning cleared, baseline itself warns). Starting state: reference
+/// proves the checks pass; it is NOT agent output and is never shown in
+/// a trial prompt. Kept as data; not a Can-authored scenario and not
+/// execution evidence.
+/// Protects: locals reference Can source is a comparison subject for the
+/// authoring-policy baseline/reference leg.
+/// Variants: locals, reference.
+/// Environment: none (static fixture; no run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (retained fixture; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_139: "HISTORY-139" => ok disposition("HISTORY-139", "retain-fixture", "tests/authoring-policies/locals/reference/src/main.can; M36 HISTORY-134", "Owner reference repair kept as hidden-check validation data; not an authored scenario.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-139"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-139", "retain-fixture", "tests/authoring-policies/locals/reference/src/main.can; M36 HISTORY-134", "Owner reference repair kept as hidden-check validation data; not an authored scenario.")

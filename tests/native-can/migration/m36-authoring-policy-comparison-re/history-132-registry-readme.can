@@ -1,0 +1,36 @@
+package m36history132
+    provides [decide]
+    uses []
+
+/// M36 HISTORY-132 "authoring-policies README.md".
+/// Source: tests/authoring-policies/README.md (2139 bytes).
+/// Related fixtures: registry.json, x-r08-comparison-2026-09-26.md,
+/// candidates/README.md and the six boolean/locals/near baseline and
+/// reference fixtures it indexes.
+/// Disposition: PRESERVE. The README is the registered comparison-input
+/// index: frozen registration, byte-frozen baselines, owner references,
+/// empty candidate slots, and the explicit no-model-access statement
+/// (0 agent attempts, whole-task tokens unmeasured). It stays as the
+/// registry-context record; H11 preassembly cites it as an A08 input.
+/// Preserved history is not execution evidence.
+/// Protects: registered authoring-policy comparison inputs and recorded
+/// baseline/reference evidence; agent trials explicitly remain unrun.
+/// Variants: none.
+/// Environment: none (stored document; no run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (preserved record; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_132: "HISTORY-132" => ok disposition("HISTORY-132", "preserve", "tests/authoring-policies/README.md; H11 preassembly A08 row", "Comparison-input index retained as the registry-context record; history, not execution evidence.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-132"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-132", "preserve", "tests/authoring-policies/README.md; H11 preassembly A08 row", "Comparison-input index retained as the registry-context record; history, not execution evidence.")

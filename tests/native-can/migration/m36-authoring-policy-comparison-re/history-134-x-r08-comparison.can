@@ -1,0 +1,35 @@
+package m36history134
+    provides [decide]
+    uses []
+
+/// M36 HISTORY-134 "x-r08-comparison-2026-09-26.md".
+/// Source: tests/authoring-policies/x-r08-comparison-2026-09-26.md (10374 bytes).
+/// Related fixtures: registry.json, the six boolean/locals/near baseline
+/// and reference fixtures, candidates/README.md.
+/// Disposition: PRESERVE. The dated comparison record holds the three
+/// X-R08-1/2/3 repair-cost records, deterministic canlc assert/format
+/// legs (shipped e3a4148c vs pre-change ba619613), and the H14/H11
+/// handoff, with agent legs explicitly unrun (0 attempts, no model
+/// access). It stays as the measurement record; H11 preassembly cites
+/// it as an A08 input. Preserved history is not execution evidence.
+/// Protects: registered authoring-policy comparison inputs and recorded
+/// baseline/reference evidence; agent trials explicitly remain unrun.
+/// Variants: none.
+/// Environment: none (stored document; no run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (preserved record; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_134: "HISTORY-134" => ok disposition("HISTORY-134", "preserve", "tests/authoring-policies/x-r08-comparison-2026-09-26.md; H11 preassembly A08 row", "Dated repair-cost record retained as the deterministic-legs measurement; history, not execution evidence.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-134"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-134", "preserve", "tests/authoring-policies/x-r08-comparison-2026-09-26.md; H11 preassembly A08 row", "Dated repair-cost record retained as the deterministic-legs measurement; history, not execution evidence.")
