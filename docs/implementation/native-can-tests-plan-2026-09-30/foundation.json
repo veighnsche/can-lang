@@ -280,7 +280,7 @@
       "acceptance": "N death, forged/absent receipt, lingering descendant/descriptor and cleanup failure cannot appear as complete success. T's own loss leaves no green receipt. Scope acceptance to the exact qualified host profile. Another host requires explicit selection and its own receipt; do not silently move execution or treat unsupported local enforcement as a pass.",
       "evidence": "Save N/T identities and independent release facts; commit N acceptance.",
       "commit": "test(testing): independently accept n",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P10",
         "P11",
@@ -615,7 +615,7 @@
       "acceptance": "Local controls reject foreign namespace/context/server/prefix, forged release, duplicate uncertain dispatch and crash-before-journal. Recovery touches only evidenced owned resources; missing release stays unresolved. Accepted N-core remains unchanged until each I slice independently accepts this delta.",
       "evidence": "evidence/P29.json with local positive/negative ownership controls and explicit unqualified service legs",
       "commit": "feat(testing): journal external service ownership",
-      "status": "planned",
+      "status": "active",
       "scope": "code and local controls; integrated gates explicit"
     }
   ]

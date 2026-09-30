@@ -447,7 +447,7 @@
       "acceptance": "N death, forged/absent receipt, lingering descendant/descriptor and cleanup failure cannot appear as complete success. T's own loss leaves no green receipt. Scope acceptance to the exact qualified host profile. Another host requires explicit selection and its own receipt; do not silently move execution or treat unsupported local enforcement as a pass.",
       "evidence": "Save N/T identities and independent release facts; commit N acceptance.",
       "commit": "test(testing): independently accept n",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P10",
         "P11",
@@ -782,7 +782,7 @@
       "acceptance": "Local controls reject foreign namespace/context/server/prefix, forged release, duplicate uncertain dispatch and crash-before-journal. Recovery touches only evidenced owned resources; missing release stays unresolved. Accepted N-core remains unchanged until each I slice independently accepts this delta.",
       "evidence": "evidence/P29.json with local positive/negative ownership controls and explicit unqualified service legs",
       "commit": "feat(testing): journal external service ownership",
-      "status": "planned",
+      "status": "active",
       "scope": "code and local controls; integrated gates explicit"
     },
     {
@@ -8084,7 +8084,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Preserve review artifacts and decide conditional retirement of six unadmitted prototype sources; no test credit from their historical presence. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.",
       "commit": "test(native-can): add prototype-source-and-review-re cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "Conditional rows require per-row current-contract relevance and reviewer disposition; preserve historical records/static fixtures where still useful. The integrator alone may retire shared old files after all linked rows and callers are resolved.",
       "delegated_oracles_owned": [],
       "delegated_oracles_shared": [],
