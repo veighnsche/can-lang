@@ -10,7 +10,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "TBD F1 fixtures"
+    "7a6200c6 F1 fixtures"
   ],
   "changed_paths": [
     "tests/native-can/subjects/descriptors/f1/"
