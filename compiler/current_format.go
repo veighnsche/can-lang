@@ -165,8 +165,14 @@ func writeFormatted(path string, identity os.FileInfo, before, formatted string)
 }
 
 func describeDiagnostic(diagnostic driver.Diagnostic) string {
-	if diagnostic.Code == "" {
-		return diagnostic.Message
+	message := diagnostic.Message
+	if diagnostic.Code != "" {
+		message = diagnostic.Code + ": " + message
 	}
-	return diagnostic.Code + ": " + diagnostic.Message
+	// --write checks the containing project, so the failing source can be a
+	// sibling rather than the file being formatted. Keep its actual location.
+	if diagnostic.File != "" {
+		return fmt.Sprintf("%s:%d:%d: %s", diagnostic.File, diagnostic.Line+1, diagnostic.Start+1, message)
+	}
+	return message
 }

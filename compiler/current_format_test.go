@@ -91,6 +91,72 @@ func TestFormatWriteReplacesAtomically(t *testing.T) {
 	}
 }
 
+func TestFormatWriteBraceEffectsAndErrors(t *testing.T) {
+	const text = `package app
+    provides [fail, recover]
+    uses [codec]
+
+fn   int   fail
+    emits {codec::invalid_data}
+    asserts
+        invalid: => codec::invalid_data{"field", "invalid"}
+    codec::invalid_data{"field", "invalid"}
+
+fn   int   recover
+    emits {}
+    asserts
+        sample: => ok 0
+    match call fail()
+        codec::invalid_data => ok 0
+        ok int value => ok value
+`
+	_, file := writeFormatProject(t, text)
+	var stdout, stderr bytes.Buffer
+	if code := runCurrentFormat(&stdout, &stderr, []string{"--write", file}); code != 0 {
+		t.Fatalf("exit %d: %s", code, stderr.String())
+	}
+	data, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"fn int fail\n", "emits {codec::invalid_data}\n", "emits {}\n", `invalid:  => codec::invalid_data{"field", "invalid"}`, `    codec::invalid_data{"field", "invalid"}`} {
+		if !strings.Contains(string(data), want) {
+			t.Fatalf("formatted source omits %q:\n%s", want, data)
+		}
+	}
+	// formatSource reparses its output and checks the printer fixpoint; a
+	// second project-checked write must also leave the canonical bytes intact.
+	if code := runCurrentFormat(&stdout, &stderr, []string{"--write", file}); code != 0 {
+		t.Fatalf("second exit %d: %s", code, stderr.String())
+	}
+	if second, err := os.ReadFile(file); err != nil || string(second) != string(data) {
+		t.Fatalf("brace-style round trip moved bytes: %v", err)
+	}
+}
+
+func TestFormatWriteIdentifiesInvalidSibling(t *testing.T) {
+	_, file := writeFormatProject(t, formatMain)
+	sibling := filepath.Join(filepath.Dir(file), "old.can")
+	const old = "package app\n    provides []\n    uses []\nfn int old\n    emits []\n    asserts\n        sample: => ok 1\n    ok 1\n"
+	if err := os.WriteFile(sibling, []byte(old), 0644); err != nil {
+		t.Fatal(err)
+	}
+	var stdout, stderr bytes.Buffer
+	if code := runCurrentFormat(&stdout, &stderr, []string{"--write", file}); code != 1 {
+		t.Fatalf("exit %d, want project refusal: %s", code, stderr.String())
+	}
+	for _, want := range []string{"cannot format", sibling + ":5:11:", `syntax: expected {, found "["`} {
+		if !strings.Contains(stderr.String(), want) {
+			t.Fatalf("refusal omits actual failing location %q: %s", want, stderr.String())
+		}
+	}
+	for path, want := range map[string]string{file: formatMain, sibling: old} {
+		if data, err := os.ReadFile(path); err != nil || string(data) != want {
+			t.Fatalf("project refusal changed %s: %v", path, err)
+		}
+	}
+}
+
 func TestFormatWriteRefusesInvalidSource(t *testing.T) {
 	_, file := writeFormatProject(t, formatMain+"fn int broken(\n")
 	var stdout, stderr bytes.Buffer
