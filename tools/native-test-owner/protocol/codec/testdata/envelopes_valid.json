@@ -1,0 +1,40 @@
+[
+  {
+    "name": "request",
+    "kind": 1,
+    "json": {
+      "schemaVersion": "1",
+      "runId": "run-1",
+      "operationId": "op-1",
+      "ownerGrant": "g-1",
+      "operation": "work.read",
+      "argumentsDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "deadlineMs": {
+        "clock": "n-monotonic",
+        "ms": 1000
+      }
+    }
+  },
+  {
+    "name": "result-completed",
+    "kind": 2,
+    "json": {
+      "schemaVersion": "1",
+      "runId": "run-1",
+      "operationId": "op-1",
+      "outcome": "completed",
+      "kind": "ok"
+    }
+  },
+  {
+    "name": "event-failed",
+    "kind": 3,
+    "json": {
+      "schemaVersion": "1",
+      "runId": "run-1",
+      "operationId": "op-2",
+      "outcome": "failed",
+      "kind": "native-io"
+    }
+  }
+]

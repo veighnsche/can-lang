@@ -1,0 +1,153 @@
+[
+  {
+    "name": "bad-version",
+    "kind": 1,
+    "json": {
+      "schemaVersion": "2",
+      "runId": "run-1",
+      "operationId": "op-1",
+      "ownerGrant": "g-1",
+      "operation": "work.read",
+      "argumentsDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "deadlineMs": {
+        "clock": "n-monotonic",
+        "ms": 1000
+      }
+    },
+    "wantError": "schemaVersion"
+  },
+  {
+    "name": "missing-run-id",
+    "kind": 1,
+    "json": {
+      "schemaVersion": "1",
+      "operationId": "op-1",
+      "ownerGrant": "g-1",
+      "operation": "work.read",
+      "argumentsDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "deadlineMs": {
+        "clock": "n-monotonic",
+        "ms": 1000
+      }
+    },
+    "wantError": "runId"
+  },
+  {
+    "name": "unknown-field",
+    "kind": 1,
+    "json": {
+      "schemaVersion": "1",
+      "runId": "run-1",
+      "operationId": "op-1",
+      "ownerGrant": "g-1",
+      "operation": "work.read",
+      "argumentsDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "deadlineMs": {
+        "clock": "n-monotonic",
+        "ms": 1000
+      },
+      "smuggled": "x"
+    },
+    "wantError": "unknown field"
+  },
+  {
+    "name": "completed-non-ok-kind",
+    "kind": 2,
+    "json": {
+      "schemaVersion": "1",
+      "runId": "run-1",
+      "operationId": "op-1",
+      "outcome": "completed",
+      "kind": "native-io"
+    },
+    "wantError": "requires kind ok"
+  },
+  {
+    "name": "failed-ok-kind",
+    "kind": 2,
+    "json": {
+      "schemaVersion": "1",
+      "runId": "run-1",
+      "operationId": "op-1",
+      "outcome": "failed",
+      "kind": "ok"
+    },
+    "wantError": "requires non-ok kind"
+  },
+  {
+    "name": "bad-outcome",
+    "kind": 2,
+    "json": {
+      "schemaVersion": "1",
+      "runId": "run-1",
+      "operationId": "op-1",
+      "outcome": "passed",
+      "kind": "ok"
+    },
+    "wantError": "outcome"
+  },
+  {
+    "name": "facts-overflow",
+    "kind": 2,
+    "json": {
+      "schemaVersion": "1",
+      "runId": "run-1",
+      "operationId": "op-1",
+      "outcome": "completed",
+      "kind": "ok",
+      "facts": {
+        "k0": 0,
+        "k1": 1,
+        "k2": 2,
+        "k3": 3,
+        "k4": 4,
+        "k5": 5,
+        "k6": 6,
+        "k7": 7,
+        "k8": 8,
+        "k9": 9,
+        "k10": 10,
+        "k11": 11,
+        "k12": 12,
+        "k13": 13,
+        "k14": 14,
+        "k15": 15,
+        "k16": 16,
+        "k17": 17,
+        "k18": 18,
+        "k19": 19,
+        "k20": 20,
+        "k21": 21,
+        "k22": 22,
+        "k23": 23,
+        "k24": 24,
+        "k25": 25,
+        "k26": 26,
+        "k27": 27,
+        "k28": 28,
+        "k29": 29,
+        "k30": 30,
+        "k31": 31,
+        "k32": 32
+      }
+    },
+    "wantError": "exceed 32"
+  },
+  {
+    "name": "negative-deadline",
+    "kind": 1,
+    "json": {
+      "schemaVersion": "1",
+      "runId": "run-1",
+      "operationId": "op-1",
+      "ownerGrant": "g-1",
+      "operation": "work.read",
+      "argumentsDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "deadlineMs": {
+        "clock": "n-monotonic",
+        "ms": -1
+      }
+    },
+    "wantError": "negative deadline"
+  }
+]
