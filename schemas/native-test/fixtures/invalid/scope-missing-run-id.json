@@ -1,0 +1,8 @@
+{
+  "caseId": "M01-row-001",
+  "attempt": 0,
+  "mode": "execute",
+  "purpose": "execution",
+  "hostProfile": "macbook-strict-v1",
+  "planDigest": "sha256:8888888888888888888888888888888888888888888888888888888888888888"
+}

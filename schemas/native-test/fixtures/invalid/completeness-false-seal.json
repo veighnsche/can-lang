@@ -1,0 +1,14 @@
+{
+  "state": "sealed",
+  "totalCount": 10,
+  "returnedCount": 7,
+  "truncated": false,
+  "gaps": [
+    {
+      "from": 7,
+      "to": 9,
+      "reason": "channel overflow before terminal record"
+    }
+  ],
+  "watermark": "cursor-0007"
+}

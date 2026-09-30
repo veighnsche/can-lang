@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://can-lang.org/schemas/native-test/1/completeness",
+  "title": "Native-test collection completeness",
+  "description": "Declares state, counts, truncation and gaps for a bounded collection or observation interval. Unavailable evidence is never an empty successful result.",
+  "$defs": {
+    "gap": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "to": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": ["from", "to", "reason"],
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "properties": {
+    "state": {
+      "type": "string",
+      "enum": ["sealed", "partial", "invalid"]
+    },
+    "totalCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "returnedCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "truncated": {
+      "type": "boolean"
+    },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/gap"
+      }
+    },
+    "watermark": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    }
+  },
+  "required": ["state", "totalCount", "returnedCount", "truncated", "gaps"],
+  "additionalProperties": false
+}

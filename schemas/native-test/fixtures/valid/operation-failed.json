@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1",
+  "runId": "run-20260930-001",
+  "operationId": "op-0002",
+  "outcome": "failed",
+  "kind": "native-io",
+  "partial": {
+    "bytesAccepted": 128,
+    "handleState": "open"
+  }
+}

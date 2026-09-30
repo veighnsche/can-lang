@@ -22,7 +22,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P01 — Version shared trust and evidence schemas
 
-- [ ] **P01 accepted** — owner lane: `shared-reference`.
+- [x] **P01 accepted** — owner lane: `shared-reference`. Evidence: [evidence/P01.json](evidence/P01.json).
 
 **Start after:** P00. **Additional acceptance prerequisites:** none.
 

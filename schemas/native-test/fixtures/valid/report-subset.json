@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1",
+  "runId": "run-20260930-001",
+  "planDigest": "sha256:8888888888888888888888888888888888888888888888888888888888888888",
+  "mode": "execute",
+  "verification": {
+    "mode": "full-roots",
+    "rootCount": 12,
+    "rootsDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "units": [
+    {
+      "caseId": "M01-row-001",
+      "variantId": "bun-darwin-arm64",
+      "attempt": 0,
+      "admission": "admitted",
+      "execution": "completed",
+      "behavior": "matched",
+      "checks": [
+        {
+          "checkId": "report-roots-present",
+          "disposition": "matched"
+        },
+        {
+          "checkId": "single-build-id",
+          "disposition": "matched"
+        }
+      ],
+      "bodyTerminal": true
+    },
+    {
+      "caseId": "M01-row-002",
+      "attempt": 0,
+      "admission": "blocked",
+      "admissionReason": "missing qualified browser observer on this host",
+      "execution": "not-started",
+      "behavior": "undetermined",
+      "checks": [],
+      "bodyTerminal": false
+    }
+  ]
+}

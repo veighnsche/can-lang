@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://can-lang.org/schemas/native-test/1/correction",
+  "title": "Native-test qualification correction",
+  "description": "Append-only correction invalidating a prior report/receipt pair (for example a late host-effect or settlement failure). Consumers resolve the current chain; a missing or conflicting chain is unavailable evidence.",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "clockTime": {
+      "type": "object",
+      "properties": {
+        "clock": {
+          "type": "string",
+          "enum": ["n-monotonic", "wall-utc"]
+        },
+        "ms": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["clock", "ms"],
+      "additionalProperties": false
+    },
+    "observer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "digest": {
+          "$ref": "#/$defs/digest"
+        }
+      },
+      "required": ["name", "digest"],
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": "1"
+    },
+    "registryRevision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "originalReportDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "originalReceiptDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "affectedRuns": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/id"
+      },
+      "minItems": 1,
+      "maxItems": 1024
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "minItems": 1,
+      "maxItems": 128
+    },
+    "obligations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9]*-[0-9]{3}$"
+      },
+      "maxItems": 4096
+    },
+    "observedAt": {
+      "$ref": "#/$defs/clockTime"
+    },
+    "observer": {
+      "$ref": "#/$defs/observer"
+    },
+    "interval": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "attribution": {
+      "type": "string",
+      "enum": ["confirmed", "uncertain"]
+    },
+    "invalidates": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    }
+  },
+  "required": ["schemaVersion", "registryRevision", "originalReportDigest", "originalReceiptDigest", "affectedRuns", "capabilities", "obligations", "observedAt", "observer", "interval", "attribution", "invalidates"],
+  "additionalProperties": false
+}

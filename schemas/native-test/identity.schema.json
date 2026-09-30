@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://can-lang.org/schemas/native-test/1/identity",
+  "title": "Native-test trusted identity",
+  "description": "Identifies one R/N/S/A/C/T/observer role by name and content digest. Paths alone are never identities.",
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  },
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": ["R", "N", "S", "A", "C", "T", "observer"]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "digest": {
+      "$ref": "#/$defs/digest"
+    }
+  },
+  "required": ["role", "name", "digest"],
+  "additionalProperties": false
+}

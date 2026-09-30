@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://can-lang.org/schemas/native-test/1/scope",
+  "title": "Native-test run scope",
+  "description": "Binds a run/case/variant/attempt to its mode, purpose, host profile and plan digest.",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  },
+  "type": "object",
+  "properties": {
+    "runId": {
+      "$ref": "#/$defs/id"
+    },
+    "caseId": {
+      "$ref": "#/$defs/id"
+    },
+    "variantId": {
+      "$ref": "#/$defs/id"
+    },
+    "attempt": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["execute", "list", "plan"]
+    },
+    "purpose": {
+      "type": "string",
+      "enum": ["execution", "qualification"]
+    },
+    "hostProfile": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "planDigest": {
+      "$ref": "#/$defs/digest"
+    }
+  },
+  "required": ["runId", "caseId", "attempt", "mode", "purpose", "hostProfile", "planDigest"],
+  "additionalProperties": false
+}

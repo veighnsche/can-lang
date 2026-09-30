@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://can-lang.org/schemas/native-test/1/operation",
+  "title": "Native-test owner operation envelopes",
+  "description": "Either an N request envelope (schema/run/operation/grant/argument-digest/deadline) or a result envelope (completed/rejected/failed/deadline/indeterminate with a mechanical kind). Per-operation fact payloads stay bounded but untyped here; capability slices type them.",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "clockTime": {
+      "type": "object",
+      "properties": {
+        "clock": {
+          "type": "string",
+          "enum": ["n-monotonic", "wall-utc"]
+        },
+        "ms": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["clock", "ms"],
+      "additionalProperties": false
+    },
+    "request": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1"
+        },
+        "runId": {
+          "$ref": "#/$defs/id"
+        },
+        "operationId": {
+          "$ref": "#/$defs/id"
+        },
+        "ownerGrant": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "operation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "argumentsDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "deadlineMs": {
+          "$ref": "#/$defs/clockTime"
+        }
+      },
+      "required": ["schemaVersion", "runId", "operationId", "ownerGrant", "operation", "argumentsDigest", "deadlineMs"],
+      "additionalProperties": false
+    },
+    "result": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1"
+        },
+        "runId": {
+          "$ref": "#/$defs/id"
+        },
+        "operationId": {
+          "$ref": "#/$defs/id"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": ["completed", "rejected", "failed", "deadline", "indeterminate"]
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["ok", "invalid-request", "unsupported-capability", "wrong-owner", "stale-handle", "closed-handle", "not-found", "permission", "changed-input", "kind-collision", "resource-limit", "native-io", "transport-failure", "unresolved-cleanup"]
+        },
+        "facts": {
+          "type": "object",
+          "maxProperties": 32
+        },
+        "partial": {
+          "type": "object",
+          "maxProperties": 32
+        }
+      },
+      "required": ["schemaVersion", "runId", "operationId", "outcome", "kind"],
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    {
+      "$ref": "#/$defs/request"
+    },
+    {
+      "$ref": "#/$defs/result"
+    }
+  ]
+}

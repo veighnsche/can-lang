@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2",
+  "runId": "run-20260930-001",
+  "operationId": "op-0001",
+  "ownerGrant": "grant-case-scope-7",
+  "operation": "work.read",
+  "argumentsDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "deadlineMs": {
+    "clock": "n-monotonic",
+    "ms": 120000
+  }
+}

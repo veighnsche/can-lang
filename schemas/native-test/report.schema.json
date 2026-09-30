@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://can-lang.org/schemas/native-test/1/report",
+  "title": "Native-test Can report",
+  "description": "Can-authored report wire shape: verification basis plus per-unit admission, execution, behavior, check accounting and body-terminal facts. Sticky mismatches and not-reached checks stay visible; bare ok with missing checks is invalid.",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "check": {
+      "type": "object",
+      "properties": {
+        "checkId": {
+          "$ref": "#/$defs/id"
+        },
+        "disposition": {
+          "type": "string",
+          "enum": ["matched", "mismatched", "not-reached-after-failure", "missing", "invalid-evidence"]
+        }
+      },
+      "required": ["checkId", "disposition"],
+      "additionalProperties": false
+    },
+    "unit": {
+      "type": "object",
+      "properties": {
+        "caseId": {
+          "$ref": "#/$defs/id"
+        },
+        "variantId": {
+          "$ref": "#/$defs/id"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "admission": {
+          "type": "string",
+          "enum": ["admitted", "blocked"]
+        },
+        "admissionReason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "execution": {
+          "type": "string",
+          "enum": ["not-started", "running", "completed", "broken", "cancelled"]
+        },
+        "behavior": {
+          "type": "string",
+          "enum": ["matched", "mismatched", "undetermined"]
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/check"
+          }
+        },
+        "bodyTerminal": {
+          "type": "boolean"
+        }
+      },
+      "required": ["caseId", "attempt", "admission", "execution", "behavior", "checks", "bodyTerminal"],
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": "1"
+    },
+    "runId": {
+      "$ref": "#/$defs/id"
+    },
+    "planDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["execute", "list", "plan"]
+    },
+    "verification": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["full-roots", "focused-closure", "incomplete"]
+        },
+        "rootCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rootsDigest": {
+          "$ref": "#/$defs/digest"
+        }
+      },
+      "required": ["mode", "rootCount", "rootsDigest"],
+      "additionalProperties": false
+    },
+    "units": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/unit"
+      }
+    }
+  },
+  "required": ["schemaVersion", "runId", "planDigest", "mode", "verification", "units"],
+  "additionalProperties": false
+}

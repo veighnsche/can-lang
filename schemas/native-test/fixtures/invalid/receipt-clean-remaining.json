@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1",
+  "runId": "run-20260930-001",
+  "reportDigest": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
+  "planDigest": "sha256:8888888888888888888888888888888888888888888888888888888888888888",
+  "referenceDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+  "ownerDigest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+  "hostProfile": "macbook-strict-v1",
+  "terminal": {
+    "state": "terminal",
+    "atMs": {
+      "clock": "n-monotonic",
+      "ms": 540000
+    }
+  },
+  "released": [],
+  "remaining": [
+    {
+      "kind": "process",
+      "id": "child-001"
+    }
+  ],
+  "forcedActions": [],
+  "cleanup": "clean"
+}

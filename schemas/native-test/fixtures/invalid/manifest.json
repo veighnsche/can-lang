@@ -1,0 +1,58 @@
+{
+  "identity-missing-digest.json": {
+    "schema": "identity",
+    "expect": "missing required property 'digest'"
+  },
+  "identity-bad-role.json": {
+    "schema": "identity",
+    "expect": "is not one of"
+  },
+  "scope-missing-run-id.json": {
+    "schema": "scope",
+    "expect": "missing required property 'runId'"
+  },
+  "operation-unknown-version.json": {
+    "schema": "operation",
+    "expect": "expected const '1'"
+  },
+  "operation-missing-id.json": {
+    "schema": "operation",
+    "expect": "missing required property 'operationId'"
+  },
+  "operation-completed-bad-kind.json": {
+    "schema": "operation",
+    "expect": "requires kind ok"
+  },
+  "limit-missing-temp.json": {
+    "schema": "limit",
+    "expect": "missing required property 'maxTempBytes'"
+  },
+  "limit-zero-processes.json": {
+    "schema": "limit",
+    "expect": "at or below exclusiveMinimum"
+  },
+  "limit-unlimited-string.json": {
+    "schema": "limit",
+    "expect": "expected type integer"
+  },
+  "completeness-false-seal.json": {
+    "schema": "completeness",
+    "expect": "must have no gaps"
+  },
+  "report-matched-missing-check.json": {
+    "schema": "report",
+    "expect": "requires every check matched"
+  },
+  "report-execute-zero-units.json": {
+    "schema": "report",
+    "expect": "requires at least one unit"
+  },
+  "receipt-clean-remaining.json": {
+    "schema": "receipt",
+    "expect": "requires empty remaining"
+  },
+  "correction-missing-digests.json": {
+    "schema": "correction",
+    "expect": "missing required property 'originalReportDigest'"
+  }
+}

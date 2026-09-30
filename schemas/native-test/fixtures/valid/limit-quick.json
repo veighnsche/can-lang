@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1",
+  "runId": "run-20260930-001",
+  "budgets": {
+    "runWallMs": 600000,
+    "finalCleanupReserveMs": 60000,
+    "prepareMs": 300000,
+    "caseBodyMs": 60000,
+    "maxCaseBodyMs": 180000,
+    "maxProducerMs": 180000,
+    "caseCleanupMs": 15000,
+    "cancelGraceMs": 2000,
+    "assertRootMs": 5000,
+    "maxProcesses": 64,
+    "maxMemoryBytes": 4294967296,
+    "maxTempBytes": 536870912,
+    "maxWorkspaceEntries": 50000,
+    "maxWorkspaceDepth": 64,
+    "maxEvidenceBytes": 1048576,
+    "maxStreamBytes": 1048576,
+    "maxRunDataBytes": 67108864,
+    "maxReportBytes": 16777216,
+    "maxReceiptBytes": 1048576,
+    "controlReserveBytes": 1048576,
+    "availableDiskFloorBytes": 10737418240
+  }
+}

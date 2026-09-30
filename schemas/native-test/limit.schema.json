@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://can-lang.org/schemas/native-test/1/limit",
+  "title": "Native-test finite budgets",
+  "description": "Every budget is a required positive integer. Omitted, zero, negative or non-numeric limits are rejected: no field may mean unlimited.",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "positive": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    }
+  },
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": "1"
+    },
+    "runId": {
+      "$ref": "#/$defs/id"
+    },
+    "budgets": {
+      "type": "object",
+      "properties": {
+        "runWallMs": {
+          "$ref": "#/$defs/positive"
+        },
+        "finalCleanupReserveMs": {
+          "$ref": "#/$defs/positive"
+        },
+        "prepareMs": {
+          "$ref": "#/$defs/positive"
+        },
+        "caseBodyMs": {
+          "$ref": "#/$defs/positive"
+        },
+        "maxCaseBodyMs": {
+          "$ref": "#/$defs/positive"
+        },
+        "maxProducerMs": {
+          "$ref": "#/$defs/positive"
+        },
+        "caseCleanupMs": {
+          "$ref": "#/$defs/positive"
+        },
+        "cancelGraceMs": {
+          "$ref": "#/$defs/positive"
+        },
+        "assertRootMs": {
+          "$ref": "#/$defs/positive"
+        },
+        "maxProcesses": {
+          "$ref": "#/$defs/positive"
+        },
+        "maxMemoryBytes": {
+          "$ref": "#/$defs/positive"
+        },
+        "maxTempBytes": {
+          "$ref": "#/$defs/positive"
+        },
+        "maxWorkspaceEntries": {
+          "$ref": "#/$defs/positive"
+        },
+        "maxWorkspaceDepth": {
+          "$ref": "#/$defs/positive"
+        },
+        "maxEvidenceBytes": {
+          "$ref": "#/$defs/positive"
+        },
+        "maxStreamBytes": {
+          "$ref": "#/$defs/positive"
+        },
+        "maxRunDataBytes": {
+          "$ref": "#/$defs/positive"
+        },
+        "maxReportBytes": {
+          "$ref": "#/$defs/positive"
+        },
+        "maxReceiptBytes": {
+          "$ref": "#/$defs/positive"
+        },
+        "controlReserveBytes": {
+          "$ref": "#/$defs/positive"
+        },
+        "availableDiskFloorBytes": {
+          "$ref": "#/$defs/positive"
+        }
+      },
+      "required": ["runWallMs", "finalCleanupReserveMs", "prepareMs", "caseBodyMs", "maxCaseBodyMs", "maxProducerMs", "caseCleanupMs", "cancelGraceMs", "assertRootMs", "maxProcesses", "maxMemoryBytes", "maxTempBytes", "maxWorkspaceEntries", "maxWorkspaceDepth", "maxEvidenceBytes", "maxStreamBytes", "maxRunDataBytes", "maxReportBytes", "maxReceiptBytes", "controlReserveBytes", "availableDiskFloorBytes"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["schemaVersion", "runId", "budgets"],
+  "additionalProperties": false
+}

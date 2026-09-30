@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1",
+  "registryRevision": 3,
+  "affectedRuns": [
+    "run-20260930-001"
+  ],
+  "capabilities": [
+    "browser-launch-isolation"
+  ],
+  "obligations": [],
+  "observedAt": {
+    "clock": "wall-utc",
+    "ms": 1759248000000
+  },
+  "observer": {
+    "name": "host-effect-observer",
+    "digest": "sha256:7777777777777777777777777777777777777777777777777777777777777777"
+  },
+  "interval": "browser launch through disposal on run-20260930-001",
+  "attribution": "uncertain",
+  "invalidates": "browser isolation acceptance for run-20260930-001"
+}

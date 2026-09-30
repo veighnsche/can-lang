@@ -179,7 +179,7 @@
       "acceptance": "Schema fixtures reject missing identity, unknown version, unbounded limit and false completeness.",
       "evidence": "Save schema review and fixtures; commit contracts alone.",
       "commit": "feat(testing): version shared trust and evidence schemas",
-      "status": "active",
+      "status": "complete",
       "start_after": [
         "P00"
       ],

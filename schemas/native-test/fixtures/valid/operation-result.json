@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1",
+  "runId": "run-20260930-001",
+  "operationId": "op-0001",
+  "outcome": "completed",
+  "kind": "ok",
+  "facts": {
+    "bytesRead": 512,
+    "revision": 3
+  }
+}
