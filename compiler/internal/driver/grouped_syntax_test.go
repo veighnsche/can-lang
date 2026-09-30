@@ -11,7 +11,7 @@ import (
 
 func TestGroupedCompletionDefinitionJumps(t *testing.T) {
 	const prefix = `package app
-    provides [read, handle]
+    provides []
     uses []
 error denied{str key}
 error missing{str key}
