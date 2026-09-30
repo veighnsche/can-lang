@@ -1,5 +1,7 @@
 There are zero external users. Implementing with backwards compatibility immediately results in technical debt. Maintaining syntax, ABI, old source spellings, generated TSlayouts, or old goldens is not a product requirement.
 
+Can is designed for AI coding agents to write. Human hand-authoring comfort is not a design objective. Evaluate syntax and APIs by reliable generation, explicit contracts, local reasoning, precise diagnostics and safe mechanical edits. Repetition is acceptable when it improves those properties; fewer lines or less typing alone does not justify abstraction or syntax sugar.
+
 Compile Can operations to equivalent native JavaScript/Bun operations in generated TypeScript instead of reimplementing them in Can or generated helpers, adding only adapters needed to preserve Can's contracts and immutability.
 
 Consult Jev (TypeSafe AI) SystemOne for difficult design decisions. It is a classifier, not an LLM, and cannot research: supply all relevant context and evidence yourself. Make three fresh consultations, rewriting ALL explanatory prose each time: context, instructions, questions, and option descriptions. Preserve the same facts, constraints, and alternatives; keep exact code and technical identifiers where needed. Check semantic equivalence and full-request wording differences before sending. Save all requests and responses, investigate disagreements, and treat agreement as advice—not proof or guaranteed bias removal.
