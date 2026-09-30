@@ -23,7 +23,7 @@ class CanClientController {
     this.queue = Promise.resolve();
     this.disposed = false;
     this.manifestRefresh = undefined;
-    this.output = vscode.window.createOutputChannel("Can language server");
+    this.output = vscode.window.createOutputChannel("Can language server", { log: true });
     this.status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
     this.status.command = "canlc.showServerStatus";
     this.status.text = "$(sync~spin) Can";
@@ -126,7 +126,7 @@ class CanClientController {
   async stopClient(client) {
     this.intentionalStop = true;
     try {
-      await client.stop();
+      if (client.needsStop()) await client.stop();
       for (const subscription of this.clientSubscriptions) subscription.dispose();
       this.clientSubscriptions = [];
     } finally {

@@ -22,7 +22,8 @@ function harness(options = {}) {
       this.stateHandlers = new Set();
       instances.push(this);
     }
-    async start() { if (options.startError) throw options.startError; }
+    async start() { if (options.startError) throw options.startError; this.running = true; }
+    needsStop() { return !!this.running; }
     async stop() { this.stops++; if (options.stopError) throw options.stopError; }
     async sendNotification(method, params) { if (options.notificationError) throw options.notificationError; this.notifications.push({ method, params }); }
     onNotification(method, callback) { this.handlers.set(method, callback); return { dispose() { } }; }
@@ -36,7 +37,7 @@ function harness(options = {}) {
     StatusBarAlignment: { Left: 1 },
     window: {
       createStatusBarItem: () => status,
-      createOutputChannel: () => output,
+      createOutputChannel: (name, options) => { assert.deepEqual(options, { log: true }); return output; },
       showInformationMessage: async (message) => { messages.push(message); },
     },
     commands: { registerCommand: (name, callback) => { commands.set(name, callback); return { dispose() {} }; } },
@@ -123,7 +124,8 @@ test("invalid configured path and launch failures report actionable status", asy
   await invalid.controller.deactivate();
   const failing = harness({ startError: new Error("protocol rejected") });
   await failing.controller.activate();
-  assert.equal(failing.instances[0].stops, 1);
+  assert.equal(failing.instances[0].stops, 0);
+  assert.equal(failing.controller.client, undefined);
   assert.match(failing.lines.join("\n"), /protocol rejected/);
   assert.match(failing.status.text, /failed/);
   await failing.controller.deactivate();
