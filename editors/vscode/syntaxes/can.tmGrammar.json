@@ -328,18 +328,7 @@
     "assertions": {
       "patterns": [
         {
-          "match": "^([ ]+)(scenario)([ ]+)([a-z][a-z0-9]*(?:_[a-z0-9]+)*)(:)(?=.*=>)",
-          "captures": {
-            "2": {
-              "name": "keyword.control.assertion.can"
-            },
-            "4": {
-              "name": "entity.name.tag.can"
-            },
-            "5": {
-              "name": "punctuation.separator.key-value.can"
-            }
-          }
+          "include": "#assertion-labels"
         },
         {
           "match": "\\b(match)([ ]+)(call)([ ]+)(concurrent|race)(?=[ ]*(?:with[ ]+error)?[ ]*$)",
@@ -365,15 +354,7 @@
           },
           "patterns": [
             {
-              "match": "^([ ]+)([a-z][a-z0-9]*(?:_[a-z0-9]+)*)(:)(?=.*=>)",
-              "captures": {
-                "2": {
-                  "name": "entity.name.tag.can"
-                },
-                "3": {
-                  "name": "punctuation.separator.key-value.can"
-                }
-              }
+              "include": "#assertion-labels"
             },
             {
               "include": "$base"
@@ -385,17 +366,6 @@
           "captures": {
             "2": {
               "name": "keyword.control.section.can"
-            }
-          }
-        },
-        {
-          "match": "^([ ]+)([a-z][a-z0-9]*(?:_[a-z0-9]+)*)(:)(?=.*=>)",
-          "captures": {
-            "2": {
-              "name": "entity.name.tag.can"
-            },
-            "3": {
-              "name": "punctuation.separator.key-value.can"
             }
           }
         }
@@ -549,6 +519,30 @@
         {
           "match": "[,]",
           "name": "punctuation.separator.can"
+        }
+      ]
+    },
+    "assertion-labels": {
+      "begin": "^([ ]+)(?:(scenario)[ ]+)?(?=[a-z][a-z0-9]*(?:_[a-z0-9]+)*(?:[ ]*\\|[ ]*[a-z][a-z0-9]*(?:_[a-z0-9]+)*)*[ ]*:(?!:)(?=.*(?:=>|\\buse\\b)))",
+      "end": ":",
+      "beginCaptures": {
+        "2": {
+          "name": "keyword.control.assertion.can"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.separator.key-value.can"
+        }
+      },
+      "patterns": [
+        {
+          "match": "[a-z][a-z0-9]*(?:_[a-z0-9]+)*",
+          "name": "entity.name.tag.can"
+        },
+        {
+          "match": "\\|",
+          "name": "keyword.operator.can"
         }
       ]
     }

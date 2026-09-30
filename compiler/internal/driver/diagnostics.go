@@ -633,15 +633,27 @@ func findInMatch(match *syntax.Match, offset int) reference {
 				return found
 			}
 		}
-		if arm.Outcome != nil {
-			if arm.Outcome.Error != nil {
-				if found := findInType(arm.Outcome.Error, compileresolve.ErrorUse, offset); !found.empty() {
-					return found
-				}
-			}
+		if found := findInCompletionHeads(arm, offset); !found.empty() {
+			return found
 		}
 		if found := findInBody(arm.Body, offset); !found.empty() {
 			return found
+		}
+	}
+	return reference{}
+}
+
+func findInCompletionHeads(arm *syntax.MatchArm, offset int) reference {
+	if arm.Outcome != nil && arm.Outcome.Error != nil {
+		if found := findInType(arm.Outcome.Error, compileresolve.ErrorUse, offset); !found.empty() {
+			return found
+		}
+	}
+	for _, outcome := range arm.AlternateOutcomes {
+		if outcome.Error != nil {
+			if found := findInType(outcome.Error, compileresolve.ErrorUse, offset); !found.empty() {
+				return found
+			}
 		}
 	}
 	return reference{}
@@ -660,6 +672,9 @@ func findInCoordination(coordination *syntax.Coordination, offset int) reference
 		}
 		for j := range participant.Arms {
 			arm := &participant.Arms[j]
+			if found := findInCompletionHeads(arm, offset); !found.empty() {
+				return found
+			}
 			for _, pattern := range arm.Patterns {
 				if found := findInPattern(pattern, offset); !found.empty() {
 					return found
@@ -672,6 +687,9 @@ func findInCoordination(coordination *syntax.Coordination, offset int) reference
 	}
 	for i := range coordination.Arms {
 		arm := &coordination.Arms[i]
+		if found := findInCompletionHeads(arm, offset); !found.empty() {
+			return found
+		}
 		for _, pattern := range arm.Patterns {
 			if found := findInPattern(pattern, offset); !found.empty() {
 				return found

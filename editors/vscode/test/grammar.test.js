@@ -192,3 +192,39 @@ test("qualified calls, scenario tags and contextual names keep their roles", asy
   has(scopesAt(lines,tokens,5,"concurrent"),"keyword.control.coordination.can");
   has(scopesAt(lines,tokens,6,"when"),"keyword.control.section.can");
 });
+
+test("grouped assertion and fixture labels remain tags across separators", async () => {
+  const lines = [
+    "    asserts",
+    "        absent | configured: 0 => ok true",
+    "    match call read()",
+    "        when",
+    "            absent | configured: => ok 1",
+    "            scenario missing | ready: => ok 1",
+    "            first | second: use readings(1)",
+    "        sql::connection_failed | sql::query_failed => ok false",
+    "        ok int value => ok true",
+    "        denied | missing => ok",
+    "        unavailable => ok false",
+  ];
+  const tokens = await tokenize(lines);
+  for (const [line, names] of [[1, ["absent", "configured"]], [4, ["absent", "configured"]], [5, ["missing", "ready"]], [6, ["first", "second"]]]) {
+    for (const name of names) has(scopesAt(lines, tokens, line, name), "entity.name.tag.can");
+    has(scopesAt(lines, tokens, line, "|"), "keyword.operator.can");
+    has(scopesAt(lines, tokens, line, ":"), "punctuation.separator.key-value.can");
+  }
+  has(scopesAt(lines, tokens, 5, "scenario"), "keyword.control.assertion.can");
+  for (const name of ["connection_failed", "query_failed"]) lacks(scopesAt(lines, tokens, 7, name), "entity.name.tag.can");
+  lacks(scopesAt(lines, tokens, 8, "value"), "entity.name.tag.can");
+  for (const name of ["denied", "missing"]) {
+    has(scopesAt(lines, tokens, 9, name), "variable.other.readwrite.can");
+    lacks(scopesAt(lines, tokens, 9, name), "entity.name.tag.can");
+  }
+  has(scopesAt(lines, tokens, 9, "|"), "keyword.operator.can");
+  has(scopesAt(lines, tokens, 9, "=>"), "keyword.operator.can");
+  has(scopesAt(lines, tokens, 9, "ok"), "keyword.control.can");
+  has(scopesAt(lines, tokens, 10, "unavailable"), "variable.other.readwrite.can");
+  lacks(scopesAt(lines, tokens, 10, "unavailable"), "entity.name.tag.can");
+  has(scopesAt(lines, tokens, 10, "=>"), "keyword.operator.can");
+  has(scopesAt(lines, tokens, 10, "false"), "constant.language.can");
+});
