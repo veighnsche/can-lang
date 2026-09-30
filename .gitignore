@@ -28,8 +28,9 @@ __pycache__/
 .env
 .env.*
 
-# test / coverage artifacts
-coverage/
+# test / coverage artifacts (root-level tool output only; the
+# tests/native-can/src/coverage/ package is tracked source)
+/coverage/
 *.coverprofile
 playwright-report/
 test-results/

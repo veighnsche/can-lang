@@ -278,7 +278,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P16 — Plan cases and validate coverage
 
-- [ ] **P16 accepted** — owner lane: `can-suite-cli`.
+- [x] **P16 accepted** — owner lane: `can-suite-cli`. Evidence: [evidence/P16.json](evidence/P16.json).
 
 **Start after:** P15. **Additional acceptance prerequisites:** none.
 

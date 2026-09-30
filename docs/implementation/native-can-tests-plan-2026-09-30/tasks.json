@@ -492,7 +492,7 @@
       "acceptance": "Empty/duplicate/unknown selections fail; deletion of both local check and plan still conflicts with retained obligation; required-but-unavailable variant is blocked.",
       "evidence": "Save all-root assertion controls; commit planner.",
       "commit": "feat(testing): plan cases and validate coverage",
-      "status": "active",
+      "status": "complete",
       "start_after": [
         "P15"
       ],

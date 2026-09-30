@@ -1,0 +1,242 @@
+package coverage
+    provides [retained_row, coverage_ok, coverage_conflict, coverage_outcome, retained, row_covered, row_seen_before, manifest_covers, forward_problems, reverse_problems, count_required, count_covered_required, count_planned_refs, validate_coverage]
+    uses [registry, spec, text]
+
+/// Independent ledger-derived coverage manifest and reconciliation (P16).
+/// This manifest owns the retained rows: it is authored from the migration
+/// ledger, never generated from plan, local inventory or passing events, so
+/// deleting a check from both the local inventory and its plan entry is a
+/// reported conflict, not silent shrinkage. Static checks here are
+/// provisional until P26/P23, like the P15 skeleton.
+
+/// One independently retained ledger obligation: a case/check pair with its
+/// replacement-obligation identity and required flag. Optional rows may be
+/// uncovered without conflict; required rows must be planned.
+record retained_row
+    str case_id
+    str check
+    str ledger_ref
+    bool required
+/// Clean reconciliation: covered required rows, total required rows and
+/// total planned refs.
+record coverage_ok
+    int required_covered
+    int required_total
+    int planned
+/// Conflicting reconciliation: one diagnostic per detected problem.
+record coverage_conflict
+    spec::diagnostic[] problems
+/// Coverage reconciliation outcome: manifest against plan and inventory.
+variant coverage_outcome
+    coverage_ok
+    coverage_conflict
+/// Ledger-derived coverage manifest per scope. The skeleton rows retain the
+/// nonzero-result facet of CAN-CORE-034 (native process observations);
+/// fuller facet coverage is later migration work. Independent data:
+/// deleting a check from the local inventory and its plan entry cannot
+/// shrink this manifest, so reconciliation reports a conflict instead.
+fn retained_row[] retained
+    emits {}
+    given
+        str scope
+    asserts
+        skeleton: "skeleton" => ok [retained_row("process/nonzero-result", "exit-code", "CAN-CORE-034", true), retained_row("process/nonzero-result", "signal", "CAN-CORE-034", true), retained_row("process/nonzero-result", "stdout", "CAN-CORE-034", true), retained_row("process/nonzero-result", "stderr", "CAN-CORE-034", true)]
+        other: "nope" => ok []
+    match scope is "skeleton"
+        false => ok []
+        true => ok [retained_row("process/nonzero-result", "exit-code", "CAN-CORE-034", true), retained_row("process/nonzero-result", "signal", "CAN-CORE-034", true), retained_row("process/nonzero-result", "stdout", "CAN-CORE-034", true), retained_row("process/nonzero-result", "stderr", "CAN-CORE-034", true)]
+/// Whether any planned unit of the row's case lists the row's check.
+fn bool row_covered
+    emits {}
+    given
+        retained_row row
+        registry::planned_unit[] units
+        int index
+    asserts
+        hit: retained_row("a", "x", "L-1", true), [registry::planned_unit("a", "default", [spec::check_ref("x")])], 0 => ok true
+        wrong_case: retained_row("a", "x", "L-1", true), [registry::planned_unit("b", "default", [spec::check_ref("x")])], 0 => ok false
+        wrong_check: retained_row("a", "x", "L-1", true), [registry::planned_unit("a", "default", [spec::check_ref("y")])], 0 => ok false
+        empty: retained_row("a", "x", "L-1", true), [], 0 => ok false
+    match index >= units.length
+        true => ok false
+        false => match units[index].case_id is row.case_id
+            false => relay call row_covered(row, units, index + 1)
+            true => match call registry::ref_member(units[index].required_checks, row.check, 0)
+                ok bool hit => match hit
+                    false => relay call row_covered(row, units, index + 1)
+                    true => ok true
+/// Whether a case/check pair already occurs in the manifest within
+/// [at, end): duplicate-obligation detection.
+fn bool row_seen_before
+    emits {}
+    given
+        retained_row[] manifest
+        str case_id
+        str check
+        int at
+        int end
+    asserts
+        seen: [retained_row("a", "x", "L-1", true)], "a", "x", 0, 1 => ok true
+        absent: [retained_row("a", "x", "L-1", true)], "a", "y", 0, 1 => ok false
+        other_case: [retained_row("a", "x", "L-1", true)], "b", "x", 0, 1 => ok false
+        outside: [retained_row("a", "x", "L-1", true), retained_row("a", "y", "L-2", true)], "a", "y", 0, 1 => ok false
+    match at >= end
+        false => match manifest[at].case_id is case_id and manifest[at].check is check
+            false => relay call row_seen_before(manifest, case_id, check, at + 1, end)
+            true => ok true
+        true => ok false
+/// Whether the manifest retains a case/check pair from an index, required
+/// or optional: the reverse unretained-check scan over planned refs.
+fn bool manifest_covers
+    emits {}
+    given
+        retained_row[] manifest
+        str case_id
+        str check
+        int index
+    asserts
+        hit: [retained_row("a", "x", "L-1", true)], "a", "x", 0 => ok true
+        optional_hit: [retained_row("a", "x", "L-1", false)], "a", "x", 0 => ok true
+        miss: [retained_row("a", "x", "L-1", true)], "a", "z", 0 => ok false
+        empty: [], "a", "x", 0 => ok false
+    match index >= manifest.length
+        true => ok false
+        false => match manifest[index].case_id is case_id and manifest[index].check is check
+            false => relay call manifest_covers(manifest, case_id, check, index + 1)
+            true => ok true
+/// Reconcile each manifest row against plan and local inventory from an
+/// index, threading problems. A required row the plan omits is a missing
+/// obligation even when the local inventory still declares it, and still
+/// one when both are deleted, because this manifest is the independent
+/// owner. A planned check outside the local inventory is undeclared.
+fn spec::diagnostic[] forward_problems
+    emits {}
+    given
+        retained_row[] manifest
+        registry::planned_unit[] units
+        spec::check[] local
+        int index
+        spec::diagnostic[] problems
+    asserts
+        covered: [retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [spec::check_ref("x")])], [spec::check("x", "X")], 0, [] => ok []
+        plan_deleted: [retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [])], [spec::check("x", "X")], 0, [] => ok [spec::diagnostic("coverage::validate_coverage", "case a variant - root coverage run static", "missing-obligation", "a:x")]
+        both_deleted: [retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [])], [], 0, [] => ok [spec::diagnostic("coverage::validate_coverage", "case a variant - root coverage run static", "missing-obligation", "a:x")]
+        optional_gap: [retained_row("a", "x", "L-1", false)], [registry::planned_unit("a", "default", [])], [], 0, [] => ok []
+        undeclared: [retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [spec::check_ref("x")])], [], 0, [] => ok [spec::diagnostic("coverage::validate_coverage", "case a variant - root coverage run static", "undeclared-check", "a:x")]
+        duplicate: [retained_row("a", "x", "L-1", true), retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [spec::check_ref("x")])], [spec::check("x", "X")], 1, [] => ok [spec::diagnostic("coverage::validate_coverage", "case a variant - root coverage run static", "duplicate-obligation", "a:x")]
+        done: [retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [spec::check_ref("x")])], [spec::check("x", "X")], 1, [spec::diagnostic("coverage::validate_coverage", "case a variant - root coverage run static", "missing-obligation", "a:x")] => ok [spec::diagnostic("coverage::validate_coverage", "case a variant - root coverage run static", "missing-obligation", "a:x")]
+    match index >= manifest.length
+        false => match call row_seen_before(manifest, manifest[index].case_id, manifest[index].check, 0, index)
+            ok bool dup => match dup
+                false => match call row_covered(manifest[index], units, 0)
+                    ok bool covered => match covered
+                        false => match manifest[index].required
+                            false => relay call forward_problems(manifest, units, local, index + 1, problems)
+                            true => relay call forward_problems(manifest, units, local, index + 1, call append(problems, spec::diagnostic("coverage::validate_coverage", call spec::reproduction_selector(call spec::context_for(manifest[index].case_id, "-", "", "static"), "coverage"), "missing-obligation", call text::join([manifest[index].case_id, manifest[index].check], ":"))))
+                        true => match call spec::check_known(local, manifest[index].check, 0)
+                            ok bool declared => match declared
+                                false => relay call forward_problems(manifest, units, local, index + 1, call append(problems, spec::diagnostic("coverage::validate_coverage", call spec::reproduction_selector(call spec::context_for(manifest[index].case_id, "-", "", "static"), "coverage"), "undeclared-check", call text::join([manifest[index].case_id, manifest[index].check], ":"))))
+                                true => relay call forward_problems(manifest, units, local, index + 1, problems)
+                true => relay call forward_problems(manifest, units, local, index + 1, call append(problems, spec::diagnostic("coverage::validate_coverage", call spec::reproduction_selector(call spec::context_for(manifest[index].case_id, "-", "", "static"), "coverage"), "duplicate-obligation", call text::join([manifest[index].case_id, manifest[index].check], ":"))))
+        true => ok problems
+/// Scan every planned ref for manifest retention: a planned check no
+/// retained row owns is an unretained-check conflict, so coverage can only
+/// change through manifest review.
+fn spec::diagnostic[] reverse_problems
+    emits {}
+    given
+        retained_row[] manifest
+        registry::planned_unit[] units
+        int uindex
+        int rindex
+        spec::diagnostic[] problems
+    asserts
+        retained: [retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [spec::check_ref("x")])], 0, 0, [] => ok []
+        unretained: [retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [spec::check_ref("z")])], 0, 0, [] => ok [spec::diagnostic("coverage::validate_coverage", "case a variant - root coverage run static", "unretained-check", "a:z")]
+        next_unit: [retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [spec::check_ref("x")]), registry::planned_unit("b", "default", [spec::check_ref("z")])], 1, 0, [] => ok [spec::diagnostic("coverage::validate_coverage", "case b variant - root coverage run static", "unretained-check", "b:z")]
+        next_ref: [retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [spec::check_ref("x"), spec::check_ref("z")])], 0, 1, [] => ok [spec::diagnostic("coverage::validate_coverage", "case a variant - root coverage run static", "unretained-check", "a:z")]
+        done: [retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [spec::check_ref("x")])], 1, 0, [spec::diagnostic("coverage::validate_coverage", "case a variant - root coverage run static", "unretained-check", "a:z")] => ok [spec::diagnostic("coverage::validate_coverage", "case a variant - root coverage run static", "unretained-check", "a:z")]
+    match uindex >= units.length
+        false => match rindex >= units[uindex].required_checks.length
+            false => match call manifest_covers(manifest, units[uindex].case_id, units[uindex].required_checks[rindex].id, 0)
+                ok bool kept => match kept
+                    false => relay call reverse_problems(manifest, units, uindex, rindex + 1, call append(problems, spec::diagnostic("coverage::validate_coverage", call spec::reproduction_selector(call spec::context_for(units[uindex].case_id, "-", "", "static"), "coverage"), "unretained-check", call text::join([units[uindex].case_id, units[uindex].required_checks[rindex].id], ":"))))
+                    true => relay call reverse_problems(manifest, units, uindex, rindex + 1, problems)
+            true => relay call reverse_problems(manifest, units, uindex + 1, 0, problems)
+        true => ok problems
+/// Count required manifest rows from an index.
+fn int count_required
+    emits {}
+    given
+        retained_row[] manifest
+        int index
+    asserts
+        mixed: [retained_row("a", "x", "L-1", true), retained_row("a", "w", "L-2", false), retained_row("b", "y", "L-3", true)], 0 => ok 2
+        empty: [], 0 => ok 0
+        done: [retained_row("a", "x", "L-1", true)], 1 => ok 0
+    match index >= manifest.length
+        false => match manifest[index].required
+            false => relay call count_required(manifest, index + 1)
+            true => ok 1 + call count_required(manifest, index + 1)
+        true => ok 0
+/// Count required manifest rows the plan covers from an index. Optional
+/// rows never count, covered or not.
+fn int count_covered_required
+    emits {}
+    given
+        retained_row[] manifest
+        registry::planned_unit[] units
+        int index
+    asserts
+        covered: [retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [spec::check_ref("x")])], 0 => ok 1
+        gap: [retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [])], 0 => ok 0
+        optional_ignored: [retained_row("a", "x", "L-1", false)], [registry::planned_unit("a", "default", [spec::check_ref("x")])], 0 => ok 0
+        empty: [], [registry::planned_unit("a", "default", [spec::check_ref("x")])], 0 => ok 0
+    match index >= manifest.length
+        false => match manifest[index].required
+            false => relay call count_covered_required(manifest, units, index + 1)
+            true => match call row_covered(manifest[index], units, 0)
+                ok bool covered => match covered
+                    false => relay call count_covered_required(manifest, units, index + 1)
+                    true => ok 1 + call count_covered_required(manifest, units, index + 1)
+        true => ok 0
+/// Count planned refs across units from an index.
+fn int count_planned_refs
+    emits {}
+    given
+        registry::planned_unit[] units
+        int index
+    asserts
+        pair: [registry::planned_unit("a", "default", [spec::check_ref("x"), spec::check_ref("y")]), registry::planned_unit("b", "default", [])], 0 => ok 2
+        empty: [], 0 => ok 0
+        done: [registry::planned_unit("a", "default", [spec::check_ref("x")])], 1 => ok 0
+    match index >= units.length
+        false => ok units[index].required_checks.length + call count_planned_refs(units, index + 1)
+        true => ok 0
+/// Reconcile plan and local inventory against the independently retained
+/// manifest: forward row coverage plus reverse plan retention. An empty
+/// manifest is itself a conflict, so obligations cannot silently shrink
+/// to nothing. Counts are returned only when no problem is found.
+fn coverage_outcome validate_coverage
+    emits {}
+    given
+        retained_row[] manifest
+        registry::planned_unit[] units
+        spec::check[] local
+    asserts
+        clean: [retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [spec::check_ref("x")])], [spec::check("x", "X")] => ok coverage_ok(1, 1, 1)
+        skeleton_clean: [retained_row("process/nonzero-result", "exit-code", "CAN-CORE-034", true), retained_row("process/nonzero-result", "signal", "CAN-CORE-034", true), retained_row("process/nonzero-result", "stdout", "CAN-CORE-034", true), retained_row("process/nonzero-result", "stderr", "CAN-CORE-034", true)], [registry::planned_unit("process/nonzero-result", "default", [spec::check_ref("exit-code"), spec::check_ref("signal"), spec::check_ref("stdout"), spec::check_ref("stderr")])], [spec::check("exit-code", "process exit code"), spec::check("signal", "termination signal"), spec::check("stdout", "standard output hex"), spec::check("stderr", "standard error hex")] => ok coverage_ok(4, 4, 4)
+        plan_and_local_deleted: [retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [])], [] => ok coverage_conflict([spec::diagnostic("coverage::validate_coverage", "case a variant - root coverage run static", "missing-obligation", "a:x")])
+        plan_deleted: [retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [])], [spec::check("x", "X")] => ok coverage_conflict([spec::diagnostic("coverage::validate_coverage", "case a variant - root coverage run static", "missing-obligation", "a:x")])
+        undeclared_plan: [retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [spec::check_ref("x")])], [] => ok coverage_conflict([spec::diagnostic("coverage::validate_coverage", "case a variant - root coverage run static", "undeclared-check", "a:x")])
+        unretained_plan: [retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [spec::check_ref("x"), spec::check_ref("z")])], [spec::check("x", "X"), spec::check("z", "Z")] => ok coverage_conflict([spec::diagnostic("coverage::validate_coverage", "case a variant - root coverage run static", "unretained-check", "a:z")])
+        optional_gap: [retained_row("a", "x", "L-1", true), retained_row("a", "w", "L-2", false)], [registry::planned_unit("a", "default", [spec::check_ref("x")])], [spec::check("x", "X")] => ok coverage_ok(1, 1, 1)
+        duplicate_row: [retained_row("a", "x", "L-1", true), retained_row("a", "x", "L-1", true)], [registry::planned_unit("a", "default", [spec::check_ref("x")])], [spec::check("x", "X")] => ok coverage_conflict([spec::diagnostic("coverage::validate_coverage", "case a variant - root coverage run static", "duplicate-obligation", "a:x")])
+        empty_manifest: [], [registry::planned_unit("a", "default", [spec::check_ref("x")])], [spec::check("x", "X")] => ok coverage_conflict([spec::diagnostic("coverage::validate_coverage", "case - variant - root coverage run static", "empty-manifest", "manifest")])
+    match manifest.length is 0
+        false => match call forward_problems(manifest, units, local, 0, [])
+            ok spec::diagnostic[] fwd => match call reverse_problems(manifest, units, 0, 0, fwd)
+                ok spec::diagnostic[] all => match all.length is 0
+                    false => ok coverage_conflict(all)
+                    true => ok coverage_ok(call count_covered_required(manifest, units, 0), call count_required(manifest, 0), call count_planned_refs(units, 0))
+        true => ok coverage_conflict([spec::diagnostic("coverage::validate_coverage", call spec::reproduction_selector(call spec::context_for("-", "-", "", "static"), "coverage"), "empty-manifest", "manifest")])
