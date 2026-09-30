@@ -38,7 +38,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P02 — Implement typed bounded protocol adapters
 
-- [ ] **P02 accepted** — owner lane: `shared-reference`.
+- [x] **P02 accepted** — owner lane: `shared-reference`. Evidence: [evidence/P02.json](evidence/P02.json).
 
 **Start after:** P01. **Additional acceptance prerequisites:** none.
 

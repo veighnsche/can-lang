@@ -198,7 +198,7 @@
       "acceptance": "Bounded native wire codec and data fixtures reject duplicate identities, gaps, truncation and malformed envelopes without trusting subject stdout. Ordinary Can codec source and supplied fixtures are reviewed provisionally; full cross-language execution is required by P23 after R-core acceptance, not assumed to qualify N.",
       "evidence": "Save fixture digest and results; commit protocol adapters.",
       "commit": "feat(testing): implement typed bounded protocol adapters",
-      "status": "active",
+      "status": "complete",
       "start_after": [
         "P01"
       ],
