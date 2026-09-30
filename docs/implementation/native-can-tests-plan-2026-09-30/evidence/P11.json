@@ -1,0 +1,99 @@
+{
+  "status": "complete",
+  "executor": "Muse (muse-spark-1.3-contributor) via worker-m-p11; integrator review/commit",
+  "writing_owner": "native-owner",
+  "task_id": "P11",
+  "row_or_file_slice": null,
+  "start_prerequisite_receipts": [
+    "P07 complete",
+    "P08 complete in c8b33a7e",
+    "P09 complete",
+    "P10 complete in b4eaa2f5"
+  ],
+  "acceptance_prerequisite_receipts": [],
+  "commits": [
+    "TBD lifecycle owner"
+  ],
+  "changed_paths": [
+    "tools/native-test-owner/recovery/",
+    "tools/native-test-owner/receipt/cleanup/"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "gofmt -l + go vet on both packages",
+      "deadline": "120s",
+      "result": "clean; exit 0 (integrator re-run)"
+    },
+    {
+      "command": "go list -deps ./tools/native-test-owner/receipt/cleanup/",
+      "deadline": "60s",
+      "result": "journal + stdlib only; no process owner, so a signal is unreachable in cleanup by construction (integrator re-run)"
+    },
+    {
+      "command": "go test -count=1 -timeout 120s on both packages",
+      "deadline": "300s",
+      "result": "ok: 13/13 recovery, 10/10 cleanup incl. 4 new integrator pins (integrator re-run)"
+    },
+    {
+      "command": "go test -count=1 -race -timeout 180s on both packages",
+      "deadline": "300s",
+      "result": "ok, no data races (integrator re-run)"
+    },
+    {
+      "command": "post-run ps sweep for sleepers (markers 41-45)",
+      "deadline": "60s",
+      "result": "no strays; distinct per-test sleep durations prevent cross-test matches"
+    }
+  ],
+  "identities": {
+    "reference": null,
+    "owner": "spawn-start identities (PID + token); strangers share the PID with a foreign token; bare PIDs never authority",
+    "candidate": null,
+    "suite": "bounded local OS controls only (/bin/sh, exec-form sleepers, t.TempDir journals/targets); no live suite, no network",
+    "artifact": null,
+    "host_profile": "darwin arm64 (ps-based sweeps; signal-0 probes)",
+    "observer": "journal replay (Pending order) + signal-0 liveness probes + dev/ino path identity"
+  },
+  "coverage": {
+    "case_check_ids": [],
+    "retained_facets": [
+      "death with intact target never authorizes signal/deletion/pass (owner-mismatch refusal; target bytes intact; foreign sleeper alive; journal unadvanced)",
+      "old unknown schema refuses everything (scan marker 99/empty/oversize; proof schema; receipt schema 99 fails closed to incomplete)",
+      "replaced directory refuses (vanished, symlink-swap, dev/ino mismatch; replacement preserved; remover never called)",
+      "active foreign process refuses with its own reason (foreign-process-live; probe still true after scan)",
+      "incomplete liveness proof refuses (missing proof, dead/foreign/unverifiable process, naming gaps, malformed op)",
+      "later safe cleanup preserves the old incomplete outcome (stranger + scan-denied refusals untouched, then owner cleanup Complete+Removed with outcome incomplete, journal closed, receipt round-trips)",
+      "bounded drain (stop-admission gate, SIGTERM + grace + abort escalation, PID order, cap refuses with remainder untouched, ignored-TERM escalates, empty/invalid cases)",
+      "owner-only cleanup (VerifyAuthority identity+path gates, scan decision gate, spy remover never called on refusal, prior preserved verbatim in all three outcomes, receipt always returned)",
+      "scan-to-cleanup wiring across packages (stranger scan refuses, owner scan allows, safe cleanup completes)"
+    ],
+    "unrun_or_blocked": [],
+    "variants_and_environments": []
+  },
+  "integrator_fixes": [
+    "LoadFile now enforces the size bound during the read (LimitReader) instead of reading the whole file first, so a hostile oversized receipt cannot exhaust memory before rejection",
+    "gate/drain docs now state the latch stops cooperating admitters only (process.Owner.Spawn does not consult the gate); a racing spawner yields an incomplete-drain report, never a silent partial success",
+    "oversize schema-marker pin (>64 bytes refuses unknown-schema; branch was untested)",
+    "long-reason truncation pin (scan-denial reasons cap at 256 bytes)",
+    "path-without-reservation pin (non-empty target against a pathless reservation refuses replaced-path without calling the remover)",
+    "close-walk-from-live pin (safe cleanup of a live operation lands closed with prior preserved)",
+    "failed-removal-retry pin (a failed removal stays failed-state yet a later working remover proceeds; terminal failed state kept, history not rewritten)"
+  ],
+  "resource_and_cleanup_receipts": [
+    "journals/targets/leases in t.TempDir; every live-child test defers Abort and asserts Live()==0; distinct sleep markers per test; ps sweeps show no strays",
+    "no repo writes outside owned P11 paths",
+    "no /tmp scratch created"
+  ],
+  "correction_registry_head": null,
+  "relevance_decision": null,
+  "retirement_eligible": false,
+  "retirement_commit": null,
+  "reviewer_disposition": "integrator accepted: read all 8 source files and all 7 test files in full (2081 lines); verified the journal contracts underneath (VerifyAuthority is read-only, terminal states excluded from Pending, failed-state retry legal); independently re-ran vet/tests/race plus the deps-confinement check. Fixed 1 robustness gap (unbounded receipt read), 2 doc overreaches (gate scope), and added 4 test pins for untested branches. The deadPID helper's ms-scale PID-reuse window was considered and kept: replacing it with an impossible PID would trade real dead-process coverage for theoretical determinism. Independent final review deferred to Z06.",
+  "limitations": [
+    "path identity is dev/ino at scan/cleanup time: a delete-and-recreate that reuses the inode inside the window would compare equal (inherent to path identity without an open-fd pin; scan and cleanup are not atomic)",
+    "scan decisions are advisory inputs to Perform (Allow/DenyReason fields), not capabilities: the hard gates are VerifyAuthority plus the caller's own scan; a caller that lies to itself about Allow bypasses only its own scan",
+    "receipt files carry no integrity seal: a tampered file can claim any outcome, so receipts are evidence, never authority (PriorFromFile documents that the outcome alone authorizes nothing)",
+    "a wedged child costs Abort's internal reap bound per child during drain escalation (finite, not grace-bounded)",
+    "closeJournal Advance errors stop the walk silently: the receipt still reports Complete when the target is gone (truthful about the target; the journal state stays observable via Lookup)"
+  ]
+}
