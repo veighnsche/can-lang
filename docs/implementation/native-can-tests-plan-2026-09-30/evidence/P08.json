@@ -10,7 +10,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "<this commit> grants + dispatch"
+    "c8b33a7e grants + dispatch"
   ],
   "changed_paths": [
     "tools/native-test-owner/protocol/dispatch/",
