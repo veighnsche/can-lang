@@ -123,13 +123,16 @@ appropriate to protect laptop load.
   source spans, and fixpoint formatting. Done when focused parse → format →
   parse and trivia tests cover empty, generic and nested forms.
   Evidence: `FormatExpression` renders the recorded `Braces` delimiter (decl/bound rendering shipped in F02; `parser.go`/`format_trivia.go` needed no change). New `TestFormatTriviaBraceConstructors` covers decls, bounds, empty/generic/nested ctors, same-line comments, UTF-8, CRLF, and idempotence. `go test -p 1 ./compiler/internal/syntax/` passes.
-- [ ] **F04 · syntax-owned fixture and rejection sweep.** Depends:
+- [x] **F04 · syntax-owned fixture and rejection sweep.** Depends:
   F03,N02. Files: F-owned syntax package tests only; do not edit N-owned
   `expressions_test.go` or `constructor_braces_test.go`. Migrate positive
   embedded Can there; keep old forms only as named rejection cases. Exercise
   terminal `E{}` and generic lookahead versus comparisons. Done when focused
   syntax tests pass and no positive syntax test still uses an old spelling.
-  Evidence: pending.
+  Evidence: 6 positive sites migrated (`wrap_test.go`, `declarations_test.go`
+  L216/408); N-owned files untouched; old-decl/bound rejects intentional
+  (`parser_test.go` L70, `declarations_test.go` L387-389/431-432).
+  `go test -p 1 -count=1 ./compiler/internal/syntax/` passes.
 
 ## Lane N — constructor meaning and failure semantics
 
@@ -163,29 +166,49 @@ appropriate to protect laptop load.
   right bound/origin, forwarding retains an occurrence, reconstruction builds
   a value, and standard failures remain outside finite bounds. Done when
   checker-to-emitter assertions confirm these contracts. Evidence: new `check/error_value_test.go` (IR: success/record nesting, `DomainCompletion` + bound + span, forward arm w/o body, reconstruction binding, standard arm; negatives: empty-bound escape with `CAN-CHECK-OUTWARD-ERROR` span, `standard_failure` bound reject) and `emit/error_value_test.go` (terminal → `$canFailure($canDomain.create(checked-id))` + `domain` mark span; store/rebuilt/quiet → `$canSuccess` without `$canFailure`; forward → passthrough, 0 `.create(`). No production change needed; both focused tests pass.
-- [ ] **N05 · diagnostics and owned Go snippets.** Depends: F02,N03.
+- [x] **N05 · diagnostics and owned Go snippets.** Depends: F02,N03.
   Files: `check/completions.go`, `program.go`, `action_bindings.go` and
   affected `check`, `resolve`, and `emit` Go tests. Replace user-facing
   `emits [` wording and migrate positive embedded source; retain old forms
   only in explicit negative tests. Do not touch catalogue or LSP files.
   Done when diagnostics show braces with correct offsets and no replacement
-  based negative test silently becomes a no-op. Evidence: pending.
+  based negative test silently becomes a no-op. Evidence: production
+  wording migrated (`program.go`, `form.go`, `completions.go`,
+  `action_bindings.go`, `browser_interface.go`); ~97 test files migrated
+  (bounds + decls, then diagnostic-driven `E()`→`E{}` incl. 8 masked
+  stragglers); `server_test.go` bind-emission anchor fixed to `}`.
+  `go test -p 1 -count=1 ./compiler/internal/check/ ./compiler/internal/resolve/`
+  pass; `./compiler/internal/emit/` passes with `CAN_BUN=$(which bun)`
+  (4 batch-route tests require it by design; 2 transient full-package
+  failures in ~14 runs, unidentified, every rerun green — V02 re-runs).
+  Corpus-dependent failures converged via M01/M02 in the same stack.
+  N05-ext: types/driver/project/browser suites migrated incl. 10 missed
+  browser_catalogue/emitted_scan sites; `overlay_test.go:43` keeps `emits []`
+  intentionally (asserts SourceError structure only); all four suites pass.
 
 ## Lane M — live Can corpus and external harnesses
 
-- [ ] **M01 · current fixtures and shared libraries.** Depends: G02 and
+- [x] **M01 · current fixtures and shared libraries.** Depends: G02 and
   release of contested files from G00. Files: active `.can` under
   `compiler/testdata/current`, `std`, `shared`. Apply the reviewed map,
   including generic aggregate and nested catalogue errors; leave calls and
   records in `()`. Done when candidate edits are checked against original
-  hashes and every change is classified. Evidence: pending.
-- [ ] **M02 · examples and executable programs.** Depends: G02. Files:
+  hashes and every change is classified. Evidence: 60 files via byte-verified
+  applier (44 F02 pre-applied skipped); `lexer/core.can` line-15 bound by
+  hand (line-19 failure intact); `http/main.can` reconstructed around the
+  committed peer-address insertion (delimiter-only, verified); project
+  fixture vendor digest refreshed (validated against baseline lockfile).
+- [x] **M02 · examples and executable programs.** Depends: G02. Files:
   active `.can` under `examples`, `tests`, `tools`, plus any `.can` under
   `docs` that G01 marked as executable. Migrate declarations, finite bounds,
   and error values; keep historical docs probes untouched. Done when all
   active positives use the
   new spellings and no record/call/pattern delimiter changed accidentally.
-  Evidence: pending.
+  Evidence: 109 files via byte-verified applier (examples/tests/tools +
+  3 executed frozen projects; 9 non-executed frozen excluded, strings and
+  `diagnostic-parse` untouched); invoice-grid/invoice-compare controls
+  digests refreshed (baseline-validated); whole-commit diff verified
+  delimiter-only outside the two digests.
 - [ ] **M03 · external Go-embedded source.** Depends: G02. Files:
   `tests/integration`, `tests/failure-conventions`, `host/conformance` Go
   tests only. Rewrite positive snippets and ensure any `strings.Replace`
@@ -212,13 +235,17 @@ appropriate to protect laptop load.
   files describe the chosen contract without treating a plan as shipped code.
   Evidence (window 1 interim): `{}` pairing + `punctuation.definition.error.can` grammar rule (gramcheck OK); syntax README one-line rule; technical-spec prose + LD29 block migrated (executed C10/Consumer blocks deferred to F02 window); decisions.md pre-654 migrated. Gramcheck brace/error samples + executed snippets converge in window 2.
   Evidence (window 2): executed C10/Consumer bounds + all 24 decisions bounds + `error below_minimum` decl migrated; gramcheck samples pinned to `error unavailable{str reason}` + new brace scope samples; shared.can decl migrated to keep the sample in-fixture. Error-value `E(...)` spellings in spec text remain until N01/P05.
-- [ ] **P02 · authored catalogue presentation.** Depends: F02. Files:
+- [x] **P02 · authored catalogue presentation.** Depends: F02. Files:
   `compiler/internal/catalogue/types.go`, `generate.go`, and catalogue tests
   after resolving any pre-existing owner. Render concrete callable/choice
   types and generated documentation bounds with braces. Keep structured
   JSON arrays as JSON. Done when targeted type/display tests expect the new
   spelling and the generator is ready. Run final focused type tests after F03
-  supplies canonical `FormatType` output. Evidence: pending.
+  supplies canonical `FormatType` output. Evidence: `types.go` bound rendering
+  + `generate.go` doc bounds emit braces; all 20 `callable_types_test.go`
+  descriptors migrated (`emits [][]` → `emits {}[]`); JSON unchanged.
+  Targeted catalogue tests pass; generator preview diff brace-only with
+  `html::email_href` preserved (mirrors regenerate in P03).
 - [ ] **P03 · regenerate catalogue mirrors.** Depends: P02,F03 and G00 owner
   release for every output. The generator alone writes
   `compiler/internal/catalogue/generated.go`, `runtime/catalogue.ts`,
@@ -226,12 +253,17 @@ appropriate to protect laptop load.
   diffs against the dirty baseline; never hand-edit mirrors or discard
   unrelated catalogue work. Done when `make catalogue-check` passes and
   generated outputs are coherent. Evidence: pending.
-- [ ] **P04 · LSP rendering and completion.** Depends: F03,N02,N03,P01.
+- [x] **P04 · LSP rendering and completion.** Depends: F03,N02,N03,P01.
   Files: all `compiler/lsp*_test.go` and `compiler/internal/driver/hover.go`
   only if needed. Migrate hover/format/completion snippets and cursor
   contexts, especially `emits {|}`; check source spans. Run
   `go run ./tools/gramcheck` after P01. Done when focused LSP tests show
-  brace syntax and no lost completion. Evidence: pending.
+  brace syntax and no lost completion. Evidence:
+  `hover.go:formatHoverBound` renders braces with 5 matching hover wants;
+  7 `lsp_*_test.go` files (33 sites, incl. `emits {|}` cursors) +
+  `current_*_test.go` + `package_instance_test.go` migrated.
+  `go test -p 1 -count=1 ./compiler/` passes with the M01 corpus;
+  `go run ./tools/gramcheck` reports grammar OK.
 - [ ] **P05 · remaining live documentation.** Depends: M01,M02 and G00
   owner release. Files: `README.md`, `REQUIREMENTS.md`, current user guides
   and other live prose/examples; leave generated catalogue README to P03.
