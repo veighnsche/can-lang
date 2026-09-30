@@ -40,6 +40,13 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	}
 	browser := builder.assembly.browser
 	builder.out.WriteString(builder.declarations)
+	jsonValueType := "unknown"
+	for _, typ := range assembly.program.Model.Types() {
+		if typ.Declaration() == "can.std.codec@1::json_value" {
+			jsonValueType = TypeName(typ)
+		}
+	}
+	fmt.Fprintf(&builder.out, "export let $canJSONValue: ReturnType<typeof $canCreateJSONValueCodec<%s>>;\n", jsonValueType)
 	if browser {
 		// The sealed browser domain runtime verifies concrete error
 		// identities asynchronously before any domain use, so the
@@ -92,6 +99,12 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	}
 	builder.initializeUtilitiesState()
 	builder.initializeCoreState()
+	jsonIDs := map[string]string{}
+	for _, kind := range []string{"null", "bool", "int", "float", "string", "array", "object", "member"} {
+		jsonIDs[kind] = builder.numberIDs["can.std.codec@1::json_"+kind]
+	}
+	encodedJSONIDs, _ := json.Marshal(jsonIDs)
+	fmt.Fprintf(&builder.out, "$canJSONValue = $canCreateJSONValueCodec<%s>($canDomain, %s, %s);\n", jsonValueType, quote(builder.numberIDs["can.std.codec@1::invalid_data"]), encodedJSONIDs)
 	if !browser {
 		builder.initializeFileState()
 		builder.initializeProcessState()
@@ -434,6 +447,7 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 	imports = append(imports, ModuleImport{Target: runtime + "/text.ts", Names: []ImportName{{"createText", "$canCreateText"}, {"isTextRegexValue", "$canIsTextRegex"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/number.ts", Names: []ImportName{{"createNumbers", "$canCreateNumbers"}, {"createExactAmounts", "$canCreateExactAmounts"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/checks.ts", Names: []ImportName{{"createChecks", "$canCreateChecks"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/codec/value.ts", Names: []ImportName{{"createJSONValueCodec", "$canCreateJSONValueCodec"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/codec/json.ts", Names: []ImportName{{"createCodec", "$canCreateCodec"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/clock.ts", Names: []ImportName{{"createClock", "$canCreateClock"}}}, ModuleImport{Target: runtime + "/platform/random.ts", Names: []ImportName{{"createRandom", "$canCreateRandom"}}}, ModuleImport{Target: runtime + "/platform/log.ts", Names: []ImportName{{"createLog", "$canCreateLog"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/html.ts", Names: []ImportName{{"createHTML", "$canCreateHTML"}, {"isHTMLValue", "$canIsHTML"}}})
@@ -472,7 +486,7 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 // stateValueImportNames lists the shared factory values every authored and
 // assertion module imports from the state module.
 func stateValueImportNames() []ImportName {
-	names := []ImportName{{"$canHTML", "$canHTML"}, {"$canForm", "$canForm"}, {"$canFormActions", "$canFormActions"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canImage", "$canImage"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canChecks", "$canChecks"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}, {"$canServer", "$canServer"}}
+	names := []ImportName{{"$canJSONValue", "$canJSONValue"}, {"$canHTML", "$canHTML"}, {"$canForm", "$canForm"}, {"$canFormActions", "$canFormActions"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canImage", "$canImage"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canChecks", "$canChecks"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}, {"$canServer", "$canServer"}}
 	names = append(names, sqlStateValueImportNames()...)
 	names = append(names, cryptoStateValueImportNames()...)
 	names = append(names, utilitiesStateValueImportNames()...)

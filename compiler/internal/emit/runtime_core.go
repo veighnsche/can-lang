@@ -49,18 +49,20 @@ func browserProgramImports(runtime string) []ModuleImport {
 // begin; SQL entries live in runtime_sql.go.
 func coreOperationBindings() bindingContribution {
 	functions := map[string]string{
-		"can.std.bytes@1::from_utf8": "$canBytes.fromUTF8",
-		"can.std.bytes@1::to_utf8":   "$canBytes.toUTF8",
-		"can.std.bytes@1::from_ints": "$canBytes.fromInts",
-		"can.std.bytes@1::to_ints":   "$canBytes.toInts",
-		"can.std.bytes@1::empty":     "$canBytes.empty",
-		"can.std.image@1::inspect":   "$canImage.inspect",
-		"can.std.io@1::stdout_write": "$canCLI.stdoutWrite",
-		"can.std.io@1::stderr_write": "$canCLI.stderrWrite",
-		"can.std.io@1::stdin_bytes":  "$canIO.stdinBytes",
-		"can.std.io@1::stdin_text":   "$canIO.stdinText",
-		"can.std.env@1::required":    "$canEnv.required",
-		"can.std.env@1::optional":    "$canEnv.optional",
+		"can.std.codec@1::decode_json_value": "$canJSONValue.decode",
+		"can.std.codec@1::encode_json_value": "$canJSONValue.encode",
+		"can.std.bytes@1::from_utf8":         "$canBytes.fromUTF8",
+		"can.std.bytes@1::to_utf8":           "$canBytes.toUTF8",
+		"can.std.bytes@1::from_ints":         "$canBytes.fromInts",
+		"can.std.bytes@1::to_ints":           "$canBytes.toInts",
+		"can.std.bytes@1::empty":             "$canBytes.empty",
+		"can.std.image@1::inspect":           "$canImage.inspect",
+		"can.std.io@1::stdout_write":         "$canCLI.stdoutWrite",
+		"can.std.io@1::stderr_write":         "$canCLI.stderrWrite",
+		"can.std.io@1::stdin_bytes":          "$canIO.stdinBytes",
+		"can.std.io@1::stdin_text":           "$canIO.stdinText",
+		"can.std.env@1::required":            "$canEnv.required",
+		"can.std.env@1::optional":            "$canEnv.optional",
 	}
 	functions["can.std.html@1::make_tag"] = "$canHTML.makeTag"
 	functions["can.std.html@1::text"] = "$canHTML.text"

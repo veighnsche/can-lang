@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "7f9e34ecfa49b6c02952c42cb19875d03eec207b125bbec30dfdc332e2c21022";
+export const catalogueSHA256 = "0a09096baf6ff3f9b515e39b2603904d635d93c98ee609ca2f0d52864acf560e";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -1984,6 +1984,143 @@ export const catalogue = freeze({
         {
           "name": "height",
           "type": "int"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "codec::json_value",
+      "identity": "can.std.codec@1::json_value",
+      "kind": "variant",
+      "parameters": [],
+      "fields": [],
+      "leaves": [
+        "codec::json_null",
+        "codec::json_bool",
+        "codec::json_int",
+        "codec::json_float",
+        "codec::json_string",
+        "codec::json_array",
+        "codec::json_object"
+      ],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "codec::json_null",
+      "identity": "can.std.codec@1::json_null",
+      "kind": "record",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "codec::json_bool",
+      "identity": "can.std.codec@1::json_bool",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "value",
+          "type": "bool"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "codec::json_int",
+      "identity": "can.std.codec@1::json_int",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "value",
+          "type": "int"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "codec::json_float",
+      "identity": "can.std.codec@1::json_float",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "value",
+          "type": "float"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "codec::json_string",
+      "identity": "can.std.codec@1::json_string",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "value",
+          "type": "str"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "codec::json_array",
+      "identity": "can.std.codec@1::json_array",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "values",
+          "type": "codec::json_value[]"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "codec::json_object",
+      "identity": "can.std.codec@1::json_object",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "members",
+          "type": "codec::json_member[]"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "codec::json_member",
+      "identity": "can.std.codec@1::json_member",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "name",
+          "type": "str"
+        },
+        {
+          "name": "value",
+          "type": "codec::json_value"
         }
       ],
       "leaves": [],
@@ -14314,6 +14451,78 @@ export const catalogue = freeze({
       "refs": [
         "A2"
       ]
+    },
+    {
+      "name": "codec::decode_json_value",
+      "identity": "can.std.codec@1::decode_json_value",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "buffer",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "codec::json_value",
+      "callbacks": [],
+      "emits": [
+        "codec::invalid_data"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "JSON.parse",
+          "JSON.rawJSON",
+          "JSON.stringify",
+          "TextEncoder",
+          "TextDecoder"
+        ],
+        "adapter": "Bounded immutable JSON values; integer-spelled tokens use exact ints, fraction/exponent tokens use finite floats; reject duplicate names, invalid scalar text and cycles.",
+        "task": "I14"
+      },
+      "assertion": "real",
+      "refs": [
+        "A2",
+        "A6"
+      ]
+    },
+    {
+      "name": "codec::encode_json_value",
+      "identity": "can.std.codec@1::encode_json_value",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "value",
+          "type": "codec::json_value"
+        }
+      ],
+      "staticInputs": [],
+      "result": "bytes::buffer",
+      "callbacks": [],
+      "emits": [
+        "codec::invalid_data"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "JSON.parse",
+          "JSON.rawJSON",
+          "JSON.stringify",
+          "TextEncoder",
+          "TextDecoder"
+        ],
+        "adapter": "Bounded immutable JSON values; integer-spelled tokens use exact ints, fraction/exponent tokens use finite floats; reject duplicate names, invalid scalar text and cycles.",
+        "task": "I14"
+      },
+      "assertion": "real",
+      "refs": [
+        "A2",
+        "A6"
+      ]
     }
   ],
   "nativeDeclarations": [
@@ -16709,6 +16918,180 @@ export const catalogueTypeShapes = freeze([
         "name": "height",
         "type": {
           "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "codec::json_value",
+    "identity": "can.std.codec@1::json_value",
+    "kind": "variant",
+    "parameters": [],
+    "fields": [],
+    "leaves": [
+      {
+        "name": "codec::json_null",
+        "arguments": null
+      },
+      {
+        "name": "codec::json_bool",
+        "arguments": null
+      },
+      {
+        "name": "codec::json_int",
+        "arguments": null
+      },
+      {
+        "name": "codec::json_float",
+        "arguments": null
+      },
+      {
+        "name": "codec::json_string",
+        "arguments": null
+      },
+      {
+        "name": "codec::json_array",
+        "arguments": null
+      },
+      {
+        "name": "codec::json_object",
+        "arguments": null
+      }
+    ]
+  },
+  {
+    "name": "codec::json_null",
+    "identity": "can.std.codec@1::json_null",
+    "kind": "record",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "codec::json_bool",
+    "identity": "can.std.codec@1::json_bool",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "value",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "codec::json_int",
+    "identity": "can.std.codec@1::json_int",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "value",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "codec::json_float",
+    "identity": "can.std.codec@1::json_float",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "value",
+        "type": {
+          "name": "float",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "codec::json_string",
+    "identity": "can.std.codec@1::json_string",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "value",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "codec::json_array",
+    "identity": "can.std.codec@1::json_array",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "values",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "codec::json_value",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "codec::json_object",
+    "identity": "can.std.codec@1::json_object",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "members",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "codec::json_member",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "codec::json_member",
+    "identity": "can.std.codec@1::json_member",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "name",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "codec::json_value",
           "arguments": null
         }
       }

@@ -1,0 +1,52 @@
+package json_values
+    provides []
+    uses [codec, bytes]
+fn str roundtrip
+    emits [codec::invalid_data]
+    given
+        str text
+    asserts
+        envelope: "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"params\":{\"name\":\"x\"},\"id\":\"opaque\"}" => ok "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"params\":{\"name\":\"x\"},\"id\":\"opaque\"}"
+        notification: "{\"method\":\"notify\"}" => ok "{\"method\":\"notify\"}"
+        malformed: "{" => codec::invalid_data("", "invalid_json")
+        duplicate: "{\"x\":0,\"x\":1}" => codec::invalid_data("/x", "duplicate_member")
+        scalar: "9007199254740993" => ok "9007199254740993"
+        nested: "[null,true,1.0,-0,{\"extra\":[]}]" => ok "[null,true,1.0,-0,{\"extra\":[]}]"
+    match chain
+        call bytes::from_utf8(text) as bytes::buffer input
+        call codec::decode_json_value(input) as codec::json_value value
+        call codec::encode_json_value(value) as bytes::buffer output
+        call bytes::to_utf8(output) as str encoded
+        codec::invalid_data
+        ok => ok encoded
+fn str construct
+    emits [codec::invalid_data]
+    given
+        str id
+    asserts
+        sample: "opaque" => ok "{\"id\":\"opaque\"}"
+    codec::json_value value = codec::json_object([codec::json_member("id", codec::json_string(id))])
+    match chain
+        call codec::encode_json_value(value) as bytes::buffer output
+        call bytes::to_utf8(output) as str encoded
+        codec::invalid_data
+        ok => ok encoded
+fn void main
+    emits [codec::invalid_data]
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match call roundtrip("{\"id\":9007199254740993}")
+        codec::invalid_data
+        ok str text => ok
+fn bool is_null
+    emits []
+    given
+        codec::json_value value
+    asserts
+        null_value: codec::json_null() => ok true
+        integer: codec::json_int(1) => ok false
+    match value
+        codec::json_null => ok true
+        _ => ok false

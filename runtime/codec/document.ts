@@ -59,8 +59,8 @@ export function parseJSONText(text: string) {
   return { parsed, rootHolder: rootHolder!, tokens };
 }
 
-// Private maintained protocol adapters and typed decoding share this bounded
-// native parser. Its output is never an authored Can untyped-JSON value.
+// Typed decoding, JSON values and maintained protocol adapters share this
+// bounded native parser. Only immutable projections escape to authored code.
 export function parseDocument(input: unknown, bytes = standaloneBytes) {
   return parseJSONText(decodeText(input, bytes));
 }

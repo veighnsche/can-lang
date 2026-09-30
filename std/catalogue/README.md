@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 7f9e34ecfa49b6c02952c42cb19875d03eec207b125bbec30dfdc332e2c21022.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 0a09096baf6ff3f9b515e39b2603904d635d93c98ee609ca2f0d52864acf560e.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -162,6 +162,15 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | browser::file | record |  | str name, int size, str mime | true |
 | action::declaration | opaque |  |  | false |
 | image::metadata | record |  | str format, int width, int height | true |
+| codec::json_value | variant |  | codec::json_null, codec::json_bool, codec::json_int, codec::json_float, codec::json_string, codec::json_array, codec::json_object | false |
+| codec::json_null | record |  |  | true |
+| codec::json_bool | record |  | bool value | true |
+| codec::json_int | record |  | int value | true |
+| codec::json_float | record |  | float value | true |
+| codec::json_string | record |  | str value | true |
+| codec::json_array | record |  | codec::json_value[] values | true |
+| codec::json_object | record |  | codec::json_member[] members | true |
+| codec::json_member | record |  | str name, codec::json_value value | true |
 
 ## Domain errors
 
@@ -592,6 +601,8 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | action::request | Result:data; action::declaration action → Result | {http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data} |  | fetch, Request, Response, TextDecoder | Resolve the action symbol against the checked JSON table, build the canonical same-origin URL from the typed captures record, issue a bodyless GET through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound. | real | I32 / P10 |
 | action::post | Result:data, Wire:data; action::declaration action → Result | {http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data} |  | fetch, Request, Response, TextDecoder | Resolve the action symbol against the checked JSON table, build the canonical same-origin URL from the typed captures record, encode the exact wire body under the shared codec within the wire limit, POST through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound. | real | I32 / P10 |
 | image::inspect | bytes::buffer bytes, int max_pixels → image::metadata | {image::invalid_image} |  | Bun.Image, Bun.Image.prototype.metadata | Sniff actual JPEG/PNG/WebP bytes and read dimensions using Bun metadata bounded by max_pixels; reject animated WebP (VP8X animation flag or ANIM/ANMF chunks), APNG (acTL), malformed and unsupported image data. | real | I13 / A2 |
+| codec::decode_json_value | bytes::buffer buffer → codec::json_value | {codec::invalid_data} |  | JSON.parse, JSON.rawJSON, JSON.stringify, TextEncoder, TextDecoder | Bounded immutable JSON values; integer-spelled tokens use exact ints, fraction/exponent tokens use finite floats; reject duplicate names, invalid scalar text and cycles. | real | I14 / A2,A6 |
+| codec::encode_json_value | codec::json_value value → bytes::buffer | {codec::invalid_data} |  | JSON.parse, JSON.rawJSON, JSON.stringify, TextEncoder, TextDecoder | Bounded immutable JSON values; integer-spelled tokens use exact ints, fraction/exponent tokens use finite floats; reject duplicate names, invalid scalar text and cycles. | real | I14 / A2,A6 |
 
 ## Native declaration profiles
 

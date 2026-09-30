@@ -845,6 +845,15 @@
       "../bytes.ts",
       "../failure.ts"
     ],
-    "platform/htmx-guard.ts": []
+    "platform/htmx-guard.ts": [],
+    "codec/value.ts": [
+      "../data.ts",
+      "../bytes.ts",
+      "../completion.ts",
+      "../domain.ts",
+      "./budget.ts",
+      "./numbers.ts",
+      "./document.ts"
+    ]
   }
 }
