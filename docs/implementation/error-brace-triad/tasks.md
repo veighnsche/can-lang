@@ -208,21 +208,33 @@ appropriate to protect laptop load.
   3 executed frozen projects; 9 non-executed frozen excluded, strings and
   `diagnostic-parse` untouched); invoice-grid/invoice-compare controls
   digests refreshed (baseline-validated); whole-commit diff verified
-  delimiter-only outside the two digests.
-- [ ] **M03 · external Go-embedded source.** Depends: G02. Files:
+  delimiter-only outside the two digests. Follow-up: benchmark-only
+  `tools/performance` generators (`compiler.py`, `test_editor_experiment.py`)
+  emit `{}` bounds (py_compile verified; no gate executes them).
+- [x] **M03 · external Go-embedded source.** Depends: G02. Files:
   `tests/integration`, `tests/failure-conventions`, `host/conformance` Go
   tests only. Rewrite positive snippets and ensure any `strings.Replace`
   mutation actually finds its target. Done when test intent is preserved and
   obsolete syntax appears only in explicit rejection cases.
-  Evidence: pending.
-- [ ] **M04 · corpus parse/format audit.** Depends: M01–M03,F03,N03.
+  Evidence: 24 files (bounds/decls + 94 classified error ctors; records
+  `retry::rejected/completed`, `profile`, `receipt` etc. and all calls keep
+  parens); `go vet` clean; 40/40 replaceOnce + 3/3 fixture anchors match
+  migrated fixtures exactly once; `host/conformance` passes; FC/integration
+  execution legs skip without a Bun archive (2 chromium-launch failures are
+  environment-only, in untouched setup code).
+- [x] **M04 · corpus parse/format audit.** Depends: M01–M03,F03,N03.
   Files: M-owned corpus and compact `evidence/corpus.md`. Run the new
   formatter only after it accepts a migrated file; compare its output to a
   second pass and inspect any unrelated source diff. Search live Can and
   external snippets, including executable docs probes, for old forms,
   classifying intentional negatives.
   Done when every active positive parses/checks where it did before and
-  no unexplained old spelling remains. Evidence: pending.
+  no unexplained old spelling remains. Evidence: 168/169 migrated files
+  reach a format fixpoint (1 intentional `lexer/core.can:19` negative);
+  63 pass1-vs-original diffs are all pre-existing alignment/spacing drift,
+  files untouched; zero `error E(` live; residual `emits [` fully
+  classified (site strings, READMEs→P05, catalogue mirror→P03, 3 Go
+  intentional negatives). See `evidence/corpus.md`.
 
 ## Lane P — catalogue, editor, LSP, and current docs
 
