@@ -1,0 +1,31 @@
+package m33history115
+    provides [decide]
+    uses []
+
+/// M33 HISTORY-115 "envelope bytes are deterministic and measured".
+/// Source: tests/host-discrimination/companions/storage.test.ts.
+/// Related fixture: tests/host-discrimination/companions/storage.ts.
+/// Disposition: OBSOLETE. T3 storage not selected for Op A (x-r01-1.md assigns the T2
+/// reviewed adapter): the companion envelope pins (117/132/72 bytes) are dated
+/// prototype-ABI measurements with no live surface, and old sizes must not freeze.
+/// Protects: envelope bytes are deterministic and measured; operations
+/// protocol/packaging; pinned byte/count observation.
+/// Variants: all values/host faults enumerated in this declaration.
+/// Environment: Bun prototype test environment (no live run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (no retained behavior; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_115: "HISTORY-115" => ok disposition("HISTORY-115", "obsolete", "x-r01-1.md Op A table (T2 assigned)", "Dated envelope pins for unselected T3 storage; no live surface and old sizes must not freeze.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-115"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-115", "obsolete", "x-r01-1.md Op A table (T2 assigned)", "Dated envelope pins for unselected T3 storage; no live surface and old sizes must not freeze.")

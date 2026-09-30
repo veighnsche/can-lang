@@ -1,0 +1,31 @@
+package m33history112
+    provides [decide]
+    uses []
+
+/// M33 HISTORY-112 "malformed response maps to protocol_error".
+/// Source: tests/host-discrimination/companions/storage.test.ts.
+/// Related fixture: tests/host-discrimination/companions/storage.ts.
+/// Disposition: OBSOLETE. T3 storage not selected for Op A (x-r01-1.md assigns the T2
+/// reviewed adapter): companion wire-codec faults are boundary-only and vacated with
+/// the tier. The T2 reviewed adapter has no wire surface.
+/// Protects: malformed response maps to protocol_error; operations localGet; expected
+/// leaves companion::protocol_error.
+/// Variants: all values/host faults enumerated in this declaration.
+/// Environment: Bun prototype test environment (no live run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (no retained behavior; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_112: "HISTORY-112" => ok disposition("HISTORY-112", "obsolete", "M32 HISTORY-090; x-r01-1.md Op A table (T2 assigned)", "Boundary-only wire-codec faults vacated with unselected T3 storage; T2 has no wire surface.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-112"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-112", "obsolete", "M32 HISTORY-090; x-r01-1.md Op A table (T2 assigned)", "Boundary-only wire-codec faults vacated with unselected T3 storage; T2 has no wire surface.")

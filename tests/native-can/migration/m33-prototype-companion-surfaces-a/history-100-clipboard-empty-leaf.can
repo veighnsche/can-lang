@@ -1,0 +1,30 @@
+package m33history100
+    provides [decide]
+    uses []
+
+/// M33 HISTORY-100 "empty companion cell reads the empty leaf".
+/// Source: tests/host-discrimination/companions/clipboard.test.ts.
+/// Related fixture: tests/host-discrimination/companions/clipboard.ts.
+/// Disposition: OBSOLETE. T3 clipboard excluded for Op B by measurement (x-r01-1.md
+/// assignment table). The live empty-read leaf is the T2 reviewed adapter's.
+/// Protects: empty companion cell reads the empty leaf; operations readText; expected
+/// leaves clipboard::empty.
+/// Variants: all values/host faults enumerated in this declaration.
+/// Environment: Bun prototype test environment (no live run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (no retained behavior; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_100: "HISTORY-100" => ok disposition("HISTORY-100", "obsolete", "M32 HISTORY-077; host/adapters/clipboard.ts (clipboard::empty)", "T3 clipboard excluded for Op B by measurement; live empty leaf is the T2 reviewed adapter's.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-100"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-100", "obsolete", "M32 HISTORY-077; host/adapters/clipboard.ts (clipboard::empty)", "T3 clipboard excluded for Op B by measurement; live empty leaf is the T2 reviewed adapter's.")

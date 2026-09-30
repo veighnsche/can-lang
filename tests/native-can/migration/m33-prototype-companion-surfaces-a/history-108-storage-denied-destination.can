@@ -1,0 +1,32 @@
+package m33history108
+    provides [decide]
+    uses []
+
+/// M33 HISTORY-108 "denied destination fails closed without sending".
+/// Source: tests/host-discrimination/companions/storage.test.ts.
+/// Related fixture: tests/host-discrimination/companions/storage.ts.
+/// Disposition: OBSOLETE. T3 storage not selected for Op A (x-r01-1.md assigns the T2
+/// reviewed adapter): companion destination faults are boundary-only and vacated with
+/// the tier. Live fail-closed is the T2 availability guard.
+/// Protects: denied destination fails closed without sending; operations localGet;
+/// expected leaves companion::destination_denied; no host contact or wire send on
+/// rejected input.
+/// Variants: all values/host faults enumerated in this declaration.
+/// Environment: Bun prototype test environment (no live run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (no retained behavior; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_108: "HISTORY-108" => ok disposition("HISTORY-108", "obsolete", "M32 HISTORY-087; host/adapters/storage.ts", "T3 storage not selected for Op A; boundary-only destination faults vacated, live fail-closed is the T2 guard.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-108"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-108", "obsolete", "M32 HISTORY-087; host/adapters/storage.ts", "T3 storage not selected for Op A; boundary-only destination faults vacated, live fail-closed is the T2 guard.")

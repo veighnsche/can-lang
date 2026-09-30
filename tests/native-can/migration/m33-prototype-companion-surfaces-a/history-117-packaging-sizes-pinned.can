@@ -1,0 +1,33 @@
+package m33history117
+    provides [decide]
+    uses []
+
+/// M33 HISTORY-117 "bundle sizes are pinned".
+/// Source: tests/host-discrimination/packaging.test.ts.
+/// Related fixtures: tests/host-discrimination/adapters/*.ts and
+/// companions/*.ts (six prototype bundle entries).
+/// Disposition: OBSOLETE. The six prototype size pins (4559/2987/6051/18360/16768/
+/// 20236 bytes) are dated tier measurements that must not freeze; D02 repinned the
+/// delivered entries (5618/4381/20838) in its own packaging conformance, and H owns
+/// admission. No Can port.
+/// Protects: bundle sizes are pinned; operations protocol/packaging; six prototype
+/// bundle entries, repeatability/size observations.
+/// Variants: all values/host faults enumerated in this declaration.
+/// Environment: Bun prototype test environment (no live run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (no retained behavior; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_117: "HISTORY-117" => ok disposition("HISTORY-117", "obsolete", "host/conformance packaging legs; d02-record.md", "Dated prototype size pins must not freeze; D02 repinned delivered entries and H owns admission.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-117"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-117", "obsolete", "host/conformance packaging legs; d02-record.md", "Dated prototype size pins must not freeze; D02 repinned delivered entries and H owns admission.")

@@ -1,0 +1,155 @@
+package m33history097
+    provides [checks, expected_vector, observe, case_body, descriptor]
+    uses [text]
+
+/// M33 HISTORY-097 "auth parity: same policy both sides; secret never logged".
+/// Source: tests/host-discrimination/companions/chart-widget.test.ts.
+/// Related fixture: tests/host-discrimination/companions/chart-widget.ts (prototype pair).
+/// Disposition: RETAIN. Auth parity plus secret sealing is live in the delivered
+/// reviewed companion: host/companions/chart.ts keeps the shared destination policy,
+/// the policy-version match, and diagnostics that name the credential env without the
+/// secret verbatim. Completes the M32 HISTORY-067 handoff (secret-sealing half).
+/// Protects: auth parity: same policy both sides; secret never logged; operations
+/// render; native exception or secret text does not leak.
+/// Variants: all values/host faults enumerated in this declaration (single parity probe
+/// over policy report, destination decision, and server diagnostics here).
+/// Environment: Bun prototype test environment; requires bun-prototype-env. Logical gates
+/// PEER, WIRE, N1 and C/R/N/S/A identities bind at P23; no live run now.
+/// C/R/N/S/A inputs: C = companion endpoint/policy/credential env; R = seeded observe
+/// variants below (offline only); N/S/A bind at P23 with the qualified report; state
+/// not bound. Cleanup receipt: probe render releases, leaving no live render behind.
+/// Delegated oracles: none. Execution credit: NOT claimed (if_retained_accept_after P23).
+/// Case chart-companion/auth-parity checks: policy-admits, policy-versions-match,
+/// render-ok, secret-sealed.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool policy_admits
+    bool versions_match
+    bool render_ok
+    bool secret_leaked
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("chart-companion/auth-parity", "default", "", "offline"), "policy-admits" => ok "case chart-companion/auth-parity variant default root policy-admits run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("chart-companion/auth-parity", "default", "", "offline"), "policy-admits" => ok evidence("policy-admits", "true", "true", true, "case chart-companion/auth-parity variant default root policy-admits run offline")
+        different: false, true, context("chart-companion/auth-parity", "default", "", "offline"), "policy-admits" => failed{"policy-admits"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "allowed", "allowed", context("chart-companion/auth-parity", "default", "", "offline"), "policy-admits" => ok evidence("policy-admits", "allowed", "allowed", true, "case chart-companion/auth-parity variant default root policy-admits run offline")
+        different: "denied", "allowed", context("chart-companion/auth-parity", "default", "", "offline"), "policy-admits" => failed{"policy-admits"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, true, false)
+        seed_denied: "seed-denied" => ok observation(false, true, false, false)
+        seed_version_skew: "seed-version-skew" => ok observation(true, false, true, false)
+        seed_render_fail: "seed-render-fail" => ok observation(true, true, false, false)
+        seed_secret_leak: "seed-secret-leak" => ok observation(true, true, true, true)
+    match variant_id
+        "seed-denied" => ok observation(false, true, false, false)
+        "seed-version-skew" => ok observation(true, false, true, false)
+        "seed-render-fail" => ok observation(true, true, false, false)
+        "seed-secret-leak" => ok observation(true, true, true, true)
+        _ => ok observation(true, true, true, false)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m33: "m33" => ok [check("policy-admits", "shared policy admits the endpoint"), check("policy-versions-match", "server policy version matches the client policy"), check("render-ok", "probe render succeeds"), check("secret-sealed", "reports and diagnostics carry no secret text")]
+        other: "nope" => ok []
+    match scope is "m33"
+        false => ok []
+        true => ok [check("policy-admits", "shared policy admits the endpoint"), check("policy-versions-match", "server policy version matches the client policy"), check("render-ok", "probe render succeeds"), check("secret-sealed", "reports and diagnostics carry no secret text")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "chart-companion/auth-parity" => ok [expected_check("policy-admits", "true"), expected_check("policy-versions-match", "true"), expected_check("render-ok", "true"), expected_check("secret-sealed", "false")]
+        unknown: "nope" => ok []
+    match case is "chart-companion/auth-parity"
+        false => ok []
+        true => ok [expected_check("policy-admits", "true"), expected_check("policy-versions-match", "true"), expected_check("render-ok", "true"), expected_check("secret-sealed", "false")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("chart-companion/auth-parity", "default", "", "offline") => ok
+        seed_denied: context("chart-companion/auth-parity", "seed-denied", "", "offline") => failed{"policy-admits"}
+        seed_version_skew: context("chart-companion/auth-parity", "seed-version-skew", "", "offline") => failed{"policy-versions-match"}
+        seed_render_fail: context("chart-companion/auth-parity", "seed-render-fail", "", "offline") => failed{"render-ok"}
+        seed_secret_leak: context("chart-companion/auth-parity", "seed-secret-leak", "", "offline") => failed{"secret-sealed"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.policy_admits, true, c, "policy-admits")
+            failed
+            ok evidence admits_evidence => match call require_bool(got.versions_match, true, c, "policy-versions-match")
+                failed
+                ok evidence versions_evidence => match call require_bool(got.render_ok, true, c, "render-ok")
+                    failed
+                    ok evidence render_evidence => match call require_bool(got.secret_leaked, false, c, "secret-sealed")
+                        failed
+                        ok evidence sealed_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m33: "m33" => ok test_case("chart-companion/auth-parity", ["chart-companion", "m33"], ["bun-prototype-env"], 15000, [check_ref("policy-admits"), check_ref("policy-versions-match"), check_ref("render-ok"), check_ref("secret-sealed")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m33"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("chart-companion/auth-parity", ["chart-companion", "m33"], ["bun-prototype-env"], 15000, [check_ref("policy-admits"), check_ref("policy-versions-match"), check_ref("render-ok"), check_ref("secret-sealed")], callable case_body)

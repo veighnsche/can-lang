@@ -1,0 +1,157 @@
+package m33history098
+    provides [checks, expected_vector, observe, case_body, descriptor]
+    uses [text]
+
+/// M33 HISTORY-098 "envelope bytes are deterministic and measured".
+/// Source: tests/host-discrimination/companions/chart-widget.test.ts.
+/// Related fixture: tests/host-discrimination/companions/chart-widget.ts (prototype pair).
+/// Disposition: RETAIN (partial). Envelope determinism and measured wire cost are live
+/// in the delivered reviewed companion: host/companions/chart.ts keeps the strict
+/// JSON codecs verbatim, so re-encoding the same envelope yields identical bytes with
+/// stable reported lengths. The absolute pins (209-byte request, 164-byte response)
+/// are OBSOLETE: dated prototype-ABI measurements that must not freeze the delivered
+/// contract. Completes the M32 HISTORY-068 handoff (determinism half).
+/// Protects: envelope bytes are deterministic and measured; operations
+/// protocol/packaging; pinned byte/count observation (pins dropped, determinism kept).
+/// Variants: all values/host faults enumerated in this declaration: render request and
+/// render response envelopes.
+/// Environment: Bun prototype test environment; requires bun-prototype-env. Logical gates
+/// PEER, WIRE, N1 and C/R/N/S/A identities bind at P23; no live run now.
+/// C/R/N/S/A inputs: C = companion endpoint/policy/credential env; R = seeded observe
+/// variants below (offline only); N/S/A bind at P23 with the qualified report; state
+/// not bound. Cleanup receipt: encode-only leg; no session state is created.
+/// Delegated oracles: none. Execution credit: NOT claimed (if_retained_accept_after P23).
+/// Case chart-companion/envelope-deterministic checks: request-deterministic,
+/// response-deterministic, request-measured, response-measured.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool req_deterministic
+    bool resp_deterministic
+    bool req_len_stable
+    bool resp_len_stable
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("chart-companion/envelope-deterministic", "default", "", "offline"), "request-deterministic" => ok "case chart-companion/envelope-deterministic variant default root request-deterministic run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("chart-companion/envelope-deterministic", "default", "", "offline"), "request-deterministic" => ok evidence("request-deterministic", "true", "true", true, "case chart-companion/envelope-deterministic variant default root request-deterministic run offline")
+        different: false, true, context("chart-companion/envelope-deterministic", "default", "", "offline"), "request-deterministic" => failed{"request-deterministic"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "stable", "stable", context("chart-companion/envelope-deterministic", "default", "", "offline"), "request-deterministic" => ok evidence("request-deterministic", "stable", "stable", true, "case chart-companion/envelope-deterministic variant default root request-deterministic run offline")
+        different: "drift", "stable", context("chart-companion/envelope-deterministic", "default", "", "offline"), "request-deterministic" => failed{"request-deterministic"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, true, true)
+        seed_request_nondeterministic: "seed-request-nondeterministic" => ok observation(false, true, false, true)
+        seed_response_nondeterministic: "seed-response-nondeterministic" => ok observation(true, false, true, false)
+        seed_request_unmeasured: "seed-request-unmeasured" => ok observation(true, true, false, true)
+        seed_response_unmeasured: "seed-response-unmeasured" => ok observation(true, true, true, false)
+    match variant_id
+        "seed-request-nondeterministic" => ok observation(false, true, false, true)
+        "seed-response-nondeterministic" => ok observation(true, false, true, false)
+        "seed-request-unmeasured" => ok observation(true, true, false, true)
+        "seed-response-unmeasured" => ok observation(true, true, true, false)
+        _ => ok observation(true, true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m33: "m33" => ok [check("request-deterministic", "re-encoded request bytes are identical"), check("response-deterministic", "re-encoded response bytes are identical"), check("request-measured", "request length is reported and stable"), check("response-measured", "response length is reported and stable")]
+        other: "nope" => ok []
+    match scope is "m33"
+        false => ok []
+        true => ok [check("request-deterministic", "re-encoded request bytes are identical"), check("response-deterministic", "re-encoded response bytes are identical"), check("request-measured", "request length is reported and stable"), check("response-measured", "response length is reported and stable")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "chart-companion/envelope-deterministic" => ok [expected_check("request-deterministic", "true"), expected_check("response-deterministic", "true"), expected_check("request-measured", "true"), expected_check("response-measured", "true")]
+        unknown: "nope" => ok []
+    match case is "chart-companion/envelope-deterministic"
+        false => ok []
+        true => ok [expected_check("request-deterministic", "true"), expected_check("response-deterministic", "true"), expected_check("request-measured", "true"), expected_check("response-measured", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("chart-companion/envelope-deterministic", "default", "", "offline") => ok
+        seed_request_nondeterministic: context("chart-companion/envelope-deterministic", "seed-request-nondeterministic", "", "offline") => failed{"request-deterministic"}
+        seed_response_nondeterministic: context("chart-companion/envelope-deterministic", "seed-response-nondeterministic", "", "offline") => failed{"response-deterministic"}
+        seed_request_unmeasured: context("chart-companion/envelope-deterministic", "seed-request-unmeasured", "", "offline") => failed{"request-measured"}
+        seed_response_unmeasured: context("chart-companion/envelope-deterministic", "seed-response-unmeasured", "", "offline") => failed{"response-measured"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.req_deterministic, true, c, "request-deterministic")
+            failed
+            ok evidence req_det_evidence => match call require_bool(got.resp_deterministic, true, c, "response-deterministic")
+                failed
+                ok evidence resp_det_evidence => match call require_bool(got.req_len_stable, true, c, "request-measured")
+                    failed
+                    ok evidence req_len_evidence => match call require_bool(got.resp_len_stable, true, c, "response-measured")
+                        failed
+                        ok evidence resp_len_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m33: "m33" => ok test_case("chart-companion/envelope-deterministic", ["chart-companion", "m33"], ["bun-prototype-env"], 15000, [check_ref("request-deterministic"), check_ref("response-deterministic"), check_ref("request-measured"), check_ref("response-measured")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m33"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("chart-companion/envelope-deterministic", ["chart-companion", "m33"], ["bun-prototype-env"], 15000, [check_ref("request-deterministic"), check_ref("response-deterministic"), check_ref("request-measured"), check_ref("response-measured")], callable case_body)

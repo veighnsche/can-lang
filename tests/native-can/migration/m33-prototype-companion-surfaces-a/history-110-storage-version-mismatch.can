@@ -1,0 +1,31 @@
+package m33history110
+    provides [decide]
+    uses []
+
+/// M33 HISTORY-110 "version mismatch fails closed both directions".
+/// Source: tests/host-discrimination/companions/storage.test.ts.
+/// Related fixture: tests/host-discrimination/companions/storage.ts.
+/// Disposition: OBSOLETE. T3 storage not selected for Op A (x-r01-1.md assigns the T2
+/// reviewed adapter): companion version faults are boundary-only and vacated with the
+/// tier. The T2 reviewed adapter has no version surface.
+/// Protects: version mismatch fails closed both directions; operations
+/// protocol/packaging; expected leaves companion::version_mismatch.
+/// Variants: all values/host faults enumerated in this declaration.
+/// Environment: Bun prototype test environment (no live run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (no retained behavior; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_110: "HISTORY-110" => ok disposition("HISTORY-110", "obsolete", "M32 HISTORY-090; x-r01-1.md Op A table (T2 assigned)", "Boundary-only version faults vacated with unselected T3 storage; T2 has no version surface.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-110"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-110", "obsolete", "M32 HISTORY-090; x-r01-1.md Op A table (T2 assigned)", "Boundary-only version faults vacated with unselected T3 storage; T2 has no version surface.")

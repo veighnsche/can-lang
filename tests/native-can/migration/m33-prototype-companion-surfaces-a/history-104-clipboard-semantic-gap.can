@@ -1,0 +1,31 @@
+package m33history104
+    provides [decide]
+    uses []
+
+/// M33 HISTORY-104 "semantic gap: companion cell and device cell are disjoint".
+/// Source: tests/host-discrimination/companions/clipboard.test.ts.
+/// Related fixture: tests/host-discrimination/companions/clipboard.ts.
+/// Disposition: OBSOLETE. The disjoint-cell measurement is the compare-target failure
+/// that excludes T3 for Op B; the exclusion rationale is preserved in the x-r01-1.md
+/// record, not as live behavior. No Can port: the excluded tier has no live surface.
+/// Protects: semantic gap: companion cell and device cell are disjoint; operations
+/// readText, writeText; expected leaves clipboard::empty.
+/// Variants: all values/host faults enumerated in this declaration.
+/// Environment: Bun prototype test environment (no live run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (no retained behavior; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_104: "HISTORY-104" => ok disposition("HISTORY-104", "obsolete", "x-r01-1.md Op B table (T3 excluded by measurement)", "Exclusion rationale preserved in the record, not as live behavior; the excluded tier has no live surface.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-104"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-104", "obsolete", "x-r01-1.md Op B table (T3 excluded by measurement)", "Exclusion rationale preserved in the record, not as live behavior; the excluded tier has no live surface.")

@@ -1,0 +1,32 @@
+package m33history101
+    provides [decide]
+    uses []
+
+/// M33 HISTORY-101 "denied destination and bad credential fail closed".
+/// Source: tests/host-discrimination/companions/clipboard.test.ts.
+/// Related fixture: tests/host-discrimination/companions/clipboard.ts.
+/// Disposition: OBSOLETE. T3 clipboard excluded for Op B by measurement (x-r01-1.md
+/// assignment table): companion destination/credential faults have no live surface.
+/// Live fail-closed is the T2 reviewed adapter's permission and availability guards.
+/// Protects: denied destination and bad credential fail closed; operations readText;
+/// expected leaves companion::destination_denied, companion::unauthorized; no host
+/// contact or wire send on rejected input.
+/// Variants: all values/host faults enumerated in this declaration.
+/// Environment: Bun prototype test environment (no live run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (no retained behavior; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_101: "HISTORY-101" => ok disposition("HISTORY-101", "obsolete", "M32 HISTORY-079/HISTORY-080; host/adapters/clipboard.ts", "T3 clipboard excluded for Op B; live fail-closed is the T2 permission and availability guards.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-101"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-101", "obsolete", "M32 HISTORY-079/HISTORY-080; host/adapters/clipboard.ts", "T3 clipboard excluded for Op B; live fail-closed is the T2 permission and availability guards.")

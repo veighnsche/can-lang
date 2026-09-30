@@ -1,0 +1,32 @@
+package m33history102
+    provides [decide]
+    uses []
+
+/// M33 HISTORY-102 "version mismatch and transport failure map honestly".
+/// Source: tests/host-discrimination/companions/clipboard.test.ts.
+/// Related fixture: tests/host-discrimination/companions/clipboard.ts.
+/// Disposition: OBSOLETE. T3 clipboard excluded for Op B by measurement (x-r01-1.md
+/// assignment table): companion version/transport faults are boundary-only and vacated
+/// with the tier. The T2 reviewed adapter has no version or transport surface.
+/// Protects: version mismatch and transport failure map honestly; operations readText;
+/// expected leaves companion::transport_failed, companion::version_mismatch; native
+/// exception or secret text does not leak.
+/// Variants: all values/host faults enumerated in this declaration.
+/// Environment: Bun prototype test environment (no live run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (no retained behavior; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_102: "HISTORY-102" => ok disposition("HISTORY-102", "obsolete", "M32 HISTORY-083; x-r01-1.md Op B table (T3 excluded)", "Boundary-only faults vacated with the excluded T3 clipboard tier; T2 has no version or transport surface.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-102"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-102", "obsolete", "M32 HISTORY-083; x-r01-1.md Op B table (T3 excluded)", "Boundary-only faults vacated with the excluded T3 clipboard tier; T2 has no version or transport surface.")

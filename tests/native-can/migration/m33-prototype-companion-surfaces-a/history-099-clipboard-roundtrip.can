@@ -1,0 +1,31 @@
+package m33history099
+    provides [decide]
+    uses []
+
+/// M33 HISTORY-099 "pastebin roundtrip: write then read returns the text".
+/// Source: tests/host-discrimination/companions/clipboard.test.ts.
+/// Related fixture: tests/host-discrimination/companions/clipboard.ts.
+/// Disposition: OBSOLETE. T3 clipboard excluded for Op B by measurement (server cell
+/// disjoint from device cell; x-r01-1.md assignment table). The live roundtrip is the
+/// T2 reviewed adapter.
+/// Protects: pastebin roundtrip: write then read returns the text; operations readText,
+/// writeText.
+/// Variants: all values/host faults enumerated in this declaration.
+/// Environment: Bun prototype test environment (no live run; relevance decision needs no live qualification).
+/// Delegated oracles: none. C/R/N/S/A: not bound (no retained behavior; no P23 port).
+/// Shared old files untouched; integrator retires after linked rows and callers resolve.
+record disposition
+    str row
+    str verdict
+    str live_owner
+    str rationale
+fn disposition decide
+    emits {}
+    given
+        str row
+    asserts
+        history_099: "HISTORY-099" => ok disposition("HISTORY-099", "obsolete", "M32 HISTORY-076; host/adapters/clipboard.ts", "T3 clipboard excluded for Op B by measurement; live roundtrip is the T2 reviewed adapter.")
+        unknown: "nope" => ok disposition("nope", "unreviewed", "", "")
+    match row is "HISTORY-099"
+        false => ok disposition(row, "unreviewed", "", "")
+        true => ok disposition("HISTORY-099", "obsolete", "M32 HISTORY-076; host/adapters/clipboard.ts", "T3 clipboard excluded for Op B by measurement; live roundtrip is the T2 reviewed adapter.")
