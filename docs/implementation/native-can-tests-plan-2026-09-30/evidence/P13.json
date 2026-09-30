@@ -1,0 +1,96 @@
+{
+  "status": "complete",
+  "executor": "Muse (muse-spark-1.3-contributor) via worker-s-p13; integrator review/commit",
+  "writing_owner": "native-owner",
+  "task_id": "P13",
+  "row_or_file_slice": null,
+  "start_prerequisite_receipts": [
+    "P12 complete in f219a318",
+    "P25 complete"
+  ],
+  "acceptance_prerequisite_receipts": [],
+  "commits": [
+    "TBD strict host enforcement"
+  ],
+  "changed_paths": [
+    "tools/native-test-owner/host/"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "gofmt -l + go vet ./tools/native-test-owner/host/",
+      "deadline": "120s",
+      "result": "clean; exit 0 (integrator re-run)"
+    },
+    {
+      "command": "go test -count=1 -timeout 120s -v ./tools/native-test-owner/host/",
+      "deadline": "300s",
+      "result": "22/22 PASS (integrator re-run)"
+    },
+    {
+      "command": "go test -count=1 -race -timeout 180s ./tools/native-test-owner/host/",
+      "deadline": "300s",
+      "result": "ok, no data races (integrator re-run)"
+    },
+    {
+      "command": "rlimit selector verification against MacOSX.sdk sys/resource.h + live sysctl/ulimit",
+      "deadline": "60s",
+      "result": "FSIZE=1 AS=5 NPROC=7 confirmed; hw.memsize 16GiB; NPROC soft 2666 (integrator)"
+    },
+    {
+      "command": "post-run ps sweep",
+      "deadline": "60s",
+      "result": "no stray sleep processes"
+    }
+  ],
+  "identities": {
+    "reference": null,
+    "owner": null,
+    "candidate": null,
+    "suite": "bounded local controls only (small control envelopes, 1 real Setsid sleep, ≤200-byte tmp writes, live ulimit demos); no live suite, no network, no 64-proc/GiB effects",
+    "artifact": "host-profile acceptance record committed separately per the card (evidence/P13-profile.json)",
+    "host_profile": "darwin arm64: NPROC 2666/4000, hw.memsize 16GiB, AS/FSIZE uncapped, ~54GB tmp free",
+    "observer": "15-check Qualify battery + per-lane P12 probes + live kernel demos"
+  },
+  "coverage": {
+    "case_check_ids": [],
+    "retained_facets": [
+      "quick envelope (64, 4GiB, 512MiB) admitted only where mechanism + reserve demonstrated (15/15 battery, host-fit arithmetic, P12-bound Admit)",
+      "bounded-job envelope (64, 6GiB, 2GiB) likewise (15/15 battery)",
+      "poll-and-kill cannot qualify (10 failing checks: mechanism, all sync refusals, overshoot, detached, bypass, overflow, both kernel demos)",
+      "sampled peaks cannot qualify (same behavioral failures; unbounded overshoot)",
+      "unavailable host remains blocked (both envelopes invalid; OpenScope refused; Admit holds no lane; drift re-probe refuses)",
+      "detached children charged (battery ledger check + real Setsid child held 1/1 with pgid==pid)",
+      "writes outside helpers caught (bypass absorb + overflow latch; proc charges reconcile first)",
+      "behavior decides, not labels (lying adapter passes mechanism-declared, fails every boundary check)",
+      "live kernel demos run on this host (NPROC fork refusal EAGAIN; FSIZE refused at exactly 8192/8192 bytes; AS-unsettable EINVAL probed)"
+    ],
+    "unrun_or_blocked": [],
+    "variants_and_environments": [
+      "darwin-only: adapter probes unavailable off darwin; darwin tests skip elsewhere"
+    ]
+  },
+  "integrator_fixes": [
+    "mem-refusal isolation: the over-mem check ran on the 1-proc control envelope so the proc ceiling refused first and a broken mem ledger would pass silently; the battery now threads an envelope per check with a proc-headroom mem envelope, proven by a negative control (dropped mem clause fails sync-refusal-mem and only it)",
+    "ChargeProc now reconciles tmp first, matching the Scope interface contract (every charge path reconciles before verdict); previously an unreconciled bypass flood admitted procs; pinned by TestChargeProcReconcilesFirst",
+    "ceiling comparisons rewritten as subtractions (memBytes > ceiling-charged) so absurd near-max charges fail closed instead of wrapping into admission; pinned by TestAbsurdChargesFailClosed on both mem and tmp",
+    "BuildProfile negatives now emitted in sorted name order (was Go map order: nondeterministic JSON across runs of the committed record)",
+    "dropped two _ = tok placeholders"
+  ],
+  "resource_and_cleanup_receipts": [
+    "battery workdirs and scope roots under t.TempDir (auto-cleaned); 1 real sleep killed+reaped with deferred backup; demo files removed; ps sweeps clean",
+    "no repo writes outside owned P13 paths",
+    "no /tmp scratch created"
+  ],
+  "correction_registry_head": null,
+  "relevance_decision": null,
+  "retirement_eligible": false,
+  "retirement_commit": null,
+  "reviewer_disposition": "integrator accepted: read all 8 source files and all 4 test files in full (2594 lines); verified rlimit selectors against SDK headers (not just the probe test); confirmed kernel demos ran live (not skipped) with exact evidence; independently re-ran vet/tests/race. Fixed 1 test hole with real teeth (mem ledger unproven), 1 contract gap (proc charges skipped reconcile), 1 theoretical wrap, 1 nondeterministic artifact order. Memory scoping accepted as the honest maximum: declared-peak ledger refusal is demonstrated and isolated, host-commit fit is arithmetic, no kernel RSS backstop exists on darwin (EINVAL probed live, not assumed), and the limitation is recorded for P14. Independent final review deferred to Z06.",
+  "limitations": [
+    "memory is declared-peak ledger only: RLIMIT_AS/DATA unsettable (EINVAL probed live); runtime RSS beyond declaration bounded only by host commit",
+    "tmp bypass bytes between reconciles bounded physically by probed free disk, not by the envelope; no verdict issued on unreconciled state; overflow latches fail-closed until disposal",
+    "NPROC fit uses the soft limit at probe time; mid-run lowering detected only at the next admission (Admit always re-probes)",
+    "kernel-demo skip-pass on hosts too quiet to demonstrate (this host demonstrates live); skips are recorded as skipped, never as demonstrated",
+    "darwin-only; another host requires its own profile receipt"
+  ]
+}
