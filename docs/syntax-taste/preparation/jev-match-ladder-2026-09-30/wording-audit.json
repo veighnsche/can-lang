@@ -1,0 +1,5 @@
+{
+  "manual_semantic_review": "All variants retain the same agent-oriented priorities, zero-user compatibility facts, two observed ladder shapes, exact deterministic eligibility and exclusions, reporting contract, untested status, three threshold alternatives and three repair alternatives. No previous Jev response is included.",
+  "wording_check": "Each explanatory state field, question instruction and option description is distinct across all three complete requests. Exact technical identifiers and code tokens are retained.",
+  "limitations": "Text inequality and manual equivalence are not proof of framing neutrality. Advice must be checked against source and tests; disagreements require investigation."
+}

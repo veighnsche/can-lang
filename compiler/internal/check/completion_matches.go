@@ -616,5 +616,8 @@ func (c *regionChecker) valueMatch(n syntax.Match, scope bodyScope, valueType *t
 	if missing {
 		return nil, fmt.Errorf("ordinary match is not exhaustive")
 	}
+	if c.context.Warn != nil && !(c.aggregate != nil && c.aggregate.discovery) {
+		c.matchLints = append(c.matchLints, matchLint{match: out, span: n.Values[0].ExprSpan()})
+	}
 	return out, nil
 }

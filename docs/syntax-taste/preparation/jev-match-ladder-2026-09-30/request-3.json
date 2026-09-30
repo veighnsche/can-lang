@@ -1,0 +1,28 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "purpose": "Evaluate an advisory for Can, a language intended for agent-written programs with no external adopters to accommodate. Favor explicit semantics, reliable authoring, local reasoning, precise feedback and mechanically safe changes. Shorter source is insufficient justification. The complaint concerns missing lint feedback on nested extension/MIME decisions.",
+    "evidence": "No new matching grammar is needed: ordinary match supports string cases, grouped | heads and exhaustive _. Observed failures include a deep chain of ext equality tests and a two-level chain with OR groups of literal equality tests. When every test uses one immutable str binding and unique strings, direct value matching can keep case handlers, their order, errors and the default intact. An isolated equality test has no nesting to flatten. The checking pipeline provides resolved identities, exact spans and warnings that do not reject code, also during error recovery.",
+    "mechanism": "Restrict detection to verified ordinary match nodes whose only heads are true and false and whose false branch immediately nests the next node. Each predicate must compare one binding ID with literal strings, optionally via OR; parentheses and string-on-left spelling are admissible. Reject effectful or projected subjects, steps between decisions, changing identities, relational operators and overlapping literals. Emit one warning on the starting condition for CLI and editor. This is offline deterministic analysis, with regression checks for findings, false positives, nested duplicate reporting and recovered programs; it currently has no prototype or benchmark."
+  },
+  "questions": {
+    "scope": {
+      "type": "choice",
+      "instructions": "Which of the following admission thresholds should this narrowly defined compiler advisory use initially to make agent repairs useful and avoid indiscriminate complexity feedback?",
+      "criteria": {
+        "two": "Trigger at a pair or a longer sequence satisfying the rule, covering the actual OR-group example and offering direct string matching.",
+        "three": "Set a three-decision minimum and intentionally omit the known pair of disjunction matches to avoid warnings on shorter ladders.",
+        "none": "Defer all compiler feedback for the described ladders and leave discovery to the current guide."
+      }
+    },
+    "delivery": {
+      "type": "choice",
+      "instructions": "How should the checker initially present an admitted finding, accounting for the established facts and edit-safety constraints?",
+      "criteria": {
+        "warning": "Show a positioned warning with a durable code and explicit guidance toward string cases, | alternatives and a final _; postpone automated rewriting.",
+        "autofix": "Include immediate automatic flattening, with validation of comments, formatting and preservation of every branch behavior before exposure.",
+        "error": "Treat these admitted ladders as compilation failures until authors use direct literal matching."
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "purpose": "Can targets AI coding agents. Explicit contracts, reliable generation, local reasoning, precise diagnostics and safe mechanical edits matter; reduced typing alone does not justify change. There are zero external users and no compatibility obligations. The user says the built-in linter should have warned about unnecessarily convoluted extension/MIME ladders.",
+    "evidence": "Existing ordinary value matches support string literal arms, grouped alternatives with | and exhaustive wildcard _. The original application used long false-branch chains of match ext is \".html\", then match ext is \".css\", etc.; another chain had two decisions whose conditions each OR several equalities. Direct match ext preserves the original distinct handlers, fallback, evaluation order and error behavior for a single immutable str binding and distinct literal strings. One comparison alone is a normal predicate. The compiler already collects nonblocking warnings with source spans and resolved binding identities, including in recoverable checking.",
+    "mechanism": "Proposed deterministic rule recognizes only fully checked ordinary matches with exactly explicit true/false literal arms; the false arm directly contains another ordinary match. Conditions are string-literal equality or OR of those equalities against the same resolved binding, allowing parentheses and reversed equality operands. No property/index reads, calls, intervening statements, mixed subjects, relational tests or duplicate literal strings qualify. Report once at the first qualifying condition, retaining CLI/editor severity warning. No online model is used for linting. Correctness tests must exercise positive and excluded shapes, maximal-chain deduplication and recovery. No measurements or implementation evidence exists yet."
+  },
+  "questions": {
+    "scope": {
+      "type": "choice",
+      "instructions": "Given these exact eligibility constraints, which initial warning threshold best provides actionable agent feedback without treating ordinary logic as complexity?",
+      "criteria": {
+        "two": "Warn for two or more consecutive eligible decisions, including the observed two-decision OR-group ladder; each is replaceable by direct string cases.",
+        "three": "Warn only at three or more eligible decisions, leaving the observed two-decision grouped ladder silent to reduce short-chain findings.",
+        "none": "Add no diagnostic yet; rely on the existing match recipe and postpone any repeated-decision warning despite the reported examples."
+      }
+    },
+    "delivery": {
+      "type": "choice",
+      "instructions": "For an eligible ladder, what initial user-facing remediation is justified by the available evidence and safety goals?",
+      "criteria": {
+        "warning": "Emit an advisory with stable code, precise span and a recommendation to match the bound string directly using literal cases, | groups and _ fallback; do not supply automatic edits yet.",
+        "autofix": "Implement an automatic rewrite in this round in addition to the warning; prove comment retention, formatting and all branch semantics before offering it.",
+        "error": "Reject eligible programs with a hard error requiring the flatter syntax rather than an advisory."
+      }
+    }
+  }
+}

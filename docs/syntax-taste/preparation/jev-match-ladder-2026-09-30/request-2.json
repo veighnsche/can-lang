@@ -1,0 +1,28 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "purpose": "The language is authored by AI agents; judge changes by contract clarity, dependable generated source, locally understandable behavior, exact diagnostics and safe edits rather than human convenience or line count. Compatibility is unnecessary because no outside users exist. This review follows a request for a built-in lint warning on convoluted extension and MIME dispatch.",
+    "evidence": "Source inspection confirms match on a string already accepts literal cases, | alternatives and a final _ arm. Application code repeatedly tested ext against extension literals through nested false arms; a separate example used two such tests, each a disjunction of equalities. For the same immutable string identity and nonoverlapping literals, flattening retains each handler, the default, ordering and completion behavior. A solitary equality remains an ordinary predicate. Existing checker warnings are advisory, positioned and available during recovery; checked expressions expose resolved binding IDs.",
+    "mechanism": "The contemplated compiler-only recognizer requires checked value matches, exactly true and false literal patterns and direct nesting through false. It accepts equality-to-string-literal and OR combinations on one resolved binding; grouping parentheses and swapped operands are allowed. Calls, field/index access, statements between tests, several subjects, order comparisons and repeated strings are excluded. A chain gets one positioned CLI/editor warning at its qualifying start. Lint execution never contacts AI. Planned validation covers accepted cases, exclusions, duplicate suppression and partial checking; performance and implementation have not been tested."
+  },
+  "questions": {
+    "scope": {
+      "type": "choice",
+      "instructions": "Select the first diagnostic policy for the specified safe shape, balancing useful repair guidance for agents against unnecessary findings on ordinary logic.",
+      "criteria": {
+        "two": "Admit any qualifying chain starting at two match decisions, so the reported pair of grouped equality tests is covered by direct-case advice.",
+        "three": "Require at least three qualifying matches; accept no feedback for the observed two-node grouped predicate chain in exchange for a higher threshold.",
+        "none": "Keep the checker silent for these shapes for now, using documentation alone until later consideration of a repeated-match advisory."
+      }
+    },
+    "delivery": {
+      "type": "choice",
+      "instructions": "Choose the first repair surface for a chain that meets the recognizer, given the evidence and requirement for safe mechanical changes.",
+      "criteria": {
+        "warning": "Provide a nonblocking diagnostic identifying direct value matching, grouped | literals and default _ with a stable identifier and exact location, leaving automatic replacement for later.",
+        "autofix": "Ship an edit action together with the diagnostic now, verifying that comments, source formatting and behavior for every arm survive.",
+        "error": "Make this pattern invalid source and require conversion to value matching before compilation can succeed."
+      }
+    }
+  }
+}

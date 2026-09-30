@@ -103,6 +103,9 @@ type regionChecker struct {
 	serial    int
 	uses      LocalUses
 	locals    map[string]*types.Type
+	// Keep independently checked matches even when an enclosing body fails.
+	// Lint them together to report only the start of a repeated-comparison chain.
+	matchLints []matchLint
 }
 type bodyScope struct{ symbols *resolve.Scope }
 
@@ -133,6 +136,7 @@ func CheckRegion(context CompletionContext, block syntax.Block) (*ir.Region, err
 	c := &regionChecker{context: context, region: r, locals: map[string]*types.Type{}, uses: LocalUses{Names: map[*syntax.NameExpr]string{}, Captures: map[*syntax.ReferenceExpr][]string{}}}
 	var err error
 	r.Body, err = c.block(block, bodyScope{context.Scope})
+	c.warnStringMatchLadders()
 	if err != nil {
 		return nil, fmt.Errorf("%s region %s: %w", r.Source, r.ID, err)
 	}
