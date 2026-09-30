@@ -1,0 +1,87 @@
+{
+  "status": "complete",
+  "executor": "Muse (muse-spark-1.3-contributor) via worker-p-p12; integrator review/commit",
+  "writing_owner": "native-owner",
+  "task_id": "P12",
+  "row_or_file_slice": null,
+  "start_prerequisite_receipts": [
+    "P07 complete",
+    "P08 complete in c8b33a7e",
+    "P09 complete",
+    "P10 complete in b4eaa2f5",
+    "P11 complete in 3905837d"
+  ],
+  "acceptance_prerequisite_receipts": [],
+  "commits": [
+    "TBD admission"
+  ],
+  "changed_paths": [
+    "tools/native-test-owner/admission/"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "gofmt -l + go vet ./tools/native-test-owner/admission/",
+      "deadline": "120s",
+      "result": "clean; exit 0 (integrator re-run)"
+    },
+    {
+      "command": "go test -count=1 -timeout 120s -v ./tools/native-test-owner/admission/",
+      "deadline": "300s",
+      "result": "14/14 PASS, ok 0.204s (integrator re-run)"
+    },
+    {
+      "command": "go test -count=1 -race -timeout 180s ./tools/native-test-owner/admission/",
+      "deadline": "300s",
+      "result": "ok 2.268s, no data races (integrator re-run)"
+    },
+    {
+      "command": "go test -count=3 on the three race-prone tests",
+      "deadline": "300s",
+      "result": "ok 0.089s contention/cross-process/nested stress (integrator re-run)"
+    }
+  ],
+  "identities": {
+    "reference": null,
+    "owner": null,
+    "candidate": null,
+    "suite": "bounded local controls only (t.TempDir host dirs, fake clock, re-exec child helper); no live suite, no network",
+    "artifact": null,
+    "host_profile": "darwin arm64 (flock arbitration; unix-only like the P10/P11 leases)",
+    "observer": "ProbeLane per-lane witness (registry + fresh-open EX probe)"
+  },
+  "coverage": {
+    "case_check_ids": [],
+    "retained_facets": [
+      "two repository roots cannot bypass the gate (same-process contention + real cross-process holder via test-binary re-exec; kernel flock alone decides across processes)",
+      "nested producer demand fails fast without deadlock (structural: nested check before any kernel call, all flock LOCK_NB, documented order; bounded-select proof)",
+      "deadline-at-success is failure (fake-clock exact boundaries: at/past fail, 1ns-before succeeds)",
+      "no case starts unless body plus cleanup fit strictly inside the budget (over/equal/fills refuse, inside admits; refusals hold nothing)",
+      "atomic declared-peak reservation (busy lane fails the whole demand naming the lane; no partial takes)",
+      "mutual exclusion under contention (2 rounds x 8 contenders, exactly 1 winner, max 1 concurrent holder, all goroutines joined)",
+      "single-shot verdicts (Complete twice reports released; Release idempotent; probe transitions held/free)"
+    ],
+    "unrun_or_blocked": [],
+    "variants_and_environments": []
+  },
+  "integrator_fixes": [
+    "fail path now releases partial kernel takes in reverse acquisition order, matching the documented convention (close order is semantically moot for flock but the doc promised it)",
+    "doc wording: registry arbitrates identically wherever the package builds (was every platform; flock is unix-only and the package cannot build on Windows, consistent with the P10/P11 leases)"
+  ],
+  "resource_and_cleanup_receipts": [
+    "host lock dirs and roots in t.TempDir; child helper reaped via explicit flag (no double-wait); no strays",
+    "no repo writes outside owned P12 paths",
+    "no /tmp scratch created"
+  ],
+  "correction_registry_head": null,
+  "relevance_decision": null,
+  "retirement_eligible": false,
+  "retirement_commit": null,
+  "reviewer_disposition": "integrator accepted: read all 3 source files and the full test file (1149 lines); traced the registry/kernel consistency (mark-before-lock with backstop, close-before-unmark windows, same-Host in-flight nested branch, Grant.mu leaf ordering with no lock cycle); independently re-ran vet/tests/race plus a 3x contention stress. The cross-process test genuinely proves kernel arbitration (parent registry empty, refusal must come from flock). Loser-outcome tolerance (busy-or-nested) in the contention test is honest: same-Host racers behind a held/in-flight demand correctly see nested-demand, and the strict assertions (exactly 1 winner, max 1 holder) stand. Two cosmetic fixes only. Independent final review deferred to Z06.",
+  "limitations": [
+    "unix-only arbitration (syscall.Flock): same platform scope as the P10/P11 leases",
+    "one Host holds at most one live Grant: multi-lane peaks must be declared atomically in one Demand (second Admit on a holding Host is nested-demand by design)",
+    "registry keys are absolute-but-symlink-unresolved paths: same-dir-different-spelling same-process contenders miss the registry fast path but still arbitrate correctly via the kernel backstop",
+    "Complete reads the clock after releasing: strictly conservative (a completion straddling the deadline reports exceeded)",
+    "a wedged child holder costs the test's 15s bound, not a hang; holder crash self-heals (OS closes fds, registry dies with the process)"
+  ]
+}
