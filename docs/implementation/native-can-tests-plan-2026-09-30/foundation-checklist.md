@@ -150,7 +150,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P08 — Implement grants and idempotent dispatch
 
-- [ ] **P08 accepted** — owner lane: `native-owner`.
+- [x] **P08 accepted** — owner lane: `native-owner`. Evidence: [evidence/P08.json](evidence/P08.json).
 
 **Start after:** P07, P02. **Additional acceptance prerequisites:** none.
 

@@ -327,7 +327,7 @@
       "acceptance": "Same ID/same arguments joins; changed arguments reject; lost acknowledgment reports indeterminate without redispatch. Subject stdout cannot forge a supervisor message.",
       "evidence": "Save frame/dispatch controls; commit service core.",
       "commit": "feat(testing): implement grants and idempotent dispatch",
-      "status": "active",
+      "status": "complete",
       "start_after": [
         "P07",
         "P02"
