@@ -257,11 +257,8 @@ func (c *programChecker) gatherBodyMode(file *resolve.File, value reflect.Value,
 			arguments = node.Types
 		case *syntax.OutcomePattern:
 			// A bare generic error arm selects a specialization from the call's bound.
-			if n, ok := node.Error.(*syntax.NamedType); ok && len(n.Arguments) == 0 {
-				symbol, err := file.Lookup(nil, n.Name, resolve.ErrorUse)
-				if err == nil && len(symbol.Parameters) != 0 {
-					return c.gatherBodyMode(file, reflect.ValueOf(node.Binding), recovering)
-				}
+			if c.bareGenericErrorHead(file, node.Error) {
+				return c.gatherBodyMode(file, reflect.ValueOf(node.Binding), recovering)
 			}
 		}
 		if name != nil {
@@ -273,6 +270,17 @@ func (c *programChecker) gatherBodyMode(file *resolve.File, value reflect.Value,
 			}
 		}
 		return c.gatherBodyMode(file, value.Elem(), recovering)
+	}
+	// MatchArm.AlternateOutcomes stores value elements, so grouped bare
+	// generic heads arrive here as structs rather than through the pointer
+	// exception above. They select their specialization from the call's
+	// bound exactly like the first head; only the optional binding is
+	// gathered. The shared group body still appears once in syntax and is
+	// visited once.
+	if value.Kind() == reflect.Struct && value.CanInterface() {
+		if pattern, ok := value.Interface().(syntax.OutcomePattern); ok && c.bareGenericErrorHead(file, pattern.Error) {
+			return c.gatherBodyMode(file, reflect.ValueOf(pattern.Binding), recovering)
+		}
 	}
 	var problems []error
 	switch value.Kind() {
@@ -296,6 +304,18 @@ func (c *programChecker) gatherBodyMode(file *resolve.File, value reflect.Value,
 		}
 	}
 	return errors.Join(problems...)
+}
+
+// bareGenericErrorHead reports whether node names a generic error without
+// specialization arguments. Such heads resolve against the call's bound at
+// checking time and must not be gathered as concrete types.
+func (c *programChecker) bareGenericErrorHead(file *resolve.File, node syntax.TypeNode) bool {
+	named, ok := node.(*syntax.NamedType)
+	if !ok || len(named.Arguments) != 0 {
+		return false
+	}
+	symbol, err := file.Lookup(nil, named.Name, resolve.ErrorUse)
+	return err == nil && len(symbol.Parameters) != 0
 }
 
 // locateGather attaches the gathering file's use-site span to a constructor

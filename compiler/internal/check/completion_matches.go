@@ -109,155 +109,186 @@ func (c *regionChecker) completionArmsCall(arms []syntax.MatchArm, call *ir.Invo
 	var problems []error
 	for _, arm := range arms {
 		rollback := c.childCheckpoint()
+		restoreCoverage := saveMap(&seen)
 		armErr := func() error {
 			if arm.Outcome == nil || len(arm.Patterns) != 0 {
 				return fmt.Errorf("completion match requires exact outcome patterns")
 			}
-			a := ir.Arm{Span: arm.Span, Forward: arm.Forward}
-			pattern := arm.Outcome
-			armScope := c.child(scope)
-			var bindingType *types.Type
-			var bindingName string
-			var key string
-			switch {
-			case pattern.Success:
-				if pattern.StandardFailure || pattern.Error != nil {
-					return fmt.Errorf("invalid success pattern")
+			patterns := []*syntax.OutcomePattern{arm.Outcome}
+			for i := range arm.AlternateOutcomes {
+				patterns = append(patterns, &arm.AlternateOutcomes[i])
+			}
+			grouped := len(patterns) > 1
+			groupArms := make([]ir.Arm, 0, len(patterns))
+			for _, pattern := range patterns {
+				span := arm.Span
+				if grouped {
+					span = pattern.Span
 				}
-				a.Outcome = "ok"
-				key = "ok"
-				bindingType = result
-				armScope = c.child(successScope)
-			case pattern.StandardFailure:
-				if pattern.Error != nil || arm.Forward {
-					return fmt.Errorf("invalid standard pattern")
+				a := ir.Arm{Span: span, Forward: arm.Forward}
+				armScope := c.child(scope)
+				var bindingType *types.Type
+				var bindingName string
+				var key string
+				if grouped && (pattern.Success || pattern.StandardFailure || pattern.Binding != nil || pattern.Alias != nil || pattern.Error == nil) {
+					return c.locate(pattern.Span, fmt.Errorf("grouped completion arms require unbound domain error heads"))
 				}
-				a.Outcome = "standard"
-				key = "standard"
-				// C9.1: a bound standard catch binds the opaque snapshot, never
-				// a string. The former canonical text is failure.message.
-				snapshot, err := c.context.Type(named("standard_failure"), false)
-				if err != nil {
-					return c.locate(pattern.Span, err)
-				}
-				bindingType = snapshot
-			default:
-				name, ok := pattern.Error.(*syntax.NamedType)
-				if !ok {
-					return c.locate(pattern.Span, fmt.Errorf("domain pattern must be an error head"))
-				}
-				var concrete ConcreteError
-				if len(name.Arguments) == 0 {
-					var declaration string
-					if c.context.ErrorName != nil {
-						declaration, err = c.context.ErrorName(name.Name)
+				switch {
+				case pattern.Success:
+					if pattern.StandardFailure || pattern.Error != nil {
+						return fmt.Errorf("invalid success pattern")
+					}
+					a.Outcome = "ok"
+					key = "ok"
+					bindingType = result
+					armScope = c.child(successScope)
+				case pattern.StandardFailure:
+					if pattern.Error != nil || arm.Forward {
+						return fmt.Errorf("invalid standard pattern")
+					}
+					a.Outcome = "standard"
+					key = "standard"
+					// C9.1: a bound standard catch binds the opaque snapshot, never
+					// a string. The former canonical text is failure.message.
+					snapshot, err := c.context.Type(named("standard_failure"), false)
+					if err != nil {
+						return c.locate(pattern.Span, err)
+					}
+					bindingType = snapshot
+				default:
+					name, ok := pattern.Error.(*syntax.NamedType)
+					if !ok {
+						return c.locate(pattern.Span, fmt.Errorf("domain pattern must be an error head"))
+					}
+					var concrete ConcreteError
+					if len(name.Arguments) == 0 {
+						var declaration string
+						if c.context.ErrorName != nil {
+							declaration, err = c.context.ErrorName(name.Name)
+						} else {
+							var typ *types.Type
+							typ, err = c.context.Type(name, false)
+							if err == nil {
+								declaration = typ.Declaration()
+							}
+						}
+						if err != nil {
+							return c.locate(pattern.Span, err)
+						}
+						concrete, err = bound.ResolveBareArm(declaration)
+						if err != nil {
+							if isExactSpecialization(err) {
+								err = c.locateCode(pattern.Span, "CAN-CHECK-EXACT-SPECIALIZATION", err)
+								return source.Relate(c.context.File.Name(), site.match, "matched bound carries several specializations", err)
+							}
+							return c.locate(pattern.Span, err)
+						}
 					} else {
-						var typ *types.Type
-						typ, err = c.context.Type(name, false)
-						if err == nil {
-							declaration = typ.Declaration()
+						resolved, resolveErr := c.context.Type(name, false)
+						if resolveErr != nil {
+							return c.locate(pattern.Span, resolveErr)
+						}
+						if _, concreteErr := c.context.Registry.Concrete(resolved); concreteErr != nil {
+							return c.locate(pattern.Span, concreteErr)
+						}
+						concrete, err = bound.ResolveExactArm(resolved.Identity())
+						if err != nil {
+							return c.locate(pattern.Span, err)
 						}
 					}
-					if err != nil {
-						return c.locate(pattern.Span, err)
-					}
-					concrete, err = bound.ResolveBareArm(declaration)
-					if err != nil {
-						if isExactSpecialization(err) {
-							err = c.locateCode(pattern.Span, "CAN-CHECK-EXACT-SPECIALIZATION", err)
-							return source.Relate(c.context.File.Name(), site.match, "matched bound carries several specializations", err)
-						}
-						return c.locate(pattern.Span, err)
-					}
-				} else {
-					resolved, resolveErr := c.context.Type(name, false)
-					if resolveErr != nil {
-						return c.locate(pattern.Span, resolveErr)
-					}
-					if _, concreteErr := c.context.Registry.Concrete(resolved); concreteErr != nil {
-						return c.locate(pattern.Span, concreteErr)
-					}
-					concrete, err = bound.ResolveExactArm(resolved.Identity())
-					if err != nil {
-						return c.locate(pattern.Span, err)
+					a.Outcome = "domain"
+					a.Error = concrete.Type
+					key = "domain:" + concrete.TypeIdentity
+					bindingType = concrete.Type
+					// An explicit alias binds the chosen payload under its own name;
+					// otherwise the existing short error-name alias is introduced.
+					bindingName = name.Name.Name
+					if pattern.Alias != nil {
+						bindingName = pattern.Alias.Text
 					}
 				}
-				a.Outcome = "domain"
-				a.Error = concrete.Type
-				key = "domain:" + concrete.TypeIdentity
-				bindingType = concrete.Type
-				// An explicit alias binds the chosen payload under its own name;
-				// otherwise the existing short error-name alias is introduced.
-				bindingName = name.Name.Name
-				if pattern.Alias != nil {
-					bindingName = pattern.Alias.Text
+				if seen[key] {
+					return c.locate(pattern.Span, fmt.Errorf("duplicate completion arm for %s", key))
 				}
-			}
-			if seen[key] {
-				return c.locate(pattern.Span, fmt.Errorf("duplicate completion arm for %s", key))
-			}
-			// C5.1 order: every error arm, with the optional standard arm
-			// anywhere among those failures, precedes exactly one final ok.
-			// Individual failure order is unconstrained; only success-last is
-			// enforced, at the failure head that breaks it.
-			if a.Outcome != "ok" && seen["ok"] {
-				return c.locate(pattern.Span, fmt.Errorf("failure arms precede the final ok"))
-			}
-			seen[key] = true
-			if pattern.Binding != nil {
-				if a.Outcome == "domain" {
-					return c.locate(pattern.Span, fmt.Errorf("domain arm binds its declared error name"))
+				// C5.1 order: every error arm, with the optional standard arm
+				// anywhere among those failures, precedes exactly one final ok.
+				// Individual failure order is unconstrained; only success-last is
+				// enforced, at the failure head that breaks it.
+				if a.Outcome != "ok" && seen["ok"] {
+					return c.locate(pattern.Span, fmt.Errorf("failure arms precede the final ok"))
 				}
-				declared, err := c.context.Type(pattern.Binding.Type, false)
-				if err != nil {
-					return err
-				}
-				if !types.Equal(declared, bindingType) {
-					if a.Outcome == "standard" {
-						return c.locate(pattern.Span, fmt.Errorf("standard catch binds the standard_failure snapshot; str and other binder types are rejected"))
+				seen[key] = true
+				if pattern.Binding != nil {
+					if a.Outcome == "domain" {
+						return c.locate(pattern.Span, fmt.Errorf("domain arm binds its declared error name"))
 					}
-					return fmt.Errorf("completion arm binding type mismatch")
-				}
-				bindingName = pattern.Binding.Name.Text
-			}
-			if bindingName != "" && !arm.Forward {
-				if a.Outcome == "domain" && pattern.Alias == nil {
-					a.Binding, err = c.bindErrorAlias(armScope, bindingName, bindingType)
-				} else {
-					a.Binding, err = c.bind(armScope, bindingName, bindingType)
-				}
-				if err != nil {
-					return c.locate(pattern.Span, err)
-				}
-			}
-			if arm.Forward {
-				if arm.Body != nil || pattern.Binding != nil || pattern.Alias != nil {
-					return fmt.Errorf("forwarding arm cannot contain a body or binding")
-				}
-				if a.Outcome == "ok" {
-					if !types.Assignable(result, c.region.Result) {
-						return fmt.Errorf("forwarded success does not fit current region")
-					}
-				} else {
-					actual, err := c.context.Registry.Bound([]*types.Type{a.Error})
+					declared, err := c.context.Type(pattern.Binding.Type, false)
 					if err != nil {
 						return err
 					}
-					if escapeErr := c.escaping(actual); escapeErr != nil {
-						return c.outward(arm.Span, site.match, escapeErr)
+					if !types.Equal(declared, bindingType) {
+						if a.Outcome == "standard" {
+							return c.locate(pattern.Span, fmt.Errorf("standard catch binds the standard_failure snapshot; str and other binder types are rejected"))
+						}
+						return fmt.Errorf("completion arm binding type mismatch")
+					}
+					bindingName = pattern.Binding.Name.Text
+				}
+				if bindingName != "" && !arm.Forward && !grouped {
+					if a.Outcome == "domain" && pattern.Alias == nil {
+						a.Binding, err = c.bindErrorAlias(armScope, bindingName, bindingType)
+					} else {
+						a.Binding, err = c.bind(armScope, bindingName, bindingType)
+					}
+					if err != nil {
+						return c.locate(pattern.Span, err)
 					}
 				}
-			} else {
-				a.Body, err = c.completion(arm.Body, armScope)
-				if err != nil && !c.deferAggregate(err) {
-					return err
+				if arm.Forward {
+					if arm.Body != nil || pattern.Binding != nil || pattern.Alias != nil {
+						return fmt.Errorf("forwarding arm cannot contain a body or binding")
+					}
+					if a.Outcome == "ok" {
+						if !types.Assignable(result, c.region.Result) {
+							return fmt.Errorf("forwarded success does not fit current region")
+						}
+					} else {
+						actual, err := c.context.Registry.Bound([]*types.Type{a.Error})
+						if err != nil {
+							return err
+						}
+						if escapeErr := c.escaping(actual); escapeErr != nil {
+							return c.outward(span, site.match, escapeErr)
+						}
+					}
+				} else if !grouped {
+					a.Body, err = c.completion(arm.Body, armScope)
+					if err != nil && !c.deferAggregate(err) {
+						return err
+					}
+				}
+				groupArms = append(groupArms, a)
+			}
+			if grouped && !arm.Forward {
+				// A grouped handler has no per-error payload binding. Check its
+				// lexical body only once so nested calls and fixture sites retain
+				// one identity even though each exact error needs an IR arm.
+				body, bodyErr := c.completion(arm.Body, c.child(scope))
+				if bodyErr != nil && !c.deferAggregate(bodyErr) {
+					return bodyErr
+				}
+				for i := range groupArms {
+					groupArms[i].Body = body
 				}
 			}
-			checked = append(checked, a)
+			checked = append(checked, groupArms...)
 			return nil
 		}()
 		if armErr != nil {
 			rollback()
+			// A failed arm, including a partially resolved group, must not
+			// leave coverage that later arms misread as duplicates.
+			restoreCoverage()
 			if !c.context.Recover {
 				return nil, armErr
 			}

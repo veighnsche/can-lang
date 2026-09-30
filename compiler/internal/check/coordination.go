@@ -128,6 +128,12 @@ func (c *regionChecker) coordination(n syntax.Coordination, scope bodyScope, exp
 			if arm.Outcome == nil {
 				return nil, fmt.Errorf("race requires completion patterns")
 			}
+			// Success and the singular all_failed aggregate take single
+			// heads. Reject grouped alternatives here so the aggregate
+			// paths below cannot silently ignore them.
+			if len(arm.AlternateOutcomes) != 0 {
+				return nil, c.locate(arm.AlternateOutcomes[0].Span, fmt.Errorf("first-success race arms take single heads without grouped alternatives"))
+			}
 			if arm.Outcome.Success {
 				successArms = append(successArms, arm)
 				continue

@@ -26,6 +26,7 @@ func (c *programChecker) assertions(file *resolve.File, fn *ProgramFunction, con
 }
 
 func (c *programChecker) assertionRows(file *resolve.File, fn *ProgramFunction, context CompletionContext, rows []syntax.Assertion) ([]*ir.Assertion, error) {
+	rows = syntax.ExpandAssertions(rows)
 	declaration := fn.Symbol.Declaration.(*syntax.FunctionDecl)
 	var result []*ir.Assertion
 	var problems []error
@@ -138,6 +139,7 @@ func (c *programChecker) assertionRows(file *resolve.File, fn *ProgramFunction, 
 // A basic table belongs to one checked invocation. The complete concurrent
 // scheduler, participant paths and captured callable instances are I18's pass.
 func (c *regionChecker) fixtures(rows []syntax.Assertion, step *ir.InvocationStep, scope bodyScope) (*ir.FixtureTable, error) {
+	rows = syntax.ExpandAssertions(rows)
 	if step.Site == "" {
 		return nil, fmt.Errorf("fixture requires a checked lexical call site")
 	}
@@ -293,6 +295,7 @@ func (c *programChecker) nativeAssertions(program *Program, callables map[string
 			default:
 				return nil
 			}
+			rows = syntax.ExpandAssertions(rows)
 			if len(rows) == 0 {
 				return fmt.Errorf("%s requires mandatory assertions", native.Symbol.Name)
 			}
@@ -498,7 +501,7 @@ func validateAssertionNames(file *resolve.File, declaration *syntax.FunctionDecl
 		return fmt.Errorf("%s requires mandatory assertions", declaration.Name.Text)
 	}
 	seen := map[string]source.Span{}
-	for _, row := range declaration.Assertions {
+	for _, row := range syntax.ExpandAssertions(declaration.Assertions) {
 		if prior, ok := seen[row.Name.Text]; ok || row.Name.Text == "" {
 			err := source.LocateCode(file.Source.Path, row.Name.Span, "CAN-CHECK-ASSERTION-NAME", fmt.Errorf("duplicate or missing assertion name in %s", declaration.Name.Text))
 			if ok {
@@ -522,7 +525,19 @@ func (c *programChecker) genericAssertions(files []*resolve.File) error {
 				continue
 			}
 			symbol := file.Package.Scope.Symbols[d.Name.Text]
-			for _, row := range d.Assertions {
+			seen := map[string]source.Span{}
+			for _, row := range syntax.ExpandAssertions(d.Assertions) {
+				if prior, duplicate := seen[row.Name.Text]; duplicate {
+					err := source.LocateCode(file.Source.Path, row.Name.Span, "CAN-CHECK-ASSERTION-NAME", fmt.Errorf("duplicate assertion name %q", row.Name.Text))
+					err = source.Relate(file.Source.Path, prior, "first assertion here", err)
+					if !c.recovering {
+						return err
+					}
+					c.world.Invalid[d] = err
+					problems = append(problems, err)
+					continue
+				}
+				seen[row.Name.Text] = row.Name.Span
 				rollback := c.unitCheckpoint()
 				rowErr := func() error {
 					elided := make([]bool, len(d.Inputs))
