@@ -687,6 +687,21 @@ export function createResponses(
         response(status, headers, ownBytes(copyBytes(body, origin)), "application/octet-stream"),
       );
     },
+    async jsonBytes(
+      status: unknown,
+      headers: unknown,
+      body: unknown,
+      _context?: AssertionContext,
+    ): Promise<Completion<unknown>> {
+      return success(
+        response(
+          status,
+          headers,
+          ownBytes(copyBytes(body, origin)),
+          "application/json; charset=utf-8",
+        ),
+      );
+    },
     async image(
       status: unknown,
       headers: unknown,

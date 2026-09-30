@@ -1626,3 +1626,29 @@ test("stream responses serve produced queues over loopback", async () => {
   expect(owned.completion.kind).toBe("ok");
   expect(seen).toEqual({ status: 200, body: "one;two" });
 });
+
+test("pre-encoded JSON responses preserve exact bytes and protected media headers", async () => {
+  const source = new TextEncoder().encode('{"id":9007199254740993,"value":-0.0}');
+  const body = ownBytes(source);
+  const status = value(await responses.ok());
+  const headers = value(await responses.emptyHeaders());
+  const response = value(await responses.jsonBytes(status, headers, body));
+  source.fill(0);
+  copyBytes(body, origin).fill(0);
+  const native = nativeResponse(response);
+  expect(native.headers.get("content-type")).toBe("application/json; charset=utf-8");
+  expect(native.headers.get("x-content-type-options")).toBe("nosniff");
+  expect(await native.text()).toBe('{"id":9007199254740993,"value":-0.0}');
+  check(
+    await responses.makeHeaders(
+      array([
+        record("header", [
+          ["name", "Content-Type"],
+          ["value", "text/html"],
+        ]),
+      ]),
+    ),
+    "http::invalid_request",
+    { reason: "invalid_header" },
+  );
+});

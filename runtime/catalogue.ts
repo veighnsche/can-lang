@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "0a09096baf6ff3f9b515e39b2603904d635d93c98ee609ca2f0d52864acf560e";
+export const catalogueSHA256 = "bdc7874222d8eccc7dc651bc949d98871e9b4e87e313b44cf1ca0c51c2957659";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -8476,6 +8476,45 @@ export const catalogue = freeze({
           "TextEncoder"
         ],
         "adapter": "Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::response_json_bytes",
+      "identity": "can.std.http@1::response_json_bytes",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "status",
+          "type": "http::body_status"
+        },
+        {
+          "name": "headers",
+          "type": "http::server_headers"
+        },
+        {
+          "name": "body",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "http::server_response",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Response",
+          "Headers",
+          "TextEncoder"
+        ],
+        "adapter": "Serve pre-encoded JSON bytes without parsing or re-encoding; fixed application/json; charset=utf-8, nosniff and immutable body snapshot.",
         "task": "I32"
       },
       "assertion": "real",

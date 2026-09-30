@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 0a09096baf6ff3f9b515e39b2603904d635d93c98ee609ca2f0d52864acf560e.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: bdc7874222d8eccc7dc651bc949d98871e9b4e87e313b44cf1ca0c51c2957659.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -450,6 +450,7 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | http::empty_server_headers |  → http::server_headers | {} |  | Headers | Create the empty immutable header set. | real | I32 / P10 |
 | http::response_empty | http::status status, http::server_headers headers → http::server_response | {} |  | Response, Headers, TextEncoder | Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec. | real | I32 / P10 |
 | http::response_bytes | http::body_status status, http::server_headers headers, bytes::buffer body → http::server_response | {} |  | Response, Headers, TextEncoder | Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec. | real | I32 / P10 |
+| http::response_json_bytes | http::body_status status, http::server_headers headers, bytes::buffer body → http::server_response | {} |  | Response, Headers, TextEncoder | Serve pre-encoded JSON bytes without parsing or re-encoding; fixed application/json; charset=utf-8, nosniff and immutable body snapshot. | real | I32 / P10 |
 | http::response_text | http::body_status status, http::server_headers headers, str body → http::server_response | {} |  | Response, Headers, TextEncoder | Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec. | real | I32 / P10 |
 | http::response_html | http::body_status status, http::server_headers headers, html::safe body → http::server_response | {} |  | Response, Headers, TextEncoder | Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec. | real | I32 / P10 |
 | http::response_image | http::body_status status, http::server_headers headers, bytes::buffer body, str media_type → http::server_response | {http::invalid_request} |  | Response, Headers | Validated raster allowlist (image/png, image/jpeg, image/webp) with immutable byte snapshot and nosniff; any other media type emits http::invalid_request. | real | I32 / P10 |

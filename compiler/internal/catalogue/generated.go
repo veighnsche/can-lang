@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "0a09096baf6ff3f9b515e39b2603904d635d93c98ee609ca2f0d52864acf560e"
+const GeneratedSourceSHA256 = "bdc7874222d8eccc7dc651bc949d98871e9b4e87e313b44cf1ca0c51c2957659"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -493,6 +493,7 @@ const OpHttpMakeServerHeaders = "http::make_server_headers"
 const OpHttpEmptyServerHeaders = "http::empty_server_headers"
 const OpHttpResponseEmpty = "http::response_empty"
 const OpHttpResponseBytes = "http::response_bytes"
+const OpHttpResponseJsonBytes = "http::response_json_bytes"
 const OpHttpResponseText = "http::response_text"
 const OpHttpResponseHtml = "http::response_html"
 const OpHttpResponseImage = "http::response_image"

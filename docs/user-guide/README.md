@@ -267,3 +267,9 @@ maintaining old syntax for compatibility.
 The guide's acceptance check is a fresh coding agent reproducing a verified small
 recipe with the documented prerequisites and checks. That check becomes applicable
 when implementation has produced a recipe; it has not been run for this scaffold.
+
+`http::response_json_bytes(status, headers, body)` serves already-encoded JSON
+bytes with `application/json; charset=utf-8` and `nosniff`. Encode an immutable
+JSON value with `codec::encode_json_value` first. This response adapter copies
+the bytes without parsing or re-encoding them, preserving exact integer tokens
+and float spellings; it does not validate arbitrary bytes as JSON.

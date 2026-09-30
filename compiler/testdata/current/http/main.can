@@ -240,6 +240,7 @@ fn bool responses
         call http::response_empty(cached, call http::empty_server_headers()) as http::server_response c
         call http::response_bytes(created, headers, call bytes::empty()) as http::server_response b
         call http::response_image(created, headers, call bytes::empty(), "image/png") as http::server_response img
+        call http::response_json_bytes(created, headers, call bytes::empty()) as http::server_response json_bytes
         call html::text("ok") as html::node node
         call html::fragment([node]) as html::safe page
         call http::response_html(oops, headers, page) as http::server_response h

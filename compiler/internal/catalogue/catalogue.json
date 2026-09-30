@@ -8474,6 +8474,45 @@
       ]
     },
     {
+      "name": "http::response_json_bytes",
+      "identity": "can.std.http@1::response_json_bytes",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "status",
+          "type": "http::body_status"
+        },
+        {
+          "name": "headers",
+          "type": "http::server_headers"
+        },
+        {
+          "name": "body",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "http::server_response",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Response",
+          "Headers",
+          "TextEncoder"
+        ],
+        "adapter": "Serve pre-encoded JSON bytes without parsing or re-encoding; fixed application/json; charset=utf-8, nosniff and immutable body snapshot.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
       "name": "http::response_text",
       "identity": "can.std.http@1::response_text",
       "kind": "function",
