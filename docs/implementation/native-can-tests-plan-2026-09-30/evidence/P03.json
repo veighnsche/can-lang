@@ -1,0 +1,78 @@
+{
+  "status": "complete",
+  "executor": "Muse (muse-spark-1.3-contributor)",
+  "writing_owner": "shared-reference",
+  "task_id": "P03",
+  "row_or_file_slice": null,
+  "start_prerequisite_receipts": [
+    "P01 complete in 626bf03743dbfa660d4b4651c2b0b3cceaeae0a5"
+  ],
+  "acceptance_prerequisite_receipts": [],
+  "commits": [
+    "<P03-SHA recorded after commit>"
+  ],
+  "changed_paths": [
+    "docs/implementation/native-can-tests-plan-2026-09-30/reference-seed.md",
+    "docs/implementation/native-can-tests-plan-2026-09-30/reference-seed.json"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "shasum -a 256 pinned Bun, Bun archive, catalogue.json, distribution/target.json, tests/conformance/native.ts",
+      "deadline": "90s",
+      "result": "Bun 35d20dd0..., archive 90987a3a..., target.json 79a61045..., native.ts e1af4ae1... all match prerequisites record; catalogue bdc78742... recorded"
+    },
+    {
+      "command": "find runtime tools/runtime distribution/assets distribution/notices -type f | wc -l; byte total",
+      "deadline": "60s",
+      "result": "336 files, 4092369 bytes including three .DS_Store files; exactly matches prerequisites inventory"
+    },
+    {
+      "command": "git log --oneline 4cf8f91d..HEAD; git diff 4cf8f91d HEAD --stat -- tests compiler runtime tools host",
+      "deadline": "60s",
+      "result": "delta is exactly 5 commits (P00, contracts, 2x AGENTS.md, P01); zero diff under tests/compiler/runtime/tools/host"
+    },
+    {
+      "command": "ls dist/development; which canlc; go version; uname",
+      "deadline": "30s",
+      "result": "dist/development empty, no canlc on PATH (R bundle still missing); go1.27.1 darwin/arm64 on Darwin 27.0.0 arm64"
+    }
+  ],
+  "identities": {
+    "reference": "proposed only: source 626bf037, catalogue bdc78742, Bun 35d20dd0; no accepted bundle",
+    "owner": null,
+    "candidate": "source at 626bf037 (revalidated from planning baseline 4cf8f91d)",
+    "suite": null,
+    "artifact": null,
+    "host_profile": "observed darwin-arm64; strict enforcement unqualified (P13)",
+    "observer": null
+  },
+  "coverage": {
+    "case_check_ids": [],
+    "retained_facets": [],
+    "variants_and_environments": [],
+    "unrun_or_blocked": [
+      "R-seed acceptance is P04/P05 work; this record selects inputs only and claims no qualification"
+    ]
+  },
+  "controls": {
+    "positive": [
+      "all reusable prerequisite hashes reproduce; bundle-absence facts confirmed (empty dist, no canlc)"
+    ],
+    "seeded_defect": [],
+    "missing_evidence": [
+      "acceptance explicitly pending; changed/missing artifact fails identity per the recorded recipe rule"
+    ]
+  },
+  "resource_and_cleanup_receipts": [
+    "read-only inventory; no builds, no extraction, no temp dirs, no live runs or measurements"
+  ],
+  "correction_registry_head": null,
+  "relevance_decision": null,
+  "retirement_eligible": false,
+  "retirement_commit": null,
+  "reviewer_disposition": "integrator self-review: inventory commands observed, hashes match prerequisites record, missing-artifact states explicit, recipe forbids candidate canlc run. Independent review deferred to Z06.",
+  "limitations": [
+    "candidate source HEAD moved by implementation commits; P04 must reverify hashes at materialization time",
+    "Go/host observed, not qualified; strict enforcement pending P13"
+  ]
+}

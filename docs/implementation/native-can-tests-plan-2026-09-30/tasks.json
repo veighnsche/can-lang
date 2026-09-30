@@ -198,7 +198,7 @@
       "acceptance": "Bounded native wire codec and data fixtures reject duplicate identities, gaps, truncation and malformed envelopes without trusting subject stdout. Ordinary Can codec source and supplied fixtures are reviewed provisionally; full cross-language execution is required by P23 after R-core acceptance, not assumed to qualify N.",
       "evidence": "Save fixture digest and results; commit protocol adapters.",
       "commit": "feat(testing): implement typed bounded protocol adapters",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P01"
       ],
@@ -216,7 +216,7 @@
       "acceptance": "Acceptance remains pending until independent controls; changed/missing artifact fails identity.",
       "evidence": "Record provenance and limits; commit seed proposal.",
       "commit": "feat(testing): select reference seed inputs",
-      "status": "planned",
+      "status": "complete",
       "start_after": [
         "P01"
       ],
@@ -290,7 +290,7 @@
       "acceptance": "N/worker death leaves T alive; loss of T cannot issue a green receipt or grant new admission.",
       "evidence": "Save T identity, bounded graph and cleanup controls; commit bootstrap witness before N qualification.",
       "commit": "feat(testing): build transitional bootstrap witness t",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P01"
       ],
@@ -308,7 +308,7 @@
       "acceptance": "Crash between reservation and marker remains discoverable; conflicting replay is rejected; wrong PID/path is not authority.",
       "evidence": "Save fault-point journal fixtures; commit journal.",
       "commit": "feat(testing): journal ownership before effects",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P01"
       ],
@@ -473,7 +473,7 @@
       "acceptance": "Complete canonical package with arbitrary ordinary helper functions, context construction, typed check references and attached assertions; static/type/fixture controls are provisional until P26/P23. No missing-assertion exemption or canned whole-case success. Seed duplicate IDs, wrong effect, missing/exhausted fixture and altered observation; diagnostics identify source and exact reproduction selector.",
       "evidence": "Save source-check receipt; commit skeleton.",
       "commit": "feat(testing): create ordinary can suite skeleton",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P01"
       ],
@@ -800,7 +800,7 @@
         "P01"
       ],
       "accept_after": [],
-      "status": "planned",
+      "status": "active",
       "scope": "mechanism code and local controls; no integrated credit"
     },
     {

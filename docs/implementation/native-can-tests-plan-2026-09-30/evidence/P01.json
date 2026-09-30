@@ -9,7 +9,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "<P01-SHA recorded after commit>"
+    "626bf03743dbfa660d4b4651c2b0b3cceaeae0a5"
   ],
   "changed_paths": [
     "schemas/native-test/"
