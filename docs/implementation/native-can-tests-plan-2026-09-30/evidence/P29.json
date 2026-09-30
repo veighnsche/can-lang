@@ -11,7 +11,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "TBD external service ownership"
+    "1162fbbe external service ownership"
   ],
   "changed_paths": [
     "tools/native-test-owner/external/"

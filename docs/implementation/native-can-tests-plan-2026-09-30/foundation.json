@@ -615,7 +615,7 @@
       "acceptance": "Local controls reject foreign namespace/context/server/prefix, forged release, duplicate uncertain dispatch and crash-before-journal. Recovery touches only evidenced owned resources; missing release stays unresolved. Accepted N-core remains unchanged until each I slice independently accepts this delta.",
       "evidence": "evidence/P29.json with local positive/negative ownership controls and explicit unqualified service legs",
       "commit": "feat(testing): journal external service ownership",
-      "status": "active",
+      "status": "complete",
       "scope": "code and local controls; integrated gates explicit"
     }
   ]
