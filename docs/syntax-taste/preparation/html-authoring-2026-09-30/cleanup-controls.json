@@ -1,0 +1,14 @@
+{
+  "checks": [
+    "dead owned directory recovered",
+    "live owner preserved",
+    "foreign owner preserved",
+    "malformed group list preserved",
+    "boolean owner pid preserved",
+    "path mismatch preserved",
+    "non-object marker preserved",
+    "live child group refused"
+  ],
+  "all_passed": true,
+  "control_directories_and_processes_reclaimed": true
+}

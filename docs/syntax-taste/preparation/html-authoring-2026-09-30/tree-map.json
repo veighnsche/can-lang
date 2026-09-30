@@ -1,0 +1,100 @@
+{
+  "source": "editor.tree",
+  "target": "tree-lowered.can",
+  "columns": "one-based scalar, ASCII probe expressions",
+  "entries": [
+    {
+      "generated_line": 247,
+      "tree_line": 6,
+      "operation": "text",
+      "expressions": [
+        {
+          "generated_start": 33,
+          "generated_end": 48,
+          "tree_line": 6,
+          "tree_column": 18,
+          "tree_expression": "\"Service draft\""
+        }
+      ]
+    },
+    {
+      "generated_line": 248,
+      "tree_line": 5,
+      "operation": "element",
+      "expressions": []
+    },
+    {
+      "generated_line": 249,
+      "tree_line": 5,
+      "operation": "element",
+      "expressions": []
+    },
+    {
+      "generated_line": 250,
+      "tree_line": 8,
+      "operation": "text",
+      "expressions": [
+        {
+          "generated_start": 33,
+          "generated_end": 39,
+          "tree_line": 8,
+          "tree_column": 18,
+          "tree_expression": "notice"
+        }
+      ]
+    },
+    {
+      "generated_line": 251,
+      "tree_line": 7,
+      "operation": "element",
+      "expressions": []
+    },
+    {
+      "generated_line": 252,
+      "tree_line": 7,
+      "operation": "element",
+      "expressions": []
+    },
+    {
+      "generated_line": 253,
+      "tree_line": 9,
+      "operation": "element",
+      "expressions": []
+    },
+    {
+      "generated_line": 254,
+      "tree_line": 9,
+      "operation": "element",
+      "expressions": [
+        {
+          "generated_start": 97,
+          "generated_end": 111,
+          "tree_line": 10,
+          "tree_column": 19,
+          "tree_expression": "parts.controls"
+        }
+      ]
+    },
+    {
+      "generated_line": 255,
+      "tree_line": 1,
+      "operation": "document",
+      "expressions": [
+        {
+          "generated_start": 55,
+          "generated_end": 69,
+          "tree_line": 3,
+          "tree_column": 14,
+          "tree_expression": "parts.viewport"
+        },
+        {
+          "generated_start": 112,
+          "generated_end": 129,
+          "tree_line": 11,
+          "tree_column": 14,
+          "tree_expression": "parts.publication"
+        }
+      ]
+    }
+  ]
+}

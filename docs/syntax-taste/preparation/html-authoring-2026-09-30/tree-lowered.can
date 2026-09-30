@@ -1,0 +1,257 @@
+package html_components
+    provides [service_fields, input_slot, slug_slot, title_slot, deliverable_slot, text_control, hidden_control, textarea_control, submit_control, prepared_editor, heading, paragraph, editor]
+    uses [html, text]
+
+record service_fields
+    str id
+    str slug
+    str title
+    str deliverable
+    str description
+
+fn html::node input_control
+    emits {html::invalid_structure}
+    given
+        str label_text
+        str name
+        str id
+        str kind
+        str value
+        str max_length
+    asserts
+        sample: "Title", "title", "job_title", "text", "Design", "120" => ok
+        hostile: "Title", "title", "job_title", "text", "\"><script>", "120" => ok
+    match chain
+        call html::text(label_text) as html::node label_words
+        call html::text_attribute("for", id) as html::attribute label_for
+        call html::make_tag("label") as html::tag label_tag
+        call html::element(label_tag, [label_for], [label_words]) as html::node label_node
+        call html::text_attribute("type", kind) as html::attribute type_attr
+        call html::text_attribute("name", name) as html::attribute name_attr
+        call html::text_attribute("id", id) as html::attribute id_attr
+        call html::text_attribute("value", value) as html::attribute value_attr
+        call html::text_attribute("maxlength", max_length) as html::attribute max_length_attr
+        call html::make_tag("input") as html::tag input_tag
+        call html::element(input_tag, [type_attr, name_attr, id_attr, value_attr, max_length_attr], []) as html::node input_node
+        call html::make_tag("div") as html::tag group_tag
+        call html::element(group_tag, [], [label_node, input_node]) as html::node group
+        html::invalid_structure
+        ok => ok group
+
+/// Render the requested-work field as escaped textarea content.
+fn html::node textarea_control
+    emits {html::invalid_structure}
+    given
+        str label_text
+        str name
+        str id
+        str value
+    asserts
+        sample: "Requested work", "requested_work", "job_work", "Create one icon." => ok
+        hostile: "Requested work", "requested_work", "job_work", "</textarea><script>bad()</script>" => ok
+    match chain
+        call html::text(label_text) as html::node label_words
+        call html::text_attribute("for", id) as html::attribute label_for
+        call html::make_tag("label") as html::tag label_tag
+        call html::element(label_tag, [label_for], [label_words]) as html::node label_node
+        call html::text_attribute("name", name) as html::attribute name_attr
+        call html::text_attribute("id", id) as html::attribute id_attr
+        call html::text_attribute("maxlength", "4000") as html::attribute max_length_attr
+        call html::text(value) as html::node contents
+        call html::make_tag("textarea") as html::tag textarea_tag
+        call html::element(textarea_tag, [name_attr, id_attr, max_length_attr], [contents]) as html::node textarea
+        call html::make_tag("div") as html::tag group_tag
+        call html::element(group_tag, [], [label_node, textarea]) as html::node group
+        html::invalid_structure
+        ok => ok group
+
+/// Render an escaped hidden input for CSRF or the owner-visible job id.
+fn html::node hidden_control
+    emits {html::invalid_structure}
+    given
+        str name
+        str value
+    asserts
+        csrf: "csrf", "token" => ok
+        id: "id", "12" => ok
+        hostile: "id", "\"><script>" => ok
+    match chain
+        call html::text_attribute("type", "hidden") as html::attribute type_attr
+        call html::text_attribute("name", name) as html::attribute name_attr
+        call html::text_attribute("value", value) as html::attribute value_attr
+        call html::make_tag("input") as html::tag input_tag
+        call html::element(input_tag, [type_attr, name_attr, value_attr], []) as html::node hidden
+        html::invalid_structure
+        ok => ok hidden
+
+/// Render a submit button.
+fn html::node submit_control
+    emits {html::invalid_structure}
+    given
+        str label_text
+    asserts
+        sample: "Save draft" => ok
+    match chain
+        call html::text_attribute("type", "submit") as html::attribute type_attr
+        call html::text(label_text) as html::node words
+        call html::make_tag("button") as html::tag button_tag
+        call html::element(button_tag, [type_attr], [words]) as html::node button
+        html::invalid_structure
+        ok => ok button
+
+fn html::node publish_control
+    emits {html::invalid_structure, html::invalid_url}
+    given
+        str id
+        str csrf
+    asserts
+        blank: "", "token" => ok
+        saved: "21", "token" => ok
+    match id is ""
+        false => match call state_form(id, csrf, "published", "Publish service")
+            html::invalid_structure
+            html::invalid_url
+            ok html::node result => ok result
+        true => match chain
+            call html::text("") as html::node empty
+            call html::make_tag("p") as html::tag p
+            call html::element(p, [], [empty]) as html::node result
+            html::invalid_structure
+            ok => ok result
+
+fn html::node state_form
+    emits {html::invalid_structure, html::invalid_url}
+    given
+        str id
+        str csrf
+        str target_state
+        str label
+    asserts
+        publish: "21", "token", "published", "Publish service" => ok
+        unpublish: "21", "token", "draft", "Unpublish service" => ok
+    match chain
+        call hidden_control("id", id) as html::node id_field
+        call hidden_control("csrf", csrf) as html::node csrf_field
+        call hidden_control("target_state", target_state) as html::node state_field
+        call submit_control(label) as html::node submit
+        call html::parse_url("/service/state") as html::url action
+        call html::url_attribute("action", action) as html::attribute action_attr
+        call html::text_attribute("method", "post") as html::attribute method_attr
+        call html::make_tag("form") as html::tag form_tag
+        call html::element(form_tag, [method_attr, action_attr], [id_field, csrf_field, state_field, submit]) as html::node result
+        html::invalid_structure
+        html::invalid_url
+        ok => ok result
+
+record input_slot
+    str label
+    str name
+    str id
+    int max_length
+
+/// Named immutable slot values exposed through pure zero-argument functions.
+fn input_slot slug_slot
+    emits {}
+    asserts
+        value:  => ok input_slot("URL name", "slug", "service_slug", 48)
+    ok input_slot("URL name", "slug", "service_slug", 48)
+
+fn input_slot title_slot
+    emits {}
+    asserts
+        value:  => ok input_slot("Title", "title", "service_title", 120)
+    ok input_slot("Title", "title", "service_title", 120)
+
+fn input_slot deliverable_slot
+    emits {}
+    asserts
+        value:  => ok input_slot("Deliverable", "deliverable", "service_deliverable", 500)
+    ok input_slot("Deliverable", "deliverable", "service_deliverable", 500)
+
+fn html::node text_control
+    emits {html::invalid_structure}
+    given
+        input_slot slot
+        str value
+    asserts
+        sample: input_slot("Title", "title", "service_title", 120), "Design" => ok
+        hostile: input_slot("Title", "title", "service_title", 120), "\"><script>" => ok
+    match call input_control(slot.label, slot.name, slot.id, "text", value, call text::from_int(slot.max_length))
+        html::invalid_structure
+        ok html::node result => ok result
+
+record prepared_editor
+    html::node[] controls
+    html::node publication
+    html::node viewport
+    html::url action
+    html::attribute method_attr
+    html::attribute action_attr
+
+fn html::node heading
+    emits {html::invalid_structure}
+    given
+        str contents
+    asserts
+        sample: "Service draft" => ok
+        hostile: "<script>" => ok
+    match chain
+        call html::text(contents) as html::node words
+        call html::make_tag("h1") as html::tag element_tag
+        call html::element(element_tag, [], [words]) as html::node result
+        html::invalid_structure
+        ok => ok result
+
+fn html::node paragraph
+    emits {html::invalid_structure}
+    given
+        str contents
+    asserts
+        sample: "Review fields." => ok
+        blank: "" => ok
+        hostile: "<script>" => ok
+    match chain
+        call html::text(contents) as html::node words
+        call html::make_tag("p") as html::tag element_tag
+        call html::element(element_tag, [], [words]) as html::node result
+        html::invalid_structure
+        ok => ok result
+
+fn html::safe editor
+    emits {html::invalid_structure, html::invalid_url}
+    given
+        service_fields fields
+        str csrf
+        str notice
+    asserts
+        blank: service_fields("", "", "", "", ""), "token", "" => ok
+        saved: service_fields("21", "logo", "Logo", "One logo", "Design"), "token", "Saved." => ok
+        hostile: service_fields("1", "logo", "<script>", "\" onfocus=\"", "</textarea>"), "token", "Review fields." => ok
+    match chain
+        call hidden_control("id", fields.id) as html::node id_field
+        call hidden_control("csrf", csrf) as html::node csrf_field
+        call text_control(call slug_slot(), fields.slug) as html::node slug_field
+        call text_control(call title_slot(), fields.title) as html::node title_field
+        call text_control(call deliverable_slot(), fields.deliverable) as html::node deliverable_field
+        call textarea_control("Description", "description", "service_description", fields.description) as html::node description_field
+        call submit_control("Save draft") as html::node submit
+        call html::parse_url("/service/edit") as html::url action
+        call html::url_attribute("action", action) as html::attribute action_attr
+        call html::text_attribute("method", "post") as html::attribute method_attr
+        call publish_control(fields.id, csrf) as html::node publication
+        call html::meta_viewport() as html::node viewport
+        html::invalid_structure | html::invalid_url
+        ok => do
+            prepared_editor parts = prepared_editor([id_field, csrf_field, slug_field, title_field, deliverable_field, description_field, submit], publication, viewport, action, method_attr, action_attr)
+            match chain
+                call html::text("Service draft") as html::node tree_node_2
+                call html::make_tag("h1") as html::tag tree_node_1_tag
+                call html::element(tree_node_1_tag, [], [tree_node_2]) as html::node tree_node_1
+                call html::text(notice) as html::node tree_node_4
+                call html::make_tag("p") as html::tag tree_node_3_tag
+                call html::element(tree_node_3_tag, [], [tree_node_4]) as html::node tree_node_3
+                call html::make_tag("form") as html::tag tree_node_5_tag
+                call html::element(tree_node_5_tag, [parts.method_attr, parts.action_attr], [...parts.controls]) as html::node tree_node_5
+                call html::document("Service draft", [parts.viewport], [tree_node_1, tree_node_3, tree_node_5, parts.publication]) as html::safe document
+                html::invalid_structure
+                ok => ok document

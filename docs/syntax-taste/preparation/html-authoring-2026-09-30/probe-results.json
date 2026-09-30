@@ -1,0 +1,722 @@
+{
+  "static": [
+    {
+      "candidate": "baseline",
+      "accepted": true,
+      "generated_bytes": 2557352,
+      "generated_files": 20
+    },
+    {
+      "candidate": "components",
+      "accepted": true,
+      "generated_bytes": 3969758,
+      "generated_files": 30
+    },
+    {
+      "candidate": "tree",
+      "accepted": true,
+      "generated_bytes": 3981191,
+      "generated_files": 30
+    },
+    {
+      "candidate": "components-group-intro",
+      "accepted": true,
+      "generated_bytes": 4385945,
+      "generated_files": 33
+    },
+    {
+      "candidate": "tree-group-intro",
+      "accepted": true,
+      "generated_bytes": 3986812,
+      "generated_files": 30
+    },
+    {
+      "candidate": "components-move-publication",
+      "accepted": true,
+      "generated_bytes": 3969758,
+      "generated_files": 30
+    },
+    {
+      "candidate": "tree-move-publication",
+      "accepted": true,
+      "generated_bytes": 3981191,
+      "generated_files": 30
+    },
+    {
+      "candidate": "components-nested-publication",
+      "accepted": true,
+      "generated_bytes": 3971018,
+      "generated_files": 30
+    },
+    {
+      "candidate": "tree-nested-publication",
+      "accepted": true,
+      "generated_bytes": 3981191,
+      "generated_files": 30
+    },
+    {
+      "candidate": "tree-viewport-in-body",
+      "accepted": true,
+      "generated_bytes": 3981193,
+      "generated_files": 30
+    },
+    {
+      "candidate": "components-tag-typo",
+      "accepted": true,
+      "generated_bytes": 3969758,
+      "generated_files": 30
+    },
+    {
+      "candidate": "components-void-child",
+      "accepted": true,
+      "generated_bytes": 3969762,
+      "generated_files": 30
+    },
+    {
+      "candidate": "components-duplicate-attribute",
+      "accepted": true,
+      "generated_bytes": 3969758,
+      "generated_files": 30
+    }
+  ],
+  "diagnostics": [
+    {
+      "case": "tag-typo",
+      "phase": "prototype tree check",
+      "code": "HTML-TREE-TAG",
+      "line": 9,
+      "message": "expected an admitted literal HTML tag and attribute list",
+      "related": null
+    },
+    {
+      "case": "literal-nested-form",
+      "phase": "prototype tree check",
+      "code": "HTML-TREE-NESTED-FORM",
+      "line": 10,
+      "message": "literal form is inside another form",
+      "related": 9
+    },
+    {
+      "case": "void-child",
+      "phase": "prototype tree check",
+      "code": "HTML-TREE-VOID",
+      "line": 8,
+      "message": "void element cannot have children",
+      "related": 7
+    },
+    {
+      "case": "duplicate-attribute",
+      "phase": "prototype tree check",
+      "code": "HTML-TREE-DUPLICATE",
+      "line": 9,
+      "message": "the same immutable attribute appears twice",
+      "related": null
+    },
+    {
+      "case": "empty-attribute-slot",
+      "phase": "prototype tree check",
+      "code": "HTML-TREE-ATTRS",
+      "line": 9,
+      "message": "attribute lists cannot contain empty slots",
+      "related": null
+    },
+    {
+      "case": "effectful-splice",
+      "phase": "prototype tree check",
+      "code": "HTML-TREE-PREPARE",
+      "line": 11,
+      "message": "prepare calls and complex expressions in ordinary Can before this tree",
+      "related": null
+    },
+    {
+      "case": "record-helper-bare-ok",
+      "phase": "full Can assertion program check",
+      "message": "assertion blank expected completion: /private<owned>/blocked-record-helper/src/main.can region can.project.root/html_components::prepare/assert/blank/expected: nonvoid success requires a value"
+    },
+    {
+      "case": "attribute-helper-fallible-fixture",
+      "phase": "full Can assertion program check",
+      "message": "assertion empty arguments: /private<owned>/blocked-record-helper/src/main.can region can.project.root/html_components::post_form/assert/empty/actual: domain-fallible call requires explicit completion handling"
+    },
+    {
+      "case": "string-node",
+      "phase": "existing Can full checker / structured driver",
+      "precise_splice_mapping": true,
+      "tree_line": 11,
+      "tree_column": 14,
+      "tree_expression": "notice",
+      "diagnostic": {
+        "phase": "check",
+        "severity": "error",
+        "code": "CAN-CHECK",
+        "message": "expression type does not fit expected type",
+        "file": "src/main.can",
+        "location": {
+          "start_line": 254,
+          "start_column": 111,
+          "end_line": 254,
+          "end_column": 117
+        },
+        "related": []
+      },
+      "fail_fast_message": "concrete function can.project.root/html_components::editor: /private<owned>/invalid/src/main.can region can.project.root/html_components::editor: expression type does not fit expected type"
+    },
+    {
+      "case": "string-nodes",
+      "phase": "existing Can full checker / structured driver",
+      "precise_splice_mapping": true,
+      "tree_line": 10,
+      "tree_column": 19,
+      "tree_expression": "notice",
+      "diagnostic": {
+        "phase": "check",
+        "severity": "error",
+        "code": "CAN-CHECK",
+        "message": "array spread requires array",
+        "file": "src/main.can",
+        "location": {
+          "start_line": 253,
+          "start_column": 96,
+          "end_line": 253,
+          "end_column": 102
+        },
+        "related": []
+      },
+      "fail_fast_message": "concrete function can.project.root/html_components::editor: /private<owned>/invalid/src/main.can region can.project.root/html_components::editor: array spread requires array"
+    }
+  ],
+  "observations": [
+    {
+      "candidate": "baseline",
+      "case": "blank",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "c3e5155f79913fb8bd3d86018cc0720c57d33bc7edc098979d851e8761229b3c",
+      "html_bytes": 913
+    },
+    {
+      "candidate": "baseline",
+      "case": "saved",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "178841de429fae93647d788eb3a45384b1e5569b089244212bdfc5aed764dd09",
+      "html_bytes": 1181
+    },
+    {
+      "candidate": "baseline",
+      "case": "hostile",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "96cbec9970b1724bb1bb01a1e3b8efa7f9aee25fe427b2cc7439b8512833a7b9",
+      "html_bytes": 1221
+    },
+    {
+      "candidate": "baseline",
+      "case": "hostile-all",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "ae7139eef4d07fc478c7cae000effbe17abc44f7192526a8482db9f89e6f309a",
+      "html_bytes": 1357
+    },
+    {
+      "candidate": "components",
+      "case": "blank",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "c3e5155f79913fb8bd3d86018cc0720c57d33bc7edc098979d851e8761229b3c",
+      "html_bytes": 913
+    },
+    {
+      "candidate": "components",
+      "case": "saved",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "178841de429fae93647d788eb3a45384b1e5569b089244212bdfc5aed764dd09",
+      "html_bytes": 1181
+    },
+    {
+      "candidate": "components",
+      "case": "hostile",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "96cbec9970b1724bb1bb01a1e3b8efa7f9aee25fe427b2cc7439b8512833a7b9",
+      "html_bytes": 1221
+    },
+    {
+      "candidate": "components",
+      "case": "hostile-all",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "ae7139eef4d07fc478c7cae000effbe17abc44f7192526a8482db9f89e6f309a",
+      "html_bytes": 1357
+    },
+    {
+      "candidate": "tree",
+      "case": "blank",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "c3e5155f79913fb8bd3d86018cc0720c57d33bc7edc098979d851e8761229b3c",
+      "html_bytes": 913
+    },
+    {
+      "candidate": "tree",
+      "case": "saved",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "178841de429fae93647d788eb3a45384b1e5569b089244212bdfc5aed764dd09",
+      "html_bytes": 1181
+    },
+    {
+      "candidate": "tree",
+      "case": "hostile",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "96cbec9970b1724bb1bb01a1e3b8efa7f9aee25fe427b2cc7439b8512833a7b9",
+      "html_bytes": 1221
+    },
+    {
+      "candidate": "tree",
+      "case": "hostile-all",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "ae7139eef4d07fc478c7cae000effbe17abc44f7192526a8482db9f89e6f309a",
+      "html_bytes": 1357
+    },
+    {
+      "candidate": "components-group-intro",
+      "case": "blank",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "7053a32d85caf4e903b67341388cf76eebdbb2f4ed6e98806bb7ae8bde358c9d",
+      "html_bytes": 932
+    },
+    {
+      "candidate": "components-group-intro",
+      "case": "saved",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "fdce24c25cef17951b3d426c363719dd72806a0e110b12565cae9102d70299bd",
+      "html_bytes": 1200
+    },
+    {
+      "candidate": "components-group-intro",
+      "case": "hostile",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "043a400d464ca630a05fde250bdb2868e9efca157351c44b3b1b26f7d9f54e6f",
+      "html_bytes": 1240
+    },
+    {
+      "candidate": "components-group-intro",
+      "case": "hostile-all",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "e9e94b910700f16f0b741219691f3cc05ab6b45aab3bcea5548a7de81b4c7b78",
+      "html_bytes": 1376
+    },
+    {
+      "candidate": "tree-group-intro",
+      "case": "blank",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "7053a32d85caf4e903b67341388cf76eebdbb2f4ed6e98806bb7ae8bde358c9d",
+      "html_bytes": 932
+    },
+    {
+      "candidate": "tree-group-intro",
+      "case": "saved",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "fdce24c25cef17951b3d426c363719dd72806a0e110b12565cae9102d70299bd",
+      "html_bytes": 1200
+    },
+    {
+      "candidate": "tree-group-intro",
+      "case": "hostile",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "043a400d464ca630a05fde250bdb2868e9efca157351c44b3b1b26f7d9f54e6f",
+      "html_bytes": 1240
+    },
+    {
+      "candidate": "tree-group-intro",
+      "case": "hostile-all",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "e9e94b910700f16f0b741219691f3cc05ab6b45aab3bcea5548a7de81b4c7b78",
+      "html_bytes": 1376
+    },
+    {
+      "candidate": "components-move-publication",
+      "case": "blank",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "5c7d418948cca70901c7fc7243cd4b46ed6a79e2f52f80e97eccddf0a40190cd",
+      "html_bytes": 913
+    },
+    {
+      "candidate": "components-move-publication",
+      "case": "saved",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "c380109f947f9d54f5e009f8da63036a0efdb015dd21ad672bb87e8a1738305f",
+      "html_bytes": 1181
+    },
+    {
+      "candidate": "components-move-publication",
+      "case": "hostile",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "1d45f207450be76378b37bdc6d1f465171e507a6a1ae8d4af03aec809939c38a",
+      "html_bytes": 1221
+    },
+    {
+      "candidate": "components-move-publication",
+      "case": "hostile-all",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "19f65c5698b2ebc1fafd7b33433c9558ce18b5540ff16ce0db875aebad8d39f7",
+      "html_bytes": 1357
+    },
+    {
+      "candidate": "tree-move-publication",
+      "case": "blank",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "5c7d418948cca70901c7fc7243cd4b46ed6a79e2f52f80e97eccddf0a40190cd",
+      "html_bytes": 913
+    },
+    {
+      "candidate": "tree-move-publication",
+      "case": "saved",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "c380109f947f9d54f5e009f8da63036a0efdb015dd21ad672bb87e8a1738305f",
+      "html_bytes": 1181
+    },
+    {
+      "candidate": "tree-move-publication",
+      "case": "hostile",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "1d45f207450be76378b37bdc6d1f465171e507a6a1ae8d4af03aec809939c38a",
+      "html_bytes": 1221
+    },
+    {
+      "candidate": "tree-move-publication",
+      "case": "hostile-all",
+      "kind": "ok",
+      "exact_independent_oracle": true,
+      "html_sha256": "19f65c5698b2ebc1fafd7b33433c9558ce18b5540ff16ce0db875aebad8d39f7",
+      "html_bytes": 1357
+    },
+    {
+      "candidate": "components-nested-publication",
+      "case": "blank",
+      "kind": "ok; blank publication contains no form"
+    },
+    {
+      "candidate": "components-nested-publication",
+      "case": "saved",
+      "kind": "expected domain",
+      "reason": "nested_element",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "components-nested-publication",
+      "case": "hostile",
+      "kind": "expected domain",
+      "reason": "nested_element",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "components-nested-publication",
+      "case": "hostile-all",
+      "kind": "expected domain",
+      "reason": "nested_element",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "tree-nested-publication",
+      "case": "blank",
+      "kind": "ok; blank publication contains no form"
+    },
+    {
+      "candidate": "tree-nested-publication",
+      "case": "saved",
+      "kind": "expected domain",
+      "reason": "nested_element",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "tree-nested-publication",
+      "case": "hostile",
+      "kind": "expected domain",
+      "reason": "nested_element",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "tree-nested-publication",
+      "case": "hostile-all",
+      "kind": "expected domain",
+      "reason": "nested_element",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "tree-viewport-in-body",
+      "case": "blank",
+      "kind": "expected domain",
+      "reason": "document_context",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "tree-viewport-in-body",
+      "case": "saved",
+      "kind": "expected domain",
+      "reason": "document_context",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "tree-viewport-in-body",
+      "case": "hostile",
+      "kind": "expected domain",
+      "reason": "document_context",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "tree-viewport-in-body",
+      "case": "hostile-all",
+      "kind": "expected domain",
+      "reason": "document_context",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "components-tag-typo",
+      "case": "blank",
+      "kind": "expected domain",
+      "reason": "tag",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "components-tag-typo",
+      "case": "saved",
+      "kind": "expected domain",
+      "reason": "tag",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "components-tag-typo",
+      "case": "hostile",
+      "kind": "expected domain",
+      "reason": "tag",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "components-tag-typo",
+      "case": "hostile-all",
+      "kind": "expected domain",
+      "reason": "tag",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "components-void-child",
+      "case": "blank",
+      "kind": "expected domain",
+      "reason": "void_children",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "components-void-child",
+      "case": "saved",
+      "kind": "expected domain",
+      "reason": "void_children",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "components-void-child",
+      "case": "hostile",
+      "kind": "expected domain",
+      "reason": "void_children",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "components-void-child",
+      "case": "hostile-all",
+      "kind": "expected domain",
+      "reason": "void_children",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "components-duplicate-attribute",
+      "case": "blank",
+      "kind": "expected domain",
+      "reason": "duplicate_attribute",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "components-duplicate-attribute",
+      "case": "saved",
+      "kind": "expected domain",
+      "reason": "duplicate_attribute",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "components-duplicate-attribute",
+      "case": "hostile",
+      "kind": "expected domain",
+      "reason": "duplicate_attribute",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    },
+    {
+      "candidate": "components-duplicate-attribute",
+      "case": "hostile-all",
+      "kind": "expected domain",
+      "reason": "duplicate_attribute",
+      "origin": {
+        "source": "can:html",
+        "start": 0,
+        "end": 0,
+        "invocation": []
+      }
+    }
+  ],
+  "execution_scope": "direct execution of emitted editor functions on four data cases; attached assertions fully checked and emitted but not executed; no integrated toolchain qualification",
+  "ai_pilot": "two independently dispatched Sol medium agents, one per surface, first attempts after correcting shared preparation; inherited opaque-argument form helper removed mechanically from executable component samples by root; target grouping/reorder edits not repaired; no timing/token comparison; initial pilots inherited the blocked record-helper template and are retained separately",
+  "source_snapshot": {
+    "files": 374,
+    "sha256": "6df68b9a704fb7f9dfab4399a700504ddcf0e4914609b10a031eac0c5995f664",
+    "html_sha256": "97f4a63c6aaaac1f8d28be1d749ff22934ce49a7fb9a88f28ad33d2dce0b1786",
+    "can_head": "381ddb340bf00ee9fdd06670a8f3271481c67201",
+    "instruments_sha256": {
+      "docs/syntax-taste/preparation/html-authoring-2026-09-30/run_probe.py": "73ee9f03ee13f8627e6620d44d7c28b4e97496b4ec829a834598289a0b8d1147",
+      "docs/syntax-taste/preparation/html-authoring-2026-09-30/emit_probe.go": "e7df51d20accc71af62de56b702956f0ab781e578ec0d2ac3ad14bb3add980de",
+      "docs/syntax-taste/preparation/html-authoring-2026-09-30/lower_tree.py": "e0626cfa643a235aefdaae807b31ddee189f1754c8fcb0705117655d263c5ae7",
+      "docs/syntax-taste/preparation/html-authoring-2026-09-30/render_probe.ts": "abe8d0a53e9863f39d269deee9372a582b2b5df23be922c2aaec362b25ccdf8e",
+      "/Users/vince/.cursor/extensions/can-lang.can-lang-0.2.0/bin/canlc": "487fa182428cafcf64f2aefe25ca26c0774cad276687e3300d167ea7d91750c4",
+      "go.mod": "2d9324ade2b9aa6a30e2557a807a4bd93a658539a2c4955a0ab2e5bb05e53156",
+      "go.sum": "2762467edeaaae5e50e30b4c7e10357b7adeb2a5bbb3d571d54e3159c6e3dd27"
+    },
+    "fixture_sha256": {
+      "baseline": "5d6b8ce30335fe41fa13155b77d498f554ce5cb6d37b74d338f68f4da9f13126",
+      "components": "c9608debc5b35e900d23d6ae8cb69ef95db6e2a140c2673a8f0f168bf424a487",
+      "tree": "ae3b9932f19168a5b64f7a3d3af412b0427bfc9a037168925e9a2afd58044d53",
+      "components-group-intro": "1c7c6fbfd7c1b532b1ea817835606eee8e983b363ebc63dfe2907eb77e988387",
+      "tree-group-intro": "1fa021e74a05b54f3700c00ed023b84527149e0bc2b0e303bc4703594b9023ce",
+      "components-move-publication": "0770f165d3c32620c0bfac0506aa8a88df83adbcffab0831e3b810aa8b60d694",
+      "tree-move-publication": "cd194e522e187c7fb80f0ff30693105d7d9ecd1d59946b34a86cac146815ab6f",
+      "components-nested-publication": "892c6f5bb5440bac4087eaa39d8bd6b336949ca46b06d4d58cf5dc34284de4aa",
+      "tree-nested-publication": "5241cb67863568bcc2b9feee99e4a1257b1d5e3c885162b85a8f208c8757288a",
+      "tree-viewport-in-body": "f7e77f0d02e80c3dae5a5ce7289113f1c9cf03348373da1eab59cd2c1369d94b",
+      "components-tag-typo": "240b94005fcca294960859a11da37b84972139c01e278a9629ed32b3b1cfa4b4",
+      "components-void-child": "d199fae1d0fa55916bf2b1ffd0895ee380c26dd8119130955d8631a5abe14988",
+      "components-duplicate-attribute": "d4cb409a285d1309dcda398f642f9a2cd3bc8187e2357a62baa23bdc15044af5"
+    }
+  },
+  "abandoned_owned_directories_recovered": 0,
+  "cleanup": "owned emission/helper directories removed; repository runtime symlinks removed without touching their target"
+}

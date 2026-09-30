@@ -1,0 +1,31 @@
+{
+  "purpose": "Non-statistical edit demonstrations on a shared page; no timing, token or line-count metric.",
+  "initial_trials": {
+    "components": "pilot-components/",
+    "tree": "pilot-tree/",
+    "template": "record-helper-blocked.can",
+    "status": "superseded; inherited prepare assertion is not executable"
+  },
+  "corrected_trials": {
+    "components_agent": "/root/components_checked_edits",
+    "tree_agent": "/root/tree_checked_edits",
+    "model": "gpt-6.1-sol",
+    "reasoning_effort": "medium",
+    "component_input_snapshot": "attribute-helper-blocked.can",
+    "tree_input": "editor.tree",
+    "component_output": "pilot-components-checked/",
+    "tree_output": "pilot-tree-checked/"
+  },
+  "assignments": {
+    "group_intro": "Wrap the existing heading and escaped notice in one section; component lane may extract a reusable ordinary typed helper, tree lane uses a literal section. Preserve controls, routes, publication branches and errors.",
+    "move_publication": "Place publication immediately before the edit form as a body sibling. Start each variant independently from its input sample."
+  },
+  "agent_constraints": "No validation, repair, formatting, builds, consultations or commits. Root performs independent full checking/emission and exact markup observation.",
+  "root_shared_support_adjustments": [
+    "Remove exported post_form declaration with invalid opaque-input assertion fixture.",
+    "Replace each inherited post_form call with literal make_tag(form) and element using the same prepared attrs/controls.",
+    "Remove html::invalid_url from the inner layout bound because its operations emit only html::invalid_structure."
+  ],
+  "repair_boundary": "Grouping helper/section structure and sibling-order target edits were retained. Corrected pre-repair raw files were not separately captured; the resulting files and source snapshots record the bounded repair recipe, not byte-for-byte proof of unassisted first-pass success.",
+  "limitations": "One agent per surface and two tasks; grouping exercises helper extraction in one lane but literal grouping in the other. No statistical generalization or extraction parity."
+}

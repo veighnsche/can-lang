@@ -1,0 +1,11 @@
+tree document "Service draft"
+    head
+        node parts.viewport
+    body
+        element h1 []
+            text "Service draft"
+        element p []
+            text notice
+        element form [parts.method_attr, parts.action_attr]
+            nodes parts.controls
+        node parts.publication
