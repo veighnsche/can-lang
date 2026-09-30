@@ -105,6 +105,7 @@
       "./assert/context.ts",
       "./assert/identity.ts",
       "./completion.ts",
+      "./failure.ts",
       "./reflect.ts",
       "./collections/map.ts"
     ],
@@ -353,6 +354,9 @@
       "../domain.ts",
       "../failure.ts",
       "../outbound/identity.ts",
+      "../outbound/ledger.ts"
+    ],
+    "ai/bound.ts": [
       "../outbound/ledger.ts"
     ],
     "platform/io.ts": [
