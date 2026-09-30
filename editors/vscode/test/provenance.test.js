@@ -34,6 +34,9 @@ test("VSIX asset gate rejects changed grammar, client and language configuration
   const { extension } = require("../scripts/source-identity");
   const { verifySourceAssets, sourceAssets } = require("../scripts/verify-vsix");
   const baseline = new Map(sourceAssets.map((asset) => [`extension/${asset}`, require("node:fs").readFileSync(path.join(extension, asset))]));
+  // Match VSCE's real archive spelling rather than the checkout's spelling.
+  baseline.set("extension/readme.md", baseline.get("extension/README.md"));
+  baseline.delete("extension/README.md");
   const read = (name) => baseline.get(name);
   assert.doesNotThrow(() => verifySourceAssets(read));
   for (const asset of ["syntaxes/can.tmGrammar.json", "client/controller.js", "language-configuration.json"]) {

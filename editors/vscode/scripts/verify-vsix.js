@@ -12,7 +12,9 @@ const sourceAssets = [
 
 function verifySourceAssets(readPacked) {
   for (const asset of sourceAssets) {
-    const packed = readPacked(`extension/${asset}`);
+    // VSCE normalizes this documentation entry to lowercase in the archive.
+    const packedName = asset === "README.md" ? "readme.md" : asset;
+    const packed = readPacked(`extension/${packedName}`);
     const reviewed = fs.readFileSync(path.join(extension, asset));
     if (!packed.equals(reviewed)) throw new Error(`VSIX ${asset} differs from reviewed source`);
   }
