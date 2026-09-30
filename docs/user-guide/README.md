@@ -54,7 +54,7 @@ flags from another tool or historical document.
 | --- | --- | --- |
 | Bootstrap and iteration | Select a usable toolchain; create a project; inspect, assert, build, and run a small slice; clean owned output | Recipe pending |
 | CLI and native platform operations | Handle arguments, files, bytes, processes, declared capabilities, and resource lifecycle | Recipe pending |
-| Domain modeling | Use current records, variants, optionals, immutable updates, collections, generics, and callables correctly | Recipe pending |
+| Domain modeling | Use current records, variants, optionals, immutable updates, collections, generics, and callables correctly | Partial: [flat literal-string matches](string-matching.md); broader modeling recipe pending |
 | Contracts and failures | Author meaningful assertions; distinguish domain outcomes and platform failures; interpret supplied versus real-native evidence | Partial: nested native-call fixtures and explicit failure mapping below |
 | Server pages and forms | Compose safe HTML, typed requests, validation feedback, routes, and assets | Partial: safe email actions and upload attribute/response notes; full form recipe pending |
 | Persistence and authorization | Use typed SQL descriptors, transactions, credentials, and access checks; sessions are an optional web example | Partial: exact SQLite execute-count note; full persistence recipe pending |
