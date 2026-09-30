@@ -9,7 +9,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "<K01-SHA recorded after commit>"
+    "50f9b91c3284f4ef11dcc8d87ba12e3fb819bc26"
   ],
   "changed_paths": [
     "tools/runtime/test-services/native-values/"

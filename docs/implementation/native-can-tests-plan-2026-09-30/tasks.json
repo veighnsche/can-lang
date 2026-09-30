@@ -290,7 +290,7 @@
       "acceptance": "N/worker death leaves T alive; loss of T cannot issue a green receipt or grant new admission.",
       "evidence": "Save T identity, bounded graph and cleanup controls; commit bootstrap witness before N qualification.",
       "commit": "feat(testing): build transitional bootstrap witness t",
-      "status": "active",
+      "status": "complete",
       "start_after": [
         "P01"
       ],
@@ -308,7 +308,7 @@
       "acceptance": "Crash between reservation and marker remains discoverable; conflicting replay is rejected; wrong PID/path is not authority.",
       "evidence": "Save fault-point journal fixtures; commit journal.",
       "commit": "feat(testing): journal ownership before effects",
-      "status": "active",
+      "status": "complete",
       "start_after": [
         "P01"
       ],

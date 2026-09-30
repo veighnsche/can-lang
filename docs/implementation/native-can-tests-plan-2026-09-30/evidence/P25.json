@@ -1,0 +1,78 @@
+{
+  "status": "complete",
+  "executor": "Muse (muse-spark-1.3-contributor) via worker-a2-p25-p07; integrator review/commit",
+  "writing_owner": "native-owner",
+  "task_id": "P25",
+  "row_or_file_slice": null,
+  "start_prerequisite_receipts": [
+    "P01 complete in 626bf03743dbfa660d4b4651c2b0b3cceaeae0a5"
+  ],
+  "acceptance_prerequisite_receipts": [],
+  "commits": [
+    "<P25-SHA recorded after commit>"
+  ],
+  "changed_paths": [
+    "tools/native-test-bootstrap/"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "gofmt -l tools/native-test-bootstrap tools/native-test-owner/journal; go vet ./tools/native-test-bootstrap/ ./tools/native-test-owner/journal/",
+      "deadline": "120s",
+      "result": "gofmt clean; vet clean (independently re-run by integrator)"
+    },
+    {
+      "command": "go test -count=1 -timeout 90s ./tools/native-test-bootstrap/ ./tools/native-test-owner/journal/",
+      "deadline": "240s",
+      "result": "ok bootstrap 2.410s, ok journal 0.271s (independently re-run by integrator)"
+    },
+    {
+      "command": "go test -race -count=1 -timeout 120s ./tools/native-test-bootstrap/ ./tools/native-test-owner/journal/",
+      "deadline": "240s",
+      "result": "ok both packages, race-clean (independently re-run by integrator)"
+    }
+  ],
+  "identities": {
+    "reference": null,
+    "owner": "T transitional witness (bootstrap.Witness); N itself still unimplemented",
+    "candidate": null,
+    "suite": null,
+    "artifact": null,
+    "host_profile": "darwin-arm64 local fixtures only; strict enforcement unqualified (P13)",
+    "observer": "T independent release witness (CheckRelease vs observed exit/reap/scratch facts)"
+  },
+  "coverage": {
+    "case_check_ids": [],
+    "retained_facets": [],
+    "variants_and_environments": [],
+    "unrun_or_blocked": [
+      "N qualification using T is P14 work; T retires with the bootstrap per Z04"
+    ]
+  },
+  "controls": {
+    "positive": [
+      "finite child/descriptor/scratch envelope enforced before any spawn; start identity (PID + token) recorded with kill-on-unrecorded-start",
+      "bounded TERM-then-KILL stop with reap join; wait deadline keeps ownership; scratch absence verified by stat",
+      "8 bounded tests with real sleep/sh fixtures, 50-200ms graces, t.TempDir() records"
+    ],
+    "seeded_defect": [
+      "external SIGKILL of a worker leaves T alive: new admit/start/stop/receipt succeed (TestWorkerDeathLeavesTAlive, spot-read by integrator)",
+      "Close makes a fully clean claim fail CheckRelease and blocks Admit/Register/Start/Stop/Wait with ErrWitnessLost; Inspect stays read-only with WitnessLost; New refuses in-place resume (TestWitnessLossCannotReceipt, spot-read by integrator)"
+    ],
+    "missing_evidence": [
+      "no N exists yet; T claims witness mechanics only, not owner acceptance"
+    ]
+  },
+  "resource_and_cleanup_receipts": [
+    "fixtures are short sleep/sh children reaped by T; t.TempDir() records auto-reclaimed; no orphan processes observed (suite exits clean)"
+  ],
+  "correction_registry_head": null,
+  "relevance_decision": null,
+  "retirement_eligible": false,
+  "retirement_commit": null,
+  "reviewer_disposition": "integrator accepted: read witness.go fully and both key tests; re-ran gofmt/vet/test/race with observed green results. No out-of-lane writes (verified via git status scope). Independent final review deferred to Z06.",
+  "limitations": [
+    "T reaps direct children only; detached-descendant containment is P10/P13 work",
+    "children start with T working directory when no scratch is registered (fixture scope only)",
+    "transitional machinery: retires with the bootstrap per Z04, not a permanent suite"
+  ]
+}

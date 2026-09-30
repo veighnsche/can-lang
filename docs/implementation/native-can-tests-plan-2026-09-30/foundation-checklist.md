@@ -70,7 +70,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P25 — Build transitional bootstrap witness T
 
-- [ ] **P25 accepted** — owner lane: `native-owner`.
+- [x] **P25 accepted** — owner lane: `native-owner`. Evidence: [evidence/P25.json](evidence/P25.json).
 
 **Start after:** P01. **Additional acceptance prerequisites:** none.
 
@@ -134,7 +134,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P07 — Journal ownership before effects
 
-- [ ] **P07 accepted** — owner lane: `native-owner`.
+- [x] **P07 accepted** — owner lane: `native-owner`. Evidence: [evidence/P07.json](evidence/P07.json).
 
 **Start after:** P01. **Additional acceptance prerequisites:** none.
 
