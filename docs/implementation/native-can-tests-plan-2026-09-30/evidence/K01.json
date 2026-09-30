@@ -1,0 +1,86 @@
+{
+  "status": "complete",
+  "executor": "Muse (muse-spark-1.3-contributor) via worker-c2-k01; integrator review/commit",
+  "writing_owner": "native-values",
+  "task_id": "K01",
+  "row_or_file_slice": null,
+  "start_prerequisite_receipts": [
+    "P01 complete in 626bf03743dbfa660d4b4651c2b0b3cceaeae0a5"
+  ],
+  "acceptance_prerequisite_receipts": [],
+  "commits": [
+    "<K01-SHA recorded after commit>"
+  ],
+  "changed_paths": [
+    "tools/runtime/test-services/native-values/"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "bun tools/runtime/test-services/native-values/schema-check.ts",
+      "deadline": "120s",
+      "result": "exit 0, 15/15 named checks pass (independently re-run by integrator)"
+    },
+    {
+      "command": "bunx oxlint tools/runtime/test-services/native-values --deny-warnings",
+      "deadline": "120s",
+      "result": "0 warnings, 0 errors on 3 files, after 2 narrow explained no-thenable suppressions for intentional negative controls (repo convention)"
+    },
+    {
+      "command": "bun run format:runtime && bun run typecheck:runtime",
+      "deadline": "240s",
+      "result": "format clean; tsc -p tsconfig.runtime.json clean"
+    },
+    {
+      "command": "bun -e consistency probe (proposed JSON logical names vs NATIVE_VALUE_OPERATIONS)",
+      "deadline": "60s",
+      "result": "JSON-CONSISTENT true ops=11 (independently re-run by integrator)"
+    }
+  ],
+  "identities": {
+    "reference": null,
+    "owner": null,
+    "candidate": null,
+    "suite": null,
+    "artifact": null,
+    "host_profile": null,
+    "observer": null
+  },
+  "coverage": {
+    "case_check_ids": [],
+    "retained_facets": [],
+    "variants_and_environments": [],
+    "unrun_or_blocked": [
+      "integrated N1/N2/N3 credit is QN1-QN3 work; live host-dependent controls wait for the qualified profile",
+      "catalogue merge of the proposed descriptor is P28/I01 integrator work"
+    ]
+  },
+  "controls": {
+    "positive": [
+      "11-operation catalogue frozen, unique identities, timing/assimilation/reply/ownership declared per entry",
+      "valid requests for every operation pass; handle wire round-trips; caps/release/close semantics hold"
+    ],
+    "seeded_defect": [
+      "unknown operations (incl. qualify_json/test_array/eval lookalikes) rejected as unsupported-capability",
+      "forbidden module/export/eval/oracle keys rejected incl. nested smuggling and every forbidden key",
+      "raw functions, Promises, thenables, symbols, oversized maps rejected from facts/partials",
+      "completed/non-ok and non-completed/ok outcome/kind mismatches rejected",
+      "over-cap mints, wrong-owner/cross-session/closed/stale use rejected; duplicate session collides"
+    ],
+    "missing_evidence": [
+      "no live execution claimed; local/bounded bootstrap controls only per task scope"
+    ]
+  },
+  "resource_and_cleanup_receipts": [
+    "no temp dirs, services, timers, or live runtimes; self-check is pure in-memory with small constant bounds"
+  ],
+  "correction_registry_head": null,
+  "relevance_decision": null,
+  "retirement_eligible": false,
+  "retirement_commit": null,
+  "reviewer_disposition": "integrator accepted: read all 4 lane files; re-ran self-check (15/15), lane lint (0/0), format, typecheck and JSON-consistency probe with observed green results; fixed 2 lint suppressions to repo convention. No catalogue/compiler/runtime/test edits by worker (verified via git status scope). Independent final review deferred to Z06.",
+  "limitations": [
+    "service request carries args alongside argumentsDigest (extends the P01 transport envelope, which holds the digest only); checkRequest validates digest shape but not digest-vs-args consistency because no canonicalization rule exists yet -- K02/P08 must define and enforce it",
+    "thenable-shaped inert data keys reject conservatively (safe direction); documented in code",
+    "live N1/N2/N3 qualification still requires K02-K06, I01-I03 and QN1-QN3"
+  ]
+}

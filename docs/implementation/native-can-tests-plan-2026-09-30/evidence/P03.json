@@ -9,7 +9,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "<P03-SHA recorded after commit>"
+    "1a78fbc1b7eb64dd3dd4e3e7e28bfe430a4b9ff7"
   ],
   "changed_paths": [
     "docs/implementation/native-can-tests-plan-2026-09-30/reference-seed.md",

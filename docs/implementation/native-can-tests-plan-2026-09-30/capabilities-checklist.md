@@ -6,7 +6,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K01 — Freeze native-value typed operation schema
 
-- [ ] **K01 accepted** — owner lane: `native-values`.
+- [x] **K01 accepted** — owner lane: `native-values`. Evidence: [evidence/K01.json](evidence/K01.json).
 
 **Start after:** P01. **Additional acceptance prerequisites:** none.
 
