@@ -41,11 +41,11 @@ func sortedKeys[V any](values map[string]V) []string {
 
 func NormalizePath(name string) error {
 	if name == "" || !utf8.ValidString(name) || strings.ContainsRune(name, 0) || path.IsAbs(name) || filepath.IsAbs(name) || path.Clean(name) != name {
-		return fmt.Errorf("path %q must be a normalized relative UTF-8 path", name)
+		return &GraphError{Kind: KindBadPath, Msg: fmt.Sprintf("path %q must be a normalized relative UTF-8 path", name)}
 	}
 	for _, part := range strings.Split(name, "/") {
 		if part == ".." {
-			return fmt.Errorf("parent traversal is forbidden in path %q", name)
+			return &GraphError{Kind: KindBadPath, Msg: fmt.Sprintf("parent traversal is forbidden in path %q", name)}
 		}
 	}
 	return nil
@@ -74,7 +74,7 @@ func ConfinedPath(root, name string, directory bool) (string, error) {
 		return "", err
 	}
 	if !Contains(root, real) {
-		return "", fmt.Errorf("path %q escapes its manifest directory after symlink resolution", name)
+		return "", &GraphError{Kind: KindEscape, Msg: fmt.Sprintf("path %q escapes its manifest directory after symlink resolution", name)}
 	}
 	info, err := os.Stat(real)
 	if err != nil {
@@ -82,10 +82,10 @@ func ConfinedPath(root, name string, directory bool) (string, error) {
 	}
 	if directory {
 		if !info.IsDir() {
-			return "", fmt.Errorf("path %q is not a directory", name)
+			return "", &GraphError{Kind: KindNotContainer, Msg: fmt.Sprintf("path %q is not a directory", name)}
 		}
 	} else if !info.Mode().IsRegular() {
-		return "", fmt.Errorf("path %q is not a regular file", name)
+		return "", &GraphError{Kind: KindNotContainer, Msg: fmt.Sprintf("path %q is not a regular file", name)}
 	}
 	return real, nil
 }

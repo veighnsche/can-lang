@@ -358,7 +358,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P20 — Expose structured product diagnostics
 
-- [ ] **P20 accepted** — owner lane: `can-suite-cli`.
+- [x] **P20 accepted** — owner lane: `can-suite-cli`. Evidence: [evidence/P20.json](evidence/P20.json).
 
 **Start after:** P01. **Additional acceptance prerequisites:** none.
 

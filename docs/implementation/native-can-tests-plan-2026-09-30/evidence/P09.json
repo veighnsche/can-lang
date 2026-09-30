@@ -10,7 +10,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "<P09-SHA recorded after commit>"
+    "872a8d395765da4d2674a001ae358caa931a2f73"
   ],
   "changed_paths": [
     "tools/native-test-owner/workspace/"

@@ -33,6 +33,9 @@ type Graph struct {
 	// LockSHA256 binds the exact can.lock.json bytes into verification
 	// identity. It is empty when the root project carries no lock file.
 	LockSHA256 string
+	// Enumerated records every source-directory enumeration in walk order.
+	// It is empty for graphs whose sources were never walked.
+	Enumerated []EnumeratedDir
 }
 type Project struct {
 	Key, ID, Root                string
@@ -120,7 +123,7 @@ func load(ctx context.Context, directory string, overlay *Overlay) (*Graph, erro
 				return nil, err
 			}
 			if !Contains(directory, real) {
-				return nil, fmt.Errorf("path %q escapes its manifest directory", name)
+				return nil, &GraphError{Kind: KindEscape, Path: filepath.Join(directory, "can.project.json"), Msg: fmt.Sprintf("path %q escapes its manifest directory", name)}
 			}
 		}
 		g.Inputs[real] = nil
@@ -163,10 +166,10 @@ func load(ctx context.Context, directory string, overlay *Overlay) (*Graph, erro
 	var load func([]string, string, int) (*Project, error)
 	load = func(edgePath []string, directory string, depth int) (*Project, error) {
 		if depth > 256 {
-			return nil, fmt.Errorf("dependency graph exceeds 256 levels")
+			return nil, &GraphError{Kind: KindTooDeep, Path: filepath.Join(directory, "can.project.json"), Msg: "dependency graph exceeds 256 levels"}
 		}
 		if loading[directory] {
-			return nil, fmt.Errorf("dependency manifest cycle at %s", directory)
+			return nil, &GraphError{Kind: KindCycle, Path: filepath.Join(directory, "can.project.json"), Msg: fmt.Sprintf("dependency manifest cycle at %s", directory)}
 		}
 		// Identical real paths intern to one instance however many edges
 		// reach them. The cycle check above runs first so a manifest
@@ -208,7 +211,7 @@ func load(ctx context.Context, directory string, overlay *Overlay) (*Graph, erro
 
 		if manifest.Project != "" {
 			if owner, exists := lineages[manifest.Project]; exists {
-				return nil, fmt.Errorf("project lineage %q names divergent instances at %s and %s", manifest.Project, owner.Root, directory)
+				return nil, &GraphError{Kind: KindLineage, Path: filepath.Join(directory, "can.project.json"), Msg: fmt.Sprintf("project lineage %q names divergent instances at %s and %s", manifest.Project, owner.Root, directory)}
 			}
 		}
 		identity := "can.project.root"
@@ -247,13 +250,13 @@ func load(ctx context.Context, directory string, overlay *Overlay) (*Graph, erro
 			depDir, err := ConfinedPath(directory, manifest.Dependencies[name], true)
 			if err != nil {
 				g.Inputs[filepath.Join(directory, manifest.Dependencies[name], "can.project.json")] = nil
-				g.Errors = append(g.Errors, configError(filepath.Join(directory, "can.project.json"), data, jsonFieldError(data, err, "dependencies", name)))
+				g.Errors = append(g.Errors, &DependencyError{Edge: name, Dir: filepath.Join(directory, manifest.Dependencies[name]), Err: configError(filepath.Join(directory, "can.project.json"), data, jsonFieldError(data, err, "dependencies", name))})
 				continue
 			}
 			child := append(append([]string{}, edgePath...), name)
 			dep, err := load(child, depDir, depth+1)
 			if err != nil {
-				g.Errors = append(g.Errors, err)
+				g.Errors = append(g.Errors, &DependencyError{Edge: name, Dir: depDir, Err: err})
 				continue
 			}
 			project.Dependencies[name] = dep
@@ -271,8 +274,9 @@ func load(ctx context.Context, directory string, overlay *Overlay) (*Graph, erro
 		}
 		if registryErr == nil && syntaxComplete {
 			if err := verifySourceRegistry(project); err != nil {
-				g.Errors = append(g.Errors, err)
-				project.RegistryError = err
+				typed := contentOrRaw(KindRegistryMismatch, filepath.Join(project.Root, project.Manifest.ErrorRegistry), err)
+				g.Errors = append(g.Errors, typed)
+				project.RegistryError = typed
 			}
 		}
 		project.FixturesIncomplete = !syntaxComplete
@@ -344,7 +348,7 @@ func (g *Graph) readSources(ctx context.Context, project *Project, outputs map[s
 			}
 			id := project.ID + "/" + packageName
 			if existing := g.Packages[id]; existing != nil {
-				return fmt.Errorf("package name %q occurs in more than one directory of %s", packageName, project.ID)
+				return &GraphError{Kind: KindPackageConflict, Path: real, Msg: fmt.Sprintf("package name %q occurs in more than one directory of %s", packageName, project.ID)}
 			}
 			output := "packages/p-" + Digest([]byte("can-package-path-v1\x00"+id))
 			if err := claimOutput(outputs, output, id); err != nil {
@@ -355,7 +359,7 @@ func (g *Graph) readSources(ctx context.Context, project *Project, outputs map[s
 			project.Packages = append(project.Packages, pkg)
 			g.Packages[id] = pkg
 		} else if pkg.Name != packageName {
-			return fmt.Errorf("source folder %s contains different package names", packageDir)
+			return &GraphError{Kind: KindPackageConflict, Path: real, Msg: fmt.Sprintf("source folder %s contains different package names", packageDir)}
 		}
 		// Identity follows the exact logical path included in the source
 		// digest. Canonical locations govern ownership/security only.
@@ -381,23 +385,24 @@ func (g *Graph) readSources(ctx context.Context, project *Project, outputs map[s
 			return err
 		}
 		if depth > 256 {
-			return fmt.Errorf("source tree exceeds 256 levels")
+			return &GraphError{Kind: KindTooDeep, Path: realDir, Msg: "source tree exceeds 256 levels"}
 		}
 		if directories[realDir] {
-			return fmt.Errorf("source directory alias or symlink cycle at %s", relative)
+			return &GraphError{Kind: KindCycle, Path: realDir, Msg: fmt.Sprintf("source directory alias or symlink cycle at %s", relative)}
 		}
 		directories[realDir] = true
 		entries, err := os.ReadDir(realDir)
 		if err != nil {
 			return err
 		}
+		g.Enumerated = append(g.Enumerated, EnumeratedDir{Dir: realDir, Entries: len(entries)})
 		for _, entry := range entries {
 			if err := ctx.Err(); err != nil {
 				return err
 			}
 			name := entry.Name()
 			if !utf8.ValidString(name) {
-				reportPath(filepath.Join(realDir, name), fmt.Errorf("source path is not UTF-8"))
+				reportPath(filepath.Join(realDir, name), &GraphError{Kind: KindUTF8, Path: filepath.Join(realDir, name), Msg: "source path is not UTF-8"})
 				continue
 			}
 			logical := path.Join(relative, name)
@@ -408,7 +413,7 @@ func (g *Graph) readSources(ctx context.Context, project *Project, outputs map[s
 				continue
 			}
 			if !Contains(project.Root, real) {
-				reportPath(entryPath, fmt.Errorf("source symlink %q escapes its manifest directory", logical))
+				reportPath(entryPath, &GraphError{Kind: KindEscape, Path: entryPath, Msg: fmt.Sprintf("source symlink %q escapes its manifest directory", logical)})
 				continue
 			}
 			info, err := os.Stat(real)
@@ -488,7 +493,7 @@ func (g *Graph) readSources(ctx context.Context, project *Project, outputs map[s
 func claimOutput(claims map[string]string, path, identity string) error {
 	key := strings.ToLower(path)
 	if owner, exists := claims[key]; exists && owner != identity {
-		return fmt.Errorf("output path collision between %q and %q", owner, identity)
+		return &GraphError{Kind: KindOutputCollision, Msg: fmt.Sprintf("output path collision between %q and %q", owner, identity)}
 	}
 	claims[key] = identity
 	return nil
@@ -574,13 +579,14 @@ func (g *Graph) verifyLock() error {
 		}
 		for _, name := range sortedKeys(parent.Manifest.Dependencies) {
 			edge, exists := edges[name]
+			manifestPath := filepath.Join(parent.Root, "can.project.json")
 			if !exists {
-				problems = append(problems, fmt.Errorf("missing dependency lock edge %q of %s", name, parent.ID))
+				problems = append(problems, &GraphError{Kind: KindLockMismatch, Path: manifestPath, Msg: fmt.Sprintf("missing dependency lock edge %q of %s", name, parent.ID)})
 				complete = false
 				continue
 			}
 			if edge.Path != parent.Manifest.Dependencies[name] {
-				problems = append(problems, fmt.Errorf("dependency lock path mismatch for edge %q of %s", name, parent.ID))
+				problems = append(problems, &GraphError{Kind: KindLockMismatch, Path: manifestPath, Msg: fmt.Sprintf("dependency lock path mismatch for edge %q of %s", name, parent.ID)})
 			}
 			child := parent.Dependencies[name]
 			if child == nil {
@@ -588,7 +594,7 @@ func (g *Graph) verifyLock() error {
 				continue
 			}
 			if child.ID != edge.Target {
-				problems = append(problems, fmt.Errorf("dependency lock target mismatch for edge %q of %s", name, parent.ID))
+				problems = append(problems, &GraphError{Kind: KindLockMismatch, Path: manifestPath, Msg: fmt.Sprintf("dependency lock target mismatch for edge %q of %s", name, parent.ID)})
 			}
 			if visited[child.ID] {
 				continue
@@ -596,24 +602,24 @@ func (g *Graph) verifyLock() error {
 			visited[child.ID] = true
 			entry, exists := g.Lock.Projects[child.ID]
 			if !exists {
-				problems = append(problems, fmt.Errorf("missing dependency lock entry for %q", child.ID))
+				problems = append(problems, &GraphError{Kind: KindLockMismatch, Path: filepath.Join(parent.Root, "can.project.json"), Msg: fmt.Sprintf("missing dependency lock entry for %q", child.ID)})
 				complete = false
 				continue
 			}
 			if entry.Lineage != child.Lineage {
-				problems = append(problems, fmt.Errorf("dependency lock lineage mismatch for %q", child.ID))
+				problems = append(problems, &GraphError{Kind: KindLockMismatch, Path: filepath.Join(child.Root, "can.project.json"), Msg: fmt.Sprintf("dependency lock lineage mismatch for %q", child.ID)})
 			}
 			if entry.ManifestSHA256 != child.ManifestSHA256 || !child.SourceIncomplete && entry.SourceSHA256 != child.SourceSHA256 || !child.FixturesIncomplete && entry.FixturesSHA256 != child.FixturesSHA256 {
-				problems = append(problems, fmt.Errorf("stale dependency digest for %q", child.ID))
+				problems = append(problems, &GraphError{Kind: KindLockMismatch, Path: filepath.Join(child.Root, "can.project.json"), Msg: fmt.Sprintf("stale dependency digest for %q", child.ID)})
 			}
 			if child.RegistryError == nil && !reflect.DeepEqual(entry.ErrorRegistry, child.Registry) {
-				problems = append(problems, fmt.Errorf("dependency registry snapshot mismatch for %q", child.ID))
+				problems = append(problems, &GraphError{Kind: KindLockMismatch, Path: filepath.Join(child.Root, "can.project.json"), Msg: fmt.Sprintf("dependency registry snapshot mismatch for %q", child.ID)})
 			}
 			visit(child, entry.Edges)
 		}
 		for _, name := range sortedKeys(edges) {
 			if _, exists := parent.Manifest.Dependencies[name]; !exists && parent.Manifest.Invalid["dependencies"] == nil {
-				problems = append(problems, fmt.Errorf("unused dependency lock edge %q of %s", name, parent.ID))
+				problems = append(problems, &GraphError{Kind: KindLockMismatch, Path: filepath.Join(parent.Root, "can.project.json"), Msg: fmt.Sprintf("unused dependency lock edge %q of %s", name, parent.ID)})
 			}
 		}
 	}
@@ -621,7 +627,7 @@ func (g *Graph) verifyLock() error {
 	if complete {
 		for _, id := range sortedKeys(g.Lock.Projects) {
 			if !visited[id] {
-				problems = append(problems, fmt.Errorf("unused dependency lock entry for %q", id))
+				problems = append(problems, &GraphError{Kind: KindLockMismatch, Path: filepath.Join(g.Root.Root, "can.project.json"), Msg: fmt.Sprintf("unused dependency lock entry for %q", id)})
 			}
 		}
 	}

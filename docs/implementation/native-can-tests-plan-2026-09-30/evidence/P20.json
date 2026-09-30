@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "executor": "Muse (muse-spark-1.3-contributor) as integrator (shared compiler files)",
+  "writing_owner": "can-suite-cli",
+  "task_id": "P20",
+  "row_or_file_slice": null,
+  "start_prerequisite_receipts": [
+    "P01 complete in 626bf03743dbfa660d4b4651c2b0b3cceaeae0a5"
+  ],
+  "acceptance_prerequisite_receipts": [],
+  "commits": [
+    "<P20-SHA recorded after commit>"
+  ],
+  "changed_paths": [
+    "compiler/internal/driver/check_json.go",
+    "compiler/internal/driver/check_json_test.go",
+    "compiler/internal/project/checkfacts.go",
+    "compiler/internal/project/checkfacts_test.go",
+    "compiler/internal/project/graph.go",
+    "compiler/internal/project/manifest.go"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "go test -count=1 -run TestCheckJSON ./compiler/internal/driver/",
+      "deadline": "180s",
+      "result": "ok, 16 paired tests (healthy + per-phase mutations + infra + unicode + spanless + related + warnings + overflow + cancel + redaction + gating)"
+    },
+    {
+      "command": "go test -count=1 ./compiler/internal/project/",
+      "deadline": "180s",
+      "result": "ok, full package incl. 3 new classifier/facts tests"
+    },
+    {
+      "command": "go test -count=1 -timeout 570s ./compiler/internal/driver/",
+      "deadline": "600s",
+      "result": "ok 11.467s, full package; loader re-typing preserved all existing behavior"
+    },
+    {
+      "command": "one-shot vector generation via temp test (deleted after)",
+      "deadline": "60s",
+      "result": "evidence/check_json_vectors.txt: accepted exit 0, rejected-parse exit 1, failed-dep exit 2, failed-missing-root exit 2; no absolute-path leak"
+    }
+  ],
+  "identities": {
+    "reference": null,
+    "owner": null,
+    "candidate": "check driver reports compiler {go, catalogue} identity; executable-lease binding is caller (P21/N) scope",
+    "suite": null,
+    "artifact": null,
+    "host_profile": null,
+    "observer": null
+  },
+  "coverage": {
+    "case_check_ids": [],
+    "retained_facets": [],
+    "variants_and_environments": [],
+    "unrun_or_blocked": [
+      "CLI dispatch/exit wiring is P21 work; this task delivers the driver + contract only"
+    ]
+  },
+  "controls": {
+    "positive": [
+      "healthy project: exit 0, accepted, empty diagnostics, all stages finished, inputs digests + recomputed overall digest verified",
+      "warnings-only run accepted with one CAN-CHECK-UNNECESSARY-LOCAL warning diagnostic",
+      "related locations ordered/distinct with files; completeness gates resolve/check on missing root"
+    ],
+    "seeded_defect": [
+      "lex (CAN-LEX-TAB), parse (syntax), check (CAN-CHECK) mutations each reject at exit 1 with exact phase/code",
+      "unknown callee rejects at its true producing stage (resolve or check)",
+      "missing root and denied reads fail exit 2 kind io-identity with no result; missing dep fails kind dependency",
+      "astral-char column asserted in UTF-16 units (12) against rune (11) and byte (14) confounders",
+      "undecodable bytes: spanless lex diagnostic with file + reason, never a fabricated squiggle",
+      "300-error project fails incomplete-report; cancelled ctx fails cancelled; cycle redacts absolute paths",
+      "classifier unit tests: content vs infra, dependency edge upgrade, located-error inner causes, message preservation"
+    ],
+    "missing_evidence": [
+      "no CLI dispatch claimed (P21); no reference qualification claimed (P26)"
+    ]
+  },
+  "resource_and_cleanup_receipts": [
+    "fixtures use t.TempDir(); probe/vector temp tests deleted after use; /tmp mutation backups removed"
+  ],
+  "correction_registry_head": null,
+  "relevance_decision": null,
+  "retirement_eligible": false,
+  "retirement_commit": null,
+  "reviewer_disposition": "integrator self-review (own code): staged pipeline mirrors analyzeGraph gating; phases attributed by producing stage with CAN-LEX- split; GraphError/DependencyError preserve CLI bytes (full driver+project suites green); spanless paths never fabricate locations; vectors observed. Independent final review deferred to Z06.",
+  "limitations": [
+    "byte offsets omitted (contract-optional)",
+    "resolve/check always run under recovery when a root exists; stopping diagnostics apply to infra stops only",
+    "CLI dispatch and exit-code user surface arrive in P21"
+  ]
+}

@@ -492,7 +492,7 @@
       "acceptance": "Empty/duplicate/unknown selections fail; deletion of both local check and plan still conflicts with retained obligation; required-but-unavailable variant is blocked.",
       "evidence": "Save all-root assertion controls; commit planner.",
       "commit": "feat(testing): plan cases and validate coverage",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P15"
       ],
@@ -576,7 +576,7 @@
       "acceptance": "Paired valid/invalid controls distinguish source rejection from missing root/dependency/I/O; Unicode, spanless, related locations, warnings and report overflow behave as specified.",
       "evidence": "Save CLI vectors; commit diagnostics driver before shared CLI dispatch.",
       "commit": "feat(testing): expose structured product diagnostics",
-      "status": "active",
+      "status": "complete",
       "start_after": [
         "P01"
       ],
