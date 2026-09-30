@@ -119,13 +119,13 @@ func (c *Catalogue) generatedFiles() (map[string][]byte, error) {
 		if len(op.StaticInputs) > 0 {
 			signature += "; static " + strings.Join(op.StaticInputs, ", ")
 		}
-		bound := "[" + strings.Join(op.Emits, ", ") + "]"
+		bound := "{" + strings.Join(op.Emits, ", ") + "}"
 		for _, cb := range op.CallbackErrors {
 			bound += " + " + cb + " errors"
 		}
 		callbacks := []string{}
 		for _, cb := range op.Callbacks {
-			errors := "[" + strings.Join(cb.Emits, ", ") + "]"
+			errors := "{" + strings.Join(cb.Emits, ", ") + "}"
 			if cb.DeriveErrors {
 				errors = "derived"
 			}

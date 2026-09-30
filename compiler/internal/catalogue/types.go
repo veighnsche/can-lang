@@ -83,7 +83,7 @@ func (r typeRef) String() string {
 		for i, t := range r.emits {
 			emits[i] = t.String()
 		}
-		bound := " emits [" + strings.Join(emits, ",") + "]"
+		bound := " emits {" + strings.Join(emits, ",") + "}"
 		if r.name == "choice_arm" {
 			return "choice_arm<" + r.result.String() + ">" + bound
 		}

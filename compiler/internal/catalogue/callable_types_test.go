@@ -7,13 +7,13 @@ import (
 
 func TestCallableAndArmDataSpecialization(t *testing.T) {
 	for _, typ := range []string{
-		"callable int () emits []",
-		"callable void (str) emits [http::timeout]",
-		"choice_arm<int> emits []",
-		"choice_arm<void> emits [http::timeout]",
-		"option::value<callable int (str) emits [http::timeout]>",
-		"option::value<choice_arm<int> emits [http::timeout]>",
-		"callable callable int (str) emits [] (bool) emits [http::timeout]",
+		"callable int () emits {}",
+		"callable void (str) emits {http::timeout}",
+		"choice_arm<int> emits {}",
+		"choice_arm<void> emits {http::timeout}",
+		"option::value<callable int (str) emits {http::timeout}>",
+		"option::value<choice_arm<int> emits {http::timeout}>",
+		"callable callable int (str) emits {} (bool) emits {http::timeout}",
 	} {
 		t.Run(typ, func(t *testing.T) {
 			c := Builtin()
@@ -29,7 +29,7 @@ func TestCallableAndArmDataSpecialization(t *testing.T) {
 }
 
 func TestStructuralSourceBridgeAndNestedSubstitution(t *testing.T) {
-	text := "callable choice_arm<option::value<int>> emits [codec::invalid_data] (callable void (str) emits [http::timeout]) emits [http::status_error]"
+	text := "callable choice_arm<option::value<int>> emits {codec::invalid_data} (callable void (str) emits {http::timeout}) emits {http::status_error}"
 	contract, err := parseConcreteType(text)
 	if err != nil {
 		t.Fatal(err)
@@ -50,7 +50,7 @@ func TestStructuralSourceBridgeAndNestedSubstitution(t *testing.T) {
 
 func TestFunctionalDataRetainsWireAndKeyExclusions(t *testing.T) {
 	c := Builtin()
-	for _, typ := range []string{"callable int () emits []", "choice_arm<int> emits []", "option::value<callable int () emits []>", "option::value<choice_arm<int> emits []>", "callable int () emits [][]"} {
+	for _, typ := range []string{"callable int () emits {}", "choice_arm<int> emits {}", "option::value<callable int () emits {}>", "option::value<choice_arm<int> emits {}>", "callable int () emits {}[]"} {
 		for _, constraint := range []string{"wire", "map_key", "sort_key", "sql_scalar", "form", "sql_row", "sql_parameters"} {
 			if c.admits(typ, constraint, func(string, string) bool { return true }) {
 				t.Fatalf("admitted %s as %s", typ, constraint)
@@ -68,12 +68,12 @@ func TestFunctionalDataRetainsWireAndKeyExclusions(t *testing.T) {
 func TestFunctionalDataRequiresValidComponentsAndErrorKinds(t *testing.T) {
 	c := Builtin()
 	for _, typ := range []string{
-		"callable int ()", "choice_arm<int>", "callable int (void) emits []",
-		"callable void[] () emits []", "choice_arm<void[]> emits []",
-		"callable int () emits [int]", "callable int () emits [http::header]",
-		"callable int () emits [http::invented]", "callable int () emits [http::timeout<int>]",
-		"callable int () emits [http::timeout[]]", "callable int () emits [callable int () emits []]",
-		"callable http::invented () emits []", "callable int () emits [] trailing",
+		"callable int ()", "choice_arm<int>", "callable int (void) emits {}",
+		"callable void[] () emits {}", "choice_arm<void[]> emits {}",
+		"callable int () emits {int}", "callable int () emits {http::header}",
+		"callable int () emits {http::invented}", "callable int () emits {http::timeout<int>}",
+		"callable int () emits {http::timeout[]}", "callable int () emits {callable int () emits {}}",
+		"callable http::invented () emits {}", "callable int () emits {} trailing",
 	} {
 		if c.admits(typ, "data", func(string, string) bool { return true }) {
 			t.Fatalf("accepted malformed/closed contract %s", typ)
@@ -84,7 +84,7 @@ func TestFunctionalDataRequiresValidComponentsAndErrorKinds(t *testing.T) {
 		seen[name] = constraint
 		return name == "app::payload" && constraint == "data" || name == "app::failed" && constraint == "error"
 	}
-	typ := "callable app::payload (app::payload) emits [app::failed]"
+	typ := "callable app::payload (app::payload) emits {app::failed}"
 	if _, err := c.Resolve("append", GeneratedTargetID, GeneratedRevision, map[string]string{"T": typ}, nil, proof); err != nil {
 		t.Fatal(err)
 	}
@@ -98,9 +98,9 @@ func TestFunctionalDataRequiresValidComponentsAndErrorKinds(t *testing.T) {
 
 func TestCallbackSpecializationPreservesNestedFunctionalBounds(t *testing.T) {
 	c := Builtin()
-	typ := "callable int (str,bool) emits [http::timeout]"
-	args := map[string]string{"T": typ, "U": "choice_arm<int> emits [http::status_error]"}
-	callbacks := map[string]CallbackContract{"callback": {Inputs: []string{"callable int (str, bool) emits [http::timeout]"}, Result: args["U"]}}
+	typ := "callable int (str,bool) emits {http::timeout}"
+	args := map[string]string{"T": typ, "U": "choice_arm<int> emits {http::status_error}"}
+	callbacks := map[string]CallbackContract{"callback": {Inputs: []string{"callable int (str, bool) emits {http::timeout}"}, Result: args["U"]}}
 	spec, err := c.Resolve("array.map", GeneratedTargetID, GeneratedRevision, args, callbacks, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -108,7 +108,7 @@ func TestCallbackSpecializationPreservesNestedFunctionalBounds(t *testing.T) {
 	if spec.Operation.Callbacks[0].Inputs[0] != typ || spec.Operation.Callbacks[0].Result != args["U"] || spec.Operation.Result != args["U"]+"[]" {
 		t.Fatalf("lost functional contract: %+v", spec)
 	}
-	callbacks["callback"] = CallbackContract{Inputs: []string{"callable int (str,bool) emits []"}, Result: args["U"]}
+	callbacks["callback"] = CallbackContract{Inputs: []string{"callable int (str,bool) emits {}"}, Result: args["U"]}
 	if _, err := c.Resolve("array.map", GeneratedTargetID, GeneratedRevision, args, callbacks, nil); err == nil {
 		t.Fatal("nested callable error bound disappeared")
 	}
