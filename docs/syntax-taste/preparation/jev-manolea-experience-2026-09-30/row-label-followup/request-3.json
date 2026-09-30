@@ -1,0 +1,21 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "scope": "Consider whether Can should gain test-label compression as a design recommendation only. The project serves no external users and need not retain old compatibility. Shorter repeated rows must keep the existing test contracts.",
+    "source": "The present grammar permits one name per asserts root/when entry. That name participates in downstream fixture selection. In Manolea, absent, configured, sample and serve have equal printed inputs and expected ok; configured follows an asset-root recovery path, whereas the remaining selectors provide credentials_missing. These are not interchangeable executions. Keep scenario linkage, mode settings, report identity, duplicate rejection and ordered fixture consumption. Renaming a wholly identical execution never creates new coverage.",
+    "templates": "A subsequent code check found a fact missing from earlier advice: template use is restricted to lexical when tables and forbidden for asserts roots. All cases produced by one use receive that single selector, requiring four uses for four names. Templates add a separately declared target-bound fixture, cases and inert parameters. Their purpose is reuse of boundary cases across locations, so they cannot directly compress root labels.",
+    "proposal": "A potential a | b: args => expected form would desugar shared text into independently selected existing rows. Keep each name and its applicable links/mode plus the original order. Do not merge assertion roots or fixture queues or advertise repeated cases as new coverage. This entails coordinated parser/formatter/checker syntax changes; evidence from a comparative prototype is still absent."
+  },
+  "questions": {
+    "row_labels": {
+      "type": "choice",
+      "instructions": "How should the project handle shared row text without altering the independently selected cases shown here?",
+      "criteria": {
+        "independent_expansion": "Specify grouped labels as ordinary individually named rows, retaining their current execution contracts.",
+        "extend_templates": "Add multi-selector and asserts-root capabilities to templates instead of creating grouped row labels.",
+        "retain": "Leave the grammar and template scope as they stand despite duplicated row bodies.",
+        "insufficient": "Request a practical source comparison before selecting grouped labels or expanded templates."
+      }
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "scope": "Choose worthwhile design follow-ups using current Can and Manolea sources. The remit is critical evaluation rather than wholesale adoption or implementation of the suggestions. No outside customers depend on existing syntax or ABI. Native JavaScript/Bun behavior is the lowering target, supplemented only for Can guarantees including immutability. This review executed neither broad builds nor timing experiments, so separate findings from interpretations.",
+    "patterns": "No new MIME primitive is required for the shown nesting: Can value patterns include string constants, | choices and wildcard _. However, the outcome parser permits only one error name in an arm for match call and match chain. Unchanged forwarding preserves the completion; making a new error does not preserve its occurrence. Grouping must respect exhaustive finite bounds and payload identity. Can also offers match chain for linear sequences that may fail.",
+    "rows": "Each asserts/when row presently has a single selector. Root naming and nested fixture choice depend on that selector, so identical printed calls need not represent the same execution. Preserve linked scenarios, execution settings, duplicate detection and FIFO fixture use when considering a | b: args => expected. Templates already support parameterized assertion reuse. Merely renaming an otherwise identical execution several times adds no behavioral coverage.",
+    "testing": "The existing assertion facility includes filters for individual roots, evaluated expectations, when fixtures, separate workers, execution budgets and structured reporting. Its deliberate live-output ban stays recorded even when a program catches the failure. Current scenario declarations link deterministic cases, not live services. Manolea uses Python to start applications with temporary file/database state, test login and recovery plus HTTP/MCP/multipart exchanges, check durable results, create filesystem fault conditions and guarantee teardown. Can main drivers already cover part of real storage execution. Available operations include files, SQL, fixed fetch declarations and process::run, whose contract awaits bounded child termination instead of yielding a running-server resource. Dynamic local addresses, session state and invalid protocol inputs need testing support. Compiler/runtime conformance also benefits from a separate external observer.",
+    "errors": "Counting Manolea src yields 325 fn declarations and their contracts: 173 have emits {}, 152 list errors. Neither src nor tests defines an application error, and the registry has no entries. The language nevertheless implements nominal payload errors, exhaustive finite emits contracts and bare forwarding. jobs::store_unavailable/preview_error produce HTTP responses, while failed_image first cleans up a previously written file. Converting these directly into error construction would omit necessary work. auth::current_identity uses none for an absent, expired or unverified session and keeps SQL failure distinct. Elsewhere SQL errors remain visible in lower layers and receive repeated endpoint translations. These facts show modeling and verbosity issues without demonstrating missing error types or demanding errors for every unfavorable business result.",
+    "platform": "Existing database facilities include transactions and typed query_one/query_optional/execute. Owner restrictions, state transitions and publication conditions are enforced together by Manolea SQL descriptors; job_open includes a contact condition. Existing building blocks for identity flows cover passwords/crypto, random values, cookies, CSRF, HTTP and storage, while application code chooses account/session behavior. Readable CRUD and authentication are the desired outcomes. Built-in syntax would still need concrete ownership, transaction/conflict and token/session semantics supporting different policies. A maintained typed package design is an alternative to expanding the grammar.",
+    "html": "A form in Manolea demonstrates approximately 26 construction calls within general match chain, covering tags through final document assembly. HTML is deliberately protected through opaque types, escaped text, URL validation and structure checks. An HTML-only chaining keyword is one possible response; typed component libraries or a declarative validated tree are other candidates. Raw HTML injection would violate the current contracts. Comparative prototypes have not yet supplied evidence for choosing among these authoring surfaces."
+  },
+  "questions": {
+    "live_testing": {
+      "type": "choice",
+      "instructions": "Which testing design should be investigated next to let application authors express the demonstrated probe behaviors in Can?",
+      "criteria": {
+        "live_facility": "Specify a Can-facing integration harness for real services, resource ownership, observation and automatic cleanup while keeping deterministic assertions intact.",
+        "relax_assertions": "Use the attached-assertion runner itself for live I/O by relaxing its current restrictions.",
+        "external_supported": "Retain a maintained external runner as the author-facing way to test whole applications.",
+        "insufficient": "Do further capability comparison before committing to a testing design."
+      }
+    },
+    "grouped_errors": {
+      "type": "choice",
+      "instructions": "How should Can approach several named errors that currently repeat the same handler or unchanged forwarding?",
+      "criteria": {
+        "group_sugar": "Introduce grouped named outcomes that retain exhaustive coverage, original forwarded occurrences and type-correct common bindings.",
+        "wrappers": "Reduce duplication through reusable mapping helpers without extending outcome-pattern grammar.",
+        "retain": "Retain one written branch for each error, accepting duplication for explicit handling.",
+        "insufficient": "Investigate shared aliases and coverage consequences before selecting a form."
+      }
+    },
+    "row_labels": {
+      "type": "choice",
+      "instructions": "Which treatment of multiple labels sharing a written test row is justified by the current identity and fixture rules?",
+      "criteria": {
+        "independent_expansion": "Allow shared row notation only with distinct expanded names and unchanged fixture ordering, links and modes; repeated names do not multiply behavioral coverage.",
+        "templates": "Keep one row selector and address repetition using current assertion templates.",
+        "retain": "Require separate source rows even when their bodies are identical.",
+        "insufficient": "Study a complete transitive-fixture case before selecting row compression."
+      }
+    },
+    "error_model": {
+      "type": "choice",
+      "instructions": "How should the project investigate domain-error ergonomics without confusing errors with HTTP rendering or compensation?",
+      "criteria": {
+        "layered_trial": "Trial current domain errors at one service boundary, keep response building and cleanup explicit, and derive syntax needs from that comparison.",
+        "new_error_surface": "Prioritize a replacement function-shaped error syntax ahead of a service-layer trial.",
+        "keep_current": "Keep the current application failure structure rather than introduce domain-specific service outcomes.",
+        "insufficient": "Continue inspecting collapsed failure cases before selecting an error-model revision."
+      }
+    },
+    "crud_auth_layer": {
+      "type": "choice",
+      "instructions": "Where should reusable CRUD and authentication behavior initially be developed in response to this source evidence?",
+      "criteria": {
+        "packages": "Develop package-level contracts for owner-aware persistence and configurable identity workflows before choosing dedicated syntax.",
+        "keywords": "Make CRUD/auth native syntax the initial design target, specifying the same authorization and lifecycle guarantees.",
+        "app_only": "Leave these workflows to application helpers and the current low-level APIs.",
+        "insufficient": "Seek further application evidence before deciding between packages and grammar."
+      }
+    },
+    "html_direction": {
+      "type": "choice",
+      "instructions": "How should the project first evaluate a more readable surface for these multi-call HTML trees?",
+      "criteria": {
+        "compare_tree": "Prototype declarative checked HTML alongside stronger component APIs and assess both under unchanged validation guarantees.",
+        "html_chain": "Prioritize a special language form that chains HTML construction calls.",
+        "helpers_only": "Focus exclusively on library-level HTML helpers using today language constructs.",
+        "insufficient": "Inspect other page structures before choosing a direction to prototype."
+      }
+    }
+  }
+}

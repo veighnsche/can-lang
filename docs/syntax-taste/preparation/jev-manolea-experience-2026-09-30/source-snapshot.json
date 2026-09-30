@@ -1,0 +1,25 @@
+{
+  "review_date": "2026-09-30",
+  "method": "Source inspection and advisory consultations; no build, application tests or performance measurement. Only review documents/evidence were authored.",
+  "repositories": {
+    "can": {
+      "root": "/Users/vince/Projects/can-lang",
+      "head_at_completion": "5804b6865897d34952c93429ac0feb10d63105b9"
+    },
+    "manolea": {
+      "root": "/Users/vince/Projects/manolea-2",
+      "head_at_completion": "2470eb2332455568addd0639c7cbb5834210d1c9"
+    }
+  },
+  "manolea_src_counts": {
+    "functions": 325,
+    "empty_emits": 173,
+    "nonempty_emits": 152,
+    "error_declarations": 0
+  },
+  "verification": {
+    "local_markdown_links": "checked exist and cited line numbers in bounds",
+    "json": "all parsed",
+    "temporary_workspaces_allocated": 0
+  }
+}

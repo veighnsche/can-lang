@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"payload_binding":{"type":"choice","choice":"unbound_groups","confidence":0.66,"probabilities":{"per_member_check":0.21,"defer":0.0,"unbound_groups":0.75,"explicit_union_alias":0.04}}},"usage":{"input_tokens":715,"output_tokens":57}}

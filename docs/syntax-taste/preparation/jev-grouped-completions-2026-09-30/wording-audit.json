@@ -1,0 +1,10 @@
+{
+  "reviewed_before_send": true,
+  "semantic_equivalence": "All versions preserve selected scope, existing binding and exact error semantics, differing payload types, single lexical body, proposed checked-body reuse, unbound user examples, alternatives and no compatibility requirement. Every state, instruction and option description was rewritten; identifiers may remain exact.",
+  "all_explanatory_fields_distinct": true,
+  "request_sha256": {
+    "1": "2c474ec2323b9772a76c73681e07ad94ca786de6395ecc2c068e8df4a27c82ae",
+    "2": "02866162de89e7152a5e79709a95bf01909ceda9f51582bad2668007ea588642",
+    "3": "98bebae403f74dce03d570a2d41dfe0c874779d6361ad521d38637262030689b"
+  }
+}

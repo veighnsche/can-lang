@@ -1,0 +1,109 @@
+fn bool valid_type
+    emits []
+    given
+        str name
+    asserts
+        html: "index.html" => ok true
+        shell: "run.sh" => ok false
+    match call path::extension(name)
+        ok str ext => match ext is ".html"
+            false => match ext is ".css"
+                false => match ext is ".js"
+                    false => match ext is ".mjs"
+                        false => match ext is ".json"
+                            false => match ext is ".txt"
+                                false => match ext is ".png"
+                                    false => match ext is ".jpg"
+                                        false => match ext is ".jpeg"
+                                            false => match ext is ".webp"
+                                                false => match ext is ".woff"
+                                                    false => match ext is ".woff2"
+                                                        false => ok false
+                                                        true => ok true
+                                                    true => ok true
+                                                true => ok true
+                                            true => ok true
+                                        true => ok true
+                                    true => ok true
+                                true => ok true
+                            true => ok true
+                        true => ok true
+                    true => ok true
+                true => ok true
+            true => ok true
+
+
+fn bool valid_mime
+    emits []
+    given
+        str name
+        str mime
+    asserts
+        html: "index.html", "text/html" => ok true
+        mismatch: "index.html", "text/javascript" => ok false
+        script: "assets/app.js", "text/javascript" => ok true
+    match call path::extension(name)
+        ok str ext => match ext is ".html"
+            false => match ext is ".css"
+                false => match ext is ".js"
+                    false => match ext is ".mjs"
+                        false => match ext is ".json"
+                            false => match ext is ".txt"
+                                false => match ext is ".png"
+                                    false => match ext is ".jpg"
+                                        false => match ext is ".jpeg"
+                                            false => match ext is ".webp"
+                                                false => match ext is ".woff"
+                                                    false => match ext is ".woff2"
+                                                        false => ok false
+                                                        true => ok mime is "font/woff2"
+                                                    true => ok mime is "font/woff"
+                                                true => ok mime is "image/webp"
+                                            true => ok mime is "image/jpeg"
+                                        true => ok mime is "image/jpeg"
+                                    true => ok mime is "image/png"
+                                true => ok mime is "text/plain"
+                            true => ok mime is "application/json"
+                        true => ok mime is "text/javascript"
+                    true => ok mime is "text/javascript"
+                true => ok mime is "text/css"
+            true => ok mime is "text/html"
+- Can the above examples not be sugared? I feel like it’s too much repeating pattern… or it should be language primitives even…
+- Error handling could use some more sugar
+- Emits are rarely used
+- Too much repeating lines (could also use some sugar
+- Like in the asserts or when… when there is repeating lines after the “:” then before the “:” we should do “missing | too_much | greater: 0 => ok true”
+- I want special language primitives for CRUD behavior. So that it’s super easy to read them.
+- The reason that we need to use Python to run specific tests definitely means that we have testing suite shortcomings in the language
+- We need authentication primitives in the language
+- Repeating errors arms like:
+                   sql::unsupported_value => ok false
+                    sql::connection_failed => ok false
+                    sql::query_failed => ok false
+Should be:
+                   sql::unsupported_value | sql::connection_failed | ql::query_failed => ok false
+
+- Another example:
+    asserts
+        absent: "MANOLEA_ASSET_ROOT" => ok
+        configured: "MANOLEA_ASSET_ROOT" => ok
+        sample: "MANOLEA_ASSET_ROOT" => ok
+        serve: "MANOLEA_ASSET_ROOT" => ok
+        invalid: "MANOLEA_ASSET_ROOT" => env::invalid_name{"MANOLEA_ASSET_ROOT"}
+Should be:
+    asserts
+        absent | configured | sample | serve: "MANOLEA_ASSET_ROOT" => ok
+        invalid: "MANOLEA_ASSET_ROOT" => env::invalid_name{"MANOLEA_ASSET_ROOT"}
+- Also with shorthand error arms:
+        html::invalid_structure
+        form::unknown_field
+        form::invalid_name
+Should be inlined like:
+        html::invalid_structure | form::unknown_field | form::invalid_name
+- We might want to redesign how we make HTML pages. Maybe we need a distinct language primitive for chain calling html specifically…
+- I actually want each indentation to be 1 space instead of 4 spaces. Because this can go very deep.
+- In the dist/assertions folder, I see a lot of values that are declared, but its values never read. A lot of $canFunctions, for example. A lot of optimization is possible
+- Not everything that I say should be implemented into can, everything needs to be carefully evaluated and deeply investigated. But the most important one is that we have to use other languages in the test folder to make a test suite. That one is very unacceptable. But I can still be very wrong… you should be challenging me.
+- I see a lot of errors like jobs::store_unavailable() OR preview_error() OR failed_image() which are functions… which should be native errors… what are errors missing that make it errors?
+- We are barely defining domain errors. So something is going wrong. It’s not ergonomic enough for you to actually fully use…. Maybe errors need to be defined more like functions… or something?
+- I think that option::none and option::some should be language primitives next to the “ok” keyword (I could be very wrong about this one) But this reminds me of rust syntax

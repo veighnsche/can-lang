@@ -1,0 +1,74 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "scope": "Manolea provides application evidence for a review of Can. The user wants complaints challenged before changes are selected; implementation is not being performed. Compatibility has no product value because no external users exist. Backend lowering should use corresponding JavaScript/Bun facilities, retaining required contract and immutability adapters. Evidence comes from source inspection, without performance measurements or large builds; causal explanations remain hypotheses.",
+    "patterns": "The MIME examples miss existing language expressiveness: a value match handles quoted strings, alternatives separated by |, and _. Error-result matching is different: each arm of match call or match chain currently names a single error. Forwarding a bare arm retains its completion, whereas constructing an error changes the occurrence. Any shorter form must keep finite exhaustive checking and payload identity. Sequential fallible operations already have the general match chain form.",
+    "rows": "One name is currently allowed before a row colon in both asserts and when. A name determines assertion-root identity and transitive fixture selection; equal visible arguments and expectations can therefore exercise different paths. Existing semantics include scenario associations, per-row modes, unique-name checks and ordered fixture queues. Reusable parameterized assertion templates are available. Label-list sugar a | b: args => expected would shorten repeated text, but labels alone cannot turn identical fixture-free executions into distinct coverage.",
+    "testing": "Testing is not absent from Can: selected assertion roots run expected/actual regions with substituted calls, worker isolation, deadlines and machine-readable results. Assertions prohibit real output operations and record an unerasable harness failure. A scenario presently names fixture relationships rather than an external-system test. Python in Manolea orchestrates service processes and disposable databases/files, sends authentication/recovery, HTTP, MCP and multipart traffic, observes persistence, arranges filesystem failures and tears down resources. Some live storage actions already reside in Can main drivers. Native files/SQL and declarative fetch exist, alongside process::run that returns only after a bounded child finishes. Ephemeral ports, session continuity and malformed traffic expose harness requirements. External conformance checks of the language implementation remain independently useful.",
+    "errors": "The source census finds 325 Manolea functions, split into 173 emits {} and 152 contracts naming errors, with no authored error declarations in src/tests and an empty registry. Nominal errors with payloads, finite checked bounds and forwarding already work in Can. The examples jobs::store_unavailable and preview_error are HTTP response builders; failed_image additionally compensates a prior file write by removal. An error value cannot replace that response construction or compensation by itself. Missing, expired or unverified sessions deliberately become none in auth::current_identity, but SQL faults escape separately. SQL failures also travel through other lower layers before repetitive handler mappings. Missing application error declarations and verbose mappings are observations; lack of an error mechanism, or a need to classify all negative results as errors, does not follow.",
+    "platform": "Can supplies typed SQL query_one, query_optional and execute plus transactions. Manolea embeds atomic owner/state/publication predicates in named SQL, with job_open also checking contact prerequisites. Password and cryptography, random generation, cookies, CSRF, HTTP and persistence capabilities are available; the app combines them into authentication and session/account rules. The request for CRUD/authentication primitives is a readability goal. Grammar-level support could shorten declarations but needs explicit ownership, atomicity, conflict and token/session rules with product policy variation. Typed reusable packages are another route requiring no extra syntax.",
+    "html": "HTML composition remains verbose even though Manolea already uses match chain: a representative form assembles tags, strings, attributes, nodes and a document over about 26 calls. Opaque validated HTML, escaping, URL typing and structural rules are existing guarantees. The proposed dedicated HTML chaining feature competes with reusable typed components and declarative checked trees. Any design must retain those guarantees rather than expose raw injection. There is no completed side-by-side authoring experiment to determine the winner."
+  },
+  "questions": {
+    "live_testing": {
+      "type": "choice",
+      "instructions": "How should the project address Python-dependent application probes without weakening the existing testing guarantees?",
+      "criteria": {
+        "live_facility": "Develop explicit live-test orchestration that reuses existing operations and owns resources, checks and cleanup separately from attached assertions.",
+        "relax_assertions": "Extend the ordinary assertion mode to execute real services and configure their environment.",
+        "external_supported": "Standardize the existing external-language application harness as the supported testing interface.",
+        "insufficient": "Postpone this choice until additional probe requirements are mapped."
+      }
+    },
+    "grouped_errors": {
+      "type": "choice",
+      "instructions": "Which next step best addresses repeated completion arms without discarding exhaustive error contracts?",
+      "criteria": {
+        "group_sugar": "Extend completion patterns with explicit error alternatives; keep nominal payloads, occurrence-preserving relay and compatible binder rules.",
+        "wrappers": "Factor mappings into current function abstractions and keep one error name per completion arm.",
+        "retain": "Prefer unchanged per-error arms for readability and auditability despite repetition.",
+        "insufficient": "Hold the decision pending additional payload and exhaustiveness cases."
+      }
+    },
+    "row_labels": {
+      "type": "choice",
+      "instructions": "How should repeated assertion or fixture row text be shortened without changing selector-dependent behavior?",
+      "criteria": {
+        "independent_expansion": "Define grouped labels as individual existing rows after expansion, preserving identity, FIFO ordering, scenario links and execution settings.",
+        "templates": "Use the implemented template mechanism for reuse rather than extend row-label syntax.",
+        "retain": "Leave each labeled row written in full for transparent fixture relationships.",
+        "insufficient": "Request a concrete expansion proof with linked fixtures before deciding."
+      }
+    },
+    "error_model": {
+      "type": "choice",
+      "instructions": "Which design intervention is justified by the error census and the actual response-helper behavior?",
+      "criteria": {
+        "layered_trial": "Refactor a representative service contract using current nominal errors while preserving boundary rendering and compensation, then assess remaining friction.",
+        "new_error_surface": "Start by redesigning error authoring around function-style declarations and creation.",
+        "keep_current": "Accept the existing response builders, primitive outcomes and SQL-error forwarding without another modeling layer.",
+        "insufficient": "Defer intervention until additional evidence shows where nominal domain outcomes are needed."
+      }
+    },
+    "crud_auth_layer": {
+      "type": "choice",
+      "instructions": "Which implementation layer should be investigated first for simplifying CRUD/auth workflows without hiding their application contracts?",
+      "criteria": {
+        "packages": "Try reusable typed APIs with visible data-access and identity policies, evaluating grammar additions only after that exercise.",
+        "keywords": "Introduce dedicated language constructs for data changes and authentication with complete policy contracts.",
+        "app_only": "Retain existing per-application assembly of SQL and authentication capabilities.",
+        "insufficient": "Delay a shared abstraction until more products establish the common policies."
+      }
+    },
+    "html_direction": {
+      "type": "choice",
+      "instructions": "Which exploration best targets verbose page construction while preserving Can HTML contracts?",
+      "criteria": {
+        "compare_tree": "Build a side-by-side authoring experiment between validated tree notation and reusable typed components with the existing safety contracts.",
+        "html_chain": "Begin with HTML-specific chaining syntax for the existing constructors.",
+        "helpers_only": "Use only ordinary component functions and the current generic sequencing form.",
+        "insufficient": "Defer the experiment choice until more representative HTML is reviewed."
+      }
+    }
+  }
+}

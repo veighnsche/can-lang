@@ -1,0 +1,21 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "scope": "Review only repeated test-row label syntax in Can. This is design advice, not an implementation request. There are no external users or compatibility obligations. The user wants less repeated text while preserving tests.",
+    "source": "Can parses one label for each asserts root or when row. Root names select transitive fixtures. Manolea has absent, configured, sample and serve roots with identical arguments and expected ok; configured supplies an asset root and exercises recovery, while other names supply credentials_missing. Thus equal displayed rows can run different paths. Scenario links, execution modes, root reports, duplicate-name diagnostics and FIFO fixture behavior must be preserved. Repeating identical behavior under several names adds no coverage.",
+    "templates": "Source investigation corrects an omission in the earlier review: fixture templates expand only in lexical when tables. The checker rejects use on asserts roots. Every expanded template row inherits the one use-site selector; four selectors still need four use rows. Templates require a separate fixture declaration tied to a target, cases and inert parameters. They support reusable boundary fixtures across sites, not shared names on assertion roots.",
+    "proposal": "The proposed a | b: args => expected shares row text but expands into independently named current rows. Names, ordering, linked scenarios and execution modes remain distinct as applicable. No combined root, shared queue or extra coverage claim is intended. Syntax/parser/formatter/checker work is needed; no comparative prototype has run."
+  },
+  "questions": {
+    "row_labels": {
+      "type": "choice",
+      "instructions": "Which next design direction best addresses this exact repeated-label example given the template restrictions?",
+      "criteria": {
+        "independent_expansion": "Design label-list syntax that expands to independent asserts/when rows with preserved identities and semantics.",
+        "extend_templates": "Extend the template system to support assertion roots and several selectors rather than add label-list syntax.",
+        "retain": "Keep explicit separate rows and current templates unchanged, accepting the local repetition.",
+        "insufficient": "Compare concrete prototype source costs before deciding on either extension."
+      }
+    }
+  }
+}

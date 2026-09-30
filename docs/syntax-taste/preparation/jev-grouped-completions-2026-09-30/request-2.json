@@ -1,0 +1,20 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "scope": "The accepted work adds error-alternative heads, unchanged-error relay groups and shared-label rows in Can assertions/fixtures. Compatibility is unnecessary with zero external users. Select only the payload-access contract for error groups, not a new union mechanism or live-test feature.",
+    "facts": "Today each completion arm identifies a nominal specialization and participates in complete coverage. Its payload is available under the error short name unless an as alias is supplied. Different errors need not share a payload type. Forwarding relays the protected completion unchanged, preserving payload and occurrence. Repeated entry into one written handler must address the same nested calls and when tables. The implementation candidate checks a common body once and reuses it across current exact-error IR branches without introducing a runtime helper. The requested examples do not inspect payloads: they produce constant results or call response helpers. Payload-dependent code can continue using separate arms.",
+    "constraints": "Retain duplicate diagnostics, complete finite coverage, explicit generic selection and final-success ordering. Keep ok/[_] out of domain-error groups and leave wrapper policies keyed individually. Avoid implicit union inference and ambiguous alternative-local aliases. Formatting keeps written groups in the AST. Multi-label test rows become distinct established assertion/fixture identities, preserving modes, links and FIFO behavior."
+  },
+  "questions": {
+    "payload_binding": {
+      "type": "choice",
+      "instructions": "What payload access should the new shared error handlers permit in this scoped change?",
+      "criteria": {
+        "unbound_groups": "Allow payload-independent groups, withholding implicit and explicit error binders while retaining existing bound individual arms.",
+        "explicit_union_alias": "Introduce an as binding over a finite error union, with explicit narrowing for variant-specific fields.",
+        "per_member_check": "Typecheck the written handler separately for every error binder, requiring validity in all cases and retaining shared invocation identity.",
+        "defer": "Postpone handler grouping pending additional payload-use evidence while implementing forwarding/test-label compression."
+      }
+    }
+  }
+}

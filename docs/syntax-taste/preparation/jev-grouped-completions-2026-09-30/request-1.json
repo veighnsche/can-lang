@@ -1,0 +1,20 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "scope": "Implement selected Can syntax: grouped named error handlers, grouped bare forwarding and multiple labels sharing asserts/when text. No external users or compatibility requirement. This question concerns payload binding only; do not expand scope into new error unions or test runners.",
+    "facts": "Existing completion heads resolve exact nominal error specializations with exhaustive checking. A single head implicitly binds its short error name, or explicitly uses as alias. Groups can contain unrelated payload types. Bare forwarding must preserve the exact protected completion, including occurrence identity and payload. A shared handler is one lexical body: nested call/when sites must remain single sites even if several errors reach it. The proposed implementation checks it once, then uses existing per-error IR dispatch arms referencing that checked body; no runtime helper is needed. Users supplied unbound groups whose handlers return constants or existing response-builder calls. One can retain individual arms whenever a payload is needed.",
+    "constraints": "Keep exhaustive coverage, duplicate detection, exact generic resolution and success-last ordering. ok and [_] remain distinct; wrapper policy keys remain individual. Grouping must not create new type inference or silently let one alternative-specific payload name stand for another. The syntax AST preserves groups for formatting; assertion labels expand into separate existing roots/fixture selectors with modes, links and queue semantics retained."
+  },
+  "questions": {
+    "payload_binding": {
+      "type": "choice",
+      "instructions": "Which payload-binding policy best fits this initial grouped-error implementation?",
+      "criteria": {
+        "unbound_groups": "Permit groups only without payload bindings; introduce no implicit aliases in their shared body, and keep individual arms for payload access.",
+        "explicit_union_alias": "Add a common explicit alias typed as a checked union of the grouped nominal errors and require narrowing before payload access.",
+        "per_member_check": "Check the common body under each member-specific alias/type, accepting it only if all versions typecheck and unifying lexical call sites.",
+        "defer": "Defer grouped handlers until more payload-heavy examples establish the desired binding behavior; forwarding and label groups can proceed."
+      }
+    }
+  }
+}

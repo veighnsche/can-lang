@@ -1,0 +1,74 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "scope": "Assess the next design work for Can after inspecting its Manolea application. This is an investigation, not approval to implement every complaint. There are zero external users and no backward compatibility requirement. Prefer equivalent native JavaScript/Bun operations with only adapters required by Can contracts and immutability. No benchmarks or broad builds were run. Recommendations must distinguish observed code from inferred causes.",
+    "patterns": "Current value matches already accept string literals, | alternatives and a _ fallback. The nested extension and MIME boolean ladders in Manolea can already be flattened with those features. Completion matches in match call and match chain instead parse one named error per arm. Bare error arms forward existing completions; reconstruction creates another occurrence. Exhaustive finite error checking and payload identity must survive any grouping. Generic match chain already flattens fallible sequencing.",
+    "rows": "Assertions and when fixtures each parse one label per row. Distinct assertion labels define distinct roots and select different nested fixtures even if displayed inputs and expected outputs coincide. Scenario links, execution modes, duplicate-name rejection and fixture FIFO order also matter. Parameterized assertion templates already exist. The proposal a | b: args => expected would share row text. Four labels with identical inputs and no different fixture behavior are duplicate examples, not four independent behaviors.",
+    "testing": "Can assertions already support focused selectors, executable expected results, when substitution, isolated workers, timeouts and structured reports. Live platform output is deliberately refused, with a sticky violation even if caught. Existing scenario syntax connects deterministic fixture labels; it is not a live integration runner. Manolea Python probes launch servers, allocate temporary DB/files, exercise login/recovery and HTTP/MCP/multipart protocols, inspect real persisted state, inject filesystem faults and clean resources. Can drivers already perform some live storage work via main. Can has files, SQL, declared fetch and bounded process::run; the latter waits for process completion, not a persistent server handle. Dynamic localhost ports, stateful sessions and malformed-wire tests need test-specific facilities. Independent compiler/runtime conformance tests serve a separate purpose.",
+    "errors": "Manolea src contains 325 functions: 173 empty emits {} and 152 nonempty emits contracts. Its error registry is empty and src/tests declare no domain errors. Can already supports declared nominal payload-bearing errors, checked finite emits and bare forwarding. jobs::store_unavailable and preview_error construct HTTP responses; failed_image removes a written file before returning a response. Replacing those functions with error constructors would remove response or cleanup behavior. auth::current_identity intentionally returns none for absent/expired/unverified sessions while propagating SQL failures. Other lower layers expose SQL errors and handlers repeatedly translate them. This establishes repetition and absent app error declarations, but does not prove a missing error type system or require every negative outcome to become an error.",
+    "platform": "Typed SQL query_one/query_optional/execute operations and transaction support already exist. Manolea named SQL statements atomically constrain owner, lifecycle state and publication, including job_open contact requirements. Low-level password/crypto, random, cookies, CSRF, HTTP and storage capabilities exist; authentication workflow and account/session policy are composed in app code. The user wants readable CRUD and authentication primitives. A new keyword can reduce ceremony but must define owner enforcement, transactions, conflicts, token/session lifecycle and configurable product policy; reusable typed packages may achieve this without grammar changes.",
+    "html": "Manolea HTML uses the already general match chain, but a form can need roughly 26 calls for tag names, text, attributes, elements and document construction. Checked opaque HTML types, text escaping, typed URLs and structural validation are intentional contracts. The user suggests an HTML-specific chain primitive. Alternatives include better typed component helpers or a checked declarative tree form; neither should silently introduce raw HTML injection. No comparative authoring prototype has yet established which surface is best."
+  },
+  "questions": {
+    "live_testing": {
+      "type": "choice",
+      "instructions": "Given the testing evidence, which next direction best supports Can-authored application tests while retaining trustworthy evidence?",
+      "criteria": {
+        "live_facility": "Design a bounded live application-test facility over existing capabilities, with lifecycle, observations and teardown distinct from deterministic assertions.",
+        "relax_assertions": "Allow attached assertions to perform live effects and add environment configuration to that runner.",
+        "external_supported": "Keep application orchestration in a documented supported external harness rather than add Can-facing live tests.",
+        "insufficient": "Collect more concrete missing-capability evidence before selecting a testing direction."
+      }
+    },
+    "grouped_errors": {
+      "type": "choice",
+      "instructions": "What should replace repetitive identical error-handling and forwarding arms, given existing value-pattern alternatives?",
+      "criteria": {
+        "group_sugar": "Add | groups for named completion arms and bare forwarding, preserving each error identity and defining sound shared bindings.",
+        "wrappers": "Use existing wrapper functions to centralize error translation while retaining individual-arm syntax.",
+        "retain": "Keep explicit separate completion arms because their individual visibility outweighs shorter source.",
+        "insufficient": "Require more binding and coverage examples before choosing this extension."
+      }
+    },
+    "row_labels": {
+      "type": "choice",
+      "instructions": "What is the sound next design direction for a | b: args => expected in asserts and when?",
+      "criteria": {
+        "independent_expansion": "Introduce label lists as expansion into separate roots/fixture rows with preserved names, order, links and modes; do not claim added coverage.",
+        "templates": "Prefer existing parameterized assertion templates and keep single-label rows.",
+        "retain": "Retain explicit repeated rows so all root and fixture identities remain visually separate.",
+        "insufficient": "Defer label sugar until a real scenario proves all identity and queue interactions."
+      }
+    },
+    "error_model": {
+      "type": "choice",
+      "instructions": "What first action best addresses absent application domain errors and verbose failure mappings?",
+      "criteria": {
+        "layered_trial": "Model one application service with existing typed domain errors, retain response/cleanup functions, and use the result to identify specific ergonomic improvements.",
+        "new_error_surface": "Design a new function-like error declaration and construction surface before changing application layering.",
+        "keep_current": "Retain the application current response-centric and primitive-result design as sufficient.",
+        "insufficient": "Gather more examples of lost error distinctions before choosing a change."
+      }
+    },
+    "crud_auth_layer": {
+      "type": "choice",
+      "instructions": "At which layer should the next exploration of readable CRUD and authentication live, given the current capabilities and policies?",
+      "criteria": {
+        "packages": "Prototype maintained typed packages or descriptors with explicit ownership, transaction and session policies before reserving language keywords.",
+        "keywords": "Design first-class CRUD and authentication grammar now, carrying ownership, atomicity and session rules explicitly.",
+        "app_only": "Keep CRUD and authentication composition entirely app-owned using current operations.",
+        "insufficient": "Investigate additional applications before selecting the layer of reuse."
+      }
+    },
+    "html_direction": {
+      "type": "choice",
+      "instructions": "What should be the next HTML authoring experiment, given that match chain already exists?",
+      "criteria": {
+        "compare_tree": "Compare a checked declarative tree prototype against improved typed component helpers, preserving escaping, URL and structural rules before choosing syntax.",
+        "html_chain": "Design a dedicated HTML chain primitive as the first simplification.",
+        "helpers_only": "Improve typed component helpers on existing match chain without exploring new tree notation.",
+        "insufficient": "Obtain additional page examples before selecting an authoring experiment."
+      }
+    }
+  }
+}

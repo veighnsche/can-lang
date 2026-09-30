@@ -1,0 +1,21 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "scope": "Assess a Can design alternative for repeated labels in test tables, without authorizing implementation. Zero outside consumers require compatibility. The desired benefit is reduced textual repetition with unchanged test meaning.",
+    "source": "Each current asserts or when entry has a single selector, and an assertion name determines nested fixture choices. The Manolea labels absent/configured/sample/serve print the same arguments and ok result, yet configured takes a supplied asset directory through recovery and the others take credentials_missing. Matching row text therefore does not imply matching execution. Preserve scenario associations, execution settings, per-root reports, repeated-name errors and FIFO fixture semantics. Multiple names for one otherwise identical case do not increase coverage.",
+    "templates": "The previous review lacked this material restriction: templates may be used only at lexical when sites; asserts roots reject use. Expansion assigns every template case the same use-site name, so four names require four uses. A template also needs its own target-specific fixture definition, case rows and inert arguments. This is cross-site boundary-fixture reuse rather than a multi-label assertion-root facility.",
+    "proposal": "Under the suggested a | b: args => expected notation, one written body expands to separate ordinary named rows. Their order, identities, applicable scenario links and execution policies stay intact. It neither fuses roots or queues nor counts duplicated behavior as more coverage. Implementing it requires syntax, parsing, formatting and checking changes, and no authoring comparison has yet been executed."
+  },
+  "questions": {
+    "row_labels": {
+      "type": "choice",
+      "instructions": "What approach to repeated test labels is justified after accounting for the actual limits of fixture templates?",
+      "criteria": {
+        "independent_expansion": "Develop multiple-label notation as unchanged separate roots or fixture entries after expansion.",
+        "extend_templates": "Broaden fixture templates to cover root assertions and multiple selector names as the chosen reuse mechanism.",
+        "retain": "Retain one fully written row per name along with the existing limited template feature.",
+        "insufficient": "Defer choosing an extension until a side-by-side authoring prototype supplies evidence."
+      }
+    }
+  }
+}

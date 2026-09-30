@@ -1,0 +1,207 @@
+{
+  "reviewed_before_send": true,
+  "manual_semantic_equivalence_review": "All three variants preserve the same observed facts, limitations, questions and alternatives. Wording differs for every state paragraph, instruction and option description. Technical identifiers and numeric source census are intentionally unchanged. No earlier Jev response is input to another request.",
+  "fact_checklist": [
+    "zero users; no compatibility; native lowering; source review only",
+    "existing string/or matches; single completion patterns; forwarding occurrence identity",
+    "label root identity; transitive fixtures; FIFO; scenarios; modes; existing templates; duplicate coverage warning",
+    "existing assert selector/worker/timeout/fixture support; intentional live guard; scenario is deterministic; real probe duties; existing Can main drivers and native capabilities; process waits; independent conformance",
+    "325 functions, 173 empty and 152 nonempty emits; no app errors; typed errors exist; response helpers and cleanup; intentional none vs propagated SQL",
+    "existing SQL and security capabilities; atomic owner/state/publication predicates; job_open contact condition; product policies vary",
+    "HTML generic chain; approx 26 calls; escaping/URL/structure/opaque guarantees; no comparative prototype"
+  ],
+  "all_explanatory_leaves_distinct": true,
+  "prose_leaf_count": 37,
+  "request_sha256": {
+    "1": "a0b4776480a068a0303ab91b94ae134ba602b3d9333cea5d21d28e1edd11c6f2",
+    "2": "69ff1ec5f396492a44adc4021d5c26aa48a0cf6c639ac2260d51067841353bd5",
+    "3": "eb7d3bbe035705a168893127881a83b08c97cf86e1ea1f8d8328d3afecc2cbce"
+  },
+  "pairwise_similarity": {
+    ".state.scope": {
+      "1-2": 0.058,
+      "1-3": 0.122,
+      "2-3": 0.068
+    },
+    ".state.patterns": {
+      "1-2": 0.038,
+      "1-3": 0.027,
+      "2-3": 0.117
+    },
+    ".state.rows": {
+      "1-2": 0.102,
+      "1-3": 0.158,
+      "2-3": 0.071
+    },
+    ".state.testing": {
+      "1-2": 0.062,
+      "1-3": 0.174,
+      "2-3": 0.094
+    },
+    ".state.errors": {
+      "1-2": 0.177,
+      "1-3": 0.263,
+      "2-3": 0.184
+    },
+    ".state.platform": {
+      "1-2": 0.169,
+      "1-3": 0.162,
+      "2-3": 0.085
+    },
+    ".state.html": {
+      "1-2": 0.128,
+      "1-3": 0.099,
+      "2-3": 0.058
+    },
+    ".questions.live_testing.instructions": {
+      "1-2": 0.387,
+      "1-3": 0.361,
+      "2-3": 0.34
+    },
+    ".questions.live_testing.criteria.live_facility": {
+      "1-2": 0.452,
+      "1-3": 0.505,
+      "2-3": 0.442
+    },
+    ".questions.live_testing.criteria.relax_assertions": {
+      "1-2": 0.44,
+      "1-3": 0.274,
+      "2-3": 0.404
+    },
+    ".questions.live_testing.criteria.external_supported": {
+      "1-2": 0.39,
+      "1-3": 0.16,
+      "2-3": 0.355
+    },
+    ".questions.live_testing.criteria.insufficient": {
+      "1-2": 0.297,
+      "1-3": 0.557,
+      "2-3": 0.216
+    },
+    ".questions.grouped_errors.instructions": {
+      "1-2": 0.326,
+      "1-3": 0.37,
+      "2-3": 0.286
+    },
+    ".questions.grouped_errors.criteria.group_sugar": {
+      "1-2": 0.391,
+      "1-3": 0.445,
+      "2-3": 0.43
+    },
+    ".questions.grouped_errors.criteria.wrappers": {
+      "1-2": 0.41,
+      "1-3": 0.297,
+      "2-3": 0.298
+    },
+    ".questions.grouped_errors.criteria.retain": {
+      "1-2": 0.359,
+      "1-3": 0.204,
+      "2-3": 0.376
+    },
+    ".questions.grouped_errors.criteria.insufficient": {
+      "1-2": 0.319,
+      "1-3": 0.517,
+      "2-3": 0.177
+    },
+    ".questions.row_labels.instructions": {
+      "1-2": 0.296,
+      "1-3": 0.283,
+      "2-3": 0.249
+    },
+    ".questions.row_labels.criteria.independent_expansion": {
+      "1-2": 0.396,
+      "1-3": 0.464,
+      "2-3": 0.372
+    },
+    ".questions.row_labels.criteria.templates": {
+      "1-2": 0.407,
+      "1-3": 0.423,
+      "2-3": 0.232
+    },
+    ".questions.row_labels.criteria.retain": {
+      "1-2": 0.431,
+      "1-3": 0.385,
+      "2-3": 0.392
+    },
+    ".questions.row_labels.criteria.insufficient": {
+      "1-2": 0.335,
+      "1-3": 0.217,
+      "2-3": 0.521
+    },
+    ".questions.error_model.instructions": {
+      "1-2": 0.32,
+      "1-3": 0.326,
+      "2-3": 0.201
+    },
+    ".questions.error_model.criteria.layered_trial": {
+      "1-2": 0.325,
+      "1-3": 0.386,
+      "2-3": 0.333
+    },
+    ".questions.error_model.criteria.new_error_surface": {
+      "1-2": 0.49,
+      "1-3": 0.427,
+      "2-3": 0.341
+    },
+    ".questions.error_model.criteria.keep_current": {
+      "1-2": 0.441,
+      "1-3": 0.385,
+      "2-3": 0.278
+    },
+    ".questions.error_model.criteria.insufficient": {
+      "1-2": 0.315,
+      "1-3": 0.316,
+      "2-3": 0.136
+    },
+    ".questions.crud_auth_layer.instructions": {
+      "1-2": 0.402,
+      "1-3": 0.486,
+      "2-3": 0.305
+    },
+    ".questions.crud_auth_layer.criteria.packages": {
+      "1-2": 0.407,
+      "1-3": 0.388,
+      "2-3": 0.298
+    },
+    ".questions.crud_auth_layer.criteria.keywords": {
+      "1-2": 0.324,
+      "1-3": 0.261,
+      "2-3": 0.315
+    },
+    ".questions.crud_auth_layer.criteria.app_only": {
+      "1-2": 0.388,
+      "1-3": 0.435,
+      "2-3": 0.423
+    },
+    ".questions.crud_auth_layer.criteria.insufficient": {
+      "1-2": 0.349,
+      "1-3": 0.49,
+      "2-3": 0.346
+    },
+    ".questions.html_direction.instructions": {
+      "1-2": 0.308,
+      "1-3": 0.306,
+      "2-3": 0.257
+    },
+    ".questions.html_direction.criteria.compare_tree": {
+      "1-2": 0.373,
+      "1-3": 0.394,
+      "2-3": 0.328
+    },
+    ".questions.html_direction.criteria.html_chain": {
+      "1-2": 0.403,
+      "1-3": 0.345,
+      "2-3": 0.423
+    },
+    ".questions.html_direction.criteria.helpers_only": {
+      "1-2": 0.329,
+      "1-3": 0.337,
+      "2-3": 0.304
+    },
+    ".questions.html_direction.criteria.insufficient": {
+      "1-2": 0.25,
+      "1-3": 0.458,
+      "2-3": 0.352
+    }
+  }
+}

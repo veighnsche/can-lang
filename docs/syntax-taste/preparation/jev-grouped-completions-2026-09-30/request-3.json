@@ -1,0 +1,20 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "scope": "Can is gaining the user-selected grouping of error branches and forwarding lines plus assertion/when labels. There are no outside consumers to protect. Decide how grouped error bodies may access payloads within this change; error-union redesign and live testing are outside the assignment.",
+    "facts": "Current error arms are exhaustively checked exact nominal heads. An individual arm introduces the error name as its payload alias, or takes an explicit as name. Members of a group may have different payload shapes. A bare relay must keep its original completion and occurrence as well as data. The single source handler also owns a single set of nested invocation/fixture sites. One implementation compiles that body once and references the checked result from existing exact-type dispatch arms, requiring no additional runtime helper. All supplied grouping examples ignore payloads and return constants or invoke response constructors; inspecting a particular payload remains possible in a separate arm.",
+    "constraints": "Do not weaken missing/duplicate-arm checks, specialization rules or the final ok convention. Standard [_] and success stay separate, and wrapper policy heads are unchanged. No inferred union or accidental reuse of an error-specific name should appear. Preserve grouped AST source formatting and expand shared test labels into independent roots/fixture selectors with existing execution settings, links and ordered queues."
+  },
+  "questions": {
+    "payload_binding": {
+      "type": "choice",
+      "instructions": "Which rule for payload names should accompany the first version of grouped completion arms?",
+      "criteria": {
+        "unbound_groups": "Make grouped bodies unbound, reserving payload aliases for separate single-error branches.",
+        "explicit_union_alias": "Support one shared union-typed alias and demand refinement before reading member payloads.",
+        "per_member_check": "Admit payload usage by checking every alternative context, then reconcile the single lexical-site contract.",
+        "defer": "Ship only relay and row-label grouping now, studying shared-handler payload semantics further."
+      }
+    }
+  }
+}

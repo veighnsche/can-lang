@@ -1,0 +1,8 @@
+{
+  "http_status": 200,
+  "elapsed_seconds": 0.264,
+  "validated": true,
+  "request": "request-3.json",
+  "response": "response-3.json",
+  "fresh_request": true
+}
