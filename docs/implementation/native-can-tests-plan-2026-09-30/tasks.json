@@ -427,7 +427,7 @@
       "acceptance": "Quick envelope (64 processes, 4 GiB, 512 MiB) and bounded-job envelope (64, 6 GiB, 2 GiB) are admitted only where enforcing mechanisms and disposal reserve are demonstrated. Poll-and-kill or sample peaks cannot qualify them; unavailable host remains blocked.",
       "evidence": "Save host-specific negative controls; commit profile acceptance separately.",
       "commit": "test(testing): qualify strict host enforcement",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P12",
         "P25"
@@ -706,7 +706,7 @@
       "acceptance": "Catalogue/checker/emitter agree on normal effects and opaque handle admission. Reject forged/stale owner, arbitrary dispatch/eval, raw thenable transport and wrong target; generated files are reproducible. Treat this as provisional R-core input until P26.",
       "evidence": "evidence/P28.json with exact identities, checks, controls, cleanup and independent review",
       "commit": "feat(testing): integrate typed owner bindings",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P02",
         "P10",
@@ -899,7 +899,7 @@
         "P11"
       ],
       "accept_after": [],
-      "status": "planned",
+      "status": "active",
       "scope": "mechanism code and local controls; no integrated credit"
     },
     {
@@ -7642,7 +7642,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Review companion chart/clipboard/storage protocol and bundle-size assertions individually; migrate retained semantics without freezing old sizes or prototype ABI. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.",
       "commit": "test(native-can): add prototype-companion-surfaces-a cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "Conditional rows require per-row current-contract relevance and reviewer disposition; preserve historical records/static fixtures where still useful. The integrator alone may retire shared old files after all linked rows and callers are resolved.",
       "delegated_oracles_owned": [],
       "delegated_oracles_shared": [],

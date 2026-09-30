@@ -260,7 +260,7 @@
       "acceptance": "Quick envelope (64 processes, 4 GiB, 512 MiB) and bounded-job envelope (64, 6 GiB, 2 GiB) are admitted only where enforcing mechanisms and disposal reserve are demonstrated. Poll-and-kill or sample peaks cannot qualify them; unavailable host remains blocked.",
       "evidence": "Save host-specific negative controls; commit profile acceptance separately.",
       "commit": "test(testing): qualify strict host enforcement",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P12",
         "P25"
@@ -539,7 +539,7 @@
       "acceptance": "Catalogue/checker/emitter agree on normal effects and opaque handle admission. Reject forged/stale owner, arbitrary dispatch/eval, raw thenable transport and wrong target; generated files are reproducible. Treat this as provisional R-core input until P26.",
       "evidence": "evidence/P28.json with exact identities, checks, controls, cleanup and independent review",
       "commit": "feat(testing): integrate typed owner bindings",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P02",
         "P10",
