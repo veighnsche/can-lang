@@ -67,25 +67,25 @@
   },
   "type": "object",
   "properties": {
-    "schemaVersion": {
+    "schema_version": {
       "const": "1"
     },
-    "runId": {
+    "run_id": {
       "$ref": "#/$defs/id"
     },
-    "reportDigest": {
+    "report_digest": {
       "$ref": "#/$defs/digest"
     },
-    "planDigest": {
+    "plan_digest": {
       "$ref": "#/$defs/digest"
     },
-    "referenceDigest": {
+    "reference_digest": {
       "$ref": "#/$defs/digest"
     },
-    "ownerDigest": {
+    "owner_digest": {
       "$ref": "#/$defs/digest"
     },
-    "hostProfile": {
+    "host_profile": {
       "type": "string",
       "minLength": 1,
       "maxLength": 256
@@ -97,11 +97,11 @@
           "type": "string",
           "enum": ["recover", "prepare", "plan", "active", "quiesce", "clean", "terminal"]
         },
-        "atMs": {
+        "at_ms": {
           "$ref": "#/$defs/clockTime"
         }
       },
-      "required": ["state", "atMs"],
+      "required": ["state", "at_ms"],
       "additionalProperties": false
     },
     "released": {
@@ -118,7 +118,7 @@
       },
       "maxItems": 4096
     },
-    "forcedActions": {
+    "forced_actions": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/forcedAction"
@@ -130,6 +130,6 @@
       "enum": ["clean", "failed", "unresolved"]
     }
   },
-  "required": ["schemaVersion", "runId", "reportDigest", "planDigest", "referenceDigest", "ownerDigest", "hostProfile", "terminal", "released", "remaining", "forcedActions", "cleanup"],
+  "required": ["schema_version", "run_id", "report_digest", "plan_digest", "reference_digest", "owner_digest", "host_profile", "terminal", "released", "remaining", "forced_actions", "cleanup"],
   "additionalProperties": false
 }

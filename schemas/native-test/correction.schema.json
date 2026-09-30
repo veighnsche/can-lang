@@ -45,20 +45,20 @@
   },
   "type": "object",
   "properties": {
-    "schemaVersion": {
+    "schema_version": {
       "const": "1"
     },
-    "registryRevision": {
+    "registry_revision": {
       "type": "integer",
       "minimum": 1
     },
-    "originalReportDigest": {
+    "original_report_digest": {
       "$ref": "#/$defs/digest"
     },
-    "originalReceiptDigest": {
+    "original_receipt_digest": {
       "$ref": "#/$defs/digest"
     },
-    "affectedRuns": {
+    "affected_runs": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/id"
@@ -84,7 +84,7 @@
       },
       "maxItems": 4096
     },
-    "observedAt": {
+    "observed_at": {
       "$ref": "#/$defs/clockTime"
     },
     "observer": {
@@ -105,6 +105,6 @@
       "maxLength": 512
     }
   },
-  "required": ["schemaVersion", "registryRevision", "originalReportDigest", "originalReceiptDigest", "affectedRuns", "capabilities", "obligations", "observedAt", "observer", "interval", "attribution", "invalidates"],
+  "required": ["schema_version", "registry_revision", "original_report_digest", "original_receipt_digest", "affected_runs", "capabilities", "obligations", "observed_at", "observer", "interval", "attribution", "invalidates"],
   "additionalProperties": false
 }

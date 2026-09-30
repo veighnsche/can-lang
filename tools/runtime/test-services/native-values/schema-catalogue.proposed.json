@@ -9,7 +9,7 @@
     "assertion is supplied: these are supplied external N-service boundaries composed by ordinary Can, not real in-worker computation.",
     "No entry takes an arbitrary module path, export name, eval/source string, or expected-value/oracle argument. Closed enums (native::registered_runtime, native::registered_api, native::registered_operation, native::make_kind, native::observe_kind, native::fault_mode) stay closed; the full enum members are fixed by K02/K03, not here.",
     "Async surface: only native::invoke dispatches a pending action and only native::settle polls it. RPC wrapping adds no thenable read, call, or await; settlement crosses as an inert handle envelope.",
-    "Limits: every session carries native::limits with all seven K01 bounds (maxSessions, maxHandlesPerSession, maxPendingActions, maxObserveEntries, maxObserveBytes, maxGatesPerSession, maxFaultsPerSession), each a required positive finite integer. Omitted, zero, negative, fractional, or unlimited bounds reject."
+    "Limits: every session carries native::limits with all seven K01 bounds (max_sessions, max_handles_per_session, maxPendingActions, maxObserveEntries, maxObserveBytes, maxGatesPerSession, maxFaultsPerSession), each a required positive finite integer. Omitted, zero, negative, fractional, or unlimited bounds reject."
   ],
   "package": { "name": "native", "identity": "can.test.native@1" },
   "proposedTypes": [

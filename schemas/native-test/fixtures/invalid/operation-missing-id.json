@@ -1,10 +1,10 @@
 {
-  "schemaVersion": "1",
-  "runId": "run-20260930-001",
-  "ownerGrant": "grant-case-scope-7",
+  "schema_version": "1",
+  "run_id": "run-20260930-001",
+  "owner_grant": "grant-case-scope-7",
   "operation": "work.read",
-  "argumentsDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-  "deadlineMs": {
+  "arguments_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "deadline_ms": {
     "clock": "n-monotonic",
     "ms": 120000
   }

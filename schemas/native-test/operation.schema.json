@@ -30,16 +30,16 @@
     "request": {
       "type": "object",
       "properties": {
-        "schemaVersion": {
+        "schema_version": {
           "const": "1"
         },
-        "runId": {
+        "run_id": {
           "$ref": "#/$defs/id"
         },
-        "operationId": {
+        "operation_id": {
           "$ref": "#/$defs/id"
         },
-        "ownerGrant": {
+        "owner_grant": {
           "type": "string",
           "minLength": 1,
           "maxLength": 256
@@ -49,26 +49,26 @@
           "minLength": 1,
           "maxLength": 128
         },
-        "argumentsDigest": {
+        "arguments_digest": {
           "$ref": "#/$defs/digest"
         },
-        "deadlineMs": {
+        "deadline_ms": {
           "$ref": "#/$defs/clockTime"
         }
       },
-      "required": ["schemaVersion", "runId", "operationId", "ownerGrant", "operation", "argumentsDigest", "deadlineMs"],
+      "required": ["schema_version", "run_id", "operation_id", "owner_grant", "operation", "arguments_digest", "deadline_ms"],
       "additionalProperties": false
     },
     "result": {
       "type": "object",
       "properties": {
-        "schemaVersion": {
+        "schema_version": {
           "const": "1"
         },
-        "runId": {
+        "run_id": {
           "$ref": "#/$defs/id"
         },
-        "operationId": {
+        "operation_id": {
           "$ref": "#/$defs/id"
         },
         "outcome": {
@@ -88,7 +88,7 @@
           "maxProperties": 32
         }
       },
-      "required": ["schemaVersion", "runId", "operationId", "outcome", "kind"],
+      "required": ["schema_version", "run_id", "operation_id", "outcome", "kind"],
       "additionalProperties": false
     }
   },

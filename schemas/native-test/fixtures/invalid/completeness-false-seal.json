@@ -1,7 +1,7 @@
 {
   "state": "sealed",
-  "totalCount": 10,
-  "returnedCount": 7,
+  "total_count": 10,
+  "returned_count": 7,
   "truncated": false,
   "gaps": [
     {

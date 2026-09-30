@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "1",
-  "registryRevision": 3,
-  "originalReportDigest": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
-  "originalReceiptDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "affectedRuns": [
+  "schema_version": "1",
+  "registry_revision": 3,
+  "original_report_digest": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
+  "original_receipt_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "affected_runs": [
     "run-20260930-001"
   ],
   "capabilities": [
@@ -12,7 +12,7 @@
   "obligations": [
     "BROWSER-001"
   ],
-  "observedAt": {
+  "observed_at": {
     "clock": "wall-utc",
     "ms": 1759248000000
   },

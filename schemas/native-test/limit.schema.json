@@ -16,83 +16,83 @@
   },
   "type": "object",
   "properties": {
-    "schemaVersion": {
+    "schema_version": {
       "const": "1"
     },
-    "runId": {
+    "run_id": {
       "$ref": "#/$defs/id"
     },
     "budgets": {
       "type": "object",
       "properties": {
-        "runWallMs": {
+        "run_wall_ms": {
           "$ref": "#/$defs/positive"
         },
-        "finalCleanupReserveMs": {
+        "final_cleanup_reserve_ms": {
           "$ref": "#/$defs/positive"
         },
-        "prepareMs": {
+        "prepare_ms": {
           "$ref": "#/$defs/positive"
         },
-        "caseBodyMs": {
+        "case_body_ms": {
           "$ref": "#/$defs/positive"
         },
-        "maxCaseBodyMs": {
+        "max_case_body_ms": {
           "$ref": "#/$defs/positive"
         },
-        "maxProducerMs": {
+        "max_producer_ms": {
           "$ref": "#/$defs/positive"
         },
-        "caseCleanupMs": {
+        "case_cleanup_ms": {
           "$ref": "#/$defs/positive"
         },
-        "cancelGraceMs": {
+        "cancel_grace_ms": {
           "$ref": "#/$defs/positive"
         },
-        "assertRootMs": {
+        "assert_root_ms": {
           "$ref": "#/$defs/positive"
         },
-        "maxProcesses": {
+        "max_processes": {
           "$ref": "#/$defs/positive"
         },
-        "maxMemoryBytes": {
+        "max_memory_bytes": {
           "$ref": "#/$defs/positive"
         },
-        "maxTempBytes": {
+        "max_temp_bytes": {
           "$ref": "#/$defs/positive"
         },
-        "maxWorkspaceEntries": {
+        "max_workspace_entries": {
           "$ref": "#/$defs/positive"
         },
-        "maxWorkspaceDepth": {
+        "max_workspace_depth": {
           "$ref": "#/$defs/positive"
         },
-        "maxEvidenceBytes": {
+        "max_evidence_bytes": {
           "$ref": "#/$defs/positive"
         },
-        "maxStreamBytes": {
+        "max_stream_bytes": {
           "$ref": "#/$defs/positive"
         },
-        "maxRunDataBytes": {
+        "max_run_data_bytes": {
           "$ref": "#/$defs/positive"
         },
-        "maxReportBytes": {
+        "max_report_bytes": {
           "$ref": "#/$defs/positive"
         },
-        "maxReceiptBytes": {
+        "max_receipt_bytes": {
           "$ref": "#/$defs/positive"
         },
-        "controlReserveBytes": {
+        "control_reserve_bytes": {
           "$ref": "#/$defs/positive"
         },
-        "availableDiskFloorBytes": {
+        "available_disk_floor_bytes": {
           "$ref": "#/$defs/positive"
         }
       },
-      "required": ["runWallMs", "finalCleanupReserveMs", "prepareMs", "caseBodyMs", "maxCaseBodyMs", "maxProducerMs", "caseCleanupMs", "cancelGraceMs", "assertRootMs", "maxProcesses", "maxMemoryBytes", "maxTempBytes", "maxWorkspaceEntries", "maxWorkspaceDepth", "maxEvidenceBytes", "maxStreamBytes", "maxRunDataBytes", "maxReportBytes", "maxReceiptBytes", "controlReserveBytes", "availableDiskFloorBytes"],
+      "required": ["run_wall_ms", "final_cleanup_reserve_ms", "prepare_ms", "case_body_ms", "max_case_body_ms", "max_producer_ms", "case_cleanup_ms", "cancel_grace_ms", "assert_root_ms", "max_processes", "max_memory_bytes", "max_temp_bytes", "max_workspace_entries", "max_workspace_depth", "max_evidence_bytes", "max_stream_bytes", "max_run_data_bytes", "max_report_bytes", "max_receipt_bytes", "control_reserve_bytes", "available_disk_floor_bytes"],
       "additionalProperties": false
     }
   },
-  "required": ["schemaVersion", "runId", "budgets"],
+  "required": ["schema_version", "run_id", "budgets"],
   "additionalProperties": false
 }

@@ -43,14 +43,14 @@ type ClockTime struct {
 // Envelope is a validated operation request or result envelope. Request-only
 // and result-only fields are mutually exclusive by frame kind.
 type Envelope struct {
-	SchemaVersion string `json:"schemaVersion"`
-	RunID         string `json:"runId"`
-	OperationID   string `json:"operationId"`
+	SchemaVersion string `json:"schema_version"`
+	RunID         string `json:"run_id"`
+	OperationID   string `json:"operation_id"`
 	// Request fields.
-	OwnerGrant      string    `json:"ownerGrant,omitempty"`
+	OwnerGrant      string    `json:"owner_grant,omitempty"`
 	Operation       string    `json:"operation,omitempty"`
-	ArgumentsDigest string    `json:"argumentsDigest,omitempty"`
-	DeadlineMs      ClockTime `json:"deadlineMs,omitempty"`
+	ArgumentsDigest string    `json:"arguments_digest,omitempty"`
+	DeadlineMs      ClockTime `json:"deadline_ms,omitempty"`
 	// Result fields.
 	Outcome string         `json:"outcome,omitempty"`
 	Kind    string         `json:"kind,omitempty"`
@@ -59,12 +59,12 @@ type Envelope struct {
 }
 
 var requestKeys = map[string]bool{
-	"schemaVersion": true, "runId": true, "operationId": true,
-	"ownerGrant": true, "operation": true, "argumentsDigest": true, "deadlineMs": true,
+	"schema_version": true, "run_id": true, "operation_id": true,
+	"owner_grant": true, "operation": true, "arguments_digest": true, "deadline_ms": true,
 }
 
 var resultKeys = map[string]bool{
-	"schemaVersion": true, "runId": true, "operationId": true,
+	"schema_version": true, "run_id": true, "operation_id": true,
 	"outcome": true, "kind": true, "facts": true, "partial": true,
 }
 
@@ -95,13 +95,13 @@ func envelopeFromMap(raw map[string]json.RawMessage, isRequest bool) (Envelope, 
 // agreement. wantKind selects the request or result shape.
 func (e Envelope) Validate(wantKind byte) error {
 	if e.SchemaVersion != "1" {
-		return fmt.Errorf("%w: schemaVersion %q", ErrBadEnvelope, e.SchemaVersion)
+		return fmt.Errorf("%w: schema_version %q", ErrBadEnvelope, e.SchemaVersion)
 	}
 	if !idPattern.MatchString(e.RunID) {
-		return fmt.Errorf("%w: runId %q", ErrBadEnvelope, e.RunID)
+		return fmt.Errorf("%w: run_id %q", ErrBadEnvelope, e.RunID)
 	}
 	if !idPattern.MatchString(e.OperationID) {
-		return fmt.Errorf("%w: operationId %q", ErrBadEnvelope, e.OperationID)
+		return fmt.Errorf("%w: operation_id %q", ErrBadEnvelope, e.OperationID)
 	}
 	switch wantKind {
 	case KindRequest:
@@ -115,13 +115,13 @@ func (e Envelope) Validate(wantKind byte) error {
 
 func (e Envelope) validateRequest() error {
 	if e.OwnerGrant == "" || len(e.OwnerGrant) > 256 {
-		return fmt.Errorf("%w: ownerGrant length", ErrBadEnvelope)
+		return fmt.Errorf("%w: owner_grant length", ErrBadEnvelope)
 	}
 	if e.Operation == "" || len(e.Operation) > 128 {
 		return fmt.Errorf("%w: operation length", ErrBadEnvelope)
 	}
 	if !digestPattern.MatchString(e.ArgumentsDigest) {
-		return fmt.Errorf("%w: argumentsDigest", ErrBadEnvelope)
+		return fmt.Errorf("%w: arguments_digest", ErrBadEnvelope)
 	}
 	if !clocks[e.DeadlineMs.Clock] {
 		return fmt.Errorf("%w: deadline clock %q", ErrBadEnvelope, e.DeadlineMs.Clock)

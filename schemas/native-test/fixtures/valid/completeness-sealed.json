@@ -1,7 +1,7 @@
 {
   "state": "sealed",
-  "totalCount": 4,
-  "returnedCount": 4,
+  "total_count": 4,
+  "returned_count": 4,
   "truncated": false,
   "gaps": [],
   "watermark": "cursor-0004"

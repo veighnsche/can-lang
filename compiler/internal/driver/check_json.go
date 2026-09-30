@@ -66,7 +66,7 @@ const (
 
 // CheckReport is the top-level JSON document.
 type CheckReport struct {
-	SchemaVersion string        `json:"schemaVersion"`
+	SchemaVersion string        `json:"schema_version"`
 	Kind          string        `json:"kind"`
 	Status        string        `json:"status"`
 	Result        *CheckResult  `json:"result,omitempty"`
@@ -92,10 +92,10 @@ type CheckCompiler struct {
 
 // CheckInputs binds declared roots, actual reads and enumeration facts.
 type CheckInputs struct {
-	DeclaredRoots []CheckDeclaredRoot `json:"declaredRoots"`
+	DeclaredRoots []CheckDeclaredRoot `json:"declared_roots"`
 	Files         []CheckInputFile    `json:"files"`
 	Enumerations  []CheckEnumeration  `json:"enumerations"`
-	OverallDigest string              `json:"overallDigest"`
+	OverallDigest string              `json:"overall_digest"`
 }
 
 // CheckDeclaredRoot identifies one input root snapshot.
@@ -127,17 +127,17 @@ type CheckDiagnostic struct {
 	Message        string         `json:"message"`
 	File           *string        `json:"file"`
 	Location       *CheckLocation `json:"location"`
-	SpanlessReason *string        `json:"spanlessReason,omitempty"`
+	SpanlessReason *string        `json:"spanless_reason,omitempty"`
 	Related        []CheckRelated `json:"related"`
 }
 
 // CheckLocation uses a logical input path with zero-based UTF-16 start/end
 // line/column, end exclusive.
 type CheckLocation struct {
-	StartLine   int `json:"startLine"`
-	StartColumn int `json:"startColumn"`
-	EndLine     int `json:"endLine"`
-	EndColumn   int `json:"endColumn"`
+	StartLine   int `json:"start_line"`
+	StartColumn int `json:"start_column"`
+	EndLine     int `json:"end_line"`
+	EndColumn   int `json:"end_column"`
 }
 
 // CheckRelated is one ordered distinct secondary location.
@@ -157,7 +157,7 @@ type CheckCompleteness struct {
 type CheckStage struct {
 	Stage         string  `json:"stage"`
 	State         string  `json:"state"`
-	StoppingCause *string `json:"stoppingCause,omitempty"`
+	StoppingCause *string `json:"stopping_cause,omitempty"`
 }
 
 // CheckUnvisited names a source and the stages never completed for it.
@@ -215,7 +215,7 @@ func mustEncodeFailure(kind, detail string) []byte {
 		Failure:       &CheckFailure{Kind: kind, Detail: detail},
 	})
 	if err != nil {
-		return []byte(`{"schemaVersion":"1","kind":"can.check","status":"failed","failure":{"kind":"internal","detail":"encode failure"}}`)
+		return []byte(`{"schema_version":"1","kind":"can.check","status":"failed","failure":{"kind":"internal","detail":"encode failure"}}`)
 	}
 	return raw
 }

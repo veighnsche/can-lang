@@ -1,11 +1,11 @@
 {
-  "schemaVersion": "2",
-  "runId": "run-20260930-001",
-  "operationId": "op-0001",
-  "ownerGrant": "grant-case-scope-7",
+  "schema_version": "2",
+  "run_id": "run-20260930-001",
+  "operation_id": "op-0001",
+  "owner_grant": "grant-case-scope-7",
   "operation": "work.read",
-  "argumentsDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-  "deadlineMs": {
+  "arguments_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "deadline_ms": {
     "clock": "n-monotonic",
     "ms": 120000
   }

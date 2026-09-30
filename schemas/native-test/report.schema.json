@@ -15,7 +15,7 @@
     "check": {
       "type": "object",
       "properties": {
-        "checkId": {
+        "check_id": {
           "$ref": "#/$defs/id"
         },
         "disposition": {
@@ -23,16 +23,16 @@
           "enum": ["matched", "mismatched", "not-reached-after-failure", "missing", "invalid-evidence"]
         }
       },
-      "required": ["checkId", "disposition"],
+      "required": ["check_id", "disposition"],
       "additionalProperties": false
     },
     "unit": {
       "type": "object",
       "properties": {
-        "caseId": {
+        "case_id": {
           "$ref": "#/$defs/id"
         },
-        "variantId": {
+        "variant_id": {
           "$ref": "#/$defs/id"
         },
         "attempt": {
@@ -44,7 +44,7 @@
           "type": "string",
           "enum": ["admitted", "blocked"]
         },
-        "admissionReason": {
+        "admission_reason": {
           "type": "string",
           "minLength": 1,
           "maxLength": 512
@@ -63,23 +63,23 @@
             "$ref": "#/$defs/check"
           }
         },
-        "bodyTerminal": {
+        "body_terminal": {
           "type": "boolean"
         }
       },
-      "required": ["caseId", "attempt", "admission", "execution", "behavior", "checks", "bodyTerminal"],
+      "required": ["case_id", "attempt", "admission", "execution", "behavior", "checks", "body_terminal"],
       "additionalProperties": false
     }
   },
   "type": "object",
   "properties": {
-    "schemaVersion": {
+    "schema_version": {
       "const": "1"
     },
-    "runId": {
+    "run_id": {
       "$ref": "#/$defs/id"
     },
-    "planDigest": {
+    "plan_digest": {
       "$ref": "#/$defs/digest"
     },
     "mode": {
@@ -93,15 +93,15 @@
           "type": "string",
           "enum": ["full-roots", "focused-closure", "incomplete"]
         },
-        "rootCount": {
+        "root_count": {
           "type": "integer",
           "minimum": 0
         },
-        "rootsDigest": {
+        "roots_digest": {
           "$ref": "#/$defs/digest"
         }
       },
-      "required": ["mode", "rootCount", "rootsDigest"],
+      "required": ["mode", "root_count", "roots_digest"],
       "additionalProperties": false
     },
     "units": {
@@ -111,6 +111,6 @@
       }
     }
   },
-  "required": ["schemaVersion", "runId", "planDigest", "mode", "verification", "units"],
+  "required": ["schema_version", "run_id", "plan_digest", "mode", "verification", "units"],
   "additionalProperties": false
 }

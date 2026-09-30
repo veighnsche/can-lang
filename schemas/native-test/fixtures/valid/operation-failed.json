@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "1",
-  "runId": "run-20260930-001",
-  "operationId": "op-0002",
+  "schema_version": "1",
+  "run_id": "run-20260930-001",
+  "operation_id": "op-0002",
   "outcome": "failed",
   "kind": "native-io",
   "partial": {

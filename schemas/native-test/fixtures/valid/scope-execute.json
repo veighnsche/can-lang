@@ -1,10 +1,10 @@
 {
-  "runId": "run-20260930-001",
-  "caseId": "M01-row-001",
-  "variantId": "bun-darwin-arm64",
+  "run_id": "run-20260930-001",
+  "case_id": "M01-row-001",
+  "variant_id": "bun-darwin-arm64",
   "attempt": 0,
   "mode": "execute",
   "purpose": "qualification",
-  "hostProfile": "macbook-strict-v1",
-  "planDigest": "sha256:8888888888888888888888888888888888888888888888888888888888888888"
+  "host_profile": "macbook-strict-v1",
+  "plan_digest": "sha256:8888888888888888888888888888888888888888888888888888888888888888"
 }

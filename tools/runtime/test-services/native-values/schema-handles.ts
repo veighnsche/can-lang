@@ -57,7 +57,7 @@ export class NativeHandleRegistry {
     if (this.sessions.has(sessionId)) {
       throw new NativeSchemaError("rejected", "kind-collision", "session id already reserved");
     }
-    if (this.sessions.size >= this.limits.maxSessions) {
+    if (this.sessions.size >= this.limits.max_sessions) {
       throw new NativeSchemaError("rejected", "resource-limit", "session cap reached");
     }
     this.sessions.set(sessionId, {
@@ -80,7 +80,7 @@ export class NativeHandleRegistry {
     kind: K,
   ): NativeHandle<K> {
     const state = this.requireLiveSession(session, owner);
-    if (state.handles >= this.limits.maxHandlesPerSession) {
+    if (state.handles >= this.limits.max_handles_per_session) {
       throw new NativeSchemaError("rejected", "resource-limit", "handle cap reached");
     }
     if (kind === "action" && state.pendingActions >= this.limits.maxPendingActions) {

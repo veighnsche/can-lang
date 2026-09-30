@@ -31,11 +31,11 @@
       "type": "string",
       "enum": ["sealed", "partial", "invalid"]
     },
-    "totalCount": {
+    "total_count": {
       "type": "integer",
       "minimum": 0
     },
-    "returnedCount": {
+    "returned_count": {
       "type": "integer",
       "minimum": 0
     },
@@ -54,6 +54,6 @@
       "maxLength": 256
     }
   },
-  "required": ["state", "totalCount", "returnedCount", "truncated", "gaps"],
+  "required": ["state", "total_count", "returned_count", "truncated", "gaps"],
   "additionalProperties": false
 }

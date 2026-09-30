@@ -474,7 +474,7 @@ export type NativeHandleWire = Readonly<{
 
 const ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/;
 
-function checkId(field: string, value: unknown): string {
+function check_id(field: string, value: unknown): string {
   if (typeof value !== "string" || !ID_PATTERN.test(value)) {
     throw new NativeSchemaError("rejected", "invalid-request", `invalid ${field}`);
   }
@@ -488,8 +488,8 @@ export function mintHandle<K extends HandleKind>(
   owner: string,
   generation: number,
 ): NativeHandle<K> {
-  checkId("handle id", id);
-  checkId("session id", sessionId);
+  check_id("handle id", id);
+  check_id("session id", sessionId);
   if (typeof owner !== "string" || owner.length === 0 || owner.length > 256) {
     throw new NativeSchemaError("rejected", "invalid-request", "invalid handle owner");
   }
@@ -528,8 +528,8 @@ export function decodeHandleWire(value: unknown): NativeHandle {
   }
   return mintHandle(
     kind as HandleKind,
-    checkId("handle id", record["id"]),
-    checkId("session id", record["sessionId"]),
+    check_id("handle id", record["id"]),
+    check_id("session id", record["sessionId"]),
     checkOwner(record["owner"]),
     generation as number,
   );
@@ -574,8 +574,8 @@ export function checkHandleUse(
 // ---------------------------------------------------------------------------
 
 export type NativeValueLimits = Readonly<{
-  maxSessions: number;
-  maxHandlesPerSession: number;
+  max_sessions: number;
+  max_handles_per_session: number;
   maxPendingActions: number;
   maxObserveEntries: number;
   maxObserveBytes: number;
@@ -584,8 +584,8 @@ export type NativeValueLimits = Readonly<{
 }>;
 
 export const NATIVE_VALUE_LIMIT_KEYS = [
-  "maxSessions",
-  "maxHandlesPerSession",
+  "max_sessions",
+  "max_handles_per_session",
   "maxPendingActions",
   "maxObserveEntries",
   "maxObserveBytes",
@@ -682,24 +682,24 @@ export type NativeValueClock = Readonly<{
 }>;
 
 export type NativeValueRequest = Readonly<{
-  schemaVersion: typeof NATIVE_VALUE_SCHEMA_VERSION;
-  runId: string;
-  operationId: string;
-  ownerGrant: string;
+  schema_version: typeof NATIVE_VALUE_SCHEMA_VERSION;
+  run_id: string;
+  operation_id: string;
+  owner_grant: string;
   operation: NativeValueOperationName;
-  argumentsDigest: string;
-  deadlineMs: NativeValueClock;
+  arguments_digest: string;
+  deadline_ms: NativeValueClock;
   args: Readonly<Record<string, unknown>>;
 }>;
 
 const REQUEST_KEYS = [
-  "schemaVersion",
-  "runId",
-  "operationId",
-  "ownerGrant",
+  "schema_version",
+  "run_id",
+  "operation_id",
+  "owner_grant",
   "operation",
-  "argumentsDigest",
-  "deadlineMs",
+  "arguments_digest",
+  "deadline_ms",
   "args",
 ] as const;
 
@@ -715,12 +715,12 @@ export function checkRequest(value: unknown): NativeValueRequest {
       throw new NativeSchemaError("rejected", "invalid-request", `unknown request field: ${key}`);
     }
   }
-  if (record["schemaVersion"] !== NATIVE_VALUE_SCHEMA_VERSION) {
-    throw new NativeSchemaError("rejected", "invalid-request", "unsupported schemaVersion");
+  if (record["schema_version"] !== NATIVE_VALUE_SCHEMA_VERSION) {
+    throw new NativeSchemaError("rejected", "invalid-request", "unsupported schema_version");
   }
-  const runId = checkId("run id", record["runId"]);
-  const operationId = checkId("operation id", record["operationId"]);
-  const ownerGrant = checkOwner(record["ownerGrant"]);
+  const run_id = check_id("run id", record["run_id"]);
+  const operation_id = check_id("operation id", record["operation_id"]);
+  const owner_grant = checkOwner(record["owner_grant"]);
   const operationRaw = record["operation"];
   if (!isNativeValueOperation(operationRaw)) {
     throw new NativeSchemaError(
@@ -729,11 +729,11 @@ export function checkRequest(value: unknown): NativeValueRequest {
       `unknown native-value operation: ${String(operationRaw)}`,
     );
   }
-  const digest = record["argumentsDigest"];
+  const digest = record["arguments_digest"];
   if (typeof digest !== "string" || !DIGEST_PATTERN.test(digest)) {
     throw new NativeSchemaError("rejected", "invalid-request", "invalid arguments digest");
   }
-  const deadlineRaw = record["deadlineMs"];
+  const deadlineRaw = record["deadline_ms"];
   if (deadlineRaw === null || typeof deadlineRaw !== "object" || Array.isArray(deadlineRaw)) {
     throw new NativeSchemaError("rejected", "invalid-request", "invalid deadline");
   }
@@ -780,13 +780,13 @@ export function checkRequest(value: unknown): NativeValueRequest {
     }
   }
   return Object.freeze({
-    schemaVersion: NATIVE_VALUE_SCHEMA_VERSION,
-    runId,
-    operationId,
-    ownerGrant,
+    schema_version: NATIVE_VALUE_SCHEMA_VERSION,
+    run_id,
+    operation_id,
+    owner_grant,
     operation: operationRaw,
-    argumentsDigest: digest,
-    deadlineMs: Object.freeze({ clock, ms }),
+    arguments_digest: digest,
+    deadline_ms: Object.freeze({ clock, ms }),
     args: Object.freeze({ ...(args as Record<string, unknown>) }),
   }) as NativeValueRequest;
 }
@@ -796,9 +796,9 @@ export function checkRequest(value: unknown): NativeValueRequest {
 // ---------------------------------------------------------------------------
 
 export type NativeValueResult = Readonly<{
-  schemaVersion: typeof NATIVE_VALUE_SCHEMA_VERSION;
-  runId: string;
-  operationId: string;
+  schema_version: typeof NATIVE_VALUE_SCHEMA_VERSION;
+  run_id: string;
+  operation_id: string;
   outcome: NativeOutcome;
   kind: MechanicalKind;
   facts?: Readonly<Record<string, unknown>>;
@@ -856,9 +856,9 @@ export function checkResult(value: unknown): NativeValueResult {
   const record = value as Record<string, unknown>;
   for (const key of Object.keys(record)) {
     if (
-      key !== "schemaVersion" &&
-      key !== "runId" &&
-      key !== "operationId" &&
+      key !== "schema_version" &&
+      key !== "run_id" &&
+      key !== "operation_id" &&
       key !== "outcome" &&
       key !== "kind" &&
       key !== "facts" &&
@@ -867,8 +867,8 @@ export function checkResult(value: unknown): NativeValueResult {
       throw new NativeSchemaError("failed", "transport-failure", `unknown result field: ${key}`);
     }
   }
-  if (record["schemaVersion"] !== NATIVE_VALUE_SCHEMA_VERSION) {
-    throw new NativeSchemaError("failed", "transport-failure", "unsupported result schemaVersion");
+  if (record["schema_version"] !== NATIVE_VALUE_SCHEMA_VERSION) {
+    throw new NativeSchemaError("failed", "transport-failure", "unsupported result schema_version");
   }
   const outcome = record["outcome"];
   if (typeof outcome !== "string" || !(NATIVE_OUTCOMES as readonly string[]).includes(outcome)) {

@@ -168,26 +168,26 @@ def semantic(schema_name, doc):
         budgets = doc.get("budgets", {})
         problems = []
         try:
-            if budgets["finalCleanupReserveMs"] > budgets["runWallMs"]:
-                problems.append("finalCleanupReserveMs exceeds runWallMs")
-            if budgets["prepareMs"] > budgets["runWallMs"]:
-                problems.append("prepareMs exceeds runWallMs")
+            if budgets["final_cleanup_reserve_ms"] > budgets["run_wall_ms"]:
+                problems.append("final_cleanup_reserve_ms exceeds run_wall_ms")
+            if budgets["prepare_ms"] > budgets["run_wall_ms"]:
+                problems.append("prepare_ms exceeds run_wall_ms")
         except KeyError:
             pass
         return problems
     if schema_name == "completeness":
         problems = []
-        total = doc.get("totalCount")
-        returned = doc.get("returnedCount")
+        total = doc.get("total_count")
+        returned = doc.get("returned_count")
         if isinstance(total, int) and isinstance(returned, int) and returned > total:
-            problems.append("returnedCount exceeds totalCount")
+            problems.append("returned_count exceeds total_count")
         if doc.get("state") == "sealed":
             if doc.get("truncated") is not False:
                 problems.append("sealed completeness must not be truncated")
             if doc.get("gaps"):
                 problems.append("sealed completeness must have no gaps")
             if total != returned:
-                problems.append("sealed completeness requires returnedCount == totalCount")
+                problems.append("sealed completeness requires returned_count == total_count")
         return problems
     if schema_name == "report":
         problems = []
@@ -195,12 +195,12 @@ def semantic(schema_name, doc):
         if doc.get("mode") == "execute" and not units:
             problems.append("execute mode requires at least one unit")
         for unit in units:
-            where = unit.get("caseId", "?")
+            where = unit.get("case_id", "?")
             if unit.get("behavior") == "matched":
                 if unit.get("execution") != "completed":
                     problems.append(f"{where}: matched behavior requires completed execution")
-                if unit.get("bodyTerminal") is not True:
-                    problems.append(f"{where}: matched behavior requires bodyTerminal")
+                if unit.get("body_terminal") is not True:
+                    problems.append(f"{where}: matched behavior requires body_terminal")
                 for check in unit.get("checks", []):
                     if check.get("disposition") != "matched":
                         problems.append(f"{where}: matched behavior requires every check matched")

@@ -3,46 +3,46 @@
     "name": "bad-version",
     "kind": 1,
     "json": {
-      "schemaVersion": "2",
-      "runId": "run-1",
-      "operationId": "op-1",
-      "ownerGrant": "g-1",
+      "schema_version": "2",
+      "run_id": "run-1",
+      "operation_id": "op-1",
+      "owner_grant": "g-1",
       "operation": "work.read",
-      "argumentsDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-      "deadlineMs": {
+      "arguments_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "deadline_ms": {
         "clock": "n-monotonic",
         "ms": 1000
       }
     },
-    "wantError": "schemaVersion"
+    "wantError": "schema_version"
   },
   {
     "name": "missing-run-id",
     "kind": 1,
     "json": {
-      "schemaVersion": "1",
-      "operationId": "op-1",
-      "ownerGrant": "g-1",
+      "schema_version": "1",
+      "operation_id": "op-1",
+      "owner_grant": "g-1",
       "operation": "work.read",
-      "argumentsDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-      "deadlineMs": {
+      "arguments_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "deadline_ms": {
         "clock": "n-monotonic",
         "ms": 1000
       }
     },
-    "wantError": "runId"
+    "wantError": "run_id"
   },
   {
     "name": "unknown-field",
     "kind": 1,
     "json": {
-      "schemaVersion": "1",
-      "runId": "run-1",
-      "operationId": "op-1",
-      "ownerGrant": "g-1",
+      "schema_version": "1",
+      "run_id": "run-1",
+      "operation_id": "op-1",
+      "owner_grant": "g-1",
       "operation": "work.read",
-      "argumentsDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-      "deadlineMs": {
+      "arguments_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "deadline_ms": {
         "clock": "n-monotonic",
         "ms": 1000
       },
@@ -54,9 +54,9 @@
     "name": "completed-non-ok-kind",
     "kind": 2,
     "json": {
-      "schemaVersion": "1",
-      "runId": "run-1",
-      "operationId": "op-1",
+      "schema_version": "1",
+      "run_id": "run-1",
+      "operation_id": "op-1",
       "outcome": "completed",
       "kind": "native-io"
     },
@@ -66,9 +66,9 @@
     "name": "failed-ok-kind",
     "kind": 2,
     "json": {
-      "schemaVersion": "1",
-      "runId": "run-1",
-      "operationId": "op-1",
+      "schema_version": "1",
+      "run_id": "run-1",
+      "operation_id": "op-1",
       "outcome": "failed",
       "kind": "ok"
     },
@@ -78,9 +78,9 @@
     "name": "bad-outcome",
     "kind": 2,
     "json": {
-      "schemaVersion": "1",
-      "runId": "run-1",
-      "operationId": "op-1",
+      "schema_version": "1",
+      "run_id": "run-1",
+      "operation_id": "op-1",
       "outcome": "passed",
       "kind": "ok"
     },
@@ -90,9 +90,9 @@
     "name": "facts-overflow",
     "kind": 2,
     "json": {
-      "schemaVersion": "1",
-      "runId": "run-1",
-      "operationId": "op-1",
+      "schema_version": "1",
+      "run_id": "run-1",
+      "operation_id": "op-1",
       "outcome": "completed",
       "kind": "ok",
       "facts": {
@@ -137,13 +137,13 @@
     "name": "negative-deadline",
     "kind": 1,
     "json": {
-      "schemaVersion": "1",
-      "runId": "run-1",
-      "operationId": "op-1",
-      "ownerGrant": "g-1",
+      "schema_version": "1",
+      "run_id": "run-1",
+      "operation_id": "op-1",
+      "owner_grant": "g-1",
       "operation": "work.read",
-      "argumentsDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-      "deadlineMs": {
+      "arguments_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "deadline_ms": {
         "clock": "n-monotonic",
         "ms": -1
       }

@@ -18,7 +18,7 @@
 // or gapped sequences, truncated reads and malformed envelopes, and never
 // trusts subject stdout: only bytes arriving on the supervisor channel are
 // decoded. Payload envelopes follow schemas/native-test/operation.schema.json
-// (schemaVersion "1", run/operation identities, owner grant or outcome kind).
+// (schema_version "1", run/operation identities, owner grant or outcome kind).
 //
 // Cross-language vectors live in testdata/: the Can codec (P02 Can side, P23)
 // must accept and reject the same frames. This package is transport only;

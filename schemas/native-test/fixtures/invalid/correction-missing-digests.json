@@ -1,14 +1,14 @@
 {
-  "schemaVersion": "1",
-  "registryRevision": 3,
-  "affectedRuns": [
+  "schema_version": "1",
+  "registry_revision": 3,
+  "affected_runs": [
     "run-20260930-001"
   ],
   "capabilities": [
     "browser-launch-isolation"
   ],
   "obligations": [],
-  "observedAt": {
+  "observed_at": {
     "clock": "wall-utc",
     "ms": 1759248000000
   },

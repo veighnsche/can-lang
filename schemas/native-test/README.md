@@ -54,9 +54,13 @@ envelope without a cross-file resolver.
 
 ## Wire conventions
 
-- `schemaVersion` is the constant `"1"` on every envelope. Unknown versions
+- Every wire field is `snake_case`. Can identifiers are lowercase-only and
+  typed JSON decode requires exact key matches, so any camelCase spelling
+  would be unimplementable in ordinary Can; snake_case is the single wire
+  spelling, chosen once with no legacy form.
+- `schema_version` is the constant `"1"` on every envelope. Unknown versions
   are rejected; there is no legacy spelling.
-- `runId`, `operationId`, `caseId`, `variantId`: `^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$`.
+- `run_id`, `operation_id`, `case_id`, `variant_id`: `^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$`.
 - Digests: `sha256:<64 lowercase hex>`. Paths alone are never identities.
 - Clock values: `{clock, ms}` with `clock` in `n-monotonic` (N's enforcing
   clock) or `wall-utc`, and `ms >= 0`.
@@ -70,11 +74,11 @@ envelope without a cross-file resolver.
 
 1. `operation` result: `completed` requires `kind: ok`; any other outcome
    requires a non-`ok` mechanical kind.
-2. `limit`: `finalCleanupReserveMs <= runWallMs` and `prepareMs <= runWallMs`.
-3. `completeness`: `returnedCount <= totalCount`; `sealed` additionally
-   requires `truncated: false`, empty `gaps` and `returnedCount == totalCount`.
+2. `limit`: `final_cleanup_reserve_ms <= run_wall_ms` and `prepare_ms <= run_wall_ms`.
+3. `completeness`: `returned_count <= total_count`; `sealed` additionally
+   requires `truncated: false`, empty `gaps` and `returned_count == total_count`.
 4. `report`: `execute` mode requires at least one unit; `matched` behavior
-   requires `completed` execution, `bodyTerminal: true` and every check
+   requires `completed` execution, `body_terminal: true` and every check
    `matched`; `blocked` admission requires `not-started` execution and
    `undetermined` behavior.
 5. `receipt`: `clean` cleanup requires empty `remaining`.

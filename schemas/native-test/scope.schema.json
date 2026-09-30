@@ -15,13 +15,13 @@
   },
   "type": "object",
   "properties": {
-    "runId": {
+    "run_id": {
       "$ref": "#/$defs/id"
     },
-    "caseId": {
+    "case_id": {
       "$ref": "#/$defs/id"
     },
-    "variantId": {
+    "variant_id": {
       "$ref": "#/$defs/id"
     },
     "attempt": {
@@ -37,15 +37,15 @@
       "type": "string",
       "enum": ["execution", "qualification"]
     },
-    "hostProfile": {
+    "host_profile": {
       "type": "string",
       "minLength": 1,
       "maxLength": 256
     },
-    "planDigest": {
+    "plan_digest": {
       "$ref": "#/$defs/digest"
     }
   },
-  "required": ["runId", "caseId", "attempt", "mode", "purpose", "hostProfile", "planDigest"],
+  "required": ["run_id", "case_id", "attempt", "mode", "purpose", "host_profile", "plan_digest"],
   "additionalProperties": false
 }

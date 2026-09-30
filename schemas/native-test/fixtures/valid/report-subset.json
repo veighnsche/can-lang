@@ -1,42 +1,42 @@
 {
-  "schemaVersion": "1",
-  "runId": "run-20260930-001",
-  "planDigest": "sha256:8888888888888888888888888888888888888888888888888888888888888888",
+  "schema_version": "1",
+  "run_id": "run-20260930-001",
+  "plan_digest": "sha256:8888888888888888888888888888888888888888888888888888888888888888",
   "mode": "execute",
   "verification": {
     "mode": "full-roots",
-    "rootCount": 12,
-    "rootsDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    "root_count": 12,
+    "roots_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
   },
   "units": [
     {
-      "caseId": "M01-row-001",
-      "variantId": "bun-darwin-arm64",
+      "case_id": "M01-row-001",
+      "variant_id": "bun-darwin-arm64",
       "attempt": 0,
       "admission": "admitted",
       "execution": "completed",
       "behavior": "matched",
       "checks": [
         {
-          "checkId": "report-roots-present",
+          "check_id": "report-roots-present",
           "disposition": "matched"
         },
         {
-          "checkId": "single-build-id",
+          "check_id": "single-build-id",
           "disposition": "matched"
         }
       ],
-      "bodyTerminal": true
+      "body_terminal": true
     },
     {
-      "caseId": "M01-row-002",
+      "case_id": "M01-row-002",
       "attempt": 0,
       "admission": "blocked",
-      "admissionReason": "missing qualified browser observer on this host",
+      "admission_reason": "missing qualified browser observer on this host",
       "execution": "not-started",
       "behavior": "undetermined",
       "checks": [],
-      "bodyTerminal": false
+      "body_terminal": false
     }
   ]
 }

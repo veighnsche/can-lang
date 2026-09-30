@@ -27,9 +27,9 @@ func TestRoundTrip(t *testing.T) {
 		kind    byte
 		payload string
 	}{
-		{KindRequest, `{"schemaVersion":"1"}`},
-		{KindReply, `{"schemaVersion":"1"}`},
-		{KindEvent, `{"schemaVersion":"1"}`},
+		{KindRequest, `{"schema_version":"1"}`},
+		{KindReply, `{"schema_version":"1"}`},
+		{KindEvent, `{"schema_version":"1"}`},
 	}
 	for _, p := range payloads {
 		if err := enc.Encode(p.kind, []byte(p.payload)); err != nil {

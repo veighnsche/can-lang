@@ -9,7 +9,7 @@
   },
   "scope-missing-run-id.json": {
     "schema": "scope",
-    "expect": "missing required property 'runId'"
+    "expect": "missing required property 'run_id'"
   },
   "operation-unknown-version.json": {
     "schema": "operation",
@@ -17,7 +17,7 @@
   },
   "operation-missing-id.json": {
     "schema": "operation",
-    "expect": "missing required property 'operationId'"
+    "expect": "missing required property 'operation_id'"
   },
   "operation-completed-bad-kind.json": {
     "schema": "operation",
@@ -25,7 +25,7 @@
   },
   "limit-missing-temp.json": {
     "schema": "limit",
-    "expect": "missing required property 'maxTempBytes'"
+    "expect": "missing required property 'max_temp_bytes'"
   },
   "limit-zero-processes.json": {
     "schema": "limit",
@@ -53,6 +53,6 @@
   },
   "correction-missing-digests.json": {
     "schema": "correction",
-    "expect": "missing required property 'originalReportDigest'"
+    "expect": "missing required property 'original_report_digest'"
   }
 }

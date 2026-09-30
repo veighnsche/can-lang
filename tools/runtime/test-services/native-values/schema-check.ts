@@ -49,21 +49,21 @@ const DIGEST = `sha256:${"ab".repeat(32)}`;
 
 function baseRequest(operation: string, args: Record<string, unknown>): Record<string, unknown> {
   return {
-    schemaVersion: "1",
-    runId: "run1",
-    operationId: "op1",
-    ownerGrant: "owner-a",
+    schema_version: "1",
+    run_id: "run1",
+    operation_id: "op1",
+    owner_grant: "owner-a",
     operation,
-    argumentsDigest: DIGEST,
-    deadlineMs: { clock: "n-monotonic", ms: 1000 },
+    arguments_digest: DIGEST,
+    deadline_ms: { clock: "n-monotonic", ms: 1000 },
     args,
   };
 }
 
 function tinyLimits(): NativeValueLimits {
   return checkLimits({
-    maxSessions: 2,
-    maxHandlesPerSession: 4,
+    max_sessions: 2,
+    max_handles_per_session: 4,
     maxPendingActions: 1,
     maxObserveEntries: 8,
     maxObserveBytes: 64,
@@ -182,12 +182,12 @@ check("valid requests for every operation pass", () => {
 
 check("malformed requests reject before any effect", () => {
   const good = () => baseRequest("native.make", { session: {}, kind: "text", payload: {} });
-  expectSchemaError(() => checkRequest({ ...good(), schemaVersion: "2" }), "invalid-request");
+  expectSchemaError(() => checkRequest({ ...good(), schema_version: "2" }), "invalid-request");
   expectSchemaError(
-    () => checkRequest({ ...good(), argumentsDigest: "md5:zzz" }),
+    () => checkRequest({ ...good(), arguments_digest: "md5:zzz" }),
     "invalid-request",
   );
-  expectSchemaError(() => checkRequest({ ...good(), operationId: "" }), "invalid-request");
+  expectSchemaError(() => checkRequest({ ...good(), operation_id: "" }), "invalid-request");
   expectSchemaError(() => checkRequest({ ...good(), extra: 1 }), "invalid-request");
   expectSchemaError(() => checkRequest({ ...good(), args: "text" }), "invalid-request");
   expectSchemaError(
@@ -240,9 +240,9 @@ check("result outcome/kind agreement holds", () => {
   assert.equal(NATIVE_OUTCOMES.length, 5);
   assert.equal(MECHANICAL_KINDS.length, 14);
   const good = {
-    schemaVersion: "1",
-    runId: "run1",
-    operationId: "op1",
+    schema_version: "1",
+    run_id: "run1",
+    operation_id: "op1",
     outcome: "completed",
     kind: "ok",
     facts: { tag: "bool", value: true },
@@ -358,7 +358,7 @@ check("limits must be finite and complete", () => {
 console.log(
   JSON.stringify({
     kind: "can.native-values-schema-check",
-    schemaVersion: "1",
+    schema_version: "1",
     checks: passed,
     count: passed.length,
   }),
