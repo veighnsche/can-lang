@@ -1,8 +1,12 @@
 # Grouped errors and test labels: parallel implementation tasks
 
-Status: **planning only; implementation has not resumed.** Existing code is an
-unverified draft. All tasks below remain open. This file is the execution order
-and progress ledger; the [design and handoff](grouped-errors-and-labels-implementation-plan-2026-09-30.md)
+Status: **implementation and bounded validation complete 30 September 2026; independent
+review (R01) blocked by environment fd exhaustion, corrections (F01) and closure (F02)
+pending.** Tasks P01-P02, S01-S03, E01-E03, A01-A03, X01-X02, U01-U02, D01 (draft),
+V01-V04 are done with evidence in the
+[completion record](grouped-errors-and-labels-completion-record-2026-09-30.md).
+This file is the execution order and progress ledger; the
+[design and handoff](grouped-errors-and-labels-implementation-plan-2026-09-30.md)
 contains the semantic contract, current diff inventory, known risks, consultation
 evidence and scope exclusions. Read both before implementing.
 
@@ -388,7 +392,16 @@ Previous partial edits and their validation limitations are in the design plan.
 
 | Task(s) | Worker / status | Changed files or reviewed evidence | Checks / findings / cleanup |
 | --- | --- | --- | --- |
-| — | Not started under this schedule | Existing unverified draft preserved | Planning deliverable only |
+| P01-P02 | done (coordinator) | HEAD `5804b686` confirmed, no drift; interface frozen; split checker test file into `grouped_completions_test.go` + `grouped_assertions_test.go` | Inventory + handoff recorded; shared Go cache accessible |
+| S01-S03 | done, V01 pass | `syntax/{ast,matches,coordination,declarations,format}.go`, `grouped_rows_test.go` (594 lines) | Syntax pkg ok; stale grouped-arm rejection removed; trivia spacing fixed |
+| E01-E03 | done, V02 pass | `check/{completion_matches,program,coordination}.go`, `grouped_completions_test.go` (17 grouped tests) | Check pkg ok; alias/coordination fixtures repaired |
+| A01-A03 | done, V02 pass | `check/assertions.go`, `grouped_assertions_test.go`; `templates.go` unchanged; `fixtures.go`/`fixes.go` read-only audits | Covered by check pkg ok |
+| X01-X02 | done, V03 pass | `emit/grouped_syntax_test.go` (7 tests); no production emitter change | Emit pkg ok with `CAN_BUN`; execution proofs green |
+| U01-U02 | done, V04 pass | `driver/{diagnostics.go,grouped_syntax_test.go}`, `can.tmGrammar.json`, `grammar.test.js` | Driver pkg ok; grammar 11/11 |
+| D01 | draft done | Four language docs with pending-status notes | Reconcile at F01 |
+| V01-V04 | done | See completion record | All gates pass; emit G80 w/o `CAN_BUN` fails identically on base (pre-existing) |
+| R01 | **blocked** | Review requested, not run | Workflow children + subagent fallback failed: `Too many open files (os error 24)`; shell also unusable |
+| F01-F02 | pending | — | Await R01; docs-pending notes, ledger commit, cleanup verification outstanding |
 
 ## Instruction for the implementation executor
 
