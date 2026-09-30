@@ -1,5 +1,7 @@
 # Independent review disposition
 
+Historical record: the owner withdrew the tree proposal on 1 October 2026. The recommendations, remaining tree gates and signoff below describe the discarded investigation and are not active work.
+
 Review scope: real-page provenance, component/tree contract fairness, markup oracle, negative controls, diagnostic coordinates, agent evidence limits, cleanup and source attribution. No reviewer changed production source or ran broad builds.
 
 Resolved findings:

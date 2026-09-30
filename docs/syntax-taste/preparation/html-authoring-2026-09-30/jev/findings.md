@@ -1,5 +1,7 @@
 # Jev advice and disagreement — HTML authoring
 
+Historical record: the owner withdrew the tree proposal on 1 October 2026. The recommendations, remaining tree gates and signoff below describe the discarded investigation and are not active work.
+
 Three fresh audited consultations returned HTTP 200 from model `jev-1.13.0`. Every explanatory field was rewritten; exact technical identifiers and equivalent alternatives were preserved. No earlier answer was supplied to a later request.
 
 | Judgment | Request 1 | Request 2 | Request 3 |

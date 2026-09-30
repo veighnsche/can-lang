@@ -20,7 +20,7 @@ This was a source investigation across Can and Manolea, with independent testing
 | CRUD primitives | Typed SQL operations and transactions exist; atomic owner/state predicates carry application policy. | Explore readable typed packages/descriptors before dedicated grammar. |
 | Authentication primitives | Basic security and transport capabilities exist; account/session policy is composed in the app. | Explore reusable typed workflow APIs with explicit policies before an authentication keyword. |
 | Python application tests | Python manages live processes, fixtures, protocols and independent observations that attached assertions intentionally cannot perform. | Highest priority: a bounded Can-facing live test facility, building on existing capabilities. |
-| HTML-specific chaining | General `match chain` is already used; constructor-level page authoring remains verbose. | Compare typed component helpers with a checked declarative tree, rather than assume another chain is sufficient. |
+| HTML-specific chaining | General `match chain` is already used; constructor-level page authoring remains verbose. | Investigate HTML authoring independently of the withdrawn tree proposal; no replacement has been selected. |
 | One-space indentation | The lexer, formatter and editor explicitly enforce/use four spaces. | Record one space as the user's preferred format. Treat it as a coordinated syntax/tooling migration; it does not remove nesting. |
 | Unread generated values | Assertion modules receive broad imports and type graphs. The reported `dist/assertions` files and exact `$canFunctions` binding were unavailable in current sources. | Investigate fresh generated output and distinguish source redundancy from runtime work before optimizing. |
 | Primitive `some`/`none` | Can already has typed optional values; absence is different from completing a function with `ok`. | Evaluate unqualified constructor/pattern names as a narrower convenience, without changing completion semantics. |
@@ -112,9 +112,7 @@ The goal of readable CRUD/authentication is sound. Dedicated keywords are not ye
 
 Authentication has reusable mechanisms and variable policy. Sessions, credential handling and token operations are candidates for maintained typed packages; signup eligibility, verification requirements and product-specific permissions need explicit policy. Test a package design against login, recovery, revocation and denial before deciding which part, if any, requires grammar. This is not a proposal to implement new cryptographic algorithms in Can.
 
-HTML is a stronger candidate for a dedicated authoring surface. A [form page](/Users/vince/Projects/manolea-2/src/jobs/jobs.can:219) uses roughly 26 calls to construct tags, attributes, text and nodes despite already using `match chain`. Another kind of chain may shorten prefixes without making the page hierarchy visible. Compare reusable components with a checked tree notation on that exact page, including dynamic lists and conditionals. Preserve [opaque tokens, escaping and validation](/Users/vince/Projects/can-lang/runtime/platform/html.ts:23), typed URLs and useful error locations. Decide from the prototype rather than introducing an HTML-only control-flow mechanism immediately.
-
-The subsequent [service-editor HTML authoring investigation](html-authoring-investigation-2026-09-30.md) compares executable typed components and a checked-tree prototype, including rendered-output checks, independent edits and diagnostic counterexamples.
+HTML authoring remains an open design question. The owner explicitly discarded the tree syntax on 1 October 2026; the [withdrawal record](html-authoring-investigation-2026-09-30.md) supersedes the former components-versus-tree recommendation. Preserve existing HTML trust boundaries and useful error locations while investigating another approach. This withdrawal does not select a replacement.
 
 ## Indentation, option names and generated output
 
@@ -131,7 +129,7 @@ Type declarations disappear during TypeScript transpilation. Unread imports, ini
 1. Prove a Can-facing live test path by matching one existing probe's behavior and cleanup guarantees.
 2. Correct the MIME implementation using current patterns and add the missing authoring recipe.
 3. Design grouped error handling/forwarding with exact coverage and occurrence-preservation checks; compare label-list expansion against existing templates.
-4. Trial one service boundary with meaningful domain errors and compare one HTML page using components versus a checked tree.
+4. Trial one service boundary with meaningful domain errors and independently investigate HTML authoring on a real page.
 5. Apply the chosen canonical indentation in a coordinated migration; evaluate short option names and typed CRUD/auth packages with representative source examples.
 6. Audit fresh emitted imports, declarations and initialization separately; optimize only behavior proven unnecessary.
 
