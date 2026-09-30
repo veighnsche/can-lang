@@ -29,34 +29,34 @@ func TestAssetURLResolvesCallerManifestOnly(t *testing.T) {
 	write("vendor/can.errors.json", `{"active":[],"retired":[]}`)
 	write("can.project.json", `{"source_root":"src","error_registry":"can.errors.json","dependencies":{"vendor":"vendor"},"assets":{"site_css":"assets/site.css"}}`)
 	write("vendor/can.project.json", `{"source_root":"src","error_registry":"can.errors.json","assets":{"mark":"assets/mark.css","site_css":"assets/mark.css"}}`)
-	vendorSource := "package vendor_app\n    provides [foreign]\n    uses [asset, html]\nfn html::url foreign\n    emits [html::invalid_url]\n    asserts\n        owned: => ok\n    match call asset::url(\"mark\")\n        html::invalid_url\n        ok html::url address => ok address\n"
+	vendorSource := "package vendor_app\n    provides [foreign]\n    uses [asset, html]\nfn html::url foreign\n    emits {html::invalid_url}\n    asserts\n        owned: => ok\n    match call asset::url(\"mark\")\n        html::invalid_url\n        ok html::url address => ok address\n"
 	write("vendor/src/lib.can", vendorSource)
 	write("src/main.can", `package app
     provides []
     uses [asset, html]
 fn html::url known
-    emits [html::invalid_url]
+    emits {html::invalid_url}
     asserts
         found: => ok
     match call asset::url("site_css")
         html::invalid_url
         ok html::url address => ok address
 fn html::url unknown
-    emits [html::invalid_url]
+    emits {html::invalid_url}
     asserts
-        missing: => html::invalid_url("missing")
+        missing: => html::invalid_url{"missing"}
     match call asset::url("absent")
         html::invalid_url
         ok html::url address => ok address
 fn html::url foreign
-    emits [html::invalid_url]
+    emits {html::invalid_url}
     asserts
-        unowned: => html::invalid_url("unowned")
+        unowned: => html::invalid_url{"unowned"}
     match call asset::url("mark")
         html::invalid_url
         ok html::url address => ok address
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts
@@ -158,7 +158,7 @@ fn void main
     provides []
     uses [asset, html]
 fn html::url dynamic
-    emits [html::invalid_url]
+    emits {html::invalid_url}
     given
         str name
     asserts
@@ -167,7 +167,7 @@ fn html::url dynamic
         html::invalid_url
         ok html::url address => ok address
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts

@@ -9,14 +9,14 @@ import (
 )
 
 const wrapHeader = "package app\n    provides []\n    uses [http, codec]\nrecord receipt\n    int count\nconnection service\n    endpoint \"http://localhost:1\"\n    timeout_ms 1000\n"
-const wrapLoad = "fetch receipt load from service\n    emits [http::request_failed]\n    asserts\n        decoded: => ok receipt(7)\n            using raw \"fixtures/load.json\"\n    get \"/load\"\n"
+const wrapLoad = "fetch receipt load from service\n    emits {http::request_failed}\n    asserts\n        decoded: => ok receipt(7)\n            using raw \"fixtures/load.json\"\n    get \"/load\"\n"
 const wrapChild = `wrap cached from load
     emits calculated
     asserts
         absent: => ok receipt(0)
-            using failure native http::status_error(404, [])
-        busy: => http::request_failed(http::status_error(429, []))
-            using failure native http::status_error(429, [])
+            using failure native http::status_error{404, []}
+        busy: => http::request_failed{http::status_error{429, []}}
+            using failure native http::status_error{429, []}
     handles native
         http::status_error as failed => match failed.status
             404 => ok receipt(0)
@@ -83,14 +83,14 @@ func TestWrapperThreeGenerationOverride(t *testing.T) {
     emits calculated
     asserts
         gone: => ok receipt(0)
-            using failure native http::status_error(404, [])
-        slow: => http::request_failed(http::status_error(503, []))
-            using failure native http::status_error(503, [])
+            using failure native http::status_error{404, []}
+        slow: => http::request_failed{http::status_error{503, []}}
+            using failure native http::status_error{503, []}
     handles native
         http::status_error as failed => match failed.status
             404 => ok receipt(0)
             429 => inherit
-            _ => http::request_failed(failed)
+            _ => http::request_failed{failed}
 `
 	p := wrapProgram(t, wrapHeader+wrapLoad+wrapChild+grandchild+programMain+"    ok\n")
 	settled := wrapNative(t, p, "settled")
@@ -115,7 +115,7 @@ func TestWrapperThreeGenerationOverride(t *testing.T) {
 
 func TestWrapperObligationDiagnostic(t *testing.T) {
 	match := wrapHeader + wrapLoad + wrapChild + `fn receipt fetch_cached
-    emits []
+    emits {}
     asserts
         sample: => ok receipt(0)
     match call cached()
@@ -131,7 +131,7 @@ func TestWrapperObligationDiagnostic(t *testing.T) {
 		}
 	}
 	relay := wrapHeader + wrapLoad + wrapChild + `fn receipt fetch_cached
-    emits []
+    emits {}
     asserts
         sample: => ok receipt(0)
     relay call cached()
@@ -254,7 +254,7 @@ func TestWrapperJudgeStateGroup(t *testing.T) {
         ai::invalid_answer => ok true
 `
 	flat := base + `fn bool caller
-    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
+    emits {http::request_failed, ai::invalid_question, ai::invalid_answer}
     asserts
         sample: => ok true
     relay call guarded("x")
@@ -263,10 +263,10 @@ func TestWrapperJudgeStateGroup(t *testing.T) {
 		t.Fatalf("flattened judge-wrapper call admitted: %v", err)
 	}
 	reference := base + `fn bool caller
-    emits []
+    emits {}
     asserts
         sample: => ok true
-    callable bool (str) emits [http::request_failed, ai::invalid_question, ai::invalid_answer] action = callable guarded
+    callable bool (str) emits {http::request_failed, ai::invalid_question, ai::invalid_answer} action = callable guarded
     relay call action("x")
 ` + programMain + "    ok\n"
 	if _, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": reference}, "assess")); err == nil || !strings.Contains(err.Error(), "judge wrapper cannot be an ordinary callable reference") {
@@ -281,55 +281,55 @@ func TestWrapperRejects(t *testing.T) {
 		want   string
 	}{
 		"question base": {
-			fullHeader + nativeQuestion + "wrap cached from question\n    emits calculated\n    asserts\n        sample: \"x\", () => ok true\n            using failure native http::status_error(404, [])\n    handles native\n        http::status_error => ok true\n" + programMain + "    ok\n",
+			fullHeader + nativeQuestion + "wrap cached from question\n    emits calculated\n    asserts\n        sample: \"x\", () => ok true\n            using failure native http::status_error{404, []}\n    handles native\n        http::status_error => ok true\n" + programMain + "    ok\n",
 			"fetch, judge or wrapper base",
 		},
 		"llm base": {
-			fullHeader + "llm str draft from generator\n    emits [http::request_failed]\n    asserts\n        sample: () => ok \"x\"\n            using raw \"fixtures/draft.json\"\n    asks \"Draft\"\nwrap polished from draft\n    emits calculated\n    asserts\n        sample: () => ok \"x\"\n            using failure native http::status_error(404, [])\n    handles native\n        http::status_error => ok \"x\"\n" + programMain + "    ok\n",
+			fullHeader + "llm str draft from generator\n    emits {http::request_failed}\n    asserts\n        sample: () => ok \"x\"\n            using raw \"fixtures/draft.json\"\n    asks \"Draft\"\nwrap polished from draft\n    emits calculated\n    asserts\n        sample: () => ok \"x\"\n            using failure native http::status_error{404, []}\n    handles native\n        http::status_error => ok \"x\"\n" + programMain + "    ok\n",
 			"fetch, judge or wrapper base",
 		},
 		"impossible native key": {
-			wrapHeader + wrapLoad + "wrap cached from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::credentials_missing(\"TOKEN\")\n    handles native\n        http::credentials_missing => ok receipt(0)\n" + programMain + "    ok\n",
+			wrapHeader + wrapLoad + "wrap cached from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::credentials_missing{\"TOKEN\"}\n    handles native\n        http::credentials_missing => ok receipt(0)\n" + programMain + "    ok\n",
 			"impossible native key",
 		},
 		"duplicate key": {
-			wrapHeader + wrapLoad + "wrap cached from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error(404, [])\n    handles native\n        http::status_error => ok receipt(0)\n        http::status_error => ok receipt(0)\n" + programMain + "    ok\n",
+			wrapHeader + wrapLoad + "wrap cached from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error{404, []}\n    handles native\n        http::status_error => ok receipt(0)\n        http::status_error => ok receipt(0)\n" + programMain + "    ok\n",
 			"duplicate policy key",
 		},
 		"function base": {
-			wrapHeader + wrapLoad + "fn int helper\n    emits []\n    asserts\n        sample: => ok 1\n    ok 1\nwrap cached from helper\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error(404, [])\n    handles native\n        http::status_error => ok receipt(0)\n" + programMain + "    ok\n",
+			wrapHeader + wrapLoad + "fn int helper\n    emits {}\n    asserts\n        sample: => ok 1\n    ok 1\nwrap cached from helper\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error{404, []}\n    handles native\n        http::status_error => ok receipt(0)\n" + programMain + "    ok\n",
 			"fetch, judge or wrapper base",
 		},
 		"self base": {
-			wrapHeader + wrapLoad + "wrap cached from cached\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error(404, [])\n    handles native\n        http::status_error => ok receipt(0)\n" + programMain + "    ok\n",
+			wrapHeader + wrapLoad + "wrap cached from cached\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error{404, []}\n    handles native\n        http::status_error => ok receipt(0)\n" + programMain + "    ok\n",
 			"cycle",
 		},
 		"mutual base": {
-			wrapHeader + wrapLoad + "wrap first from second\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error(404, [])\n    handles native\n        http::status_error => ok receipt(0)\nwrap second from first\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error(404, [])\n    handles native\n        http::status_error => ok receipt(0)\n" + programMain + "    ok\n",
+			wrapHeader + wrapLoad + "wrap first from second\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error{404, []}\n    handles native\n        http::status_error => ok receipt(0)\nwrap second from first\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error{404, []}\n    handles native\n        http::status_error => ok receipt(0)\n" + programMain + "    ok\n",
 			"cycle",
 		},
 		"inherit outside handler": {
-			wrapHeader + wrapLoad + "fn int helper\n    emits []\n    asserts\n        sample: => ok 1\n    inherit\n" + programMain + "    ok\n",
+			wrapHeader + wrapLoad + "fn int helper\n    emits {}\n    asserts\n        sample: => ok 1\n    inherit\n" + programMain + "    ok\n",
 			"inherit is only admitted in a wrapper policy handler",
 		},
 		"bad transport phase": {
-			wrapHeader + wrapLoad + "wrap cached from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::transport_failed(\"bogus\")\n    handles native\n        http::transport_failed => ok receipt(0)\n" + programMain + "    ok\n",
+			wrapHeader + wrapLoad + "wrap cached from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::transport_failed{\"bogus\"}\n    handles native\n        http::transport_failed => ok receipt(0)\n" + programMain + "    ok\n",
 			"unknown transport phase",
 		},
 		"cross-origin injection": {
-			wrapHeader + wrapLoad + "wrap cached from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure emitted http::status_error(404, [])\n    handles native\n        http::status_error => ok receipt(0)\n" + programMain + "    ok\n",
+			wrapHeader + wrapLoad + "wrap cached from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure emitted http::status_error{404, []}\n    handles native\n        http::status_error => ok receipt(0)\n" + programMain + "    ok\n",
 			"not a domain obligation",
 		},
 		"consumer injection": {
-			wrapHeader + wrapLoad + "fn int helper\n    emits []\n    asserts\n        sample: => ok 1\n            using failure native http::status_error(404, [])\n    ok 1\n" + programMain + "    ok\n",
+			wrapHeader + wrapLoad + "fn int helper\n    emits {}\n    asserts\n        sample: => ok 1\n            using failure native http::status_error{404, []}\n    ok 1\n" + programMain + "    ok\n",
 			"confined to attached wrapper assertions",
 		},
 		"missing key coverage": {
-			wrapHeader + wrapLoad + "wrap cached from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::timeout(1000)\n    handles native\n        http::status_error => ok receipt(0)\n" + programMain + "    ok\n",
+			wrapHeader + wrapLoad + "wrap cached from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::timeout{1000}\n    handles native\n        http::status_error => ok receipt(0)\n" + programMain + "    ok\n",
 			"selecting local native key",
 		},
 		"self call cycle": {
-			wrapHeader + wrapLoad + "wrap cached from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error(404, [])\n    handles native\n        http::status_error => relay call cached()\n" + programMain + "    ok\n",
+			wrapHeader + wrapLoad + "wrap cached from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error{404, []}\n    handles native\n        http::status_error => relay call cached()\n" + programMain + "    ok\n",
 			"calculated-bound dependency cycle",
 		},
 	}
@@ -347,7 +347,7 @@ func TestWrapperRejects(t *testing.T) {
 // and links every other declaration still waiting on the chain. No fix
 // breaks the cycle: that redesigns the policies.
 func TestBoundCycleObligation(t *testing.T) {
-	text := wrapHeader + wrapLoad + "wrap first from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error(404, [])\n    handles native\n        http::status_error => relay call second()\nwrap second from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error(404, [])\n    handles native\n        http::status_error => relay call first()\n" + programMain + "    ok\n"
+	text := wrapHeader + wrapLoad + "wrap first from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error{404, []}\n    handles native\n        http::status_error => relay call second()\nwrap second from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error{404, []}\n    handles native\n        http::status_error => relay call first()\n" + programMain + "    ok\n"
 	_, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": text}, "load", "draft"))
 	if err == nil {
 		t.Fatal("bound cycle admitted")
@@ -369,7 +369,7 @@ func TestBoundCycleObligation(t *testing.T) {
 		t.Fatalf("cycle proposed fixes: %+v", located.Fixes)
 	}
 
-	override := wrapHeader + wrapLoad + "wrap cached from cached\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error(404, [])\n    handles native\n        http::status_error => ok receipt(0)\n" + programMain + "    ok\n"
+	override := wrapHeader + wrapLoad + "wrap cached from cached\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error{404, []}\n    handles native\n        http::status_error => ok receipt(0)\n" + programMain + "    ok\n"
 	_, err = programFixture(t, withNativeRaw(map[string]string{"src/main.can": override}, "load", "draft"))
 	if err == nil || !strings.Contains(err.Error(), "wrapper base cycle") {
 		t.Fatalf("override cycle misdiagnosed: %v", err)

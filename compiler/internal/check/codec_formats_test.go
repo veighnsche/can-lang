@@ -41,7 +41,7 @@ func TestCodecFormatSpecializations(t *testing.T) {
 		{"opaque", "codec::decode_toml<service>", "codec::decode_toml<bytes::buffer>", "not codec-admissible"},
 		{"missing argument", "codec::decode_yaml<waypoint>", "codec::decode_yaml", "one explicit"},
 		{"wrong input", "codec::decode_json5<waypoint>(encoded)", "codec::decode_json5<int>(encoded)", "type"},
-		{"fallible handler", "fn void handle_waypoint\n    emits []", "fn void handle_waypoint\n    emits [codec::invalid_data]", "type"},
+		{"fallible handler", "fn void handle_waypoint\n    emits {}", "fn void handle_waypoint\n    emits {codec::invalid_data}", "type"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			modified := strings.Replace(source, tc.old, tc.replacement, 1)

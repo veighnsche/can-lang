@@ -18,8 +18,8 @@ import (
 )
 
 func expressionContext(ts map[string]*types.Type) *check.Expressions {
-	values := map[string]string{"ints": "int[]", "words": "str[]", "text": "str", "item": "alpha::item", "other": "beta::item", "either": "both", "items": "alpha::item[]", "resource": "bytes::buffer", "callback": "callable int () emits []", "yes": "bool", "nan": "float", "negative_zero": "float"}
-	functions := map[string]string{"first": "callable int () emits []", "middle": "callable int () emits []", "last": "callable int () emits []", "truth": "callable bool () emits []", "falsehood": "callable bool () emits []", "fallible": "callable int () emits [number::inexact]"}
+	values := map[string]string{"ints": "int[]", "words": "str[]", "text": "str", "item": "alpha::item", "other": "beta::item", "either": "both", "items": "alpha::item[]", "resource": "bytes::buffer", "callback": "callable int () emits {}", "yes": "bool", "nan": "float", "negative_zero": "float"}
+	functions := map[string]string{"first": "callable int () emits {}", "middle": "callable int () emits {}", "last": "callable int () emits {}", "truth": "callable bool () emits {}", "falsehood": "callable bool () emits {}", "fallible": "callable int () emits {number::inexact}"}
 	resolver := func(m map[string]string) func(syntax.QualifiedName) (check.ValueBinding, error) {
 		return func(name syntax.QualifiedName) (check.ValueBinding, error) {
 			typ := ts[m[name.Name]]

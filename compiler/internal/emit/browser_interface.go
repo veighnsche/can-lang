@@ -7,7 +7,7 @@ package emit
 // without coordinating both consumers.
 //
 // Entry (emit/browser.go):
-//   - Browser main is checked zero-argument void with emits [] (see
+//   - Browser main is checked zero-argument void with emits {} (see
 //     check.CheckBrowserProgram). Bun main(str[] args) diagnoses separately.
 //   - browser.ts exports BROWSER_PROFILE="browser-main" and an inert
 //     $canBrowserMain(): Promise<void> that runs once (guarded by

@@ -93,15 +93,15 @@ func TestParseRawFixtureRejects(t *testing.T) {
 
 func TestRawFixtureBindingRejects(t *testing.T) {
 	header := "package app\n    provides []\n    uses [http, codec]\nconnection service\n    endpoint \"http://localhost:1\"\n    timeout_ms 1000\n"
-	mismatched := header + "fetch str load from service\n    emits [http::request_failed]\n    asserts\n        sample: => ok \"x\"\n            using raw \"fixtures/other.json\"\n    get \"/\"\n" + programMain + "    ok\n"
+	mismatched := header + "fetch str load from service\n    emits {http::request_failed}\n    asserts\n        sample: => ok \"x\"\n            using raw \"fixtures/other.json\"\n    get \"/\"\n" + programMain + "    ok\n"
 	if _, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": mismatched}, "load", "other")); err == nil || !strings.Contains(err.Error(), "raw fixture targets can.project.root/app::other, not can.project.root/app::load") {
 		t.Fatalf("wrong fixture target admitted: %v", err)
 	}
-	uncovered := header + "fetch str load from service\n    emits [http::request_failed]\n    asserts\n        sample: => ok \"x\"\n    get \"/\"\n" + programMain + "    ok\n"
+	uncovered := header + "fetch str load from service\n    emits {http::request_failed}\n    asserts\n        sample: => ok \"x\"\n    get \"/\"\n" + programMain + "    ok\n"
 	if _, err := programFixture(t, map[string]string{"src/main.can": uncovered}); err == nil || !strings.Contains(err.Error(), "lacks request/decoder coverage") {
 		t.Fatalf("missing request/decoder coverage admitted: %v", err)
 	}
-	nullOnly := header + "fetch str load from service\n    emits [http::request_failed]\n    asserts\n        sample: => http::request_failed(http::credentials_missing(\"TOKEN\"))\n            using raw \"fixtures/load.json\"\n    get \"/\"\n" + programMain + "    ok\n"
+	nullOnly := header + "fetch str load from service\n    emits {http::request_failed}\n    asserts\n        sample: => http::request_failed{http::credentials_missing{\"TOKEN\"}}\n            using raw \"fixtures/load.json\"\n    get \"/\"\n" + programMain + "    ok\n"
 	files := map[string]string{"src/main.can": nullOnly}
 	files["src/fixtures/load.json"] = `{"schema":"can.native-fixture.v1","target":"can.project.root/app::load","environment":{},"exchange":null}`
 	if _, err := programFixture(t, files); err == nil || !strings.Contains(err.Error(), "lacks request/decoder coverage") {

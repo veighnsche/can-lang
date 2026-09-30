@@ -92,7 +92,7 @@ const liveMountServer = "package server\n" +
 	"    provides [routes, main]\n" +
 	"    uses [contract, action, form, html, http]\n" +
 	"fn contract::grid_load_outcome load_grid\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        http::request req\n" +
 	"        contract::invoice_key key\n" +
@@ -102,7 +102,7 @@ const liveMountServer = "package server\n" +
 	"        false => ok contract::grid_denied(\"foreign\")\n" +
 	"        true => ok contract::grid_loaded(\"r1\")\n" +
 	"fn contract::grid_edit_outcome save_grid\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        http::request req\n" +
 	"        contract::invoice_key key\n" +
@@ -111,7 +111,7 @@ const liveMountServer = "package server\n" +
 	"        sample: contract::invoice_key(1, 7), contract::grid_edit_input(\"op-1\", \"r1\") => ok contract::grid_saved(\"op-1\")\n" +
 	"    ok contract::grid_saved(body.operation_id)\n" +
 	"fn contract::edit_outcome save_html\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        http::request req\n" +
 	"        contract::invoice_key key\n" +
@@ -122,7 +122,7 @@ const liveMountServer = "package server\n" +
 	"        false => ok contract::failed(\"no\")\n" +
 	"        true => ok contract::saved(\"yes\")\n" +
 	"fn html::safe render_html\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        contract::edit_outcome outcome\n" +
 	"    asserts\n" +
@@ -131,14 +131,14 @@ const liveMountServer = "package server\n" +
 	"        contract::saved => ok call html::text_fragment(\"saved\")\n" +
 	"        contract::failed => ok call html::text_fragment(\"failed\")\n" +
 	"fn html::safe render_bad_form\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        form::rejected<contract::invoice_form> bad\n" +
 	"    asserts\n" +
 	"        sample: form::rejected<contract::invoice_form>([], []) => ok\n" +
 	"    ok call html::text_fragment(\"bad\")\n" +
 	"fn http::router routes\n" +
-	"    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]\n" +
+	"    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}\n" +
 	"    asserts\n" +
 	"        sample: => ok\n" +
 	"    match chain\n" +
@@ -151,7 +151,7 @@ const liveMountServer = "package server\n" +
 	"        http::ambiguous_route\n" +
 	"        ok => ok built\n" +
 	"fn void main\n" +
-	"    emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed]\n" +
+	"    emits {http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed}\n" +
 	"    given\n" +
 	"        str[] args\n" +
 	"    asserts\n" +

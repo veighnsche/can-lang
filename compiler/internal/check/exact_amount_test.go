@@ -17,7 +17,7 @@ func TestExactAmountCatalogue(t *testing.T) {
 	for _, change := range [][2]string{
 		{"number::divmod(numerator, denominator)", "number::divmod(1.0, denominator)"},
 		{"number::round_ratio_half_even(numerator, denominator)", "number::round_ratio_half_even(numerator, 2.0)"},
-		{"fn number::division truncating\n    emits [number::zero_divisor]", "fn number::division truncating\n    emits []"},
+		{"fn number::division truncating\n    emits {number::zero_divisor}", "fn number::division truncating\n    emits {}"},
 		{"fn number::rounded rounded", "fn dec rounded"},
 	} {
 		t.Run(change[1], func(t *testing.T) {

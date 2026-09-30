@@ -23,7 +23,7 @@ const integerWorkerMain = `package app
     uses []
 
 fn int double
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -31,7 +31,7 @@ fn int double
     ok value * 2
 
 fn int negate
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -39,7 +39,7 @@ fn int negate
     ok -value
 
 fn int add
-    emits []
+    emits {}
     given
         int total
         int value
@@ -48,7 +48,7 @@ fn int add
     ok total + value
 
 fn int combined
-    emits []
+    emits {}
     given
         int first
         int second
@@ -58,7 +58,7 @@ fn int combined
     ok (first + second) * third
 
 fn item identity<item>
-    emits []
+    emits {}
     given
         item input
     asserts
@@ -66,7 +66,7 @@ fn item identity<item>
     ok input
 
 fn int add_offset
-    emits []
+    emits {}
     given
         near int offset
         int number
@@ -75,7 +75,7 @@ fn int add_offset
     ok offset + number
 
 fn int[] doubled
-    emits []
+    emits {}
     given
         int[] values
     asserts
@@ -84,7 +84,7 @@ fn int[] doubled
     ok call values.map(callable double)
 
 fn int sum
-    emits []
+    emits {}
     given
         int[] values
     asserts
@@ -93,7 +93,7 @@ fn int sum
     ok call values.fold(0, callable add)
 
 fn int[] generic_pass
-    emits []
+    emits {}
     given
         int[] values
     asserts
@@ -102,18 +102,18 @@ fn int[] generic_pass
     ok call values.map(callable identity<int>)
 
 fn int[] captured_map
-    emits []
+    emits {}
     given
         int[] values
         int offset
     asserts
         sample: [1, 2], 3 => ok [4, 5]
         empty: [], 7 => ok []
-    callable int (int) emits [] operation = callable add_offset
+    callable int (int) emits {} operation = callable add_offset
     ok call values.map(operation)
 
 fn int remainder
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -121,7 +121,7 @@ fn int remainder
     ok value % 2
 
 fn int halved
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -129,7 +129,7 @@ fn int halved
     ok value / 2
 
 fn bool is_positive
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -137,7 +137,7 @@ fn bool is_positive
     ok value < 0
 
 fn int stepped
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -146,7 +146,7 @@ fn int stepped
     ok bumped
 
 fn int called
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -154,7 +154,7 @@ fn int called
     ok call double(value)
 
 fn int branched
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -168,7 +168,7 @@ record box
     int value
 
 fn int fielded
-    emits []
+    emits {}
     given
         box original
     asserts
@@ -176,7 +176,7 @@ fn int fielded
     ok original.value * 2
 
 fn int wrong_input
-    emits []
+    emits {}
     given
         str text
     asserts
@@ -184,7 +184,7 @@ fn int wrong_input
     ok 1
 
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -197,7 +197,7 @@ const integerWorkerExtra = `package app
     uses []
 
 fn int[] doubled_extra
-    emits []
+    emits {}
     given
         int[] values
     asserts
@@ -551,12 +551,12 @@ func TestIntegerWorkerBrowserOmitsDescriptor(t *testing.T) {
 	assembly := integerWorkerAssembly(t, program)
 	double := integerWorkerFunction(t, program, "app::double")
 	fixture := newRegionFixture(t)
-	fixture.functions["double"] = check.ValueBinding{Identity: double.Identity(), Type: fixture.ts["callable int (int) emits []"]}
-	doubleContract := fixture.ts["callable int (int) emits []"]
+	fixture.functions["double"] = check.ValueBinding{Identity: double.Identity(), Type: fixture.ts["callable int (int) emits {}"]}
+	doubleContract := fixture.ts["callable int (int) emits {}"]
 	fixture.callables = map[string]check.CallableDeclaration{
 		double.Identity(): {Kind: "function", Contract: doubleContract, Names: []string{"value"}, Near: []bool{false}},
 	}
-	region, err := fixture.region(t, "    callable int (int) emits [] action = callable double\n    ok action\n", "callable int (int) emits []", nil, ir.FunctionRegion)
+	region, err := fixture.region(t, "    callable int (int) emits {} action = callable double\n    ok action\n", "callable int (int) emits {}", nil, ir.FunctionRegion)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -893,7 +893,7 @@ const integerWorkerCaptureMain = `package app
     uses []
 
 fn int trailing
-    emits []
+    emits {}
     given
         int number
         near int offset
@@ -902,7 +902,7 @@ fn int trailing
     ok number + offset
 
 fn int sandwich
-    emits []
+    emits {}
     given
         near int prefix
         int value
@@ -912,18 +912,18 @@ fn int sandwich
     ok prefix + value + suffix
 
 fn int[] trailing_map
-    emits []
+    emits {}
     given
         int[] values
         int offset
     asserts
         sample: [1, 2], 10 => ok [11, 12]
         empty: [], 7 => ok []
-    callable int (int) emits [] operation = callable trailing
+    callable int (int) emits {} operation = callable trailing
     ok call values.map(operation)
 
 fn int[] sandwich_map
-    emits []
+    emits {}
     given
         int[] values
         int prefix
@@ -931,11 +931,11 @@ fn int[] sandwich_map
     asserts
         sample: [1, 2], 100, 1000 => ok [1101, 1102]
         empty: [], 7, 8 => ok []
-    callable int (int) emits [] operation = callable sandwich
+    callable int (int) emits {} operation = callable sandwich
     ok call values.map(operation)
 
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -1033,19 +1033,19 @@ func TestIntegerWorkerEmittedRouteDiscrimination(t *testing.T) {
 	double := integerWorkerFunction(t, program, "app::double")
 	add := integerWorkerFunction(t, program, "app::add")
 	fixture := newRegionFixture(t)
-	doubleContract := fixture.ts["callable int (int) emits []"]
-	addContract := fixture.ts["callable int (int, int) emits []"]
+	doubleContract := fixture.ts["callable int (int) emits {}"]
+	addContract := fixture.ts["callable int (int, int) emits {}"]
 	fixture.functions["double"] = check.ValueBinding{Identity: double.Identity(), Type: doubleContract}
 	fixture.functions["add"] = check.ValueBinding{Identity: add.Identity(), Type: addContract}
 	fixture.callables = map[string]check.CallableDeclaration{
 		double.Identity(): {Kind: "function", Contract: doubleContract, Names: []string{"value"}, Near: []bool{false}},
 		add.Identity():    {Kind: "function", Contract: addContract, Names: []string{"total", "value"}, Near: []bool{false, false}},
 	}
-	doubleRegion, err := fixture.region(t, "    callable int (int) emits [] action = callable double\n    ok action\n", "callable int (int) emits []", nil, ir.FunctionRegion)
+	doubleRegion, err := fixture.region(t, "    callable int (int) emits {} action = callable double\n    ok action\n", "callable int (int) emits {}", nil, ir.FunctionRegion)
 	if err != nil {
 		t.Fatal(err)
 	}
-	addRegion, err := fixture.region(t, "    callable int (int, int) emits [] action = callable add\n    ok action\n", "callable int (int, int) emits []", nil, ir.FunctionRegion)
+	addRegion, err := fixture.region(t, "    callable int (int, int) emits {} action = callable add\n    ok action\n", "callable int (int, int) emits {}", nil, ir.FunctionRegion)
 	if err != nil {
 		t.Fatal(err)
 	}

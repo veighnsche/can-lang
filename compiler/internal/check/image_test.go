@@ -7,7 +7,7 @@ func TestImageInspectIsCallableWithTypedMetadata(t *testing.T) {
     provides []
     uses [bytes, codec, image]
 fn image::metadata inspect_image
-    emits [codec::invalid_data, image::invalid_image]
+    emits {codec::invalid_data, image::invalid_image}
     asserts
         sample: => ok image::metadata("png", 1, 1)
     match chain
@@ -17,7 +17,7 @@ fn image::metadata inspect_image
         image::invalid_image
         ok => ok metadata
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts

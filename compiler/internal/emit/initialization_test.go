@@ -75,7 +75,7 @@ func TestInitializationOrderingAndRefusals(t *testing.T) {
 	for _, text := range []string{
 		"int a = b\nint b = a\n", "int a = a\n", "int a = call first()\n", "int a = (1 + call first())\n",
 		"str a = call env::get(\"TOKEN\")\n", "bytes::buffer a = call bytes::from_utf8(\"x\")\n",
-		"callable int () emits [] a = callable first\n", "int a = ints[0]\n",
+		"callable int () emits {} a = callable first\n", "int a = ints[0]\n",
 		"bytes::buffer a = resource\n",
 		"int a = match true\n    false => 2\n    true => 1\n",
 		"bool a = false and (call first() is 1)\n",
@@ -98,8 +98,8 @@ func TestInitializationOrderingAndRefusals(t *testing.T) {
 
 func TestInitializationNamedArmEvidence(t *testing.T) {
 	ts := fixtureTypes(t)
-	values := initialValues(t, "choice_arm<int> emits [] a = arm\n", ts)
-	arm := check.ValueBinding{Identity: "app::arm", Type: ts["choice_arm<int> emits []"]}
+	values := initialValues(t, "choice_arm<int> emits {} a = arm\n", ts)
+	arm := check.ValueBinding{Identity: "app::arm", Type: ts["choice_arm<int> emits {}"]}
 	values[0].Checker.Value = func(_ syntax.QualifiedName) (check.ValueBinding, error) { return arm, nil }
 	if _, err := check.Initialization(values, nil); err == nil {
 		t.Fatal("unproven named arm admitted")
@@ -112,7 +112,7 @@ func TestInitializationNamedArmEvidence(t *testing.T) {
 	if err != nil || !strings.Contains(code.Code, "= $namedArm;") || strings.Contains(code.Code, "$namedArm(") {
 		t.Fatal("storing a named arm must not invoke it", err, code.Code)
 	}
-	arm.Type = ts["callable int () emits []"]
+	arm.Type = ts["callable int () emits {}"]
 	if _, err := check.Initialization(values, []check.ValueBinding{arm}); err == nil {
 		t.Fatal("ordinary callable admitted as a named arm")
 	}

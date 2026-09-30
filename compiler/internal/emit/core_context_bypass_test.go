@@ -22,12 +22,12 @@ const coreCorpus = `package app
     provides []
     uses [text, bytes, codec, checks]
 fn str text_flow
-    emits []
+    emits {}
     asserts
         sample: => ok "hi"
     ok call "  HI  ".trim().to_lower_case()
 fn int split_flow
-    emits [text::empty_separator]
+    emits {text::empty_separator}
     asserts
         sample: => ok 2
     match chain
@@ -35,7 +35,7 @@ fn int split_flow
         text::empty_separator
         ok => ok parts.length
 fn str byte_flow
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     asserts
         sample: => ok "aGk="
     match chain
@@ -43,14 +43,14 @@ fn str byte_flow
         codec::invalid_data
         ok => ok call bytes::encode_base64(raw)
 fn bool check_flow
-    emits []
+    emits {}
     asserts
         sample: => ok true
     match call checks::require(true, "ok")
         checks::failed => ok false
         ok => ok true
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -487,7 +487,7 @@ func TestCoreExecutesEligibleRoutes(t *testing.T) {
 	}
 	// require keeps its hidden exact call-site origin before the context
 	// in the direct branch.
-	header := "package app\n    provides []\n    uses []\nfn void run\n    emits []\n    asserts\n        test: => ok 1\n"
+	header := "package app\n    provides []\n    uses []\nfn void run\n    emits {}\n    asserts\n        test: => ok 1\n"
 	reqSource := header + bodies["$reqFail"]
 	reqStart := strings.Index(reqSource, "freq(false")
 	reqSpan := fmt.Sprintf(`{source: "region.can", start: %d, end: %d, invocation: ["app::run"]}`, reqStart, reqStart+len(`freq(false, "nope")`))
@@ -502,7 +502,7 @@ func TestCoreExecutesEligibleRoutes(t *testing.T) {
 	if !strings.Contains(direct, spanTuple) {
 		t.Fatalf("require direct branch lost hidden origin %s:\n%s", spanTuple, reqBody)
 	}
-	hostHeader := "package app\n    provides []\n    uses []\nfn str run\n    emits []\n    asserts\n        test: => ok 1\n"
+	hostHeader := "package app\n    provides []\n    uses []\nfn str run\n    emits {}\n    asserts\n        test: => ok 1\n"
 	hostSource := hostHeader + bodies["$hostile"]
 	hostStart := strings.Index(hostSource, "ftutf8(")
 	hostCall := "ftutf8(hostile)"

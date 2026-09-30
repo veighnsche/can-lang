@@ -13,7 +13,7 @@ import (
 // in order; POST clients append the wire body last.
 func fetchWebFile(extra ...string) string {
 	clients := "fn load_outcome reload_line\n" +
-		"    emits [http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data]\n" +
+		"    emits {http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data}\n" +
 		"    given\n" +
 		"        str invoice_id\n" +
 		"        int line\n" +
@@ -26,7 +26,7 @@ func fetchWebFile(extra ...string) string {
 		"        codec::invalid_data\n" +
 		"        ok load_outcome got => ok got\n" +
 		"fn save_outcome store_invoice\n" +
-		"    emits [http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data]\n" +
+		"    emits {http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data}\n" +
 		"    given\n" +
 		"        invoice_wire body\n" +
 		"    asserts\n" +
@@ -227,7 +227,7 @@ func TestFetchJSONCrossPackageName(t *testing.T) {
 		"    provides []\n" +
 		"    uses [web, http, codec]\n" +
 		"fn web::load_outcome reload_line\n" +
-		"    emits [http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data]\n" +
+		"    emits {http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data}\n" +
 		"    given\n" +
 		"        str invoice_id\n" +
 		"        int line\n" +
@@ -358,7 +358,7 @@ func TestFetchJSONPostRejectsFormAction(t *testing.T) {
 		"        stored status 200 swap inner\n"
 	decls := actionSaveDomain + actionLineKey + actionSaveAction + actionLoadDomain + actionLoadAction + form +
 		"fn store_outcome push_batch\n" +
-		"    emits [http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data]\n" +
+		"    emits {http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data}\n" +
 		"    given\n" +
 		"        batch_wire body\n" +
 		"    asserts\n" +

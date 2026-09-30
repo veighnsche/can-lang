@@ -236,7 +236,7 @@ func TestActionContractSharedExports(t *testing.T) {
 		"src/contract/contract.can": actionContractSource,
 		"src/app/main.can": "package app\n    provides []\n    uses [invoice_contract]\n" +
 			"fn invoice_contract::invoice_key describe\n" +
-			"    emits []\n" +
+			"    emits {}\n" +
 			"    asserts\n" +
 			"        sample: => ok invoice_contract::invoice_key(1, 7)\n" +
 			"    ok invoice_contract::invoice_key(1, 7)\n" + actionMain,

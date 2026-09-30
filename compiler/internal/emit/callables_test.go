@@ -144,7 +144,7 @@ func TestDynamicCallablePreparationAndThenField(t *testing.T) {
 		t.Skip("set CAN_BUN for native dynamic call preparation")
 	}
 	fixture := newRegionFixture(t)
-	factoryType, err := types.CallableOfChecked(fixture.ts["callable int (int) emits []"], nil, nil)
+	factoryType, err := types.CallableOfChecked(fixture.ts["callable int (int) emits {}"], nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

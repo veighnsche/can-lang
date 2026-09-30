@@ -51,8 +51,8 @@ func TestArrayCatalogueRejectsLostErrorBound(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, change := range [][2]string{
-		{"fn int[] stops\n    emits [codec::invalid_data]", "fn int[] stops\n    emits []"},
-		{"callable int[] (callable int (int) emits [codec::invalid_data]) emits [codec::invalid_data] action", "callable int[] (callable int (int) emits [codec::invalid_data]) emits [] action"},
+		{"fn int[] stops\n    emits {codec::invalid_data}", "fn int[] stops\n    emits {}"},
+		{"callable int[] (callable int (int) emits {codec::invalid_data}) emits {codec::invalid_data} action", "callable int[] (callable int (int) emits {codec::invalid_data}) emits {} action"},
 	} {
 		text := strings.Replace(string(source), change[0], change[1], 1)
 		if text == string(source) {
@@ -95,7 +95,7 @@ func TestEmptyArrayGenericInferenceDoesNotGuess(t *testing.T) {
 	for name, extra := range map[string]string{
 		"near conflict": `
 fn item near_identity<item>
-    emits []
+    emits {}
     given
         near item prefix
         item value
@@ -103,7 +103,7 @@ fn item near_identity<item>
         unit: 1, 2 => ok 2
     ok value
 fn int[] conflict
-    emits []
+    emits {}
     given
         str prefix
     asserts
@@ -112,7 +112,7 @@ fn int[] conflict
 `,
 		"unconstrained input": `
 fn output produce<output, input>
-    emits []
+    emits {}
     given
         near output result
         input value
@@ -120,7 +120,7 @@ fn output produce<output, input>
         unit: 1, "x" => ok 1
     ok result
 fn int[] ambiguous
-    emits []
+    emits {}
     given
         int result
     asserts

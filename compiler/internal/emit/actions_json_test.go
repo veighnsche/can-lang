@@ -52,7 +52,7 @@ const actionEmitFormWeb = "package web\n" +
 	"        stored status 200 swap inner\n" +
 	"        store_failed status 422 swap inner\n" +
 	"fn void main\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        str[] arguments\n" +
 	"    asserts\n" +

@@ -42,7 +42,7 @@ func header(pkg, provides, uses string) string {
 	return "package " + pkg + "\n    provides [" + provides + "]\n    uses [" + uses + "]\n"
 }
 func function(name, typ, inputs, body string) string {
-	text := "fn " + typ + " " + name + "\n    emits []\n"
+	text := "fn " + typ + " " + name + "\n    emits {}\n"
 	if inputs != "" {
 		text += "    given\n" + inputs
 	}
@@ -153,7 +153,7 @@ func TestQualifiedLookupBypassesLocalValuesAndKeepsOpacity(t *testing.T) {
 }
 
 func TestReceiverPackageMethodOwnership(t *testing.T) {
-	method := "fn int area\n    on panel shape\n    emits []\n    asserts\n        sample: panel() => => ok 1\n    ok 1\n"
+	method := "fn int area\n    on panel shape\n    emits {}\n    asserts\n        sample: panel() => => ok 1\n    ok 1\n"
 	w, err := buildFiles(t, map[string]string{
 		"src/panels/main.can": header("panels", "panel, area", "") + "record panel\n" + method,
 		"src/app/main.can":    header("app", "", "panels") + "record holder\n    panels::panel value\n",
@@ -192,9 +192,9 @@ func TestResolutionRejectsScopeAndSignatureViolations(t *testing.T) {
 		base(header("app", "", "") + function("bad<item>", "item", "        item item\n", "    ok item\n")),
 		base(header("app", "", "") + function("bad<item, item>", "item", "", "    ok x\n")),
 		base(header("app", "", "") + function("transform", "int", "", "    ok 1\n") + "record bad\n    transform value\n"),
-		base(header("app", "", "") + "fn int bad\n    on int value\n    emits []\n    asserts\n        x: 1 => => ok 1\n    ok 1\n"),
+		base(header("app", "", "") + "fn int bad\n    on int value\n    emits {}\n    asserts\n        x: 1 => => ok 1\n    ok 1\n"),
 		{"src/a/one.can": header("app", "from_other_file", "") + "record item\n", "src/a/two.can": header("app", "", "") + "record from_other_file\n"},
-		{"src/a/main.can": header("a", "item", "") + "record item\n", "src/b/main.can": header("b", "", "a") + "fn int bad\n    on a::item value\n    emits []\n    asserts\n        x: a::item() => => ok 1\n    ok 1\n"},
+		{"src/a/main.can": header("a", "item", "") + "record item\n", "src/b/main.can": header("b", "", "a") + "fn int bad\n    on a::item value\n    emits {}\n    asserts\n        x: a::item() => => ok 1\n    ok 1\n"},
 		{"src/a/main.can": header("a", "", "") + "record private\n", "src/b/main.can": header("b", "", "a") + "record bad\n    a::private value\n"},
 	}
 	for i, files := range cases {
@@ -216,7 +216,7 @@ func TestGenericParametersPrecedeReturnTypeResolution(t *testing.T) {
 }
 
 func TestSignatureBoundsRequireEligibleVisibleErrors(t *testing.T) {
-	base := header("app", "run", "") + "error failed()\nfn void run\n    emits [failed]\n    asserts\n        sample: => ok\n    ok\n"
+	base := header("app", "run", "") + "error failed{}\nfn void run\n    emits {failed}\n    asserts\n        sample: => ok\n    ok\n"
 	files := map[string]string{"src/main.can": base, "can.errors.json": `{"active":["app::failed"],"retired":[]}`}
 	if _, err := buildFiles(t, files); err == nil || !strings.Contains(err.Error(), "private type") {
 		t.Fatalf("exported bound hid private error: %v", err)
@@ -225,7 +225,11 @@ func TestSignatureBoundsRequireEligibleVisibleErrors(t *testing.T) {
 	if _, err := buildFiles(t, files); err != nil {
 		t.Fatal(err)
 	}
-	files["src/main.can"] = strings.Replace(files["src/main.can"], "emits [failed]", "emits [int]", 1)
+	previous := files["src/main.can"]
+	files["src/main.can"] = strings.Replace(previous, "emits {failed}", "emits {int}", 1)
+	if files["src/main.can"] == previous {
+		t.Fatal("non-error bound mutation matched nothing")
+	}
 	if _, err := buildFiles(t, files); err == nil {
 		t.Fatal("non-error declaration admitted in emits")
 	}

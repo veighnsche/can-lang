@@ -16,21 +16,21 @@ const browserUP13QueryFixture = `package app
     provides []
     uses [browser, option]
 fn void show_boot_notice
-    emits []
+    emits {}
     given
         str message
     asserts
         sample: "hi" => ok
     ok
 fn void boot
-    emits []
+    emits {}
     given
         str selected
     asserts
         sample: "inv-1" => ok
     ok
 fn void main
-    emits []
+    emits {}
     asserts
         empty: => ok
     match call browser::query_parameter("invoice")
@@ -101,21 +101,21 @@ func TestBrowserSealsQueryOptionIdentitiesBun(t *testing.T) {
     provides []
     uses [browser, option]
 fn void show_boot_notice
-    emits []
+    emits {}
     given
         str message
     asserts
         sample: "hi" => ok
     ok
 fn void boot
-    emits []
+    emits {}
     given
         str selected
     asserts
         sample: "inv-1" => ok
     ok
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

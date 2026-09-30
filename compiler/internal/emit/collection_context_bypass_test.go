@@ -22,7 +22,7 @@ const collectionCorpus = `package app
     provides []
     uses [collections]
 fn int map_ops
-    emits [collections::key_exists, collections::key_absent]
+    emits {collections::key_exists, collections::key_absent}
     asserts
         sample: => ok 201
     match chain
@@ -39,7 +39,7 @@ fn int map_ops
         collections::key_absent
         ok => ok found + again + rows.length
 fn int set_ops
-    emits []
+    emits {}
     asserts
         sample: => ok 7
     collections::set<int> s0 = call collections::empty_set<int>()
@@ -56,7 +56,7 @@ fn int set_ops
         true, false, true => ok 7
         _, _, _ => ok 0
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -542,7 +542,7 @@ func TestCollectionExecutesMapSetRoutes(t *testing.T) {
 	if !strings.Contains(mapBody, " : "+rest[:end]+")") {
 		t.Fatalf("defined branch differs from legacy lowering:\n%s", mapBody)
 	}
-	header := "package app\n    provides []\n    uses []\nfn int run\n    emits []\n    asserts\n        test: => ok 1\n"
+	header := "package app\n    provides []\n    uses []\nfn int run\n    emits {}\n    asserts\n        test: => ok 1\n"
 	coldSource := header + bodies["$cold"]
 	coldStart := strings.Index(coldSource, "cget9(")
 	coldCall := "cget9(call cemptymap(), 1)"

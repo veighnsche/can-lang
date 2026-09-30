@@ -8,7 +8,7 @@ import (
 )
 
 const actionMain = "fn void main\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        str[] arguments\n" +
 	"    asserts\n" +
@@ -363,7 +363,7 @@ func TestActionRejects(t *testing.T) {
 			`duplicate name "save_invoice"`,
 		},
 		"action collides with function": {
-			actionWebFile("fn str save_invoice\n    emits []\n    asserts\n        sample: => ok \"x\"\n    ok \"x\"\n"),
+			actionWebFile("fn str save_invoice\n    emits {}\n    asserts\n        sample: => ok \"x\"\n    ok \"x\"\n"),
 			`duplicate name "save_invoice"`,
 		},
 		"duplicate route": {

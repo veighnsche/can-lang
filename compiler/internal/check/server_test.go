@@ -158,7 +158,7 @@ func TestServerLifecycleRejectsMismatches(t *testing.T) {
 		"fixture arity":           {"sample: config, built => ok", "sample: config => ok"},
 		"opaque fixture value":    {"sample: config, built => ok", "sample: config, built => ok 7"},
 		"fixture token mismatch":  {"sample: sturdy => ok", "sample: config => ok"},
-		"missing bind emission":   {"http::ambiguous_route, http::bind_failed]", "http::ambiguous_route]"},
+		"missing bind emission":   {"http::ambiguous_route, http::bind_failed}", "http::ambiguous_route}"},
 	} {
 		t.Run(name, func(t *testing.T) {
 			source := strings.Replace(base, replace.old, replace.new, 1)

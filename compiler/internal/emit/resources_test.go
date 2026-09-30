@@ -20,9 +20,9 @@ func TestCheckedResourceCaptureRetainsNativeLease(t *testing.T) {
 	}
 	fixture := newRegionFixture(t)
 	fixture.values["pool"] = check.ValueBinding{Identity: "value/pool", Type: fixture.ts["sql::pool"]}
-	fixture.functions["inspect"] = check.ValueBinding{Identity: "function/inspect", Type: fixture.ts["callable int (sql::pool) emits []"]}
-	fixture.callables = map[string]check.CallableDeclaration{"function/inspect": {Kind: "function", Contract: fixture.ts["callable int (sql::pool) emits []"], Names: []string{"pool"}, Near: []bool{true}}}
-	region, err := fixture.region(t, "    callable int () emits [] action = callable inspect\n    ok action\n", "callable int () emits []", nil, ir.FunctionRegion)
+	fixture.functions["inspect"] = check.ValueBinding{Identity: "function/inspect", Type: fixture.ts["callable int (sql::pool) emits {}"]}
+	fixture.callables = map[string]check.CallableDeclaration{"function/inspect": {Kind: "function", Contract: fixture.ts["callable int (sql::pool) emits {}"], Names: []string{"pool"}, Near: []bool{true}}}
+	region, err := fixture.region(t, "    callable int () emits {} action = callable inspect\n    ok action\n", "callable int () emits {}", nil, ir.FunctionRegion)
 	if err != nil {
 		t.Fatal(err)
 	}

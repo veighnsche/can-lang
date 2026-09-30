@@ -14,19 +14,19 @@ const browserSurfaceFixture = `package app
     provides []
     uses [browser]
 fn void on_click
-    emits []
+    emits {}
     given
         browser::event e
     asserts
         sample: browser::event("click", "save", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void on_tick
-    emits []
+    emits {}
     asserts
         sample: => ok
     ok
 fn int demo
-    emits [browser::missing_root, browser::disposed, browser::rejected, browser::stale_version]
+    emits {browser::missing_root, browser::disposed, browser::rejected, browser::stale_version}
     given
         str root
     asserts
@@ -82,7 +82,7 @@ fn int demo
                                                                                     ok => match call browser::dispose_app(app)
                                                                                         ok => ok next
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -197,12 +197,12 @@ func TestBrowserStaticAdmissionRefusals(t *testing.T) {
 		{"timer result callback", `set_timeout(view, 250, callable on_tick)`, `set_timeout(view, 250, call on_tick())`, `browser timer callback must be a named reference`},
 		{"negative delay", `set_timeout(view, 250, callable on_tick)`, `set_timeout(view, -5, callable on_tick)`, `browser delay must be 0-2147483647 milliseconds`},
 		{"huge delay", `set_timeout(view, 250, callable on_tick)`, `set_timeout(view, 2147483648, callable on_tick)`, `browser delay must be 0-2147483647 milliseconds`},
-		{"forged handles", "fn void main", "fn browser::app forge_app\n    emits []\n    asserts\n        sample: => ok browser::app(\"x\")\n    ok browser::app(\"root\")\nfn browser::node forge_node\n    emits []\n    asserts\n        sample: => ok browser::node(\"x\")\n    ok browser::node(\"text\")\nfn void main", `no eligible constructor browser::app`},
+		{"forged handles", "fn void main", "fn browser::app forge_app\n    emits {}\n    asserts\n        sample: => ok browser::app(\"x\")\n    ok browser::app(\"root\")\nfn browser::node forge_node\n    emits {}\n    asserts\n        sample: => ok browser::node(\"x\")\n    ok browser::node(\"text\")\nfn void main", `no eligible constructor browser::app`},
 		{"unknown operation", `call browser::focus(box)`, `call browser::raw(box)`, `no eligible call browser::raw`},
-		{"fallible handler", "fn void on_click\n    emits []", "fn void on_click\n    emits [browser::rejected]", ``},
+		{"fallible handler", "fn void on_click\n    emits {}", "fn void on_click\n    emits {browser::rejected}", ``},
 		{"replace mistyped value", `replace_state(cell, snap.version, 8)`, `replace_state(cell, snap.version, "x")`, ``},
 		{"cross spec snapshot", `ok browser::snapshot<int> snap`, `ok browser::snapshot<str> snap`, ``},
-		{"unhandled missing root", "    emits [browser::missing_root, browser::disposed, browser::rejected, browser::stale_version]\n", "    emits [browser::disposed, browser::rejected, browser::stale_version]\n", `browser::missing_root`},
+		{"unhandled missing root", "    emits {browser::missing_root, browser::disposed, browser::rejected, browser::stale_version}\n", "    emits {browser::disposed, browser::rejected, browser::stale_version}\n", `browser::missing_root`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			source := strings.Replace(browserSurfaceFixture, tc.from, tc.to, 1)

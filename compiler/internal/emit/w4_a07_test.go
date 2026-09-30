@@ -26,7 +26,7 @@ const w4Corpus = `package app
     provides []
     uses [collections]
 fn int machine
-    emits []
+    emits {}
     given
         int n
         int state
@@ -40,7 +40,7 @@ fn int machine
             1 => relay call machine(n - 1, 2, acc + 2)
             _ => relay call machine(n - 1, 0, acc + 3)
 fn int scan_sum
-    emits []
+    emits {}
     given
         int[] values
         int i
@@ -51,7 +51,7 @@ fn int scan_sum
         true => ok acc
         false => relay call scan_sum(values, i + 1, acc + values[i])
 fn collections::entry<int,int>[] aggregate
-    emits [collections::key_exists]
+    emits {collections::key_exists}
     given
         collections::entry<int,int>[] rows
         int i
@@ -66,7 +66,7 @@ fn collections::entry<int,int>[] aggregate
             false => ok rows[0:0]
         false => relay call aggregate(rows, i + 1, seen + 1)
 fn int fault_standard
-    emits []
+    emits {}
     given
         int n
         bool armed
@@ -78,11 +78,11 @@ fn int fault_standard
             0 => ok 1 / n
             _ => relay call fault_standard(n - 1, armed)
 fn int fault_declared
-    emits [collections::key_absent]
+    emits {collections::key_absent}
     given
         int n
     asserts
-        sample: 3 => collections::key_absent()
+        sample: 3 => collections::key_absent{}
     collections::map<int,int> empty = call collections::empty_map<int,int>()
     match n
         0 => match call collections::get(empty, 1)
@@ -90,16 +90,16 @@ fn int fault_declared
             ok int found => ok found
         _ => relay call fault_declared(n - 1)
 fn int fault_originated
-    emits [collections::key_absent]
+    emits {collections::key_absent}
     given
         int n
     asserts
-        sample: 3 => collections::key_absent()
+        sample: 3 => collections::key_absent{}
     match n
-        0 => collections::key_absent()
+        0 => collections::key_absent{}
         _ => relay call fault_originated(n - 1)
 fn int[] grow
-    emits []
+    emits {}
     given
         int[] acc
         int n
@@ -109,7 +109,7 @@ fn int[] grow
         0 => ok acc
         _ => relay call grow([...acc, n], n - 1)
 fn int triangle
-    emits []
+    emits {}
     given
         int n
     asserts
@@ -118,7 +118,7 @@ fn int triangle
         0 => ok 0
         _ => ok call triangle(n - 1) + n
 fn int ping
-    emits []
+    emits {}
     given
         int n
     asserts
@@ -127,7 +127,7 @@ fn int ping
         0 => ok 0
         _ => relay call pong(n - 1)
 fn int pong
-    emits []
+    emits {}
     given
         int n
     asserts
@@ -136,24 +136,24 @@ fn int pong
         0 => ok 100
         _ => relay call ping(n)
 fn int identity
-    emits []
+    emits {}
     given
         int value
     asserts
         sample: 4 => ok 4
     ok value
 fn int loop_excluded
-    emits []
+    emits {}
     given
         int n
     asserts
         sample: 3 => ok 0
-    callable int (int) emits [] action = callable identity
+    callable int (int) emits {} action = callable identity
     match n
         0 => ok call action(0)
         _ => relay call loop_excluded(n - 1)
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

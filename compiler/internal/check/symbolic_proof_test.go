@@ -14,7 +14,7 @@ const symbolicCorePackage = `package core
     provides [identity]
     uses []
 fn item identity<item>
-    emits []
+    emits {}
     given
         item value
     asserts
@@ -28,21 +28,21 @@ const symbolicHelpersPackage = `package helpers
 record box<item>
     item value
 fn item pass<item>
-    emits []
+    emits {}
     given
         item value
     asserts
         number: 3 => ok 3
     ok call core::identity<item>(value)
 fn box<item> wrap<item>
-    emits []
+    emits {}
     given
         item value
     asserts
         number: 3 => ok box(3)
     ok box(call pass<item>(value))
 fn box<item> nested<item>
-    emits []
+    emits {}
     given
         item value
     asserts
@@ -51,7 +51,7 @@ fn box<item> nested<item>
 `
 
 const symbolicAppMain = `fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -124,7 +124,7 @@ func TestSymbolicCrossPackageChain(t *testing.T) {
 	program, err := programFixture(t, map[string]string{
 		"src/core/core.can":       symbolicCorePackage,
 		"src/helpers/helpers.can": symbolicHelpersPackage,
-		"src/app/main.can":        "package app\n    provides [top]\n    uses [helpers]\nfn helpers::box<item> top<item>\n    emits []\n    given\n        item value\n    asserts\n        number: 3 => ok helpers::box(3)\n    ok call helpers::wrap<item>(value)\n" + symbolicAppMain,
+		"src/app/main.can":        "package app\n    provides [top]\n    uses [helpers]\nfn helpers::box<item> top<item>\n    emits {}\n    given\n        item value\n    asserts\n        number: 3 => ok helpers::box(3)\n    ok call helpers::wrap<item>(value)\n" + symbolicAppMain,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -173,7 +173,7 @@ func TestSymbolicCrossPackageChain(t *testing.T) {
 
 func TestSymbolicMutualPermutation(t *testing.T) {
 	program, err := programFixture(t, map[string]string{
-		"src/app.can": "package app\n    provides [first, second]\n    uses []\nfn a first<a, b>\n    emits []\n    given\n        a x\n        b y\n        bool stop\n    asserts\n        base: 1, \"s\", true => ok 1\n    match stop\n        false => ok call second<b, a>(y, x, true)\n        true => ok x\nfn b second<a, b>\n    emits []\n    given\n        a x\n        b y\n        bool stop\n    asserts\n        base: 1, \"s\", true => ok \"s\"\n    match stop\n        false => ok call first<b, a>(y, x, true)\n        true => ok y\n" + symbolicAppMain,
+		"src/app.can": "package app\n    provides [first, second]\n    uses []\nfn a first<a, b>\n    emits {}\n    given\n        a x\n        b y\n        bool stop\n    asserts\n        base: 1, \"s\", true => ok 1\n    match stop\n        false => ok call second<b, a>(y, x, true)\n        true => ok x\nfn b second<a, b>\n    emits {}\n    given\n        a x\n        b y\n        bool stop\n    asserts\n        base: 1, \"s\", true => ok \"s\"\n    match stop\n        false => ok call first<b, a>(y, x, true)\n        true => ok y\n" + symbolicAppMain,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -186,7 +186,7 @@ func TestSymbolicMutualPermutation(t *testing.T) {
 
 func TestSymbolicDuplicationDrop(t *testing.T) {
 	program, err := programFixture(t, map[string]string{
-		"src/app.can": "package app\n    provides [dup, pair]\n    uses []\nfn a dup<a>\n    emits []\n    given\n        a value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call pair<a, a>(value, value, true)\n        true => ok value\nfn a pair<a, b>\n    emits []\n    given\n        a x\n        b y\n        bool stop\n    asserts\n        base: 3, 4, true => ok 3\n    match stop\n        false => ok call dup<a>(x, true)\n        true => ok x\n" + symbolicAppMain,
+		"src/app.can": "package app\n    provides [dup, pair]\n    uses []\nfn a dup<a>\n    emits {}\n    given\n        a value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call pair<a, a>(value, value, true)\n        true => ok value\nfn a pair<a, b>\n    emits {}\n    given\n        a x\n        b y\n        bool stop\n    asserts\n        base: 3, 4, true => ok 3\n    match stop\n        false => ok call dup<a>(x, true)\n        true => ok x\n" + symbolicAppMain,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -199,7 +199,7 @@ func TestSymbolicDuplicationDrop(t *testing.T) {
 
 func TestSymbolicClosedComponent(t *testing.T) {
 	program, err := programFixture(t, map[string]string{
-		"src/app.can": "package app\n    provides [a, b]\n    uses []\nfn void a<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok\n    match stop\n        false => relay call b<int>(3, true)\n        true => ok\nfn void b<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok\n    match stop\n        false => relay call a<int>(3, true)\n        true => ok\n" + symbolicAppMain,
+		"src/app.can": "package app\n    provides [a, b]\n    uses []\nfn void a<item>\n    emits {}\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok\n    match stop\n        false => relay call b<int>(3, true)\n        true => ok\nfn void b<item>\n    emits {}\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok\n    match stop\n        false => relay call a<int>(3, true)\n        true => ok\n" + symbolicAppMain,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -212,7 +212,7 @@ func TestSymbolicClosedComponent(t *testing.T) {
 
 func TestSymbolicInferredMutual(t *testing.T) {
 	program, err := programFixture(t, map[string]string{
-		"src/app.can": "package app\n    provides [first, second]\n    uses []\nfn item first<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call second(value, true)\n        true => ok value\nfn item second<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call first(value, true)\n        true => ok value\n" + symbolicAppMain,
+		"src/app.can": "package app\n    provides [first, second]\n    uses []\nfn item first<item>\n    emits {}\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call second(value, true)\n        true => ok value\nfn item second<item>\n    emits {}\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call first(value, true)\n        true => ok value\n" + symbolicAppMain,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -222,7 +222,7 @@ func TestSymbolicInferredMutual(t *testing.T) {
 
 func TestSymbolicCallableThroughChain(t *testing.T) {
 	program, err := programFixture(t, map[string]string{
-		"src/app.can": "package app\n    provides [apply, middle]\n    uses []\nfn item apply<item>\n    emits []\n    given\n        item value\n        callable item (item) emits [] each\n    asserts\n        number: 3, callable identity_int => ok 3\n    ok call each(value)\nfn int identity_int\n    emits []\n    given\n        int value\n    asserts\n        sample: 1 => ok 1\n    ok value\nfn item middle<item>\n    emits []\n    given\n        item value\n        callable item (item) emits [] each\n    asserts\n        number: 3, callable identity_int => ok 3\n    ok call apply<item>(value, each)\n" + symbolicAppMain,
+		"src/app.can": "package app\n    provides [apply, middle]\n    uses []\nfn item apply<item>\n    emits {}\n    given\n        item value\n        callable item (item) emits {} each\n    asserts\n        number: 3, callable identity_int => ok 3\n    ok call each(value)\nfn int identity_int\n    emits {}\n    given\n        int value\n    asserts\n        sample: 1 => ok 1\n    ok value\nfn item middle<item>\n    emits {}\n    given\n        item value\n        callable item (item) emits {} each\n    asserts\n        number: 3, callable identity_int => ok 3\n    ok call apply<item>(value, each)\n" + symbolicAppMain,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -235,14 +235,14 @@ func TestSymbolicCallableThroughChain(t *testing.T) {
 
 func TestSymbolicExactEmitsThroughChain(t *testing.T) {
 	program, err := programFixture(t, map[string]string{
-		"src/app.can": "package app\n    provides [checked, caller]\n    uses [codec]\nfn int checked<item>\n    emits [codec::invalid_data]\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    ok 3\nfn int caller<item>\n    emits [codec::invalid_data]\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    relay call checked<item>(value)\n" + symbolicAppMain,
+		"src/app.can": "package app\n    provides [checked, caller]\n    uses [codec]\nfn int checked<item>\n    emits {codec::invalid_data}\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    ok 3\nfn int caller<item>\n    emits {codec::invalid_data}\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    relay call checked<item>(value)\n" + symbolicAppMain,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 	symbolicInstances(t, program)
 	_, err = programFixture(t, map[string]string{
-		"src/app.can": "package app\n    provides [checked, caller]\n    uses [codec]\nfn int checked<item>\n    emits [codec::invalid_data]\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    ok 3\nfn int caller<item>\n    emits []\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    relay call checked<item>(value)\n" + symbolicAppMain,
+		"src/app.can": "package app\n    provides [checked, caller]\n    uses [codec]\nfn int checked<item>\n    emits {codec::invalid_data}\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    ok 3\nfn int caller<item>\n    emits {}\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    relay call checked<item>(value)\n" + symbolicAppMain,
 	})
 	if err == nil {
 		t.Fatal("narrowed emits bound through a symbolic call admitted")
@@ -254,7 +254,7 @@ func TestSymbolicExactEmitsThroughChain(t *testing.T) {
 
 func TestSymbolicRejectsPrivateCallee(t *testing.T) {
 	_, err := programFixture(t, map[string]string{
-		"src/app.can": "package local\n    provides [pass]\n    uses []\nfn item double<item>\n    emits []\n    given\n        item value\n    asserts\n        number: 3 => ok 6\n    ok value + value\nfn item pass<item>\n    emits []\n    given\n        item value\n    asserts\n        number: 3 => ok 6\n    ok call double<item>(value)\n" + symbolicAppMain,
+		"src/app.can": "package local\n    provides [pass]\n    uses []\nfn item double<item>\n    emits {}\n    given\n        item value\n    asserts\n        number: 3 => ok 6\n    ok value + value\nfn item pass<item>\n    emits {}\n    given\n        item value\n    asserts\n        number: 3 => ok 6\n    ok call double<item>(value)\n" + symbolicAppMain,
 	})
 	if err == nil {
 		t.Fatal("private template under opaque argument admitted")
@@ -279,8 +279,8 @@ func TestSymbolicRejectsPrivateCallee(t *testing.T) {
 
 func TestSymbolicCalleeArithmeticFailsAtCallee(t *testing.T) {
 	_, err := programFixture(t, map[string]string{
-		"src/core/core.can": "package core\n    provides [identity]\n    uses []\nfn item identity<item>\n    emits []\n    given\n        item value\n    asserts\n        number: 3 => ok 6\n    ok value + value\n",
-		"src/app/main.can":  "package app\n    provides [pass]\n    uses [core]\nfn item pass<item>\n    emits []\n    given\n        item value\n    asserts\n        number: 3 => ok 6\n    ok call core::identity<item>(value)\n" + symbolicAppMain,
+		"src/core/core.can": "package core\n    provides [identity]\n    uses []\nfn item identity<item>\n    emits {}\n    given\n        item value\n    asserts\n        number: 3 => ok 6\n    ok value + value\n",
+		"src/app/main.can":  "package app\n    provides [pass]\n    uses [core]\nfn item pass<item>\n    emits {}\n    given\n        item value\n    asserts\n        number: 3 => ok 6\n    ok call core::identity<item>(value)\n" + symbolicAppMain,
 	})
 	if err == nil {
 		t.Fatal("illegal callee arithmetic admitted")
@@ -296,7 +296,7 @@ func TestSymbolicCalleeArithmeticFailsAtCallee(t *testing.T) {
 
 func TestSymbolicRejectsNestedGrowth(t *testing.T) {
 	_, err := programFixture(t, map[string]string{
-		"src/app.can": "package app\n    provides [box, a, b]\n    uses []\nrecord box<item>\n    item value\nfn void a<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok\n    match stop\n        false => relay call b<box<item>>(box(value), true)\n        true => ok\nfn void b<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok\n    match stop\n        false => relay call a<item>(value, true)\n        true => ok\n" + symbolicAppMain,
+		"src/app.can": "package app\n    provides [box, a, b]\n    uses []\nrecord box<item>\n    item value\nfn void a<item>\n    emits {}\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok\n    match stop\n        false => relay call b<box<item>>(box(value), true)\n        true => ok\nfn void b<item>\n    emits {}\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok\n    match stop\n        false => relay call a<item>(value, true)\n        true => ok\n" + symbolicAppMain,
 	})
 	if err == nil {
 		t.Fatal("nested growing cycle admitted")
@@ -312,7 +312,7 @@ func TestSymbolicRejectsNestedGrowth(t *testing.T) {
 
 func TestSymbolicRejectsSelfGrowth(t *testing.T) {
 	_, err := programFixture(t, map[string]string{
-		"src/app.can": "package app\n    provides [grow]\n    uses []\nfn void grow<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok\n    match stop\n        false => relay call grow<item[]>([value], true)\n        true => ok\n" + symbolicAppMain,
+		"src/app.can": "package app\n    provides [grow]\n    uses []\nfn void grow<item>\n    emits {}\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok\n    match stop\n        false => relay call grow<item[]>([value], true)\n        true => ok\n" + symbolicAppMain,
 	})
 	if err == nil {
 		t.Fatal("growing self call admitted")
@@ -324,7 +324,7 @@ func TestSymbolicRejectsSelfGrowth(t *testing.T) {
 
 func TestSymbolicRejectsFailedComponentReuse(t *testing.T) {
 	_, err := programFixture(t, map[string]string{
-		"src/app.can": "package app\n    provides [a, b, c]\n    uses []\nfn item a<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call b<item>(value, true)\n        true => ok value\nfn item b<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call a<item>(value, true)\n        true => ok value + value\nfn item c<item>\n    emits []\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    ok call a<item>(value, true)\n" + symbolicAppMain,
+		"src/app.can": "package app\n    provides [a, b, c]\n    uses []\nfn item a<item>\n    emits {}\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call b<item>(value, true)\n        true => ok value\nfn item b<item>\n    emits {}\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call a<item>(value, true)\n        true => ok value + value\nfn item c<item>\n    emits {}\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    ok call a<item>(value, true)\n" + symbolicAppMain,
 	})
 	if err == nil {
 		t.Fatal("proof reuse after failed component admitted")
@@ -339,8 +339,8 @@ func TestSymbolicRejectsFailedComponentReuse(t *testing.T) {
 func TestSymbolicOwnerPassthrough(t *testing.T) {
 	program, err := programFixture(t, map[string]string{
 		"src/mail/box.can":     ownerMailPackage,
-		"src/helpers/help.can": "package helpers\n    provides [pass, wrap]\n    uses []\nfn item pass<item>\n    emits []\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    ok value\nfn item wrap<item>\n    emits []\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    ok call pass<item>(value)\n",
-		"src/app/main.can":     "package app\n    provides []\n    uses [mail, codec, bytes, helpers]\n" + "fn mail::email use_token\n    emits []\n    given\n        str address\n    asserts\n        sample: \"a@b\" => ok call mail::make_email(\"a@b\")\n    mail::email held = call mail::make_email(address)\n    ok call helpers::wrap(held)\n" + ownerAppMain,
+		"src/helpers/help.can": "package helpers\n    provides [pass, wrap]\n    uses []\nfn item pass<item>\n    emits {}\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    ok value\nfn item wrap<item>\n    emits {}\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    ok call pass<item>(value)\n",
+		"src/app/main.can":     "package app\n    provides []\n    uses [mail, codec, bytes, helpers]\n" + "fn mail::email use_token\n    emits {}\n    given\n        str address\n    asserts\n        sample: \"a@b\" => ok call mail::make_email(\"a@b\")\n    mail::email held = call mail::make_email(address)\n    ok call helpers::wrap(held)\n" + ownerAppMain,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -362,7 +362,7 @@ func TestSymbolicOwnerPassthrough(t *testing.T) {
 func TestSymbolicRejectsOwnerConstruction(t *testing.T) {
 	_, err := programFixture(t, map[string]string{
 		"src/mail/box.can": ownerMailPackage,
-		"src/app/main.can": "package app\n    provides [forge]\n    uses [mail, codec, bytes]\n" + "fn mail::email forge<item>\n    emits []\n    given\n        item value\n    asserts\n        number: 3 => ok call mail::make_email(\"a@b\")\n    ok mail::email(\"forged\")\n" + ownerAppMain,
+		"src/app/main.can": "package app\n    provides [forge]\n    uses [mail, codec, bytes]\n" + "fn mail::email forge<item>\n    emits {}\n    given\n        item value\n    asserts\n        number: 3 => ok call mail::make_email(\"a@b\")\n    ok mail::email(\"forged\")\n" + ownerAppMain,
 	})
 	if err == nil {
 		t.Fatal("bogus owner construction from a generic admitted")

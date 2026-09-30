@@ -44,8 +44,8 @@ func TestGroupedNativeInvocation(t *testing.T) {
 		{"variadic", "    given\n        str ...labels\n", "    state\n        str input\n", "\"a\", \"b\", (\"input\")"},
 	} {
 		t.Run(f.name, func(t *testing.T) {
-			native := "llm str generate from generator\n    emits [" + nativeLLM + "]\n" + f.inputs + f.state + "    asserts\n        sample: " + f.args + " => ok \"x\"\n            using raw \"fixtures/generate.json\"\n    asks \"Generate\"\n"
-			wrapper := "fn str wrap\n    emits [" + nativeLLM + "]\n    asserts\n        sample: => ok \"x\"\n    relay call generate(" + f.args + ")\n"
+			native := "llm str generate from generator\n    emits {" + nativeLLM + "}\n" + f.inputs + f.state + "    asserts\n        sample: " + f.args + " => ok \"x\"\n            using raw \"fixtures/generate.json\"\n    asks \"Generate\"\n"
+			wrapper := "fn str wrap\n    emits {" + nativeLLM + "}\n    asserts\n        sample: => ok \"x\"\n    relay call generate(" + f.args + ")\n"
 			p, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": nativeHeader + nativeGenerator + native + wrapper + programMain + "    ok\n"}, "generate"))
 			if err != nil {
 				t.Fatal(err)
@@ -61,7 +61,7 @@ func TestGroupedNativeInvocation(t *testing.T) {
 	}
 }
 func TestNativeIntrinsicBoundsAndProfile(t *testing.T) {
-	native := "llm str generate from generator\n    emits [" + nativeLLM + "]\n    asks \"Generate\"\n"
+	native := "llm str generate from generator\n    emits {" + nativeLLM + "}\n    asks \"Generate\"\n"
 	for name, bad := range map[string]string{
 		"missing error":               strings.Replace(nativeGenerator+native, "http::timeout, ", "", 1),
 		"wrong profile":               strings.Replace(nativeGenerator+native, "openai_responses_v1", "typesafe_systemone_v1", 1),
@@ -76,7 +76,7 @@ func TestNativeIntrinsicBoundsAndProfile(t *testing.T) {
 }
 
 const nativeQuestion = `noul bool question from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     given
         str description
     asks description
@@ -84,7 +84,7 @@ const nativeQuestion = `noul bool question from classifier
         false "No" => ok false
 `
 const nativeJudge = `judge bool assess from classifier
-    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
+    emits {http::request_failed, ai::invalid_question, ai::invalid_answer}
     state
         str message
     asserts
@@ -110,10 +110,13 @@ func TestJudgePreparationAndHandlerRegions(t *testing.T) {
 		"missing binding":        strings.Replace(text, " as bool first", "", 1),
 		"wrong binding":          strings.Replace(text, "as bool first", "as str first", 1),
 		"wrong connection":       strings.Replace(text, "judge bool assess from classifier", "judge bool assess from other", 1) + strings.Replace(nativeClassifier, "connection classifier", "connection other", 1),
-		"missing question bound": strings.Replace(text, "emits [ai::invalid_question, ai::invalid_answer]", "emits [ai::invalid_question, ai::invalid_answer, http::credentials_missing]", 1),
+		"missing question bound": strings.Replace(text, "emits {ai::invalid_question, ai::invalid_answer}", "emits {ai::invalid_question, ai::invalid_answer, http::credentials_missing}", 1),
 		"direct question call":   strings.Replace(text, "    ok\n", "    call question(\"direct\")\n    ok\n", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
+			if bad == text {
+				t.Fatalf("mutation missed for %q", name)
+			}
 			if _, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": bad}, "assess")); err == nil {
 				t.Fatal("accepted invalid native semantics")
 			}
@@ -122,7 +125,7 @@ func TestJudgePreparationAndHandlerRegions(t *testing.T) {
 }
 func TestChoiceAndScoreStaticBodies(t *testing.T) {
 	declarations := `choice str dynamic from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     given
         choice_option[] candidates
     asks "Choose"
@@ -130,7 +133,7 @@ func TestChoiceAndScoreStaticBodies(t *testing.T) {
         ok str selected => ok selected
 
 score float score_question from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     score as measured
     confidence as certainty
     asks "Severity"
@@ -139,7 +142,7 @@ score float score_question from classifier
         ok => ok measured * certainty
 
 record weights choice float weighted from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     confidence as certainty
     asks "Choose"
         first "First" => ok % * certainty
@@ -172,11 +175,11 @@ record weights choice float weighted from classifier
 
 func TestGeneratedArmSpreadShape(t *testing.T) {
 	declarations := `record arms
-    choice_arm<float> emits [] left
-    choice_arm<float> emits [] right
+    choice_arm<float> emits {} left
+    choice_arm<float> emits {} right
 
 record weights choice float weighted from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     given
         arms choices
     confidence as certainty
@@ -202,8 +205,8 @@ record weights choice float weighted from classifier
 	}
 	for name, bad := range map[string]string{
 		"expanded collision": strings.Replace(text, "after \"Last\"", "left \"Last\"", 1),
-		"incompatible arm":   strings.Replace(text, "choice_arm<float> emits [] left", "choice_arm<str> emits [] left", 1),
-		"ordinary field":     strings.Replace(text, "choice_arm<float> emits [] left", "str left", 1),
+		"incompatible arm":   strings.Replace(text, "choice_arm<float> emits {} left", "choice_arm<str> emits {} left", 1),
+		"ordinary field":     strings.Replace(text, "choice_arm<float> emits {} left", "str left", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
 			if _, err := programFixture(t, map[string]string{"src/main.can": bad}); err == nil {
@@ -215,11 +218,11 @@ record weights choice float weighted from classifier
 
 func TestNamedArmDeclarationEvidence(t *testing.T) {
 	declarations := `choice_arm float reusable
-    emits []
+    emits {}
     describes "Reusable"
     ok %
 
-choice_arm<float> emits [] stored = reusable
+choice_arm<float> emits {} stored = reusable
 `
 	text := nativeHeader + declarations + programMain + "    ok\n"
 	p, err := programFixture(t, map[string]string{"src/main.can": text})

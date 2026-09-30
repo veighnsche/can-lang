@@ -9,7 +9,7 @@ import (
 )
 
 const withCombineDecl = `fn int combine
-    emits []
+    emits {}
     given
         near int prefix
         int value
@@ -23,15 +23,15 @@ const withCombineDecl = `fn int combine
 // leave unlisted near-inputs on name lookup; direct calls stay positional.
 func TestAUQ3CoreExplicitBindings(t *testing.T) {
 	text := programHeader + withCombineDecl + `fn int compute
-    emits []
+    emits {}
     given
         int seed
     asserts
         first: 4 => ok 12
-    callable int (int) emits [] action = callable combine with suffix = 5, prefix = 3
+    callable int (int) emits {} action = callable combine with suffix = 5, prefix = 3
     ok call action(seed)
 fn int direct
-    emits []
+    emits {}
     asserts
         sample: => ok 12
     ok call combine(3, 4, 5)
@@ -66,13 +66,13 @@ fn int direct
 
 func TestAUQ3CorePartialFallback(t *testing.T) {
 	text := programHeader + withCombineDecl + `fn int partial
-    emits []
+    emits {}
     given
         int suffix
         int value
     asserts
         sample: 5, 4 => ok 12
-    callable int (int) emits [] action = callable combine with prefix = 3
+    callable int (int) emits {} action = callable combine with prefix = 3
     ok call action(value)
 ` + programMain + "    ok\n"
 	program, err := programFixture(t, map[string]string{"src/main.can": text})
@@ -113,12 +113,12 @@ func TestAUQ3CoreBindingRefusals(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			text := programHeader + withCombineDecl + `fn int broken
-    emits []
+    emits {}
     given
         int seed
     asserts
         first: 4 => ok 12
-    callable int (int) emits [] action = ` + tc.binding + `
+    callable int (int) emits {} action = ` + tc.binding + `
     ok call action(seed)
 ` + programMain + "    ok\n"
 			_, err := programFixture(t, map[string]string{"src/main.can": text})

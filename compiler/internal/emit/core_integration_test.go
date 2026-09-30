@@ -25,14 +25,14 @@ func coreEmitProgram(t *testing.T) *check.Program {
 owner record email
     str address
 fn email make_email
-    emits []
+    emits {}
     given
         str address
     asserts
         sample: "a@b" => ok email("a@b")
     ok email(address)
 fn str email_address
-    emits []
+    emits {}
     given
         email mail
     asserts
@@ -73,7 +73,7 @@ fn str email_address
     provides []
     uses [post::mail, rival::mail as other, geo::shapes, vendor::helper as h]
 fn str describe
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -82,7 +82,7 @@ fn str describe
     match held
         mail::email => ok call mail::email_address(held)
 fn str describe_rival
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -91,7 +91,7 @@ fn str describe_rival
     match held
         other::email => ok call other::email_address(held)
 fn int area_units
-    emits []
+    emits {}
     given
         shapes::shape value
     asserts
@@ -101,12 +101,12 @@ fn int area_units
         shapes::circle(bind radius) => ok radius
         shapes::rectangle(bind width, _) => ok width
 fn str read_customer
-    emits []
+    emits {}
     asserts
         customer: => ok "fixture" link h::checkout
     ok call h::read()
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

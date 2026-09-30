@@ -130,8 +130,8 @@ func TestForwardingProofPredicateSelectsExactBinding(t *testing.T) {
 
 func TestForwardingAssemblyProofAndSameSpelling(t *testing.T) {
 	generic := forwardingProgram(t, map[string]string{
-		"src/lib/lib.can":  "package lib\n    provides [doubled]\n    uses []\nfn item doubled<item>\n    emits []\n    given\n        item value\n        callable item (item, item) emits [] plus\n    asserts\n        triple: 3, callable int_plus => ok 6\n    ok call plus(value, value)\nfn int int_plus\n    emits []\n    given\n        int first\n        int second\n    asserts\n        sample: 3, 3 => ok 6\n    ok first + second\n",
-		"src/app/main.can": "package app\n    provides []\n    uses [lib]\nfn int app_plus\n    emits []\n    given\n        int first\n        int second\n    asserts\n        sample: 1, 2 => ok 3\n    ok first + second\nfn int use_doubled\n    emits []\n    asserts\n        sample: => ok 8\n    ok call lib::doubled(4, callable app_plus)\nfn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n",
+		"src/lib/lib.can":  "package lib\n    provides [doubled]\n    uses []\nfn item doubled<item>\n    emits {}\n    given\n        item value\n        callable item (item, item) emits {} plus\n    asserts\n        triple: 3, callable int_plus => ok 6\n    ok call plus(value, value)\nfn int int_plus\n    emits {}\n    given\n        int first\n        int second\n    asserts\n        sample: 3, 3 => ok 6\n    ok first + second\n",
+		"src/app/main.can": "package app\n    provides []\n    uses [lib]\nfn int app_plus\n    emits {}\n    given\n        int first\n        int second\n    asserts\n        sample: 1, 2 => ok 3\n    ok first + second\nfn int use_doubled\n    emits {}\n    asserts\n        sample: => ok 8\n    ok call lib::doubled(4, callable app_plus)\nfn void main\n    emits {}\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n",
 	})
 	assembly, err := assembleProgramBindings(generic)
 	if err != nil {
@@ -175,9 +175,9 @@ func TestForwardingAssemblyProofAndSameSpelling(t *testing.T) {
 	}
 
 	spelled := forwardingProgram(t, map[string]string{
-		"src/a/first.can":  "package first\n    provides [dup]\n    uses []\nfn int dup\n    emits []\n    given\n        int value\n    asserts\n        sample: 1 => ok 2\n    ok value + 1\n",
-		"src/b/second.can": "package second\n    provides [dup]\n    uses []\nfn int dup\n    emits []\n    given\n        int value\n    asserts\n        sample: 2 => ok 4\n    ok value + 2\n",
-		"src/app/main.can": "package app\n    provides []\n    uses [first, second]\nfn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    match (call first::dup(1) + call second::dup(2))\n        6 => ok\n        _ => do\n            int invalid = 1 / 0\n            ok\n",
+		"src/a/first.can":  "package first\n    provides [dup]\n    uses []\nfn int dup\n    emits {}\n    given\n        int value\n    asserts\n        sample: 1 => ok 2\n    ok value + 1\n",
+		"src/b/second.can": "package second\n    provides [dup]\n    uses []\nfn int dup\n    emits {}\n    given\n        int value\n    asserts\n        sample: 2 => ok 4\n    ok value + 2\n",
+		"src/app/main.can": "package app\n    provides []\n    uses [first, second]\nfn void main\n    emits {}\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    match (call first::dup(1) + call second::dup(2))\n        6 => ok\n        _ => do\n            int invalid = 1 / 0\n            ok\n",
 	})
 	var first, second *check.ProgramFunction
 	for _, fn := range spelled.Functions {
@@ -221,7 +221,7 @@ const forwardingAuthoredSource = `package app
     provides []
     uses []
 fn int add
-    emits []
+    emits {}
     given
         int first
         int second
@@ -229,7 +229,7 @@ fn int add
         sample: 3, 4 => ok 7
     ok first + second
 fn int combine
-    emits []
+    emits {}
     given
         near int prefix
         int value
@@ -238,35 +238,35 @@ fn int combine
         sample: 3, 4, 5 => ok 12
     ok prefix + value + suffix
 fn item identity<item>
-    emits []
+    emits {}
     given
         item value
     asserts
         number: 3 => ok 3
     ok value
 fn int use_ordinary
-    emits []
+    emits {}
     asserts
         sample: => ok 7
-    callable int (int, int) emits [] action = callable add
+    callable int (int, int) emits {} action = callable add
     ok call action(3, 4)
 fn int use_captured
-    emits []
+    emits {}
     given
         int prefix
         int suffix
     asserts
         sample: 3, 5 => ok 12
-    callable int (int) emits [] action = callable combine
+    callable int (int) emits {} action = callable combine
     ok call action(4)
 fn int use_generic
-    emits []
+    emits {}
     asserts
         sample: => ok 7
-    callable int (int) emits [] action = callable identity<int>
+    callable int (int) emits {} action = callable identity<int>
     ok call action(7)
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -282,22 +282,22 @@ const forwardingArraySource = `package app
     provides []
     uses []
 fn int twice
-    emits []
+    emits {}
     given
         int value
     asserts
         sample: 3 => ok 6
     ok value * 2
 fn int[] referenced_map
-    emits []
+    emits {}
     given
         int[] items
     asserts
         sample: [1, 2] => ok [2, 4]
-    callable int[] (callable int (int) emits []) emits [] action = callable items.map
+    callable int[] (callable int (int) emits {}) emits {} action = callable items.map
     ok call action(callable twice)
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -314,19 +314,19 @@ const forwardingNativeSource = `package app
     provides []
     uses [codec, bytes]
 fn int via_callable
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
         sample: "7" => ok 7
-    callable int (bytes::buffer) emits [codec::invalid_data] decode = callable codec::decode_json<int>
+    callable int (bytes::buffer) emits {codec::invalid_data} decode = callable codec::decode_json<int>
     match chain
         call bytes::from_utf8(text) as bytes::buffer encoded
         call decode(encoded) as int decoded
         codec::invalid_data
         ok => ok decoded
 fn void main
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str[] arguments
     asserts
@@ -512,22 +512,22 @@ func TestForwardingBrowserAndAssertionSelection(t *testing.T) {
     provides []
     uses []
 fn int identity_int
-    emits []
+    emits {}
     given
         int value
     asserts
         sample: 4 => ok 4
     ok value
 fn int consume
-    emits []
+    emits {}
     given
-        callable int (int) emits [] action
+        callable int (int) emits {} action
         int value
     asserts
         sample: callable identity_int, 4 => ok 4
     ok call action(value)
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -574,12 +574,12 @@ func TestForwardingFallbackKeepsAsyncExecutable(t *testing.T) {
 	fixture.callables = map[string]check.CallableDeclaration{
 		"function/increment": {
 			Kind:     "function",
-			Contract: fixture.ts["callable int (int) emits []"],
+			Contract: fixture.ts["callable int (int) emits {}"],
 			Names:    []string{"value"},
 			Near:     []bool{false},
 		},
 	}
-	region, err := fixture.region(t, "    callable int (int) emits [] action = callable increment\n    ok action\n", "callable int (int) emits []", nil, ir.FunctionRegion)
+	region, err := fixture.region(t, "    callable int (int) emits {} action = callable increment\n    ok action\n", "callable int (int) emits {}", nil, ir.FunctionRegion)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -633,7 +633,7 @@ func TestForwardingSavedTargetCaptureOrderAndResidual(t *testing.T) {
 		t.Fatal(err)
 	}
 	fixture.functions["combine"] = check.ValueBinding{Identity: "function/combine", Type: three}
-	fixture.functions["second"] = check.ValueBinding{Identity: "function/second", Type: fixture.ts["callable int () emits []"]}
+	fixture.functions["second"] = check.ValueBinding{Identity: "function/second", Type: fixture.ts["callable int () emits {}"]}
 	fixture.callables = map[string]check.CallableDeclaration{
 		"function/combine": {
 			Kind:     "function",
@@ -642,7 +642,7 @@ func TestForwardingSavedTargetCaptureOrderAndResidual(t *testing.T) {
 			Near:     []bool{true, false, true},
 		},
 	}
-	region, err := fixture.region(t, "    callable int (int) emits [] action = callable combine with prefix = call first(), suffix = call second()\n    ok call action(4)\n", "int", nil, ir.FunctionRegion)
+	region, err := fixture.region(t, "    callable int (int) emits {} action = callable combine with prefix = call first(), suffix = call second()\n    ok call action(4)\n", "int", nil, ir.FunctionRegion)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -749,7 +749,7 @@ func TestForwardingReceiptsResourcesDelayedGatesAndLeases(t *testing.T) {
     provides []
     uses []
 fn int combine
-    emits []
+    emits {}
     given
         near int prefix
         int value
@@ -758,22 +758,22 @@ fn int combine
         sample: 3, 4, 5 => ok 12
     ok prefix + value + suffix
 fn int consume
-    emits []
+    emits {}
     given
-        callable int (int) emits [] action
+        callable int (int) emits {} action
         int value
     asserts
         sample: callable identity, 4 => ok 4
     ok call action(value)
 fn int identity
-    emits []
+    emits {}
     given
         int value
     asserts
         sample: 4 => ok 4
     ok value
 fn int compute
-    emits []
+    emits {}
     given
         int prefix
         int suffix
@@ -781,10 +781,10 @@ fn int compute
     asserts
         first: 3, 5, 4 => ok 12
         second: 7, 11, 4 => ok 22
-    callable int (int) emits [] action = callable combine
+    callable int (int) emits {} action = callable combine
     ok call consume(action, value)
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts
@@ -875,12 +875,12 @@ console.log("receipts passed");
 		fixture.callables = map[string]check.CallableDeclaration{
 			"function/increment": {
 				Kind:     "function",
-				Contract: fixture.ts["callable int (int) emits []"],
+				Contract: fixture.ts["callable int (int) emits {}"],
 				Names:    []string{"value"},
 				Near:     []bool{false},
 			},
 		}
-		region, err := fixture.region(t, "    callable int (int) emits [] action = callable increment\n    ok action\n", "callable int (int) emits []", nil, ir.FunctionRegion)
+		region, err := fixture.region(t, "    callable int (int) emits {} action = callable increment\n    ok action\n", "callable int (int) emits {}", nil, ir.FunctionRegion)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -942,16 +942,16 @@ console.log("delayed passed");
 	t.Run("resources", func(t *testing.T) {
 		fixture := newRegionFixture(t)
 		fixture.values["pool"] = check.ValueBinding{Identity: "value/pool", Type: fixture.ts["sql::pool"]}
-		fixture.functions["inspect"] = check.ValueBinding{Identity: "function/inspect", Type: fixture.ts["callable int (sql::pool) emits []"]}
+		fixture.functions["inspect"] = check.ValueBinding{Identity: "function/inspect", Type: fixture.ts["callable int (sql::pool) emits {}"]}
 		fixture.callables = map[string]check.CallableDeclaration{
 			"function/inspect": {
 				Kind:     "function",
-				Contract: fixture.ts["callable int (sql::pool) emits []"],
+				Contract: fixture.ts["callable int (sql::pool) emits {}"],
 				Names:    []string{"pool"},
 				Near:     []bool{true},
 			},
 		}
-		region, err := fixture.region(t, "    callable int () emits [] action = callable inspect\n    ok action\n", "callable int () emits []", nil, ir.FunctionRegion)
+		region, err := fixture.region(t, "    callable int () emits {} action = callable inspect\n    ok action\n", "callable int () emits {}", nil, ir.FunctionRegion)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1031,12 +1031,12 @@ func TestForwardingFailuresHostilePayloadsAndBoundaries(t *testing.T) {
 	fixture.callables = map[string]check.CallableDeclaration{
 		"function/lookup": {
 			Kind:     "function",
-			Contract: fixture.ts["callable int (int) emits [missing]"],
+			Contract: fixture.ts["callable int (int) emits {missing}"],
 			Names:    []string{"value"},
 			Near:     []bool{false},
 		},
 	}
-	region, err := fixture.region(t, "    callable int (int) emits [missing] action = callable lookup\n    ok action\n", "callable int (int) emits [missing]", nil, ir.FunctionRegion)
+	region, err := fixture.region(t, "    callable int (int) emits {missing} action = callable lookup\n    ok action\n", "callable int (int) emits {missing}", nil, ir.FunctionRegion)
 	if err != nil {
 		t.Fatal(err)
 	}

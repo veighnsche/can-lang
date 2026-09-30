@@ -100,10 +100,10 @@ func twinModelFiles(uses, body string) map[string]string {
 		"src/main.can":                header("app", "", uses) + body,
 		"libs/left/can.project.json":  `{"source_root":"src","project":"shop_left","error_registry":"can.errors.json"}`,
 		"libs/left/can.errors.json":   `{"active":["model::failed"],"retired":[]}`,
-		"libs/left/src/model.can":     "package model\n    provides [item, failed]\n    uses []\nrecord item\n    int value\nerror failed(str reason)\nrecord secret\n    int value\n",
+		"libs/left/src/model.can":     "package model\n    provides [item, failed]\n    uses []\nrecord item\n    int value\nerror failed{str reason}\nrecord secret\n    int value\n",
 		"libs/right/can.project.json": `{"source_root":"src","project":"shop_right","error_registry":"can.errors.json"}`,
 		"libs/right/can.errors.json":  `{"active":["model::failed"],"retired":[]}`,
-		"libs/right/src/model.can":    "package model\n    provides [item, failed]\n    uses []\nrecord item\n    str label\nerror failed(str reason)\n",
+		"libs/right/src/model.can":    "package model\n    provides [item, failed]\n    uses []\nrecord item\n    str label\nerror failed{str reason}\n",
 	}
 }
 
@@ -121,7 +121,7 @@ func twinModelSources() map[string]string {
 
 func TestQualifiedImportsComposeTwinModels(t *testing.T) {
 	files := twinModelFiles("left::model as first, right::model as second",
-		"record holder\n    first::item one\n    second::item two\nfn void run\n    emits [first::failed, second::failed]\n    asserts\n        sample: => ok\n    ok\n")
+		"record holder\n    first::item one\n    second::item two\nfn void run\n    emits {first::failed, second::failed}\n    asserts\n        sample: => ok\n    ok\n")
 	pinInstanceLockSources(t, files, twinModelIDs(), twinModelLineages(), twinModelSources())
 	w, err := buildFiles(t, files)
 	if err != nil {
@@ -148,7 +148,7 @@ func TestQualifiedImportsComposeTwinModels(t *testing.T) {
 	}
 	// Renaming the local aliases keeps every canonical symbol identity.
 	renamed := twinModelFiles("left::model as alpha, right::model as beta",
-		"record holder\n    alpha::item one\n    beta::item two\nfn void run\n    emits [alpha::failed, beta::failed]\n    asserts\n        sample: => ok\n    ok\n")
+		"record holder\n    alpha::item one\n    beta::item two\nfn void run\n    emits {alpha::failed, beta::failed}\n    asserts\n        sample: => ok\n    ok\n")
 	pinInstanceLockSources(t, renamed, twinModelIDs(), twinModelLineages(), twinModelSources())
 	again, err := buildFiles(t, renamed)
 	if err != nil {

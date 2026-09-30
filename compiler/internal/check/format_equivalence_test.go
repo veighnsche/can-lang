@@ -21,7 +21,7 @@ package app
 
 // doubler docs
 fn   int   double
-    emits []
+    emits {}
     given
         int value  // trailing
     asserts
@@ -29,7 +29,7 @@ fn   int   double
     ok value + value
 
 fn int consumer  // trailing consumer
-    emits []
+    emits {}
     asserts
         sample: => ok 18
     // first site below
@@ -41,7 +41,7 @@ fn int consumer  // trailing consumer
 
         ok int got => ok got + first  // trailing arm
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -53,19 +53,19 @@ const formatMisorderedSource = `package app
     provides []
     uses [codec]
 fn int number
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     asserts
         sample: => ok 1
     ok 1
 fn int bad  // trailing
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     asserts
         sample: => ok 1
     match call number()
         ok int got => ok got
         codec::invalid_data => ok 0
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

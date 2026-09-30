@@ -5,12 +5,12 @@ import (
 	"testing"
 )
 
-const scenarioHelper = "package helper\n    provides [read, checkout]\n    uses [text]\nscenario checkout\nfn str read\n    emits []\n    asserts\n        unit: => ok \"fixture\"\n    match call text::from_int(7)\n        when\n            scenario checkout: 7 => ok \"fixture\"\n            unit: 7 => ok \"fixture\"\n        ok str result => ok result\n"
+const scenarioHelper = "package helper\n    provides [read, checkout]\n    uses [text]\nscenario checkout\nfn str read\n    emits {}\n    asserts\n        unit: => ok \"fixture\"\n    match call text::from_int(7)\n        when\n            scenario checkout: 7 => ok \"fixture\"\n            unit: 7 => ok \"fixture\"\n        ok str result => ok result\n"
 
-const scenarioAppMain = "fn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n"
+const scenarioAppMain = "fn void main\n    emits {}\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n"
 
 func scenarioApp(link string) string {
-	return "package app\n    provides []\n    uses [helper]\nfn str read_customer\n    emits []\n    asserts\n        customer: => ok \"fixture\"" + link + "\n    ok call helper::read()\n" + scenarioAppMain
+	return "package app\n    provides []\n    uses [helper]\nfn str read_customer\n    emits {}\n    asserts\n        customer: => ok \"fixture\"" + link + "\n    ok call helper::read()\n" + scenarioAppMain
 }
 
 func scenarioPackageID(t *testing.T, program *Program, name string) string {
@@ -92,7 +92,7 @@ func TestScenarioLinkStale(t *testing.T) {
 	renamed := strings.Replace(scenarioHelper, "scenario checkout", "scenario checkout_v2", 1)
 	renamed = strings.Replace(renamed, "provides [read, checkout]", "provides [read, checkout_v2]", 1)
 	renamed = strings.Replace(renamed, "scenario checkout:", "scenario checkout_v2:", 1)
-	aliased := "package app\n    provides []\n    uses [helper as h]\nfn str read_customer\n    emits []\n    asserts\n        customer: => ok \"fixture\" link helper::checkout\n    ok call h::read()\n" + scenarioAppMain
+	aliased := "package app\n    provides []\n    uses [helper as h]\nfn str read_customer\n    emits {}\n    asserts\n        customer: => ok \"fixture\" link helper::checkout\n    ok call h::read()\n" + scenarioAppMain
 	private := strings.Replace(scenarioHelper, "provides [read, checkout]", "provides [read]", 1)
 	for name, tc := range map[string]struct {
 		helper, app, want string
@@ -115,7 +115,7 @@ func TestScenarioLinkStale(t *testing.T) {
 }
 
 func TestScenarioLinkRespectsAlias(t *testing.T) {
-	app := "package app\n    provides []\n    uses [helper as h]\nfn str read_customer\n    emits []\n    asserts\n        customer: => ok \"fixture\" link h::checkout\n    ok call h::read()\n" + scenarioAppMain
+	app := "package app\n    provides []\n    uses [helper as h]\nfn str read_customer\n    emits {}\n    asserts\n        customer: => ok \"fixture\" link h::checkout\n    ok call h::read()\n" + scenarioAppMain
 	program, err := programFixture(t, map[string]string{
 		"src/helper/helper.can": scenarioHelper,
 		"src/app/main.can":      app,
@@ -130,10 +130,10 @@ func TestScenarioLinkRespectsAlias(t *testing.T) {
 }
 
 func TestScenarioLinkAmbiguous(t *testing.T) {
-	left := "package left\n    provides [flow]\n    uses []\nscenario flow\nfn int ping\n    emits []\n    asserts\n        sample: => ok 1\n    ok 1\n"
-	right := "package right\n    provides [flow]\n    uses []\nscenario flow\nfn int pong\n    emits []\n    asserts\n        sample: => ok 2\n    ok 2\n"
+	left := "package left\n    provides [flow]\n    uses []\nscenario flow\nfn int ping\n    emits {}\n    asserts\n        sample: => ok 1\n    ok 1\n"
+	right := "package right\n    provides [flow]\n    uses []\nscenario flow\nfn int pong\n    emits {}\n    asserts\n        sample: => ok 2\n    ok 2\n"
 	app := func(link string) string {
-		return "package app\n    provides []\n    uses [left, right]\nfn int both\n    emits []\n    asserts\n        combined: => ok 3" + link + "\n    ok 3\n" + scenarioAppMain
+		return "package app\n    provides []\n    uses [left, right]\nfn int both\n    emits {}\n    asserts\n        combined: => ok 3" + link + "\n    ok 3\n" + scenarioAppMain
 	}
 	if _, err := programFixture(t, map[string]string{
 		"src/left/left.can":   left,
@@ -183,8 +183,8 @@ func TestScenarioPlacementRejects(t *testing.T) {
 }
 
 func TestScenarioTwoSequentialLinks(t *testing.T) {
-	helper := "package helper\n    provides [read, checkout, retry]\n    uses [text]\nscenario checkout\nscenario retry\nfn str read\n    emits []\n    asserts\n        unit: => ok \"fixture\"\n    match call text::from_int(7)\n        when\n            scenario checkout: 7 => ok \"first\"\n            scenario retry: 7 => ok \"second\"\n        ok str result => ok result\n"
-	app := "package app\n    provides []\n    uses [helper]\nfn str read_customer\n    emits []\n    asserts\n        customer: => ok \"first\" link helper::checkout, helper::retry\n    ok call helper::read()\n" + scenarioAppMain
+	helper := "package helper\n    provides [read, checkout, retry]\n    uses [text]\nscenario checkout\nscenario retry\nfn str read\n    emits {}\n    asserts\n        unit: => ok \"fixture\"\n    match call text::from_int(7)\n        when\n            scenario checkout: 7 => ok \"first\"\n            scenario retry: 7 => ok \"second\"\n        ok str result => ok result\n"
+	app := "package app\n    provides []\n    uses [helper]\nfn str read_customer\n    emits {}\n    asserts\n        customer: => ok \"first\" link helper::checkout, helper::retry\n    ok call helper::read()\n" + scenarioAppMain
 	program, err := programFixture(t, map[string]string{
 		"src/helper/helper.can": helper,
 		"src/app/main.can":      app,
@@ -204,7 +204,7 @@ func TestScenarioTwoSequentialLinks(t *testing.T) {
 }
 
 func TestScenarioUseRowInheritsTag(t *testing.T) {
-	source := programHeader + "fixture doubled for double\n    cases\n        2 => ok 4\nfn int double\n    emits []\n    given\n        int value\n    asserts\n        sample: 1 => ok 2\n    ok value + value\nscenario pair\nfn int first_use\n    emits []\n    asserts\n        paired: => ok 4 link pair\n    match call double(2)\n        when\n            scenario pair: use doubled()\n        ok int got => ok got\n" + programMain + "    ok\n"
+	source := programHeader + "fixture doubled for double\n    cases\n        2 => ok 4\nfn int double\n    emits {}\n    given\n        int value\n    asserts\n        sample: 1 => ok 2\n    ok value + value\nscenario pair\nfn int first_use\n    emits {}\n    asserts\n        paired: => ok 4 link pair\n    match call double(2)\n        when\n            scenario pair: use doubled()\n        ok int got => ok got\n" + programMain + "    ok\n"
 	program, err := programFixture(t, map[string]string{"src/main.can": source})
 	if err != nil {
 		t.Fatal(err)
@@ -225,7 +225,7 @@ func TestScenarioUseRowInheritsTag(t *testing.T) {
 }
 
 func TestScenarioMalformedSidecar(t *testing.T) {
-	source := "package app\n    provides []\n    uses [http, codec]\nrecord receipt\n    int count\nconnection service\n    endpoint \"http://127.0.0.1:1/\"\n    timeout_ms 5000\nfetch receipt load_json from service\n    emits [http::request_failed]\n    asserts\n        decoded: => ok receipt(7)\n            using raw \"fixtures/load_json.json\"\n    get \"/json\"\nscenario flow\nfn receipt cached\n    emits [http::request_failed]\n    asserts\n        sample: => ok receipt(7) link flow\n    match call load_json()\n        when\n            scenario flow: => ok receipt(7)\n                using raw \"fixtures/broken.json\"\n        http::request_failed\n        ok receipt found => ok found\n" + programMain + "    ok\n"
+	source := "package app\n    provides []\n    uses [http, codec]\nrecord receipt\n    int count\nconnection service\n    endpoint \"http://127.0.0.1:1/\"\n    timeout_ms 5000\nfetch receipt load_json from service\n    emits {http::request_failed}\n    asserts\n        decoded: => ok receipt(7)\n            using raw \"fixtures/load_json.json\"\n    get \"/json\"\nscenario flow\nfn receipt cached\n    emits {http::request_failed}\n    asserts\n        sample: => ok receipt(7) link flow\n    match call load_json()\n        when\n            scenario flow: => ok receipt(7)\n                using raw \"fixtures/broken.json\"\n        http::request_failed\n        ok receipt found => ok found\n" + programMain + "    ok\n"
 	files := withNativeRaw(map[string]string{"src/main.can": source}, "load_json")
 	files["src/fixtures/broken.json"] = "{oops"
 	_, err := programFixture(t, files)

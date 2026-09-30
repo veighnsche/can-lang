@@ -12,17 +12,17 @@ import (
 )
 
 const coordinationDeclarations = `fn int number
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     asserts
         sample: => ok 1
     ok 1
 fn str text
-    emits []
+    emits {}
     asserts
         sample: => ok "text"
     ok "text"
 fn int input
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -52,11 +52,11 @@ func TestCoordinationAggregateComposition(t *testing.T) {
 		t.Fatal("aggregate normalization admitted array covariance")
 	}
 	source += `fn int inspect_nested
-    emits []
+    emits {}
     given
         all_failed<combined_failure> value
     asserts
-        empty: all_failed<combined_failure>([]) => ok 0
+        empty: all_failed<combined_failure>{[]} => ok 0
     match value
         all_failed => ok all_failed.failures.length
 `
@@ -74,11 +74,11 @@ func TestMapAggregateConversionRejections(t *testing.T) {
 	narrow := source + `variant narrow_failure
     codec::invalid_data
 fn narrow_failure bad_one
-    emits []
+    emits {}
     given
         a_failure item
     asserts
-        data: codec::invalid_data("a", "type") => ok codec::invalid_data("a", "type")
+        data: codec::invalid_data{"a", "type"} => ok codec::invalid_data{"a", "type"}
     ok item
 `
 	if _, err := programFixture(t, map[string]string{"src/main.can": narrow}); err == nil || !strings.Contains(err.Error(), "expression type does not fit expected type") {
@@ -89,11 +89,11 @@ fn narrow_failure bad_one
 		t.Fatalf("map callback with foreign input admitted: %v", err)
 	}
 	counting := source + `fn int count_leaves
-    emits []
+    emits {}
     given
         a_failure item
     asserts
-        data: codec::invalid_data("a", "type") => ok 1
+        data: codec::invalid_data{"a", "type"} => ok 1
     ok 1
 `
 	badResult := strings.Replace(counting, "call all_failed.failures.map(callable widen_one)", "call all_failed.failures.map(callable count_leaves)", 1)
@@ -137,7 +137,7 @@ func TestCheckedConcurrentHandlers(t *testing.T) {
 	}
 }
 func TestCheckedRaceAndSpread(t *testing.T) {
-	body := `    callable int () emits [codec::invalid_data][] operations = [callable number]
+	body := `    callable int () emits {codec::invalid_data}[] operations = [callable number]
     int result = match call race with error
         ...operations
         number()
@@ -148,10 +148,16 @@ func TestCheckedRaceAndSpread(t *testing.T) {
 		t.Fatal(err)
 	}
 	bad := strings.Replace(body, "        number()", "        text()", 1)
+	if bad == body {
+		t.Fatal("heterogeneous mutation matched nothing")
+	}
 	if _, err := coordinationProgram(t, bad); err == nil || !strings.Contains(err.Error(), "identical") {
 		t.Fatalf("heterogeneous race accepted: %v", err)
 	}
-	bad = strings.Replace(body, "callable int () emits [codec::invalid_data][] operations = [callable number]", "callable int (int) emits [][] operations = [callable input]", 1)
+	bad = strings.Replace(body, "callable int () emits {codec::invalid_data}[] operations = [callable number]", "callable int (int) emits {}[] operations = [callable input]", 1)
+	if bad == body {
+		t.Fatal("non-nullary mutation matched nothing")
+	}
 	if _, err := coordinationProgram(t, bad); err == nil || !strings.Contains(err.Error(), "nullary") {
 		t.Fatalf("non-nullary spread accepted: %v", err)
 	}
@@ -159,12 +165,12 @@ func TestCheckedRaceAndSpread(t *testing.T) {
 
 func TestCoordinationSpreadUsesDeclaredCommonBound(t *testing.T) {
 	prefix := strings.Replace(programHeader, "uses []", "uses [codec]", 1) + coordinationDeclarations + `fn int pure
-    emits []
+    emits {}
     asserts
         sample: => ok 1
     ok 1
 ` + programMain
-	body := `    callable int () emits [codec::invalid_data][] operations = [callable pure]
+	body := `    callable int () emits {codec::invalid_data}[] operations = [callable pure]
     int result = match call race with error
         ...operations
         codec::invalid_data => ok 0
@@ -178,9 +184,12 @@ func TestCoordinationSpreadUsesDeclaredCommonBound(t *testing.T) {
 		"missing common bound arm": strings.Replace(body, "        codec::invalid_data => ok 0\n", "", 1),
 		"different success":        strings.Replace(body, "[callable pure]", "[callable text]", 1),
 		"remaining input":          strings.Replace(body, "[callable pure]", "[callable input]", 1),
-		"error outside bound":      strings.Replace(strings.Replace(body, "emits [codec::invalid_data][]", "emits [][]", 1), "[callable pure]", "[callable number]", 1),
+		"error outside bound":      strings.Replace(strings.Replace(body, "emits {codec::invalid_data}[]", "emits {}[]", 1), "[callable pure]", "[callable number]", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
+			if bad == body {
+				t.Fatalf("mutation missed for %q", name)
+			}
 			if _, err := programFixture(t, map[string]string{"src/main.can": prefix + bad}); err == nil {
 				t.Fatal("invalid callable spread admitted")
 			}
@@ -212,10 +221,13 @@ func TestCoordinationCoverageAndHandlerContracts(t *testing.T) {
 		"missing shared domain arm": strings.Replace(good, "        codec::invalid_data => ok []\n", "", 1),
 		"wrong whole fallback":      strings.Replace(good, "codec::invalid_data => ok []", "codec::invalid_data => ok 0", 1),
 		"wrong element result":      strings.Replace(good, "ok int value => ok value", "ok int value => ok [value]", 1),
-		"handler failure escapes":   strings.Replace(good, "ok int value => ok value", `ok int value => codec::invalid_data("", "type")`, 1),
+		"handler failure escapes":   strings.Replace(good, "ok int value => ok value", `ok int value => codec::invalid_data{"", "type"}`, 1),
 		"no success arm":            strings.Replace(good, "            ok int value => ok value\n", "", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
+			if bad == good {
+				t.Fatalf("mutation missed for %q", name)
+			}
 			if _, err := coordinationProgram(t, bad); err == nil {
 				t.Fatal("invalid coordination admitted")
 			}
@@ -256,7 +268,7 @@ func TestForwardedAggregateCoverage(t *testing.T) {
     codec::invalid_data
     standard_failure
 fn int aggregate
-    emits [all_failed<failure>]
+    emits {all_failed<failure>}
     asserts
         sample: => ok 1
     int result = match call race
@@ -272,9 +284,12 @@ fn int aggregate
 	for name, bad := range map[string]string{
 		"missing standard snapshot": strings.Replace(source, "    standard_failure\n", "", 1),
 		"missing declared domain":   strings.Replace(source, "variant failure\n    codec::invalid_data\n", "variant failure\n", 1),
-		"missing forwarded bound":   strings.Replace(source, "emits [all_failed<failure>]", "emits []", 1),
+		"missing forwarded bound":   strings.Replace(source, "emits {all_failed<failure>}", "emits {}", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
+			if bad == source {
+				t.Fatalf("mutation missed for %q", name)
+			}
 			if _, err := programFixture(t, map[string]string{"src/main.can": bad}); err == nil {
 				t.Fatal("invalid aggregate forwarding admitted")
 			}
@@ -290,14 +305,14 @@ variant alternate
     codec::invalid_data
     standard_failure
 fn int summarize
-    emits []
+    emits {}
     given
         failure[] failures
     asserts
         sample: [] => ok 0
     ok failures.length
 fn int other
-    emits []
+    emits {}
     given
         alternate[] failures
     asserts
@@ -331,10 +346,10 @@ fn int other
 		t.Fatal("discovery placeholder bypassed the full operand check")
 	}
 	outer := `fn int outer_failure
-    emits [all_failed<alternate>]
+    emits {all_failed<alternate>}
     asserts
-        empty: => all_failed<alternate>([])
-    all_failed<alternate>([])
+        empty: => all_failed<alternate>{[]}
+    all_failed<alternate>{[]}
 `
 	nested := `    match call outer_failure()
         all_failed => do
@@ -402,16 +417,16 @@ func TestExactHeadRejections(t *testing.T) {
 		"incomplete outer": {
 			edits: [][2]string{
 				{"variant outer_failure\n    all_failed<a_failure>\n    all_failed<b_failure>\n    standard_failure\n", "variant outer_failure\n    all_failed<a_failure>\n    standard_failure\n"},
-				{", all_failed<b_failure>([codec::invalid_data(\"b\", \"type\")])", ""},
+				{", all_failed<b_failure>{[codec::invalid_data{\"b\", \"type\"}]}", ""},
 			},
 			want: "does not cover",
 		},
 		"participant arm at outer race": {
-			edits: [][2]string{{"        all_failed<outer_failure> as agg => all_failed<outer_failure>(agg.failures)\n", "        codec::invalid_data => ok 0\n"}},
+			edits: [][2]string{{"        all_failed<outer_failure> as agg => all_failed<outer_failure>{agg.failures}\n", "        codec::invalid_data => ok 0\n"}},
 			want:  "only handles success and all_failed",
 		},
 		"wrong-specification fixture": {
-			edits: [][2]string{{"sub_a: 1 => all_failed<a_failure>([codec::invalid_data(\"a\", \"type\")])", "sub_a: 1 => all_failed<combined_failure>([codec::invalid_data(\"a\", \"type\")])"}},
+			edits: [][2]string{{"sub_a: 1 => all_failed<a_failure>{[codec::invalid_data{\"a\", \"type\"}]}", "sub_a: 1 => all_failed<combined_failure>{[codec::invalid_data{\"a\", \"type\"}]}"}},
 			want:  "undeclared escaping domain error",
 		},
 	}
@@ -474,11 +489,11 @@ variant both
     all_failed<a_failure>
     all_failed<b_failure>
 fn str classify
-    emits []
+    emits {}
     given
         both value
     asserts
-        sample: all_failed<a_failure>([codec::invalid_data("a", "type")]) => ok "a"
+        sample: all_failed<a_failure>{[codec::invalid_data{"a", "type"}]} => ok "a"
     match value
         all_failed => ok "a"
         all_failed<b_failure> => ok "b"
@@ -514,16 +529,16 @@ func programFixtureRegistry(t *testing.T, files map[string]string, registry stri
 }
 
 func TestGenericBodyExactHeadPerSpecialization(t *testing.T) {
-	text := programHeader + `error hold<item>(item value)
+	text := programHeader + `error hold<item>{item value}
 fn str first<item>
-    emits [hold<item>]
+    emits {hold<item>}
     given
         item value
     asserts
-        integer: 1 => hold<int>(1)
-    hold<item>(value)
+        integer: 1 => hold<int>{1}
+    hold<item>{value}
 fn str describe<item>
-    emits []
+    emits {}
     given
         item value
     asserts

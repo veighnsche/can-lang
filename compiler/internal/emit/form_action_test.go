@@ -22,7 +22,7 @@ const formActionEmitWeb = "package web\n" +
 	"    saved\n" +
 	"    rejected\n" +
 	"fn save_outcome save_validated\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        invoice_wire body\n" +
 	"    asserts\n" +
@@ -37,21 +37,21 @@ const formActionEmitWeb = "package web\n" +
 	"        saved status 200 swap inner\n" +
 	"        rejected status 422 swap inner\n" +
 	"fn html::safe render_outcome\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        save_outcome outcome\n" +
 	"    asserts\n" +
 	"        sample: saved(\"c\") => ok\n" +
 	"    ok call html::text_fragment(\"done\")\n" +
 	"fn html::safe render_rejected\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        form::rejected<invoice_wire> bad\n" +
 	"    asserts\n" +
 	"        sample: form::rejected<invoice_wire>([], []) => ok\n" +
 	"    ok call html::text_fragment(\"bad\")\n" +
 	"fn http::router mounted\n" +
-	"    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]\n" +
+	"    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}\n" +
 	"    asserts\n" +
 	"        sample: => ok\n" +
 	"    match chain\n" +
@@ -62,14 +62,14 @@ const formActionEmitWeb = "package web\n" +
 	"        http::ambiguous_route\n" +
 	"        ok => ok router\n" +
 	"fn form::collection use_collection\n" +
-	"    emits [form::unknown_field]\n" +
+	"    emits {form::unknown_field}\n" +
 	"    asserts\n" +
 	"        sample: => ok\n" +
 	"    match call form::named_collection<invoice_wire>(\"lines\")\n" +
 	"        form::unknown_field\n" +
 	"        ok form::collection coll => ok coll\n" +
 	"fn void main\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        str[] arguments\n" +
 	"    asserts\n" +

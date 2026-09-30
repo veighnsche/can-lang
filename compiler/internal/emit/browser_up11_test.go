@@ -87,7 +87,7 @@ const browserUP11EmptyMain = `package app
     provides []
     uses []
 fn void main
-    emits []
+    emits {}
     asserts
         empty: => ok
     ok
@@ -138,14 +138,14 @@ func TestBrowserThreadsExplicitOwnerContext(t *testing.T) {
     provides []
     uses []
 fn int doubled
-    emits []
+    emits {}
     given
         int value
     asserts
         sample: 4 => ok 8
     ok value + value
 fn void main
-    emits []
+    emits {}
     asserts
         empty: => ok
     match call doubled(21)
@@ -188,17 +188,17 @@ func TestBrowserCoordinationUsesExplicitSettle(t *testing.T) {
     provides []
     uses []
 fn int left
-    emits []
+    emits {}
     asserts
         sample: => ok 1
     ok 1
 fn int right
-    emits []
+    emits {}
     asserts
         sample: => ok 2
     ok 2
 fn void main
-    emits []
+    emits {}
     asserts
         empty: => ok
     int[] both = match call concurrent
@@ -234,35 +234,35 @@ func TestBrowserBindsQueryCancelOperations(t *testing.T) {
     provides []
     uses [browser, option]
 fn void on_field_key
-    emits []
+    emits {}
     given
         browser::event e
     asserts
         sample: browser::event("keydown", "input", "", "Enter", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void on_submit
-    emits []
+    emits {}
     given
         browser::event e
     asserts
         sample: browser::event("submit", "form", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void show_boot_notice
-    emits []
+    emits {}
     given
         str message
     asserts
         sample: "hi" => ok
     ok
 fn void boot
-    emits []
+    emits {}
     given
         str selected
     asserts
         sample: "inv-1" => ok
     ok
 fn void main
-    emits []
+    emits {}
     asserts
         empty: => ok
     match call browser::query_parameter("invoice")
@@ -289,21 +289,21 @@ fn void main
     provides []
     uses [browser]
 fn void on_field_key
-    emits []
+    emits {}
     given
         browser::event e
     asserts
         sample: browser::event("keydown", "input", "", "Enter", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void on_submit
-    emits []
+    emits {}
     given
         browser::event e
     asserts
         sample: browser::event("submit", "form", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void demo
-    emits [browser::missing_root, browser::disposed, browser::rejected]
+    emits {browser::missing_root, browser::disposed, browser::rejected}
     given
         str root
     asserts
@@ -325,7 +325,7 @@ fn void demo
                             browser::rejected
                             ok => ok
 fn void main
-    emits []
+    emits {}
     asserts
         empty: => ok
     match call demo("app")
@@ -359,7 +359,7 @@ record point
 record other
     int y
 fn other load_unused
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -370,7 +370,7 @@ fn other load_unused
         codec::invalid_data
         ok => ok found
 fn point load_used
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -383,7 +383,7 @@ fn point load_used
 int used_value = 41
 int unused_value = 99
 fn void main
-    emits []
+    emits {}
     asserts
         empty: => ok
     match call load_used("{\"x\":1}")
@@ -428,7 +428,7 @@ fn void main
 record point
     int x
 fn point load_unused
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -439,7 +439,7 @@ fn point load_unused
         codec::invalid_data
         ok => ok found
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -494,7 +494,7 @@ action save_invoice
         records::saved status 200
         records::rejected status 422
 fn void main
-    emits []
+    emits {}
     asserts
         empty: => ok
     ok
@@ -544,7 +544,7 @@ func TestBrowserUnusedSharedCodeAddsNoEdge(t *testing.T) {
     provides []
     uses [shared]
 fn void main
-    emits []
+    emits {}
     asserts
         empty: => ok
     match call shared::used_helper("hi")
@@ -554,21 +554,21 @@ fn void main
     provides [used_helper, unused_form_helper, unused_server_helper]
     uses [browser, codec]
 fn void used_helper
-    emits []
+    emits {}
     given
         str text
     asserts
         sample: "hi" => ok
     ok
 fn void unused_form_helper
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
-        sample: "x" => codec::invalid_data("", "")
-    codec::invalid_data("", "")
+        sample: "x" => codec::invalid_data{"", ""}
+    codec::invalid_data{"", ""}
 fn void unused_server_helper
-    emits []
+    emits {}
     given
         str text
     asserts

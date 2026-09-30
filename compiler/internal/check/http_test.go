@@ -202,7 +202,7 @@ func TestHTTPRouteMountRefusals(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			source := original
 			if tc.name == "route reference" {
-				source = strings.Replace(original, `str tag = "t"`, "str tag = \"t\"\n    callable http::route (str, callable http::server_response (http::request) emits []) emits [http::invalid_route] maker = callable http::route_get", 1)
+				source = strings.Replace(original, `str tag = "t"`, "str tag = \"t\"\n    callable http::route (str, callable http::server_response (http::request) emits {}) emits {http::invalid_route} maker = callable http::route_get", 1)
 			} else {
 				source = strings.Replace(original, mount, tc.replacement, 1)
 			}
@@ -252,14 +252,14 @@ func TestHTTPRoutePathCorpusMatchesRuntime(t *testing.T) {
 
 func TestHTTPHandlerContractRefusals(t *testing.T) {
 	header := "package app\n    provides []\n    uses [http]\n"
-	main := "fn void main\n    emits []\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    ok\n"
+	main := "fn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    ok\n"
 	for _, tc := range []struct{ name, handler string }{
-		{"wrong input", "fn http::server_response handle\n    emits []\n    given\n        str req\n    asserts\n        sample: \"x\" => ok\n    ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), req)\n"},
-		{"wrong result", "fn str handle\n    emits []\n    given\n        http::request req\n    asserts\n        sample: => ok \"x\"\n    ok \"x\"\n"},
-		{"fallible handler", "fn http::server_response handle\n    emits [http::invalid_request]\n    given\n        http::request req\n    asserts\n        sample: => http::invalid_request(\"x\")\n    http::invalid_request(\"x\")\n"},
+		{"wrong input", "fn http::server_response handle\n    emits {}\n    given\n        str req\n    asserts\n        sample: \"x\" => ok\n    ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), req)\n"},
+		{"wrong result", "fn str handle\n    emits {}\n    given\n        http::request req\n    asserts\n        sample: => ok \"x\"\n    ok \"x\"\n"},
+		{"fallible handler", "fn http::server_response handle\n    emits {http::invalid_request}\n    given\n        http::request req\n    asserts\n        sample: => http::invalid_request{\"x\"}\n    http::invalid_request{\"x\"}\n"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			mount := "fn bool mounted\n    emits [http::invalid_route]\n    asserts\n        sample: => ok true\n    match call http::route_get(\"/a\", callable handle)\n        http::invalid_route\n        ok http::route route => ok true\n"
+			mount := "fn bool mounted\n    emits {http::invalid_route}\n    asserts\n        sample: => ok true\n    match call http::route_get(\"/a\", callable handle)\n        http::invalid_route\n        ok http::route route => ok true\n"
 			source := header + tc.handler + mount + main
 			if _, err := programFixture(t, map[string]string{"src/main.can": source}); err == nil {
 				t.Fatalf("accepted %s", tc.name)
@@ -308,19 +308,19 @@ func TestHTTPAssertionScopeRefusals(t *testing.T) {
 			}
 		})
 	}
-	helper := "package app\n    provides []\n    uses [http]\nfn http::request echo\n    emits []\n    given\n        http::request req\n    asserts\n        sample: => ok req\n    ok req\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    ok\n"
+	helper := "package app\n    provides []\n    uses [http]\nfn http::request echo\n    emits {}\n    given\n        http::request req\n    asserts\n        sample: => ok req\n    ok req\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    ok\n"
 	if _, err := programFixture(t, map[string]string{"src/main.can": helper}); err == nil {
 		t.Fatal("accepted scope-typed expected completion")
 	}
-	bare := "package app\n    provides []\n    uses [http]\nfn http::server_response handle\n    emits []\n    given\n        http::request req\n    asserts\n        sample: => ok\n    ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), \"ok\")\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    ok\n"
+	bare := "package app\n    provides []\n    uses [http]\nfn http::server_response handle\n    emits {}\n    given\n        http::request req\n    asserts\n        sample: => ok\n    ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), \"ok\")\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    ok\n"
 	if _, err := programFixture(t, map[string]string{"src/main.can": bare}); err != nil {
 		t.Fatalf("rejected bare ok for opaque results: %v", err)
 	}
-	valued := "package app\n    provides []\n    uses []\nfn str name\n    emits []\n    asserts\n        sample: => ok\n    ok \"x\"\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    ok\n"
+	valued := "package app\n    provides []\n    uses []\nfn str name\n    emits {}\n    asserts\n        sample: => ok\n    ok \"x\"\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    ok\n"
 	if _, err := programFixture(t, map[string]string{"src/main.can": valued}); err == nil {
 		t.Fatal("accepted bare ok for data results")
 	}
-	body := "package app\n    provides []\n    uses [http]\nfn http::server_response handle\n    emits []\n    given\n        http::request req\n    asserts\n        sample: => ok\n    match call http::request_method(req)\n        ok str method => ok\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    ok\n"
+	body := "package app\n    provides []\n    uses [http]\nfn http::server_response handle\n    emits {}\n    given\n        http::request req\n    asserts\n        sample: => ok\n    match call http::request_method(req)\n        ok str method => ok\nfn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n    ok\n"
 	if _, err := programFixture(t, map[string]string{"src/main.can": body}); err == nil {
 		t.Fatal("accepted bare ok in a nonvoid body")
 	}

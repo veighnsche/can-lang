@@ -11,7 +11,7 @@ const selfTailCountdownSource = "package app\n" +
 	"    provides []\n" +
 	"    uses []\n" +
 	"fn int countdown\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        int n\n" +
 	"    asserts\n" +
@@ -20,7 +20,7 @@ const selfTailCountdownSource = "package app\n" +
 	"        0 => ok 0\n" +
 	"        _ => relay call countdown(n - 1)\n" +
 	"fn void main\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        str[] arguments\n" +
 	"    asserts\n" +
@@ -31,7 +31,7 @@ const selfTailSwapSource = "package app\n" +
 	"    provides []\n" +
 	"    uses []\n" +
 	"fn int swap\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        int a\n" +
 	"        int b\n" +
@@ -41,7 +41,7 @@ const selfTailSwapSource = "package app\n" +
 	"        0 => ok b\n" +
 	"        _ => relay call swap(b, a - 1)\n" +
 	"fn void main\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        str[] arguments\n" +
 	"    asserts\n" +
@@ -119,7 +119,7 @@ func TestSelfTailExcludedKeepsNestedCall(t *testing.T) {
 		"    provides []\n" +
 		"    uses []\n" +
 		"fn int ping\n" +
-		"    emits []\n" +
+		"    emits {}\n" +
 		"    given\n" +
 		"        int n\n" +
 		"    asserts\n" +
@@ -128,7 +128,7 @@ func TestSelfTailExcludedKeepsNestedCall(t *testing.T) {
 		"        0 => ok 0\n" +
 		"        _ => relay call pong(n)\n" +
 		"fn int pong\n" +
-		"    emits []\n" +
+		"    emits {}\n" +
 		"    given\n" +
 		"        int n\n" +
 		"    asserts\n" +
@@ -137,7 +137,7 @@ func TestSelfTailExcludedKeepsNestedCall(t *testing.T) {
 		"        0 => ok 0\n" +
 		"        _ => relay call ping(n)\n" +
 		"fn void main\n" +
-		"    emits []\n" +
+		"    emits {}\n" +
 		"    given\n" +
 		"        str[] arguments\n" +
 		"    asserts\n" +
@@ -173,7 +173,7 @@ func TestSelfTailRelayMappingsIncrease(t *testing.T) {
 		"    provides []\n" +
 		"    uses []\n" +
 		"fn int countdown\n" +
-		"    emits []\n" +
+		"    emits {}\n" +
 		"    given\n" +
 		"        int n\n" +
 		"    asserts\n" +
@@ -183,7 +183,7 @@ func TestSelfTailRelayMappingsIncrease(t *testing.T) {
 		"        false => ok 0\n" +
 		"        true => relay call countdown(n - 1)\n" +
 		"fn int swap\n" +
-		"    emits []\n" +
+		"    emits {}\n" +
 		"    given\n" +
 		"        int a\n" +
 		"        int b\n" +
@@ -193,7 +193,7 @@ func TestSelfTailRelayMappingsIncrease(t *testing.T) {
 		"        0 => ok b\n" +
 		"        _ => relay call swap(b, a - 1)\n" +
 		"fn void main\n" +
-		"    emits []\n" +
+		"    emits {}\n" +
 		"    given\n" +
 		"        str[] arguments\n" +
 		"    asserts\n" +

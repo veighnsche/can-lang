@@ -21,7 +21,7 @@ func TestNumericCatalogue(t *testing.T) {
 		{"text::to_float(value)", "text::to_float(1.0)"},
 		{"number::floor(value)", "number::sqrt(value)"},
 		{"fn float floor_value", "fn dec floor_value"},
-		{"fn float int_float\n    emits [number::inexact]", "fn float int_float\n    emits []"},
+		{"fn float int_float\n    emits {number::inexact}", "fn float int_float\n    emits {}"},
 	} {
 		t.Run(change[1], func(t *testing.T) {
 			text := strings.Replace(string(source), change[0], change[1], 1)

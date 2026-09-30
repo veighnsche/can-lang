@@ -25,21 +25,21 @@ func TestOwnerRecordLowersThroughNominalHelpers(t *testing.T) {
 owner record email
     str address
 fn email make_email
-    emits []
+    emits {}
     given
         str address
     asserts
         sample: "a@b" => ok email("a@b")
     ok email(address)
 fn str email_address
-    emits []
+    emits {}
     given
         email mail
     asserts
         sample: email("a@b") => ok "a@b"
     ok mail.address
 fn email refresh
-    emits []
+    emits {}
     given
         email mail
     asserts
@@ -50,7 +50,7 @@ fn email refresh
     provides []
     uses [mail]
 fn str describe
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -59,7 +59,7 @@ fn str describe
     match held
         mail::email => ok call mail::email_address(held)
 fn bool same_address
-    emits []
+    emits {}
     given
         str first
         str second
@@ -69,7 +69,7 @@ fn bool same_address
     mail::email two = call mail::make_email(second)
     ok one is two
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

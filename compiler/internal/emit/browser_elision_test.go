@@ -11,7 +11,7 @@ const browserElisionSource = `package app
     provides []
     uses [browser]
 fn void on_press
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<int> cell
@@ -21,7 +21,7 @@ fn void on_press
         browser::disposed => ok
         ok browser::snapshot<int> snap => ok
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

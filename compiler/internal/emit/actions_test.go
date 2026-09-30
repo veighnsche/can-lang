@@ -66,7 +66,7 @@ const actionEmitWeb = "package web\n" +
 	"        missing status 403\n" +
 	"        unavailable status 503\n" +
 	"fn void main\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        str[] arguments\n" +
 	"    asserts\n" +
@@ -154,7 +154,7 @@ func TestActionEmissionFreezesContractTable(t *testing.T) {
 
 func TestActionEmissionOmitsEmptyTable(t *testing.T) {
 	program := actionEmitProgram(t, map[string]string{
-		"src/main.can": "package app\n    provides []\n    uses []\nfn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n",
+		"src/main.can": "package app\n    provides []\n    uses []\nfn void main\n    emits {}\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n",
 	})
 	joined := emittedBody(t, program)
 	if strings.Contains(joined, "$canActions") {

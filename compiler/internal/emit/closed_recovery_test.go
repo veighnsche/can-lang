@@ -76,7 +76,7 @@ func closedRecoveryIdentities(t *testing.T, program *check.Program) (string, map
 // with distinct integer thresholds and reasons.
 const closedRecoveryEligible = `
 fn bool is_big
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -86,7 +86,7 @@ fn bool is_big
         checks::failed => ok false
         ok => ok true
 fn bool is_huge
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -107,7 +107,7 @@ fn bool is_huge
 // string input with an ordered comparison (input-type gate).
 const closedRecoveryNegatives = `
 fn bool is_small
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -116,7 +116,7 @@ fn bool is_small
         checks::failed => ok false
         ok => ok true
 fn bool is_shifted
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -125,7 +125,7 @@ fn bool is_shifted
         checks::failed => ok false
         ok => ok true
 fn bool is_zero
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -134,7 +134,7 @@ fn bool is_zero
         checks::failed => ok false
         ok => ok true
 fn bool is_effectful
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -143,7 +143,7 @@ fn bool is_effectful
         checks::failed => ok false
         ok => ok true
 fn bool is_reordered
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -152,7 +152,7 @@ fn bool is_reordered
         checks::failed => ok false
         ok => ok true
 fn bool is_swapped
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -161,7 +161,7 @@ fn bool is_swapped
         checks::failed => ok true
         ok => ok false
 fn bool is_extra
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -171,7 +171,7 @@ fn bool is_extra
         checks::failed => ok false
         ok => ok true
 fn bool is_two
-    emits []
+    emits {}
     given
         int number
         int extra
@@ -181,7 +181,7 @@ fn bool is_two
         checks::failed => ok false
         ok => ok true
 fn int is_int
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -190,7 +190,7 @@ fn int is_int
         checks::failed => ok 0
         ok => ok 1
 fn bool is_payload
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -202,16 +202,16 @@ variant failure
     checks::failed
     standard_failure
 fn bool is_value_match
-    emits []
+    emits {}
     given
         failure value
     asserts
-        sample: checks::failed("positive required") => ok false
+        sample: checks::failed{"positive required"} => ok false
     match value
         checks::failed => ok false
         standard_failure => ok true
 fn bool is_folded
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -220,7 +220,7 @@ fn bool is_folded
         checks::failed => ok false
         ok => ok true
 fn bool is_name
-    emits []
+    emits {}
     given
         str name
     asserts

@@ -159,7 +159,7 @@ func actionShape(action *ActionDeclaration) string {
 // handler for JSON actions, plus the normal outcome renderer and the
 // structural-rejection renderer for HTML form actions, or the single
 // document renderer for HTML GET reads. All bound callables are
-// non-generic, non-variadic and emits []; the application maps fallible
+// non-generic, non-variadic and emits {}; the application maps fallible
 // work into declared leaves. Named callable operands are validated
 // against their exact required shape here so arity, request position,
 // captures, wire, result and error mismatches diagnose at the operand;
@@ -332,7 +332,7 @@ func (c *programChecker) checkMountCallable(file *resolve.File, scope *resolve.S
 		for _, failure := range contract.Errors() {
 			names = append(names, types.CanonicalName(failure))
 		}
-		return fail(fmt.Errorf("action::mount %s %q emits [%s], but action %q requires emits []", role, actionSpelling(name.Name), strings.Join(names, ", "), spelling))
+		return fail(fmt.Errorf("action::mount %s %q emits {%s}, but action %q requires emits {}", role, actionSpelling(name.Name), strings.Join(names, ", "), spelling))
 	}
 	if contract.Result().Identity() != want.Result().Identity() {
 		return fail(fmt.Errorf("action::mount %s %q returns %s, but action %q requires %s", role, actionSpelling(name.Name), types.CanonicalName(contract.Result()), spelling, types.CanonicalName(want.Result())))

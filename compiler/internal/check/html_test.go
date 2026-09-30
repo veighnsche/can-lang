@@ -7,7 +7,7 @@ import (
 
 func TestHTMLHasOnlyCatalogueConstructors(t *testing.T) {
 	header := "package app\n    provides []\n    uses [html, htmx]\n"
-	main := "fn void main\n    emits []\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n"
+	main := "fn void main\n    emits {}\n    given\n        str[] args\n    asserts\n        sample: [] => ok\n"
 	for _, body := range []string{
 		"    html::safe forged = html::safe(\"<script>bad</script>\")\n    ok\n",
 		"    html::node forged = html::node(\"markup\")\n    ok\n",
@@ -23,7 +23,7 @@ func TestHTMLHasOnlyCatalogueConstructors(t *testing.T) {
 			t.Fatal("legacy HTML authority accepted")
 		}
 	}
-	source := header + strings.Replace(main, "emits []", "emits [html::invalid_structure]", 1) + "    match call html::make_tag(\"div\")\n        html::invalid_structure\n        ok html::tag tag => ok\n"
+	source := header + strings.Replace(main, "emits {}", "emits {html::invalid_structure}", 1) + "    match call html::make_tag(\"div\")\n        html::invalid_structure\n        ok html::tag tag => ok\n"
 	if _, err := programFixture(t, map[string]string{"src/main.can": source}); err != nil {
 		t.Fatal(err)
 	}

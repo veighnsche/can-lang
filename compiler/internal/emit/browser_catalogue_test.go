@@ -13,19 +13,19 @@ const browserCatalogueSource = `package app
     provides []
     uses [browser]
 fn void on_click
-    emits []
+    emits {}
     given
         browser::event e
     asserts
         sample: browser::event("click", "", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void on_tick
-    emits []
+    emits {}
     asserts
         sample: => ok
     ok
 fn int demo
-    emits [browser::missing_root, browser::disposed, browser::rejected, browser::stale_version]
+    emits {browser::missing_root, browser::disposed, browser::rejected, browser::stale_version}
     given
         str root
     asserts
@@ -59,7 +59,7 @@ fn int demo
                                                 ok => match call browser::dispose_app(app)
                                                     ok => ok next
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

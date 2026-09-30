@@ -36,14 +36,14 @@ func browserTargetFixture(t *testing.T, files map[string]string, target Target) 
 const browserTargetHeader = "package app\n    provides []\n    uses []\n"
 
 const browserZeroMain = browserTargetHeader + `fn void main
-    emits []
+    emits {}
     asserts
         empty: => ok
     ok
 `
 
 const bunArgsMain = browserTargetHeader + `fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -89,14 +89,14 @@ func TestBunTargetRejectsZeroArgMain(t *testing.T) {
 
 func TestBrowserTargetRejectsEmittingMain(t *testing.T) {
 	source := browserTargetHeader + `fn void main
-    emits [checks::failed]
+    emits {checks::failed}
     asserts
         empty: => ok
     ok
 `
 	// checks is not imported; use a catalogue error via uses.
 	source = "package app\n    provides []\n    uses [checks]\n" + `fn void main
-    emits [checks::failed]
+    emits {checks::failed}
     asserts
         empty: => ok
     ok
@@ -155,7 +155,7 @@ func TestAssertionStagingAcceptsEitherEntryShape(t *testing.T) {
 
 func TestAssertionStagingRejectsMalformedMain(t *testing.T) {
 	malformed := browserTargetHeader + `fn void main
-    emits []
+    emits {}
     given
         str first
         str second

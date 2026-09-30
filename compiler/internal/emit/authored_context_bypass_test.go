@@ -177,7 +177,7 @@ func TestBypassEmittedBranchShape(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	source := "package app\n    provides []\n    uses []\nfn int run\n    emits []\n    asserts\n        test: => ok 1\n    ok call pair(call first(), 2)\n"
+	source := "package app\n    provides []\n    uses []\nfn int run\n    emits {}\n    asserts\n        test: => ok 1\n    ok call pair(call first(), 2)\n"
 	seenCall := false
 	for _, mapping := range mappings {
 		if mapping.Operation != "call" || mapping.Source != "region.can" {
@@ -232,12 +232,12 @@ func TestBypassFallbackEmission(t *testing.T) {
 	fixture.callables = map[string]check.CallableDeclaration{
 		"function/increment": {
 			Kind:     "function",
-			Contract: fixture.ts["callable int (int) emits []"],
+			Contract: fixture.ts["callable int (int) emits {}"],
 			Names:    []string{"value"},
 			Near:     []bool{false},
 		},
 	}
-	region, err := fixture.region(t, "    callable int (int) emits [] action = callable increment\n    ok call action(4)\n", "int", nil, ir.FunctionRegion)
+	region, err := fixture.region(t, "    callable int (int) emits {} action = callable increment\n    ok call action(4)\n", "int", nil, ir.FunctionRegion)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -315,7 +315,7 @@ console.log("bypass routes passed");
 
 func TestBypassExecutesFailuresAndAdmission(t *testing.T) {
 	fixture := newRegionFixture(t)
-	fixture.functions["boom"] = check.ValueBinding{Identity: "function/boom", Type: fixture.ts["callable int () emits []"]}
+	fixture.functions["boom"] = check.ValueBinding{Identity: "function/boom", Type: fixture.ts["callable int () emits {}"]}
 	match, err := fixture.region(t, "    match call lookup(-4)\n        missing => ok missing.code\n        ok\n", "int", []string{"missing"}, ir.HandlerRegion)
 	if err != nil {
 		t.Fatal(err)
@@ -383,7 +383,7 @@ console.log("bypass failures passed");
 
 func TestBypassEligibleCallBoundaryAndBoxedPayloads(t *testing.T) {
 	fixture := newRegionFixture(t)
-	fixture.functions["probe"] = check.ValueBinding{Identity: "function/probe", Type: fixture.ts["callable int (int) emits []"]}
+	fixture.functions["probe"] = check.ValueBinding{Identity: "function/probe", Type: fixture.ts["callable int (int) emits {}"]}
 	functions := map[string]string{"function/probe": "$probe", "function/log": "$log"}
 	proof := map[string]string{"function/probe": "$probe"}
 	bodies := map[string]string{
@@ -393,7 +393,7 @@ func TestBypassEligibleCallBoundaryAndBoxedPayloads(t *testing.T) {
 		"$thenP":   "    ok call probe(1)\n",
 		"$getterP": "    ok call probe(2)\n",
 	}
-	header := "package app\n    provides []\n    uses []\nfn int run\n    emits []\n    asserts\n        test: => ok 1\n"
+	header := "package app\n    provides []\n    uses []\nfn int run\n    emits {}\n    asserts\n        test: => ok 1\n"
 	spanOf := func(body, call string) (int, int) {
 		source := header + body
 		start := strings.Index(source, call)

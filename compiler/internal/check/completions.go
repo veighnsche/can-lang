@@ -309,7 +309,7 @@ func (c *regionChecker) block(block syntax.Block, parent bodyScope) (*ir.Block, 
 				return nil, err
 			}
 			if call.Result.Kind() != types.Void || len(call.Errors) != 0 {
-				return nil, fmt.Errorf("call step requires void success and emits []")
+				return nil, fmt.Errorf("call step requires void success and emits {}")
 			}
 			out.Steps = append(out.Steps, ir.Statement{Call: call})
 			last = nil
@@ -782,7 +782,7 @@ func (c *regionChecker) outward(use, region source.Span, err error) error {
 		declared = append(declared, entry.TypeIdentity)
 	}
 	sort.Strings(declared)
-	explained := fmt.Errorf("%s; region declares emits [%s]", err.Error(), strings.Join(declared, ", "))
+	explained := fmt.Errorf("%s; region declares emits {%s}", err.Error(), strings.Join(declared, ", "))
 	if c.context.File == nil {
 		return explained
 	}

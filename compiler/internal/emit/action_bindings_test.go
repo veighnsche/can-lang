@@ -14,7 +14,7 @@ const actionBindingsEmitServer = "package server\n" +
 	"    provides [routes]\n" +
 	"    uses [contract, action, form, html, http, sql]\n" +
 	"fn contract::grid_load_outcome load_grid\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        near sql::pool pool\n" +
 	"        http::request req\n" +
@@ -23,7 +23,7 @@ const actionBindingsEmitServer = "package server\n" +
 	"        sample: contract::invoice_key(1, 7) => ok contract::grid_denied(\"denied\")\n" +
 	"    ok contract::grid_denied(\"denied\")\n" +
 	"fn contract::grid_edit_outcome save_grid\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        near sql::pool pool\n" +
 	"        http::request req\n" +
@@ -33,7 +33,7 @@ const actionBindingsEmitServer = "package server\n" +
 	"        sample: contract::invoice_key(1, 7), contract::grid_edit_input(\"op-1\", \"r1\") => ok contract::grid_failed(\"op-1\", \"no\")\n" +
 	"    ok contract::grid_failed(body.operation_id, \"no\")\n" +
 	"fn contract::edit_outcome save_html\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        near sql::pool pool\n" +
 	"        http::request req\n" +
@@ -43,7 +43,7 @@ const actionBindingsEmitServer = "package server\n" +
 	"        sample: contract::invoice_key(1, 7), contract::invoice_form(\"2\", form::rows<contract::line_wire>([], [])) => ok contract::failed(\"no\")\n" +
 	"    ok contract::failed(\"no\")\n" +
 	"fn html::safe render_html\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        contract::edit_outcome outcome\n" +
 	"    asserts\n" +
@@ -52,14 +52,14 @@ const actionBindingsEmitServer = "package server\n" +
 	"        contract::saved => ok call html::text_fragment(\"saved\")\n" +
 	"        contract::failed => ok call html::text_fragment(\"failed\")\n" +
 	"fn html::safe render_bad_form\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        form::rejected<contract::invoice_form> bad\n" +
 	"    asserts\n" +
 	"        sample: form::rejected<contract::invoice_form>([], []) => ok\n" +
 	"    ok call html::text_fragment(\"bad\")\n" +
 	"fn http::router routes\n" +
-	"    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]\n" +
+	"    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}\n" +
 	"    given\n" +
 	"        near sql::pool pool\n" +
 	"    asserts\n" +
@@ -80,7 +80,7 @@ const actionBindingsEmitClient = "package client\n" +
 	"    provides [load_url, fetch_load, fetch_save]\n" +
 	"    uses [contract, action, codec, http]\n" +
 	"fn str load_url\n" +
-	"    emits [action::invalid_path]\n" +
+	"    emits {action::invalid_path}\n" +
 	"    given\n" +
 	"        contract::invoice_key key\n" +
 	"    asserts\n" +
@@ -89,7 +89,7 @@ const actionBindingsEmitClient = "package client\n" +
 	"        action::invalid_path\n" +
 	"        ok str built => ok built\n" +
 	"fn contract::grid_load_outcome fetch_load\n" +
-	"    emits [http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data]\n" +
+	"    emits {http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data}\n" +
 	"    given\n" +
 	"        contract::invoice_key key\n" +
 	"    asserts\n" +
@@ -103,7 +103,7 @@ const actionBindingsEmitClient = "package client\n" +
 	"        codec::invalid_data\n" +
 	"        ok contract::grid_load_outcome got => ok got\n" +
 	"fn contract::grid_edit_outcome fetch_save\n" +
-	"    emits [http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data]\n" +
+	"    emits {http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data}\n" +
 	"    given\n" +
 	"        contract::invoice_key key\n" +
 	"        contract::grid_edit_input body\n" +
@@ -220,12 +220,12 @@ func TestActionBindingsEmission(t *testing.T) {
 }
 
 func TestActionBindingsBrowserClientProjection(t *testing.T) {
-	contractWithoutMain := strings.Replace(actionContractEmitWeb, "fn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n", "", 1)
+	contractWithoutMain := strings.Replace(actionContractEmitWeb, "fn void main\n    emits {}\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n", "", 1)
 	if contractWithoutMain == actionContractEmitWeb {
 		t.Fatal("contract fixture main not found for client-projection pruning fix")
 	}
 	clientWithMain := actionBindingsEmitClient + "fn void main\n" +
-		"    emits []\n" +
+		"    emits {}\n" +
 		"    given\n" +
 		"        str[] arguments\n" +
 		"    asserts\n" +

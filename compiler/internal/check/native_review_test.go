@@ -7,7 +7,7 @@ import (
 
 func TestNativeDescriptorMetadataPhase(t *testing.T) {
 	helpers := `fn str describe
-    emits []
+    emits {}
     given
         float value
     asserts
@@ -15,7 +15,7 @@ func TestNativeDescriptorMetadataPhase(t *testing.T) {
     ok "Description"
 
 fn float threshold
-    emits []
+    emits {}
     given
         float value
     asserts
@@ -23,7 +23,7 @@ fn float threshold
     ok value
 
 fn str captured
-    emits []
+    emits {}
     given
         near float certainty
     asserts
@@ -31,21 +31,21 @@ fn str captured
     ok "Description"
 
 fn str invoke
-    emits []
+    emits {}
     given
-        callable str () emits [] action
+        callable str () emits {} action
     asserts
         sample: callable fixed => ok "Description"
     relay call action()
 
 fn str fixed
-    emits []
+    emits {}
     asserts
         sample: => ok "Description"
     ok "Description"
 `
 	question := `choice float choose from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     confidence as certainty
     asks "Choose"
     minimum 0.5 => ok -1.0
@@ -72,7 +72,7 @@ fn str fixed
 
 func TestNativeProbabilityLocal(t *testing.T) {
 	question := `noul float likelihood from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     asks "Likely?"
         true "Yes" => do
             float probability = %
@@ -88,11 +88,11 @@ func TestNativeProbabilityLocal(t *testing.T) {
 
 func TestNativeVariadicGeneratedShape(t *testing.T) {
 	declarations := `record arms
-    choice_arm<float> emits [] left
-    choice_arm<float> emits [] right
+    choice_arm<float> emits {} left
+    choice_arm<float> emits {} right
 
 record weights choice float weighted from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     given
         arms ...choices
     asks "Choose"
@@ -110,9 +110,9 @@ record weights choice float weighted from classifier
 
 func TestNativeStateCodecAdmission(t *testing.T) {
 	for _, kind := range []string{"judge", "llm"} {
-		for _, typ := range []string{"bytes::buffer", "callable str () emits []", "choice_arm<str> emits []", "opaque_record", "opaque_record[]"} {
+		for _, typ := range []string{"bytes::buffer", "callable str () emits {}", "choice_arm<str> emits {}", "opaque_record", "opaque_record[]"} {
 			t.Run(kind+"/"+typ, func(t *testing.T) {
-				declaration := "llm str generate from generator\n    emits [" + nativeLLM + "]\n    state\n        " + typ + " input\n    asks \"Generate\"\n"
+				declaration := "llm str generate from generator\n    emits {" + nativeLLM + "}\n    state\n        " + typ + " input\n    asks \"Generate\"\n"
 				if kind == "judge" {
 					declaration = strings.Replace(nativeJudge, "str message", typ+" message", 1)
 				}
@@ -134,8 +134,8 @@ func TestNativeStateCodecAdmission(t *testing.T) {
 
 func TestNativeExportedConnection(t *testing.T) {
 	for _, declaration := range []string{
-		"fetch str exposed from generator\n    emits [http::request_failed]\n    asserts\n        sample: => ok \"\"\n            using raw \"fixtures/exposed.json\"\n    get \"/\"\n",
-		"llm str exposed from generator\n    emits [" + nativeLLM + "]\n    asserts\n        sample: () => ok \"x\"\n            using raw \"fixtures/exposed.json\"\n    asks \"Generate\"\n",
+		"fetch str exposed from generator\n    emits {http::request_failed}\n    asserts\n        sample: => ok \"\"\n            using raw \"fixtures/exposed.json\"\n    get \"/\"\n",
+		"llm str exposed from generator\n    emits {" + nativeLLM + "}\n    asserts\n        sample: () => ok \"x\"\n            using raw \"fixtures/exposed.json\"\n    asks \"Generate\"\n",
 		strings.Replace(nativeQuestion, "bool question", "bool exposed", 1),
 		strings.Replace(strings.Replace(nativeJudge, "bool assess", "bool exposed", 1), "fixtures/assess.json", "fixtures/exposed.json", 1) + nativeQuestion,
 	} {

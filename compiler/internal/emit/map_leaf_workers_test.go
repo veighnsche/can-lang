@@ -124,7 +124,7 @@ const mapLeafCorpus = `package app
     provides []
     uses [collections]
 fn collections::map<str,int> count_str
-    emits []
+    emits {}
     given
         collections::map<str,int> totals
         str word
@@ -138,7 +138,7 @@ fn collections::map<str,int> count_str
             collections::key_absent => ok totals
             ok collections::map<str,int> next => ok next
 fn collections::map<int,int> count_int
-    emits []
+    emits {}
     given
         collections::map<int,int> totals
         int word
@@ -152,7 +152,7 @@ fn collections::map<int,int> count_int
             collections::key_absent => ok totals
             ok collections::map<int,int> next => ok next
 fn collections::map<bool,int> count_bool
-    emits []
+    emits {}
     given
         collections::map<bool,int> totals
         bool word
@@ -166,7 +166,7 @@ fn collections::map<bool,int> count_bool
             collections::key_absent => ok totals
             ok collections::map<bool,int> next => ok next
 fn collections::map<str,int> uses_remove
-    emits []
+    emits {}
     given
         collections::map<str,int> totals
         str word
@@ -176,7 +176,7 @@ fn collections::map<str,int> uses_remove
         collections::key_absent => ok totals
         ok collections::map<str,int> next => ok next
 fn collections::map<str,str> wrong_value
-    emits []
+    emits {}
     given
         collections::map<str,str> totals
         str word
@@ -186,7 +186,7 @@ fn collections::map<str,str> wrong_value
         collections::key_absent => ok totals
         ok str previous => ok totals
 fn collections::map<str,int> has_statement
-    emits []
+    emits {}
     given
         collections::map<str,int> totals
         str word
@@ -197,14 +197,14 @@ fn collections::map<str,int> has_statement
         collections::key_absent => ok held
         ok int previous => ok held
 fn int helper
-    emits []
+    emits {}
     given
         int value
     asserts
         sample: 1 => ok 1
     ok value
 fn collections::map<str,int> authored_call
-    emits []
+    emits {}
     given
         collections::map<str,int> totals
         str word
@@ -216,7 +216,7 @@ fn collections::map<str,int> authored_call
             collections::key_absent => ok totals
             ok collections::map<str,int> next => ok next
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -649,7 +649,7 @@ const mapLeafRecoveryCorpus = `package app
     provides []
     uses [collections]
 fn collections::map<str,int> count_recover
-    emits []
+    emits {}
     given
         collections::map<str,int> totals
         str word
@@ -664,7 +664,7 @@ fn collections::map<str,int> count_recover
             collections::key_absent => ok totals
             ok collections::map<str,int> next => ok next
 fn collections::map<str,int> identity_map
-    emits []
+    emits {}
     given
         collections::map<str,int> totals
         str word
@@ -672,7 +672,7 @@ fn collections::map<str,int> identity_map
         sample: call collections::empty_map<str,int>(), "a" => ok
     ok totals
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

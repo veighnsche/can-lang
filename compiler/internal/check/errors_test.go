@@ -27,7 +27,7 @@ func errorFixture(t *testing.T) (*resolve.World, *check.ErrorRegistry, map[strin
 	for _, p := range catalogue.Builtin().Inventory().Packages {
 		packages = append(packages, p.Name)
 	}
-	text := "package app\n    provides []\n    uses [" + strings.Join(packages, ", ") + "]\nerror failed<item>(item value)\nerror nested(option::value<int> value)\nvariant failure\n    failed<int>\n    standard_failure\n"
+	text := "package app\n    provides []\n    uses [" + strings.Join(packages, ", ") + "]\nerror failed<item>{item value}\nerror nested{option::value<int> value}\nvariant failure\n    failed<int>\n    standard_failure\n"
 	for name, data := range map[string]string{"can.project.json": `{"source_root":"src","error_registry":"can.errors.json"}`, "can.errors.json": `{"active":["app::failed","app::nested"],"retired":["app::legacy"]}`, "src/main.can": text} {
 		p := filepath.Join(root, name)
 		if err := os.MkdirAll(filepath.Dir(p), 0700); err != nil {
@@ -143,7 +143,7 @@ func TestNumberedErrorDeclarationsRejected(t *testing.T) {
 	for _, spelling := range []string{"1000000", "0xf4240", "0b11110100001001000000", "0o3641100"} {
 		t.Run(spelling, func(t *testing.T) {
 			root := t.TempDir()
-			for name, data := range map[string]string{"can.project.json": `{"source_root":"src","error_registry":"can.errors.json"}`, "can.errors.json": `{"active":["app::failed"],"retired":[]}`, "src/main.can": "package app\n    provides []\n    uses []\nerror " + spelling + " failed(item value)\n"} {
+			for name, data := range map[string]string{"can.project.json": `{"source_root":"src","error_registry":"can.errors.json"}`, "can.errors.json": `{"active":["app::failed"],"retired":[]}`, "src/main.can": "package app\n    provides []\n    uses []\nerror " + spelling + " failed{item value}\n"} {
 				p := filepath.Join(root, name)
 				if err := os.MkdirAll(filepath.Dir(p), 0700); err != nil {
 					t.Fatal(err)

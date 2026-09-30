@@ -25,7 +25,7 @@ record account_row
 record id_parameters
     int id
 fn sql::decision<int> decide
-    emits []
+    emits {}
     given
         sql::transaction tx
     asserts
@@ -38,7 +38,7 @@ fn sql::decision<int> decide
         sql::constraint_failed => ok sql::rollback<int>(0)
         ok int affected => ok sql::commit<int>(affected)
 fn int run
-    emits [http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown]
+    emits {http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown}
     asserts
         sample: => ok 1
     match call sql::pool_open("CAN_TEST_POSTGRES", 5)
@@ -54,7 +54,7 @@ fn int run
             sql::commit_unknown
             ok int total => ok total
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts
@@ -73,7 +73,7 @@ record account_row
     int id
     str display_name
 fn sql::decision<int> decide
-    emits []
+    emits {}
     given
         sql::transaction tx
     asserts
@@ -89,7 +89,7 @@ fn sql::decision<int> decide
         sql::schema_mismatch => ok sql::rollback<int>(0)
         ok account_row row => ok sql::commit<int>(row.id)
 fn int run
-    emits [http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown]
+    emits {http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown}
     asserts
         sample: => ok 1
     match call sql::pool_open("CAN_TEST_POSTGRES", 5)
@@ -105,7 +105,7 @@ fn int run
             sql::commit_unknown
             ok int total => ok total
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts
@@ -189,7 +189,7 @@ record account_row
     int id
     str display_name
 fn sql::decision<int> decide
-    emits []
+    emits {}
     given
         sql::transaction tx
     asserts
@@ -206,7 +206,7 @@ fn sql::decision<int> decide
             option::none => ok sql::rollback<int>(0)
             option::some => ok sql::commit<int>(found.value.id)
 fn int run
-    emits [http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown]
+    emits {http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown}
     asserts
         sample: => ok 1
     match call sql::pool_open("CAN_TEST_POSTGRES", 5)
@@ -222,7 +222,7 @@ fn int run
             sql::commit_unknown
             ok int total => ok total
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts
@@ -279,7 +279,7 @@ func TestSQLTransactionRejects(t *testing.T) {
 		source string
 		want   string
 	}{
-		{"callback emits", strings.Replace(sqlTransactionSource, "fn sql::decision<int> decide\n    emits []", "fn sql::decision<int> decide\n    emits [sql::query_failed]", 1), "does not fit expected type"},
+		{"callback emits", strings.Replace(sqlTransactionSource, "fn sql::decision<int> decide\n    emits {}", "fn sql::decision<int> decide\n    emits {sql::query_failed}", 1), "does not fit expected type"},
 		{"callback result", strings.Replace(strings.Replace(sqlTransactionSource, "fn sql::decision<int> decide", "fn int decide", 1), "sample: => ok sql::commit<int>(1)", "sample: => ok 1", 1), "does not fit expected type"},
 		// Pool inputs are scope-elided like transaction handles (I42), so
 		// the zero-argument assert row stays arity-correct and the pool
@@ -292,6 +292,9 @@ func TestSQLTransactionRejects(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.source == sqlTransactionSource {
+				t.Fatalf("mutation missed for %q", tc.name)
+			}
 			graph, err := project.Load(writeSQLTransactionProject(t, tc.source))
 			if err != nil {
 				t.Fatal(err)

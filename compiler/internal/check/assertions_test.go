@@ -6,7 +6,7 @@ import (
 )
 
 func TestMandatoryAssertionsAreTyped(t *testing.T) {
-	valid := programHeader + programMain + "    ok\nfn int plus\n    emits []\n    given\n        int value\n    asserts\n        sample: 2 => ok 3\n    ok value + 1\n"
+	valid := programHeader + programMain + "    ok\nfn int plus\n    emits {}\n    given\n        int value\n    asserts\n        sample: 2 => ok 3\n    ok value + 1\n"
 	if _, err := programFixture(t, map[string]string{"src/main.can": valid}); err != nil {
 		t.Fatal(err)
 	}
@@ -33,7 +33,7 @@ func TestSuppliedCompletionsAreCheckedBeforeExecution(t *testing.T) {
             7 => ok
             _ => ok
 fn int plus
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -52,7 +52,7 @@ fn int plus
 
 func TestNativeSliceFixturesUseCheckedInvocationContract(t *testing.T) {
 	source := programHeader + `fn str sample
-    emits []
+    emits {}
     asserts
         selected: => ok "fake"
     match call "abc".slice(1, 3)
@@ -80,11 +80,11 @@ func TestNativeSliceFixturesUseCheckedInvocationContract(t *testing.T) {
 }
 
 func TestUsingRawOnOrdinaryFunctionsRejected(t *testing.T) {
-	attached := programHeader + "fn int plus\n    emits []\n    given\n        int value\n    asserts\n        sample: 2 => ok 3\n            using raw \"fixtures/plus.json\"\n    ok value + 1\n" + programMain + "    ok\n"
+	attached := programHeader + "fn int plus\n    emits {}\n    given\n        int value\n    asserts\n        sample: 2 => ok 3\n            using raw \"fixtures/plus.json\"\n    ok value + 1\n" + programMain + "    ok\n"
 	if _, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": attached}, "plus")); err == nil || !strings.Contains(err.Error(), "using raw is allowed on fetch/judge/LLM/wrapper targets only") {
 		t.Fatalf("raw mode on ordinary function admitted: %v", err)
 	}
-	lexical := programHeader + "fn int sample\n    emits []\n    asserts\n        selected: => ok 7\n    match call plus(1)\n        when\n            selected: 1 => ok 7\n                using raw \"fixtures/plus.json\"\n        ok\nfn int plus\n    emits []\n    given\n        int value\n    asserts\n        sample: 1 => ok 2\n    ok value + 1\n" + programMain + "    ok\n"
+	lexical := programHeader + "fn int sample\n    emits {}\n    asserts\n        selected: => ok 7\n    match call plus(1)\n        when\n            selected: 1 => ok 7\n                using raw \"fixtures/plus.json\"\n        ok\nfn int plus\n    emits {}\n    given\n        int value\n    asserts\n        sample: 1 => ok 2\n    ok value + 1\n" + programMain + "    ok\n"
 	if _, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": lexical}, "plus")); err == nil || !strings.Contains(err.Error(), "using raw is allowed on fetch/judge/LLM/wrapper targets only") {
 		t.Fatalf("raw mode on ordinary lexical target admitted: %v", err)
 	}

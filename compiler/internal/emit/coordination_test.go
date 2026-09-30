@@ -40,7 +40,7 @@ func TestGeneratedCoordinationPreparesWholeChains(t *testing.T) {
 		t.Fatal("incorrect native runtime")
 	}
 	f := newRegionFixture(t)
-	actions, err := types.ArrayOfChecked(f.ts["callable int () emits []"])
+	actions, err := types.ArrayOfChecked(f.ts["callable int () emits {}"])
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -10,7 +10,7 @@ import (
 )
 
 const genericIdentity = `fn item identity<item>
-    emits []
+    emits {}
     given
         item value
     asserts
@@ -70,7 +70,7 @@ func TestGenericWholeBodyAndRecursion(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			declaration := `fn item repeat<item>
-    emits []
+    emits {}
     given
         item value
         int count
@@ -96,7 +96,7 @@ func TestGenericWholeBodyAndRecursion(t *testing.T) {
 }
 
 func TestExplicitGenericCallableReference(t *testing.T) {
-	text := programHeader + genericIdentity + programMain + `    callable int (int) emits [] action = callable identity<int>
+	text := programHeader + genericIdentity + programMain + `    callable int (int) emits {} action = callable identity<int>
     int result = call action(7)
     ok
 `
@@ -111,7 +111,7 @@ func TestExplicitGenericCallableReference(t *testing.T) {
 
 func TestGenericCallInference(t *testing.T) {
 	declarations := genericIdentity + `fn item first<item>
-    emits []
+    emits {}
     given
         item[] items
         item fallback
@@ -122,13 +122,13 @@ func TestGenericCallInference(t *testing.T) {
         true => ok fallback
 
 fn item[] empty<item>
-    emits []
+    emits {}
     asserts
         sample: => ok call integer_empty()
     ok []
 
 fn int[] integer_empty
-    emits []
+    emits {}
     asserts
         sample: => ok []
     ok []
@@ -185,7 +185,7 @@ func TestGenericAssertionsOwnInstances(t *testing.T) {
 
 func TestGenericReferenceInference(t *testing.T) {
 	declarations := genericIdentity + `fn item captured<item>
-    emits []
+    emits {}
     given
         near item value
     asserts
@@ -193,8 +193,8 @@ func TestGenericReferenceInference(t *testing.T) {
     ok value
 `
 	text := programHeader + declarations + programMain + `    int value = 7
-    callable int (int) emits [] identity_action = callable identity
-    callable int () emits [] captured_action = callable captured
+    callable int (int) emits {} identity_action = callable identity
+    callable int () emits {} captured_action = callable captured
     int result = call identity_action(call captured_action())
     ok
 `
@@ -206,10 +206,13 @@ func TestGenericReferenceInference(t *testing.T) {
 		t.Fatalf("reference duplicated cached instances: %d", len(p.Functions))
 	}
 	for name, bad := range map[string]string{
-		"capture conflicts with expected": strings.Replace(text, "callable int () emits [] captured_action", "callable str () emits [] captured_action", 1),
-		"nonidentical callable inputs":    strings.Replace(text, "callable int (int) emits [] identity_action", "callable int (str) emits [] identity_action", 1),
+		"capture conflicts with expected": strings.Replace(text, "callable int () emits {} captured_action", "callable str () emits {} captured_action", 1),
+		"nonidentical callable inputs":    strings.Replace(text, "callable int (int) emits {} identity_action", "callable int (str) emits {} identity_action", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
+			if bad == text {
+				t.Fatalf("mutation missed for %q", name)
+			}
 			if _, err := programFixture(t, map[string]string{"src/main.can": bad}); err == nil {
 				t.Fatal("invalid generic reference accepted")
 			}
@@ -230,7 +233,7 @@ variant selection
     box<int>
     box<str>
 fn int unbox
-    emits []
+    emits {}
     given
         box<int> value
     asserts
@@ -266,14 +269,14 @@ func TestGenericMethods(t *testing.T) {
     item value
 fn item read<item>
     on box<item> self
-    emits []
+    emits {}
     asserts
         integer: box(3) => => ok 3
         text: box("x") => => ok "x"
     ok self.value
 fn item replace<item>
     on box<item> self
-    emits []
+    emits {}
     given
         near item replacement
     asserts
@@ -284,8 +287,8 @@ fn item replace<item>
     int replacement = 7
     int direct = call value.read()
     int explicit = call value.read<int>()
-    callable int () emits [] read_action = callable value.read
-    callable int () emits [] replace_action = callable value.replace
+    callable int () emits {} read_action = callable value.read
+    callable int () emits {} replace_action = callable value.replace
     int result = call replace_action()
     ok
 `
@@ -347,7 +350,7 @@ func TestGenericCrossModuleIdentity(t *testing.T) {
 
 func TestFiniteGenericTransitionsIgnoreCacheOrder(t *testing.T) {
 	declaration := `fn int fixed<item>
-    emits []
+    emits {}
     given
         item value
         int count
@@ -378,7 +381,7 @@ func TestFiniteGenericTransitionsIgnoreCacheOrder(t *testing.T) {
 }
 func TestGenericLiteralSpreadPreservesExpectedElements(t *testing.T) {
 	declaration := `fn item pick<item>
-    emits []
+    emits {}
     given
         item first
         item second

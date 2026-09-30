@@ -18,7 +18,7 @@ import (
 
 // Target selects the entry shape a checked program enforces. Bun keeps the
 // historical void main(str[] args); the browser profile requires an exported
-// non-generic void main with no arguments and emits []. The checker retains
+// non-generic void main with no arguments and emits {}. The checker retains
 // full source checks for both targets; the emitter prunes production output
 // by reachability.
 type Target string
@@ -314,7 +314,7 @@ func CheckAssertionProgram(graph *project.Graph) (*Program, error) {
 }
 
 // CheckBrowserProgram checks the same source with the browser entry shape:
-// one exported non-generic void main with no arguments and emits []. Bun
+// one exported non-generic void main with no arguments and emits {}. Bun
 // main(str[] args) diagnoses here; browser zero-argument main diagnoses
 // under CheckProgram. Full source checks run for both targets.
 func CheckBrowserProgram(graph *project.Graph) (*Program, error) {
@@ -359,7 +359,7 @@ func checkTargetEntry(target Target, d *syntax.FunctionDecl) error {
 			len(d.Inputs) != 0 ||
 			syntax.FormatType(d.Result) != "void" ||
 			len(d.Errors.Types) != 0 {
-			return fmt.Errorf("browser entry must be an exported non-generic void main with no arguments and emits []")
+			return fmt.Errorf("browser entry must be an exported non-generic void main with no arguments and emits {}")
 		}
 		return nil
 	}
@@ -613,7 +613,7 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 	}
 	if requireEntry && p.Entry == nil {
 		if target == TargetBrowser {
-			return nil, fmt.Errorf("root project requires void main with no arguments and emits [] for target browser")
+			return nil, fmt.Errorf("root project requires void main with no arguments and emits {} for target browser")
 		}
 		return nil, fmt.Errorf("root project requires void main(str[] args)")
 	}

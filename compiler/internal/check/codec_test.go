@@ -26,7 +26,7 @@ func TestCodecExplicitSpecializations(t *testing.T) {
 	}
 	for _, tc := range []struct{ name, old, replacement, want string }{
 		{"opaque", "codec::encode_json<receipt>", "codec::encode_json<bytes::buffer>", "not codec-admissible"},
-		{"callable", "codec::encode_json<receipt>", "codec::encode_json<callable int () emits []>", "not codec-admissible"},
+		{"callable", "codec::encode_json<receipt>", "codec::encode_json<callable int () emits {}>", "not codec-admissible"},
 		{"missing argument", "codec::encode_json<receipt>", "codec::encode_json", "one explicit"},
 		{"wrong arity", "codec::encode_json<receipt>", "codec::encode_json<int, str>", "one explicit"},
 		{"wrong input", "codec::encode_json<receipt>(original)", "codec::encode_json<int>(original)", "type"},

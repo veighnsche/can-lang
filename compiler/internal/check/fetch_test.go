@@ -32,7 +32,7 @@ func TestNamedFetchModes(t *testing.T) {
 		{"body text (call [[payload]].map(callable extract))[0]", "body bytes payload"},
 		{`content_type = ([...([("application/json")])])`, `content_type = "text/plain"`},
 		{`content_type = ([...([("application/json")])])`, `content_type = ""`},
-		{"emits [http::request_failed]", "emits []"},
+		{"emits {http::request_failed}", "emits {}"},
 	} {
 		t.Run(change[1], func(t *testing.T) {
 			text := strings.Replace(string(source), change[0], change[1], 1)
@@ -105,7 +105,7 @@ func TestFetchContentTypeEmptyOverrideAndDynamicAdmission(t *testing.T) {
 		t.Run(value, func(t *testing.T) {
 			text := strings.Replace(base, `content_type = ([...([("application/json")])])`, "content_type = "+value, 1)
 			text += `fn str pass_header
-    emits []
+    emits {}
     given
         str value
     asserts

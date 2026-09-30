@@ -18,7 +18,7 @@ import (
 
 func staticOriginDouble(t *testing.T) (*ir.Region, string) {
 	t.Helper()
-	program := actionEmitProgram(t, map[string]string{"src/main.can": "package app\n    provides []\n    uses []\nfn int double\n    emits []\n    given\n        int value\n    asserts\n        sample: 2 => ok 4\n    ok value * 2\nfn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n"})
+	program := actionEmitProgram(t, map[string]string{"src/main.can": "package app\n    provides []\n    uses []\nfn int double\n    emits {}\n    given\n        int value\n    asserts\n        sample: 2 => ok 4\n    ok value * 2\nfn void main\n    emits {}\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n"})
 	for _, fn := range program.Functions {
 		if fn.Symbol.Name == "double" {
 			return fn.Region, fn.Symbol.Source.ID
@@ -176,8 +176,8 @@ func TestStaticOriginTemplateSubstitutionEmission(t *testing.T) {
 	// The fixture template lives in a separate definition file from its
 	// consumer, so definition spans are distinguishable from use spans
 	// through real checking and production emission (no manual markNode).
-	helpers := "package app\n    provides []\n    uses []\nfn int double\n    emits []\n    given\n        int value\n    asserts\n        sample: 2 => ok 4\n    ok value + value\nfixture doubled for double\n    given\n        int base\n    cases\n        base => ok base + base\n        3 => ok 6\n"
-	mainText := "package app\n    provides []\n    uses []\nfn int consumer\n    emits []\n    asserts\n        sample: => ok 4\n    match call double(2)\n        when\n            sample: use doubled(2)\n        ok int got => ok got\nfn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n"
+	helpers := "package app\n    provides []\n    uses []\nfn int double\n    emits {}\n    given\n        int value\n    asserts\n        sample: 2 => ok 4\n    ok value + value\nfixture doubled for double\n    given\n        int base\n    cases\n        base => ok base + base\n        3 => ok 6\n"
+	mainText := "package app\n    provides []\n    uses []\nfn int consumer\n    emits {}\n    asserts\n        sample: => ok 4\n    match call double(2)\n        when\n            sample: use doubled(2)\n        ok int got => ok got\nfn void main\n    emits {}\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n"
 	program := actionEmitProgram(t, map[string]string{"src/main.can": mainText, "src/helpers.can": helpers})
 	var consumerRegion *ir.Region
 	var consumerOut, useID, defID, consumerRegionID string
@@ -331,7 +331,7 @@ func TestStaticOriginBunSharingAndFreshness(t *testing.T) {
 	}
 	f := newRegionFixture(t)
 	okBody, stdBody := "    ok 1\n", "    ok 1 / 0\n"
-	domBody := "    match call lookup(1)\n        missing => ok 0\n        ok => missing(9)\n"
+	domBody := "    match call lookup(1)\n        missing => ok 0\n        ok => missing{9}\n"
 	okRegion, err := f.region(t, okBody, "int", nil, ir.FunctionRegion)
 	if err != nil {
 		t.Fatal(err)
@@ -349,7 +349,7 @@ func TestStaticOriginBunSharingAndFreshness(t *testing.T) {
 	// tuples are proven against authored text rather than pairwise
 	// agreement between two repeated origins.
 	authored := func(result, body string) string {
-		return "package app\n    provides []\n    uses []\nfn " + result + " run\n    emits []\n    asserts\n        test: => ok 1\n" + body
+		return "package app\n    provides []\n    uses []\nfn " + result + " run\n    emits {}\n    asserts\n        test: => ok 1\n" + body
 	}
 	okText, stdText, domText := authored("int", okBody), authored("int", stdBody), authored("int", domBody)
 	slice := func(text string, span source.Span) string { return text[span.Start:span.End] }
@@ -386,7 +386,7 @@ func TestStaticOriginBunSharingAndFreshness(t *testing.T) {
 	if !foundDomain {
 		t.Fatal("domain failure site missing from match arms")
 	}
-	if got := slice(domText, domSpan); got != "missing(9)" {
+	if got := slice(domText, domSpan); got != "missing{9}" {
 		t.Fatalf("domain failure span slices %q, want the authored constructor", got)
 	}
 	tuple := func(regionID string, span source.Span) string {
@@ -563,7 +563,7 @@ console.log("static origins shared");
 }
 
 func TestStaticOriginProductionMappingsAndLiterals(t *testing.T) {
-	program := actionEmitProgram(t, map[string]string{"src/main.can": "package app\n    provides []\n    uses []\nfn str echo\n    emits []\n    given\n        str value\n    asserts\n        sample: \"$canOrigin\" => ok \"$canOrigin\"\n    ok value\nfn str tricky\n    emits []\n    asserts\n        sample: => ok \"{source:fake\" \n    ok \"{source:fake\"\nfn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n"})
+	program := actionEmitProgram(t, map[string]string{"src/main.can": "package app\n    provides []\n    uses []\nfn str echo\n    emits {}\n    given\n        str value\n    asserts\n        sample: \"$canOrigin\" => ok \"$canOrigin\"\n    ok value\nfn str tricky\n    emits {}\n    asserts\n        sample: => ok \"{source:fake\" \n    ok \"{source:fake\"\nfn void main\n    emits {}\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n"})
 	for _, emit := range []struct {
 		name string
 		call func() ([]ir.Artifact, error)
@@ -719,7 +719,7 @@ func TestStaticOriginEmittedInvocationBoundary(t *testing.T) {
 	// call-site span, distinct from the function entry and the prepared
 	// literal. The emitted caller must supply that step tuple as the first
 	// boundary for a synthetic can: failure.
-	text := "package app\n    provides []\n    uses []\nfn int run\n    emits []\n    asserts\n        test: => ok 1\n" + body
+	text := "package app\n    provides []\n    uses []\nfn int run\n    emits {}\n    asserts\n        test: => ok 1\n" + body
 	slice := func(span source.Span) string { return text[span.Start:span.End] }
 	if region.ID != "app::run" {
 		t.Fatalf("fixture region moved: %q", region.ID)

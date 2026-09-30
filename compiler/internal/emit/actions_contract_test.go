@@ -73,7 +73,7 @@ const actionContractEmitWeb = "package contract\n" +
 	"        saved status 200 swap inner\n" +
 	"        failed status 422 swap inner\n" +
 	"fn void main\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        str[] arguments\n" +
 	"    asserts\n" +

@@ -48,7 +48,7 @@ const browserPureSource = `package app
 record point
     int x
 fn point load
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -59,7 +59,7 @@ fn point load
         codec::invalid_data
         ok => ok found
 fn void main
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str[] arguments
     asserts
@@ -134,7 +134,7 @@ func TestBrowserModulesRejectForbiddenProgram(t *testing.T) {
     provides []
     uses [env, http]
 fn void main
-    emits [env::invalid_name, http::credentials_missing]
+    emits {env::invalid_name, http::credentials_missing}
     given
         str[] arguments
     asserts

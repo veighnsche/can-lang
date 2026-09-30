@@ -21,7 +21,7 @@ func TestBytesCatalogueAdmission(t *testing.T) {
 		{"length is projection", "ok empty.length", "ok call empty.length()"},
 		{"wrong octet type", "call bytes::from_ints(values)", "call bytes::from_ints([1.0])"},
 		{"wrong decode input", "call bytes::to_utf8(original)", "call bytes::to_utf8(3)"},
-		{"error bound", "fn int[] integers\n    emits [codec::invalid_data]", "fn int[] integers\n    emits []"},
+		{"error bound", "fn int[] integers\n    emits {codec::invalid_data}", "fn int[] integers\n    emits {}"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			changed := strings.Replace(source, tc.old, tc.replacement, 1)

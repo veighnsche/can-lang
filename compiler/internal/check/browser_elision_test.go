@@ -13,7 +13,7 @@ const browserElisionFixture = `package app
     provides []
     uses [browser]
 fn void on_press
-    emits []
+    emits {}
     given
         browser::event e
         near browser::state<int> cell
@@ -26,7 +26,7 @@ fn void on_press
             browser::disposed => ok
             ok => ok
 fn void mount
-    emits [browser::disposed, browser::rejected]
+    emits {browser::disposed, browser::rejected}
     given
         browser::app app
         browser::view view
@@ -39,7 +39,7 @@ fn void mount
         browser::rejected
         ok => ok
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -66,14 +66,14 @@ func TestBrowserElisionRefusesNonScopeOpaque(t *testing.T) {
     provides []
     uses [browser, http]
 fn void handle
-    emits []
+    emits {}
     given
         http::server_response response
     asserts
         sample: => ok
     ok
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -94,7 +94,7 @@ func TestBrowserElisionRecordStaysSupplied(t *testing.T) {
     provides []
     uses [browser]
 fn void main
-    emits []
+    emits {}
     given
         browser::event e
     asserts

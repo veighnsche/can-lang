@@ -29,7 +29,7 @@ record pair
     str b
 record no_params
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts
@@ -103,7 +103,7 @@ record account_row
 record id_parameters
     int id
 fn account_row by_id
-    emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch]
+    emits {http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch}
     given
         int id
     asserts
@@ -125,7 +125,7 @@ fn account_row by_id
             sql::schema_mismatch
             ok account_row row => ok row
 fn option::value<account_row> by_term
-    emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_count, sql::schema_mismatch]
+    emits {http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_count, sql::schema_mismatch}
     given
         str term
     asserts
@@ -146,7 +146,7 @@ fn option::value<account_row> by_term
             sql::schema_mismatch
             ok option::value<account_row> found => ok found
 fn account_row[] by_rows
-    emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch]
+    emits {http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch}
     given
         str term
     asserts
@@ -167,7 +167,7 @@ fn account_row[] by_rows
             sql::schema_mismatch
             ok account_row[] rows => ok rows
 fn int add_one
-    emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed]
+    emits {http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed}
     given
         str term
     asserts
@@ -186,7 +186,7 @@ fn int add_one
             sql::constraint_failed
             ok int affected => ok affected
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts
@@ -370,14 +370,14 @@ record account_row
     int id
     str display_name
 fn void main
-    emits []
+    emits {}
     given
         str[] args
     asserts
         empty: [] => ok
     ok
 fn account_row[] load
-    emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch]
+    emits {sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch}
     given
         str query
         near sql::pool pool

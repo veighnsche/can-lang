@@ -41,7 +41,7 @@ const actionDocumentDecls = "package doc\n" +
 // actionDocumentServer binds the read: a request-first handler capturing
 // the startup pool, the single document renderer, and the route table.
 const actionDocumentServer = "fn page_outcome load_page\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        near sql::pool pool\n" +
 	"        http::request req\n" +
@@ -51,7 +51,7 @@ const actionDocumentServer = "fn page_outcome load_page\n" +
 	"    match call http::request_headers(req)\n" +
 	"        ok http::header[] headers => ok page_missing(\"gone\")\n" +
 	"fn html::safe render_page\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        page_outcome outcome\n" +
 	"    asserts\n" +
@@ -61,7 +61,7 @@ const actionDocumentServer = "fn page_outcome load_page\n" +
 	"        page_missing => ok call html::text_fragment(\"missing\")\n" +
 	"        page_unavailable => ok call html::text_fragment(\"unavailable\")\n" +
 	"fn http::router routes\n" +
-	"    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]\n" +
+	"    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}\n" +
 	"    given\n" +
 	"        near sql::pool pool\n" +
 	"    asserts\n" +
@@ -76,7 +76,7 @@ const actionDocumentServer = "fn page_outcome load_page\n" +
 
 // actionDocumentURL builds canonical read paths from captures records.
 const actionDocumentURL = "fn str page_url\n" +
-	"    emits [action::invalid_path]\n" +
+	"    emits {action::invalid_path}\n" +
 	"    given\n" +
 	"        page_key key\n" +
 	"    asserts\n" +
@@ -240,7 +240,7 @@ func TestActionDocumentBindingRejects(t *testing.T) {
 	full := actionDocumentDecls + actionDocumentServer + actionDocumentURL
 	fetch := func(call string) string {
 		return "fn page_outcome fetch_page\n" +
-			"    emits [http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data]\n" +
+			"    emits {http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data}\n" +
 			"    given\n" +
 			"        page_key key\n" +
 			"    asserts\n" +

@@ -15,13 +15,13 @@ func TestLexicalSitesUseSyntaxPreorder(t *testing.T) {
     provides []
     uses []
 fn int run
-    emits []
+    emits {}
     given
         int value
     asserts
         sample: 1 => ok 1
     int prepared = call outer(call inner()).step(call later())
-    callable int (int) emits [] action = callable run
+    callable int (int) emits {} action = callable run
     match call outer(value)
         when
             sample: call expected() => ok call supplied()
@@ -59,12 +59,12 @@ fn int run
 
 func TestFixtureSiteIgnoresCheckerLocalAllocation(t *testing.T) {
 	text := programHeader + `fn int value
-    emits []
+    emits {}
     asserts
         sample: => ok 1
     ok 1
 fn int consumer
-    emits []
+    emits {}
     asserts
         sample: => ok 2
     match call value()

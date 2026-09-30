@@ -21,7 +21,7 @@ func TestGenericVariantDirectBridgeLeafConversion(t *testing.T) {
 	for name, body := range bodies {
 		t.Run(name, func(t *testing.T) {
 			text := programHeader + variantTaggedDeclarations + `fn tagged<str> convert
-    emits []
+    emits {}
     given
         tagged<int> value
     asserts
@@ -43,7 +43,7 @@ variant outer<item>
     inner<item>
     extra
 fn outer<str> convert
-    emits []
+    emits {}
     given
         outer<int> value
     asserts
@@ -59,14 +59,14 @@ fn outer<str> convert
 func TestOptionConversion(t *testing.T) {
 	header := strings.Replace(programHeader, "uses []", "uses [option]", 1)
 	positive := header + `fn option::value<int> wrap
-    emits []
+    emits {}
     given
         int value
     asserts
         sample: 3 => ok option::some(3)
     ok option::some(value)
 fn option::value<int> absent
-    emits []
+    emits {}
     asserts
         sample: => ok option::none()
     ok option::none()
@@ -76,7 +76,7 @@ fn option::value<int> absent
 	}
 	for name, fn := range map[string]string{
 		"variant to variant": `fn option::value<str> convert
-    emits []
+    emits {}
     given
         option::value<int> value
     asserts
@@ -84,7 +84,7 @@ fn option::value<int> absent
     ok value
 `,
 		"leaf to wrong specialization": `fn option::value<str> convert
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -109,7 +109,7 @@ record other
 variant tagged<item>
     unit
 fn tagged<str> convert
-    emits []
+    emits {}
     given
         other value
     asserts
@@ -119,7 +119,7 @@ fn tagged<str> convert
 		"generic record": `record box<item>
     item value
 fn box<str> convert
-    emits []
+    emits {}
     given
         box<int> value
     asserts
@@ -131,7 +131,7 @@ fn box<str> convert
 variant wrap<item>
     box<item>
 fn wrap<str> convert
-    emits []
+    emits {}
     given
         wrap<int> value
     asserts
@@ -157,7 +157,7 @@ variant payment<item>
     declined
 `
 	complete := programHeader + declarations + `fn str describe
-    emits []
+    emits {}
     given
         payment<int> value
     asserts
@@ -170,7 +170,7 @@ variant payment<item>
 		t.Fatalf("exhaustive generic match rejected: %v", err)
 	}
 	partial := programHeader + declarations + `fn str describe
-    emits []
+    emits {}
     given
         payment<int> value
     asserts

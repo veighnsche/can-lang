@@ -68,12 +68,12 @@ func testdataFixtures(t *testing.T, files map[string]string, area string) map[st
 }
 
 const programHeader = "package app\n    provides []\n    uses []\n"
-const programMain = "fn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n"
+const programMain = "fn void main\n    emits {}\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n"
 
 func TestProgramConnectsFilesAndInitialization(t *testing.T) {
 	p, err := programFixture(t, map[string]string{
 		"src/main.can":   programHeader + "int answer = later + 1\n" + programMain + "    call check(answer, arguments.length)\n    ok\n",
-		"src/helper.can": programHeader + "int later = 41\nfn void check\n    emits []\n    given\n        int answer\n        int count\n    asserts\n        sample: 42, 0 => ok\n    match answer is 42 and count >= 0\n        false => ok\n        true => ok\n",
+		"src/helper.can": programHeader + "int later = 41\nfn void check\n    emits {}\n    given\n        int answer\n        int count\n    asserts\n        sample: 42, 0 => ok\n    match answer is 42 and count >= 0\n        false => ok\n        true => ok\n",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -89,13 +89,21 @@ func TestProgramConnectsFilesAndInitialization(t *testing.T) {
 	}
 }
 func TestProgramRefusesInvalidEntryAndBodies(t *testing.T) {
+	wrongResult := strings.Replace(programMain, "fn void main", "fn int main", 1)
+	if wrongResult == programMain {
+		t.Fatal("wrong-result mutation matched nothing")
+	}
+	wrongInput := strings.Replace(programMain, "str[] arguments", "int arguments", 1)
+	if wrongInput == programMain {
+		t.Fatal("wrong-input mutation matched nothing")
+	}
 	for name, source := range map[string]string{
 		"missing entry":        programHeader,
-		"wrong result":         programHeader + strings.Replace(programMain, "fn void main", "fn int main", 1) + "    ok 1\n",
-		"wrong input":          programHeader + strings.Replace(programMain, "str[] arguments", "int arguments", 1) + "    ok\n",
+		"wrong result":         programHeader + wrongResult + "    ok 1\n",
+		"wrong input":          programHeader + wrongInput + "    ok\n",
 		"static mismatch":      programHeader + programMain + "    ok arguments\n",
 		"unknown call":         programHeader + programMain + "    call missing()\n    ok\n",
-		"bad unused body":      programHeader + programMain + "    ok\nfn int unused\n    emits []\n    asserts\n        sample: => ok 1\n    ok false\n",
+		"bad unused body":      programHeader + programMain + "    ok\nfn int unused\n    emits {}\n    asserts\n        sample: => ok 1\n    ok false\n",
 		"initialization cycle": programHeader + "int first = second\nint second = first\n" + programMain + "    ok\n",
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -112,7 +120,7 @@ func TestProgramChecksMethodsAndNestedRegions(t *testing.T) {
 item initial = item(7)
 fn int read
     on item self
-    emits []
+    emits {}
     asserts
         sample: item(7) => => ok 7
     ok self.number

@@ -50,7 +50,7 @@ func patternBindProgram(t *testing.T, body string) (*Program, error) {
 
 func TestPatternBindCapturesAtEveryDepth(t *testing.T) {
 	text := patternBindHeader + `fn bool accepted
-    emits []
+    emits {}
     given
         payment value
     asserts
@@ -60,7 +60,7 @@ func TestPatternBindCapturesAtEveryDepth(t *testing.T) {
         paid => ok true
         bind rest => ok false
 fn bool nested
-    emits []
+    emits {}
     given
         receipt value
     asserts
@@ -70,7 +70,7 @@ fn bool nested
         receipt(paid) => ok true
         receipt(bind status) => ok false
 fn int area_units
-    emits []
+    emits {}
     given
         shape value
     asserts
@@ -80,7 +80,7 @@ fn int area_units
         circle(bind radius) => ok radius
         rectangle(bind width, _) => ok width
 fn int first_or_zero
-    emits []
+    emits {}
     given
         int[] items
     asserts
@@ -90,7 +90,7 @@ fn int first_or_zero
         [] => ok 0
         [bind head, ...tail] => ok head + tail.length - tail.length
 fn int classify
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -100,7 +100,7 @@ fn int classify
         0 => ok 0
         bind n => ok n
 fn int either_first
-    emits []
+    emits {}
     given
         int[] items
     asserts
@@ -111,7 +111,7 @@ fn int either_first
         [0, ...tail] | [1, ...tail] => ok tail.length
         [bind head, ...tail] => ok head
 fn int degrees_or_zero
-    emits []
+    emits {}
     given
         temperature value
     asserts
@@ -127,7 +127,7 @@ fn int degrees_or_zero
 
 func TestPatternBareNominalHidesFields(t *testing.T) {
 	text := patternBindHeader + `fn int area_units
-    emits []
+    emits {}
     given
         shape value
     asserts
@@ -137,7 +137,7 @@ func TestPatternBareNominalHidesFields(t *testing.T) {
         circle => ok value.radius * value.radius
         rectangle => ok value.width * value.height
 fn int radius_of
-    emits []
+    emits {}
     given
         circle value
     asserts
@@ -181,7 +181,7 @@ func locatePattern(t *testing.T, text, spelling string) {
 // silently capturing the remainder as an `any` binding.
 func TestPatternFinalArmTypoRejected(t *testing.T) {
 	text := patternBindHeader + `fn bool accepted
-    emits []
+    emits {}
     given
         payment value
     asserts
@@ -199,7 +199,7 @@ func TestPatternFinalArmTypoRejected(t *testing.T) {
 // nested position, not capture the field.
 func TestPatternNestedTypoRejected(t *testing.T) {
 	text := patternBindHeader + `fn bool nested
-    emits []
+    emits {}
     given
         receipt value
     asserts
@@ -223,7 +223,7 @@ variant payment
     pending
     refunded
 fn bool accepted
-    emits []
+    emits {}
     given
         payment value
     asserts
@@ -243,7 +243,7 @@ fn bool accepted
 
 func TestPatternBareNameOutsideVariantRejected(t *testing.T) {
 	scalar := patternBindHeader + `fn int classify
-    emits []
+    emits {}
     given
         int number
     asserts
@@ -255,7 +255,7 @@ func TestPatternBareNameOutsideVariantRejected(t *testing.T) {
 ` + programMain + "    ok\n"
 	locatePattern(t, scalar, "other")
 	record := patternBindHeader + `fn int radius_of
-    emits []
+    emits {}
     given
         circle value
     asserts
@@ -268,7 +268,7 @@ func TestPatternBareNameOutsideVariantRejected(t *testing.T) {
 
 func TestPatternBindDuplicatesAndAlternatives(t *testing.T) {
 	duplicate := patternBindHeader + `fn int first
-    emits []
+    emits {}
     given
         int[] items
     asserts
@@ -279,7 +279,7 @@ func TestPatternBindDuplicatesAndAlternatives(t *testing.T) {
 ` + programMain + "    ok\n"
 	rejectPattern(t, duplicate, "duplicate pattern binding head")
 	alternativeMerge := patternBindHeader + `fn int first
-    emits []
+    emits {}
     given
         int[] items
     asserts
@@ -290,7 +290,7 @@ func TestPatternBindDuplicatesAndAlternatives(t *testing.T) {
 ` + programMain + "    ok\n"
 	rejectPattern(t, alternativeMerge, "duplicate alternative binding")
 	missingName := patternBindHeader + `fn int first
-    emits []
+    emits {}
     given
         int[] items
     asserts
@@ -301,7 +301,7 @@ func TestPatternBindDuplicatesAndAlternatives(t *testing.T) {
 ` + programMain + "    ok\n"
 	rejectPattern(t, missingName, "alternatives must bind the same names")
 	typeMismatch := patternBindHeader + `fn int either_value
-    emits []
+    emits {}
     given
         either choice
     asserts

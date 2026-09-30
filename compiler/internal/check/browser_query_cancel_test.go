@@ -9,35 +9,35 @@ const browserQueryCancelFixture = `package app
     provides []
     uses [browser, option]
 fn void on_field_key
-    emits []
+    emits {}
     given
         browser::event e
     asserts
         sample: browser::event("keydown", "input", "", "Enter", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void on_submit
-    emits []
+    emits {}
     given
         browser::event e
     asserts
         sample: browser::event("submit", "form", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void boot
-    emits []
+    emits {}
     given
         str selected
     asserts
         sample: "inv-1" => ok
     ok
 fn void show_boot_notice
-    emits []
+    emits {}
     given
         str message
     asserts
         sample: "hi" => ok
     ok
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -99,21 +99,21 @@ const browserCancelFixture = `package app
     provides []
     uses [browser]
 fn void on_field_key
-    emits []
+    emits {}
     given
         browser::event e
     asserts
         sample: browser::event("keydown", "input", "", "Enter", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void on_submit
-    emits []
+    emits {}
     given
         browser::event e
     asserts
         sample: browser::event("submit", "form", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void demo
-    emits [browser::missing_root, browser::disposed, browser::rejected]
+    emits {browser::missing_root, browser::disposed, browser::rejected}
     given
         str root
     asserts
@@ -135,7 +135,7 @@ fn void demo
                             browser::rejected
                             ok => ok
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

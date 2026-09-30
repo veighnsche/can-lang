@@ -11,14 +11,14 @@ import (
 func TestStandardSnapshotContracts(t *testing.T) {
 	header := strings.Replace(programHeader, "uses []", "uses [codec, bytes]", 1)
 	work := `fn int work
-    emits []
+    emits {}
     asserts
         sample: => ok 1
     ok 1
 `
 	t.Run("store and project", func(t *testing.T) {
 		text := header + work + `fn str observed
-    emits []
+    emits {}
     asserts
         sample: => ok "none"
     match call work()
@@ -39,7 +39,7 @@ func TestStandardSnapshotContracts(t *testing.T) {
     codec::invalid_data
     standard_failure
 fn str leaf_kind
-    emits []
+    emits {}
     asserts
         sample: => ok "none"
     match call work()
@@ -56,19 +56,19 @@ fn str leaf_kind
 	})
 	for name, body := range map[string]string{
 		"construct": `fn standard_failure make
-    emits []
+    emits {}
     asserts
         sample: => ok
     standard_failure()
 `,
 		"emits": `fn void leak
-    emits [standard_failure]
+    emits {standard_failure}
     asserts
         sample: => ok
     ok
 `,
 		"wire": `fn int ship
-    emits []
+    emits {}
     asserts
         sample: => ok 0
     match call work()
@@ -78,7 +78,7 @@ fn str leaf_kind
         ok int value => ok value
 `,
 		"update": `fn str forge
-    emits []
+    emits {}
     asserts
         sample: => ok "none"
     match call work()

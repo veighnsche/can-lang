@@ -131,7 +131,7 @@ const mapBatchAdversarialCorpus = `package app
     provides []
     uses [collections]
 fn collections::map<str,int> literal_key
-    emits []
+    emits {}
     given
         collections::map<str,int> totals
         str word
@@ -145,7 +145,7 @@ fn collections::map<str,int> literal_key
             collections::key_absent => ok totals
             ok collections::map<str,int> next => ok next
 fn collections::map<str,int> div_value
-    emits []
+    emits {}
     given
         collections::map<str,int> totals
         str word
@@ -159,7 +159,7 @@ fn collections::map<str,int> div_value
             collections::key_absent => ok totals
             ok collections::map<str,int> next => ok next
 fn collections::map<str,int> swapped_ops
-    emits []
+    emits {}
     given
         collections::map<str,int> totals
         str word
@@ -173,7 +173,7 @@ fn collections::map<str,int> swapped_ops
             collections::key_exists => ok totals
             ok collections::map<str,int> next => ok next
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -375,7 +375,7 @@ const mapBatchRecoveryUseCorpus = `package app
     provides []
     uses [collections]
 fn collections::map<str,int> count_recover
-    emits []
+    emits {}
     given
         collections::map<str,int> totals
         str word
@@ -390,7 +390,7 @@ fn collections::map<str,int> count_recover
             collections::key_absent => ok totals
             ok collections::map<str,int> next => ok next
 fn int frequency
-    emits [collections::key_absent]
+    emits {collections::key_absent}
     given
         str[] words
         str word
@@ -401,7 +401,7 @@ fn int frequency
         collections::key_absent
         ok int found => ok found
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

@@ -15,7 +15,7 @@ import (
 
 func localContext(t *testing.T, ts map[string]*types.Type, typ, initializer string) check.LocalForwarding {
 	t.Helper()
-	text := "package app\n    provides []\n    uses [alpha]\nfn " + typ + " run\n    emits []\n    asserts\n        example: => ok 1\n    " + typ + " result = " + initializer + "\n    ok result\n"
+	text := "package app\n    provides []\n    uses [alpha]\nfn " + typ + " run\n    emits {}\n    asserts\n        example: => ok 1\n    " + typ + " result = " + initializer + "\n    ok result\n"
 	file, _ := source.New("locals.can", text)
 	parsed := syntax.Parse(file)
 	if !parsed.OK() {
@@ -97,7 +97,7 @@ func TestFiniteLocalRule(t *testing.T) {
 		{"int", "left / right"}, {"int", "left % right"}, {"int", "left ** right"}, {"int", "left << right"}, {"int", "left >> right"},
 		{"float", "1.0 / 2.0"}, {"int", "ints[0]"}, {"int[]", "ints[0:1]"}, {"int[]", "[]"}, {"int[]", "[1]"},
 		{"alpha::item", "alpha::item(1, [])"}, {"alpha::item", "item with value=1"}, {"int", "call first()"},
-		{"callable int () emits []", "callable first"}, {"both", "item"},
+		{"callable int () emits {}", "callable first"}, {"both", "item"},
 	} {
 		t.Run("retain/"+example.expr, func(t *testing.T) {
 			c := localContext(t, ts, example.typ, example.expr)

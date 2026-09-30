@@ -36,11 +36,11 @@ func newRegionFixture(t *testing.T) *regionFixture {
 	text := `package app
     provides []
     uses [sql, bytes, collections]
-error missing(int code)
-error other()
-error wrapped<item>(item value)
+error missing{int code}
+error other{}
+error wrapped<item>{item value}
 record receipt
-    callable void () emits [] then
+    callable void () emits {} then
 record left
     int value
 record right
@@ -80,7 +80,7 @@ record node
 	if err = builder.SeedDeclarations(); err != nil {
 		t.Fatal(err)
 	}
-	names := []string{"collections::map<int,sql::pool>", "sql::pool", "bytes::buffer", "callable int (sql::pool) emits []", "callable bool () emits []", "callable left () emits []", "callable left (left, int) emits [missing]", "callable int (left) emits [other]", "wrapped<int>", "wrapped<str>", "callable int () emits [wrapped<int>, wrapped<str>]", "int", "float", "str", "bool", "void", "missing", "other", "receipt", "left", "right", "either", "node", "int[]", "bool[]", "node[]", "callable int () emits []", "callable int (int) emits [missing]", "callable void () emits []", "callable receipt () emits []", "callable int (int, int[]) emits []", "callable int (int, int) emits []", "callable int (int) emits []", "callable int () emits [missing, other]", "standard_failure"}
+	names := []string{"collections::map<int,sql::pool>", "sql::pool", "bytes::buffer", "callable int (sql::pool) emits {}", "callable bool () emits {}", "callable left () emits {}", "callable left (left, int) emits {missing}", "callable int (left) emits {other}", "wrapped<int>", "wrapped<str>", "callable int () emits {wrapped<int>, wrapped<str>}", "int", "float", "str", "bool", "void", "missing", "other", "receipt", "left", "right", "either", "node", "int[]", "bool[]", "node[]", "callable int () emits {}", "callable int (int) emits {missing}", "callable void () emits {}", "callable receipt () emits {}", "callable int (int, int[]) emits {}", "callable int (int, int) emits {}", "callable int (int) emits {}", "callable int () emits {missing, other}", "standard_failure"}
 	fixture := &regionFixture{ts: map[string]*types.Type{}, registry: registry, scope: file.Scope, functions: map[string]check.ValueBinding{}, values: map[string]check.ValueBinding{}}
 	for _, name := range names {
 		src, _ := source.New("type.can", name)
@@ -96,7 +96,7 @@ record node
 	if _, err = builder.Finish(); err != nil {
 		t.Fatal(err)
 	}
-	for name, typ := range map[string]string{"truth": "callable bool () emits []", "build": "callable left () emits []", "bump": "callable left (left, int) emits [missing]", "read": "callable int (left) emits [other]", "sum": "callable int (int, int[]) emits []", "pair": "callable int (int, int) emits []", "ambiguous": "callable int () emits [wrapped<int>, wrapped<str>]", "first": "callable int () emits []", "lookup": "callable int (int) emits [missing]", "log": "callable void () emits []", "make": "callable receipt () emits []", "increment": "callable int (int) emits []", "both": "callable int () emits [missing, other]"} {
+	for name, typ := range map[string]string{"truth": "callable bool () emits {}", "build": "callable left () emits {}", "bump": "callable left (left, int) emits {missing}", "read": "callable int (left) emits {other}", "sum": "callable int (int, int[]) emits {}", "pair": "callable int (int, int) emits {}", "ambiguous": "callable int () emits {wrapped<int>, wrapped<str>}", "first": "callable int () emits {}", "lookup": "callable int (int) emits {missing}", "log": "callable void () emits {}", "make": "callable receipt () emits {}", "increment": "callable int (int) emits {}", "both": "callable int () emits {missing, other}"} {
 		fixture.functions[name] = check.ValueBinding{Identity: "function/" + name, Type: fixture.ts[typ]}
 	}
 	for name, typ := range map[string]string{"number": "int", "flag": "bool", "items": "int[]", "choice": "either", "tree": "node", "payload": "receipt"} {
@@ -106,7 +106,7 @@ record node
 }
 func (f *regionFixture) region(t *testing.T, body, result string, errors []string, kind ir.RegionKind) (*ir.Region, error) {
 	t.Helper()
-	text := "package app\n    provides []\n    uses []\nfn " + result + " run\n    emits []\n    asserts\n        test: => ok 1\n" + body
+	text := "package app\n    provides []\n    uses []\nfn " + result + " run\n    emits {}\n    asserts\n        test: => ok 1\n" + body
 	src, _ := source.New("region.can", text)
 	parsed := syntax.Parse(src)
 	if !parsed.OK() {
@@ -228,7 +228,7 @@ func TestCompletionRegionContracts(t *testing.T) {
 		"    match choice\n        left(bind value) | right(bind value) => ok 1\n",
 
 		"    ok\n",
-		"    missing(1)\n",
+		"    missing{1}\n",
 		"    relay call lookup(1)\n",
 		"    ok call lookup(1) + 1\n",
 		"    call first()\n    ok 1\n",
@@ -237,7 +237,7 @@ func TestCompletionRegionContracts(t *testing.T) {
 		"    match call lookup(1)\n        missing\n        ok\n",
 		"    match call lookup(1)\n        missing => ok 3\n        ok\n        ok => ok 2\n",
 		"    match call lookup(1)\n        missing => ok 2\n        ok str text => ok 1\n",
-		"    match call lookup(1)\n        missing => other()\n        ok\n",
+		"    match call lookup(1)\n        missing => other{}\n        ok\n",
 		"    match chain\n        call lookup(1) as int found\n        missing => ok found\n        ok => ok found\n",
 		"    match chain\n        call first()\n        ok => ok 1\n",
 		"    match flag\n        true => ok 1\n",
@@ -253,7 +253,7 @@ func TestCompletionRegionContracts(t *testing.T) {
 			}
 		})
 	}
-	escaped, err := f.region(t, "    match call lookup(1)\n        missing => other()\n        ok\n", "int", []string{"other", "missing"}, ir.HandlerRegion)
+	escaped, err := f.region(t, "    match call lookup(1)\n        missing => other{}\n        ok\n", "int", []string{"other", "missing"}, ir.HandlerRegion)
 	if err != nil || len(escaped.Escapes) != 1 || !types.Equal(escaped.Escapes[0], f.ts["other"]) {
 		t.Fatal("handler escape set includes handled participant", err)
 	}
@@ -414,8 +414,8 @@ const assert=(ok:boolean,label:string)=>{if(!ok)throw new Error(label)};
 	}
 
 	failureCases := []struct{ body, check string }{
-		{"    match call lookup(1)\n        missing => ok 0\n        ok => missing(9)\n", "r.kind==='domain' && ($canErrorPayload(r) as {code:bigint}).code===9n"},
-		{"    match call lookup(-1)\n        missing => match call first()\n            ok => missing(7)\n        ok\n", "r.kind==='domain' && ($canErrorPayload(r) as {code:bigint}).code===7n"},
+		{"    match call lookup(1)\n        missing => ok 0\n        ok => missing{9}\n", "r.kind==='domain' && ($canErrorPayload(r) as {code:bigint}).code===9n"},
+		{"    match call lookup(-1)\n        missing => match call first()\n            ok => missing{7}\n        ok\n", "r.kind==='domain' && ($canErrorPayload(r) as {code:bigint}).code===7n"},
 		{"    match call lookup(1 / 0)\n        missing => ok 0\n        [_] => ok 2 / 0\n        ok\n", "r.kind==='standard'"},
 		{"    match chain\n        call lookup(-1) as int found\n        call increment(found) as int next\n        missing\n        ok => ok next\n", "r.kind==='domain' && !events.includes('increment')"},
 	}

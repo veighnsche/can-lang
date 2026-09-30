@@ -11,42 +11,42 @@ const browserControlsFixture = `package app
     provides []
     uses [browser]
 fn str[] use_selected
-    emits []
+    emits {}
     given
         str[] picked
     asserts
         sample: [] => ok []
     ok picked
 fn browser::file[] use_files
-    emits []
+    emits {}
     given
         browser::file[] picked
     asserts
         sample: [] => ok []
     ok picked
 fn bool use_modifiers
-    emits []
+    emits {}
     given
         browser::modifiers held
     asserts
         sample: browser::modifiers(false, true, false, false) => ok true
     ok held.ctrl
 fn int use_selection
-    emits []
+    emits {}
     given
         browser::selection caret
     asserts
         sample: browser::selection(-1, -1, "none") => ok -1
     ok caret.start
 fn str use_file
-    emits []
+    emits {}
     given
         browser::file found
     asserts
         sample: browser::file("a.csv", 12, "text/csv") => ok "a.csv"
     ok found.name
 fn void on_field_input
-    emits []
+    emits {}
     given
         browser::event e
     asserts
@@ -63,7 +63,7 @@ fn void on_field_input
                             false => ok
                             true => ok
 fn int demo
-    emits [browser::missing_root, browser::disposed, browser::rejected]
+    emits {browser::missing_root, browser::disposed, browser::rejected}
     given
         str root
     asserts
@@ -113,7 +113,7 @@ fn int demo
                                                                     ok => match call browser::dispose_app(app)
                                                                         ok => ok 1
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

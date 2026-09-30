@@ -24,7 +24,7 @@ const formWireDomain = "record line_wire\n" +
 	"    rejected\n"
 
 const formSaveHandler = "fn save_outcome save_validated\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        invoice_wire body\n" +
 	"    asserts\n" +
@@ -41,14 +41,14 @@ const formSaveAction = "action save_invoice\n" +
 	"        rejected status 422 swap inner\n"
 
 const formRenderers = "fn html::safe render_outcome\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        save_outcome outcome\n" +
 	"    asserts\n" +
 	"        sample: saved(\"c\") => ok\n" +
 	"    ok call html::text_fragment(\"done\")\n" +
 	"fn html::safe render_rejected\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        form::rejected<invoice_wire> bad\n" +
 	"    asserts\n" +
@@ -56,7 +56,7 @@ const formRenderers = "fn html::safe render_outcome\n" +
 	"    ok call html::text_fragment(\"bad\")\n"
 
 const formMounted = "fn http::router mounted\n" +
-	"    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]\n" +
+	"    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}\n" +
 	"    asserts\n" +
 	"        sample: => ok\n" +
 	"    match chain\n" +
@@ -68,21 +68,21 @@ const formMounted = "fn http::router mounted\n" +
 	"        ok => ok router\n"
 
 const formBuilderFns = "fn form::collection use_collection\n" +
-	"    emits [form::unknown_field]\n" +
+	"    emits {form::unknown_field}\n" +
 	"    asserts\n" +
 	"        sample: => ok\n" +
 	"    match call form::named_collection<invoice_wire>(\"lines\")\n" +
 	"        form::unknown_field\n" +
 	"        ok form::collection coll => ok coll\n" +
 	"fn form::field use_field\n" +
-	"    emits [form::unknown_field]\n" +
+	"    emits {form::unknown_field}\n" +
 	"    asserts\n" +
 	"        sample: => ok\n" +
 	"    match call form::named_field<line_wire>(\"sku\")\n" +
 	"        form::unknown_field\n" +
 	"        ok form::field field => ok field\n" +
 	"fn str use_names\n" +
-	"    emits [form::unknown_field, form::invalid_name]\n" +
+	"    emits {form::unknown_field, form::invalid_name}\n" +
 	"    asserts\n" +
 	"        sample: => ok \"lines[a1][sku]\"\n" +
 	"    match chain\n" +

@@ -66,7 +66,7 @@ const fetchActionEmitWeb = "package web\n" +
 	"        missing status 403\n" +
 	"        unavailable status 503\n" +
 	"fn load_outcome reload_line\n" +
-	"    emits [http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data]\n" +
+	"    emits {http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data}\n" +
 	"    given\n" +
 	"        str invoice_id\n" +
 	"        int line\n" +
@@ -79,7 +79,7 @@ const fetchActionEmitWeb = "package web\n" +
 	"        codec::invalid_data\n" +
 	"        ok load_outcome got => ok got\n" +
 	"fn save_outcome store_invoice\n" +
-	"    emits [http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data]\n" +
+	"    emits {http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data}\n" +
 	"    given\n" +
 	"        invoice_wire body\n" +
 	"    asserts\n" +
@@ -92,7 +92,7 @@ const fetchActionEmitWeb = "package web\n" +
 	"        codec::invalid_data\n" +
 	"        ok save_outcome done => ok done\n" +
 	"fn void main\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        str[] arguments\n" +
 	"    asserts\n" +

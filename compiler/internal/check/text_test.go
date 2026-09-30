@@ -21,7 +21,7 @@ func TestTextCatalogue(t *testing.T) {
 		{"value.includes(part)", "value.includes(1)"},
 		{"value.to_lower_case()", "value.locale_lower_case()"},
 		{"text::from_scalars(items)", "text::from_scalars([1.0])"},
-		{"fn str[] split\n    emits [text::empty_separator]", "fn str[] split\n    emits []"},
+		{"fn str[] split\n    emits {text::empty_separator}", "fn str[] split\n    emits {}"},
 	} {
 		t.Run(change[1], func(t *testing.T) {
 			text := strings.Replace(string(source), change[0], change[1], 1)
@@ -42,7 +42,7 @@ variant selection
     box<int>
     box<str>
 fn selection[][] nested
-    emits []
+    emits {}
     given
         box<int>[] values
     asserts

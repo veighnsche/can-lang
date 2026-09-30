@@ -139,7 +139,7 @@ func assertCoreConsumerSpan(t *testing.T, name string, err error) {
 }
 
 func coreMain() string {
-	return "fn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n"
+	return "fn void main\n    emits {}\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n"
 }
 
 // coreMailDep is a vendor mail package: the owner record plus its factory
@@ -151,14 +151,14 @@ func coreMailDep() coreDep {
 owner record email
     str address
 fn email make_email
-    emits []
+    emits {}
     given
         str address
     asserts
         sample: "a@b" => ok email("a@b")
     ok email(address)
 fn str email_address
-    emits []
+    emits {}
     given
         email mail
     asserts
@@ -174,7 +174,7 @@ func coreBoxDep() coreDep {
 record box<item>
     item value
 fn box<item> wrap<item>
-    emits []
+    emits {}
     given
         item value
     asserts
@@ -190,7 +190,7 @@ func TestCoreOwnerRecordThroughGenericPackageBoundary(t *testing.T) {
 	deps["rival"] = coreDep{lineage: "shop_rival", files: deps["rival"].files}
 	header := "package app\n    provides []\n    uses [post::mail, tools::lib, rival::mail as other, codec, bytes]\n"
 	positive := header + `fn str describe
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -200,7 +200,7 @@ func TestCoreOwnerRecordThroughGenericPackageBoundary(t *testing.T) {
     match held
         mail::email => ok call mail::email_address(cell.value)
 fn bool same_address
-    emits []
+    emits {}
     given
         str first
         str second
@@ -215,7 +215,7 @@ fn bool same_address
 	}
 	cases := map[string]struct{ app, want string }{
 		"generic codec encode": {`fn bytes::buffer expose
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -225,7 +225,7 @@ fn bool same_address
     ok call codec::encode_json<lib::box<mail::email>>(cell)
 `, "not codec-admissible"},
 		"generic codec decode": {`fn lib::box<mail::email> load_owned
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -237,7 +237,7 @@ fn bool same_address
         ok => ok decoded
 `, "not codec-admissible"},
 		"field read through instantiation": {`fn str peek
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -248,7 +248,7 @@ fn bool same_address
     ok inner.address
 `, "representation is confined"},
 		"twin instance construction": {`fn other::email forge
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -256,7 +256,7 @@ fn bool same_address
     ok other::email(address)
 `, "only be constructed in its declaring package"},
 		"twin instance confusion": {`fn str smuggle
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -307,14 +307,14 @@ variant shape
 	deps := map[string]coreDep{"geo": geo, "geo2": twin}
 	header := "package app\n    provides []\n    uses [geo::shapes, geo2::shapes as other]\n"
 	positive := header + `fn shapes::shape convert
-    emits []
+    emits {}
     given
         shapes::circle value
     asserts
         sample: shapes::circle(3) => ok shapes::circle(3)
     ok value
 fn int area_units
-    emits []
+    emits {}
     given
         shapes::shape value
     asserts
@@ -324,7 +324,7 @@ fn int area_units
         shapes::circle(bind radius) => ok radius
         shapes::rectangle(bind width, _) => ok width
 fn shapes::tagged<str> rewrap
-    emits []
+    emits {}
     given
         shapes::tagged<int> value
     asserts
@@ -336,7 +336,7 @@ fn shapes::tagged<str> rewrap
 	}
 	cases := map[string]struct{ app, want string }{
 		"unlisted leaf": {`fn shapes::shape convert
-    emits []
+    emits {}
     given
         shapes::triangle value
     asserts
@@ -344,7 +344,7 @@ fn shapes::tagged<str> rewrap
     ok value
 `, "does not fit expected type"},
 		"twin instance leaf": {`fn shapes::shape convert
-    emits []
+    emits {}
     given
         other::circle value
     asserts
@@ -352,7 +352,7 @@ fn shapes::tagged<str> rewrap
     ok value
 `, "does not fit expected type"},
 		"twin instance variant": {`fn other::shape convert
-    emits []
+    emits {}
     given
         shapes::shape value
     asserts
@@ -360,7 +360,7 @@ fn shapes::tagged<str> rewrap
     ok value
 `, "does not fit expected type"},
 		"missing leaf arm": {`fn int area_units
-    emits []
+    emits {}
     given
         shapes::shape value
     asserts
@@ -389,7 +389,7 @@ func TestCoreScenarioLinkAfterAliasRename(t *testing.T) {
     uses [text]
 scenario checkout
 fn str read
-    emits []
+    emits {}
     asserts
         unit: => ok "fixture"
     match call text::from_int(7)
@@ -400,7 +400,7 @@ fn str read
 `
 	deps := map[string]coreDep{"vendor": {lineage: "shop_vendor", files: map[string]string{"helper.can": helper}}}
 	app := func(uses, link, call string) string {
-		return "package app\n    provides []\n    uses [" + uses + "]\nfn str read_customer\n    emits []\n    asserts\n        customer: => ok \"fixture\"" + link + "\n    ok call " + call + "\n" + coreMain()
+		return "package app\n    provides []\n    uses [" + uses + "]\nfn str read_customer\n    emits {}\n    asserts\n        customer: => ok \"fixture\"" + link + "\n    ok call " + call + "\n" + coreMain()
 	}
 	program, err := func() (*Program, error) {
 		_, program, err := coreFixture(t, map[string]string{"src/app/main.can": app("vendor::helper as h", " link h::checkout", "h::read()")}, deps)
@@ -438,7 +438,7 @@ func TestCoreScenarioTwoLinksThroughInstanceAlias(t *testing.T) {
 scenario checkout
 scenario retry
 fn str read
-    emits []
+    emits {}
     asserts
         unit: => ok "fixture"
     match call text::from_int(7)
@@ -449,7 +449,7 @@ fn str read
 `
 	deps := map[string]coreDep{"vendor": {lineage: "shop_vendor", files: map[string]string{"helper.can": helper}}}
 	program, err := func() (*Program, error) {
-		_, program, err := coreFixture(t, map[string]string{"src/app/main.can": "package app\n    provides []\n    uses [vendor::helper as h]\nfn str read_customer\n    emits []\n    asserts\n        customer: => ok \"first\" link h::checkout, h::retry\n    ok call h::read()\n" + coreMain()}, deps)
+		_, program, err := coreFixture(t, map[string]string{"src/app/main.can": "package app\n    provides []\n    uses [vendor::helper as h]\nfn str read_customer\n    emits {}\n    asserts\n        customer: => ok \"first\" link h::checkout, h::retry\n    ok call h::read()\n" + coreMain()}, deps)
 		return program, err
 	}()
 	if err != nil {
@@ -468,14 +468,14 @@ func coreTwinModelDep(value string) coreDep {
     uses []
 record item
     ` + value + `
-error failed(str reason)
+error failed{str reason}
 fn int risky
-    emits [failed]
+    emits {failed}
     given
         int value
     asserts
-        sample: 0 => failed("bad")
-    failed("bad")
+        sample: 0 => failed{"bad"}
+    failed{"bad"}
 `}, registry: `{"active":["model::failed"],"retired":[]}`}
 }
 
@@ -486,9 +486,9 @@ func TestCoreErrorAcrossTwinInstances(t *testing.T) {
 	}
 	header := "package app\n    provides []\n    uses [left::model as first, right::model as second]\n"
 	positive := header + `fn int caller
-    emits [first::failed, second::failed]
+    emits {first::failed, second::failed}
     asserts
-        sample: => first::failed("bad")
+        sample: => first::failed{"bad"}
     match call first::risky(0)
         first::failed
         ok int got => relay call second::risky(got)
@@ -510,17 +510,17 @@ func TestCoreErrorAcrossTwinInstances(t *testing.T) {
 	}
 	cases := map[string]struct{ app, want string }{
 		"undeclared twin escape": {`fn int caller
-    emits [first::failed]
+    emits {first::failed}
     asserts
-        sample: => first::failed("bad")
+        sample: => first::failed{"bad"}
     match call first::risky(0)
         first::failed
         ok int got => relay call second::risky(got)
 `, "undeclared escaping domain error"},
 		"wrong twin arm": {`fn int caller
-    emits [second::failed]
+    emits {second::failed}
     asserts
-        sample: => second::failed("bad")
+        sample: => second::failed{"bad"}
     match call second::risky(0)
         first::failed
         ok int got => ok got

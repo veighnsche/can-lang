@@ -13,14 +13,14 @@ import (
 )
 
 const templateTarget = `fn int double
-    emits []
+    emits {}
     given
         int value
     asserts
         sample: 2 => ok 4
     ok value + value
 fn int pick
-    emits []
+    emits {}
     given
         int first
         int second
@@ -48,7 +48,7 @@ func TestFixtureTemplateExpansion(t *testing.T) {
         base => ok base + base
         3 => ok 6
 fn int first_use
-    emits []
+    emits {}
     asserts
         sample: => ok 4
     match call double(2)
@@ -56,7 +56,7 @@ fn int first_use
             sample: use doubled(2)
         ok int got => ok got
 fn int second_use
-    emits []
+    emits {}
     asserts
         sample: => ok 6
     match call double(9)
@@ -99,7 +99,7 @@ func TestFixtureTemplateRejects(t *testing.T) {
 `
 	consumer := func(row string) string {
 		return `fn int consumer
-    emits []
+    emits {}
     asserts
         sample: => ok 4
     match call double(2)
@@ -118,7 +118,7 @@ func TestFixtureTemplateRejects(t *testing.T) {
 		"executable argument": {base + consumer("sample: use doubled(call double(2))"), "is executable"},
 		"captured local":      {base + strings.Replace(consumer("sample: use doubled(first)"), "match call double(2)", "int first = 2\n    match call double(first)", 1), `no eligible declaration for "first"`},
 		"captured fn input": {base + `fn int consumer
-    emits []
+    emits {}
     given
         int second
     asserts
@@ -130,22 +130,22 @@ func TestFixtureTemplateRejects(t *testing.T) {
 ` + programMain + "    ok\n", `no eligible declaration for "second"`},
 		"wrong exact target": {base + strings.Replace(consumer("sample: use doubled(2)"), "match call double(2)", "match call pick(1, 2)", 1), "not the invoked"},
 		"reference call site": {base + `fn int consumer
-    emits []
+    emits {}
     asserts
         sample: => ok 4
-    callable int (int) emits [] action = callable double
+    callable int (int) emits {} action = callable double
     match call action(2)
         when
             sample: use doubled(2)
         ok int got => ok got
 ` + programMain + "    ok\n", "not the invoked"},
-		"use in attached row":   {base + "fn int bad\n    emits []\n    asserts\n        sample: use doubled(2)\n    ok 1\n" + programMain + "    ok\n", "lexical when tables only"},
+		"use in attached row":   {base + "fn int bad\n    emits {}\n    asserts\n        sample: use doubled(2)\n    ok 1\n" + programMain + "    ok\n", "lexical when tables only"},
 		"question target":       {base + "fixture q for question\n    cases\n        1 => ok 1\n" + consumer("sample: 2 => ok 4"), "no invokable fixture target"},
-		"callable value target": {base + "callable int () emits [] thunk = callable double\nfixture v for thunk\n    cases\n        1 => ok 1\n" + consumer("sample: 2 => ok 4"), "not a fixture target declaration"},
+		"callable value target": {base + "callable int () emits {} thunk = callable double\nfixture v for thunk\n    cases\n        1 => ok 1\n" + consumer("sample: 2 => ok 4"), "not a fixture target declaration"},
 		"duplicate parameter":   {programHeader + templateTarget + "fixture doubled for double\n    given\n        int base\n        int base\n    cases\n        base => ok base\n" + consumer("sample: 2 => ok 4"), `duplicate field "base"`},
 		"executable case":       {programHeader + templateTarget + "fixture doubled for double\n    given\n        int base\n    cases\n        call double(base) => ok 1\n" + consumer("sample: 2 => ok 4"), "case 1"},
 		"executable outcome":    {programHeader + templateTarget + "fixture doubled for double\n    given\n        int base\n    cases\n        base => ok call double(base)\n" + consumer("sample: 2 => ok 4"), "case 1"},
-		"using failure in case": {programHeader + templateTarget + "fixture doubled for double\n    cases\n        1 => ok 1\n            using failure native http::status_error(1, [])\n" + consumer("sample: 2 => ok 4"), "confined to attached wrapper assertions"},
+		"using failure in case": {programHeader + templateTarget + "fixture doubled for double\n    cases\n        1 => ok 1\n            using failure native http::status_error{1, []}\n" + consumer("sample: 2 => ok 4"), "confined to attached wrapper assertions"},
 	}
 	for name, kase := range cases {
 		t.Run(strings.ReplaceAll(name, " ", "_"), func(t *testing.T) {
@@ -162,7 +162,7 @@ func TestFixtureShadowedStaticKeepsStaticMeaning(t *testing.T) {
 	// even when a runtime input shadows the name: no capture, no
 	// re-resolution.
 	text := programHeader + "int limit = 9\n" + templateTarget + "fixture doubled for double\n    given\n        int base\n    cases\n        base => ok base\n" + `fn int consumer
-    emits []
+    emits {}
     given
         int limit
     asserts
@@ -203,7 +203,7 @@ func TestFixtureNativeTargetWithRaw(t *testing.T) {
 	// target plus policy shape through the ordinary raw path.
 	lib := "package app\n    provides []\n    uses [http, codec]\nfixture fetched for load\n    given\n        int count\n    cases\n        => ok receipt(count)\n        => ok receipt(7)\n            using raw \"fixtures/fetched.json\"\n"
 	main := wrapHeader + wrapLoad + `fn receipt consumer
-    emits [http::request_failed]
+    emits {http::request_failed}
     asserts
         sample: => ok receipt(7)
     match call load()
@@ -237,8 +237,8 @@ func TestFixtureNativeTargetWithRaw(t *testing.T) {
 func TestFixtureImportedTemplateResolvesRawAtDefinition(t *testing.T) {
 	// The imported template's raw path resolves relative to its own
 	// defining directory; no copy exists beside the use site.
-	vendor := "package helpers\n    provides [fetched, receipt, load, service]\n    uses [http, codec]\nrecord receipt\n    int count\nconnection service\n    endpoint \"http://localhost:1\"\n    timeout_ms 1000\nfetch receipt load from service\n    emits [http::request_failed]\n    asserts\n        decoded: => ok receipt(7)\n            using raw \"fixtures/load.json\"\n    get \"/load\"\nfixture fetched for load\n    given\n        int count\n    cases\n        => ok receipt(count)\n        => ok receipt(7)\n            using raw \"fixtures/fetched.json\"\n"
-	main := "package app\n    provides []\n    uses [http, codec, vendor::helpers]\nfn helpers::receipt consumer\n    emits [http::request_failed]\n    asserts\n        sample: => ok helpers::receipt(7)\n    match call helpers::load()\n        when\n            sample: use helpers::fetched(7)\n        http::request_failed\n        ok helpers::receipt got => ok got\n" + programMain + "    ok\n"
+	vendor := "package helpers\n    provides [fetched, receipt, load, service]\n    uses [http, codec]\nrecord receipt\n    int count\nconnection service\n    endpoint \"http://localhost:1\"\n    timeout_ms 1000\nfetch receipt load from service\n    emits {http::request_failed}\n    asserts\n        decoded: => ok receipt(7)\n            using raw \"fixtures/load.json\"\n    get \"/load\"\nfixture fetched for load\n    given\n        int count\n    cases\n        => ok receipt(count)\n        => ok receipt(7)\n            using raw \"fixtures/fetched.json\"\n"
+	main := "package app\n    provides []\n    uses [http, codec, vendor::helpers]\nfn helpers::receipt consumer\n    emits {http::request_failed}\n    asserts\n        sample: => ok helpers::receipt(7)\n    match call helpers::load()\n        when\n            sample: use helpers::fetched(7)\n        http::request_failed\n        ok helpers::receipt got => ok got\n" + programMain + "    ok\n"
 	program, err := programFixtureWithVendor(t, map[string]string{"src/main.can": main}, map[string]string{
 		"src/lib.can":               vendor,
 		"src/fixtures/load.json":    nativeRawFixture("can.project.dependency/vendor/helpers::load"),
@@ -256,8 +256,8 @@ func TestFixtureImportedTemplateResolvesRawAtDefinition(t *testing.T) {
 func TestFixtureExpansionTagsDefinitionSources(t *testing.T) {
 	// Expanded rows mix definition and use nodes; every span must validate
 	// against its attributed file or source-map encoding fails the stage.
-	vendor := "package helpers\n    provides [fetched, receipt, load, service]\n    uses [http, codec]\nrecord receipt\n    int count\nconnection service\n    endpoint \"http://localhost:1\"\n    timeout_ms 1000\nfetch receipt load from service\n    emits [http::request_failed]\n    asserts\n        decoded: => ok receipt(7)\n            using raw \"fixtures/load.json\"\n    get \"/load\"\nfixture fetched for load\n    given\n        int count\n    cases\n        => ok receipt(count)\n        => ok receipt(7)\n            using raw \"fixtures/fetched.json\"\n"
-	main := "package app\n    provides []\n    uses [http, codec, vendor::helpers]\nfn helpers::receipt consumer\n    emits [http::request_failed]\n    asserts\n        sample: => ok helpers::receipt(7)\n    match call helpers::load()\n        when\n            sample: use helpers::fetched(7)\n        http::request_failed\n        ok helpers::receipt got => ok got\n" + programMain + "    ok\n"
+	vendor := "package helpers\n    provides [fetched, receipt, load, service]\n    uses [http, codec]\nrecord receipt\n    int count\nconnection service\n    endpoint \"http://localhost:1\"\n    timeout_ms 1000\nfetch receipt load from service\n    emits {http::request_failed}\n    asserts\n        decoded: => ok receipt(7)\n            using raw \"fixtures/load.json\"\n    get \"/load\"\nfixture fetched for load\n    given\n        int count\n    cases\n        => ok receipt(count)\n        => ok receipt(7)\n            using raw \"fixtures/fetched.json\"\n"
+	main := "package app\n    provides []\n    uses [http, codec, vendor::helpers]\nfn helpers::receipt consumer\n    emits {http::request_failed}\n    asserts\n        sample: => ok helpers::receipt(7)\n    match call helpers::load()\n        when\n            sample: use helpers::fetched(7)\n        http::request_failed\n        ok helpers::receipt got => ok got\n" + programMain + "    ok\n"
 	program, err := programFixtureWithVendor(t, map[string]string{"src/main.can": main}, map[string]string{
 		"src/lib.can":               vendor,
 		"src/fixtures/load.json":    nativeRawFixture("can.project.dependency/vendor/helpers::load"),
@@ -389,7 +389,7 @@ func TestFixtureJudgeGroupedTarget(t *testing.T) {
     cases
         ("x") => ok true
 fn bool consumer
-    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
+    emits {http::request_failed, ai::invalid_question, ai::invalid_answer}
     asserts
         sample: => ok true
     match call assess(("x"))
@@ -411,7 +411,7 @@ fn bool consumer
 }
 
 func TestFixtureGenericTarget(t *testing.T) {
-	text := "package app\n    provides []\n    uses []\nfn item identity<item>\n    emits []\n    given\n        item value\n    asserts\n        integer: 3 => ok 3\n    ok value\nfixture ints for identity<int>\n    cases\n        3 => ok 3\nfn int consumer\n    emits []\n    asserts\n        sample: => ok 3\n    match call identity<int>(3)\n        when\n            sample: use ints()\n        ok int got => ok got\n" + programMain + "    ok\n"
+	text := "package app\n    provides []\n    uses []\nfn item identity<item>\n    emits {}\n    given\n        item value\n    asserts\n        integer: 3 => ok 3\n    ok value\nfixture ints for identity<int>\n    cases\n        3 => ok 3\nfn int consumer\n    emits {}\n    asserts\n        sample: => ok 3\n    match call identity<int>(3)\n        when\n            sample: use ints()\n        ok int got => ok got\n" + programMain + "    ok\n"
 	program, err := programFixture(t, map[string]string{"src/main.can": text})
 	if err != nil {
 		t.Fatal(err)
@@ -439,7 +439,7 @@ func TestFixtureWrapperTarget(t *testing.T) {
     emits calculated
     asserts
         sample: => ok receipt(0)
-            using failure native http::status_error(404, [])
+            using failure native http::status_error{404, []}
     handles native
         http::status_error => ok receipt(0)
 fixture recent for cached
@@ -449,7 +449,7 @@ fixture older for load
     cases
         => ok receipt(7)
 fn receipt consumer
-    emits [http::request_failed]
+    emits {http::request_failed}
     asserts
         sample: => ok receipt(0)
     match call cached()
@@ -474,7 +474,7 @@ fn receipt consumer
 }
 
 func TestFixtureCatalogueTarget(t *testing.T) {
-	text := "package app\n    provides []\n    uses [bytes, codec]\nfixture decoded for bytes::from_utf8\n    cases\n        \"T\" => codec::invalid_data(\"text\", \"unit\")\nfn bytes::buffer consumer\n    emits [codec::invalid_data]\n    asserts\n        sample: => codec::invalid_data(\"text\", \"unit\")\n    match call bytes::from_utf8(\"T\")\n        when\n            sample: use decoded()\n        codec::invalid_data\n        ok bytes::buffer got => ok got\n" + programMain + "    ok\n"
+	text := "package app\n    provides []\n    uses [bytes, codec]\nfixture decoded for bytes::from_utf8\n    cases\n        \"T\" => codec::invalid_data{\"text\", \"unit\"}\nfn bytes::buffer consumer\n    emits {codec::invalid_data}\n    asserts\n        sample: => codec::invalid_data{\"text\", \"unit\"}\n    match call bytes::from_utf8(\"T\")\n        when\n            sample: use decoded()\n        codec::invalid_data\n        ok bytes::buffer got => ok got\n" + programMain + "    ok\n"
 	program, err := programFixture(t, map[string]string{"src/main.can": text})
 	if err != nil {
 		t.Fatal(err)
@@ -497,7 +497,7 @@ func TestFixtureObligation(t *testing.T) {
 `
 	consumer := func(row string) string {
 		return `fn int consumer
-    emits []
+    emits {}
     asserts
         sample: => ok 4
     match call double(2)
@@ -554,7 +554,7 @@ func TestFixtureObligationCrossFile(t *testing.T) {
         3 => ok 6
 `
 	main := programHeader + `fn int consumer
-    emits []
+    emits {}
     asserts
         sample: => ok 4
     match call double(2)

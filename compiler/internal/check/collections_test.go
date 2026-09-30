@@ -64,7 +64,7 @@ func TestCollectionKindSelectsBulkBuilders(t *testing.T) {
 // result and failure types.
 func TestBulkBuildersResolveFromSource(t *testing.T) {
 	text := strings.Replace(programHeader, "uses []", "uses [collections]", 1) + `fn collections::entry<int,str>[] built
-    emits [collections::key_exists]
+    emits {collections::key_exists}
     asserts
         sample: => ok [collections::entry<int,str>(1, "a")]
     collections::entry<int,str>[] rows = [collections::entry<int,str>(1, "a")]
@@ -72,7 +72,7 @@ func TestBulkBuildersResolveFromSource(t *testing.T) {
         collections::key_exists
         ok collections::map<int,str> made => ok call collections::entries(made)
 fn bool grouped
-    emits []
+    emits {}
     asserts
         sample: => ok true
     match call collections::build_set<int>([3, 2, 3])
@@ -218,7 +218,7 @@ func TestCollectionsRejectInvalidContracts(t *testing.T) {
 		{"collections::empty_set<int>()", "collections::set<int>()"},
 		{"collections::contains(first, 1)", "collections::contains(first, 1.0)"},
 		{"callable collections::add\n", "callable collections::contains\n"},
-		{"emits [collections::key_absent]\n    asserts", "emits []\n    asserts"},
+		{"emits {collections::key_absent}\n    asserts", "emits {}\n    asserts"},
 		{"collections::add(empty, false)", "collections::add(empty, 1)"},
 	} {
 		t.Run(change[1], func(t *testing.T) {

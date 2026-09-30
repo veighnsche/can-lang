@@ -10,9 +10,9 @@ import (
 	"github.com/veighnsche/can-lang/compiler/internal/project"
 )
 
-const scenarioEmitHelper = "package helper\n    provides [read, checkout]\n    uses [text]\nscenario checkout\nfn str read\n    emits []\n    asserts\n        unit: => ok \"fixture\"\n    match call text::from_int(7)\n        when\n            scenario checkout: 7 => ok \"fixture\"\n            unit: 7 => ok \"fixture\"\n        ok str result => ok result\n"
+const scenarioEmitHelper = "package helper\n    provides [read, checkout]\n    uses [text]\nscenario checkout\nfn str read\n    emits {}\n    asserts\n        unit: => ok \"fixture\"\n    match call text::from_int(7)\n        when\n            scenario checkout: 7 => ok \"fixture\"\n            unit: 7 => ok \"fixture\"\n        ok str result => ok result\n"
 
-const scenarioEmitApp = "package app\n    provides []\n    uses [helper]\nfn str read_customer\n    emits []\n    asserts\n        customer: => ok \"fixture\" link helper::checkout\n    ok call helper::read()\nfn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n"
+const scenarioEmitApp = "package app\n    provides []\n    uses [helper]\nfn str read_customer\n    emits {}\n    asserts\n        customer: => ok \"fixture\" link helper::checkout\n    ok call helper::read()\nfn void main\n    emits {}\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n"
 
 func scenarioEmitProgram(t *testing.T) *check.Program {
 	t.Helper()

@@ -46,7 +46,7 @@ func TestJudgeRetainsCheckedPhases(t *testing.T) {
 
 func TestJudgeStateSchemaDisclosesOnlyState(t *testing.T) {
 	for _, state := range []struct{ block, sample string }{{"", "\"x\", ()"}, {"    state\n        str message\n        int count\n", "\"x\", (\"message\", 1)"}} {
-		judge := "judge bool assess from classifier\n    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]\n    given\n        str private_description\n" + state.block + "    asserts\n        sample: " + state.sample + " => ok true\n            using raw \"fixtures/assess.json\"\n    call question(private_description) as bool unused\n    ok => ok true\n"
+		judge := "judge bool assess from classifier\n    emits {http::request_failed, ai::invalid_question, ai::invalid_answer}\n    given\n        str private_description\n" + state.block + "    asserts\n        sample: " + state.sample + " => ok true\n            using raw \"fixtures/assess.json\"\n    call question(private_description) as bool unused\n    ok => ok true\n"
 		p, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": nativeHeader + nativeClassifier + nativeQuestion + judge + programMain + "    ok\n"}, "assess"))
 		if err != nil {
 			t.Fatal(err)
@@ -80,11 +80,11 @@ func TestJudgeStateSchemaDisclosesOnlyState(t *testing.T) {
 
 func TestNamedArmInitializationDependencies(t *testing.T) {
 	text := nativeHeader + `choice_arm float arm
-    emits []
+    emits {}
     describes description
     ok %
 
-choice_arm<float> emits [] stored = arm
+choice_arm<float> emits {} stored = arm
 str description = "forward"
 ` + programMain + "    ok\n"
 	p, err := programFixture(t, map[string]string{"src/main.can": text})
@@ -109,7 +109,7 @@ str other = description`, 1)
 
 func TestQuestionHandlerScopesRemainSeparate(t *testing.T) {
 	declaration := `choice str dynamic from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     given
         choice_option[] candidates
     confidence as certainty
@@ -119,7 +119,7 @@ func TestQuestionHandlerScopesRemainSeparate(t *testing.T) {
         ok str selected => ok selected
 
 score float rating from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     score as measured
     confidence as certainty
     asks "Rate"
@@ -150,11 +150,11 @@ score float rating from classifier
 
 func TestGeneratedArmSpreadInfersOrdinaryGenericCalls(t *testing.T) {
 	declarations := `record arms
-    choice_arm<float> emits [] left
-    choice_arm<float> emits [] right
+    choice_arm<float> emits {} left
+    choice_arm<float> emits {} right
 
 fn item identity<item>
-    emits []
+    emits {}
     given
         item value
     asserts
@@ -162,7 +162,7 @@ fn item identity<item>
     ok value
 
 fn item first<item>
-    emits []
+    emits {}
     given
         item[] values
     asserts
@@ -170,7 +170,7 @@ fn item first<item>
     ok values[0]
 
 fn item keep<item>
-    emits []
+    emits {}
     given
         item[] ignored
         item value
@@ -179,7 +179,7 @@ fn item keep<item>
     ok value
 
 fn item variadic<item>
-    emits []
+    emits {}
     given
         item ...values
     asserts
@@ -191,13 +191,13 @@ record box<item>
 
 fn item unwrap<item>
     on box<item> self
-    emits []
+    emits {}
     asserts
         sample: box<int>(1) => => ok 1
     ok self.value
 
 fn item choose<item>
-    emits []
+    emits {}
     given
         int index
         item value
@@ -206,7 +206,7 @@ fn item choose<item>
     ok value
 
 record weights choice float weighted from classifier
-    emits [ai::invalid_question, ai::invalid_answer]
+    emits {ai::invalid_question, ai::invalid_answer}
     given
         arms choices
         box<arms> wrapped

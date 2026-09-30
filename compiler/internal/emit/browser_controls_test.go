@@ -9,14 +9,14 @@ const browserControlsEmitFixture = `package app
     provides []
     uses [browser]
 fn void on_field_input
-    emits []
+    emits {}
     given
         browser::event e
     asserts
         sample: browser::event("input", "field", "x", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void main
-    emits []
+    emits {}
     asserts
         empty: => ok
     match call browser::mount("app")

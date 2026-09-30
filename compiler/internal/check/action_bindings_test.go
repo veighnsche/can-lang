@@ -17,7 +17,7 @@ const actionBindingsModel = "package model\n" +
 	"    provides [session_of, exact_origin, load_authorized, save_authorized, save_html_authorized]\n" +
 	"    uses [invoice_contract as contract, cookie, form, http, option, sql]\n" +
 	"fn option::value<str> find_header\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        http::header[] headers\n" +
 	"        str name\n" +
@@ -32,7 +32,7 @@ const actionBindingsModel = "package model\n" +
 	"            true => ok option::some(headers[0].value)\n" +
 	"        true => ok option::none()\n" +
 	"fn option::value<str> unique_scan\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        http::header[] headers\n" +
 	"        str name\n" +
@@ -51,7 +51,7 @@ const actionBindingsModel = "package model\n" +
 	"                option::some => ok option::none()\n" +
 	"        true => ok found\n" +
 	"fn option::value<str> unique_header\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        http::header[] headers\n" +
 	"        str name\n" +
@@ -61,7 +61,7 @@ const actionBindingsModel = "package model\n" +
 	"    match call unique_scan(headers, name, option::none())\n" +
 	"        ok option::value<str> found => ok found\n" +
 	"fn option::value<str> session_of\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        http::header[] headers\n" +
 	"    asserts\n" +
@@ -75,7 +75,7 @@ const actionBindingsModel = "package model\n" +
 	"                ok cookie::collection jar => match call cookie::get(jar, \"session\")\n" +
 	"                    ok option::value<str> id => ok id\n" +
 	"fn bool exact_origin\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        http::header[] headers\n" +
 	"        str public_origin\n" +
@@ -88,7 +88,7 @@ const actionBindingsModel = "package model\n" +
 	"            option::none => ok false\n" +
 	"            option::some => ok found.value is public_origin\n" +
 	"fn contract::grid_load_outcome load_authorized\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        sql::pool pool\n" +
 	"        str session\n" +
@@ -100,7 +100,7 @@ const actionBindingsModel = "package model\n" +
 	"        false => ok contract::grid_loaded(contract::grid_snapshot(\"r1\", [], 0))\n" +
 	"        true => ok contract::grid_load_forbidden(\"denied\")\n" +
 	"fn contract::grid_edit_outcome save_authorized\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        sql::pool pool\n" +
 	"        str session\n" +
@@ -116,7 +116,7 @@ const actionBindingsModel = "package model\n" +
 	"            true => ok contract::grid_saved(body.operation_id, contract::grid_snapshot(\"r2\", body.lines, 0))\n" +
 	"        true => ok contract::grid_forbidden(body.operation_id, \"denied\")\n" +
 	"fn contract::edit_outcome save_html_authorized\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        sql::pool pool\n" +
 	"        str session\n" +
@@ -139,7 +139,7 @@ const actionBindingsServer = "package server\n" +
 	"    provides [routes]\n" +
 	"    uses [invoice_contract as contract, action, form, html, http, option, sql, model]\n" +
 	"fn contract::grid_load_outcome load_grid\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        near sql::pool pool\n" +
 	"        http::request req\n" +
@@ -155,7 +155,7 @@ const actionBindingsServer = "package server\n" +
 	"                option::some => match call model::load_authorized(pool, session.value, key)\n" +
 	"                    ok contract::grid_load_outcome found => ok found\n" +
 	"fn contract::grid_edit_outcome save_grid\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        near sql::pool pool\n" +
 	"        near str public_origin\n" +
@@ -176,7 +176,7 @@ const actionBindingsServer = "package server\n" +
 	"                        true => match call model::save_authorized(pool, session.value, key, body)\n" +
 	"                            ok contract::grid_edit_outcome result => ok result\n" +
 	"fn contract::edit_outcome save_html\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        near sql::pool pool\n" +
 	"        near str public_origin\n" +
@@ -197,7 +197,7 @@ const actionBindingsServer = "package server\n" +
 	"                        true => match call model::save_html_authorized(pool, session.value, key, form)\n" +
 	"                            ok contract::edit_outcome result => ok result\n" +
 	"fn html::safe render_html\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        contract::edit_outcome outcome\n" +
 	"    asserts\n" +
@@ -209,14 +209,14 @@ const actionBindingsServer = "package server\n" +
 	"        contract::forbidden => ok call html::text_fragment(\"forbidden\")\n" +
 	"        contract::unavailable => ok call html::text_fragment(\"unavailable\")\n" +
 	"fn html::safe render_bad_form\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        form::rejected<contract::invoice_form> bad\n" +
 	"    asserts\n" +
 	"        sample: form::rejected<contract::invoice_form>([], []) => ok\n" +
 	"    ok call html::text_fragment(\"bad form\")\n" +
 	"fn http::router routes\n" +
-	"    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]\n" +
+	"    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}\n" +
 	"    given\n" +
 	"        near sql::pool pool\n" +
 	"        near str public_origin\n" +
@@ -232,7 +232,7 @@ const actionBindingsServer = "package server\n" +
 	"        http::ambiguous_route\n" +
 	"        ok => ok built\n" +
 	"fn str quantity_input\n" +
-	"    emits [form::unknown_field, form::invalid_name]\n" +
+	"    emits {form::unknown_field, form::invalid_name}\n" +
 	"    asserts\n" +
 	"        sample: => ok \"lines[a1][quantity]\"\n" +
 	"    match chain\n" +
@@ -250,7 +250,7 @@ const actionBindingsClient = "package client\n" +
 	"    provides [load_url, form_url, fetch_load, fetch_save]\n" +
 	"    uses [invoice_contract as contract, action, codec, http]\n" +
 	"fn str load_url\n" +
-	"    emits [action::invalid_path]\n" +
+	"    emits {action::invalid_path}\n" +
 	"    given\n" +
 	"        contract::invoice_key key\n" +
 	"    asserts\n" +
@@ -259,7 +259,7 @@ const actionBindingsClient = "package client\n" +
 	"        action::invalid_path\n" +
 	"        ok str built => ok built\n" +
 	"fn str form_url\n" +
-	"    emits [action::invalid_path]\n" +
+	"    emits {action::invalid_path}\n" +
 	"    given\n" +
 	"        contract::invoice_key key\n" +
 	"    asserts\n" +
@@ -268,7 +268,7 @@ const actionBindingsClient = "package client\n" +
 	"        action::invalid_path\n" +
 	"        ok str built => ok built\n" +
 	"fn contract::grid_load_outcome fetch_load\n" +
-	"    emits [http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data]\n" +
+	"    emits {http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data}\n" +
 	"    given\n" +
 	"        contract::invoice_key key\n" +
 	"    asserts\n" +
@@ -284,7 +284,7 @@ const actionBindingsClient = "package client\n" +
 	"        codec::invalid_data\n" +
 	"        ok contract::grid_load_outcome got => ok got\n" +
 	"fn contract::grid_edit_outcome fetch_save\n" +
-	"    emits [http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data]\n" +
+	"    emits {http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data}\n" +
 	"    given\n" +
 	"        contract::invoice_key key\n" +
 	"        contract::grid_edit_input body\n" +
@@ -589,7 +589,7 @@ func TestActionBindingsRejects(t *testing.T) {
 		},
 		"missing request input": {
 			actionBindingsExtra("fn contract::grid_load_outcome load_noreq\n"+
-				"    emits []\n"+
+				"    emits {}\n"+
 				"    given\n"+
 				"        near sql::pool pool\n"+
 				"        contract::invoice_key key\n"+
@@ -600,7 +600,7 @@ func TestActionBindingsRejects(t *testing.T) {
 		},
 		"swapped request input": {
 			actionBindingsExtra("fn contract::grid_load_outcome load_swapped\n"+
-				"    emits []\n"+
+				"    emits {}\n"+
 				"    given\n"+
 				"        near sql::pool pool\n"+
 				"        contract::invoice_key key\n"+
@@ -613,7 +613,7 @@ func TestActionBindingsRejects(t *testing.T) {
 		},
 		"wrong handler result": {
 			actionBindingsExtra("fn contract::grid_edit_outcome load_wrong_result\n"+
-				"    emits []\n"+
+				"    emits {}\n"+
 				"    given\n"+
 				"        near sql::pool pool\n"+
 				"        http::request req\n"+
@@ -625,7 +625,7 @@ func TestActionBindingsRejects(t *testing.T) {
 		},
 		"fallible handler": {
 			actionBindingsExtra("fn contract::grid_load_outcome load_emits\n"+
-				"    emits [http::invalid_request]\n"+
+				"    emits {http::invalid_request}\n"+
 				"    given\n"+
 				"        near sql::pool pool\n"+
 				"        http::request req\n"+
@@ -633,11 +633,11 @@ func TestActionBindingsRejects(t *testing.T) {
 				"    asserts\n"+
 				"        sample: contract::invoice_key(1, 7) => ok contract::grid_load_forbidden(\"denied\")\n"+
 				"    ok contract::grid_load_forbidden(\"denied\")\n", "load_emits"),
-			`handler "load_emits" emits [http::invalid_request], but action "contract::load_invoice_grid" requires emits []`,
+			`handler "load_emits" emits {http::invalid_request}, but action "contract::load_invoice_grid" requires emits {}`,
 		},
 		"generic handler": {
 			actionBindingsExtra("fn contract::grid_load_outcome load_generic<item>\n"+
-				"    emits []\n"+
+				"    emits {}\n"+
 				"    given\n"+
 				"        near sql::pool pool\n"+
 				"        http::request req\n"+
@@ -650,7 +650,7 @@ func TestActionBindingsRejects(t *testing.T) {
 		},
 		"variadic handler": {
 			actionBindingsExtra("fn contract::grid_load_outcome load_variadic\n"+
-				"    emits []\n"+
+				"    emits {}\n"+
 				"    given\n"+
 				"        near sql::pool pool\n"+
 				"        http::request req\n"+
@@ -663,7 +663,7 @@ func TestActionBindingsRejects(t *testing.T) {
 		},
 		"wrong captures record": {
 			actionBindingsExtra("fn contract::grid_load_outcome load_wrongkey\n"+
-				"    emits []\n"+
+				"    emits {}\n"+
 				"    given\n"+
 				"        near sql::pool pool\n"+
 				"        http::request req\n"+
@@ -686,16 +686,16 @@ func TestActionBindingsRejects(t *testing.T) {
 			`normal renderer "render_bad_form" must take `,
 		},
 		"fallible renderer": {
-			map[string][][2]string{server: {{"fn html::safe render_html\n    emits []\n", "fn html::safe render_html\n    emits [http::invalid_request]\n"}}},
-			`normal renderer "render_html" emits [http::invalid_request]`,
+			map[string][][2]string{server: {{"fn html::safe render_html\n    emits {}\n", "fn html::safe render_html\n    emits {http::invalid_request}\n"}}},
+			`normal renderer "render_html" emits {http::invalid_request}`,
 		},
 		"missing pool capture": {
-			map[string][][2]string{server: {{"fn http::router routes\n    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]\n    given\n        near sql::pool pool\n        near str public_origin\n", "fn http::router routes\n    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]\n    given\n        near str public_origin\n"}}},
+			map[string][][2]string{server: {{"fn http::router routes\n    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}\n    given\n        near sql::pool pool\n        near str public_origin\n", "fn http::router routes\n    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}\n    given\n        near str public_origin\n"}}},
 			"near capture pool of ",
 		},
 		"mistyped pool capture": {
 			map[string][][2]string{server: {
-				{"fn http::router routes\n    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]\n    given\n        near sql::pool pool\n", "fn http::router routes\n    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]\n    given\n        near str pool\n"},
+				{"fn http::router routes\n    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}\n    given\n        near sql::pool pool\n", "fn http::router routes\n    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}\n    given\n        near str pool\n"},
 				{"        sample: \"https://shop.example\" => ok\n    match chain\n", "        sample: \"pool\", \"https://shop.example\" => ok\n    match chain\n"},
 			}},
 			"requires exact declared type",
@@ -772,10 +772,10 @@ func TestActionBindingsRejects(t *testing.T) {
 func TestActionBindingsRejectCallableReference(t *testing.T) {
 	server := strings.Replace(actionBindingsServer, "fn http::router routes\n",
 		"fn http::route bad_ref\n"+
-			"    emits []\n"+
+			"    emits {}\n"+
 			"    asserts\n"+
 			"        sample: => ok\n"+
-			"    callable http::route () emits [http::invalid_route] bad = callable action::mount\n"+
+			"    callable http::route () emits {http::invalid_route} bad = callable action::mount\n"+
 			"    ok call bad()\n"+
 			"fn http::router routes\n", 1)
 	files := map[string]string{
@@ -824,7 +824,7 @@ const actionBindingsTiny = "package tiny\n" +
 	"        note_saved status 200\n" +
 	"        note_failed status 422\n" +
 	"fn note_outcome save_note\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        near sql::pool pool\n" +
 	"        http::request req\n" +
@@ -834,7 +834,7 @@ const actionBindingsTiny = "package tiny\n" +
 	"    match call http::request_headers(req)\n" +
 	"        ok http::header[] headers => ok note_saved(body.title)\n" +
 	"fn note_outcome check_ping\n" +
-	"    emits []\n" +
+	"    emits {}\n" +
 	"    given\n" +
 	"        near sql::pool pool\n" +
 	"        http::request req\n" +
@@ -843,7 +843,7 @@ const actionBindingsTiny = "package tiny\n" +
 	"    match call http::request_headers(req)\n" +
 	"        ok http::header[] headers => ok note_failed(\"down\")\n" +
 	"fn http::router routes\n" +
-	"    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]\n" +
+	"    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}\n" +
 	"    given\n" +
 	"        near sql::pool pool\n" +
 	"    asserts\n" +
@@ -857,14 +857,14 @@ const actionBindingsTiny = "package tiny\n" +
 	"        http::ambiguous_route\n" +
 	"        ok => ok built\n" +
 	"fn str ping_url\n" +
-	"    emits [action::invalid_path]\n" +
+	"    emits {action::invalid_path}\n" +
 	"    asserts\n" +
 	"        sample: => ok \"/ping\"\n" +
 	"    match call action::url(ping)\n" +
 	"        action::invalid_path\n" +
 	"        ok str built => ok built\n" +
 	"fn note_outcome fetch_ping\n" +
-	"    emits [http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data]\n" +
+	"    emits {http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data}\n" +
 	"    asserts\n" +
 	"        sample: => ok note_saved(\"t\")\n" +
 	"    match call action::request(ping)\n" +
@@ -876,7 +876,7 @@ const actionBindingsTiny = "package tiny\n" +
 	"        codec::invalid_data\n" +
 	"        ok note_outcome got => ok got\n" +
 	"fn note_outcome fetch_note\n" +
-	"    emits [http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data]\n" +
+	"    emits {http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data}\n" +
 	"    given\n" +
 	"        note_wire body\n" +
 	"    asserts\n" +
@@ -945,7 +945,7 @@ func TestActionBindingsBodyModeSwitch(t *testing.T) {
 	// can never address the form action.
 	decls := actionBindingsTiny[:strings.Index(actionBindingsTiny, "fn note_outcome save_note\n")]
 	client := "fn note_outcome fetch_note\n" +
-		"    emits [http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data]\n" +
+		"    emits {http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data}\n" +
 		"    given\n" +
 		"        note_wire body\n" +
 		"    asserts\n" +

@@ -44,8 +44,8 @@ func TestCallableReferenceRefusals(t *testing.T) {
 	for _, tc := range []struct{ name, old, replacement string }{
 		{"missing capture", "int prefix\n        int suffix\n        int value", "int absent\n        int suffix\n        int value"},
 		{"wrong capture type", "int prefix\n        int suffix\n        int value", "str prefix\n        int suffix\n        int value"},
-		{"wrong input", "callable int (int) emits [] action = callable combine", "callable int (str) emits [] action = callable combine"},
-		{"wrong result", "callable int (int) emits [] action = callable combine", "callable str (int) emits [] action = callable combine"},
+		{"wrong input", "callable int (int) emits {} action = callable combine", "callable int (str) emits {} action = callable combine"},
+		{"wrong result", "callable int (int) emits {} action = callable combine", "callable str (int) emits {} action = callable combine"},
 		{"static method reference", "callable (call make_box()).read", "callable read"},
 		{"direct near omitted", "call compute(3, 5, 4)", "call combine(4)"},
 	} {
@@ -85,7 +85,7 @@ func TestNativeDeclarationReferenceEligibility(t *testing.T) {
 		if (declaration.validate() == nil) != expected {
 			t.Fatalf("incorrect callable gate for %s", kind)
 		}
-		src, _ := source.New("reference.can", programHeader+"fn callable int (int) emits [] make\n    emits []\n    asserts\n        sample: => ok callable chosen\n    ok callable chosen\n")
+		src, _ := source.New("reference.can", programHeader+"fn callable int (int) emits {} make\n    emits {}\n    asserts\n        sample: => ok callable chosen\n    ok callable chosen\n")
 		parsed := syntax.Parse(src)
 		if !parsed.OK() {
 			t.Fatal(parsed.Diagnostics)
@@ -120,27 +120,30 @@ func TestNativeDeclarationReferenceEligibility(t *testing.T) {
 }
 func TestCallableErrorBoundsAndExactCaptureTypes(t *testing.T) {
 	source := programHeader + `fn int safe
-    emits []
+    emits {}
     given
         int value
     asserts
         sample: 1 => ok 1
     ok value
 fn int fallible
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         int value
     asserts
         sample: 1 => ok 1
     ok value
-` + programMain + `    callable int (int) emits [codec::invalid_data] action = callable safe
+` + programMain + `    callable int (int) emits {codec::invalid_data} action = callable safe
     ok
 `
 	source = strings.Replace(source, "uses []", "uses [codec]", 1)
 	if _, err := programFixture(t, map[string]string{"src/main.can": source}); err != nil {
 		t.Fatal(err)
 	}
-	bad := strings.Replace(source, "callable int (int) emits [codec::invalid_data] action = callable safe", "callable int (int) emits [] action = callable fallible", 1)
+	bad := strings.Replace(source, "callable int (int) emits {codec::invalid_data} action = callable safe", "callable int (int) emits {} action = callable fallible", 1)
+	if bad == source {
+		t.Fatal("wider-bound mutation matched nothing")
+	}
 	if _, err := programFixture(t, map[string]string{"src/main.can": bad}); err == nil || !strings.Contains(err.Error(), "expected type") {
 		t.Fatalf("wider error bound admitted: %v", err)
 	}

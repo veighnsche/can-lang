@@ -10,18 +10,18 @@ const nativeConnection = "connection service\n    endpoint \"http://localhost:1\
 
 func TestNativeKindsAndGeneratedNames(t *testing.T) {
 	text := header("app", "weights, classify, service", "") + nativeConnection + `record weights choice float classify from service
-    emits []
+    emits {}
     confidence as certainty
     asks "Choose"
         first "First" => ok %
         second "Second" => ok %
 
 fetch str load from service
-    emits []
+    emits {}
     get "/"
 
 llm str generate from service
-    emits []
+    emits {}
     state
         str input
     asks input
@@ -55,18 +55,26 @@ llm str generate from service
 }
 func TestNativeSignatureCollisionsAndVisibility(t *testing.T) {
 	question := `record weights choice float classify from service
-    emits []
+    emits {}
     asks "Choose"
         first "First" => ok %
 `
+	sameName := strings.Replace(question, "record weights", "record classify", 1)
+	if sameName == question {
+		t.Fatal("same-name mutation matched nothing")
+	}
+	duplicateField := strings.Replace(question, "    asks", "    confidence as first\n    asks", 1)
+	if duplicateField == question {
+		t.Fatal("duplicate-field mutation matched nothing")
+	}
 	for name, text := range map[string]string{
 		"hidden generated record":   header("app", "classify, service", "") + nativeConnection + question,
 		"private connection":        header("app", "weights, classify", "") + nativeConnection + question,
-		"same generated name":       header("app", "", "") + nativeConnection + strings.Replace(question, "record weights", "record classify", 1),
+		"same generated name":       header("app", "", "") + nativeConnection + sameName,
 		"ordinary name collision":   header("app", "", "") + nativeConnection + "record weights\n" + question,
 		"wrong connection kind":     header("app", "", "") + "record service\n" + question,
-		"duplicate state":           header("app", "", "") + nativeConnection + "llm str generate from service\n    emits []\n    given\n        str input\n    state\n        str input\n    asks input\n",
-		"duplicate generated field": header("app", "", "") + nativeConnection + strings.Replace(question, "    asks", "    confidence as first\n    asks", 1),
+		"duplicate state":           header("app", "", "") + nativeConnection + "llm str generate from service\n    emits {}\n    given\n        str input\n    state\n        str input\n    asks input\n",
+		"duplicate generated field": header("app", "", "") + nativeConnection + duplicateField,
 	} {
 		t.Run(name, func(t *testing.T) {
 			if _, err := buildFiles(t, map[string]string{"src/main.can": text}); err == nil {

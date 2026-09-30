@@ -18,8 +18,8 @@ func exportedGenericProgram(t *testing.T) *check.Program {
 	files := map[string]string{
 		"can.project.json": `{"source_root":"src","error_registry":"can.errors.json"}`,
 		"can.errors.json":  `{"active":[],"retired":[]}`,
-		"src/lib/lib.can":  "package lib\n    provides [doubled]\n    uses []\nfn item doubled<item>\n    emits []\n    given\n        item value\n        callable item (item, item) emits [] plus\n    asserts\n        triple: 3, callable int_plus => ok 6\n    ok call plus(value, value)\nfn int int_plus\n    emits []\n    given\n        int first\n        int second\n    asserts\n        sample: 3, 3 => ok 6\n    ok first + second\n",
-		"src/app/main.can": "package app\n    provides []\n    uses [lib]\nfn int app_plus\n    emits []\n    given\n        int first\n        int second\n    asserts\n        sample: 1, 2 => ok 3\n    ok first + second\nfn int use_doubled\n    emits []\n    asserts\n        sample: => ok 8\n    ok call lib::doubled(4, callable app_plus)\nfn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n",
+		"src/lib/lib.can":  "package lib\n    provides [doubled]\n    uses []\nfn item doubled<item>\n    emits {}\n    given\n        item value\n        callable item (item, item) emits {} plus\n    asserts\n        triple: 3, callable int_plus => ok 6\n    ok call plus(value, value)\nfn int int_plus\n    emits {}\n    given\n        int first\n        int second\n    asserts\n        sample: 3, 3 => ok 6\n    ok first + second\n",
+		"src/app/main.can": "package app\n    provides []\n    uses [lib]\nfn int app_plus\n    emits {}\n    given\n        int first\n        int second\n    asserts\n        sample: 1, 2 => ok 3\n    ok first + second\nfn int use_doubled\n    emits {}\n    asserts\n        sample: => ok 8\n    ok call lib::doubled(4, callable app_plus)\nfn void main\n    emits {}\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n",
 	}
 	for name, text := range files {
 		path := filepath.Join(root, name)
@@ -91,14 +91,14 @@ const exportedIdentitySource = `package app
     provides [identity]
     uses []
 fn item identity<item>
-    emits []
+    emits {}
     given
         item value
     asserts
         number: 3 => ok 3
     ok value
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -161,7 +161,7 @@ func TestGenericMissingConcreteTargetFailsClosed(t *testing.T) {
     provides [identity]
     uses []
 fn item identity<item>
-    emits []
+    emits {}
     given
         item value
     asserts
@@ -174,7 +174,7 @@ fn item identity<item>
 record box<item>
     item value
 fn box<item> nested<item>
-    emits []
+    emits {}
     given
         item value
     asserts
@@ -185,7 +185,7 @@ fn box<item> nested<item>
     provides []
     uses [helpers]
 fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts

@@ -353,7 +353,7 @@ func (c *programChecker) serveFormSite(file *resolve.File, special *FormSpeciali
 // intrinsic carries no handler slot, so the site binds the serving
 // package's unique function whose checked contract exactly matches the
 // action: capture inputs in path order plus the wire body, the action
-// returns, and emits []. Zero or multiple matches diagnose; nothing is
+// returns, and emits {}. Zero or multiple matches diagnose; nothing is
 // guessed. This keeps the serve pipeline working through the
 // handler-free transition; UP08's mount names the handler explicitly
 // with a callable argument instead.
@@ -382,7 +382,7 @@ func (c *programChecker) resolveServeHandler(file *resolve.File, action *ActionD
 // serveHandlerMatches mirrors the retired handles-bound handler contract:
 // a non-generic, non-variadic, method-free function taking each path
 // capture by name and type plus the wire body and returning the action
-// returns with emits [].
+// returns with emits {}.
 func (c *programChecker) serveHandlerMatches(symbol *resolve.Symbol, action *ActionDeclaration) bool {
 	if symbol.Kind != resolve.Function || symbol.Receiver != nil {
 		return false

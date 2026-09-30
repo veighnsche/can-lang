@@ -9,7 +9,7 @@ import (
 // exhaustiveness diagnostics for other shapes are unchanged.
 func TestAUQ1BooleanArmOrder(t *testing.T) {
 	pick := `fn int pick
-    emits []
+    emits {}
     given
         bool flag
     asserts
@@ -37,7 +37,7 @@ func TestAUQ1BooleanArmOrder(t *testing.T) {
 // the order rule was removed.
 func TestAUQ1BooleanCoverageUnchanged(t *testing.T) {
 	pick := `fn int pick
-    emits []
+    emits {}
     given
         bool flag
     asserts
@@ -54,7 +54,7 @@ func TestAUQ1BooleanCoverageUnchanged(t *testing.T) {
 // the program, its type contract and its diagnostics are otherwise clean.
 func TestAUQ2CoreFinalLocalWarning(t *testing.T) {
 	text := programHeader + `fn int forwarded
-    emits []
+    emits {}
     given
         int left
         int right
@@ -89,7 +89,7 @@ func TestAUQ2CoreFinalLocalWarning(t *testing.T) {
 // AU-Q2-core: programs without the shape report no warnings.
 func TestAUQ2CoreNoWarningWithoutShape(t *testing.T) {
 	text := programHeader + `fn int kept
-    emits []
+    emits {}
     given
         int left
         int right

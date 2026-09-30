@@ -75,7 +75,7 @@ func TestCompletionArmOrder(t *testing.T) {
 		))
 	})
 	t.Run("race shared error after success", func(t *testing.T) {
-		body := "    callable int () emits [codec::invalid_data][] operations = [callable number]\n" +
+		body := "    callable int () emits {codec::invalid_data}[] operations = [callable number]\n" +
 			"    match call race with error\n" +
 			"        ...operations\n" +
 			"        number()\n" +
@@ -108,7 +108,7 @@ func TestMissingArmObligation(t *testing.T) {
 	forwarding := strings.Replace(programHeader, "uses []", "uses [codec]", 1) +
 		coordinationDeclarations +
 		`fn int handle
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     asserts
         sample: => ok 1
     match call number()
@@ -147,7 +147,7 @@ func TestMissingArmObligation(t *testing.T) {
 	strict := strings.Replace(programHeader, "uses []", "uses [codec]", 1) +
 		coordinationDeclarations +
 		`fn int strict
-    emits []
+    emits {}
     asserts
         sample: => ok 1
     match call number()
@@ -168,7 +168,7 @@ func TestMissingArmObligation(t *testing.T) {
 	voidSuccess := strings.Replace(programHeader, "uses []", "uses [codec]", 1) +
 		coordinationDeclarations +
 		`fn void sink
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     asserts
         sample: => ok
     match call number()
@@ -186,7 +186,7 @@ func TestMissingArmObligation(t *testing.T) {
 	valuedSuccess := strings.Replace(programHeader, "uses []", "uses [codec]", 1) +
 		coordinationDeclarations +
 		`fn int valued
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     asserts
         sample: => ok 1
     match call number()
@@ -209,7 +209,7 @@ func TestOutwardErrorObligation(t *testing.T) {
 	relay := strings.Replace(programHeader, "uses []", "uses [codec]", 1) +
 		coordinationDeclarations +
 		`fn int pass
-    emits []
+    emits {}
     asserts
         sample: => ok 1
     relay call number()
@@ -218,7 +218,7 @@ func TestOutwardErrorObligation(t *testing.T) {
 	if err == nil {
 		t.Fatal("relay escape admitted")
 	}
-	for _, want := range []string{"undeclared escaping domain error", "region declares emits []"} {
+	for _, want := range []string{"undeclared escaping domain error", "region declares emits {}"} {
 		if !strings.Contains(err.Error(), want) {
 			t.Fatalf("outward diagnostic omits %q: %v", want, err)
 		}
@@ -240,10 +240,10 @@ func TestOutwardErrorObligation(t *testing.T) {
 	construct := strings.Replace(programHeader, "uses []", "uses [codec]", 1) +
 		coordinationDeclarations +
 		`fn int raise
-    emits []
+    emits {}
     asserts
         sample: => ok 1
-    codec::invalid_data("b", "type")
+    codec::invalid_data{"b", "type"}
 ` + programMain + "    ok\n"
 	_, err = programFixture(t, map[string]string{"src/main.can": construct})
 	if err == nil {

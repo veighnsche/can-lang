@@ -15,28 +15,28 @@ owner record email
 record email_wire
     str address
 fn email make_email
-    emits []
+    emits {}
     given
         str address
     asserts
         sample: "a@b" => ok email("a@b")
     ok email(address)
 fn str email_address
-    emits []
+    emits {}
     given
         email mail
     asserts
         sample: email("a@b") => ok "a@b"
     ok mail.address
 fn email load_verified
-    emits []
+    emits {}
     given
         email mail
     asserts
         sample: email("a@b") => ok email("verified")
     ok mail with address = "verified"
 fn email_wire load_wire
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -54,7 +54,7 @@ const ownerAppHeader = `package app
 `
 
 const ownerAppMain = `fn void main
-    emits []
+    emits {}
     given
         str[] arguments
     asserts
@@ -71,7 +71,7 @@ func ownerProgram(t *testing.T, app string) (map[string]string, *Program, error)
 
 func TestOwnerRecordBoundaryPositives(t *testing.T) {
 	app := `fn str describe
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -80,7 +80,7 @@ func TestOwnerRecordBoundaryPositives(t *testing.T) {
     match held
         mail::email => ok call mail::email_address(held)
 fn bool same_address
-    emits []
+    emits {}
     given
         str first
         str second
@@ -90,7 +90,7 @@ fn bool same_address
     mail::email two = call mail::make_email(second)
     ok one is two
 fn str adopt
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -111,7 +111,7 @@ fn str adopt
 func TestOwnerRecordForeignNegatives(t *testing.T) {
 	cases := map[string]struct{ app, want string }{
 		"constructor": {`fn mail::email forge
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -119,7 +119,7 @@ func TestOwnerRecordForeignNegatives(t *testing.T) {
     ok mail::email(address)
 `, "only be constructed in its declaring package"},
 		"with update": {`fn mail::email rewrite
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -128,7 +128,7 @@ func TestOwnerRecordForeignNegatives(t *testing.T) {
     ok held with address = "forged"
 `, "representation is confined"},
 		"field read": {`fn str peek
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -137,7 +137,7 @@ func TestOwnerRecordForeignNegatives(t *testing.T) {
     ok held.address
 `, "representation is confined"},
 		"json decode": {`fn mail::email load_owned
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -149,7 +149,7 @@ func TestOwnerRecordForeignNegatives(t *testing.T) {
         ok => ok decoded
 `, "not codec-admissible"},
 		"json encode": {`fn bytes::buffer expose
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -158,7 +158,7 @@ func TestOwnerRecordForeignNegatives(t *testing.T) {
     ok call codec::encode_json<mail::email>(held)
 `, "not codec-admissible"},
 		"destructure": {`fn str unpack
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -168,7 +168,7 @@ func TestOwnerRecordForeignNegatives(t *testing.T) {
         mail::email(bind addr) => ok addr
 `, "representation is confined"},
 		"typed wire is not the owner": {`fn str smuggle
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -208,7 +208,7 @@ func assertOwnerSpan(t *testing.T, name string, err error) {
 
 func TestOwnerRecordInPackageCodecRejection(t *testing.T) {
 	mail := ownerMailPackage + `fn email load_owned
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         str text
     asserts
@@ -232,7 +232,7 @@ func TestOwnerRecordInPackageCodecRejection(t *testing.T) {
 func TestOwnerRecordFixtureAdmission(t *testing.T) {
 	cases := map[string]struct{ app, want string }{
 		"assertion input": {`fn mail::email pass_through
-    emits []
+    emits {}
     given
         mail::email mail
     asserts
@@ -240,7 +240,7 @@ func TestOwnerRecordFixtureAdmission(t *testing.T) {
     ok mail
 `, "only be constructed in its declaring package"},
 		"supplied completion": {`fn mail::email mint
-    emits []
+    emits {}
     given
         str address
     asserts
@@ -248,7 +248,7 @@ func TestOwnerRecordFixtureAdmission(t *testing.T) {
     ok call mail::make_email(address)
 `, "only be constructed in its declaring package"},
 		"template use argument": {`fn int double
-    emits []
+    emits {}
     given
         int value
     asserts
@@ -260,7 +260,7 @@ fixture doubled for double
     cases
         base => ok base + base
 fn int consumer
-    emits []
+    emits {}
     asserts
         sample: => ok 4
     match call double(2)

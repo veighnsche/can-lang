@@ -9,7 +9,7 @@ import (
 )
 
 const tailCountdownDecl = `fn int countdown
-    emits []
+    emits {}
     given
         int n
     asserts
@@ -60,7 +60,7 @@ func TestSelfTailPositive(t *testing.T) {
 // A04 positive: relays in several match arms lower together.
 func TestSelfTailSeveralArms(t *testing.T) {
 	text := programHeader + `fn int parity
-    emits []
+    emits {}
     given
         int n
     asserts
@@ -86,7 +86,7 @@ func TestSelfTailSeveralArms(t *testing.T) {
 // A04 negative: mutual recursion never lowers; each relay is noted.
 func TestSelfTailMutual(t *testing.T) {
 	text := programHeader + `fn int ping
-    emits []
+    emits {}
     given
         int n
     asserts
@@ -95,7 +95,7 @@ func TestSelfTailMutual(t *testing.T) {
         0 => ok 0
         _ => relay call pong(n)
 fn int pong
-    emits []
+    emits {}
     given
         int n
     asserts
@@ -129,14 +129,14 @@ fn int pong
 // it keeps nested calls and stays silent.
 func TestSelfTailNonSelfSilent(t *testing.T) {
 	text := programHeader + `fn int helper
-    emits []
+    emits {}
     given
         int n
     asserts
         sample: 1 => ok 1
     ok n
 fn int top
-    emits []
+    emits {}
     given
         int n
     asserts
@@ -161,7 +161,7 @@ fn int top
 // lowers; behavior is unchanged and no note fires.
 func TestSelfTailPostProcessing(t *testing.T) {
 	text := programHeader + `fn int triangle
-    emits []
+    emits {}
     given
         int n
     asserts
@@ -185,19 +185,19 @@ func TestSelfTailPostProcessing(t *testing.T) {
 // A04 negative: a frame-created callable defers completion past the relay.
 func TestSelfTailCallableExcluded(t *testing.T) {
 	text := programHeader + `fn int identity
-    emits []
+    emits {}
     given
         int value
     asserts
         sample: 4 => ok 4
     ok value
 fn int loop
-    emits []
+    emits {}
     given
         int n
     asserts
         sample: 3 => ok 0
-    callable int (int) emits [] action = callable identity
+    callable int (int) emits {} action = callable identity
     match n
         0 => ok call action(0)
         _ => relay call loop(n - 1)
@@ -221,7 +221,7 @@ fn int loop
 // them keep nested calls.
 func TestSelfTailFixtureExcluded(t *testing.T) {
 	text := strings.Replace(programHeader, "uses []", "uses [codec]", 1) + coordinationDeclarations + `fn int loop
-    emits [codec::invalid_data]
+    emits {codec::invalid_data}
     given
         int n
     asserts
@@ -253,12 +253,12 @@ func TestSelfTailTimerExcluded(t *testing.T) {
     provides []
     uses [browser]
 fn void on_tick
-    emits []
+    emits {}
     asserts
         sample: => ok
     ok
 fn int ticked
-    emits [browser::missing_root, browser::disposed, browser::rejected]
+    emits {browser::missing_root, browser::disposed, browser::rejected}
     given
         int n
     asserts
@@ -293,14 +293,14 @@ func TestSelfTailLeaseExcluded(t *testing.T) {
     provides []
     uses [sql, http]
 fn sql::decision<int> decide
-    emits []
+    emits {}
     given
         sql::transaction tx
     asserts
         sample: => ok sql::commit<int>(1)
     ok sql::commit<int>(1)
 fn int run
-    emits [http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown]
+    emits {http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown}
     asserts
         sample: => ok 1
     match call sql::pool_open("CAN_TEST_POSTGRES", 5)
@@ -333,7 +333,7 @@ func TestSelfTailDrainExcluded(t *testing.T) {
     provides []
     uses [s3, stream, bytes]
 fn int streamed
-    emits [s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, s3::over_limit]
+    emits {s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, s3::over_limit}
     given
         int n
     asserts
@@ -369,7 +369,7 @@ func TestSelfTailCoordinationExcluded(t *testing.T) {
     codec::invalid_data
     standard_failure
 fn int loop
-    emits [all_failed<failure>]
+    emits {all_failed<failure>}
     given
         int n
     asserts
