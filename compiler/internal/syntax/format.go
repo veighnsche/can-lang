@@ -406,11 +406,15 @@ func (f *formatter) assertion(level int, a Assertion) {
 	if a.Scenario != nil {
 		prefix = "scenario "
 	}
+	labels := a.Name.Text
+	for _, label := range a.AlternateNames {
+		labels += " | " + label.Text
+	}
 	if a.Use != nil {
-		f.line(level, prefix+a.Name.Text+": use "+formatName(a.Use.Template)+"("+formatArguments(a.Use.Arguments)+")", a.Span.Start)
+		f.line(level, prefix+labels+": use "+formatName(a.Use.Template)+"("+formatArguments(a.Use.Arguments)+")", a.Span.Start)
 		return
 	}
-	text := prefix + a.Name.Text + ": "
+	text := prefix + labels + ": "
 	if a.Receiver != nil {
 		text += FormatExpression(a.Receiver) + " => "
 	}
@@ -497,7 +501,17 @@ func (f *formatter) coordination(level int, prefix string, c Coordination) {
 	}
 }
 func (f *formatter) coordinationArm(level int, arm MatchArm) {
-	o := arm.Outcome
+	text := formatOutcomePattern(arm.Outcome)
+	for i := range arm.AlternateOutcomes {
+		text += " | " + formatOutcomePattern(&arm.AlternateOutcomes[i])
+	}
+	if arm.Forward {
+		f.line(level, text, arm.Span.Start)
+	} else {
+		f.body(level, text+" => ", arm.Body)
+	}
+}
+func formatOutcomePattern(o *OutcomePattern) string {
 	text := ""
 	switch {
 	case o.Success:
@@ -516,11 +530,7 @@ func (f *formatter) coordinationArm(level int, arm MatchArm) {
 	if o.Alias != nil {
 		text += " as " + o.Alias.Text
 	}
-	if arm.Forward {
-		f.line(level, text, arm.Span.Start)
-	} else {
-		f.body(level, text+" => ", arm.Body)
-	}
+	return text
 }
 func (f *formatter) body(level int, prefix string, body Body) {
 	switch n := body.(type) {
@@ -590,23 +600,9 @@ func (f *formatter) match(level int, prefix string, m Match) {
 	for _, arm := range arms {
 		text := ""
 		if arm.Outcome != nil {
-			o := arm.Outcome
-			switch {
-			case o.Success:
-				text = "ok"
-			case o.StandardFailure:
-				text = "[_]"
-			default:
-				text = FormatType(o.Error)
-			}
-			if o.Binding != nil {
-				if o.StandardFailure {
-					text += " as"
-				}
-				text += " " + formatField(*o.Binding)
-			}
-			if o.Alias != nil {
-				text += " as " + o.Alias.Text
+			text = formatOutcomePattern(arm.Outcome)
+			for i := range arm.AlternateOutcomes {
+				text += " | " + formatOutcomePattern(&arm.AlternateOutcomes[i])
 			}
 		} else {
 			patterns := make([]string, len(arm.Patterns))

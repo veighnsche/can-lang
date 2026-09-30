@@ -413,16 +413,26 @@ func (p *parser) assertion(method bool) Assertion {
 	start := p.peek().Span.Start
 	var scenario *Token
 	var name Token
+	var alternateNames []Token
 	if p.scenarioTag() {
 		p.take()
 		tag := p.expect(Name)
 		scenario = &tag
 		name = tag
-		p.expect(":")
 	} else {
 		name = p.expect(Name)
-		p.expect(":")
 	}
+	seen := map[string]bool{name.Text: true}
+	for p.at("|") {
+		p.take()
+		label := p.expect(Name)
+		if seen[label.Text] {
+			p.fail("duplicate grouped assertion label")
+		}
+		seen[label.Text] = true
+		alternateNames = append(alternateNames, label)
+	}
+	p.expect(":")
 	if p.word("use") {
 		use := p.take().Span.Start
 		template := p.qualified()
@@ -434,7 +444,7 @@ func (p *parser) assertion(method bool) Assertion {
 		if p.at(Indent) {
 			p.fail("use expansion carries no execution mode")
 		}
-		return Assertion{Span: p.span(start), Name: name, Scenario: scenario, Use: &AssertionUse{Span: p.span(use), Template: template, Arguments: arguments}}
+		return Assertion{Span: p.span(start), Name: name, AlternateNames: alternateNames, Scenario: scenario, Use: &AssertionUse{Span: p.span(use), Template: template, Arguments: arguments}}
 	}
 	var receiver Expr
 	if method {
@@ -467,7 +477,29 @@ func (p *parser) assertion(method bool) Assertion {
 	p.singleLine(start, end)
 	p.expect(Newline)
 	mode := p.assertionMode()
-	return Assertion{Span: p.span(start), Name: name, Receiver: receiver, Arguments: arguments, Expected: expected, Mode: mode, Scenario: scenario, Links: links}
+	return Assertion{Span: p.span(start), Name: name, AlternateNames: alternateNames, Receiver: receiver, Arguments: arguments, Expected: expected, Mode: mode, Scenario: scenario, Links: links}
+}
+
+// ExpandAssertions gives each grouped selector its own checked identity while
+// retaining the one authored row's payload, mode, links and source span.
+func ExpandAssertions(rows []Assertion) []Assertion {
+	var expanded []Assertion
+	for _, row := range rows {
+		labels := make([]Token, 0, 1+len(row.AlternateNames))
+		labels = append(labels, row.Name)
+		labels = append(labels, row.AlternateNames...)
+		for _, label := range labels {
+			copy := row
+			copy.Name = label
+			copy.AlternateNames = nil
+			if row.Scenario != nil {
+				tag := label
+				copy.Scenario = &tag
+			}
+			expanded = append(expanded, copy)
+		}
+	}
+	return expanded
 }
 
 // linkClauseFollows reports whether a link clause starts at the cursor: the
@@ -497,7 +529,7 @@ func (p *parser) scenarioTag() bool {
 	if second >= len(p.tokens) {
 		return false
 	}
-	return p.tokens[first].Kind == Name && p.tokens[second].Kind == ":"
+	return p.tokens[first].Kind == Name && (p.tokens[second].Kind == ":" || p.tokens[second].Kind == "|")
 }
 
 // assertionMode parses the optional indented execution-mode line under an

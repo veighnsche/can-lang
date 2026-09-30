@@ -64,8 +64,8 @@ func (p *parser) match(terminal bool) Match {
 				arm.Patterns = append(arm.Patterns, p.pattern())
 			}
 		} else {
-			outcome := p.outcomePattern()
-			arm.Outcome = &outcome
+			arm.Outcome, arm.AlternateOutcomes = p.completionHeadGroup()
+			outcome := arm.Outcome
 			if p.at(Newline) {
 				if outcome.Binding != nil || outcome.Alias != nil || outcome.StandardFailure {
 					p.fail("only bare ok and unaliased error arms may forward")
@@ -88,6 +88,28 @@ func (p *parser) match(terminal bool) Match {
 	p.expect(Dedent)
 	match.Span = p.span(start)
 	return match
+}
+
+// completionHeadGroup keeps one source arm and body for named errors that
+// share a handler. Success and standard-failure heads remain independent.
+func (p *parser) completionHeadGroup() (*OutcomePattern, []OutcomePattern) {
+	first := p.outcomePattern()
+	if !p.at("|") {
+		return &first, nil
+	}
+	if first.Error == nil || first.Binding != nil || first.Alias != nil {
+		p.fail("grouped completion heads require unbound named errors")
+	}
+	var alternatives []OutcomePattern
+	for p.at("|") {
+		p.take()
+		next := p.outcomePattern()
+		if next.Error == nil || next.Binding != nil || next.Alias != nil {
+			p.fail("grouped completion heads require unbound named errors")
+		}
+		alternatives = append(alternatives, next)
+	}
+	return &first, alternatives
 }
 
 func (p *parser) outcomePattern() OutcomePattern {

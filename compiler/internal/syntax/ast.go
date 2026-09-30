@@ -275,12 +275,15 @@ type Input struct {
 	Variadic bool
 }
 type Assertion struct {
-	Span      source.Span
-	Name      Token
-	Receiver  Expr
-	Arguments []Argument
-	Expected  Body
-	Mode      *AssertionMode
+	Span source.Span
+	Name Token
+	// AlternateNames are additional selectors sharing this source row. Each
+	// becomes an independent assertion or lexical fixture when checked.
+	AlternateNames []Token
+	Receiver       Expr
+	Arguments      []Argument
+	Expected       Body
+	Mode           *AssertionMode
 	// Use expands a fixture template in place; it carries no arguments,
 	// expected completion or execution mode of its own.
 	Use *AssertionUse
@@ -416,8 +419,10 @@ type MatchArm struct {
 	Span     source.Span
 	Patterns []PatternNode
 	Outcome  *OutcomePattern
-	Body     Body
-	Forward  bool
+	// AlternateOutcomes are additional named error heads sharing one body.
+	AlternateOutcomes []OutcomePattern
+	Body              Body
+	Forward           bool
 }
 type OutcomePattern struct {
 	Span            source.Span

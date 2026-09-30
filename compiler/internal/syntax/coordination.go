@@ -91,8 +91,8 @@ func (p *parser) coordination() Coordination {
 
 func (p *parser) coordinationArm() MatchArm {
 	start := p.peek().Span.Start
-	outcome := p.outcomePattern()
-	arm := MatchArm{Outcome: &outcome}
+	outcome, alternatives := p.completionHeadGroup()
+	arm := MatchArm{Outcome: outcome, AlternateOutcomes: alternatives}
 	if p.at(Newline) {
 		if outcome.Binding != nil || outcome.Alias != nil || outcome.StandardFailure {
 			p.fail("only bare ok or unaliased named errors can forward")
