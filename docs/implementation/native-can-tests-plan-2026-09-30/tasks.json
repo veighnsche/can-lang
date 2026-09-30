@@ -365,7 +365,7 @@
       "acceptance": "F1 fd 3 non-reader, delayed EOF, malformed frame, orphan/detached-child and PID reuse controls cannot produce clean release; fd 4 lease remains distinct. Bounded kernel-level control observes protection across launcher exit and loss after missing/early fd close, with independent release witness; Can scenario acceptance is QF2.",
       "evidence": "Save OS-specific control record; commit process owner.",
       "commit": "feat(testing): own processes and descriptors",
-      "status": "active",
+      "status": "complete",
       "start_after": [
         "P08"
       ],
