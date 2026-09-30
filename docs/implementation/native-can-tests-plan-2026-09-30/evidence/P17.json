@@ -10,7 +10,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "<this commit> reducer"
+    "0c3b8f75 reducer"
   ],
   "changed_paths": [
     "tests/native-can/src/report/reducer/reducer.can"
