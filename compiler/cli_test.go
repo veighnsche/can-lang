@@ -54,9 +54,27 @@ func TestRunUsageCodes(t *testing.T) {
 		{"build", "--assert-jobs", "abc", "proj"},
 		{"build", "--assert-jobs", "65", "proj"},
 		{"build", "proj", "extra"},
+		{"run"},
+		{"run", "--assert-timeout-ms"},
+		{"run", "--assert-timeout-ms", "5000"},
+		{"run", "--assert-timeout-ms", "0", "proj"},
+		{"run", "--assert-timeout-ms", "abc", "proj"},
+		{"run", "--assert-timeout-ms", "600001", "proj"},
+		{"run", "--assert-jobs"},
+		{"run", "--assert-jobs", "0", "proj"},
+		{"run", "--assert-jobs", "abc", "proj"},
+		{"run", "--assert-jobs", "65", "proj"},
+		{"run", "--target", "bun", "proj"},
+		{"run", "proj", "extra"},
 	} {
 		if code := run(argv); code != 2 {
 			t.Fatalf("run(%q) = %d, want usage exit 2", argv, code)
 		}
+	}
+}
+
+func TestRunAcceptsAssertionOptionsBeforeProject(t *testing.T) {
+	if code := run([]string{"run", "--assert-timeout-ms", "600000", "--assert-jobs", "1", "project"}); code != 1 {
+		t.Fatalf("run with assertion options = %d, want bundle-resolution failure after parsing", code)
 	}
 }

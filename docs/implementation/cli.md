@@ -16,7 +16,7 @@ launcher refuses `build` and `run` because it has no qualified sidecar.
 /absolute/version/bin/canlc build /absolute/canonical/project
 /absolute/version/bin/canlc build --target browser /absolute/canonical/project
 /absolute/version/bin/canlc build --browser-manifest /absolute/canonical/browser-manifest.json /absolute/canonical/server-project
-/absolute/version/bin/canlc run /absolute/canonical/project -- 'application argument'
+/absolute/version/bin/canlc run [--assert-timeout-ms 1..600000] [--assert-jobs 1..64] /absolute/canonical/project -- 'application argument'
 ```
 
 `build --target browser` verifies the same assertion roots under Bun, then
@@ -51,6 +51,9 @@ and builds current sources, then executes the absolute bundled Bun. Its stdout
 contains only application output. Arguments after `--` are application arguments,
 including flag-shaped strings; the launcher, project selector, entry path and
 runtime options are excluded. Omitting `--` is allowed when there are no args.
+`run` accepts the same `--assert-timeout-ms` and `--assert-jobs` controls as
+`build`; both commands retain the shared defaults unless the caller overrides
+them.
 
 The root project must declare exactly one non-generic, non-method
 `void main(str[] args)`; the input may have any valid name. A browser

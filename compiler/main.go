@@ -96,57 +96,59 @@ func run(argv []string) int {
 		target := browser.TargetBun
 		browserManifest := ""
 		rest := argv[1:]
-		buildUsage := "usage: canlc build [--target bun|browser] [--assert-timeout-ms 1..600000] [--assert-jobs 1..64] [--browser-manifest FILE] PROJECT_DIRECTORY | canlc run PROJECT_DIRECTORY [-- APPLICATION_ARGS...]"
-		if argv[0] == "build" {
-			for len(rest) >= 1 && strings.HasPrefix(rest[0], "--") {
-				if len(rest) < 3 {
-					fmt.Fprintln(os.Stderr, buildUsage)
-					return 2
-				}
-				switch rest[0] {
-				case "--assert-timeout-ms":
-					parsed, parseErr := driver.ParseAssertTimeoutMs(rest[1])
-					if parseErr != nil {
-						fmt.Fprintln(os.Stderr, buildUsage)
-						fmt.Fprintln(os.Stderr, parseErr)
-						return 2
-					}
-					timeoutMs = parsed
-				case "--assert-jobs":
-					parsed, parseErr := driver.ParseAssertJobs(rest[1])
-					if parseErr != nil {
-						fmt.Fprintln(os.Stderr, buildUsage)
-						fmt.Fprintln(os.Stderr, parseErr)
-						return 2
-					}
-					jobs = parsed
-				case "--target":
-					parsed, parseErr := browser.ParseTarget(rest[1])
-					if parseErr != nil {
-						fmt.Fprintln(os.Stderr, buildUsage)
-						fmt.Fprintln(os.Stderr, parseErr)
-						return 2
-					}
-					target = parsed
-				case "--browser-manifest":
-					if rest[1] == "" {
-						fmt.Fprintln(os.Stderr, buildUsage)
-						return 2
-					}
-					browserManifest = rest[1]
-				default:
-					fmt.Fprintln(os.Stderr, buildUsage)
-					return 2
-				}
-				rest = rest[2:]
-			}
-			if target == browser.TargetBrowser && browserManifest != "" {
+		buildUsage := "usage: canlc build [--target bun|browser] [--assert-timeout-ms 1..600000] [--assert-jobs 1..64] [--browser-manifest FILE] PROJECT_DIRECTORY | canlc run [--assert-timeout-ms 1..600000] [--assert-jobs 1..64] PROJECT_DIRECTORY [-- APPLICATION_ARGS...]"
+		for len(rest) >= 1 && strings.HasPrefix(rest[0], "--") {
+			if len(rest) < 2 {
 				fmt.Fprintln(os.Stderr, buildUsage)
-				fmt.Fprintln(os.Stderr, "browser builds do not pair a browser manifest")
 				return 2
 			}
+			switch rest[0] {
+			case "--assert-timeout-ms":
+				parsed, parseErr := driver.ParseAssertTimeoutMs(rest[1])
+				if parseErr != nil {
+					fmt.Fprintln(os.Stderr, buildUsage)
+					fmt.Fprintln(os.Stderr, parseErr)
+					return 2
+				}
+				timeoutMs = parsed
+			case "--assert-jobs":
+				parsed, parseErr := driver.ParseAssertJobs(rest[1])
+				if parseErr != nil {
+					fmt.Fprintln(os.Stderr, buildUsage)
+					fmt.Fprintln(os.Stderr, parseErr)
+					return 2
+				}
+				jobs = parsed
+			case "--target":
+				if argv[0] != "build" {
+					fmt.Fprintln(os.Stderr, buildUsage)
+					return 2
+				}
+				parsed, parseErr := browser.ParseTarget(rest[1])
+				if parseErr != nil {
+					fmt.Fprintln(os.Stderr, buildUsage)
+					fmt.Fprintln(os.Stderr, parseErr)
+					return 2
+				}
+				target = parsed
+			case "--browser-manifest":
+				if argv[0] != "build" || rest[1] == "" {
+					fmt.Fprintln(os.Stderr, buildUsage)
+					return 2
+				}
+				browserManifest = rest[1]
+			default:
+				fmt.Fprintln(os.Stderr, buildUsage)
+				return 2
+			}
+			rest = rest[2:]
 		}
-		if len(rest) < 1 || rest[0] == "" || (argv[0] == "build" && len(rest) != 1) || (argv[0] == "run" && len(rest) > 1 && rest[1] != "--") {
+		if argv[0] == "build" && target == browser.TargetBrowser && browserManifest != "" {
+			fmt.Fprintln(os.Stderr, buildUsage)
+			fmt.Fprintln(os.Stderr, "browser builds do not pair a browser manifest")
+			return 2
+		}
+		if len(rest) < 1 || rest[0] == "" || strings.HasPrefix(rest[0], "--") || (argv[0] == "build" && len(rest) != 1) || (argv[0] == "run" && len(rest) > 1 && rest[1] != "--") {
 			fmt.Fprintln(os.Stderr, buildUsage)
 			return 2
 		}
@@ -160,10 +162,10 @@ func run(argv []string) int {
 				}
 			} else {
 				var args []string
-				if len(argv) > 2 {
-					args = argv[3:]
+				if len(rest) > 1 {
+					args = rest[2:]
 				}
-				err = sidecar.Run(context.Background(), argv[1], args, os.Environ(), os.Stdin, os.Stdout, os.Stderr)
+				err = sidecar.Run(context.Background(), rest[0], args, os.Environ(), os.Stdin, os.Stdout, os.Stderr, timeoutMs, jobs)
 			}
 		}
 		if err != nil {
