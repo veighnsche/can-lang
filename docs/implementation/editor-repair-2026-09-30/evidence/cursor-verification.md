@@ -1,0 +1,7 @@
+# Live Cursor verification — 2026-09-30
+
+The actual current Cursor window selected a controlled temporary `probe.can` buffer after user reload. Its Can status reported the installed server at `/Users/vince/.cursor/extensions/can-lang.can-lang-0.2.0/bin/canlc`, build `0.2.0+7fa98c82a7ab.feea7763a822`, with no activation error in that window. The editor showed Can syntax colors, **Errors: 2, Warnings: 1**, red squiggles exactly under `missing_one` and `missing_two` on the same source line, and an amber squiggle exactly under `alias` on its declaration. The rest of those lines was not underlined.
+
+The earlier release protocol probe checked the same build's two simultaneous errors, one warning, completion, hover, definition, rename, references, signature help, symbols, semantic tokens, folds and formatting; see `release-protocol.json` and `delivery.md`. This live check confirms the important rendering and active build in Cursor, while those other providers were exercised through the real server protocol rather than clicked individually in the UI.
+
+Only the owned probe tab was closed. Its registered directory `/private/tmp/can-editor-live-2026-09-30-01a0f0a1` contained only `can.project.json`, `can.errors.json` and `src/probe.can`; those files and the directory were removed. The earlier registered repair directory was also absent. No application source or unsaved user buffer was changed.

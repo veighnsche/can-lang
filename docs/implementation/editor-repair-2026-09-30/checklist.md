@@ -2,9 +2,9 @@
 
 ## Active executor override — 2026-09-30 Codex takeover
 
-The user's replacement AGENTS instructions make Codex the default executor. The legacy Muse run is stopped (PID99423, SIGINT, exit130, no descendants); native goal tools were unavailable. All implementation, coordination and checklist ownership now belongs to Codex and explicitly assigned Codex subagents. No new Muse execution without explicit current-task opt-in. The historical Muse-specific native-goal and schedule/yield clauses below document the original launch only and do not constrain Codex. Keep all substantive requirements, design decisions, resource limits and acceptance checks. F00-F03 are claimed implemented by the stopped run and remain independently unverified. The coordinator may repair those interfaces; communicate changes to active lane owners first.
+The user's replacement AGENTS instructions made Codex the default executor. The legacy Muse run stopped (PID99423, SIGINT, exit130, no descendants), and Codex completed implementation, independent review and delivery. The historical Muse-specific native-goal and schedule/yield clauses below document the original launch only; the completed acceptance evidence is linked under each task.
 
-Current lane ownership is assigned by Codex via collaboration messages. All compiler/editor/server source corrections, independent review and integrated/race verification are complete. All writers are released. Source commit ab764c08 is integrated into main; host package, live Cursor verification and cleanup remain open. Subagents do not edit this checklist or monitor; they report compact evidence to root. One heavy compiler/test command at a time, no benchmarks or broad builds. No edits to the main checkout's code until reviewed integration. The dead tmux pane has an attached viewer; preserve its socket until the viewer detaches.
+All compiler/editor/server corrections, independent review, integration, host packaging, live Cursor verification and cleanup are complete. All writers are released, reviewed source is on main, the managed worktree is archived, and the task heartbeat is retired. Historical lane ownership and launch instructions below document the completed run.
 
 ## Handoff contract
 
@@ -387,23 +387,23 @@ Foundation F00-F03 -> parser/project P10-P13 -> resolver/types/checker R20-R27. 
   - Acceptance: Installed extension contains final reviewed build and grammar; startup succeeds; temporary packaging artifact reclaimed; exact version/hash and install result recorded.
   - Evidence: [delivery.md](evidence/delivery.md), [release-protocol.json](evidence/release-protocol.json), and lane verification records.
 
-- [ ] **D92 — Verify actual active Cursor behavior and acceptance**
+- [x] **D92 — Verify actual active Cursor behavior and acceptance**
   - Prerequisites: D91.
   - Owner: Codex.
   - Files/interfaces: Cursor process/activation output; controlled temporary or scratch probe; evidence/cursor-verification.md.
   - Changes/traceability: Confirm the actual current Cursor window uses the new server process/build and source grammar. Exercise precise error+warning squiggles and key completion/hover/definition/rename/format actions in a controlled buffer; inspect scope/protocol where useful. Never edit application sources just to provoke errors. (R01-R13; acceptance 11; [design](design.md)).
   - Acceptance: Live server path/build/capabilities match installed source; visible or exact editor diagnostic range evidence confirms correct position/severity; no startup failures or stale prior server remains responsible.
-  - Evidence: pending.
+  - Evidence: [cursor-verification.md](evidence/cursor-verification.md), [release-protocol.json](evidence/release-protocol.json).
 
-- [ ] **C99 — Preserve evidence, clean owned resources, archive worktree and retire monitor**
+- [x] **C99 — Preserve evidence, clean owned resources, archive worktree and retire monitor**
   - Prerequisites: D92; all writers/processes/viewers released.
   - Owner: Codex.
   - Files/interfaces: monitor.md; owned temp prompt/socket/session resources; managed worktree artifact; heartbeat.
   - Changes/traceability: Preserve compact design/checklist/review/install evidence in main. Remove only recorded task-owned temporary files, terminate only released owned terminal/session resources, archive managed worktree through supported tool after unique work is preserved, and delete/retire matching heartbeat. Report any cleanup/verification failure explicitly. (R14; resource/closure policy; [design](design.md)).
   - Acceptance: No required work remains; unique code/evidence preserved; no leaked owned workspaces/bundles/caches; archive/monitor retirement verified; final user result is accurate.
-  - Evidence: pending.
+  - Evidence: [cursor-verification.md](evidence/cursor-verification.md), [delivery.md](evidence/delivery.md), and [monitor.md](monitor.md).
 
 
 ## Final cost/scope instruction
 
-The user requested no new tasks and immediate merge/closure. All source is committed on main through 7fa98c82; documentation is preserved locally in main. Worktree is archived and heartbeat deleted. D92 remains pending one user-triggered Cursor reload; C99 has only the small registered probe cleanup tied to that check. No poster/story work was started.
+The user requested no new tasks and immediate merge/closure. All source is committed on main through 7fa98c82; documentation is preserved locally in main. Worktree is archived and heartbeat deleted. D92 passed in the actual current Cursor window and the final controlled probe tab/directory were removed. C99 is complete.

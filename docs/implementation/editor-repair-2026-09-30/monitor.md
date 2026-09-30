@@ -6,7 +6,7 @@ Codex-owned. Muse reads its checklist/design and must not edit this record. User
 
 ```json
 {
-  "state": "waiting_for_user_cursor_reload",
+  "state": "complete",
   "workspace": "/Users/vince/.codex/worktrees/editor-repair/can-lang",
   "branch": "codex/editor-repair",
   "base": "9c283544466876700ef7a079f0bc3136451c0008",
@@ -36,7 +36,7 @@ Codex-owned. Muse reads its checklist/design and must not edit this record. User
   "created_at": "2026-09-30T05:17:28.465037+00:00",
   "heavy_retention": false,
   "other_session": "Main has unrelated Muse session 01a0efd8-5d53-73a0-88ab-57366f002962; never stop/message/edit it",
-  "next_action": "Only after user reload: read current Can server status/build, close and remove owned controlled probe, finalize cleanup. No new feature/research work.",
+  "next_action": "None. Reviewed repair is on main, current Cursor live probe passed, and task-owned temporary resources are retired.",
   "run_tag": "b6201821-3921-4d14-950c-c1447ac17b96",
   "startup_attempts": [
     {
@@ -52,9 +52,9 @@ Codex-owned. Muse reads its checklist/design and must not edit this record. User
   "heartbeat_destination": "same calling thread, destination=thread",
   "notification_policy": "Default; prompt requires silence for unchanged/non-actionable progress, notify meaningful change/failure/completion/required action",
   "executor": "none; no background work",
-  "last_checked_at": "2026-09-30T08:43:59.758816+00:00",
-  "last_observation": "Cursor app running after user resumed; no active Can server observed before opening controlled probe. Original owned temp probe disappeared between turns. Final live activation check being resumed; no new feature work.",
-  "temporary_cleanup_status": "Owned stopped tmux server/socket retired with no attached clients; worktree archived and temporary VSIX removed. Remaining small controlled probe/script/prompt directory stays registered to this chat until the pending manual reload check; no running process or automatic work.",
+  "last_checked_at": "2026-09-30T08:49:59+00:00",
+  "last_observation": "Live current Cursor window showed Can 0.2.0+7fa98c82a7ab.feea7763a822 from the installed canlc path. Controlled probe displayed 2 errors and 1 warning, with red squiggles exactly under missing_one and missing_two and amber squiggle exactly under alias; source highlighting was visible. The owned tab was closed. Both registered task temp directories are absent.",
+  "temporary_cleanup_status": "Complete: owned tmux/server socket retired, managed worktree archived, temporary VSIX removed, prior and final registered probe directories absent; final probe tab closed. No background heartbeat remains.",
   "codex_agents": {
     "/root/compiler_recovery": "Final body-annotation gathering recovery and tests, Go slot granted",
     "/root/editor_implementation": "All owned files released; final editor/syntax gate passed",
@@ -77,7 +77,8 @@ Codex-owned. Muse reads its checklist/design and must not edit this record. User
   "installed_version": "0.2.0+7fa98c82a7ab.feea7763a822",
   "worktree_status": "Archived through supported app tool; artifact confirmed archived",
   "live_probe_directory": "/private/tmp/can-editor-live-2026-09-30-01a0f0a1",
-  "live_probe_cleanup": "Registered before allocation: create only can.project.json, can.errors.json and src/probe.can; close owned probe buffer after verification, remove owned directory on success/failure and report cleanup errors."
+  "live_probe_cleanup": "Registered before allocation: create only can.project.json, can.errors.json and src/probe.can; close owned probe buffer after verification, remove owned directory on success/failure and report cleanup errors.",
+  "live_probe_status": "Verified in actual current Cursor window; closed tab and removed registered directory."
 }
 ```
 
