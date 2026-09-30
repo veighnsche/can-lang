@@ -52,8 +52,8 @@ Codex-owned. Muse reads its checklist/design and must not edit this record. User
   "heartbeat_destination": "same calling thread, destination=thread",
   "notification_policy": "Default; prompt requires silence for unchanged/non-actionable progress, notify meaningful change/failure/completion/required action",
   "executor": "none; no background work",
-  "last_checked_at": "2026-09-30T08:24:27.094504+00:00",
-  "last_observation": "All source commits are on main; final package verified and installed. Corrected actual LogOutputChannel and needsStop API mismatch; 11 client tests passed. Current Cursor host still has prior failed activation in memory; manual Reload Window requested because native actions did not reliably apply. No new tasks, background monitor or image/story artifact work. Tmux and VSIX cleaned; compact probe/script remain only for the pending live check.",
+  "last_checked_at": "2026-09-30T08:43:59.758816+00:00",
+  "last_observation": "Cursor app running after user resumed; no active Can server observed before opening controlled probe. Original owned temp probe disappeared between turns. Final live activation check being resumed; no new feature work.",
   "temporary_cleanup_status": "Owned stopped tmux server/socket retired with no attached clients; worktree archived and temporary VSIX removed. Remaining small controlled probe/script/prompt directory stays registered to this chat until the pending manual reload check; no running process or automatic work.",
   "codex_agents": {
     "/root/compiler_recovery": "Final body-annotation gathering recovery and tests, Go slot granted",
@@ -75,7 +75,9 @@ Codex-owned. Muse reads its checklist/design and must not edit this record. User
   "integrated_commit": "ab764c082d81ccada40144d2331dab67cc4bc2b8",
   "final_source_commit": "7fa98c82a7ab",
   "installed_version": "0.2.0+7fa98c82a7ab.feea7763a822",
-  "worktree_status": "Archived through supported app tool; artifact confirmed archived"
+  "worktree_status": "Archived through supported app tool; artifact confirmed archived",
+  "live_probe_directory": "/private/tmp/can-editor-live-2026-09-30-01a0f0a1",
+  "live_probe_cleanup": "Registered before allocation: create only can.project.json, can.errors.json and src/probe.can; close owned probe buffer after verification, remove owned directory on success/failure and report cleanup errors."
 }
 ```
 
