@@ -1,0 +1,79 @@
+{
+  "status": "complete",
+  "executor": "Muse (muse-spark-1.3-contributor) via worker-q-k05; integrator review/commit",
+  "writing_owner": "native-values",
+  "task_id": "K05",
+  "row_or_file_slice": null,
+  "start_prerequisite_receipts": [
+    "K02 complete in 0bb57596",
+    "K03 complete in 143ec9c6",
+    "K04 complete"
+  ],
+  "acceptance_prerequisite_receipts": [],
+  "commits": [
+    "TBD C adapter witness"
+  ],
+  "changed_paths": [
+    "tools/runtime/test-services/native-values/c-witness.ts",
+    "tools/runtime/test-services/native-values/c-witness-check.ts"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "bun tools/runtime/test-services/native-values/c-witness-check.ts",
+      "deadline": "120s",
+      "result": "20/20 pass incl. 2 new integrator pins (integrator re-run)"
+    },
+    {
+      "command": "bun run lint:fix:runtime + format:runtime + check:runtime + typecheck",
+      "deadline": "300s",
+      "result": "lint 0 warnings 0 errors, format clean, tsc clean (integrator re-run)"
+    },
+    {
+      "command": "bun schema-check.ts + session-check.ts + observe-check.ts + c-ingress-check.ts",
+      "deadline": "120s",
+      "result": "K01 15/15, K02 11/11, K03 10/10, K04 19/19 still pass (integrator re-run)"
+    }
+  ],
+  "identities": {
+    "reference": null,
+    "owner": null,
+    "candidate": null,
+    "suite": null,
+    "artifact": "minted cartifactN ids bound to per-instance random-nonce witness tokens (cwt:<seq>:<16hex>); cross-instance and fabricated tokens fail lookup",
+    "host_profile": null,
+    "observer": null
+  },
+  "coverage": {
+    "case_check_ids": [],
+    "retained_facets": [
+      "plausible bypass detectable (fabricated token, uninstrumented artifact, token/artifact mismatch, malformed token shape all reject not-found)",
+      "wrong export/signature detectable (outside-vocab and manifest-missing exports reject unsupported-capability; differing signature rejects changed-input)",
+      "eager read detectable (observe before completion rejects permission; unknown invocation rejects stale-handle)",
+      "forged local completion detectable (never-begun, wrong-artifact, replay reject stale-handle; unknown tag rejects unsupported-capability)",
+      "positive witnessed invocation round-trips (instrument/begin/complete/observe with matching binding digests; all 4 exports x all 3 completions; bindings differ per invocation)",
+      "bounds (8-artifact and 32-invocation caps enforced; malformed manifests fail closed with zero artifacts minted; rejections counted)"
+    ],
+    "unrun_or_blocked": [
+      "live host-dependent controls wait for the corresponding qualified profile and Q task; QN2 holds integrated credit (per K05 scope)"
+    ],
+    "variants_and_environments": []
+  },
+  "integrator_fixes": [
+    "bounds-invocation-cap pin (32-invocation cap was untested; only the artifact cap was pinned)",
+    "bounds-malformed-manifest pin (non-object/missing/bad-signatures manifests fail closed invalid-request with zero artifacts minted)"
+  ],
+  "resource_and_cleanup_receipts": [
+    "pure in-memory mechanics; no /tmp scratch, no services, no live runtimes",
+    "no repo writes outside owned K05 c-witness* paths"
+  ],
+  "correction_registry_head": null,
+  "relevance_decision": null,
+  "retirement_eligible": false,
+  "retirement_commit": null,
+  "reviewer_disposition": "integrator accepted: read c-witness.ts (388 lines) and c-witness-check.ts (283 lines) in full; re-ran the self-check, all runtime gates, and K01-K04 checks. Token design verified sound (per-instance secret nonce, table-lookup verification so guesses fail closed, hypothetical token collision fails closed to not-found rather than aliasing). Self-check grounds signatures in the real K04 manifest (all 4 vocab exports present and matched). Added 2 pins for untested branches; no behavior gaps found. Independent final review deferred to Z06.",
+  "limitations": [
+    "bounded local mechanics only: the token-bound invocation logic is proven, but actual generated-C-path integration is live-host work for QN2",
+    "tokens are per-instance (random nonce): no cross-instance or persisted bindings by design",
+    "fact key is adapter_export because export is a K01 forbidden key"
+  ]
+}
