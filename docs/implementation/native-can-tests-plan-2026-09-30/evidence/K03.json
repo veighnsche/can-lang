@@ -1,0 +1,85 @@
+{
+  "status": "complete",
+  "executor": "Muse (muse-spark-1.3-contributor) via worker-n-k03; integrator review/commit",
+  "writing_owner": "native-values",
+  "task_id": "K03",
+  "row_or_file_slice": null,
+  "start_prerequisite_receipts": [
+    "K02 complete in 0bb57596"
+  ],
+  "acceptance_prerequisite_receipts": [],
+  "commits": [
+    "TBD exact native value facts"
+  ],
+  "changed_paths": [
+    "tools/runtime/test-services/native-values/observe.ts",
+    "tools/runtime/test-services/native-values/observe-check.ts"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "bun tools/runtime/test-services/native-values/observe-check.ts",
+      "deadline": "120s",
+      "result": "10/10 pass incl. 2 new integrator pins (integrator re-run)"
+    },
+    {
+      "command": "bun run lint:fix:runtime + format:runtime + check:runtime + typecheck",
+      "deadline": "300s",
+      "result": "lint 0 warnings 0 errors, format clean, tsc clean (integrator re-run)"
+    },
+    {
+      "command": "bun schema-check.ts + session-check.ts",
+      "deadline": "120s",
+      "result": "K01 15/15 and K02 11/11 still pass (integrator re-run)"
+    },
+    {
+      "command": "bun -e DataView sNaN round-trip probe",
+      "deadline": "60s",
+      "result": "engine quiets 0x7ff00001 to 0x7ff80000: lexeme fix targets a live bug, not hardening"
+    }
+  ],
+  "identities": {
+    "reference": null,
+    "owner": null,
+    "candidate": null,
+    "suite": null,
+    "artifact": null,
+    "host_profile": "bun (JSC): sNaN quieting observed; literal-direct paths are engine-independent",
+    "observer": null
+  },
+  "coverage": {
+    "case_check_ids": [],
+    "retained_facets": [
+      "normalization distinguishable (+0 vs -0 sign/classes, NaN payloads uncanonicalized, subnormal/inf exact, sNaN literal-exact)",
+      "rounding distinguishable (0.1 and 1/3 nearest-even words pinned, 0.1+0.2 vs 0.3 differ, make-observe round-trips bit-exact)",
+      "lexemes exact (safe integers incl. MAX_SAFE_INTEGER as text, 2^53/-0 as bits, nested values explicit gaps)",
+      "alias swap distinguishable (equal payloads get distinct cells, re-alias shares cells with alias_of chains, groups 0-1-2)",
+      "assimilation distinguishable (property_then on thenable returns opaque function with thenCalls 0; only call_then assimilates+counts; getter not-callable; revoked proxy TypeError with 0 traps)",
+      "zero implicit reads on all 7 observe kinds over hostile handles (counters stay 0, fixtures proven armed by biting control)",
+      "counter intervals slice (from,to] with exact op lists and hostile deltas; bad/future/over-wide ranges reject",
+      "final seal binds construction + read log + observation history + counters (deterministic, sensitive to any difference incl. same-count different-kind; sealed sessions freeze make/alias/observe/read; counters/interval/reseal/close still work)"
+    ],
+    "unrun_or_blocked": [
+      "live host-dependent controls wait for the corresponding qualified profile and Q task (per K03 scope)"
+    ],
+    "variants_and_environments": []
+  },
+  "integrator_fixes": [
+    "lexeme f64 path now reports construction-literal bits instead of re-deriving from a reconstructed JS number: Bun quiets signaling NaNs (0x7ff00001 becomes 0x7ff80000 through getFloat64/setFloat64), so the old path misreported sNaN cells and disagreed with ieee_bits; pinned with sNaN assertions on both kinds",
+    "seal now binds the observation history (per-observe seq/kind/handles), not just counts: previously two sessions with the same construction and one same-count different-kind observation sealed identically; pinned with a same-count different-kind sensitivity assertion"
+  ],
+  "resource_and_cleanup_receipts": [
+    "pure in-memory mechanics; no /tmp scratch, no services, no live runtimes",
+    "no repo writes outside owned K03 observe* paths (sibling recovery/ paths present but untouched)"
+  ],
+  "correction_registry_head": null,
+  "relevance_decision": null,
+  "retirement_eligible": false,
+  "retirement_commit": null,
+  "reviewer_disposition": "integrator accepted: read observe.ts (1074 lines) and observe-check.ts (822 lines) in full; re-ran the self-check, all runtime gates, and K01/K02 checks. Mirror design (reimplementing K02 construction rather than wrapping) accepted as the only sound option under one-writer-per-path: K02 cells are private by design and effectful reads fundamentally need raw access a wrapper cannot obtain; K02's zero-read guarantee stays airtight with session.ts untouched. Mirror fidelity verified operation-by-operation (same order, same errors; two deliberate narrowings: deep-copy of entry values required for read-out stability, null-guards returning invalid-request instead of TypeError). Fixed 1 live exactness bug (sNaN quieting, proven with an engine probe) and 1 seal-completeness gap (observation history binding), each with a regression pin. Independent final review deferred to Z06.",
+  "limitations": [
+    "bounded local mechanics only: no I/O, timers, transports, services, or live runtimes",
+    "entry payloads nesting deeper than 8 inside a value reject (defensive copy bound; K01's own depth-8 screen binds first in absolute terms, so no operative divergence from K02)",
+    "scalar effectful reads report engine-held bits with a matches_construction cross-check: adversarial words the engine cannot hold (sNaN) report quieted with the flag false rather than failing",
+    "mirror drift risk: future K02 vocabulary/limit changes do not propagate to the K03 mirror automatically; the two self-checks pin current agreement"
+  ]
+}
