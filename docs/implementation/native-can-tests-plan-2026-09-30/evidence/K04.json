@@ -11,7 +11,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "<this commit> C ingress seam"
+    "65594374 C ingress seam"
   ],
   "changed_paths": [
     "tools/runtime/test-services/native-values/c-ingress.manifest.json",
