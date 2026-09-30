@@ -11,7 +11,7 @@ const imageInspectEmitSource = "package app\n" +
 	"    provides []\n" +
 	"    uses [bytes, codec, image]\n" +
 	"fn image::metadata inspect_image\n" +
-	"    emits [codec::invalid_data, image::invalid_image]\n" +
+	"    emits {codec::invalid_data, image::invalid_image}\n" +
 	"    asserts\n" +
 	"        sample: => ok image::metadata(\"png\", 1, 1)\n" +
 	"    match chain\n" +
@@ -21,7 +21,7 @@ const imageInspectEmitSource = "package app\n" +
 	"        image::invalid_image\n" +
 	"        ok => ok metadata\n" +
 	"fn void main\n" +
-	"    emits [codec::invalid_data, image::invalid_image]\n" +
+	"    emits {codec::invalid_data, image::invalid_image}\n" +
 	"    given\n" +
 	"        str[] args\n" +
 	"    asserts\n" +
