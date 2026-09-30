@@ -1,0 +1,107 @@
+{
+  "status": "complete",
+  "executor": "Muse (muse-spark-1.3-contributor) via worker-v-p14; integrator review/commit",
+  "writing_owner": "native-owner",
+  "task_id": "P14",
+  "row_or_file_slice": null,
+  "start_prerequisite_receipts": [
+    "P10 complete in b4eaa2f5",
+    "P11 complete in 3905837d",
+    "P12 complete in f219a318",
+    "P13 complete in f481e36e",
+    "P02 complete in ce130fd0",
+    "P25 complete"
+  ],
+  "acceptance_prerequisite_receipts": [],
+  "commits": [
+    "TBD N acceptance",
+    "TBD P10 status-pipe fix (shared owner code)"
+  ],
+  "changed_paths": [
+    "tools/native-test-owner/acceptance/",
+    "tools/native-test-owner/process/process.go",
+    "tools/native-test-owner/process/process_test.go"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "gofmt -l + go vet on acceptance/ and process/",
+      "deadline": "120s",
+      "result": "clean; exit 0 (integrator re-run)"
+    },
+    {
+      "command": "go test -count=1 -timeout 180s -v ./tools/native-test-owner/acceptance/",
+      "deadline": "300s",
+      "result": "14/14 PASS + 1 helper SKIP, 6.192s incl. new refusal-reason pin (integrator re-run)"
+    },
+    {
+      "command": "go test -count=1 -race -timeout 240s ./tools/native-test-owner/acceptance/",
+      "deadline": "300s",
+      "result": "ok 10.426s, no data races (integrator re-run)"
+    },
+    {
+      "command": "go test -count=3 on timing-sensitive acceptance/process tests",
+      "deadline": "300s",
+      "result": "ok both packages (integrator re-run)"
+    },
+    {
+      "command": "go test -count=1 ./tools/native-test-owner/... + f1 subjects",
+      "deadline": "300s",
+      "result": "all 11 packages ok after the P10 pipe fix (integrator re-run)"
+    },
+    {
+      "command": "post-run ps sweep (sleep 30/31)",
+      "deadline": "60s",
+      "result": "no strays"
+    }
+  ],
+  "identities": {
+    "reference": null,
+    "owner": "witness spawn-start identities (fresh token per run); N spawn-start identities per run",
+    "candidate": null,
+    "suite": "re-exec test-binary N subjects (version-attested) + /bin/sh fixtures; t.TempDir only; no live suite, no network",
+    "artifact": "n-acceptance.json committed separately (complete, 7/7 checks, pass receipt)",
+    "host_profile": "darwin-strict/quick re-probed at selection; drift refuses",
+    "observer": "T: own journal, process owner, lease, admission lanes, recovery gate — separate graph from N"
+  },
+  "coverage": {
+    "case_check_ids": [],
+    "retained_facets": [
+      "N death cannot appear as complete success (die mode exit 1, no ack, release refusal, failed spawn intent, receipt fails Verify)",
+      "forged receipt cannot appear as success (tampered bytes fail Verify; wrong-op fails)",
+      "absent receipt cannot appear as success (missing file fails; witness-lost writes nothing)",
+      "lingering descendant cannot appear as success (orphan is the sole cause with ack+EOF; grandchild reaped via pidfile, release re-probed)",
+      "lingering descriptor cannot appear as success (held-but-unreaped at decision; aborted, release re-probed)",
+      "cleanup failure cannot appear as success (clean body, remove-failed receipt, incomplete)",
+      "T's loss leaves no green receipt (Kill then Accept: witness-lost, no file)",
+      "exact qualified host profile (rebind darwin-strict/quick/facts; tampered qual facts drift-refuse; N identity re-verified)",
+      "another host needs explicit selection + own receipt (no spawn intent, no retained child, non-green refusal receipt)",
+      "unsupported enforcement never passes (unavailable adapter cannot qualify or select)",
+      "refusal receipts name the operative denial with a target reserved (not a path refusal); remover never called"
+    ],
+    "unrun_or_blocked": [],
+    "variants_and_environments": [
+      "darwin-only: acceptance tests skip elsewhere (P13 OS-specific record)"
+    ]
+  },
+  "integrator_fixes": [
+    "P10 status-pipe race (worker-V's finding, proven + fixed by integrator): Spawn used cmd.StdoutPipe with an eager cmd.Wait goroutine, and Go's Wait closes StdoutPipe read ends once the child exits — late collection on perfect fast-child behavior failed deterministically with 'file already closed' (proven by TestCollectAfterChildExit failing pre-fix). Spawn now uses a manual os.Pipe with owner-held lifetime (parent drops its write copy after Start; read end held until EOF/abort). All 11 consumer packages re-verified green",
+    "removed P14 helper's 1s status hold (the in-scope mitigation is no longer needed; the suite passing without it, happy in 0.09s, proves the P10 fix end-to-end) and corrected its stale comment",
+    "refuse() now passes the reserved cleanup-target path to the denial request: previously every refusal with a target misreported replaced-path (authority mismatch on empty path) and dropped the operative denial; pinned by TestRefuseCarriesDenialWithTarget"
+  ],
+  "resource_and_cleanup_receipts": [
+    "witness dirs, journals, leases, lanes, receipts in t.TempDir; every child reaped (Live()==0 asserted); orphan grandchild killed via pidfile + release re-probed; exact-image ps sweeps clean",
+    "no repo writes outside owned P14 paths + the integrator-owned P10 shared files",
+    "no /tmp scratch created"
+  ],
+  "correction_registry_head": null,
+  "relevance_decision": null,
+  "retirement_eligible": false,
+  "retirement_commit": null,
+  "reviewer_disposition": "integrator accepted: read all 5 source files and both test files in full (1672 lines); independently re-ran vet/tests/race plus 3x stress and the whole owner tree. The worker's P10 race report was accurate and precisely diagnosed; I proved it deterministically on current code, fixed it at the root (manual pipe, not StdoutPipe), and removed the mitigation to prove the fix end-to-end. Fixed 1 refusal-reason wart with a pin. N/T separation verified (N never the test process; T owns a separate graph; manifest binds both). Independent final review deferred to Z06.",
+  "limitations": [
+    "acceptance retries need fresh OpIDs (journal reserve conflicts fail closed as misuse, consistent with P10 spawn conflicts)",
+    "manifest embeds T's run-scoped spawn-start token (single-use, run over; harmless post-hoc)",
+    "the scan gate in Accept is defense-in-depth: in-process it can only refuse on anomalous journal state (real scan teeth tested in P11)",
+    "darwin-only; another host requires explicit selection and its own receipt where it runs"
+  ]
+}
