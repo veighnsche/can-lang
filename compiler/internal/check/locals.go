@@ -31,6 +31,7 @@ type LocalForwarding struct {
 type UnnecessaryLocal struct {
 	Name        string
 	Span        source.Span
+	BindingSpan source.Span
 	Replacement string
 }
 
@@ -108,7 +109,7 @@ func CheckLocalForwarding(context LocalForwarding) error {
 	if err != nil {
 		return err
 	}
-	return &UnnecessaryLocal{Name: local.Name.Text, Span: local.Span, Replacement: prefix + replacement}
+	return &UnnecessaryLocal{Name: local.Name.Text, Span: local.Name.Span, BindingSpan: local.Span, Replacement: prefix + replacement}
 }
 func simpleLocalSyntax(expr syntax.Expr) bool {
 	if expr == nil {

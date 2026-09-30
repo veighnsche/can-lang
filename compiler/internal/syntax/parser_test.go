@@ -77,7 +77,7 @@ func TestTypeGrammarRejectsMalformedFragments(t *testing.T) {
 				t.Fatal(err)
 			}
 			node, diagnostics := ParseType(file)
-			if node != nil || len(diagnostics) != 1 {
+			if node != nil || len(diagnostics) == 0 {
 				t.Fatalf("accepted malformed type: %q", text)
 			}
 			if err := file.Validate(diagnostics[0].Span); err != nil {

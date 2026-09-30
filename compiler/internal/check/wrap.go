@@ -265,23 +265,11 @@ func orderWrappers(wrappers []*NativeDeclaration, deps map[string][]string) ([]*
 	for _, native := range wrappers {
 		edges := map[string]bool{}
 		for _, dep := range deps[native.Symbol.ID] {
-			if dep != native.Symbol.ID && byID[dep] != nil {
+			if byID[dep] != nil {
 				edges[dep] = true
 			}
 		}
 		pending[native.Symbol.ID] = edges
-	}
-	self := []string{}
-	for _, native := range wrappers {
-		for _, dep := range deps[native.Symbol.ID] {
-			if dep == native.Symbol.ID {
-				self = append(self, native.Symbol.ID)
-			}
-		}
-	}
-	if len(self) > 0 {
-		sort.Strings(self)
-		return nil, &boundCycleError{involved: self}
 	}
 	var ordered []*NativeDeclaration
 	for len(pending) > 0 {
@@ -297,7 +285,7 @@ func orderWrappers(wrappers []*NativeDeclaration, deps map[string][]string) ([]*
 				rest = append(rest, id)
 			}
 			sort.Strings(rest)
-			return nil, &boundCycleError{involved: rest}
+			return ordered, &boundCycleError{involved: rest}
 		}
 		sort.Strings(ready)
 		for _, id := range ready {
@@ -317,10 +305,11 @@ func orderWrappers(wrappers []*NativeDeclaration, deps map[string][]string) ([]*
 // checks policy arms in dependency order and publishes each calculated
 // signature for callers. Ordinary explicit-bound callees are leaves.
 func (c *programChecker) checkWrapperPolicies(program *Program, callables map[string]CallableDeclaration) error {
+	var problems []error
 	var wrappers []*NativeDeclaration
 	byID := map[string]*NativeDeclaration{}
 	for _, native := range program.Natives {
-		if native.Symbol.Kind != resolve.Wrapper {
+		if native.Symbol.Kind != resolve.Wrapper || native.Symbol.Invalid != nil {
 			continue
 		}
 		wrappers = append(wrappers, native)
@@ -336,7 +325,13 @@ func (c *programChecker) checkWrapperPolicies(program *Program, callables map[st
 		declaration := native.Symbol.Declaration.(*syntax.WrapDecl)
 		chain, err := c.wrapperChain(file, native.Symbol)
 		if err != nil {
-			return err
+			if !c.recovering {
+				return err
+			}
+			native.Symbol.Invalid = err
+			c.world.Invalid[declaration] = err
+			problems = append(problems, err)
+			continue
 		}
 		chains[native.Symbol.ID] = chain
 		edges := []string{}
@@ -350,16 +345,43 @@ func (c *programChecker) checkWrapperPolicies(program *Program, callables map[st
 	if err != nil {
 		var cycle *boundCycleError
 		if errors.As(err, &cycle) {
-			return locateBoundCycle(byID, cycle)
+			err = locateBoundCycle(byID, cycle)
+			for _, id := range cycle.involved {
+				byID[id].Symbol.Invalid = err
+				c.world.Invalid[byID[id].Symbol.Declaration] = err
+			}
 		}
-		return err
+		if !c.recovering {
+			return err
+		}
+		problems = append(problems, err)
 	}
 	for _, native := range ordered {
+		if native.Symbol.Invalid != nil {
+			continue
+		}
+		for _, dep := range deps[native.Symbol.ID] {
+			if prior := byID[dep]; prior != nil && prior.Symbol.Invalid != nil {
+				native.Symbol.Invalid = &source.BlockedError{Dependency: dep}
+				c.world.Invalid[native.Symbol.Declaration] = native.Symbol.Invalid
+			}
+		}
+		if native.Symbol.Invalid != nil {
+			continue
+		}
+		rollback := c.unitCheckpoint()
 		if err := c.checkWrapper(program, native, chains[native.Symbol.ID], byID, callables); err != nil {
-			return fmt.Errorf("wrapper %s: %w", native.Symbol.Name, err)
+			rollback()
+			err = source.Locate(native.Symbol.Source.Path, resolve.DeclarationNameSpan(native.Symbol.Declaration), fmt.Errorf("wrapper %s: %w", native.Symbol.Name, err))
+			if !c.recovering {
+				return err
+			}
+			problems = append(problems, err)
+			native.Symbol.Invalid = err
+			c.world.Invalid[native.Symbol.Declaration] = err
 		}
 	}
-	return nil
+	return errors.Join(problems...)
 }
 
 // relateSymbol links a failure to a declared symbol's declaration span.

@@ -29,6 +29,9 @@ const (
 // Each key carries its concrete data type plus the JSON or form descriptor
 // the emitter supplies to the shared runtime boundary.
 type HTTPSpecialization struct {
+	Invalid   error
+	SiteFile  string
+	SiteSpan  source.Span
 	Operation string
 	Data      *types.Type
 	Contract  *types.Type
@@ -213,7 +216,10 @@ func (c *programChecker) gatherHTTP(file *resolve.File, callee syntax.Expr, args
 		c.https = map[string]*HTTPSpecialization{}
 		c.httpParts = map[string]*httpParts{}
 	}
-	if c.https[key] != nil {
+	if prior := c.https[key]; prior != nil {
+		if prior.Invalid != nil {
+			return &source.BlockedError{Dependency: key}
+		}
 		return nil
 	}
 	// Catalogue dependencies resolve in the maintained package namespace, not the
@@ -251,7 +257,7 @@ func (c *programChecker) gatherHTTP(file *resolve.File, callee syntax.Expr, args
 		parts.errors = append(parts.errors, typ)
 	}
 	// Residual signatures can be derived after graph sealing; retain ingredients.
-	c.https[key] = &HTTPSpecialization{Operation: symbol.ID, Data: data}
+	c.https[key] = &HTTPSpecialization{SiteFile: file.Source.Path, SiteSpan: args[0].TypeSpan(), Operation: symbol.ID, Data: data}
 	c.httpParts[key] = parts
 	if c.specializer != nil {
 		if err = c.finishHTTP(key); err != nil {

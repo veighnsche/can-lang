@@ -1,1 +1,83 @@
-{"brackets": [["[", "]"], ["(", ")"], ["{", "}"]], "comments": {"lineComment": "//"}, "surroundingPairs": [["[", "]"], ["(", ")"], ["{", "}"], ["\"", "\""]]}
+{
+  "comments": {
+    "lineComment": "//",
+    "blockComment": [
+      "/*",
+      "*/"
+    ]
+  },
+  "brackets": [
+    [
+      "(",
+      ")"
+    ],
+    [
+      "[",
+      "]"
+    ],
+    [
+      "{",
+      "}"
+    ]
+  ],
+  "autoClosingPairs": [
+    {
+      "open": "(",
+      "close": ")",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    },
+    {
+      "open": "[",
+      "close": "]",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    },
+    {
+      "open": "{",
+      "close": "}",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    },
+    {
+      "open": "\"",
+      "close": "\"",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    }
+  ],
+  "surroundingPairs": [
+    [
+      "(",
+      ")"
+    ],
+    [
+      "[",
+      "]"
+    ],
+    [
+      "{",
+      "}"
+    ],
+    [
+      "\"",
+      "\""
+    ]
+  ],
+  "indentationRules": {
+    "increaseIndentPattern": "^\\s*(?:(?:fn|record|variant|connection|fetch|llm|judge|noul|choice|choice_arm|score|wrap|fixture|scenario|action|owner\\s+record)\\b|(?:given|asserts|when|match|chain|do|on|with|from|state|asks|cases|handles|captures|returns|input|result)\\b).*$|^\\s*[^/\\n][^\\n]*\\b(?:match|chain|do)\\b[^\\n]*$",
+    "decreaseIndentPattern": "^\\s*(?:\\}|\\]|\\)).*$"
+  },
+  "folding": {
+    "offSide": true
+  },
+  "wordPattern": "[a-z][a-z0-9]*(?:_[a-z0-9]+)*"
+}

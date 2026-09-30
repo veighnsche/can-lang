@@ -2,20 +2,24 @@ package check
 
 import (
 	"fmt"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 	"math/big"
 )
 
 // ConnectionDeclaration converts inert literal syntax into the shared I15 policy.
 // It deliberately never evaluates a call, reads the environment, or opens I/O.
-func ConnectionDeclaration(declaration *syntax.ConnectionDecl) (ConnectionPolicy, error) {
+func ConnectionDeclaration(file *source.File, declaration *syntax.ConnectionDecl) (ConnectionPolicy, error) {
 	var convert func(syntax.ConnectionSetting) (ConnectionSetting, error)
 	convert = func(setting syntax.ConnectionSetting) (ConnectionSetting, error) {
-		out := ConnectionSetting{Name: setting.Name.Text}
+		out := ConnectionSetting{Name: setting.Name.Text, File: file.Name(), NameSpan: setting.Name.Span, ValueSpan: setting.Name.Span}
+		if setting.Value != nil {
+			out.ValueSpan = setting.Value.ExprSpan()
+		}
 		for _, entry := range setting.Entries {
 			converted, err := convert(entry)
 			if err != nil {
-				return out, err
+				converted.Invalid = err
 			}
 			out.Entries = append(out.Entries, converted)
 		}
@@ -30,7 +34,7 @@ func ConnectionDeclaration(declaration *syntax.ConnectionDecl) (ConnectionPolicy
 		}
 		integer, err := connectionInteger(setting.Value)
 		if err != nil {
-			return out, fmt.Errorf("connection %s setting %s: %w", declaration.Name.Text, setting.Name.Text, err)
+			return out, source.Locate(file.Name(), setting.Value.ExprSpan(), fmt.Errorf("connection %s setting %s: %w", declaration.Name.Text, setting.Name.Text, err))
 		}
 		out.Integer = integer
 		return out, nil
@@ -39,11 +43,12 @@ func ConnectionDeclaration(declaration *syntax.ConnectionDecl) (ConnectionPolicy
 	for _, setting := range declaration.Settings {
 		converted, err := convert(setting)
 		if err != nil {
-			return ConnectionPolicy{}, err
+			converted.Invalid = err
 		}
 		settings = append(settings, converted)
 	}
-	return CheckConnection(settings)
+	policy, err := CheckConnection(settings)
+	return policy, source.Locate(file.Name(), declaration.Name.Span, err)
 }
 func connectionInteger(expression syntax.Expr) (*big.Int, error) {
 	switch n := expression.(type) {

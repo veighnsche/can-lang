@@ -1,1 +1,93 @@
-{"activationEvents":["onLanguage:can"],"contributes":{"configuration":{"properties":{"canlc.serverPath":{"default":"","description":"Path to the canlc binary (default: bundled bin/canlc). Empty means bundled.","type":"string"}},"title":"can-lang"},"grammars":[{"embeddedLanguages":{},"language":"can","path":"./syntaxes/can.tmGrammar.json","scopeName":"source.can"}],"languages":[{"aliases":["CAN","can-lang"],"configuration":"./language-configuration.json","extensions":[".can"],"id":"can"}]},"description":"can-lang: highlighting plus squiggles served by canlc lsp.","displayName":"can-lang","engines":{"vscode":"^1.91.0"},"main":"./client/extension.js","name":"can-lang","packageManager":"bun@1.4.2","publisher":"can-lang","version":"0.1.0","scripts":{"test":"echo \"Error: no test specified\" && exit 1"},"keywords":[],"author":"","license":"ISC","type":"commonjs","dependencies":{"vscode-languageclient":"10.1.1"}}
+{
+  "activationEvents": [
+    "onLanguage:can",
+    "onCommand:canlc.restartServer",
+    "onCommand:canlc.showServerStatus",
+    "workspaceContains:**/can.project.json"
+  ],
+  "contributes": {
+    "configuration": {
+      "properties": {
+        "canlc.serverPath": {
+          "default": "",
+          "description": "Path to the canlc binary (default: bundled bin/canlc). Empty means bundled.",
+          "type": "string"
+        },
+        "canlc.inlayHints": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show proven Can type and parameter hints."
+        }
+      },
+      "title": "can-lang"
+    },
+    "grammars": [
+      {
+        "embeddedLanguages": {},
+        "language": "can",
+        "path": "./syntaxes/can.tmGrammar.json",
+        "scopeName": "source.can"
+      }
+    ],
+    "languages": [
+      {
+        "aliases": [
+          "CAN",
+          "can-lang"
+        ],
+        "configuration": "./language-configuration.json",
+        "extensions": [
+          ".can"
+        ],
+        "id": "can"
+      }
+    ],
+    "commands": [
+      {
+        "command": "canlc.restartServer",
+        "title": "Can: Restart Language Server"
+      },
+      {
+        "command": "canlc.showServerStatus",
+        "title": "Can: Show Language Server Status"
+      }
+    ],
+    "configurationDefaults": {
+      "[can]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "editor.detectIndentation": false
+      }
+    }
+  },
+  "description": "can-lang: highlighting plus squiggles served by canlc lsp.",
+  "displayName": "can-lang",
+  "engines": {
+    "vscode": "^1.91.0"
+  },
+  "main": "./client/extension.js",
+  "name": "can-lang",
+  "packageManager": "bun@1.4.2",
+  "publisher": "can-lang",
+  "version": "0.2.0",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "test:grammar": "node --test test/grammar.test.js",
+    "verify:server": "node scripts/verify-server.js",
+    "build:server": "node scripts/build-server.js",
+    "package:host": "bun run verify:server && bun run smoke:protocol && vsce package --out bin/can-lang.vsix && node scripts/verify-vsix.js bin/can-lang.vsix",
+    "smoke:protocol": "node scripts/protocol-smoke.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "vscode-languageclient": "10.1.1"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "4.0.0",
+    "vscode-oniguruma": "2.0.1",
+    "vscode-textmate": "9.2.0"
+  }
+}

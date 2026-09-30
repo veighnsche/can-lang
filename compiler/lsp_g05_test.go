@@ -15,10 +15,10 @@ import (
 // or same-spelled bindings in other scopes are different identities
 // and stay untouched; explicit with pins rename with the callee's
 // near parameter while implicit fallback captures keep their own
-// caller-scope identity. Every rename validates like --write: the
-// live snapshot must be error-free, the renamed text must check clean
-// through a copied overlay, and the renamed tokens must re-resolve to
-// exactly one shared identity. Anything else declines to null.
+// caller-scope identity. Every rename validates through an isolated overlay:
+// existing independent errors may remain at mapped locations, no new error
+// may appear, and renamed tokens must re-resolve to exactly one identity.
+// Unsafe proposals return an explained protocol refusal.
 
 // g05Fallback keeps one unlisted near-input on fallback lookup: the
 // caller's own `prefix` binding satisfies combine's near parameter by
@@ -54,7 +54,7 @@ func g05Rename(id int, uri string, line, character int, newName string) string {
 }
 
 // g05Raw requests a rename at a needle cursor and returns the raw wire
-// result, which is nil for a declined rename.
+// result or an explained protocol refusal.
 func g05Raw(t *testing.T, files map[string]string, open, needle, newName string, id int) (map[string]string, any) {
 	t.Helper()
 	root := writeServerProject(t, files)
@@ -71,7 +71,50 @@ func g05Raw(t *testing.T, files map[string]string, open, needle, newName string,
 		g05Rename(id, uris[open], line, character, newName),
 		`{"jsonrpc":"2.0","method":"exit"}`,
 	})
+	for _, frame := range frames {
+		if frame["id"] == float64(id) {
+			if err, ok := frame["error"].(map[string]any); ok {
+				return texts, &g05Refusal{code: err["code"], message: err["message"]}
+			}
+		}
+	}
 	return texts, g01Response(t, frames, float64(id))
+}
+
+// Versioned document edits are the only accepted atomic rename shape.
+func g05DocumentChanges(t *testing.T, result map[string]any) map[string]any {
+	t.Helper()
+	documents, ok := result["documentChanges"].([]any)
+	if !ok {
+		t.Fatalf("rename has no versioned documentChanges: %v", result)
+	}
+	changes := map[string]any{}
+	for _, raw := range documents {
+		change, ok := raw.(map[string]any)
+		if !ok {
+			t.Fatalf("invalid document edit: %v", raw)
+		}
+		doc, ok := change["textDocument"].(map[string]any)
+		if !ok {
+			t.Fatalf("missing textDocument: %v", change)
+		}
+		uri, ok := doc["uri"].(string)
+		if !ok || uri == "" {
+			t.Fatalf("missing edit URI: %v", doc)
+		}
+		if _, hasVersion := doc["version"]; !hasVersion {
+			t.Fatalf("edit lacks explicit version: %v", doc)
+		}
+		if _, duplicate := changes[uri]; duplicate {
+			t.Fatalf("multiple edit batches for %s", uri)
+		}
+		edits, ok := change["edits"].([]any)
+		if !ok {
+			t.Fatalf("invalid edits: %v", change)
+		}
+		changes[uri] = edits
+	}
+	return changes
 }
 
 // g05Edits renders a rename result as sorted "file:line:token=>new"
@@ -82,10 +125,7 @@ func g05Edits(t *testing.T, texts map[string]string, raw any) []string {
 	if !ok {
 		t.Fatalf("rename not an object: %v", raw)
 	}
-	changes, ok := result["changes"].(map[string]any)
-	if !ok {
-		t.Fatalf("rename has no changes: %v", result)
-	}
+	changes := g05DocumentChanges(t, result)
 	uris := make([]string, 0, len(changes))
 	for uri := range changes {
 		uris = append(uris, uri)
@@ -130,11 +170,33 @@ func g05Want(t *testing.T, got, want []string) {
 	}
 }
 
-func g05WantNull(t *testing.T, texts map[string]string, raw any, what string) {
+type g05Refusal struct{ code, message any }
+
+func g05WantRefusal(t *testing.T, texts map[string]string, raw any, what string) {
 	t.Helper()
-	if raw != nil {
-		t.Fatalf("%s renamed instead of declining: %v", what, g05Edits(t, texts, raw))
+	refusal, ok := raw.(*g05Refusal)
+	if !ok {
+		t.Fatalf("%s must return an explained rename refusal, got %v", what, raw)
 	}
+	message, _ := refusal.message.(string)
+	if (refusal.code != -32803.0 && refusal.code != -32602.0) || message == "" {
+		t.Fatalf("%s gave an unhelpful failure: %+v", what, refusal)
+	}
+}
+
+func g05RefusalFrame(t *testing.T, frames []map[string]any, id float64) {
+	t.Helper()
+	for _, frame := range frames {
+		if frame["id"] == id {
+			err, ok := frame["error"].(map[string]any)
+			if !ok {
+				t.Fatalf("rename was not refused: %v", frame)
+			}
+			g05WantRefusal(t, nil, &g05Refusal{code: err["code"], message: err["message"]}, "unsafe rename")
+			return
+		}
+	}
+	t.Fatalf("no response to %v", id)
 }
 
 // g05Apply splices a rename result into the fixture texts, returning
@@ -145,10 +207,7 @@ func g05Apply(t *testing.T, texts map[string]string, raw any) map[string]string 
 	if !ok {
 		t.Fatalf("rename not an object: %v", raw)
 	}
-	changes, ok := result["changes"].(map[string]any)
-	if !ok {
-		t.Fatalf("rename has no changes: %v", result)
-	}
+	changes := g05DocumentChanges(t, result)
 	out := map[string]string{}
 	for uri, text := range texts {
 		name := uri[strings.LastIndex(uri, "/")+1:]
@@ -212,10 +271,10 @@ func TestG05InitializeAdvertisesRename(t *testing.T) {
 	if !ok {
 		t.Fatalf("no capabilities in %v", result)
 	}
-	if capabilities["renameProvider"] != true {
+	if provider, ok := capabilities["renameProvider"].(map[string]any); !ok || provider["prepareProvider"] != true {
 		t.Fatalf("rename not advertised: %v", capabilities)
 	}
-	if capabilities["textDocumentSync"] != 1.0 || capabilities["definitionProvider"] != true || capabilities["documentFormattingProvider"] != true || capabilities["hoverProvider"] != true || capabilities["referencesProvider"] != true {
+	if !g01FullSync(capabilities) || capabilities["definitionProvider"] != true || capabilities["documentFormattingProvider"] != true || capabilities["hoverProvider"] != true || capabilities["referencesProvider"] != true {
 		t.Fatalf("existing capabilities regressed: %v", capabilities)
 	}
 	completion, ok := capabilities["completionProvider"].(map[string]any)
@@ -355,13 +414,13 @@ func TestG05RenameCrossFile(t *testing.T) {
 func TestG05RenameCaptureDeclines(t *testing.T) {
 	files := map[string]string{"src/main.can": g03Main}
 	texts, raw := g05Raw(t, files, "src/main.can", "=> tot|al + seed", "seed", 2)
-	g05WantNull(t, texts, raw, "inner-total-to-seed")
+	g05WantRefusal(t, texts, raw, "inner-total-to-seed")
 	texts, raw = g05Raw(t, files, "src/main.can", "int se|ed\n    asserts\n        sample: 1 => ok 2", "total", 2)
-	g05WantNull(t, texts, raw, "outer-seed-to-total")
+	g05WantRefusal(t, texts, raw, "outer-seed-to-total")
 	// The renamed outer binding would steal the arm's later `seed`
 	// uses through its new shadowing position.
 	texts, raw = g05Raw(t, files, "src/main.can", "int tot|al = seed\n    int widened", "seed", 2)
-	g05WantNull(t, texts, raw, "outer-total-to-stolen-seed")
+	g05WantRefusal(t, texts, raw, "outer-total-to-stolen-seed")
 }
 
 // TestG05RenameAdmissibleSpellings pins renames the validator must not
@@ -391,13 +450,14 @@ func TestG05RenameAdmissibleSpellings(t *testing.T) {
 	})
 }
 
-// TestG05RenameProvidedNameDeclines pins the header boundary: package
-// `provides` entries are not reference-index occurrences, so renaming
-// a provided declaration declines — the candidate check vetoes —
-// rather than leaving the header stale.
-func TestG05RenameProvidedNameDeclines(t *testing.T) {
+// Exported rename updates the provides occurrence atomically with its declaration.
+func TestG05RenameProvidedName(t *testing.T) {
 	texts, raw := g05Raw(t, map[string]string{"src/main.can": g03Main}, "src/main.can", "fn int r|un", "start", 2)
-	g05WantNull(t, texts, raw, "provided-name-leaves-header-stale")
+	g05Want(t, g05Edits(t, texts, raw), []string{"main.can:1:run=>start", "main.can:27:run=>start"})
+	edited := g05Apply(t, texts, raw)["main.can"]
+	if !strings.Contains(edited, "provides [start, shadowed]") || !strings.Contains(edited, "fn int start") {
+		t.Fatalf("export was left stale: %s", edited)
+	}
 }
 
 // TestG05EditorWorkflow pins AU-LSP-rename: the full ordered authoring
@@ -526,9 +586,9 @@ func TestG05EditorWorkflow(t *testing.T) {
 func TestG05RenameFallbackCouplingDeclines(t *testing.T) {
 	files := map[string]string{"src/main.can": g05Fallback}
 	texts, raw := g05Raw(t, files, "src/main.can", "near int pre|fix", "label", 2)
-	g05WantNull(t, texts, raw, "near-param-away-from-fallback")
+	g05WantRefusal(t, texts, raw, "near-param-away-from-fallback")
 	texts, raw = g05Raw(t, files, "src/main.can", "int pre|fix = seed + 1", "base", 2)
-	g05WantNull(t, texts, raw, "fallback-away-from-near-param")
+	g05WantRefusal(t, texts, raw, "fallback-away-from-near-param")
 }
 
 // TestG05RenameInvalidNameDeclines pins spelling validation: hard
@@ -537,7 +597,7 @@ func TestG05RenameInvalidNameDeclines(t *testing.T) {
 	files := map[string]string{"src/main.can": g03Main}
 	for _, name := range []string{"", "with", "call", "match", "With", "9lives", "has space", "pkg::x", "_", "trailing_"} {
 		texts, raw := g05Raw(t, files, "src/main.can", "int doub|led = seed", name, 2)
-		g05WantNull(t, texts, raw, fmt.Sprintf("invalid-name-%q", name))
+		g05WantRefusal(t, texts, raw, fmt.Sprintf("invalid-name-%q", name))
 	}
 }
 
@@ -554,12 +614,8 @@ func TestG05RenameUnresolvedDeclines(t *testing.T) {
 		g05Rename(3, uri, 3, 0, "renamed"),
 		`{"jsonrpc":"2.0","method":"exit"}`,
 	})
-	if result := g01Response(t, frames, 2); result != nil {
-		t.Fatalf("unresolved callee renamed: %v", result)
-	}
-	if result := g01Response(t, frames, 3); result != nil {
-		t.Fatalf("whitespace renamed: %v", result)
-	}
+	g05RefusalFrame(t, frames, 2)
+	g05RefusalFrame(t, frames, 3)
 }
 
 // TestG05RenameSameNameNoOp pins the identity rename: renaming to the
@@ -571,8 +627,8 @@ func TestG05RenameSameNameNoOp(t *testing.T) {
 	if !ok {
 		t.Fatalf("same-name rename not an object: %v", raw)
 	}
-	changes, ok := result["changes"].(map[string]any)
-	if !ok || len(changes) != 0 {
+	changes := g05DocumentChanges(t, result)
+	if len(changes) != 0 {
 		t.Fatalf("same-name rename not an empty edit: %v", raw)
 	}
 }

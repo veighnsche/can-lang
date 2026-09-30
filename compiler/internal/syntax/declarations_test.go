@@ -58,7 +58,8 @@ func assertSyntaxShape(t *testing.T, a, b reflect.Value) {
 	case reflect.Struct:
 		for i := 0; i < a.NumField(); i++ {
 			name := a.Type().Field(i).Name
-			if name == "Span" || name == "Source" || name == "Comments" {
+			switch name {
+			case "Span", "KeywordSpan", "OperatorSpan", "OperatorSpans", "QualifierSpan", "MemberSpan", "Source", "Comments":
 				continue
 			}
 			assertSyntaxShape(t, a.Field(i), b.Field(i))
@@ -273,7 +274,7 @@ func TestFileParserRejectsObsoleteAndMalformedGrammar(t *testing.T) {
 			t.Fatal(err)
 		}
 		result := Parse(file)
-		if result.OK() || result.File != nil {
+		if result.OK() {
 			t.Fatalf("accepted %q", fragment)
 		}
 		if err := file.Validate(result.Diagnostics[0].Span); err != nil {

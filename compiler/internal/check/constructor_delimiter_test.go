@@ -1,6 +1,7 @@
 package check
 
 import (
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"strings"
 	"testing"
 )
@@ -120,8 +121,8 @@ fn void main
 			if !strings.Contains(err.Error(), tc.want) {
 				t.Fatalf("diagnostic %q lacks %q", err.Error(), tc.want)
 			}
-			if !strings.Contains(err.Error(), "byte ") {
-				t.Fatalf("diagnostic lacks a located span: %q", err.Error())
+			if located, ok := source.AsLocated(err); !ok || located.File == "" || located.Span.End <= located.Span.Start {
+				t.Fatalf("diagnostic lacks a structured source span: %q", err.Error())
 			}
 		})
 	}

@@ -30,18 +30,40 @@ type lexer struct {
 }
 
 // Lex emits significant-line layout tokens, preserving comment trivia separately.
-// Invalid input fails closed at its first precise diagnostic; parsers must not
-// consume a result with diagnostics. Every result ends in one EOF token.
+// Invalid lines retain precise diagnostics and synchronize at the next physical
+// line. Every result ends in one EOF token; diagnostics still reject strict use.
 func Lex(file *source.File) Result {
 	l := &lexer{file: file, text: file.Text(), pos: file.BOMLength(), lineStart: file.BOMLength(), result: Result{File: file}}
-	for l.pos < len(l.text) && len(l.result.Diagnostics) == 0 {
+	for l.pos < len(l.text) {
+		before, issues := l.pos, len(l.result.Diagnostics)
 		l.next()
+		if len(l.result.Diagnostics) > issues {
+			// A physical line is the canonical continuation boundary. Preserve
+			// the next line's layout and never turn a damaged token into code.
+			if l.pos == before && l.pos < len(l.text) && l.text[l.pos] != '\n' && !(l.text[l.pos] == '\r' && l.pos+1 < len(l.text) && l.text[l.pos+1] == '\n') {
+				_, width := utf8.DecodeRuneInString(l.text[l.pos:])
+				l.pos += width
+			}
+			if l.lineStart != l.pos {
+				for l.pos < len(l.text) && l.text[l.pos] != '\n' && l.text[l.pos] != '\r' {
+					l.pos++
+				}
+			}
+			l.delimiters = nil
+		}
+		// Progress is independent of diagnostic deduplication. A scanner that
+		// revisits the same bad scalar (for example inside a comment) must
+		// still consume it when its identical finding is already present.
+		if l.pos == before {
+			_, width := utf8.DecodeRuneInString(l.text[l.pos:])
+			l.pos += width
+		}
 	}
-	if len(l.result.Diagnostics) == 0 && len(l.delimiters) > 0 {
+	if len(l.delimiters) > 0 {
 		d := l.delimiters[len(l.delimiters)-1]
 		l.fail("CAN-LEX-DELIMITER", "unclosed delimiter", d.offset, d.offset+1)
 	}
-	if len(l.result.Diagnostics) == 0 {
+	{
 		if l.significant {
 			l.emit(Newline, l.pos, l.pos, "")
 		}
@@ -57,7 +79,11 @@ func (l *lexer) emit(kind Kind, start, end int, value string) {
 	l.result.Tokens = append(l.result.Tokens, Token{Kind: kind, Span: source.Span{Start: start, End: end}, Text: l.text[start:end], Value: value})
 }
 func (l *lexer) fail(code, message string, start, end int) {
-	l.result.Diagnostics = append(l.result.Diagnostics, Diagnostic{Code: code, Message: message, Span: source.Span{Start: start, End: end}})
+	diagnostic := Diagnostic{Code: code, Message: message, Span: source.Span{Start: start, End: end}}
+	if n := len(l.result.Diagnostics); n > 0 && l.result.Diagnostics[n-1] == diagnostic {
+		return
+	}
+	l.result.Diagnostics = append(l.result.Diagnostics, diagnostic)
 }
 func (l *lexer) layout() bool {
 	if l.significant {
@@ -95,7 +121,7 @@ func (l *lexer) newline() {
 	l.pos++
 	if len(l.delimiters) > 0 {
 		l.fail("CAN-LEX-CONTINUATION", "parentheses, brackets, and braces must stay on one physical line", start, l.pos)
-		return
+		l.delimiters = nil
 	}
 	if l.significant {
 		l.emit(Newline, start, l.pos, "")

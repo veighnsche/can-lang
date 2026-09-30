@@ -119,8 +119,14 @@ func TestSourceConcreteTypeRefusals(t *testing.T) {
 			if typ != nil && Equal(typ, typ) {
 				t.Fatal("failed graph remained compatibility evidence")
 			}
-			if _, err = b.Finish(); err == nil {
-				t.Fatal("failed builder recovered silently")
+			if typ != nil {
+				if _, err = b.Finish(); err == nil {
+					t.Fatal("invalid completed graph recovered silently")
+				}
+			} else {
+				if _, err = b.Resolve(file, annotation(t, "int"), nil, false); err != nil {
+					t.Fatalf("failed annotation poisoned unrelated type: %v", err)
+				}
 			}
 		})
 	}
@@ -236,5 +242,51 @@ func TestClosedCatalogueTypeShapes(t *testing.T) {
 	}
 	if _, err = b.Finish(); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestFailedResolveRestoresExistingTypeNodes(t *testing.T) {
+	b, file := buildSource(t, sourceHeader+"record kept\n    int count\n\nrecord broken<item>\n    broken<item> self\n    item invalid\n")
+	original, err := b.Resolve(file, annotation(t, "kept"), nil, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	before := *original
+	nodes, constraints := len(b.graph.nodes), len(b.constraints)
+	if _, err = b.Resolve(file, annotation(t, "broken<void>"), nil, false); err == nil {
+		t.Fatal("invalid specialization accepted")
+	}
+	if len(b.graph.nodes) != nodes || len(b.constraints) != constraints || original.canonical != before.canonical || original.defined != before.defined || len(original.fields) != len(before.fields) || original.fields[0] != before.fields[0] {
+		t.Fatal("failed resolution changed committed node state")
+	}
+	if _, err = b.Resolve(file, annotation(t, "str[]"), nil, false); err != nil {
+		t.Fatalf("unrelated type poisoned: %v", err)
+	}
+	if _, err = b.Finish(); err != nil {
+		t.Fatalf("rolled-back nodes poisoned sealing: %v", err)
+	}
+}
+
+func TestRecoveringSealRetainsIndependentTypes(t *testing.T) {
+	b, file := buildSource(t, sourceHeader+"record cycle\n    cycle next\n\nrecord good\n    int value\n")
+	bad, err := b.Resolve(file, annotation(t, "cycle"), nil, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	good, err := b.Resolve(file, annotation(t, "good"), nil, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	model, err := b.FinishRecovering()
+	if err == nil || model == nil {
+		t.Fatal("cycle must fail with partial model")
+	}
+	if Equal(bad, bad) || !Equal(good, good) {
+		t.Fatal("invalid graph leaked or independent type lost")
+	}
+	for _, typ := range model.Types() {
+		if typ == bad {
+			t.Fatal("invalid type in sealed model")
+		}
 	}
 }

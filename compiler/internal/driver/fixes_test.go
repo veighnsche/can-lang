@@ -98,3 +98,31 @@ func TestValidateFixMissingArm(t *testing.T) {
 		t.Fatalf("overlay fix rejected: %v", err)
 	}
 }
+
+func TestValidateFixRetainsIndependentError(t *testing.T) {
+	const bad = `package app
+    provides []
+    uses []
+fn int bad
+    emits {}
+    asserts
+        sample: => ok 1
+    ok missing_value
+`
+	root := writeBridgeProject(t, map[string]string{"src/main.can": missingArmMain, "src/bad.can": bad})
+	open := canonical(t, filepath.Join(root, "src/main.can"))
+	snapshot, err := CheckSnapshot(root, open, project.NewOverlay())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(snapshot.Diagnostics) < 2 {
+		t.Fatalf("expected independent findings: %+v", snapshot.Diagnostics)
+	}
+	fixes := SuggestedFixes(snapshot, open)
+	if len(fixes) != 1 {
+		t.Fatalf("missing fix beside unrelated error: %+v", fixes)
+	}
+	if err := ValidateFix(root, snapshot, project.NewOverlay(), fixes[0]); err != nil {
+		t.Fatalf("safe fix refused beside unrelated error: %v", err)
+	}
+}

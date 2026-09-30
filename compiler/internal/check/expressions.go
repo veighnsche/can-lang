@@ -3,6 +3,7 @@
 package check
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -17,6 +18,11 @@ type ValueBinding struct {
 	Type     *types.Type
 }
 type Expressions struct {
+	// Recovery checks independent operands transactionally, but never returns
+	// an executable expression when any required child failed.
+	Recover    bool
+	Checkpoint func() func()
+
 	// File is the owning source file for structured failure spans. The
 	// owning body pass sets it; a nil file leaves errors unlocated.
 	File *source.File
@@ -39,6 +45,28 @@ type Expressions struct {
 	Reference   func(syntax.QualifiedName) (ValueBinding, error)
 	Function    func(syntax.QualifiedName) (ValueBinding, error)
 	Constructor func(*syntax.ConstructorExpr, *types.Type, *Expressions) (*types.Type, error)
+}
+
+// child rolls back failed sibling evidence before another sibling is checked.
+func (c *Expressions) child(check func() error) error {
+	var rollback func()
+	if c.Recover && c.Checkpoint != nil {
+		rollback = c.Checkpoint()
+	}
+	err := check()
+	if err != nil && rollback != nil {
+		rollback()
+	}
+	return err
+}
+
+func (c *Expressions) checkChild(node syntax.Expr, expected *types.Type) (*ir.Expression, error) {
+	var value *ir.Expression
+	err := c.child(func() (err error) {
+		value, err = c.Check(node, expected)
+		return err
+	})
+	return value, err
 }
 
 func (c *Expressions) scalar(name string) (*types.Type, error) {
@@ -76,10 +104,10 @@ func (c *Expressions) Check(node syntax.Expr, expected *types.Type) (*ir.Express
 		out, err = c.DeferredCheck(node, expected, c, err)
 	}
 	if err != nil {
-		return nil, c.locate(node, fmt.Errorf("expression at byte %d: %w", node.ExprSpan().Start, err))
+		return nil, c.locate(node, err)
 	}
 	if expected != nil && !types.Assignable(out.Type, expected) {
-		return nil, c.locate(node, fmt.Errorf("expression type does not fit expected type at byte %d", node.ExprSpan().Start))
+		return nil, c.locate(node, fmt.Errorf("expression type does not fit expected type"))
 	}
 	return out, nil
 }
@@ -90,7 +118,16 @@ func (c *Expressions) locate(node syntax.Expr, err error) error {
 	if c.File == nil {
 		return err
 	}
-	return source.Locate(c.File.Name(), node.ExprSpan(), err)
+	span := node.ExprSpan()
+	switch n := node.(type) {
+	case *syntax.BinaryExpr:
+		span = n.OperatorSpan
+	case *syntax.UnaryExpr:
+		span = n.OperatorSpan
+	case *syntax.FieldExpr:
+		span = n.Field.Span
+	}
+	return source.Locate(c.File.Name(), span, err)
 }
 func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Expression, error) {
 	out := &ir.Expression{Span: node.ExprSpan()}
@@ -177,13 +214,13 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 		out.Type = operand.Type
 		out.Inputs = []*ir.Expression{operand}
 	case *syntax.BinaryExpr:
-		left, e := c.Check(n.Left, nil)
-		if e != nil {
-			return nil, e
+		left, leftErr := c.checkChild(n.Left, nil)
+		if leftErr != nil && !c.Recover {
+			return nil, leftErr
 		}
-		right, e := c.Check(n.Right, nil)
-		if e != nil {
-			return nil, e
+		right, rightErr := c.checkChild(n.Right, nil)
+		if err := errors.Join(leftErr, rightErr); err != nil {
+			return nil, err
 		}
 		if !types.Equal(left.Type, right.Type) {
 			return nil, fmt.Errorf("operator %s requires identical operand types", n.Operator)
@@ -209,52 +246,74 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 	case *syntax.ComparisonExpr:
 		out.Kind = ir.Comparison
 		out.Operators = append([]string(nil), n.Operators...)
+		var findings []error
 		for _, operand := range n.Operands {
-			x, e := c.Check(operand, nil)
+			x, e := c.checkChild(operand, nil)
 			if e != nil {
-				return nil, e
+				if !c.Recover {
+					return nil, e
+				}
+				findings = append(findings, e)
 			}
 			out.Inputs = append(out.Inputs, x)
 		}
 		for i, op := range n.Operators {
-			a, b := out.Inputs[i].Type, out.Inputs[i+1].Type
-			common := a
-			if !types.Equal(a, b) {
-				if a.Kind() == types.Variant && types.Assignable(b, a) {
-					common = a
-				} else if b.Kind() == types.Variant && types.Assignable(a, b) {
-					common = b
-				} else {
-					return nil, fmt.Errorf("comparison requires identical types or a named variant admitting both operands")
-				}
+			if out.Inputs[i] == nil || out.Inputs[i+1] == nil {
+				continue
 			}
 			mode := ir.Strict
-			if op == "is" || op == "is not" {
-				if !types.EqualityEligible(common) {
-					return nil, fmt.Errorf("type is not equality eligible")
+			e := func() error {
+				a, b := out.Inputs[i].Type, out.Inputs[i+1].Type
+				common := a
+				if !types.Equal(a, b) {
+					if a.Kind() == types.Variant && types.Assignable(b, a) {
+						common = a
+					} else if b.Kind() == types.Variant && types.Assignable(a, b) {
+						common = b
+					} else {
+						return fmt.Errorf("comparison requires identical types or a named variant admitting both operands")
+					}
 				}
-				if scalar(common, "float") {
-					mode = ir.FloatIdentity
-				} else if common.Kind() != types.Primitive {
-					mode = ir.Deep
+				if op == "is" || op == "is not" {
+					if !types.EqualityEligible(common) {
+						return fmt.Errorf("type is not equality eligible")
+					}
+					if scalar(common, "float") {
+						mode = ir.FloatIdentity
+					} else if common.Kind() != types.Primitive {
+						mode = ir.Deep
+					}
+				} else if !numeric(common) && !scalar(common, "str") {
+					return fmt.Errorf("type is not ordered")
 				}
-			} else if !numeric(common) && !scalar(common, "str") {
-				return nil, fmt.Errorf("type is not ordered")
+				return nil
+			}()
+			if e != nil {
+				if c.File != nil && i < len(n.OperatorSpans) {
+					e = source.Locate(c.File.Name(), n.OperatorSpans[i], e)
+				}
+				if !c.Recover {
+					return nil, e
+				}
+				findings = append(findings, e)
 			}
 			out.Equality = append(out.Equality, mode)
 		}
+		if len(findings) > 0 {
+			return nil, errors.Join(findings...)
+		}
 		out.Type, err = c.scalar("bool")
 	case *syntax.IndexExpr:
-		receiver, e := c.Check(n.Receiver, nil)
-		if e != nil {
-			return nil, e
+		receiver, receiverErr := c.checkChild(n.Receiver, nil)
+		if receiverErr != nil && !c.Recover {
+			return nil, receiverErr
 		}
 		integer, e := c.scalar("int")
 		if e != nil {
-			return nil, e
+			return nil, errors.Join(receiverErr, e)
 		}
-		position, e := c.Check(n.Index, integer)
-		if e != nil {
+		position, positionErr := c.checkChild(n.Index, integer)
+		if e := errors.Join(receiverErr, positionErr); e != nil {
 			return nil, e
 		}
 		if receiver.Type.Kind() == types.Array {
@@ -267,11 +326,15 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 		out.Kind = ir.Index
 		out.Inputs = []*ir.Expression{receiver, position}
 	case *syntax.SliceExpr:
-		receiver, e := c.Check(n.Receiver, nil)
-		if e != nil {
-			return nil, e
+		receiver, receiverErr := c.checkChild(n.Receiver, nil)
+		if receiverErr != nil && !c.Recover {
+			return nil, receiverErr
 		}
-		return c.slice(receiver, n.Start, n.End, node)
+		value, sliceErr := c.slice(receiver, n.Start, n.End, node)
+		if err := errors.Join(receiverErr, sliceErr); err != nil {
+			return nil, err
+		}
+		return value, nil
 	case *syntax.FieldExpr:
 		if c.AggregateFieldCheck != nil {
 			value, handled, err := c.AggregateFieldCheck(n, expected)
@@ -320,52 +383,65 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 		out.Kind = ir.Array
 		var element *types.Type
 		if expected != nil && expected.Kind() == types.Array {
-			element = expected.Element()
-			out.Type = expected
+			element, out.Type = expected.Element(), expected
 		}
+		var findings []error
 		for _, argument := range n.Elements {
-			if argument.Group != nil {
-				return nil, fmt.Errorf("state group in array")
-			}
-			want := element
-			if argument.Spread {
-				want = nil
-				// Context belongs to fresh literal construction, including grouped
-				// nested spreads. Existing arrays retain their invariant type.
-				literal := argument.Value
-				for {
-					group, ok := literal.(*syntax.GroupExpr)
-					if !ok {
-						break
-					}
-					literal = group.Value
+			e := c.child(func() error {
+				if argument.Group != nil {
+					return fmt.Errorf("state group in array")
 				}
-				if _, ok := literal.(*syntax.ArrayExpr); ok && element != nil {
-					var err error
-					want, err = types.ArrayOfChecked(element)
-					if err != nil {
-						return nil, err
+				want := element
+				if argument.Spread {
+					want = nil
+					literal := argument.Value
+					for {
+						group, ok := literal.(*syntax.GroupExpr)
+						if !ok {
+							break
+						}
+						literal = group.Value
+					}
+					if _, ok := literal.(*syntax.ArrayExpr); ok && element != nil {
+						var e error
+						want, e = types.ArrayOfChecked(element)
+						if e != nil {
+							return e
+						}
 					}
 				}
-			}
-			x, e := c.Check(argument.Value, want)
+				x, e := c.Check(argument.Value, want)
+				if e != nil {
+					return e
+				}
+				actual := x.Type
+				if argument.Spread {
+					if actual.Kind() != types.Array {
+						return c.locate(argument.Value, fmt.Errorf("array spread requires array"))
+					}
+					actual = actual.Element()
+				}
+				if element == nil {
+					element = actual
+				} else if expected == nil && !types.Equal(element, actual) || expected != nil && !types.Assignable(actual, element) {
+					return c.locate(argument.Value, fmt.Errorf("array elements need one identical type or the expected named variant"))
+				}
+				out.Inputs = append(out.Inputs, x)
+				out.Spread = append(out.Spread, argument.Spread)
+				return nil
+			})
 			if e != nil {
-				return nil, e
-			}
-			actual := x.Type
-			if argument.Spread {
-				if actual.Kind() != types.Array {
-					return nil, fmt.Errorf("array spread requires array")
+				if c.File != nil {
+					e = source.Locate(c.File.Name(), argument.Span, e)
 				}
-				actual = actual.Element()
+				if !c.Recover {
+					return nil, e
+				}
+				findings = append(findings, e)
 			}
-			if element == nil {
-				element = actual
-			} else if expected == nil && !types.Equal(element, actual) || expected != nil && !types.Assignable(actual, element) {
-				return nil, fmt.Errorf("array elements need one identical type or the expected named variant")
-			}
-			out.Inputs = append(out.Inputs, x)
-			out.Spread = append(out.Spread, argument.Spread)
+		}
+		if len(findings) > 0 {
+			return nil, errors.Join(findings...)
 		}
 		if element == nil {
 			return nil, fmt.Errorf("empty array requires expected element type")
@@ -399,17 +475,34 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 		out.Kind = ir.Record
 		out.Type = typ
 		out.Text = typ.Identity()
+		var findings []error
 		for i, arg := range n.Arguments {
-			if arg.Spread || arg.Group != nil {
-				return nil, fmt.Errorf("constructor spread requires fixed-argument expansion")
-			}
-			value, e := c.Check(arg.Value, fields[i].Type)
+			e := c.child(func() error {
+				if arg.Spread || arg.Group != nil {
+					return fmt.Errorf("constructor spread requires fixed-argument expansion")
+				}
+				value, e := c.Check(arg.Value, fields[i].Type)
+				if e != nil {
+					return e
+				}
+				out.Inputs = append(out.Inputs, value)
+				out.Fields = append(out.Fields, fields[i].Name)
+				return nil
+			})
 			if e != nil {
-				return nil, e
+				if c.File != nil {
+					e = source.Locate(c.File.Name(), arg.Span, e)
+				}
+				if !c.Recover {
+					return nil, e
+				}
+				findings = append(findings, e)
 			}
-			out.Inputs = append(out.Inputs, value)
-			out.Fields = append(out.Fields, fields[i].Name)
 		}
+		if len(findings) > 0 {
+			return nil, errors.Join(findings...)
+		}
+
 	case *syntax.UpdateExpr:
 		receiver, e := c.Check(n.Receiver, nil)
 		if e != nil {
@@ -425,19 +518,37 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 			fields[f.Name] = f.Type
 		}
 		var replacements []types.Replacement
+		var findings []error
 		for _, field := range n.Fields {
-			want := fields[field.Name.Text]
-			if want == nil {
-				return nil, fmt.Errorf("unknown update field %s", field.Name.Text)
-			}
-			value, e := c.Check(field.Value, want)
+			e := c.child(func() error {
+				want := fields[field.Name.Text]
+				if want == nil {
+					e := fmt.Errorf("unknown update field %s", field.Name.Text)
+					if c.File != nil {
+						return source.Locate(c.File.Name(), field.Name.Span, e)
+					}
+					return e
+				}
+				value, e := c.Check(field.Value, want)
+				if e != nil {
+					return e
+				}
+				out.Inputs = append(out.Inputs, value)
+				out.Fields = append(out.Fields, field.Name.Text)
+				replacements = append(replacements, types.Replacement{Name: field.Name.Text, Type: value.Type})
+				return nil
+			})
 			if e != nil {
-				return nil, e
+				if !c.Recover {
+					return nil, e
+				}
+				findings = append(findings, e)
 			}
-			out.Inputs = append(out.Inputs, value)
-			out.Fields = append(out.Fields, field.Name.Text)
-			replacements = append(replacements, types.Replacement{Name: field.Name.Text, Type: value.Type})
 		}
+		if len(findings) > 0 {
+			return nil, errors.Join(findings...)
+		}
+
 		out.Type, err = types.CheckUpdate(receiver.Type, replacements)
 	default:
 		return nil, fmt.Errorf("expression %T requires its owning checker pass", node)
@@ -448,26 +559,44 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 	return out, nil
 }
 func (c *Expressions) slice(receiver *ir.Expression, start, end syntax.Expr, node syntax.Expr) (*ir.Expression, error) {
-	if receiver.Type.Kind() != types.Array && !scalar(receiver.Type, "str") {
-		return nil, fmt.Errorf("slicing requires array or str")
+	var findings []error
+	out := &ir.Expression{Kind: ir.Slice, Span: node.ExprSpan(), Inputs: []*ir.Expression{receiver, nil, nil}}
+	if receiver != nil {
+		out.Type = receiver.Type
+		if receiver.Type.Kind() != types.Array && !scalar(receiver.Type, "str") {
+			e := fmt.Errorf("slicing requires array or str")
+			if !c.Recover {
+				return nil, e
+			}
+			if c.File != nil {
+				e = source.Locate(c.File.Name(), receiver.Span, e)
+			}
+			findings = append(findings, e)
+		}
 	}
 	integer, err := c.scalar("int")
 	if err != nil {
-		return nil, err
+		return nil, errors.Join(append(findings, err)...)
 	}
-	out := &ir.Expression{Kind: ir.Slice, Type: receiver.Type, Span: node.ExprSpan(), Inputs: []*ir.Expression{receiver, nil, nil}}
-	if start != nil {
-		out.Inputs[1], err = c.Check(start, integer)
-		if err != nil {
-			return nil, err
+	for i, bound := range []syntax.Expr{start, end} {
+		if bound == nil {
+			continue
 		}
-	}
-	if end != nil {
-		out.Inputs[2], err = c.Check(end, integer)
-		if err != nil {
-			return nil, err
+		value, e := c.checkChild(bound, integer)
+		if e != nil {
+			if !c.Recover {
+				return nil, e
+			}
+			findings = append(findings, e)
 		}
+		out.Inputs[i+1] = value
 	}
+	if len(findings) > 0 {
+		return nil, errors.Join(findings...)
+	}
+	if receiver == nil {
+		return nil, nil
+	} // owning receiver failure remains authoritative
 	return out, nil
 }
 func (c *Expressions) call(n *syntax.CallExpr, expected *types.Type) (*ir.Expression, error) {
@@ -508,15 +637,31 @@ func (c *Expressions) call(n *syntax.CallExpr, expected *types.Type) (*ir.Expres
 			return nil, fmt.Errorf("call arity mismatch")
 		}
 		out = &ir.Expression{Kind: ir.Call, Text: binding.Identity, Type: binding.Type.Result(), Span: n.ExprSpan()}
+		var findings []error
 		for i, a := range invocation.Arguments {
-			if a.Spread || a.Group != nil {
-				return nil, fmt.Errorf("call spread/state group requires owning call checker")
+			e := c.child(func() error {
+				if a.Spread || a.Group != nil {
+					return fmt.Errorf("call spread/state group requires owning call checker")
+				}
+				x, e := c.Check(a.Value, inputs[i])
+				if e != nil {
+					return e
+				}
+				out.Inputs = append(out.Inputs, x)
+				return nil
+			})
+			if e != nil {
+				if c.File != nil {
+					e = source.Locate(c.File.Name(), a.Span, e)
+				}
+				if !c.Recover {
+					return nil, e
+				}
+				findings = append(findings, e)
 			}
-			x, err := c.Check(a.Value, inputs[i])
-			if err != nil {
-				return nil, err
-			}
-			out.Inputs = append(out.Inputs, x)
+		}
+		if len(findings) > 0 {
+			return nil, errors.Join(findings...)
 		}
 	}
 	for _, method := range n.Methods {

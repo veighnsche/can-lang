@@ -1,7 +1,10 @@
 package types
 
 import (
+	"errors"
 	"fmt"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
+	"maps"
 	"sort"
 
 	"github.com/veighnsche/can-lang/compiler/internal/catalogue"
@@ -12,15 +15,17 @@ import (
 // Builder gathers concrete annotations and reachable declaration shapes. Finish
 // validates the entire graph; no unsealed type is compatibility evidence.
 type Builder struct {
-	world       *resolve.World
-	graph       *graph
-	catalogue   map[string]*resolve.Symbol
-	constraints []constraint
-	pending     map[*Type]bool
-	active      map[string]int
-	failure     error
+	world        *resolve.World
+	graph        *graph
+	catalogue    map[string]*resolve.Symbol
+	constraints  []constraint
+	pending      map[*Type]bool
+	active       map[string]int
+	failure      error
+	resolveDepth int
 }
 type constraint struct {
+	owner    *Type
 	argument *Type
 	name     string
 }
@@ -29,6 +34,9 @@ type Model struct{ types []*Type }
 func (m *Model) Types() []*Type { return append([]*Type(nil), m.types...) }
 
 func NewBuilder(world *resolve.World) *Builder {
+	if world.Invalid == nil {
+		world.Invalid = map[syntax.Declaration]error{}
+	}
 	b := &Builder{world: world, graph: newGraph(), catalogue: map[string]*resolve.Symbol{}, active: map[string]int{}}
 	for name, symbol := range world.Prelude.Symbols {
 		b.catalogue[name] = symbol
@@ -48,15 +56,24 @@ func NewBuilder(world *resolve.World) *Builder {
 // bindings are concrete and keyed by the declaring template's parameter names.
 // allowVoid is true only for success results, never data positions.
 func (b *Builder) Resolve(file *resolve.File, node syntax.TypeNode, parameters map[string]*Type, allowVoid bool) (result *Type, err error) {
-	if b.failure != nil {
-		return nil, b.failure
-	}
 	if b.graph.sealed {
 		return nil, fmt.Errorf("type builder is already finished")
 	}
+	outer := b.resolveDepth == 0
+	var rollback func()
+	if outer {
+		rollback = b.checkpoint()
+	}
+	b.resolveDepth++
 	defer func() {
+		b.resolveDepth--
 		if err != nil {
-			b.failure = err
+			if outer {
+				rollback()
+			}
+			if file != nil && file.Source != nil {
+				err = source.Locate(file.Source.Path, node.TypeSpan(), err)
+			}
 		}
 	}()
 	switch n := node.(type) {
@@ -129,6 +146,9 @@ func (b *Builder) functional(file *resolve.File, kind Kind, result syntax.TypeNo
 	return b.graph.function(kind, r, xs, es)
 }
 func (b *Builder) instantiate(symbol *resolve.Symbol, arguments []*Type) (*Type, error) {
+	if symbol.Invalid != nil {
+		return nil, &source.BlockedError{Dependency: symbol.ID}
+	}
 	if len(arguments) != len(symbol.Parameters) {
 		return nil, fmt.Errorf("type argument arity for %s: want %d, got %d", symbol.ID, len(symbol.Parameters), len(arguments))
 	}
@@ -241,7 +261,7 @@ func (b *Builder) catalogueShape(symbol *resolve.Symbol, n *Type, env map[string
 		return nil, fmt.Errorf("unknown closed catalogue type %s", name)
 	}
 	for _, p := range parameters {
-		b.constraints = append(b.constraints, constraint{env[p.Name], p.Constraint})
+		b.constraints = append(b.constraints, constraint{argument: env[p.Name], name: p.Constraint, owner: n})
 	}
 	resolvedFields := make([]Field, len(fields))
 	alternatives := make([]*Type, len(leaves))
@@ -294,37 +314,54 @@ func (b *Builder) descriptor(text string, env map[string]*Type) (*Type, error) {
 	return resolveDescriptor(d)
 }
 
-func (b *Builder) Finish() (model *Model, err error) {
-	defer func() {
-		if err != nil {
-			b.failure = err
-			b.graph.sealed = false
-		}
-	}()
+func (b *Builder) Finish() (*Model, error)           { return b.finish(false) }
+func (b *Builder) FinishRecovering() (*Model, error) { return b.finish(true) }
+func (b *Builder) finish(recovering bool) (*Model, error) {
 	if b.failure != nil {
 		return nil, b.failure
 	}
-	if err := b.graph.seal(); err != nil {
-		return nil, err
-	}
-	for _, c := range b.constraints {
+	invalid := map[*Type]error{}
+	for _, constraint := range b.constraints {
 		accepted := false
-		switch c.name {
+		switch constraint.name {
 		case "data":
-			accepted = c.argument.kind != Void
+			accepted = constraint.argument.kind != Void
 		case "map_key":
-			accepted = c.argument.kind == Primitive && (c.argument.declaration == "int" || c.argument.declaration == "bool" || c.argument.declaration == "str")
+			accepted = constraint.argument.kind == Primitive && (constraint.argument.declaration == "int" || constraint.argument.declaration == "bool" || constraint.argument.declaration == "str")
 		case "failure_variant":
-			accepted = c.argument.kind == Variant
+			accepted = constraint.argument.kind == Variant
 		default:
-			return nil, fmt.Errorf("unimplemented catalogue type constraint %q", c.name)
+			return nil, fmt.Errorf("unimplemented catalogue type constraint %q", constraint.name)
 		}
 		if !accepted {
-			b.graph.sealed = false
-			return nil, fmt.Errorf("type %s violates catalogue constraint %s", c.argument.id, c.name)
+			invalid[constraint.owner] = fmt.Errorf("type %s violates catalogue constraint %s", constraint.argument.id, constraint.name)
 		}
 	}
-	return &Model{types: b.graph.ordered()}, nil
+	problems := b.graph.validateAndSeal(invalid, recovering)
+	var failures []error
+	for _, problem := range problems {
+		err := problem.err
+		for _, pkg := range b.world.Packages {
+			for _, symbol := range pkg.Scope.Symbols {
+				if symbol.ID == problem.typ.declaration && symbol.Source != nil {
+					err = source.LocateCode(symbol.Source.Path, resolve.DeclarationNameSpan(symbol.Declaration), "CAN-TYPE", err)
+					if recovering {
+						symbol.Invalid = err
+						b.world.Invalid[symbol.Declaration] = err
+					}
+				}
+			}
+		}
+		if !source.IsBlocked(err) {
+			failures = append(failures, err)
+		}
+	}
+	err := errors.Join(failures...)
+	if err != nil && !recovering {
+		b.failure = err
+		return nil, err
+	}
+	return &Model{types: b.graph.ordered()}, err
 }
 
 // SeedDeclarations includes every non-generic project nominal declaration.
@@ -341,13 +378,47 @@ func (b *Builder) SeedDeclarations() error {
 		}
 	}
 	sort.Slice(symbols, func(i, j int) bool { return symbols[i].ID < symbols[j].ID })
+	var problems []error
 	for _, s := range symbols {
-		if len(s.Parameters) == 0 {
-			if _, err := b.instantiate(s, nil); err != nil {
-				b.failure = err
-				return err
+		if len(s.Parameters) != 0 || s.Invalid != nil {
+			continue
+		}
+		rollback := b.checkpoint()
+		if _, err := b.instantiate(s, nil); err != nil {
+			rollback()
+			s.Invalid = err
+			b.world.Invalid[s.Declaration] = err
+			if !source.IsBlocked(err) {
+				problems = append(problems, source.Locate(s.Source.Path, s.Declaration.DeclSpan(), err))
 			}
 		}
 	}
-	return nil
+	return errors.Join(problems...)
+}
+
+// checkpoint restores pointed-to nodes as well as table membership. A shallow
+// map copy alone would retain mutations made while completing recursive nodes.
+func (b *Builder) checkpoint() func() {
+	nodes := maps.Clone(b.graph.nodes)
+	values := make(map[*Type]Type, len(nodes))
+	for _, node := range nodes {
+		value := *node
+		value.arguments = append([]*Type(nil), node.arguments...)
+		value.fields = append([]Field(nil), node.fields...)
+		value.alternatives = append([]*Type(nil), node.alternatives...)
+		value.inputs = append([]*Type(nil), node.inputs...)
+		value.errors = append([]*Type(nil), node.errors...)
+		values[node] = value
+	}
+	constraints := append([]constraint(nil), b.constraints...)
+	pending, active := maps.Clone(b.pending), maps.Clone(b.active)
+	return func() {
+		for node, value := range values {
+			*node = value
+		}
+		b.graph.nodes = nodes
+		b.constraints = constraints
+		b.pending = pending
+		b.active = active
+	}
 }

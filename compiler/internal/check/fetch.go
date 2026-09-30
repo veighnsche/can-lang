@@ -3,6 +3,7 @@ package check
 import (
 	"fmt"
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
 	"mime"
@@ -25,6 +26,7 @@ func checkFetchContentType(d *syntax.FetchDecl, policy ConnectionPolicy) error {
 	if d.BodyEncoding == nil || d.BodyEncoding.Text != "json" {
 		return nil
 	}
+	span := d.BodyEncoding.Span
 	var current string
 	present := false
 	for _, header := range policy.Headers {
@@ -41,11 +43,12 @@ func checkFetchContentType(d *syntax.FetchDecl, policy ConnectionPolicy) error {
 		if !known {
 			return nil
 		}
+		span = header.Value.ExprSpan()
 		current = strings.Join(parts, ", ")
 		present = len(parts) > 0
 	}
 	if present && !fetchJSONContentType(current) {
-		return fmt.Errorf("JSON fetch body requires application/json Content-Type with optional UTF-8 charset")
+		return &source.SpanError{Span: span, Err: fmt.Errorf("JSON fetch body requires application/json Content-Type with optional UTF-8 charset")}
 	}
 	return nil
 }
@@ -86,7 +89,7 @@ func checkLiteralHeaderValues(expr syntax.Expr) error {
 		if value.Token.Kind == syntax.String {
 			for _, r := range value.Token.Value {
 				if r > 255 || r == 0 || r == '\r' || r == '\n' {
-					return fmt.Errorf("invalid literal request header value")
+					return &source.SpanError{Span: value.ExprSpan(), Err: fmt.Errorf("invalid literal request header value")}
 				}
 			}
 		}

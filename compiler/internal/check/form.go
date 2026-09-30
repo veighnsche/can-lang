@@ -25,6 +25,9 @@ const (
 // static name builders plus the HTML action adapter binder. Data is the
 // wire or row record; Result and Rejected serve the adapter only.
 type FormSpecialization struct {
+	Invalid   error
+	SiteFile  string
+	SiteSpan  source.Span
 	Operation string
 	Result    *types.Type
 	Data      *types.Type
@@ -95,10 +98,13 @@ func (c *programChecker) gatherForm(file *resolve.File, site syntax.Expr, callee
 	if c.forms == nil {
 		c.forms = map[string]*FormSpecialization{}
 	}
-	if c.forms[key] != nil {
+	if prior := c.forms[key]; prior != nil {
+		if prior.Invalid != nil {
+			return &source.BlockedError{Dependency: key}
+		}
 		return nil
 	}
-	special := &FormSpecialization{Operation: symbol.ID}
+	special := &FormSpecialization{SiteFile: file.Source.Path, SiteSpan: args[0].TypeSpan(), Operation: symbol.ID}
 	if symbol.ID == formServeAction {
 		special.Result, special.Data = arguments[0], arguments[1]
 	} else {

@@ -1,10 +1,10 @@
 package driver
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
-	"sort"
-	"strings"
 
 	"github.com/veighnsche/can-lang/compiler/internal/check"
 	"github.com/veighnsche/can-lang/compiler/internal/editortrace"
@@ -17,9 +17,8 @@ import (
 // Diagnostic is one editor squiggle: a canonical file, zero-based lines,
 // UTF-16 columns, the pipeline's own code and message, a severity, and
 // optional secondary locations. Lexing, parsing, resolution, and checking
-// supply structured spans; only spanless failures reuse the CLI-identical
-// message anchored to the attributed file's first line, never to a
-// guessed token.
+// supply structured spans. Spanless failures carry an empty File and are
+// reported as project status instead of source squiggles.
 type Diagnostic struct {
 	File     string
 	Line     int
@@ -63,6 +62,8 @@ type Location struct {
 // builds, runs, asserts, dials out, queries, reads the environment,
 // emits files, or mutates registries.
 type Snapshot struct {
+	Analysis    *Analysis
+	Program     *check.Program
 	Graph       *project.Graph
 	World       *compileresolve.World
 	Diagnostics []Diagnostic
@@ -74,85 +75,156 @@ type Snapshot struct {
 // so library files diagnose like programs. Every pipeline failure becomes
 // a diagnostic; the returned error is only for programmer misuse.
 func CheckSnapshot(directory, openFile string, overlay *project.Overlay) (*Snapshot, error) {
-	defer editortrace.Stage("snapshot")()
+	return CheckSnapshotContext(context.Background(), directory, openFile, overlay)
+}
+
+func CheckSnapshotContext(ctx context.Context, directory, openFile string, overlay *project.Overlay) (*Snapshot, error) {
 	if directory == "" {
 		return nil, fmt.Errorf("diagnose project: empty directory")
 	}
-	snapshot := &Snapshot{Versions: map[string]int64{}}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	graph, loadErr := project.LoadWithOverlayContext(ctx, directory, overlay)
+	return analyzeGraph(ctx, directory, graph, loadErr, overlay)
+}
+
+func analyzeGraph(ctx context.Context, directory string, graph *project.Graph, loadErr error, overlay *project.Overlay) (*Snapshot, error) {
+	defer editortrace.Stage("snapshot")()
+	snapshot := &Snapshot{Graph: graph, Versions: map[string]int64{}}
 	if overlay != nil {
 		snapshot.Versions = overlay.Versions()
 	}
-	endLoad := editortrace.Stage("load")
-	graph, err := project.LoadWithOverlay(directory, overlay)
-	endLoad()
-	if err != nil {
-		snapshot.Diagnostics = loadDiagnostics(graph, openFile, err)
-		return snapshot, nil
+	builder := NewBuilder(directory)
+	builder.SetGraph(graph)
+	addError := func(err error) {
+		for _, issue := range errorIssues(err) {
+			builder.AddIssue(issue)
+		}
 	}
-	snapshot.Graph = graph
-	endResolve := editortrace.Stage("snapshot-resolve")
-	world, err := compileresolve.Build(graph)
-	endResolve()
-	if err != nil {
-		snapshot.Diagnostics = []Diagnostic{semanticDiagnostic(graph, openFile, err)}
-		return snapshot, nil
+	addError(loadErr)
+	if graph != nil {
+		for path, data := range graph.Inputs {
+			builder.AddSource(DocInput{Path: path, Version: snapshot.Versions[path], Text: string(data)})
+		}
+		if graph.Root != nil {
+			if err := ctx.Err(); err != nil {
+				return nil, err
+			}
+			snapshot.World = compileresolve.BuildRecoveringContext(ctx, graph)
+			builder.SetWorld(snapshot.World)
+			for _, err := range snapshot.World.Errors {
+				addError(err)
+			}
+			if err := ctx.Err(); err != nil {
+				return nil, err
+			}
+			// The checker consumes this same resolved world; recovery never
+			// replays the project or changes the source to expose later errors.
+			program, err := check.AnalyzeProgramContext(ctx, graph, snapshot.World)
+			snapshot.Program = program
+			addError(err)
+			if program != nil {
+				for _, warning := range program.Warnings {
+					severity := warning.Severity
+					if severity == "" {
+						severity = source.SeverityWarning
+					}
+					builder.AddIssue(source.Issue{File: warning.File, Span: warning.Span, Code: warning.Code, Severity: severity, Message: warning.Message})
+				}
+			}
+		}
 	}
-	snapshot.World = world
-	endCheck := editortrace.Stage("check")
-	program, err := check.CheckAssertionProgram(graph)
-	endCheck()
-	if err != nil {
-		snapshot.Diagnostics = []Diagnostic{semanticDiagnostic(graph, openFile, err)}
-		return snapshot, nil
+	if err := ctx.Err(); err != nil {
+		return nil, err
 	}
-	endDiagnostics := editortrace.Stage("diagnostic-conversion")
-	snapshot.Diagnostics = warningDiagnostics(graph, program.Warnings)
-	endDiagnostics()
+	if snapshot.World != nil {
+		for src, file := range snapshot.World.Files {
+			status := source.UnitValid
+			if len(src.Syntax.Invalid) > 0 {
+				status = source.UnitInvalid
+			}
+			builder.SetUnit(UnitID(src.Path), UnitReport{Status: status})
+			for _, symbol := range file.Package.Scope.Symbols {
+				if symbol.Source != src {
+					continue
+				}
+				report := UnitReport{Status: source.UnitValid}
+				if invalid := snapshot.World.Invalid[symbol.Declaration]; invalid != nil {
+					report.Status = source.UnitInvalid
+					var blocked *source.BlockedError
+					if source.IsBlocked(invalid) && errors.As(invalid, &blocked) {
+						report.Status = source.UnitBlocked
+						report.BlockedBy = []string{blocked.Dependency}
+					}
+				}
+				builder.SetUnit(UnitID(symbol.ID), report)
+			}
+		}
+	}
+	snapshot.Analysis = builder.Seal()
+	snapshot.Analysis.Program = snapshot.Program
+	for _, issue := range snapshot.Analysis.Issues {
+		snapshot.Diagnostics = append(snapshot.Diagnostics, issueDiagnostic(graph, issue))
+	}
 	return snapshot, nil
 }
 
-// warningDiagnostics converts advisory check-pipeline findings to editor
-// diagnostics with warning severity: the same findings the CLI prints,
-// positioned through the same loaded bytes the errors use. A finding
-// whose span cannot be resolved keeps its file with an explicit
-// unavailable marker instead of silently becoming another file's line 1.
-// The slice is empty (never nil-shaped into errors) when the pipeline
-// reports nothing.
-func warningDiagnostics(graph *project.Graph, warnings []check.Warning) []Diagnostic {
-	out := make([]Diagnostic, 0, len(warnings))
-	for _, warning := range warnings {
-		diagnostic := Diagnostic{File: warning.File, Code: warning.Code, Message: warning.Message, Severity: "warning"}
-		text, ok := fileText(graph, warning.File)
-		if !ok {
-			diagnostic.Code = unavailableCode(warning.Code)
-			out = append(out, diagnostic)
-			continue
-		}
-		file, fileErr := source.New(warning.File, text)
-		if fileErr != nil {
-			diagnostic.Code = unavailableCode(warning.Code)
-			out = append(out, diagnostic)
-			continue
-		}
-		start, startErr := file.UTF16Position(warning.Span.Start)
-		end, endErr := file.UTF16Position(warning.Span.End)
-		if startErr != nil || endErr != nil {
-			diagnostic.Code = unavailableCode(warning.Code)
-			out = append(out, diagnostic)
-			continue
-		}
-		diagnostic.Line, diagnostic.Start = start.Line, start.Character
-		diagnostic.EndLine, diagnostic.End = end.Line, end.Character
-		out = append(out, diagnostic)
+func errorIssues(err error) []source.Issue {
+	if err == nil {
+		return nil
 	}
-	return out
+	if many, ok := err.(interface{ Unwrap() []error }); ok {
+		var issues []source.Issue
+		for _, child := range many.Unwrap() {
+			issues = append(issues, errorIssues(child)...)
+		}
+		return issues
+	}
+	if _, located := err.(*source.LocatedError); !located {
+		if wrapped, ok := err.(interface{ Unwrap() error }); ok {
+			// Editor identity uses the producer's semantic message. CLI
+			// wrapper context can contain shifted byte offsets or renamed
+			// function identities; structured ranges already carry location.
+			return errorIssues(wrapped.Unwrap())
+		}
+	}
+	if source.IsBlocked(err) {
+		return nil
+	}
+	if parsed, ok := err.(*project.SourceError); ok {
+		var issues []source.Issue
+		for _, diagnostic := range parsed.Diagnostics {
+			issues = append(issues, source.Issue{File: parsed.Path, Span: diagnostic.Span, Code: diagnostic.Code, Severity: source.SeverityError, Message: diagnostic.Message})
+		}
+		if len(issues) > 0 {
+			return issues
+		}
+	}
+	issue := source.Issue{Code: "CAN-PROJECT", Severity: source.SeverityError, Message: err.Error()}
+	if located, ok := source.AsLocated(err); ok {
+		issue.File, issue.Span, issue.Code, issue.Related, issue.Fixes = located.File, located.Span, located.Code, located.Related, located.Fixes
+		if issue.Code == "" {
+			issue.Code = "CAN-CHECK"
+		}
+	}
+	return []source.Issue{issue}
+}
+
+func issueDiagnostic(graph *project.Graph, issue source.Issue) Diagnostic {
+	diagnostic := Diagnostic{File: issue.File, Code: issue.Code, Severity: issue.Severity, Message: issue.Message}
+	if issue.File == "" {
+		return diagnostic
+	}
+	converted := semanticDiagnostic(graph, "", &source.LocatedError{File: issue.File, Span: issue.Span, Code: issue.Code, Related: issue.Related, Fixes: issue.Fixes, Err: fmt.Errorf("%s", issue.Message)})
+	converted.Severity = issue.Severity
+	return converted
 }
 
 // semanticDiagnostic converts a structured resolver or checker failure to
 // its primary editor position with related locations. Spanless failures
-// keep the first-line anchor; a structured span whose file has no loaded
-// bytes or whose offsets are invalid keeps the true file with an explicit
-// unavailable marker instead of silently becoming another file's line 1.
+// become project status. Unavailable bytes or invalid offsets retain the
+// original file in the message and carry an explicit unavailable marker.
 func semanticDiagnostic(graph *project.Graph, openFile string, err error) Diagnostic {
 	located, ok := source.AsLocated(err)
 	if !ok {
@@ -162,17 +234,23 @@ func semanticDiagnostic(graph *project.Graph, openFile string, err error) Diagno
 	text, ok := fileText(graph, located.File)
 	if !ok {
 		diagnostic.Code = unavailableCode(located.Code)
+		diagnostic.File = ""
+		diagnostic.Message = located.File + ": " + diagnostic.Message
 		return diagnostic
 	}
 	file, fileErr := source.New(located.File, text)
 	if fileErr != nil {
 		diagnostic.Code = unavailableCode(located.Code)
+		diagnostic.File = ""
+		diagnostic.Message = located.File + ": " + diagnostic.Message
 		return diagnostic
 	}
 	start, startErr := file.UTF16Position(located.Span.Start)
 	end, endErr := file.UTF16Position(located.Span.End)
 	if startErr != nil || endErr != nil {
 		diagnostic.Code = unavailableCode(located.Code)
+		diagnostic.File = ""
+		diagnostic.Message = located.File + ": " + diagnostic.Message
 		return diagnostic
 	}
 	diagnostic.Line, diagnostic.Start = start.Line, start.Character
@@ -190,18 +268,21 @@ func convertRelated(graph *project.Graph, related source.RelatedSpan) RelatedDia
 	converted := RelatedDiagnostic{File: related.File, Message: related.Note}
 	text, ok := fileText(graph, related.File)
 	if !ok {
-		converted.Message += " [position unavailable]"
+		converted.Message = related.File + ": " + converted.Message + " [position unavailable]"
+		converted.File = ""
 		return converted
 	}
 	file, fileErr := source.New(related.File, text)
 	if fileErr != nil {
-		converted.Message += " [position unavailable]"
+		converted.Message = related.File + ": " + converted.Message + " [position unavailable]"
+		converted.File = ""
 		return converted
 	}
 	start, startErr := file.UTF16Position(related.Span.Start)
 	end, endErr := file.UTF16Position(related.Span.End)
 	if startErr != nil || endErr != nil {
-		converted.Message += " [position unavailable]"
+		converted.Message = related.File + ": " + converted.Message + " [position unavailable]"
+		converted.File = ""
 		return converted
 	}
 	converted.Line, converted.Start = start.Line, start.Character
@@ -216,103 +297,17 @@ func unavailableCode(code string) string {
 	return code + " " + source.SpanUnavailable
 }
 
-func loadDiagnostics(graph *project.Graph, openFile string, err error) []Diagnostic {
-	var sourceErr *project.SourceError
-	if !asSourceError(err, &sourceErr) {
-		return []Diagnostic{anchored(graph, openFile, "", err.Error())}
-	}
-	if sourceErr.File == nil || len(sourceErr.Diagnostics) == 0 {
-		return []Diagnostic{anchored(graph, sourceErr.Path, "", sourceErr.Message)}
-	}
-	first := sourceErr.Diagnostics[0]
-	diagnostic := Diagnostic{File: sourceErr.Path, Code: first.Code, Severity: "error"}
-	message := first.Message
-	if sourceErr.Message != "" {
-		if _, after, ok := cutMessage(sourceErr.Message); ok {
-			message = after
-		}
-	}
-	diagnostic.Message = message
-	start, startErr := sourceErr.File.UTF16Position(first.Span.Start)
-	end, endErr := sourceErr.File.UTF16Position(first.Span.End)
-	if startErr != nil || endErr != nil || start.Line != end.Line {
-		line, lineErr := lineOf(sourceErr.File, first.Span.Start)
-		if lineErr != nil {
-			return []Diagnostic{anchored(graph, sourceErr.Path, first.Code, message)}
-		}
-		diagnostic.Line = line
-		diagnostic.EndLine = line
-		diagnostic.Start, diagnostic.End = 0, lineWidth(sourceErr.File, line)
-		return []Diagnostic{diagnostic}
-	}
-	diagnostic.Line, diagnostic.Start, diagnostic.End = start.Line, start.Character, end.Character
-	diagnostic.EndLine = end.Line
-	return []Diagnostic{diagnostic}
-}
-
-func asSourceError(err error, target **project.SourceError) bool {
-	type unwrapper interface{ Unwrap() error }
-	for err != nil {
-		if e, ok := err.(*project.SourceError); ok {
-			*target = e
-			return true
-		}
-		un, ok := err.(unwrapper)
-		if !ok {
-			return false
-		}
-		err = un.Unwrap()
-	}
-	return false
-}
-
-// cutMessage splits the historical "path:line:col: code: message" format so
-// editors show the message without restating the position they already draw.
-func cutMessage(text string) (string, string, bool) {
-	parts := strings.SplitN(text, ": ", 4)
-	if len(parts) != 4 {
-		return "", "", false
-	}
-	return parts[0], parts[3], true
-}
-
-// anchored files a spanless failure on the first line of the attributed
-// file: the longest loaded-source path named by the message, else the open
-// file, else the first loaded source.
+// anchored retains a spanless compiler failure as project status.
 func anchored(graph *project.Graph, openFile, code, message string) Diagnostic {
-	file := ""
-	if graph != nil {
-		paths := []string{}
-		for _, p := range graph.Projects {
-			for _, s := range p.Sources {
-				paths = append(paths, s.Path)
-			}
-		}
-		sort.Slice(paths, func(i, j int) bool { return len(paths[i]) > len(paths[j]) })
-		for _, path := range paths {
-			if strings.Contains(message, path) {
-				file = path
-				break
-			}
-		}
-		if file == "" && len(paths) > 0 {
-			sort.Strings(paths)
-			file = paths[0]
-		}
-	}
-	if file == "" {
-		file = openFile
-	}
-	width := 0
-	if text, ok := fileText(graph, file); ok {
-		width = utf16Width(firstLine(text))
-	}
-	return Diagnostic{File: file, Line: 0, EndLine: 0, Start: 0, End: width, Code: code, Message: message, Severity: "error"}
+	return Diagnostic{Code: code, Message: message, Severity: source.SeverityError}
 }
 
 func fileText(graph *project.Graph, file string) (string, bool) {
 	if graph == nil {
 		return "", false
+	}
+	if data, ok := graph.Inputs[file]; ok && data != nil {
+		return string(data), true
 	}
 	for _, p := range graph.Projects {
 		for _, s := range p.Sources {
@@ -322,49 +317,6 @@ func fileText(graph *project.Graph, file string) (string, bool) {
 		}
 	}
 	return "", false
-}
-
-func firstLine(text string) string {
-	if i := strings.IndexByte(text, '\n'); i >= 0 {
-		return text[:i]
-	}
-	return text
-}
-
-func utf16Width(line string) int {
-	width := 0
-	for _, r := range strings.TrimSuffix(line, "\r") {
-		if r > 0xFFFF {
-			width += 2
-		} else {
-			width++
-		}
-	}
-	return width
-}
-
-func lineOf(file *source.File, offset int) (int, error) {
-	position, err := file.UTF16Position(offset)
-	if err != nil {
-		return 0, err
-	}
-	return position.Line, nil
-}
-
-func lineWidth(file *source.File, line int) int {
-	span, err := file.LineSpan(line)
-	if err != nil {
-		return 0
-	}
-	width := 0
-	for _, r := range file.Text()[span.Start:span.End] {
-		if r > 0xFFFF {
-			width += 2
-		} else {
-			width++
-		}
-	}
-	return width
 }
 
 // Definition resolves the identifier at an editor offset to its declaring

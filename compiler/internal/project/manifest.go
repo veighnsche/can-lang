@@ -1,6 +1,7 @@
 package project
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -14,12 +15,16 @@ import (
 )
 
 type Manifest struct {
-	SourceRoot    string
-	Project       string // optional lineage ID; empty means a legacy edge-path identity
-	Dependencies  map[string]string
-	Assets        map[string]string
-	SQL           map[string]SQLDescriptor
-	ErrorRegistry string
+	// Invalid components retain explicit blocking evidence for recovered loads.
+	Invalid             map[string]error
+	InvalidDependencies map[string]error
+	InvalidSQL          map[string]error
+	SourceRoot          string
+	Project             string // optional lineage ID; empty means a legacy edge-path identity
+	Dependencies        map[string]string
+	Assets              map[string]string
+	SQL                 map[string]SQLDescriptor
+	ErrorRegistry       string
 }
 
 var identifier = regexp.MustCompile(`^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$`)
@@ -90,35 +95,55 @@ func Contains(root, name string) bool {
 }
 
 func ParseManifest(data []byte) (Manifest, error) {
-	m := Manifest{Dependencies: map[string]string{}, Assets: map[string]string{}, SQL: map[string]SQLDescriptor{}}
+	m := Manifest{Invalid: map[string]error{}, InvalidDependencies: map[string]error{}, InvalidSQL: map[string]error{}, Dependencies: map[string]string{}, Assets: map[string]string{}, SQL: map[string]SQLDescriptor{}}
 	if err := validateJSON(data); err != nil {
+		m.Invalid["syntax"] = err
 		return m, err
 	}
-	fields, err := object(data, []string{"source_root", "error_registry"}, []string{"project", "dependencies", "assets", "sql"})
-	if err != nil {
-		return m, err
+	fields, shapeErr := object(data, []string{"source_root", "error_registry"}, []string{"project", "dependencies", "assets", "sql"})
+	if fields == nil {
+		m.Invalid["shape"] = shapeErr
+		return m, shapeErr
+	}
+	problems := []error{shapeErr}
+	if shapeErr != nil {
+		m.Invalid["shape"] = shapeErr
+	}
+	for _, key := range []string{"source_root", "error_registry"} {
+		if _, ok := fields[key]; !ok {
+			m.Invalid[key] = fmt.Errorf("missing field %q", key)
+		}
+	}
+	add := func(key string, issue error) {
+		problems = append(problems, issue)
+		m.Invalid[key] = errors.Join(m.Invalid[key], issue)
 	}
 	if raw, exists := fields["project"]; exists {
 		lineage, err := text(raw)
+		if err == nil && !Identifier(lineage) {
+			err = fmt.Errorf("project lineage %q must be a lowercase identifier", lineage)
+		}
 		if err != nil {
-			return m, fmt.Errorf("project: %w", err)
+			add("project", jsonFieldError(data, err, "project"))
+		} else {
+			m.Project = lineage
 		}
-		if !Identifier(lineage) {
-			return m, fmt.Errorf("project lineage %q must be a lowercase identifier", lineage)
-		}
-		m.Project = lineage
 	}
 	destinations := map[string]*string{"source_root": &m.SourceRoot, "error_registry": &m.ErrorRegistry}
 	for _, key := range sortedKeys(destinations) {
-		dest := destinations[key]
-		value, err := text(fields[key])
+		raw, exists := fields[key]
+		if !exists {
+			continue
+		}
+		value, err := text(raw)
+		if err == nil {
+			err = NormalizePath(value)
+		}
 		if err != nil {
-			return m, fmt.Errorf("%s: %w", key, err)
+			add(key, jsonFieldError(data, fmt.Errorf("%s: %w", key, err), key))
+			continue
 		}
-		if err := NormalizePath(value); err != nil {
-			return m, err
-		}
-		*dest = value
+		*destinations[key] = value
 	}
 	for _, key := range []string{"dependencies", "assets"} {
 		raw, exists := fields[key]
@@ -127,18 +152,29 @@ func ParseManifest(data []byte) (Manifest, error) {
 		}
 		values, err := dictionary(raw)
 		if err != nil {
-			return m, fmt.Errorf("%s: %w", key, err)
+			add(key, jsonFieldError(data, err, key))
+			continue
 		}
 		for _, name := range sortedKeys(values) {
 			if name == "" || strings.ContainsRune(name, 0) || (key == "dependencies" && !Identifier(name)) {
-				return m, fmt.Errorf("invalid %s name %q", key, name)
+				issue := jsonKeyError(data, fmt.Errorf("invalid %s name %q", key, name), key, name)
+				add(key, issue)
+				if key == "dependencies" {
+					m.InvalidDependencies[name] = issue
+				}
+				continue
 			}
 			value, err := text(values[name])
-			if err != nil {
-				return m, err
+			if err == nil {
+				err = NormalizePath(value)
 			}
-			if err := NormalizePath(value); err != nil {
-				return m, err
+			if err != nil {
+				issue := jsonFieldError(data, err, key, name)
+				add(key, issue)
+				if key == "dependencies" {
+					m.InvalidDependencies[name] = issue
+				}
+				continue
 			}
 			if key == "dependencies" {
 				m.Dependencies[name] = value
@@ -148,11 +184,14 @@ func ParseManifest(data []byte) (Manifest, error) {
 		}
 	}
 	if raw, exists := fields["sql"]; exists {
-		decoded, err := decodeSQLMap(raw)
-		if err != nil {
-			return m, err
-		}
+		decoded, invalid, err := decodeSQLMap(raw)
 		m.SQL = decoded
+		for name, issue := range invalid {
+			m.InvalidSQL[name] = jsonChildError(data, issue, "sql")
+		}
+		if err != nil {
+			add("sql", jsonChildError(data, err, "sql"))
+		}
 	}
-	return m, nil
+	return m, errors.Join(problems...)
 }

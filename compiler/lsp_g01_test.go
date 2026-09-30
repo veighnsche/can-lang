@@ -56,6 +56,11 @@ func g01Formatting(id int, uri string) string {
 		id, jsonQuote(uri))
 }
 
+func g01FullSync(capabilities map[string]any) bool {
+	sync, ok := capabilities["textDocumentSync"].(map[string]any)
+	return ok && sync["openClose"] == true && sync["change"] == 1.0 && sync["save"] != nil
+}
+
 func g01Response(t *testing.T, frames []map[string]any, id float64) any {
 	t.Helper()
 	for _, f := range frames {
@@ -88,7 +93,7 @@ func TestG01InitializeAdvertisesFormatting(t *testing.T) {
 	if capabilities["documentFormattingProvider"] != true {
 		t.Fatalf("formatting not advertised: %v", capabilities)
 	}
-	if capabilities["textDocumentSync"] != 1.0 || capabilities["definitionProvider"] != true {
+	if !g01FullSync(capabilities) || capabilities["definitionProvider"] != true {
 		t.Fatalf("existing capabilities regressed: %v", capabilities)
 	}
 }
@@ -175,19 +180,13 @@ func TestG01FormattingInvalidBufferReturnsNull(t *testing.T) {
 	uri := uriFromPath(filepath.Join(root, "src/main.can"))
 	unparseable := strings.Replace(g01TrueFirst, "fn int pick", "fn int pick(", 1)
 	unchecked := strings.Replace(g01TrueFirst, "false => ok 0", "false => ok missing", 1)
-	frames := runExchange(t, []string{
-		didOpen(uri, g01TrueFirst, 1),
-		didChange(uri, unparseable, 2),
-		g01Formatting(2, uri),
-		didChange(uri, unchecked, 3),
-		g01Formatting(3, uri),
-		`{"jsonrpc":"2.0","method":"exit"}`,
-	})
-	if result := g01Response(t, frames, 2); result != nil {
-		t.Fatalf("unparseable buffer formatted: %v", result)
-	}
-	if result := g01Response(t, frames, 3); result != nil {
-		t.Fatalf("unchecked buffer formatted: %v", result)
+	for name, text := range map[string]string{"unparseable": unparseable, "unchecked": unchecked} {
+		t.Run(name, func(t *testing.T) {
+			frames := runExchange(t, []string{didOpen(uri, g01TrueFirst, 1), didChange(uri, text, 2), g01Formatting(2, uri), `{"jsonrpc":"2.0","method":"exit"}`})
+			if result := g01Response(t, frames, 2); result != nil {
+				t.Fatalf("invalid buffer formatted: %v", result)
+			}
+		})
 	}
 	if disk, err := os.ReadFile(filepath.Join(root, "src/main.can")); err != nil || string(disk) != g01TrueFirst {
 		t.Fatalf("failed formatting reached disk: %v", err)

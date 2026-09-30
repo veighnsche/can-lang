@@ -4,6 +4,8 @@
 package resolve
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"sort"
@@ -66,6 +68,7 @@ const (
 )
 
 type Symbol struct {
+	Invalid                         error
 	Name, ID                        string
 	Kind                            Kind
 	Public, Constructible, Callable bool
@@ -116,6 +119,7 @@ func (s *Symbol) Eligible(usage Usage) bool {
 }
 
 type Scope struct {
+	Blocked  map[string]string
 	Parent   *Scope
 	Symbols  map[string]*Symbol
 	reserved map[string]bool
@@ -126,14 +130,18 @@ func NewScope(parent *Scope) *Scope {
 	if parent != nil {
 		reserved = parent.reserved
 	}
-	return &Scope{Parent: parent, Symbols: map[string]*Symbol{}, reserved: reserved}
+	return &Scope{Blocked: map[string]string{}, Parent: parent, Symbols: map[string]*Symbol{}, reserved: reserved}
 }
 func (s *Scope) Define(symbol *Symbol) error {
 	if s.reserved[symbol.Name] {
 		return fmt.Errorf("prelude name %q cannot be redeclared or shadowed", symbol.Name)
 	}
-	if _, exists := s.Symbols[symbol.Name]; exists {
-		return fmt.Errorf("duplicate name %q in one scope", symbol.Name)
+	if prior, exists := s.Symbols[symbol.Name]; exists {
+		err := fmt.Errorf("duplicate name %q in one scope", symbol.Name)
+		if prior.Source != nil && symbol.Source != nil {
+			return source.Relate(prior.Source.Path, DeclarationNameSpan(prior.Declaration), "first declaration here", located(symbol.Source, DeclarationNameSpan(symbol.Declaration), err))
+		}
+		return err
 	}
 	s.Symbols[symbol.Name] = symbol
 	return nil
@@ -146,7 +154,13 @@ func (s *Scope) Lookup(name string, usage Usage) (*Symbol, error) {
 // generic specialization. It must not freeze a guessed callable type at parsing.
 func (s *Scope) LookupWhere(name string, eligible func(*Symbol) bool) (*Symbol, error) {
 	for scope := s; scope != nil; scope = scope.Parent {
+		if dependency := scope.Blocked[name]; dependency != "" {
+			return nil, &source.BlockedError{Dependency: dependency}
+		}
 		if symbol := scope.Symbols[name]; symbol != nil && eligible(symbol) {
+			if symbol.Invalid != nil {
+				return nil, &source.BlockedError{Dependency: symbol.ID}
+			}
 			return symbol, nil
 		}
 	}
@@ -159,14 +173,21 @@ type Package struct {
 	Scope    *Scope
 }
 type File struct {
-	Source  *project.Source
-	Package *Package
-	Scope   *Scope
-	Imports map[string]*Package
+	InvalidImports map[string]bool
+	Source         *project.Source
+	Package        *Package
+	Scope          *Scope
+	Imports        map[string]*Package
 }
 type World struct {
-	Graph   *project.Graph
-	Prelude *Scope
+	visiting           map[syntax.Declaration]bool
+	Errors             []error
+	Invalid            map[syntax.Declaration]error
+	Declarations       map[syntax.Declaration]*Symbol
+	Ambiguous          map[syntax.Declaration]bool
+	checkableAmbiguous map[syntax.Declaration]bool
+	Graph              *project.Graph
+	Prelude            *Scope
 	// Packages holds every instance: project packages keyed by canonical
 	// package identity (<project-ID>/<package>), catalogue packages by
 	// bare name. Identity keys contain "/" so the two sets never collide.
@@ -177,32 +198,68 @@ type World struct {
 }
 
 func Build(graph *project.Graph) (*World, error) {
+	world := BuildRecovering(graph)
+	if len(world.Errors) != 0 {
+		return nil, errors.Join(world.Errors...)
+	}
+	return world, nil
+}
+
+// BuildRecovering commits independently valid declaration scopes once and
+// retains failures alongside the partial world. Strict Build rejects any error.
+func BuildRecovering(graph *project.Graph) *World {
+	return BuildRecoveringContext(context.Background(), graph)
+}
+func BuildRecoveringContext(ctx context.Context, graph *project.Graph) *World {
 	defer editortrace.Stage("resolve-build")()
-	w := &World{Graph: graph, Prelude: NewScope(nil), Packages: map[string]*Package{}, Files: map[*project.Source]*File{}, Functions: map[*syntax.FunctionDecl]*Scope{}, NativeScopes: map[syntax.Declaration]*Scope{}}
+	w := &World{Declarations: map[syntax.Declaration]*Symbol{}, Ambiguous: map[syntax.Declaration]bool{}, checkableAmbiguous: map[syntax.Declaration]bool{}, Invalid: map[syntax.Declaration]error{}, Graph: graph, Prelude: NewScope(nil), Packages: map[string]*Package{}, Files: map[*project.Source]*File{}, Functions: map[*syntax.FunctionDecl]*Scope{}, NativeScopes: map[syntax.Declaration]*Scope{}}
 	if err := w.catalogue(); err != nil {
-		return nil, err
+		w.Errors = append(w.Errors, err)
+		return w
 	}
 	for _, id := range keys(graph.Packages) {
+		if ctx.Err() != nil {
+			return w
+		}
 		p := graph.Packages[id]
 		pkg := &Package{Name: p.Name, ID: p.ID, Source: p, Scope: NewScope(w.Prelude)}
 		w.Packages[id] = pkg
 		for _, src := range p.Sources {
-			file := &File{Source: src, Package: pkg, Scope: NewScope(pkg.Scope), Imports: map[string]*Package{}}
+			file := &File{InvalidImports: map[string]bool{}, Source: src, Package: pkg, Scope: NewScope(pkg.Scope), Imports: map[string]*Package{}}
 			w.Files[src] = file
+			for _, name := range src.Syntax.InvalidNames {
+				pkg.Scope.Blocked[name.Text] = src.Path + ":" + name.Text
+			}
 			for _, declaration := range src.Syntax.Declarations {
 				symbol := declarationSymbol(declaration)
 				symbol.ID = p.ID + "::" + symbol.Name
 				symbol.Package = pkg
 				symbol.Source = src
 				symbol.Declaration = declaration
+				w.Declarations[declaration] = symbol
 				if err := pkg.Scope.Define(symbol); err != nil {
-					return nil, located(src, declarationNameSpan(declaration), fmt.Errorf("%s: %w", src.Path, err))
+					w.markAmbiguous(symbol)
+					w.Invalid[declaration] = err
+					symbol.Invalid = err
+					if prior := pkg.Scope.Symbols[symbol.Name]; prior != nil {
+						w.markAmbiguous(prior)
+						prior.Invalid = err
+						w.Invalid[prior.Declaration] = err
+					}
+					w.Errors = append(w.Errors, located(src, DeclarationNameSpan(declaration), fmt.Errorf("%s: %w", src.Path, err)))
+					continue
+				}
+				if len(src.Syntax.InvalidDeclarations[declaration]) != 0 {
+					symbol.Invalid = &source.BlockedError{Dependency: src.Path + ":" + symbol.Name}
+					w.Invalid[declaration] = symbol.Invalid
+					continue
 				}
 				if q, ok := declaration.(*syntax.QuestionDecl); ok && q.RecordName != nil {
 					generated := generatedQuestionRecord(q)
 					record := &Symbol{Name: q.RecordName.Text, ID: p.ID + "::" + q.RecordName.Text, Kind: Record, Constructible: true, Package: pkg, Source: src, Declaration: generated, GeneratedQuestion: q}
 					if err := pkg.Scope.Define(record); err != nil {
-						return nil, located(src, q.RecordName.Span, fmt.Errorf("%s: %w", src.Path, err))
+						w.Errors = append(w.Errors, located(src, q.RecordName.Span, fmt.Errorf("%s: %w", src.Path, err)))
+						continue
 					}
 				}
 			}
@@ -211,16 +268,24 @@ func Build(graph *project.Graph) (*World, error) {
 	// All tables exist before exports, imports or signatures are inspected. Source
 	// package import cycles are legal and do not require loading-order resolution.
 	for _, id := range keys(graph.Packages) {
+		if ctx.Err() != nil {
+			return w
+		}
 		for _, src := range graph.Packages[id].Sources {
 			file := w.Files[src]
 			seen := map[string]bool{}
 			for _, export := range src.Syntax.Header.Provides {
 				symbol := file.Package.Scope.Symbols[export.Text]
 				if symbol == nil || symbol.Source != src {
-					return nil, located(src, export.Span, fmt.Errorf("%s: provides %q is not declared by this file", src.Path, export.Text))
+					if symbol == nil && len(src.Syntax.Invalid) > 0 {
+						continue
+					}
+					w.Errors = append(w.Errors, located(src, export.Span, fmt.Errorf("%s: provides %q is not declared by this file", src.Path, export.Text)))
+					continue
 				}
 				if seen[export.Text] {
-					return nil, located(src, export.Span, fmt.Errorf("%s: duplicate provides entry %q", src.Path, export.Text))
+					w.Errors = append(w.Errors, located(src, export.Span, fmt.Errorf("%s: duplicate provides entry %q", src.Path, export.Text)))
+					continue
 				}
 				seen[export.Text] = true
 				symbol.Public = true
@@ -228,26 +293,34 @@ func Build(graph *project.Graph) (*World, error) {
 		}
 	}
 	for _, id := range keys(graph.Packages) {
+		if ctx.Err() != nil {
+			return w
+		}
 		for _, src := range graph.Packages[id].Sources {
 			file := w.Files[src]
 			for _, entry := range src.Syntax.Header.Uses {
-				target, err := w.resolveImport(src, entry)
-				if err != nil {
-					return nil, err
-				}
 				alias := entry.Package.Text
 				if entry.Alias != nil {
 					alias = entry.Alias.Text
 				}
+				target, err := w.resolveImport(src, entry)
+				if err != nil {
+					file.InvalidImports[alias] = true
+					w.Errors = append(w.Errors, err)
+					continue
+				}
 				if file.Imports[alias] != nil || file.Package.Scope.Symbols[alias] != nil || w.Prelude.reserved[alias] {
-					return nil, located(src, importEntrySpan(entry), fmt.Errorf("%s: import alias %q collides with another name", src.Path, alias))
+					w.Errors = append(w.Errors, located(src, importEntrySpan(entry), fmt.Errorf("%s: import alias %q collides with another name", src.Path, alias)))
+					continue
 				}
 				if catalogue.Builtin().IsReservedPackage(alias) && alias != target.Name {
-					return nil, located(src, importEntrySpan(entry), fmt.Errorf("import alias %q claims a reserved catalogue package", alias))
+					w.Errors = append(w.Errors, located(src, importEntrySpan(entry), fmt.Errorf("import alias %q claims a reserved catalogue package", alias)))
+					continue
 				}
 				if target.Source != nil {
 					if err := internalVisibility(src, target.Source); err != nil {
-						return nil, located(src, entry.Package.Span, err)
+						w.Errors = append(w.Errors, located(src, entry.Package.Span, err))
+						continue
 					}
 				}
 				file.Imports[alias] = target
@@ -255,16 +328,53 @@ func Build(graph *project.Graph) (*World, error) {
 		}
 	}
 	for _, id := range keys(graph.Packages) {
+		if ctx.Err() != nil {
+			return w
+		}
 		for _, src := range graph.Packages[id].Sources {
 			file := w.Files[src]
 			for _, declaration := range src.Syntax.Declarations {
+				if !w.Checkable(declaration) {
+					continue
+				}
 				if err := w.signature(file, declaration); err != nil {
-					return nil, located(src, declaration.DeclSpan(), fmt.Errorf("%s: %w", src.Path, err))
+					w.Invalid[declaration] = err
+					delete(w.checkableAmbiguous, declaration)
+					w.Declarations[declaration].Invalid = err
+					if source.IsBlocked(err) {
+						continue
+					}
+					w.Errors = append(w.Errors, located(src, DeclarationNameSpan(declaration), fmt.Errorf("%s: %w", src.Path, err)))
+					continue
 				}
 			}
 		}
 	}
-	return w, nil
+	return w
+}
+
+// Checkable distinguishes an ambiguous package binding from the independent
+// declaration's own syntax/signature. Only functions with intact syntax can be
+// checked privately; they never become callable through the package table.
+func (w *World) Checkable(declaration syntax.Declaration) bool {
+	return w.Invalid[declaration] == nil || w.checkableAmbiguous[declaration]
+}
+func (w *World) Invalidate(declaration syntax.Declaration, err error) {
+	w.Invalid[declaration] = err
+	delete(w.checkableAmbiguous, declaration)
+}
+func (w *World) markAmbiguous(symbol *Symbol) {
+	declaration := symbol.Declaration
+	if w.Ambiguous[declaration] {
+		return
+	}
+	w.Ambiguous[declaration] = true
+	if _, ok := declaration.(*syntax.FunctionDecl); !ok || len(symbol.Source.Syntax.InvalidDeclarations[declaration]) != 0 {
+		return
+	}
+	w.checkableAmbiguous[declaration] = true
+	// These identities exist only within analysis and cannot be looked up.
+	symbol.ID += fmt.Sprintf("/ambiguous/%s/%d", symbol.Source.ID, declaration.DeclSpan().Start)
 }
 
 func declarationSymbol(declaration syntax.Declaration) *Symbol {
@@ -336,7 +446,7 @@ func declarationSymbol(declaration syntax.Declaration) *Symbol {
 
 // declarationNameSpan points at the declared name token, falling back to
 // the whole declaration when the form carries no name token.
-func declarationNameSpan(declaration syntax.Declaration) source.Span {
+func DeclarationNameSpan(declaration syntax.Declaration) source.Span {
 	switch d := declaration.(type) {
 	case *syntax.ConnectionDecl:
 		return d.Name.Span
@@ -383,6 +493,9 @@ func (w *World) resolveImport(src *project.Source, entry syntax.Import) (*Packag
 	if entry.Dependency != nil {
 		dep, ok := owner.Dependencies[entry.Dependency.Text]
 		if !ok {
+			if _, declared := owner.Manifest.Dependencies[entry.Dependency.Text]; declared || owner.Manifest.InvalidDependencies[entry.Dependency.Text] != nil || owner.Manifest.Invalid["dependencies"] != nil {
+				return nil, &source.BlockedError{Dependency: "dependency:" + entry.Dependency.Text}
+			}
 			return nil, located(src, entry.Dependency.Span, fmt.Errorf("%s: unknown dependency %q", src.Path, entry.Dependency.Text))
 		}
 		target := w.projectPackage(dep, entry.Package.Text)
@@ -488,7 +601,19 @@ func (w *World) catalogue() error {
 	return nil
 }
 
-func (f *File) Lookup(scope *Scope, name syntax.QualifiedName, usage Usage) (*Symbol, error) {
+func (f *File) Lookup(scope *Scope, name syntax.QualifiedName, usage Usage) (symbol *Symbol, err error) {
+	defer func() {
+		if err != nil {
+			span := name.Span
+			if name.MemberSpan.End > name.MemberSpan.Start {
+				span = name.MemberSpan
+			}
+			if name.Package != "" && f.Imports[name.Package] == nil && name.QualifierSpan.End > name.QualifierSpan.Start {
+				span = name.QualifierSpan
+			}
+			err = located(f.Source, span, err)
+		}
+	}()
 	if name.Package == "" {
 		if scope == nil {
 			scope = f.Scope
@@ -497,9 +622,18 @@ func (f *File) Lookup(scope *Scope, name syntax.QualifiedName, usage Usage) (*Sy
 	}
 	pkg := f.Imports[name.Package]
 	if pkg == nil {
+		if f.InvalidImports[name.Package] {
+			return nil, &source.BlockedError{Dependency: "import:" + name.Package}
+		}
 		return nil, fmt.Errorf("package qualifier %q is not imported by this file", name.Package)
 	}
-	symbol := pkg.Scope.Symbols[name.Name]
+	if dependency := pkg.Scope.Blocked[name.Name]; dependency != "" {
+		return nil, &source.BlockedError{Dependency: dependency}
+	}
+	symbol = pkg.Scope.Symbols[name.Name]
+	if symbol != nil && symbol.Invalid != nil {
+		return nil, &source.BlockedError{Dependency: symbol.ID}
+	}
 	if symbol == nil || !symbol.Eligible(usage) {
 		return nil, fmt.Errorf("no eligible %s %s::%s", usage, name.Package, name.Name)
 	}
@@ -564,7 +698,18 @@ func keys[V any](m map[string]V) []string {
 }
 
 func (w *World) signature(file *File, declaration syntax.Declaration) error {
-	symbol := file.Package.Scope.Symbols[declarationSymbol(declaration).Name]
+	if w.visiting == nil {
+		w.visiting = map[syntax.Declaration]bool{}
+	}
+	if w.visiting[declaration] {
+		return located(file.Source, DeclarationNameSpan(declaration), fmt.Errorf("cyclic declaration signature"))
+	}
+	w.visiting[declaration] = true
+	defer delete(w.visiting, declaration)
+	symbol := w.Declarations[declaration]
+	if symbol == nil {
+		symbol = file.Package.Scope.Symbols[declarationSymbol(declaration).Name]
+	}
 	scope := NewScope(file.Scope)
 	for _, name := range symbol.Parameters {
 		if err := scope.Define(&Symbol{Name: name, ID: symbol.ID + "<" + name + ">", Kind: TypeParameter}); err != nil {
@@ -573,17 +718,20 @@ func (w *World) signature(file *File, declaration syntax.Declaration) error {
 	}
 	check := func(typ syntax.TypeNode) error { return file.checkType(scope, typ, symbol.Public, TypeUse) }
 	fields := func(fields []syntax.Field) error {
-		seen := map[string]bool{}
+		seen := map[string]source.Span{}
+		var problems []error
 		for _, field := range fields {
-			if seen[field.Name.Text] {
-				return fmt.Errorf("duplicate field %q", field.Name.Text)
+			if prior, exists := seen[field.Name.Text]; exists {
+				err := located(file.Source, field.Name.Span, fmt.Errorf("duplicate field %q", field.Name.Text))
+				problems = append(problems, source.Relate(file.Source.Path, prior, "first field declared here", err))
+			} else {
+				seen[field.Name.Text] = field.Name.Span
 			}
-			seen[field.Name.Text] = true
 			if err := check(field.Type); err != nil {
-				return err
+				problems = append(problems, err)
 			}
 		}
-		return nil
+		return errors.Join(problems...)
 	}
 	if syntax.NativeSignature(declaration) != nil {
 		return w.nativeSignature(file, scope, symbol, declaration)
@@ -637,99 +785,109 @@ func (w *World) signature(file *File, declaration syntax.Declaration) error {
 	case *syntax.ValueDecl:
 		return check(d.Binding.Type)
 	case *syntax.FunctionDecl:
+		var problems []error
 		if err := check(d.Result); err != nil {
-			return err
+			problems = append(problems, err)
 		}
 		if err := file.checkBound(scope, d.Errors, symbol.Public); err != nil {
-			return err
+			problems = append(problems, err)
 		}
 		if d.Receiver != nil {
 			if err := check(d.Receiver.Type); err != nil {
-				return err
+				problems = append(problems, err)
+			} else {
+				named, ok := d.Receiver.Type.(*syntax.NamedType)
+				if !ok {
+					problems = append(problems, located(file.Source, d.Receiver.Type.TypeSpan(), fmt.Errorf("method receiver must be a nominal record")))
+				} else {
+					receiver, err := file.Lookup(scope, named.Name, TypeUse)
+					if err != nil {
+						problems = append(problems, err)
+					} else if receiver.Kind != Record || receiver.Package != file.Package {
+						problems = append(problems, located(file.Source, named.Span, fmt.Errorf("only a record's declaring package may define its methods")))
+					} else {
+						symbol.Receiver = receiver
+					}
+				}
 			}
-			named, ok := d.Receiver.Type.(*syntax.NamedType)
-			if !ok {
-				return fmt.Errorf("method receiver must be a nominal record")
-			}
-			receiver, err := file.Lookup(scope, named.Name, TypeUse)
-			if err != nil {
-				return err
-			}
-			if receiver.Kind != Record || receiver.Package != file.Package {
-				return fmt.Errorf("only a record's declaring package may define its methods")
-			}
-			symbol.Receiver = receiver
 		}
-		// Generic parameters, receiver and inputs occupy one collision domain.
-		add := func(field syntax.Field) error {
-			if err := check(field.Type); err != nil {
-				return err
+		add := func(field syntax.Field, checked bool) {
+			if !checked {
+				if err := check(field.Type); err != nil {
+					problems = append(problems, err)
+				}
 			}
 			_, callable := field.Type.(*syntax.CallableType)
-			return scope.Define(&Symbol{Name: field.Name.Text, ID: symbol.ID + "/input/" + field.Name.Text, Kind: Value, Type: field.Type, Callable: callable})
+			if err := scope.Define(&Symbol{Name: field.Name.Text, ID: symbol.ID + "/input/" + field.Name.Text, Kind: Value, Type: field.Type, Callable: callable}); err != nil {
+				problems = append(problems, located(file.Source, field.Name.Span, err))
+			}
 		}
 		if d.Receiver != nil {
-			if err := add(*d.Receiver); err != nil {
-				return err
-			}
+			add(*d.Receiver, true)
 		}
 		for _, input := range d.Inputs {
-			if err := add(input.Field); err != nil {
-				return err
-			}
+			add(input.Field, false)
 		}
 		w.Functions[d] = scope
+		return errors.Join(problems...)
 	}
 	return nil
 }
 
 func (f *File) checkBound(scope *Scope, bound syntax.ErrorBound, public bool) error {
+	var problems []error
 	for _, typ := range bound.Types {
 		if err := f.checkType(scope, typ, public, ErrorUse); err != nil {
-			return err
+			problems = append(problems, err)
 		}
 	}
-	return nil
+	return errors.Join(problems...)
 }
-func (f *File) checkType(scope *Scope, typ syntax.TypeNode, public bool, usage Usage) error {
+func (f *File) checkType(scope *Scope, typ syntax.TypeNode, public bool, usage Usage) (err error) {
+	defer func() {
+		if err != nil {
+			err = located(f.Source, typ.TypeSpan(), err)
+		}
+	}()
+	var problems []error
 	if usage == ErrorUse {
 		if _, ok := typ.(*syntax.NamedType); !ok {
-			return fmt.Errorf("emits requires named error types")
+			problems = append(problems, located(f.Source, typ.TypeSpan(), fmt.Errorf("emits requires named error types")))
+		}
+	}
+	check := func(child syntax.TypeNode) {
+		if err := f.checkType(scope, child, public, TypeUse); err != nil {
+			problems = append(problems, err)
 		}
 	}
 	switch t := typ.(type) {
 	case *syntax.NamedType:
 		symbol, err := f.Lookup(scope, t.Name, usage)
 		if err != nil {
-			return err
-		}
-		if public && symbol.Source != nil && !symbol.Public {
-			return fmt.Errorf("exported signature exposes private type %s", symbol.ID)
+			problems = append(problems, located(f.Source, t.Name.Span, err))
+		} else if public && symbol.Source != nil && !symbol.Public {
+			problems = append(problems, located(f.Source, t.Name.Span, fmt.Errorf("exported signature exposes private type %s", symbol.ID)))
 		}
 		for _, arg := range t.Arguments {
-			if err := f.checkType(scope, arg, public, TypeUse); err != nil {
-				return err
-			}
+			check(arg)
 		}
 	case *syntax.ArrayType:
-		return f.checkType(scope, t.Element, public, TypeUse)
+		check(t.Element)
 	case *syntax.CallableType:
-		if err := f.checkType(scope, t.Result, public, TypeUse); err != nil {
-			return err
-		}
+		check(t.Result)
 		for _, input := range t.Inputs {
-			if err := f.checkType(scope, input, public, TypeUse); err != nil {
-				return err
-			}
+			check(input)
 		}
-		return f.checkBound(scope, t.Errors, public)
+		if err := f.checkBound(scope, t.Errors, public); err != nil {
+			problems = append(problems, err)
+		}
 	case *syntax.ChoiceArmType:
-		if err := f.checkType(scope, t.Result, public, TypeUse); err != nil {
-			return err
+		check(t.Result)
+		if err := f.checkBound(scope, t.Errors, public); err != nil {
+			problems = append(problems, err)
 		}
-		return f.checkBound(scope, t.Errors, public)
 	default:
-		return fmt.Errorf("unknown type syntax")
+		problems = append(problems, fmt.Errorf("unknown type syntax"))
 	}
-	return nil
+	return errors.Join(problems...)
 }

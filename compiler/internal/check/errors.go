@@ -18,14 +18,21 @@ type ErrorDeclaration struct {
 	Name       string `json:"name"`
 	Parameters int    `json:"parameters"`
 }
-type ErrorRegistry struct{ declarations map[string]ErrorDeclaration }
+type ErrorRegistry struct {
+	declarations map[string]ErrorDeclaration
+	blocked      map[string]bool
+}
 
 // ErrorDeclarations consumes the manifest/lock/source agreement established by
 // project.Load, and binds each qualified kind to the resolver's declaration
 // identity. Rechecking the kind/source association here prevents a registry
 // entry from being used as permission to emit a different declaration.
 func ErrorDeclarations(world *resolve.World) (*ErrorRegistry, error) {
-	registry := &ErrorRegistry{declarations: map[string]ErrorDeclaration{}}
+	return errorDeclarations(world, false)
+}
+func errorDeclarations(world *resolve.World, recovering bool) (*ErrorRegistry, error) {
+	registry := &ErrorRegistry{declarations: map[string]ErrorDeclaration{}, blocked: map[string]bool{}}
+	var problems []error
 	add := func(d ErrorDeclaration) error {
 		if _, exists := registry.declarations[d.Identity]; exists {
 			return fmt.Errorf("duplicate error declaration %s", d.Identity)
@@ -45,44 +52,65 @@ func ErrorDeclarations(world *resolve.World) (*ErrorRegistry, error) {
 	sort.Strings(owners)
 	for _, key := range owners {
 		owner := world.Graph.Projects[key]
-		if err := owner.Registry.Validate(); err != nil {
-			return nil, err
-		}
-		live := map[string]string{}
-		for _, kind := range owner.Registry.Active {
-			parts := strings.Split(kind, "::")
-			if len(parts) != 2 {
-				return nil, fmt.Errorf("invalid allocated error name")
-			}
-			pkg := world.Packages[owner.ID+"/"+parts[0]]
-			if pkg == nil || pkg.Source == nil || pkg.Source.Owner != owner {
-				return nil, fmt.Errorf("error allocation has wrong nominal owner")
-			}
-			symbol := pkg.Scope.Symbols[parts[1]]
-			if symbol == nil || symbol.Kind != resolve.Error {
-				return nil, fmt.Errorf("error allocation lacks source declaration")
-			}
-			if _, ok := symbol.Declaration.(*syntax.ErrorDecl); !ok {
-				return nil, fmt.Errorf("error allocation lacks error AST")
-			}
-			live[kind] = symbol.ID
-			if err := add(ErrorDeclaration{symbol.ID, kind, len(symbol.Parameters)}); err != nil {
-				return nil, err
-			}
-		}
-		for _, retired := range owner.Registry.Retired {
-			if live[retired] != "" {
-				return nil, fmt.Errorf("retired error %q is still active", retired)
-			}
-			parts := strings.Split(retired, "::")
-			if len(parts) != 2 {
-				return nil, fmt.Errorf("invalid retired error name")
-			}
-			if pkg := world.Packages[owner.ID+"/"+parts[0]]; pkg != nil && pkg.Source != nil && pkg.Source.Owner == owner {
-				if symbol := pkg.Scope.Symbols[parts[1]]; symbol != nil && symbol.Kind == resolve.Error {
-					return nil, fmt.Errorf("retired error %q is redeclared", retired)
+		if recovering && owner.RegistryError != nil {
+			for _, pkg := range world.Packages {
+				if pkg.Source != nil && pkg.Source.Owner == owner {
+					for _, symbol := range pkg.Scope.Symbols {
+						if symbol.Kind == resolve.Error {
+							registry.blocked[symbol.ID] = true
+						}
+					}
 				}
 			}
+			continue
+		}
+		ownerErr := func() error {
+			if err := owner.Registry.Validate(); err != nil {
+				return err
+			}
+			live := map[string]string{}
+			for _, kind := range owner.Registry.Active {
+				parts := strings.Split(kind, "::")
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid allocated error name")
+				}
+				pkg := world.Packages[owner.ID+"/"+parts[0]]
+				if pkg == nil || pkg.Source == nil || pkg.Source.Owner != owner {
+					return fmt.Errorf("error allocation has wrong nominal owner")
+				}
+				symbol := pkg.Scope.Symbols[parts[1]]
+				if symbol == nil || symbol.Kind != resolve.Error {
+					return fmt.Errorf("error allocation lacks source declaration")
+				}
+				if _, ok := symbol.Declaration.(*syntax.ErrorDecl); !ok {
+					return fmt.Errorf("error allocation lacks error AST")
+				}
+				live[kind] = symbol.ID
+				if err := add(ErrorDeclaration{symbol.ID, kind, len(symbol.Parameters)}); err != nil {
+					return err
+				}
+			}
+			for _, retired := range owner.Registry.Retired {
+				if live[retired] != "" {
+					return fmt.Errorf("retired error %q is still active", retired)
+				}
+				parts := strings.Split(retired, "::")
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid retired error name")
+				}
+				if pkg := world.Packages[owner.ID+"/"+parts[0]]; pkg != nil && pkg.Source != nil && pkg.Source.Owner == owner {
+					if symbol := pkg.Scope.Symbols[parts[1]]; symbol != nil && symbol.Kind == resolve.Error {
+						return fmt.Errorf("retired error %q is redeclared", retired)
+					}
+				}
+			}
+			return nil
+		}()
+		if ownerErr != nil {
+			if !recovering {
+				return nil, ownerErr
+			}
+			problems = append(problems, ownerErr)
 		}
 	}
 	for _, pkg := range world.Packages {
@@ -91,13 +119,18 @@ func ErrorDeclarations(world *resolve.World) (*ErrorRegistry, error) {
 		}
 		for _, symbol := range pkg.Scope.Symbols {
 			if symbol.Kind == resolve.Error {
-				if _, ok := registry.declarations[symbol.ID]; !ok {
-					return nil, fmt.Errorf("source error is unallocated")
+				if _, ok := registry.declarations[symbol.ID]; !ok && !registry.blocked[symbol.ID] {
+					err := source.Locate(symbol.Source.Path, resolve.DeclarationNameSpan(symbol.Declaration), fmt.Errorf("source error is unallocated"))
+					if !recovering {
+						return nil, err
+					}
+					problems = append(problems, err)
+					registry.blocked[symbol.ID] = true
 				}
 			}
 		}
 	}
-	return registry, nil
+	return registry, errors.Join(problems...)
 }
 func (r *ErrorRegistry) Declarations() []ErrorDeclaration {
 	out := make([]ErrorDeclaration, 0, len(r.declarations))
@@ -121,6 +154,9 @@ func (r *ErrorRegistry) Concrete(typ *types.Type) (ConcreteError, error) {
 	}
 	declaration, ok := r.declarations[typ.Declaration()]
 	if !ok {
+		if r.blocked[typ.Declaration()] {
+			return ConcreteError{}, &source.BlockedError{Dependency: typ.Declaration()}
+		}
 		return ConcreteError{}, fmt.Errorf("unallocated nominal error identity")
 	}
 	args := typ.Arguments()

@@ -13,6 +13,7 @@ import (
 // JSON encode/decode plus the B1-11 document decoders. General source
 // function specialization and inference remain separate work.
 type CodecSpecialization struct {
+	Invalid   error
 	Operation string
 	Data      *types.Type
 	Contract  *types.Type
@@ -76,7 +77,10 @@ func (c *programChecker) gatherCodec(file *resolve.File, site syntax.Expr, calle
 		c.codecs = map[string]*CodecSpecialization{}
 		c.codecParts = map[string][]*types.Type{}
 	}
-	if c.codecs[key] != nil {
+	if prior := c.codecs[key]; prior != nil {
+		if prior.Invalid != nil {
+			return &source.BlockedError{Dependency: key}
+		}
 		return nil
 	}
 	byteType := &syntax.NamedType{Name: syntax.QualifiedName{Package: "bytes", Name: "buffer"}}

@@ -122,7 +122,7 @@ func TestG02InitializeAdvertisesHover(t *testing.T) {
 	if capabilities["hoverProvider"] != true {
 		t.Fatalf("hover not advertised: %v", capabilities)
 	}
-	if capabilities["textDocumentSync"] != 1.0 || capabilities["definitionProvider"] != true || capabilities["documentFormattingProvider"] != true {
+	if !g01FullSync(capabilities) || capabilities["definitionProvider"] != true || capabilities["documentFormattingProvider"] != true {
 		t.Fatalf("existing capabilities regressed: %v", capabilities)
 	}
 }
@@ -250,18 +250,40 @@ func TestG02HoverUnresolvedReturnsNull(t *testing.T) {
 		t.Fatalf("no publish in %v", frames)
 	}
 	diags := diagnosticsOf(t, last)
-	if len(diags) != 1 || !strings.Contains(diags[0]["message"].(string), "missing_fn") {
+	found := false
+	for _, diagnostic := range diags {
+		if strings.Contains(diagnostic["message"].(string), "missing_fn") {
+			found = true
+			span := diagnostic["range"].(map[string]any)
+			start, end := span["start"].(map[string]any), span["end"].(map[string]any)
+			if start["line"] != end["line"] || end["character"].(float64)-start["character"].(float64) != 10 {
+				t.Fatalf("missing callee range widened: %v", span)
+			}
+		}
+	}
+	if !found {
 		t.Fatalf("breakage unpublished beside null hovers: %v", diags)
 	}
 }
 
-// TestG02HoverDeclinesLocals pins the G03 handoff: body-local bindings
-// decline exactly like go-to-definition until references own binding
-// identity, rather than risk a shadowed name's type.
-func TestG02HoverDeclinesLocals(t *testing.T) {
+// Scoped local hover reports the checked input type at the exact use token.
+func TestG02HoverLocals(t *testing.T) {
 	_, frames := g02Exchange(t, g02Main, "action(se|ed)", 2)
-	if result := g01Response(t, frames, 2); result != nil {
-		t.Fatalf("local binding hovered: %v", result)
+	result, ok := g01Response(t, frames, 2).(map[string]any)
+	if !ok {
+		t.Fatalf("local hover unavailable: %v", frames)
+	}
+	contents := result["contents"].(map[string]any)
+	text, _ := contents["value"].(string)
+	if !strings.Contains(text, "int") || !strings.Contains(text, "seed") {
+		t.Fatalf("wrong local type: %v", result)
+	}
+	rng := result["range"].(map[string]any)
+	start := rng["start"].(map[string]any)
+	end := rng["end"].(map[string]any)
+	line, column := positionOf(t, g02Main, "action(|seed)")
+	if start["line"] != float64(line) || start["character"] != float64(column) || end["character"] != float64(column+4) {
+		t.Fatalf("local hover range: %v", rng)
 	}
 }
 

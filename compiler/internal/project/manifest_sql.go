@@ -2,119 +2,146 @@ package project
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 )
 
-// SQLDescriptor is one manifest SQL descriptor: the raw statement text
-// plus its declared shape. Validation against the SQL grammar backends
-// happens in check/sql_descriptors.go; this file only decodes.
+// SQLDescriptor is one manifest SQL descriptor. SQL backend validation remains
+// compiler-owned; configuration parsing never executes or connects to a database.
 type SQLDescriptor struct {
 	Dialect, Statement, ParameterType, RowType, Cardinality string
 	Parameters                                              []string
 	RowLimitParameter                                       uint64
 }
 
-// decodeSQLMap decodes the manifest "sql" table in name order. Names must
-// be nonempty and NUL-free; each entry decodes via parseSQL. The envelope
-// owns the field lookup; this owns the entries.
-func decodeSQLMap(raw json.RawMessage) (map[string]SQLDescriptor, error) {
+func decodeSQLMap(raw json.RawMessage) (map[string]SQLDescriptor, map[string]error, error) {
 	out := map[string]SQLDescriptor{}
+	invalid := map[string]error{}
 	values, err := dictionary(raw)
 	if err != nil {
-		return nil, fmt.Errorf("sql: %w", err)
+		return out, invalid, jsonFieldError(raw, fmt.Errorf("sql: %w", err))
 	}
+	var problems []error
 	for _, name := range sortedKeys(values) {
 		if name == "" || strings.ContainsRune(name, 0) {
-			return nil, fmt.Errorf("invalid SQL descriptor name")
+			issue := jsonKeyError(raw, fmt.Errorf("invalid SQL descriptor name"), name)
+			invalid[name] = issue
+			problems = append(problems, issue)
+			continue
 		}
 		descriptor, err := parseSQL(values[name])
 		if err != nil {
-			return nil, fmt.Errorf("sql %q: %w", name, err)
+			issue := jsonChildError(raw, err, name)
+			invalid[name] = issue
+			problems = append(problems, issue)
+			continue
 		}
 		out[name] = descriptor
 	}
-	return out, nil
+	return out, invalid, errors.Join(problems...)
 }
 
 func parseSQL(raw json.RawMessage) (SQLDescriptor, error) {
 	d := SQLDescriptor{}
-	fields, err := object(raw, []string{"dialect", "statement", "parameters", "parameter_type", "row_type", "cardinality"}, []string{"row_limit_parameter"})
-	if err != nil {
-		return d, err
+	fields, shapeErr := object(raw, []string{"dialect", "statement", "parameters", "parameter_type", "row_type", "cardinality"}, []string{"row_limit_parameter"})
+	if fields == nil {
+		return d, shapeErr
 	}
+	problems := []error{shapeErr}
+	add := func(err error, path ...string) { problems = append(problems, jsonFieldError(raw, err, path...)) }
 	destinations := map[string]*string{"dialect": &d.Dialect, "statement": &d.Statement, "parameter_type": &d.ParameterType, "row_type": &d.RowType, "cardinality": &d.Cardinality}
 	for _, key := range sortedKeys(destinations) {
-		dest := destinations[key]
-		value, err := text(fields[key])
-		if err != nil || value == "" {
-			return d, fmt.Errorf("%s must be a nonempty string", key)
+		value, exists := fields[key]
+		if !exists {
+			continue
 		}
-		*dest = value
-	}
-	if d.Dialect != "postgresql" && d.Dialect != "sqlite" && d.Dialect != "mysql" {
-		return d, fmt.Errorf("unsupported SQL dialect")
-	}
-	if d.Cardinality != "one" && d.Cardinality != "optional" && d.Cardinality != "many" && d.Cardinality != "execute" {
-		return d, fmt.Errorf("invalid SQL cardinality")
-	}
-	parameters, err := array(fields["parameters"])
-	if err != nil {
-		return d, err
-	}
-	seen := map[string]bool{}
-	for _, raw := range parameters {
-		value, err := text(raw)
-		if err != nil || !Identifier(value) || seen[value] {
-			return d, fmt.Errorf("invalid or duplicate SQL parameter name")
+		text, err := text(value)
+		if err != nil || text == "" {
+			add(fmt.Errorf("%s must be a nonempty string", key), key)
+			continue
 		}
-		seen[value] = true
-		d.Parameters = append(d.Parameters, value)
+		*destinations[key] = text
 	}
-	for _, name := range []string{d.ParameterType, d.RowType} {
+	if d.Dialect != "" && d.Dialect != "postgresql" && d.Dialect != "sqlite" && d.Dialect != "mysql" {
+		add(fmt.Errorf("unsupported SQL dialect"), "dialect")
+	}
+	cardinalityValid := d.Cardinality == "one" || d.Cardinality == "optional" || d.Cardinality == "many" || d.Cardinality == "execute"
+	if d.Cardinality != "" && !cardinalityValid {
+		add(fmt.Errorf("invalid SQL cardinality"), "cardinality")
+	}
+	parametersValid := false
+	if value, exists := fields["parameters"]; exists {
+		parameters, err := array(value)
+		if err != nil {
+			add(err, "parameters")
+		} else {
+			parametersValid = true
+			seen := map[string]int{}
+			for i, value := range parameters {
+				name, err := text(value)
+				if err != nil || !Identifier(name) {
+					parametersValid = false
+					add(fmt.Errorf("invalid SQL parameter name"), "parameters", strconv.Itoa(i))
+					continue
+				}
+				if first, duplicate := seen[name]; duplicate {
+					parametersValid = false
+					problems = append(problems, &JSONError{Span: JSONFieldSpan(raw, "parameters", strconv.Itoa(i)), Related: []source.Span{JSONFieldSpan(raw, "parameters", strconv.Itoa(first))}, Err: fmt.Errorf("duplicate SQL parameter name")})
+				} else {
+					seen[name] = i
+				}
+				d.Parameters = append(d.Parameters, name)
+			}
+		}
+	}
+	for _, key := range []string{"parameter_type", "row_type"} {
+		name := *destinations[key]
+		if name == "" {
+			continue
+		}
 		file, err := source.New("<manifest-type>", name)
 		if err != nil {
-			return d, err
+			add(err, key)
+			continue
 		}
 		typ, diagnostics := syntax.ParseType(file)
 		if len(diagnostics) > 0 {
-			return d, fmt.Errorf("invalid SQL type %q", name)
+			add(fmt.Errorf("invalid SQL type %q", name), key)
+			continue
 		}
 		nominal, ok := typ.(*syntax.NamedType)
 		if !ok || nominal.Name.Package == "" {
-			return d, fmt.Errorf("SQL types must be fully qualified nominal types")
+			add(fmt.Errorf("SQL types must be fully qualified nominal types"), key)
 		}
 	}
 	limit, exists := fields["row_limit_parameter"]
-	if d.Cardinality == "execute" {
-		if exists {
-			return d, fmt.Errorf("execute cannot declare row_limit_parameter")
-		}
-	} else if d.Cardinality == "one" && !exists {
-		// F8/RETURNING shape: cardinality one without a row-limit site.
-		// Absent decodes as 0; the checker (CheckDescriptorDialect)
-		// then requires INSERT ... RETURNING and rejects every other
-		// one+0 shape exactly as before.
-		d.RowLimitParameter = 0
-	} else {
-		if !exists {
-			return d, fmt.Errorf("row-returning SQL requires row_limit_parameter")
-		}
-		d.RowLimitParameter, err = integer(limit)
+	limitValid := false
+	if exists && d.Cardinality != "execute" {
+		n, err := integer(limit)
 		if err != nil {
-			return d, fmt.Errorf("row_limit_parameter must follow the application parameters")
-		}
-		if d.Cardinality == "one" && d.RowLimitParameter == 0 {
-			// Explicit 0 is the absent shape (F8/RETURNING); the
-			// checker decides admission from the statement text.
-			return d, nil
-		}
-		if d.RowLimitParameter != uint64(len(d.Parameters))+1 {
-			return d, fmt.Errorf("row_limit_parameter must follow the application parameters")
+			add(fmt.Errorf("row_limit_parameter must be an unsigned integer"), "row_limit_parameter")
+		} else {
+			d.RowLimitParameter, limitValid = n, true
 		}
 	}
-	return d, nil
+	if cardinalityValid {
+		if d.Cardinality == "execute" {
+			if exists {
+				add(fmt.Errorf("execute cannot declare row_limit_parameter"), "row_limit_parameter")
+			}
+		} else if !exists {
+			// A one-row RETURNING descriptor has no row-limit placeholder.
+			if d.Cardinality != "one" {
+				add(fmt.Errorf("row-returning SQL requires row_limit_parameter"), "row_limit_parameter")
+			}
+		} else if limitValid && parametersValid && !(d.Cardinality == "one" && d.RowLimitParameter == 0) && d.RowLimitParameter != uint64(len(d.Parameters))+1 {
+			add(fmt.Errorf("row_limit_parameter must follow the application parameters"), "row_limit_parameter")
+		}
+	}
+	return d, errors.Join(problems...)
 }

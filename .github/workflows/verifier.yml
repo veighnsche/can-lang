@@ -69,6 +69,12 @@ jobs:
           set -euo pipefail
           bun ci
           bun run check:runtime
+      - name: Check the Can extension grammar and client
+        working-directory: editors/vscode
+        run: |
+          set -euo pipefail
+          bun ci
+          bun test
       - name: Check formatting, vet, and generated mirrors
         run: |
           set -euo pipefail

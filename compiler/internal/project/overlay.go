@@ -1,6 +1,7 @@
 package project
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -34,7 +35,7 @@ func (o *Overlay) Set(path string, version int64, text string) error {
 	if err != nil {
 		return err
 	}
-	if !strings.HasSuffix(canonical, ".can") {
+	if !strings.HasSuffix(canonical, ".can") && !strings.HasSuffix(canonical, ".json") {
 		return fmt.Errorf("overlay covers Can sources, not %s", path)
 	}
 	o.mu.Lock()
@@ -127,7 +128,7 @@ func LoadWithOverlay(directory string, overlay *Overlay) (*Graph, error) {
 	if overlay == nil {
 		return Load(directory)
 	}
-	return load(directory, overlay.bytesFor)
+	return load(context.Background(), directory, overlay)
 }
 
 func (o *Overlay) bytesFor(real string) ([]byte, bool) {
@@ -138,4 +139,15 @@ func (o *Overlay) bytesFor(real string) ([]byte, bool) {
 		return nil, false
 	}
 	return []byte(entry.Text), true
+}
+
+func LoadWithOverlayContext(ctx context.Context, directory string, overlay *Overlay) (*Graph, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	graph, err := load(ctx, directory, overlay)
+	if cancelled := ctx.Err(); cancelled != nil {
+		return nil, cancelled
+	}
+	return graph, err
 }

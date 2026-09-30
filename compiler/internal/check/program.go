@@ -1,7 +1,10 @@
 package check
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
@@ -68,7 +71,11 @@ type Program struct {
 	Warnings []Warning
 }
 type ProgramFunction struct {
-	Symbol        *resolve.Symbol
+	Symbol *resolve.Symbol
+	// Signature is the sealed callable contract proved independently of the
+	// body. A nonnil Signature does not prove executable or assertion validity.
+	// Source consumers must not combine contracts of distinct generic instances.
+	Signature     *types.Type
 	Region        *ir.Region
 	Instance      string
 	TypeArguments []*types.Type
@@ -84,6 +91,7 @@ func (f *ProgramFunction) Identity() string {
 }
 
 type programChecker struct {
+	recovering  bool
 	program     *Program
 	specializer *types.Specializer
 	instances   map[string]*ProgramFunction
@@ -99,9 +107,13 @@ type programChecker struct {
 	world       *resolve.World
 	builder     *types.Builder
 	annotations map[*resolve.File]map[string]*types.Type
-	bindings    map[string]*types.Type
-	variadic    map[string]bool
-	templates   map[string]*Template
+	// Exact failed ordinary-body annotation nodes are recorded before sealing.
+	// This immutable failure map never carries generic instance failures.
+	annotationFailures  map[*resolve.File]map[syntax.TypeNode]error
+	constructorFailures map[*syntax.ConstructorExpr]error
+	bindings            map[string]*types.Type
+	variadic            map[string]bool
+	templates           map[string]*Template
 	// symbolicComponent maps a public generic declaration identity to its
 	// dependency component during exported-generic proof. symbolicProofs
 	// holds only committed components; nothing is committed until every
@@ -137,6 +149,11 @@ func (c *programChecker) gather(file *resolve.File, node syntax.TypeNode) (*type
 	return t, nil
 }
 func (c *programChecker) annotation(file *resolve.File, node syntax.TypeNode, allowVoid bool) (*types.Type, error) {
+	if c.current == nil || c.current.Instance == "" {
+		if c.annotationFailures[file][node] != nil {
+			return nil, &source.BlockedError{Dependency: fmt.Sprintf("%s:annotation@%d", file.Source.Path, node.TypeSpan().Start)}
+		}
+	}
 	if c.specializer != nil && (c.current != nil && c.current.Instance != "" || c.annotations[file][syntax.FormatType(node)] == nil) {
 		return c.specializer.Resolve(file, node, c.parameters(), allowVoid)
 	}
@@ -157,6 +174,13 @@ func named(name string) syntax.TypeNode {
 // types or evaluate expressions. Synthetic constructor annotations must be
 // gathered too; local pattern binders are deliberately excluded from lookup.
 func (c *programChecker) gatherBody(file *resolve.File, value reflect.Value) error {
+	return c.gatherBodyMode(file, value, false)
+}
+
+// Only ordinary function gathering before model sealing may retain failed
+// annotation nodes. Other phases keep their specialization-specific boundaries.
+func (c *programChecker) gatherBodyMode(file *resolve.File, value reflect.Value, recovering bool) error {
+	recovering = recovering && c.recovering && c.specializer == nil
 	if !value.IsValid() {
 		return nil
 	}
@@ -166,6 +190,16 @@ func (c *programChecker) gatherBody(file *resolve.File, value reflect.Value) err
 		}
 		if node, ok := value.Interface().(syntax.TypeNode); ok {
 			_, err := c.gather(file, node)
+			if err != nil && recovering {
+				err = locateGather(file, node.TypeSpan(), err)
+				if c.annotationFailures == nil {
+					c.annotationFailures = map[*resolve.File]map[syntax.TypeNode]error{}
+				}
+				if c.annotationFailures[file] == nil {
+					c.annotationFailures[file] = map[syntax.TypeNode]error{}
+				}
+				c.annotationFailures[file][node] = err
+			}
 			return err
 		}
 		switch node := value.Interface().(type) {
@@ -198,13 +232,18 @@ func (c *programChecker) gatherBody(file *resolve.File, value reflect.Value) err
 		}
 		if constructor, ok := value.Interface().(*syntax.ConstructorExpr); ok {
 			symbol, err := file.Lookup(nil, constructor.Name, resolve.ConstructorUse)
-			if err != nil {
-				return locateGather(file, constructor.ExprSpan(), err)
+			if err == nil && (len(constructor.Types) != 0 || len(symbol.Parameters) == 0) {
+				_, err = c.gather(file, &syntax.NamedType{Span: constructor.Name.Span, Name: constructor.Name, Arguments: constructor.Types})
 			}
-			if len(constructor.Types) != 0 || len(symbol.Parameters) == 0 {
-				if _, err = c.gather(file, &syntax.NamedType{Name: constructor.Name, Arguments: constructor.Types}); err != nil {
-					return err
+			if err != nil {
+				err = locateGather(file, constructor.Name.Span, err)
+				if recovering {
+					if c.constructorFailures == nil {
+						c.constructorFailures = map[*syntax.ConstructorExpr]error{}
+					}
+					c.constructorFailures[constructor] = err
 				}
+				return err
 			}
 		}
 		var name *syntax.QualifiedName
@@ -221,35 +260,42 @@ func (c *programChecker) gatherBody(file *resolve.File, value reflect.Value) err
 			if n, ok := node.Error.(*syntax.NamedType); ok && len(n.Arguments) == 0 {
 				symbol, err := file.Lookup(nil, n.Name, resolve.ErrorUse)
 				if err == nil && len(symbol.Parameters) != 0 {
-					return c.gatherBody(file, reflect.ValueOf(node.Binding))
+					return c.gatherBodyMode(file, reflect.ValueOf(node.Binding), recovering)
 				}
 			}
 		}
 		if name != nil {
 			symbol, err := file.Lookup(nil, *name, resolve.TypeUse)
 			if err == nil && (len(arguments) != 0 || len(symbol.Parameters) == 0) {
-				if _, err = c.gather(file, &syntax.NamedType{Name: *name, Arguments: arguments}); err != nil {
+				if _, err = c.gather(file, &syntax.NamedType{Span: name.Span, Name: *name, Arguments: arguments}); err != nil {
 					return err
 				}
 			}
 		}
-		return c.gatherBody(file, value.Elem())
+		return c.gatherBodyMode(file, value.Elem(), recovering)
 	}
+	var problems []error
 	switch value.Kind() {
 	case reflect.Struct:
 		for i := 0; i < value.NumField(); i++ {
-			if err := c.gatherBody(file, value.Field(i)); err != nil {
-				return err
+			if err := c.gatherBodyMode(file, value.Field(i), recovering); err != nil {
+				if !recovering {
+					return err
+				}
+				problems = append(problems, err)
 			}
 		}
 	case reflect.Slice:
 		for i := 0; i < value.Len(); i++ {
-			if err := c.gatherBody(file, value.Index(i)); err != nil {
-				return err
+			if err := c.gatherBodyMode(file, value.Index(i), recovering); err != nil {
+				if !recovering {
+					return err
+				}
+				problems = append(problems, err)
 			}
 		}
 	}
-	return nil
+	return errors.Join(problems...)
 }
 
 // locateGather attaches the gathering file's use-site span to a constructor
@@ -285,11 +331,14 @@ func (c *programChecker) expressions(file *resolve.File, scope *resolve.Scope) *
 		}
 		return ValueBinding{Identity: identity, Type: typ}, nil
 	}
-	expressions := &Expressions{Scalars: c.annotations[file], Package: expressionPackage(file),
+	expressions := &Expressions{Recover: c.recovering, Checkpoint: c.unitCheckpoint, Scalars: c.annotations[file], Package: expressionPackage(file),
 		Value:     func(name syntax.QualifiedName) (ValueBinding, error) { return lookup(name, resolve.ValueUse) },
 		Reference: func(name syntax.QualifiedName) (ValueBinding, error) { return lookup(name, resolve.ReferenceUse) },
 		Function:  func(name syntax.QualifiedName) (ValueBinding, error) { return lookup(name, resolve.CallUse) },
 		Constructor: func(node *syntax.ConstructorExpr, expected *types.Type, expressions *Expressions) (*types.Type, error) {
+			if (c.current == nil || c.current.Instance == "") && c.constructorFailures[node] != nil {
+				return nil, &source.BlockedError{Dependency: fmt.Sprintf("%s:constructor@%d", file.Source.Path, node.Name.Span.Start)}
+			}
 			symbol, err := file.Lookup(nil, node.Name, resolve.ConstructorUse)
 			if err != nil {
 				return nil, err
@@ -376,30 +425,81 @@ func checkTargetEntry(target Target, d *syntax.FunctionDecl) error {
 }
 
 func checkProgramForTarget(graph *project.Graph, target Target, requireEntry bool) (*Program, error) {
+	if len(graph.Errors) != 0 {
+		return nil, errors.Join(graph.Errors...)
+	}
+	world, err := resolve.Build(graph)
+	if err != nil {
+		return nil, err
+	}
+	return checkResolvedProgram(context.Background(), graph, world, target, requireEntry, false)
+}
+
+// AnalyzeProgram checks each available declaration using the canonical passes.
+// Its partial Program is diagnostic evidence only; strict callers never receive
+// a Program when any check fails.
+func AnalyzeProgram(graph *project.Graph, world *resolve.World) (*Program, error) {
+	return AnalyzeProgramContext(context.Background(), graph, world)
+}
+
+func AnalyzeProgramContext(ctx context.Context, graph *project.Graph, world *resolve.World) (*Program, error) {
+	program, err := checkResolvedProgram(ctx, graph, world, TargetBun, false, true)
+	if cancelled := ctx.Err(); cancelled != nil {
+		return nil, cancelled
+	}
+	return program, err
+}
+
+func checkResolvedProgram(ctx context.Context, graph *project.Graph, world *resolve.World, target Target, requireEntry, recovering bool) (result *Program, failure error) {
+	var problems []error
+	var p *Program
+	var c *programChecker
+	defer func() {
+		if !recovering {
+			return
+		}
+		if failure != nil {
+			problems = append(problems, failure)
+		}
+		failure = errors.Join(problems...)
+		if p != nil {
+			p.Warnings = c.warnings
+			result = p
+		}
+	}()
 	if target != TargetBun && target != TargetBrowser {
 		return nil, fmt.Errorf("unknown check target %q: expected %q or %q", string(target), string(TargetBun), string(TargetBrowser))
 	}
-	endResolve := editortrace.Stage("checker-resolve")
-	world, err := resolve.Build(graph)
-	endResolve()
-	if err != nil {
-		return nil, err
-	}
+	var err error
 	endDeclarations := editortrace.Stage("check-declarations")
-	if _, err = types.CheckDeclarations(world); err != nil {
-		return nil, err
+	if recovering {
+		_, err = types.AnalyzeDeclarations(world)
+	} else {
+		_, err = types.CheckDeclarations(world)
+	}
+	if err != nil {
+		if !recovering {
+			return nil, err
+		}
+		problems = append(problems, err)
 	}
 	endDeclarations()
 	endSeed := editortrace.Stage("check-seed")
-	registry, err := ErrorDeclarations(world)
+	registry, err := errorDeclarations(world, recovering)
 	if err != nil {
-		return nil, err
+		if !recovering {
+			return nil, err
+		}
+		problems = append(problems, err)
 	}
-	c := &programChecker{world: world, builder: types.NewBuilder(world), annotations: map[*resolve.File]map[string]*types.Type{}, bindings: map[string]*types.Type{}, variadic: map[string]bool{}, templates: map[string]*Template{}}
+	c = &programChecker{recovering: recovering, world: world, builder: types.NewBuilder(world), annotations: map[*resolve.File]map[string]*types.Type{}, bindings: map[string]*types.Type{}, variadic: map[string]bool{}, templates: map[string]*Template{}}
 	if err = c.builder.SeedDeclarations(); err != nil {
-		return nil, err
+		if !recovering {
+			return nil, err
+		}
+		problems = append(problems, err)
 	}
-	p := &Program{Target: target, World: world, Registry: registry, Intrinsics: map[string]*types.Type{}, Connections: map[string]ConnectionPolicy{}}
+	p = &Program{Target: target, World: world, Registry: registry, Intrinsics: map[string]*types.Type{}, Connections: map[string]ConnectionPolicy{}}
 	endSeed()
 	endCatalogue := editortrace.Stage("check-catalogue-contracts")
 	// Resolve maintained contracts from the catalogue in a private canonical scope.
@@ -487,6 +587,9 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 	}
 	sort.Slice(files, func(i, j int) bool { return files[i].Source.ID < files[j].Source.ID })
 	for _, file := range files {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
 		// Wrapper gathering may populate an origin file's cache early;
 		// never drop entries another file already computed.
 		if c.annotations[file] == nil {
@@ -498,117 +601,147 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 			}
 		}
 		for _, declaration := range file.Source.Syntax.Declarations {
-			switch d := declaration.(type) {
-			case *syntax.FetchDecl, *syntax.LLMDecl, *syntax.JudgeDecl, *syntax.QuestionDecl, *syntax.ChoiceArmDecl:
-				native, e := c.gatherNative(file, declaration)
-				if e != nil {
-					return nil, e
-				}
-				p.Natives = append(p.Natives, native)
-			case *syntax.WrapDecl:
-				native, e := c.gatherWrapper(file, d)
-				if e != nil {
-					return nil, e
-				}
-				p.Natives = append(p.Natives, native)
-			case *syntax.ConnectionDecl:
-				policy, e := ConnectionDeclaration(d)
-				if e != nil {
-					return nil, e
-				}
-				p.Connections[file.Package.Scope.Symbols[d.Name.Text].ID] = policy
-			case *syntax.FunctionDecl:
-				if err = validateAssertionNames(d); err != nil {
-					return nil, err
-				}
-				symbol := file.Package.Scope.Symbols[d.Name.Text]
-				if d.Name.Text == "main" && file.Source.Package.Owner == graph.Root {
-					if p.Entry != nil {
-						return nil, fmt.Errorf("multiple root main declarations")
-					}
-					if err := checkTargetEntry(target, d); err != nil {
-						if !requireEntry && checkTargetEntry(otherCheckTarget(target), d) == nil {
-							// Assertion-only staging never runs the
-							// entry, so it accepts either valid target
-							// shape while still rejecting malformed mains.
-						} else {
-							return nil, err
-						}
-					}
-					p.Entry = &ProgramFunction{Symbol: symbol}
-				}
-				if len(d.Parameters) != 0 {
-					continue
-				} // I46 owns reachable concrete specialization.
-				signature := &syntax.CallableType{Result: d.Result, Errors: d.Errors}
-				var fields []syntax.Field
-				if d.Receiver != nil {
-					fields = append(fields, *d.Receiver)
-				}
-				for i, input := range d.Inputs {
-					field := input.Field
-					if input.Variadic {
-						if i != len(d.Inputs)-1 {
-							return nil, fmt.Errorf("variadic input must be last")
-						}
-						field.Type = &syntax.ArrayType{Element: field.Type}
-						c.variadic[symbol.ID] = true
-					}
-					fields = append(fields, field)
-				}
-				for _, field := range fields {
-					signature.Inputs = append(signature.Inputs, field.Type)
-					typ, e := c.gather(file, field.Type)
+			if !world.Checkable(declaration) {
+				continue
+			}
+			gatherErr := func() error {
+				switch d := declaration.(type) {
+				case *syntax.FetchDecl, *syntax.LLMDecl, *syntax.JudgeDecl, *syntax.QuestionDecl, *syntax.ChoiceArmDecl:
+					native, e := c.gatherNative(file, declaration)
 					if e != nil {
-						return nil, e
+						return e
 					}
-					c.bindings[symbol.ID+"/input/"+field.Name.Text] = typ
-				}
-				typ, e := c.gather(file, signature)
-				if e != nil {
-					return nil, e
-				}
-				c.bindings[symbol.ID] = typ
-				if err = c.gatherBody(file, reflect.ValueOf(d.Assertions)); err != nil {
-					return nil, err
-				}
-				if err = c.gatherBody(file, reflect.ValueOf(d.Body)); err != nil {
-					return nil, err
-				}
-				fn := &ProgramFunction{Symbol: symbol}
-				if p.Entry != nil && p.Entry.Symbol == symbol {
-					fn = p.Entry
-				}
-				p.Functions = append(p.Functions, fn)
-			case *syntax.ValueDecl:
-				typ, e := c.gather(file, d.Binding.Type)
-				if e != nil {
-					return nil, e
-				}
-				c.bindings[file.Package.Scope.Symbols[d.Binding.Name.Text].ID] = typ
-				if err = c.gatherBody(file, reflect.ValueOf(d.Binding.Value)); err != nil {
-					return nil, err
-				}
-			case *syntax.ActionDecl:
-				if d.Captures != nil {
-					if _, e := c.gather(file, d.Captures); e != nil {
-						return nil, e
+					p.Natives = append(p.Natives, native)
+				case *syntax.WrapDecl:
+					native, e := c.gatherWrapper(file, d)
+					if e != nil {
+						return e
+					}
+					p.Natives = append(p.Natives, native)
+				case *syntax.ConnectionDecl:
+					policy, e := ConnectionDeclaration(file.Source.Syntax.Source, d)
+					if e != nil {
+						return e
+					}
+					p.Connections[file.Package.Scope.Symbols[d.Name.Text].ID] = policy
+				case *syntax.FunctionDecl:
+					if err = validateAssertionNames(file, d); err != nil {
+						if !recovering {
+							return err
+						}
+						problems = append(problems, err)
+					}
+					symbol := world.Declarations[d]
+					if !world.Ambiguous[d] && d.Name.Text == "main" && file.Source.Package.Owner == graph.Root {
+						if p.Entry != nil {
+							return fmt.Errorf("multiple root main declarations")
+						}
+						if err := checkTargetEntry(target, d); err != nil {
+							if !requireEntry && checkTargetEntry(otherCheckTarget(target), d) == nil {
+								// Assertion-only staging never runs the
+								// entry, so it accepts either valid target
+								// shape while still rejecting malformed mains.
+							} else {
+								return err
+							}
+						}
+						p.Entry = &ProgramFunction{Symbol: symbol}
+					}
+					if len(d.Parameters) != 0 {
+						return nil
+					} // I46 owns reachable concrete specialization.
+					signature := &syntax.CallableType{Result: d.Result, Errors: d.Errors}
+					var fields []syntax.Field
+					if d.Receiver != nil {
+						fields = append(fields, *d.Receiver)
+					}
+					for i, input := range d.Inputs {
+						field := input.Field
+						if input.Variadic {
+							if i != len(d.Inputs)-1 {
+								return fmt.Errorf("variadic input must be last")
+							}
+							field.Type = &syntax.ArrayType{Element: field.Type}
+							c.variadic[symbol.ID] = true
+						}
+						fields = append(fields, field)
+					}
+					for _, field := range fields {
+						signature.Inputs = append(signature.Inputs, field.Type)
+						typ, e := c.gather(file, field.Type)
+						if e != nil {
+							return e
+						}
+						c.bindings[symbol.ID+"/input/"+field.Name.Text] = typ
+					}
+					typ, e := c.gather(file, signature)
+					if e != nil {
+						return e
+					}
+					c.bindings[symbol.ID] = typ
+					fn := &ProgramFunction{Symbol: symbol}
+					if p.Entry != nil && p.Entry.Symbol == symbol {
+						fn = p.Entry
+					}
+					// Header evidence survives an independently invalid body.
+					p.Functions = append(p.Functions, fn)
+					for _, body := range []any{d.Assertions, d.Body} {
+						if bodyGatherErr := c.gatherBodyMode(file, reflect.ValueOf(body), recovering); bodyGatherErr != nil {
+							if !recovering {
+								return bodyGatherErr
+							}
+							bodyGatherErr = source.Locate(file.Source.Path, d.DeclSpan(), bodyGatherErr)
+							problems = append(problems, bodyGatherErr)
+							world.Invalid[d] = errors.Join(world.Invalid[d], bodyGatherErr)
+						}
+					}
+				case *syntax.ValueDecl:
+					typ, e := c.gather(file, d.Binding.Type)
+					if e != nil {
+						return e
+					}
+					c.bindings[file.Package.Scope.Symbols[d.Binding.Name.Text].ID] = typ
+					if err = c.gatherBody(file, reflect.ValueOf(d.Binding.Value)); err != nil {
+						return err
+					}
+				case *syntax.ActionDecl:
+					if d.Captures != nil {
+						if _, e := c.gather(file, d.Captures); e != nil {
+							return e
+						}
+					}
+					if d.Input != nil && d.Input.Type != nil {
+						if _, e := c.gather(file, d.Input.Type); e != nil {
+							return e
+						}
+					}
+					if _, e := c.gather(file, d.Returns); e != nil {
+						return e
+					}
+					for _, kase := range d.Cases {
+						if _, e := c.gather(file, &syntax.NamedType{Span: kase.Span, Name: kase.Leaf}); e != nil {
+							return e
+						}
 					}
 				}
-				if d.Input != nil && d.Input.Type != nil {
-					if _, e := c.gather(file, d.Input.Type); e != nil {
-						return nil, e
+				return nil
+			}()
+			if gatherErr != nil {
+				gatherErr = source.Locate(file.Source.Path, declaration.DeclSpan(), gatherErr)
+				if !recovering {
+					return nil, gatherErr
+				}
+				world.Invalid[declaration] = gatherErr
+				for _, symbol := range file.Package.Scope.Symbols {
+					if symbol.Declaration == declaration {
+						symbol.Invalid = gatherErr
 					}
 				}
-				if _, e := c.gather(file, d.Returns); e != nil {
-					return nil, e
-				}
-				for _, kase := range d.Cases {
-					if _, e := c.gather(file, &syntax.NamedType{Span: kase.Span, Name: kase.Leaf}); e != nil {
-						return nil, e
-					}
+				if !source.IsBlocked(gatherErr) {
+					problems = append(problems, gatherErr)
 				}
 			}
+
 		}
 	}
 	if requireEntry && p.Entry == nil {
@@ -619,9 +752,45 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 	}
 	endGather()
 	endModel := editortrace.Stage("check-model")
-	p.Model, err = c.builder.Finish()
+	if recovering {
+		p.Model, err = c.builder.FinishRecovering()
+	} else {
+		p.Model, err = c.builder.Finish()
+	}
 	if err != nil {
-		return nil, err
+		if !recovering {
+			return nil, err
+		}
+		problems = append(problems, err)
+	}
+	if p.Model == nil {
+		return nil, fmt.Errorf("type model unavailable")
+	}
+	if recovering {
+		valid := p.Functions[:0]
+		for _, fn := range p.Functions {
+			if types.Equal(c.bindings[fn.Symbol.ID], c.bindings[fn.Symbol.ID]) {
+				valid = append(valid, fn)
+			} else {
+				world.Invalid[fn.Symbol.Declaration] = &source.BlockedError{Dependency: "type:" + fn.Symbol.ID}
+			}
+		}
+		p.Functions = valid
+		for _, native := range p.Natives {
+			if native.Signature != nil && !types.Equal(native.Signature, native.Signature) {
+				native.Symbol.Invalid = &source.BlockedError{Dependency: "type:" + native.Symbol.ID}
+				world.Invalid[native.Symbol.Declaration] = native.Symbol.Invalid
+			}
+		}
+	}
+	for _, fn := range p.Functions {
+		if world.Ambiguous[fn.Symbol.Declaration] {
+			continue
+		}
+		signature := c.bindings[fn.Identity()]
+		if types.Equal(signature, signature) && signature.Kind() == types.Callable {
+			fn.Signature = signature
+		}
 	}
 	c.program = p
 	c.instances = map[string]*ProgramFunction{}
@@ -630,33 +799,68 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 		return nil, err
 	}
 	if err = c.checkNativeContracts(p); err != nil {
-		return nil, err
+		if !recovering {
+			return nil, err
+		}
+		problems = append(problems, err)
 	}
 	p.Codecs = c.codecs
 	for id := range c.codecs {
 		if err = c.finishCodec(id); err != nil {
+			special := c.codecs[id]
+			if special != nil {
+				special.Invalid = err
+				err = source.Locate(special.SiteFile, special.SiteSpan, err)
+			}
 			if special := c.codecs[id]; special != nil && special.SiteFile != "" {
 				err = source.Locate(special.SiteFile, special.SiteSpan, err)
 			}
-			return nil, err
+			if !recovering {
+				return nil, err
+			}
+			problems = append(problems, err)
 		}
 	}
 	p.HTTPs = c.https
 	for id := range c.https {
 		if err = c.finishHTTP(id); err != nil {
-			return nil, err
+			special := c.https[id]
+			if special != nil {
+				special.Invalid = err
+				err = source.Locate(special.SiteFile, special.SiteSpan, err)
+			}
+			if !recovering {
+				return nil, err
+			}
+			problems = append(problems, err)
 		}
 	}
 	p.Forms = c.forms
 	for id := range c.forms {
 		if err = c.finishForm(id); err != nil {
-			return nil, err
+			special := c.forms[id]
+			if special != nil {
+				special.Invalid = err
+				err = source.Locate(special.SiteFile, special.SiteSpan, err)
+			}
+			if !recovering {
+				return nil, err
+			}
+			problems = append(problems, err)
 		}
 	}
 	p.Fetches = c.fetches
 	for id := range c.fetches {
 		if err = c.finishFetch(id); err != nil {
-			return nil, err
+			special := c.fetches[id]
+			if special != nil {
+				special.Invalid = err
+				err = source.Locate(special.SiteFile, special.SiteSpan, err)
+			}
+			if !recovering {
+				return nil, err
+			}
+			problems = append(problems, err)
 		}
 	}
 	endModel()
@@ -664,6 +868,9 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 	callables := map[string]CallableDeclaration{}
 	c.callables = callables
 	for _, native := range p.Natives {
+		if native.Symbol.Invalid != nil {
+			continue
+		}
 		// Wrapper descriptors publish with their calculated contracts.
 		if native.Symbol.Kind == resolve.Wrapper {
 			continue
@@ -703,16 +910,28 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 	// the type graph is sealed. Declarations are handler-free, so no
 	// executable import is needed to check or export them.
 	if err = c.checkActions(files); err != nil {
-		return nil, err
+		if !recovering {
+			return nil, err
+		}
+		problems = append(problems, err)
 	}
 	if err = c.checkWrapperPolicies(p, callables); err != nil {
-		return nil, err
+		if !recovering {
+			return nil, err
+		}
+		problems = append(problems, err)
 	}
 	if err = c.checkTemplates(p, callables); err != nil {
-		return nil, err
+		if !recovering {
+			return nil, err
+		}
+		problems = append(problems, err)
 	}
 	if err = c.checkNativeBodies(p, callables); err != nil {
-		return nil, err
+		if !recovering {
+			return nil, err
+		}
+		problems = append(problems, err)
 	}
 	// Exported-generic declaration proofs resolve declaration-only symbolic
 	// Parameter graphs. They run in an isolated fork that is discarded
@@ -720,69 +939,120 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 	// concrete. Every specializer use is dynamic through c.specializer, so
 	// the swap covers the proof's signature, body and region checks.
 	production := c.specializer
+	rollbackProof := c.unitCheckpoint()
 	c.specializer = production.Fork()
 	exportedErr := c.checkExportedGenerics(files)
+	rollbackProof()
 	c.specializer = production
 	if exportedErr != nil {
-		return nil, exportedErr
+		if !recovering {
+			return nil, exportedErr
+		}
+		problems = append(problems, exportedErr)
 	}
 	if err = c.genericAssertions(files); err != nil {
-		return nil, err
+		if !recovering {
+			return nil, err
+		}
+		problems = append(problems, err)
 	}
 	for index := 0; index < len(p.Functions); index++ {
-		fn := p.Functions[index]
-		c.current = fn
-		symbol := fn.Symbol
-		file := world.Files[symbol.Source]
-		d := symbol.Declaration.(*syntax.FunctionDecl)
-		if fn.Instance != "" {
-			if err = c.gatherBody(file, reflect.ValueOf(d.Body)); err != nil {
-				return nil, fmt.Errorf("specialization %s requested at %s: %w", fn.Identity(), strings.Join(fn.Requests, "; "), err)
-			}
+		if err := ctx.Err(); err != nil {
+			return nil, err
 		}
-		context, e := c.functionContext(fn)
-		if e != nil {
-			return nil, e
-		}
-		if fn.Instance == "" {
-			assertions, e := c.assertions(file, fn, context)
-			if e != nil {
-				return nil, e
-			}
-			p.Assertions = append(p.Assertions, assertions...)
-		}
-		fn.Region, err = CheckRegion(context, d.Body)
-		if err != nil {
+		rollback := c.unitCheckpoint()
+		bodyErr := func() error {
+			fn := p.Functions[index]
+			c.current = fn
+			symbol := fn.Symbol
+			file := world.Files[symbol.Source]
+			d := symbol.Declaration.(*syntax.FunctionDecl)
 			if fn.Instance != "" {
-				return nil, fmt.Errorf("concrete function %s (generic source %s, requested at %s): %w", fn.Identity(), symbol.Source.Syntax.Source.Name(), strings.Join(fn.Requests, "; "), err)
+				if err = c.gatherBody(file, reflect.ValueOf(d.Body)); err != nil {
+					return fmt.Errorf("specialization %s requested at %s: %w", fn.Identity(), strings.Join(fn.Requests, "; "), err)
+				}
 			}
-			return nil, fmt.Errorf("concrete function %s: %w", fn.Identity(), err)
+			context, e := c.functionContext(fn)
+			if e != nil {
+				return e
+			}
+			context.Recover = recovering
+			if fn.Instance == "" {
+				assertions, e := c.assertions(file, fn, context)
+				if e != nil {
+					if !recovering {
+						return e
+					}
+					world.Invalid[d] = errors.Join(world.Invalid[d], e)
+					problems = append(problems, source.Locate(file.Source.Path, d.Name.Span, e))
+				}
+				p.Assertions = append(p.Assertions, assertions...)
+			}
+			fn.Region, err = CheckRegion(context, d.Body)
+			if err != nil {
+				if fn.Instance != "" {
+					return fmt.Errorf("concrete function %s (generic source %s, requested at %s): %w", fn.Identity(), symbol.Source.Syntax.Source.Name(), strings.Join(fn.Requests, "; "), err)
+				}
+				return fmt.Errorf("concrete function %s: %w", fn.Identity(), err)
+			}
+			return nil
+		}()
+		if world.Ambiguous[p.Functions[index].Symbol.Declaration] {
+			rollback()
+			p.Functions[index].Region = nil
+		} else if bodyErr != nil {
+			rollback()
 		}
+		if bodyErr != nil {
+			fn := p.Functions[index]
+			bodyErr = source.Locate(fn.Symbol.Source.Path, fn.Symbol.Declaration.DeclSpan(), bodyErr)
+			if !recovering {
+				return nil, bodyErr
+			}
+			problems = append(problems, bodyErr)
+			world.Invalid[fn.Symbol.Declaration] = errors.Join(world.Invalid[fn.Symbol.Declaration], bodyErr)
+		}
+
 	}
 	endBodies()
 	c.current = nil
 	if err = c.nativeAssertions(p, callables); err != nil {
-		return nil, err
+		if !recovering {
+			return nil, err
+		}
+		problems = append(problems, err)
 	}
 	var initial []InitialValue
 	for _, file := range files {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
 		for _, declaration := range file.Source.Syntax.Declarations {
 			if d, ok := declaration.(*syntax.ValueDecl); ok {
+				if world.Invalid[declaration] != nil {
+					continue
+				}
 				id := file.Package.Scope.Symbols[d.Binding.Name.Text].ID
 				initial = append(initial, InitialValue{Identity: id, QualifiedName: id, Source: file.Source.ID, Binding: d.Binding, Type: c.bindings[id], Checker: c.expressions(file, file.Scope)})
 			}
 		}
 	}
 	for _, native := range p.Natives {
+		if native.Symbol.Invalid != nil {
+			continue
+		}
 		if native.ArmDescription != nil {
 			file := c.world.Files[native.Symbol.Source]
 			d := native.Symbol.Declaration.(*syntax.ChoiceArmDecl)
 			initial = append(initial, InitialValue{Identity: native.Symbol.ID, QualifiedName: native.Symbol.ID, Source: file.Source.ID, Binding: syntax.Binding{Value: d.Description}, Type: c.bindings[native.Symbol.ID], Checker: c.expressions(file, file.Scope), ArmDescription: native.ArmDescription})
 		}
 	}
-	p.Initializers, err = Initialization(initial, nil)
+	p.Initializers, err = initialization(initial, nil, recovering)
 	if err != nil {
-		return nil, err
+		if !recovering {
+			return nil, err
+		}
+		problems = append(problems, err)
 	}
 	p.Model = c.specializer.Model()
 	for _, key := range projectKeys(graph) {
@@ -790,10 +1060,55 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 	}
 	p.SQL, err = CheckSQLDescriptors(graph, world, p.Model)
 	if err != nil {
-		return nil, err
+		if !recovering {
+			return nil, err
+		}
+		problems = append(problems, err)
 	}
-	if err = CheckSQLCallSites(p.SQLs, c.sqlSites, p.SQL); err != nil {
-		return nil, err
+	sites := c.sqlSites
+	for i := range sites {
+		site := &sites[i]
+		if owner := graph.Projects[site.Owner]; owner != nil {
+			site.DescriptorFile = filepath.Join(owner.Root, "can.project.json")
+			site.DescriptorSpans = map[string]source.Span{}
+			for _, field := range []string{"parameter_type", "row_type", "cardinality"} {
+				site.DescriptorSpans[field] = project.JSONFieldSpan(graph.Inputs[site.DescriptorFile], "sql", site.Name, field)
+			}
+		}
+	}
+	if recovering {
+		validSites := make([]SQLSiteRecord, 0, len(sites))
+		available := map[string]bool{}
+		for _, descriptor := range p.SQL {
+			available[descriptor.Owner+"\x00"+descriptor.Checked.Name] = true
+		}
+		for _, site := range sites {
+			owner := graph.Projects[site.Owner]
+			if owner != nil && !available[site.Owner+"\x00"+site.Name] {
+				_, declared := owner.Manifest.SQL[site.Name]
+				if declared || owner.Manifest.InvalidSQL[site.Name] != nil || owner.Manifest.Invalid["sql"] != nil {
+					continue
+				}
+			}
+			validSites = append(validSites, site)
+		}
+		sites = validSites
+	}
+	if err = CheckSQLCallSites(p.SQLs, sites, p.SQL); err != nil {
+		if !recovering {
+			return nil, err
+		}
+		problems = append(problems, err)
+	}
+	if recovering {
+		for _, file := range files {
+			for _, declaration := range file.Source.Syntax.Declarations {
+				if fn, ok := declaration.(*syntax.FunctionDecl); ok && len(fn.InvalidAssertions) != 0 {
+					world.Invalid[fn] = fmt.Errorf("invalid assertion syntax")
+				}
+			}
+		}
+		c.blockDependentRegions()
 	}
 	noteCyclicRelays(p, c.warn)
 	p.Warnings = c.warnings
@@ -820,10 +1135,10 @@ func (c *programChecker) functionContext(fn *ProgramFunction) (CompletionContext
 		return CompletionContext{}, e
 	}
 	owner := file.Source.Package.Owner
-	context := CompletionContext{Sites: indexLexicalSites(symbol.ID, d), Identity: fn.Identity(), Kind: ir.FunctionRegion, Package: file.Package.ID, File: file.Source.Syntax.Source, Scope: scope, Result: signature.Result(), Errors: bound, Registry: c.program.Registry, Expressions: c.expressions(file, scope), Variadic: c.variadic, Callables: c.callables, Raw: c.rawScope(file), Wrappers: wrapperPlans(c.program), Asset: func(name string) ir.AssetResolution {
+	context := CompletionContext{Checkpoint: c.unitCheckpoint, Sites: indexLexicalSites(symbol.ID, d), Identity: fn.Identity(), Kind: ir.FunctionRegion, Package: file.Package.ID, File: file.Source.Syntax.Source, Scope: scope, Result: signature.Result(), Errors: bound, Registry: c.program.Registry, Expressions: c.expressions(file, scope), Variadic: c.variadic, Callables: c.callables, Raw: c.rawScope(file), Wrappers: wrapperPlans(c.program), Asset: func(name string) ir.AssetResolution {
 		return resolveAssetName(c.world.Graph, owner, name)
-	}, SQLSite: func(key, name string) ir.SQLCallSite {
-		c.sqlSites = append(c.sqlSites, SQLSiteRecord{Key: key, Owner: owner.Key, Name: name})
+	}, SQLSite: func(key, name string, span source.Span) ir.SQLCallSite {
+		c.sqlSites = append(c.sqlSites, SQLSiteRecord{Key: key, Owner: owner.Key, Name: name, File: file.Source.Path, Span: span})
 		return ir.SQLCallSite{Owner: owner.Key, Name: name}
 	}, FormSite: func(operation, key, name string) (ir.FormActionSite, error) {
 		return c.formSite(file, operation, key, name)

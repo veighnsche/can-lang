@@ -41,20 +41,22 @@ func (p *parser) expression(minimum int) Expr {
 	start := p.peek().Span.Start
 	var left Expr
 	if p.at("-") || p.at("~") || p.word("not") {
-		op := p.take().Text
+		opTok := p.take()
+		op := opTok.Text
 		power := 12
 		if op == "not" {
 			power = 4
 		}
 		operand := p.expression(power)
-		left = &UnaryExpr{ExpressionLocation: p.location(start), Operator: op, Operand: operand}
+		left = &UnaryExpr{ExpressionLocation: p.location(start), Operator: op, OperatorSpan: opTok.Span, Operand: operand}
 	} else if p.word("call") {
 		left = p.callExpression()
 	} else if p.word("callable") {
-		p.take()
+		keyword := p.take()
 		callee := p.callee()
 		types := p.typeArguments()
-		left = &ReferenceExpr{ExpressionLocation: p.location(start), Callee: callee, Types: types, Bindings: p.withBindings()}
+		bindings := p.withBindings(callee, start)
+		left = &ReferenceExpr{ExpressionLocation: p.location(start), KeywordSpan: keyword.Span, Callee: callee, Types: types, Bindings: bindings}
 	} else {
 		left = p.primary(true)
 	}
@@ -69,10 +71,13 @@ func (p *parser) expressionTail(left Expr, minimum int) Expr {
 		if power == 0 || power < minimum {
 			break
 		}
-		op := p.take().Text
+		opTok := p.take()
+		op := opTok.Text
+		opSpan := opTok.Span
 		if op == "is" && p.word("not") {
-			p.take()
+			notTok := p.take()
 			op = "is not"
+			opSpan.End = notTok.Span.End
 		}
 		rightPower := power + 1
 		if op == "**" {
@@ -83,12 +88,13 @@ func (p *parser) expressionTail(left Expr, minimum int) Expr {
 			if chain, ok := left.(*ComparisonExpr); ok {
 				chain.Operands = append(chain.Operands, right)
 				chain.Operators = append(chain.Operators, op)
+				chain.OperatorSpans = append(chain.OperatorSpans, opSpan)
 				chain.Span = p.span(start)
 			} else {
-				left = &ComparisonExpr{ExpressionLocation: p.location(start), Operands: []Expr{left, right}, Operators: []string{op}}
+				left = &ComparisonExpr{ExpressionLocation: p.location(start), Operands: []Expr{left, right}, Operators: []string{op}, OperatorSpans: []source.Span{opSpan}}
 			}
 		} else {
-			left = &BinaryExpr{ExpressionLocation: p.location(start), Operator: op, Left: left, Right: right}
+			left = &BinaryExpr{ExpressionLocation: p.location(start), Operator: op, OperatorSpan: opSpan, Left: left, Right: right}
 		}
 	}
 	if minimum <= 1 && p.word("with") {
@@ -137,7 +143,7 @@ func (p *parser) primary(constructors bool) Expr {
 			types := p.constructorTypes()
 			if p.at("(") || p.at("{") {
 				braces := p.at("{")
-				args := p.constructorArguments(braces)
+				args := p.constructorArguments(name, braces)
 				for _, argument := range args {
 					if argument.Group != nil {
 						p.fail("a constructor cannot receive a state group")
@@ -225,28 +231,59 @@ func (p *parser) argumentList(end Kind) []Argument {
 	}
 }
 
-func (p *parser) arguments() []Argument {
-	p.expect("(")
-	args := p.invocationArguments(")")
-	p.expect(")")
-	return args
+func (p *parser) arguments() []Argument { return p.argumentsFor(nil) }
+func (p *parser) argumentsFor(callee Expr) (args []Argument) {
+	return p.argumentsForKind("call", callee, nil, QualifiedName{}, "(", ")")
 }
 
-func (p *parser) constructorArguments(braces bool) []Argument {
-	if !braces {
-		return p.arguments()
+func (p *parser) argumentsForKind(kind string, callee, receiver Expr, name QualifiedName, open, close Kind) (args []Argument) {
+	context := &IncompleteContext{Kind: kind, Callee: callee, Receiver: receiver, Name: name, Open: p.peek().Span}
+	if callee != nil {
+		context.Span.Start = callee.ExprSpan().Start
+	} else {
+		context.Span.Start = p.peek().Span.Start
 	}
-	p.expect("{")
-	args := p.invocationArguments("}")
-	p.expect("}")
+	p.argumentContexts = append(p.argumentContexts, context)
+	defer func() {
+		p.argumentContexts = p.argumentContexts[:len(p.argumentContexts)-1]
+		if failure := recover(); failure != nil {
+			context.Span.End = p.peek().Span.Start
+			if p.recovering {
+				p.incomplete = append(p.incomplete, *context)
+			}
+			panic(failure)
+		}
+	}()
+	p.expect(open)
+	args = p.invocationArguments(close)
+	p.expect(close)
 	return args
 }
 
-func (p *parser) invocationArguments(end Kind) []Argument {
-	var args []Argument
+func (p *parser) constructorArguments(name QualifiedName, braces bool) []Argument {
+	callee := &NameExpr{ExpressionLocation: ExpressionLocation{Span: name.Span}, Name: name}
+	if !braces {
+		return p.argumentsForKind("constructor", callee, nil, name, "(", ")")
+	}
+	return p.argumentsForKind("constructor", callee, nil, name, "{", "}")
+}
+
+func (p *parser) invocationArguments(end Kind) (args []Argument) {
+	var context *IncompleteContext
+	if len(p.argumentContexts) > 0 {
+		context = p.argumentContexts[len(p.argumentContexts)-1]
+	}
+	defer func() {
+		if context != nil {
+			context.Arguments = append([]Argument(nil), args...)
+		}
+	}()
 	if !p.at(end) {
 		for {
 			start := p.peek().Span.Start
+			if context != nil {
+				context.ArgumentStarts = append(context.ArgumentStarts, start)
+			}
 			spread := p.at("...")
 			if spread {
 				p.take()
@@ -296,7 +333,10 @@ func (p *parser) postfix(left Expr) Expr {
 	for {
 		switch {
 		case p.at("."):
-			p.take()
+			dot := p.take()
+			if !p.at(Name) && p.recovering {
+				p.incomplete = append(p.incomplete, IncompleteContext{Kind: "member", Callee: left, Open: dot.Span, Span: source.Span{Start: start, End: p.peek().Span.Start}})
+			}
 			field := p.expect(Name)
 			left = &FieldExpr{ExpressionLocation: p.location(start), Receiver: left, Field: field}
 		case p.at("["):
@@ -345,7 +385,7 @@ func (p *parser) lookahead(offset int) (Token, bool) {
 // stays record-update syntax for the expression tail to parse. A comma
 // continues the bindings only when `Name =` follows it, so a pinned
 // callable stays a valid element of an outer comma list.
-func (p *parser) withBindings() []WithBinding {
+func (p *parser) withBindings(callee Expr, referenceStart int) []WithBinding {
 	if !p.word("with") {
 		return nil
 	}
@@ -359,8 +399,22 @@ func (p *parser) withBindings() []WithBinding {
 	for {
 		start := p.peek().Span.Start
 		param := p.expect(Name)
-		p.expect("=")
-		value := p.expression(2)
+		equals := p.expect("=")
+		var value Expr
+		func() {
+			defer func() {
+				if failure := recover(); failure != nil {
+					if p.recovering {
+						p.incomplete = append(p.incomplete, IncompleteContext{
+							Kind: "pin", Span: source.Span{Start: referenceStart, End: p.peek().Span.Start},
+							Open: equals.Span, Callee: callee, Name: QualifiedName{Name: param.Text, Span: param.Span},
+						})
+					}
+					panic(failure)
+				}
+			}()
+			value = p.expression(2)
+		}()
 		bindings = append(bindings, WithBinding{Span: p.span(start), Name: param, Value: value})
 		if !p.at(",") {
 			return bindings
@@ -382,7 +436,7 @@ func (p *parser) callExpression() Expr {
 func (p *parser) invocationExpression(start int) *CallExpr {
 	callee := p.callee()
 	types := p.typeArguments()
-	args := p.arguments()
+	args := p.argumentsFor(callee)
 	invocation := Invocation{Span: p.span(callee.ExprSpan().Start), Callee: callee, Types: types, Arguments: args}
 	var methods []MethodInvocation
 	for p.at(".") {
@@ -396,7 +450,9 @@ func (p *parser) invocationExpression(start int) *CallExpr {
 			*p = saved
 			break
 		}
-		args := p.arguments()
+		methodName := QualifiedName{Name: name.Text, Span: name.Span}
+		methodCallee := &NameExpr{ExpressionLocation: ExpressionLocation{Span: name.Span}, Name: methodName}
+		args := p.argumentsForKind("method", methodCallee, invocation.Callee, methodName, "(", ")")
 		methods = append(methods, MethodInvocation{Span: p.span(name.Span.Start), Name: name, Types: types, Arguments: args})
 	}
 	p.singleLine(start, p.last.Span.End)

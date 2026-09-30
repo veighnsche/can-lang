@@ -1,6 +1,7 @@
 package resolve
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/veighnsche/can-lang/compiler/internal/source"
@@ -9,46 +10,48 @@ import (
 
 func (w *World) nativeSignature(file *File, scope *Scope, symbol *Symbol, declaration syntax.Declaration) error {
 	header := syntax.NativeSignature(declaration)
+	var problems []error
 	connection, err := file.Lookup(scope, header.Connection, ConnectionUse)
 	if err != nil {
-		return err
-	}
-	if symbol.Public && !connection.Public {
-		return fmt.Errorf("exported signature exposes private connection %s", connection.ID)
+		problems = append(problems, located(file.Source, header.Connection.Span, err))
+	} else if symbol.Public && !connection.Public {
+		problems = append(problems, located(file.Source, header.Connection.Span, fmt.Errorf("exported signature exposes private connection %s", connection.ID)))
 	}
 	if err := file.checkType(scope, header.Result, symbol.Public, TypeUse); err != nil {
-		return err
+		problems = append(problems, err)
 	}
 	if err := file.checkBound(scope, header.Errors, symbol.Public); err != nil {
-		return err
+		problems = append(problems, err)
 	}
 	if q, ok := declaration.(*syntax.QuestionDecl); ok && q.RecordName != nil {
 		generated := file.Package.Scope.Symbols[q.RecordName.Text]
-		if symbol.Public && !generated.Public {
-			return fmt.Errorf("exported question cannot hide its generated record %s", q.RecordName.Text)
-		}
-		if err := w.signature(file, generated.Declaration); err != nil {
-			return err
+		if generated != nil {
+			if symbol.Public && !generated.Public {
+				problems = append(problems, located(file.Source, q.RecordName.Span, fmt.Errorf("exported question cannot hide its generated record %s", q.RecordName.Text)))
+			}
+			if err := w.signature(file, generated.Declaration); err != nil {
+				problems = append(problems, err)
+			}
 		}
 	}
-	add := func(field syntax.Field) error {
+	add := func(field syntax.Field) {
 		if err := file.checkType(scope, field.Type, symbol.Public, TypeUse); err != nil {
-			return err
+			problems = append(problems, err)
 		}
 		_, callable := field.Type.(*syntax.CallableType)
-		return scope.Define(&Symbol{Name: field.Name.Text, ID: symbol.ID + "/input/" + field.Name.Text, Kind: Value, Type: field.Type, Callable: callable})
+		if err := scope.Define(&Symbol{Name: field.Name.Text, ID: symbol.ID + "/input/" + field.Name.Text, Kind: Value, Type: field.Type, Callable: callable}); err != nil {
+			problems = append(problems, located(file.Source, field.Name.Span, err))
+		}
 	}
 	for i, input := range header.Inputs {
 		if input.Variadic && i != len(header.Inputs)-1 {
-			return fmt.Errorf("variadic native input must be last")
+			problems = append(problems, located(file.Source, input.Name.Span, fmt.Errorf("variadic native input must be last")))
 		}
 		field := input.Field
 		if input.Variadic {
-			field.Type = &syntax.ArrayType{Element: field.Type}
+			field.Type = &syntax.ArrayType{Span: field.Type.TypeSpan(), Element: field.Type}
 		}
-		if err := add(field); err != nil {
-			return err
-		}
+		add(field)
 	}
 	var state []syntax.Field
 	switch d := declaration.(type) {
@@ -59,17 +62,15 @@ func (w *World) nativeSignature(file *File, scope *Scope, symbol *Symbol, declar
 	case *syntax.QuestionDecl:
 		for _, binder := range d.Binders {
 			if err := scope.Define(&Symbol{Name: binder.Name.Text, ID: symbol.ID + "/metadata/" + binder.Name.Text, Kind: Value, Type: &syntax.NamedType{Name: syntax.QualifiedName{Name: "float"}}}); err != nil {
-				return err
+				problems = append(problems, located(file.Source, binder.Name.Span, err))
 			}
 		}
 	}
 	for _, field := range state {
-		if err := add(field); err != nil {
-			return err
-		}
+		add(field)
 	}
 	w.NativeScopes[declaration] = scope
-	return nil
+	return errors.Join(problems...)
 }
 
 // WrapperOrigin resolves the immediate base and the original fetch/judge

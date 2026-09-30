@@ -374,3 +374,36 @@ func TestContainedSourceSymlinkPreservesCanonicalPackageOwner(t *testing.T) {
 		t.Fatal("canonical symlink basename changed a logical source identity")
 	}
 }
+
+func TestRecoveryLockDespiteSourceSyntax(t *testing.T) {
+	root := t.TempDir()
+	projectFixture(t, root)
+	writeFixture(t, root, "src/a/bad.can", "package alpha\n    provides []\n    uses []\nfn int broken(\n")
+	writeFixture(t, root, "vendor/src/shared.can", sourceText("gamma", "record newer\n"))
+	graph, err := Load(root)
+	if graph == nil || err == nil || !strings.Contains(err.Error(), "stale dependency digest") {
+		t.Fatalf("independent stale lock hidden: %v", err)
+	}
+	if len(graph.Errors) < 2 {
+		t.Fatalf("missing syntax and lock findings: %v", graph.Errors)
+	}
+}
+func TestRecoverySourceWalkContinuesAfterBrokenPath(t *testing.T) {
+	root := t.TempDir()
+	writeFixture(t, root, "can.project.json", `{"source_root":"src","error_registry":"can.errors.json"}`)
+	writeFixture(t, root, "can.errors.json", `{"active":[],"retired":[]}`)
+	writeFixture(t, root, "src/b.can", "package app\n    provides []\n    uses []\nfn int broken(\n")
+	if err := os.Symlink("absent.can", filepath.Join(root, "src/a.can")); err != nil {
+		t.Fatal(err)
+	}
+	graph, err := Load(root)
+	if err == nil || graph == nil || len(graph.Root.Sources) != 1 || len(graph.Errors) < 2 {
+		t.Fatalf("sibling hidden: %v %+v", err, graph)
+	}
+	if !strings.Contains(err.Error(), "a.can") {
+		t.Fatalf("path provenance absent: %v", err)
+	}
+	if !graph.Root.SourceIncomplete {
+		t.Fatal("incomplete inventory treated as complete")
+	}
+}

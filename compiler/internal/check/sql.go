@@ -1,7 +1,10 @@
 package check
 
 import (
+	"errors"
 	"fmt"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
+	"path/filepath"
 	"sort"
 
 	"github.com/veighnsche/can-lang/compiler/internal/catalogue"
@@ -50,6 +53,7 @@ func CheckSQLDescriptors(graph *project.Graph, world *resolve.World, model *type
 		projects[key] = p
 	}
 	var out []ir.SQLDescriptor
+	var problems []error
 	for _, key := range projectKeys(graph) {
 		names := make([]string, 0, len(graph.Projects[key].Manifest.SQL))
 		for name := range graph.Projects[key].Manifest.SQL {
@@ -60,12 +64,29 @@ func CheckSQLDescriptors(graph *project.Graph, world *resolve.World, model *type
 			manifest := graph.Projects[key].Manifest.SQL[name]
 			checked, err := checkSQLDescriptor(byDeclaration, world, projects, key, name, manifest)
 			if err != nil {
-				return nil, err
+				path := filepath.Join(graph.Projects[key].Root, "can.project.json")
+				var locate func(error)
+				locate = func(err error) {
+					if joined, ok := err.(interface{ Unwrap() []error }); ok {
+						for _, child := range joined.Unwrap() {
+							locate(child)
+						}
+						return
+					}
+					fields := []string{"sql", name}
+					var fieldError *sqlDescriptorError
+					if errors.As(err, &fieldError) {
+						fields = append(fields, fieldError.Field)
+					}
+					problems = append(problems, source.LocateCode(path, project.JSONFieldSpan(graph.Inputs[path], fields...), "CAN-CHECK-SQL-DESCRIPTOR", err))
+				}
+				locate(err)
+				continue
 			}
 			out = append(out, checked)
 		}
 	}
-	return out, nil
+	return out, errors.Join(problems...)
 }
 
 // sqlPoolQueryOperation admits the four I35 pool query operations for
@@ -109,6 +130,7 @@ func sqlOperation(identity string) *catalogue.Operation {
 // P/R records are the descriptor's own parameter/row records, and the
 // operation matches the descriptor cardinality.
 func CheckSQLCallSites(sqls map[string]*SQLSpecialization, sites []SQLSiteRecord, descriptors []ir.SQLDescriptor) error {
+	var problems []error
 	byOwner := map[string]map[string]ir.SQLDescriptor{}
 	for _, descriptor := range descriptors {
 		owners := byOwner[descriptor.Owner]
@@ -119,34 +141,49 @@ func CheckSQLCallSites(sqls map[string]*SQLSpecialization, sites []SQLSiteRecord
 		owners[descriptor.Checked.Name] = descriptor
 	}
 	for _, site := range sites {
-		special := sqls[site.Key]
-		if special == nil {
-			return fmt.Errorf("sql query site %s/%s lacks a checked specialization", site.Owner, site.Name)
+		field := ""
+		err := func() error {
+			special := sqls[site.Key]
+			if special == nil {
+				return fmt.Errorf("sql query site %s/%s lacks a checked specialization", site.Owner, site.Name)
+			}
+			descriptor, ok := byOwner[site.Owner][site.Name]
+			if !ok {
+				return fmt.Errorf("sql query site %s/%s names an undeclared descriptor", site.Owner, site.Name)
+			}
+			if special.P.Identity() != descriptor.ParamType {
+				field = "parameter_type"
+				return fmt.Errorf("sql query site %s/%s binds parameters %s, descriptor wants %s", site.Owner, site.Name, special.P.Identity(), descriptor.ParamType)
+			}
+			want := ""
+			switch special.Operation {
+			case sqlQueryOne, sqlTransactionQueryOne:
+				want = "one"
+			case sqlQueryOptional, sqlTransactionQueryOption:
+				want = "optional"
+			case sqlQueryRows, sqlTransactionQueryRows:
+				want = "many"
+			case sqlExecute, sqlTransactionExecute:
+				want = "execute"
+			}
+			if descriptor.Checked.Cardinality != want {
+				field = "cardinality"
+				return fmt.Errorf("sql query site %s/%s needs cardinality %s, descriptor has %s", site.Owner, site.Name, want, descriptor.Checked.Cardinality)
+			}
+			if special.Operation != sqlExecute && special.Operation != sqlTransactionExecute && special.R.Identity() != descriptor.RowType {
+				field = "row_type"
+				return fmt.Errorf("sql query site %s/%s binds rows %s, descriptor wants %s", site.Owner, site.Name, special.R.Identity(), descriptor.RowType)
+			}
+			return nil
+		}()
+		if err != nil {
+			err = source.LocateCode(site.File, site.Span, "CAN-CHECK-SQL-SITE", err)
+			if field != "" && site.DescriptorFile != "" {
+				err = source.Relate(site.DescriptorFile, site.DescriptorSpans[field], "descriptor "+field+" declared here", err)
+			}
+			problems = append(problems, err)
 		}
-		descriptor, ok := byOwner[site.Owner][site.Name]
-		if !ok {
-			return fmt.Errorf("sql query site %s/%s names an undeclared descriptor", site.Owner, site.Name)
-		}
-		if special.P.Identity() != descriptor.ParamType {
-			return fmt.Errorf("sql query site %s/%s binds parameters %s, descriptor wants %s", site.Owner, site.Name, special.P.Identity(), descriptor.ParamType)
-		}
-		want := ""
-		switch special.Operation {
-		case sqlQueryOne, sqlTransactionQueryOne:
-			want = "one"
-		case sqlQueryOptional, sqlTransactionQueryOption:
-			want = "optional"
-		case sqlQueryRows, sqlTransactionQueryRows:
-			want = "many"
-		case sqlExecute, sqlTransactionExecute:
-			want = "execute"
-		}
-		if descriptor.Checked.Cardinality != want {
-			return fmt.Errorf("sql query site %s/%s needs cardinality %s, descriptor has %s", site.Owner, site.Name, want, descriptor.Checked.Cardinality)
-		}
-		if special.Operation != sqlExecute && special.Operation != sqlTransactionExecute && special.R.Identity() != descriptor.RowType {
-			return fmt.Errorf("sql query site %s/%s binds rows %s, descriptor wants %s", site.Owner, site.Name, special.R.Identity(), descriptor.RowType)
-		}
+
 	}
-	return nil
+	return errors.Join(problems...)
 }

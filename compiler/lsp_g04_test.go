@@ -178,7 +178,7 @@ func TestG04InitializeAdvertisesCompletion(t *testing.T) {
 	if !ok || len(triggers) == 0 {
 		t.Fatalf("completion triggers missing: %v", provider)
 	}
-	if capabilities["textDocumentSync"] != 1.0 || capabilities["definitionProvider"] != true || capabilities["documentFormattingProvider"] != true || capabilities["hoverProvider"] != true || capabilities["referencesProvider"] != true {
+	if !g01FullSync(capabilities) || capabilities["definitionProvider"] != true || capabilities["documentFormattingProvider"] != true || capabilities["hoverProvider"] != true || capabilities["referencesProvider"] != true {
 		t.Fatalf("existing capabilities regressed: %v", capabilities)
 	}
 }
@@ -251,22 +251,24 @@ func TestG04CompletionShadowedSymbolSuppressed(t *testing.T) {
 	g04Find(t, items, "combine")
 }
 
-// TestG04CompletionUnparseableDeclinesNull pins the no-guess rule: a
-// buffer that cannot load declines to null, as does an unknown file.
-func TestG04CompletionUnparseableDeclinesNull(t *testing.T) {
+// Recovery preserves independent completion facts but never invents unopened documents.
+func TestG04CompletionRecoveryAndUnopenedDocument(t *testing.T) {
 	broken := strings.Replace(g04Main, "fn int helper", "fn int helper(", 1)
-	if raw := g04Raw(t, map[string]string{"src/main.can": broken}, "src/main.can", "fn int helpe|r(", 2); raw != nil {
-		t.Fatalf("unparseable buffer completed: %v", raw)
-	}
+	items := g04Items(t, map[string]string{"src/main.can": broken}, "src/main.can", "ok call action(doub|led)", 2)
+	g04Find(t, items, "doubled")
 	root := writeServerProject(t, map[string]string{"src/main.can": g04Main})
 	uri := uriFromPath(filepath.Join(root, "src/main.can"))
-	frames := runExchange(t, []string{
-		g04Completion(2, uri, 0, 0),
-		`{"jsonrpc":"2.0","method":"exit"}`,
-	})
-	if result := g01Response(t, frames, 2); result != nil {
-		t.Fatalf("unopened file completed: %v", result)
+	frames := runExchange(t, []string{g04Completion(2, uri, 0, 0), `{"jsonrpc":"2.0","method":"exit"}`})
+	for _, frame := range frames {
+		if frame["id"] == 2.0 {
+			err, ok := frame["error"].(map[string]any)
+			if !ok || err["code"] != -32602.0 {
+				t.Fatalf("unopened document accepted: %v", frame)
+			}
+			return
+		}
 	}
+	t.Fatal("missing unopened-document response")
 }
 
 // TestG04CompletionCalleeArity pins caller repair: a broken callee

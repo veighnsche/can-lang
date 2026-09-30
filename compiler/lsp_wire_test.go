@@ -18,7 +18,7 @@ func publishBridgeFrame(t *testing.T, version *int64, diags []driver.Diagnostic)
 	t.Helper()
 	var buf bytes.Buffer
 	w := bufio.NewWriter(&buf)
-	if err := publishBridgeDiagnostics(w, "file:///m.can", version, diags); err != nil {
+	if err := publishBridgeDiagnostics(w, "file:///m.can", version, diags, uriFromPath); err != nil {
 		t.Fatalf("publish: %v", err)
 	}
 	raw := buf.String()

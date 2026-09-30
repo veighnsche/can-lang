@@ -172,8 +172,8 @@ func TestLexicalFailuresHavePreciseSpans(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.text, func(t *testing.T) {
 			result := lexText(t, tc.text)
-			if len(result.Diagnostics) != 1 {
-				t.Fatalf("expected one refusal, got %+v", result.Diagnostics)
+			if len(result.Diagnostics) == 0 {
+				t.Fatalf("expected a refusal, got %+v", result.Diagnostics)
 			}
 			d := result.Diagnostics[0]
 			fragment, err := result.File.Slice(d.Span)

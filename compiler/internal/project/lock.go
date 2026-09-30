@@ -5,8 +5,10 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -30,59 +32,63 @@ const ReportIdentityVersion = "can.error.v2"
 // sorted unique active/retired qualified names, disjoint sets, and
 // unambiguous predecessor chains over retired names.
 func (r Registry) Validate() error {
-	if !sortedUnique(r.Active) {
-		return fmt.Errorf("active registry kinds must be sorted and unique")
-	}
-	if !sortedUnique(r.Retired) {
-		return fmt.Errorf("retired registry names must be sorted and unique")
-	}
-	for _, kind := range r.Active {
-		if !qualifiedKind(kind) {
-			return fmt.Errorf("registry kind %q must be a qualified declaration name", kind)
+	var problems []error
+	add := func(err error, path ...string) { problems = append(problems, jsonAt(err, path...)) }
+	active, retired := map[string]bool{}, map[string]bool{}
+	for _, entry := range []struct {
+		name   string
+		values []string
+		set    map[string]bool
+	}{{"active", r.Active, active}, {"retired", r.Retired, retired}} {
+		for i, name := range entry.values {
+			index := strconv.Itoa(i)
+			if !qualifiedKind(name) {
+				add(fmt.Errorf("registry kind %q must be a qualified declaration name", name), entry.name, index)
+				continue
+			}
+			if i > 0 && qualifiedKind(entry.values[i-1]) && entry.values[i-1] >= name {
+				add(fmt.Errorf("%s registry kinds must be sorted and unique", entry.name), entry.name, index)
+			}
+			entry.set[name] = true
+			if entry.name == "retired" && active[name] {
+				add(fmt.Errorf("retired error %q is still active", name), entry.name, index)
+			}
 		}
-	}
-	active := map[string]bool{}
-	for _, kind := range r.Active {
-		active[kind] = true
-	}
-	retired := map[string]bool{}
-	for _, name := range r.Retired {
-		if !qualifiedKind(name) {
-			return fmt.Errorf("retired name %q must be a qualified declaration name", name)
-		}
-		if active[name] {
-			return fmt.Errorf("retired error %q is still active", name)
-		}
-		retired[name] = true
 	}
 	chained := map[string]string{}
 	for _, current := range sortedKeys(r.Predecessors) {
 		chain := r.Predecessors[current]
 		if !active[current] {
-			return fmt.Errorf("predecessor chain for %q lacks an active declaration", current)
+			problems = append(problems, &jsonPathError{path: []string{"predecessors", current}, key: true, err: fmt.Errorf("predecessor chain for %q lacks an active declaration", current)})
+			continue
 		}
 		if len(chain) == 0 {
-			return fmt.Errorf("predecessor chain for %q is empty", current)
+			add(fmt.Errorf("predecessor chain for %q is empty", current), "predecessors", current)
+			continue
 		}
 		seen := map[string]bool{}
-		for _, prior := range chain {
+		for i, prior := range chain {
+			at := []string{"predecessors", current, strconv.Itoa(i)}
 			if !qualifiedKind(prior) {
-				return fmt.Errorf("predecessor %q must be a qualified declaration name", prior)
+				add(fmt.Errorf("predecessor %q must be a qualified declaration name", prior), at...)
+				continue
 			}
 			if seen[prior] {
-				return fmt.Errorf("predecessor %q repeats within one chain", prior)
+				add(fmt.Errorf("predecessor %q repeats within one chain", prior), at...)
 			}
 			seen[prior] = true
 			if !retired[prior] {
-				return fmt.Errorf("predecessor %q is not retired", prior)
+				add(fmt.Errorf("predecessor %q is not retired", prior), at...)
+				continue
 			}
-			if owner, exists := chained[prior]; exists {
-				return fmt.Errorf("predecessor %q chains to both %s and %s", prior, owner, current)
+			if owner, exists := chained[prior]; exists && owner != current {
+				add(fmt.Errorf("predecessor %q chains to both %s and %s", prior, owner, current), at...)
+			} else {
+				chained[prior] = current
 			}
-			chained[prior] = current
 		}
 	}
-	return nil
+	return errors.Join(problems...)
 }
 
 func sortedUnique(names []string) bool {
@@ -146,58 +152,75 @@ func ParseRegistry(data []byte) (Registry, error) {
 	if err := validateJSON(data); err != nil {
 		return r, err
 	}
-	fields, err := object(data, []string{"active", "retired"}, []string{"predecessors"})
-	if err != nil {
-		return r, err
+	fields, shapeErr := object(data, []string{"active", "retired"}, []string{"predecessors"})
+	if fields == nil {
+		return r, shapeErr
 	}
-	active, err := array(fields["active"])
-	if err != nil {
-		return r, err
-	}
-	for _, raw := range active {
-		kind, err := text(raw)
+	problems := []error{shapeErr}
+	invalid := map[string]bool{}
+	stringsAt := func(raw json.RawMessage, path ...string) []string {
+		values, err := array(raw)
 		if err != nil {
-			return r, err
+			problems = append(problems, jsonFieldError(data, err, path...))
+			invalid[jsonPathKey(path)] = true
+			return nil
 		}
-		r.Active = append(r.Active, kind)
-	}
-	retired, err := array(fields["retired"])
-	if err != nil {
-		return r, err
-	}
-	for _, raw := range retired {
-		name, err := text(raw)
-		if err != nil {
-			return r, err
+		names := make([]string, len(values))
+		for i, value := range values {
+			name, err := text(value)
+			if err != nil {
+				at := append(append([]string{}, path...), strconv.Itoa(i))
+				problems = append(problems, jsonFieldError(data, err, at...))
+				invalid[jsonPathKey(at)] = true
+				continue
+			}
+			names[i] = name
 		}
-		r.Retired = append(r.Retired, name)
+		return names
 	}
-	if raw, exists := fields["predecessors"]; exists {
+	if raw, ok := fields["active"]; ok {
+		r.Active = stringsAt(raw, "active")
+	}
+	if raw, ok := fields["retired"]; ok {
+		r.Retired = stringsAt(raw, "retired")
+	}
+	if raw, ok := fields["predecessors"]; ok {
 		entries, err := dictionary(raw)
 		if err != nil {
-			return r, err
-		}
-		r.Predecessors = map[string][]string{}
-		for _, current := range sortedKeys(entries) {
-			chain, err := array(entries[current])
-			if err != nil {
-				return r, err
+			problems = append(problems, jsonFieldError(data, err, "predecessors"))
+		} else {
+			r.Predecessors = map[string][]string{}
+			for _, current := range sortedKeys(entries) {
+				r.Predecessors[current] = stringsAt(entries[current], "predecessors", current)
 			}
-			names := []string{}
-			for _, raw := range chain {
-				name, err := text(raw)
-				if err != nil {
-					return r, err
+		}
+	}
+	var addValidated func(error)
+	addValidated = func(err error) {
+		if err == nil {
+			return
+		}
+		if many, ok := err.(interface{ Unwrap() []error }); ok {
+			for _, child := range many.Unwrap() {
+				addValidated(child)
+			}
+			return
+		}
+		if located, ok := err.(*jsonPathError); ok {
+			for i := len(located.path); i > 0; i-- {
+				if invalid[jsonPathKey(located.path[:i])] {
+					return
 				}
-				names = append(names, name)
 			}
-			r.Predecessors[current] = names
+			// Allocation relationships require both correctly decoded lists.
+			if len(located.path) > 0 && located.path[0] == "predecessors" && (invalid[jsonPathKey([]string{"active"})] || invalid[jsonPathKey([]string{"retired"})]) {
+				return
+			}
 		}
+		problems = append(problems, bindJSONPaths(data, err))
 	}
-	if err := r.Validate(); err != nil {
-		return r, err
-	}
-	return r, nil
+	addValidated(r.Validate())
+	return r, errors.Join(problems...)
 }
 
 func ParseLock(data []byte) (Lock, error) {
@@ -205,95 +228,132 @@ func ParseLock(data []byte) (Lock, error) {
 	if err := validateJSON(data); err != nil {
 		return lock, err
 	}
-	fields, err := object(data, []string{"edges", "projects"}, nil)
-	if err != nil {
-		return lock, err
+	fields, shapeErr := object(data, []string{"edges", "projects"}, nil)
+	if fields == nil {
+		return lock, shapeErr
 	}
-	edges, err := parseLockEdges(fields["edges"])
-	if err != nil {
-		return lock, err
+	problems := []error{shapeErr}
+	if raw, ok := fields["edges"]; ok {
+		edges, err := parseLockEdges(raw)
+		lock.Edges = edges
+		problems = append(problems, jsonChildError(data, err, "edges"))
 	}
-	lock.Edges = edges
-	entries, err := dictionary(fields["projects"])
-	if err != nil {
-		return lock, err
-	}
-	for _, id := range sortedKeys(entries) {
-		if !ValidNodeID(id) || id == "can.project.root" {
-			return lock, fmt.Errorf("invalid lock project identity %q", id)
-		}
-		fields, err := object(entries[id], []string{"lineage", "manifest_sha256", "source_sha256", "fixtures_sha256", "error_registry", "edges"}, nil)
+	if raw, ok := fields["projects"]; ok {
+		entries, err := dictionary(raw)
 		if err != nil {
-			return lock, err
-		}
-		entry := LockEntry{Edges: map[string]LockEdge{}}
-		destinations := map[string]*string{"lineage": &entry.Lineage, "manifest_sha256": &entry.ManifestSHA256, "source_sha256": &entry.SourceSHA256, "fixtures_sha256": &entry.FixturesSHA256}
-		for _, key := range sortedKeys(destinations) {
-			dest := destinations[key]
-			value, err := text(fields[key])
-			if err != nil {
-				return lock, err
-			}
-			*dest = value
-		}
-		if entry.Lineage != "" && !Identifier(entry.Lineage) {
-			return lock, fmt.Errorf("lock lineage %q must be a lowercase identifier", entry.Lineage)
-		}
-		if NodeLineage(id) != entry.Lineage {
-			return lock, fmt.Errorf("lock project %q disagrees with its lineage pin", id)
-		}
-		for _, digest := range []string{entry.ManifestSHA256, entry.SourceSHA256, entry.FixturesSHA256} {
-			if len(digest) != 64 || strings.ToLower(digest) != digest {
-				return lock, fmt.Errorf("lock digest must be 64 lowercase hexadecimal characters")
-			}
-			if _, err := hex.DecodeString(digest); err != nil {
-				return lock, fmt.Errorf("invalid lock digest")
+			problems = append(problems, jsonFieldError(data, err, "projects"))
+		} else {
+			for _, id := range sortedKeys(entries) {
+				if !ValidNodeID(id) || id == "can.project.root" {
+					problems = append(problems, jsonKeyError(data, fmt.Errorf("invalid lock project identity %q", id), "projects", id))
+					continue
+				}
+				entry, err := parseLockEntry(entries[id], id)
+				if err != nil {
+					problems = append(problems, jsonChildError(data, err, "projects", id))
+					continue
+				}
+				lock.Projects[id] = entry
 			}
 		}
-		entry.ErrorRegistry, err = ParseRegistry(fields["error_registry"])
-		if err != nil {
-			return lock, err
-		}
-		entry.Edges, err = parseLockEdges(fields["edges"])
-		if err != nil {
-			return lock, err
-		}
-		lock.Projects[id] = entry
 	}
-	return lock, nil
+	return lock, errors.Join(problems...)
+}
+
+func parseLockEntry(raw json.RawMessage, id string) (LockEntry, error) {
+	entry := LockEntry{Edges: map[string]LockEdge{}}
+	fields, shapeErr := object(raw, []string{"lineage", "manifest_sha256", "source_sha256", "fixtures_sha256", "error_registry", "edges"}, nil)
+	if fields == nil {
+		return entry, shapeErr
+	}
+	problems := []error{shapeErr}
+	destinations := map[string]*string{"lineage": &entry.Lineage, "manifest_sha256": &entry.ManifestSHA256, "source_sha256": &entry.SourceSHA256, "fixtures_sha256": &entry.FixturesSHA256}
+	for _, key := range sortedKeys(destinations) {
+		value, exists := fields[key]
+		if !exists {
+			continue
+		}
+		text, err := text(value)
+		if err == nil {
+			if key == "lineage" {
+				if text != "" && !Identifier(text) {
+					err = fmt.Errorf("lock lineage %q must be a lowercase identifier", text)
+				} else if NodeLineage(id) != text {
+					err = fmt.Errorf("lock project %q disagrees with its lineage pin", id)
+				}
+			} else {
+				if len(text) != 64 || strings.ToLower(text) != text {
+					err = fmt.Errorf("lock digest must be 64 lowercase hexadecimal characters")
+				} else if _, decodeErr := hex.DecodeString(text); decodeErr != nil {
+					err = fmt.Errorf("invalid lock digest")
+				}
+			}
+		}
+		if err != nil {
+			problems = append(problems, jsonFieldError(raw, err, key))
+			continue
+		}
+		*destinations[key] = text
+	}
+	if value, exists := fields["error_registry"]; exists {
+		registry, err := ParseRegistry(value)
+		entry.ErrorRegistry = registry
+		problems = append(problems, jsonChildError(raw, err, "error_registry"))
+	}
+	if value, exists := fields["edges"]; exists {
+		edges, err := parseLockEdges(value)
+		entry.Edges = edges
+		problems = append(problems, jsonChildError(raw, err, "edges"))
+	}
+	return entry, errors.Join(problems...)
 }
 
 func parseLockEdges(raw json.RawMessage) (map[string]LockEdge, error) {
 	edges := map[string]LockEdge{}
 	entries, err := dictionary(raw)
 	if err != nil {
-		return edges, err
+		return edges, jsonFieldError(raw, err)
 	}
+	var problems []error
 	for _, name := range sortedKeys(entries) {
 		if !Identifier(name) {
-			return edges, fmt.Errorf("invalid lock edge name %q", name)
+			problems = append(problems, jsonKeyError(raw, fmt.Errorf("invalid lock edge name %q", name), name))
+			continue
 		}
-		fields, err := object(entries[name], []string{"target", "path"}, nil)
-		if err != nil {
-			return edges, err
+		fields, shapeErr := object(entries[name], []string{"target", "path"}, nil)
+		entryProblems := []error{shapeErr}
+		edge := LockEdge{}
+		if fields != nil {
+			if value, ok := fields["target"]; ok {
+				target, err := text(value)
+				if err == nil && (!ValidNodeID(target) || target == "can.project.root") {
+					err = fmt.Errorf("invalid lock edge target %q", target)
+				}
+				if err != nil {
+					entryProblems = append(entryProblems, jsonFieldError(entries[name], err, "target"))
+				} else {
+					edge.Target = target
+				}
+			}
+			if value, ok := fields["path"]; ok {
+				path, err := text(value)
+				if err == nil {
+					err = NormalizePath(path)
+				}
+				if err != nil {
+					entryProblems = append(entryProblems, jsonFieldError(entries[name], err, "path"))
+				} else {
+					edge.Path = path
+				}
+			}
 		}
-		target, err := text(fields["target"])
-		if err != nil {
-			return edges, err
+		if err := errors.Join(entryProblems...); err != nil {
+			problems = append(problems, jsonChildError(raw, err, name))
+			continue
 		}
-		if !ValidNodeID(target) || target == "can.project.root" {
-			return edges, fmt.Errorf("invalid lock edge target %q", target)
-		}
-		edgePath, err := text(fields["path"])
-		if err != nil {
-			return edges, err
-		}
-		if err := NormalizePath(edgePath); err != nil {
-			return edges, err
-		}
-		edges[name] = LockEdge{Target: target, Path: edgePath}
+		edges[name] = edge
 	}
-	return edges, nil
+	return edges, errors.Join(problems...)
 }
 
 func Digest(data []byte) string { sum := sha256.Sum256(data); return hex.EncodeToString(sum[:]) }

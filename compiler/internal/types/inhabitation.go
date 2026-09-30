@@ -1,19 +1,43 @@
 package types
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
+)
 
 // seal validates the whole finite graph before exposing any compatibility
 // evidence. Back edges through records are legal; back edges through variants
 // alone are not. Expansion to infinitely many distinct nodes is the builder's
 // responsibility, separate from this finite-graph analysis.
+type typeProblem struct {
+	typ *Type
+	err error
+}
+
 func (g *graph) seal() error {
+	problems := g.validateAndSeal(nil, false)
+	var failures []error
+	for _, problem := range problems {
+		failures = append(failures, problem.err)
+	}
+	return errors.Join(failures...)
+}
+
+// validateAndSeal runs one finite graph validation and propagates invalid
+// prerequisites to their reverse dependencies. Recovery seals only nodes whose
+// complete outgoing dependency closure is valid; rejected nodes remain unsealed.
+func (g *graph) validateAndSeal(invalid map[*Type]error, recovering bool) []typeProblem {
 	if g.sealed {
 		return nil
+	}
+	if invalid == nil {
+		invalid = map[*Type]error{}
 	}
 	nodes := g.ordered()
 	for _, t := range nodes {
 		if !t.defined {
-			return fmt.Errorf("undefined concrete type %s", t.id)
+			invalid[t] = fmt.Errorf("undefined concrete type %s", t.id)
 		}
 	}
 	g.leaves = map[*Type][]*Type{}
@@ -21,13 +45,7 @@ func (g *graph) seal() error {
 	var flatten func(*Type) ([]*Type, error)
 	flatten = func(t *Type) ([]*Type, error) {
 		if t.kind != Variant {
-			if t.kind == Record || t.kind == Error || t.kind == Opaque && t.standardFailure {
-				return []*Type{t}, nil
-			}
-			// An opaque parameter is a symbolic leaf, not a concrete
-			// inhabitant claim. Only exported-generic declaration graphs
-			// contain parameters; concrete checking never seals one.
-			if t.kind == Parameter {
+			if t.kind == Record || t.kind == Error || t.kind == Opaque && t.standardFailure || t.kind == Parameter {
 				return []*Type{t}, nil
 			}
 			return nil, fmt.Errorf("ineligible variant leaf %s", t.id)
@@ -35,14 +53,18 @@ func (g *graph) seal() error {
 		if active[t] {
 			return nil, fmt.Errorf("recursive variant-only alternatives: %s", t.id)
 		}
+		if invalid[t] != nil {
+			return nil, &source.BlockedError{Dependency: t.declaration}
+		}
 		if leaves, ok := g.leaves[t]; ok {
 			return leaves, nil
 		}
 		active[t] = true
+		defer delete(active, t)
 		seen := map[string]bool{}
 		var leaves []*Type
-		for _, a := range t.alternatives {
-			nested, err := flatten(a)
+		for _, alternative := range t.alternatives {
+			nested, err := flatten(alternative)
 			if err != nil {
 				return nil, err
 			}
@@ -54,23 +76,39 @@ func (g *graph) seal() error {
 				leaves = append(leaves, leaf)
 			}
 		}
-		delete(active, t)
 		g.leaves[t] = leaves
 		return leaves, nil
 	}
 	for _, t := range nodes {
-		if t.kind == Variant {
+		if t.kind == Variant && invalid[t] == nil {
 			if _, err := flatten(t); err != nil {
-				return err
+				invalid[t] = err
 			}
 		}
 	}
-	// Least fixed point: never assume a required recursive field already has a
-	// value. Empty arrays, primitives and callable/resource values are bases.
-	// An opaque parameter is also a base: its future arguments supply the
-	// inhabitant, and the symbolic pass checks operations, not inhabitation.
+	propagate := func() {
+		for changed := true; changed; {
+			changed = false
+			for _, t := range nodes {
+				if invalid[t] != nil {
+					continue
+				}
+				for _, dependency := range typeDependencies(t) {
+					if invalid[dependency] != nil {
+						invalid[t] = &source.BlockedError{Dependency: dependency.declaration}
+						changed = true
+						break
+					}
+				}
+			}
+		}
+	}
+	propagate()
 	inhabited := map[*Type]bool{}
 	for _, t := range nodes {
+		if invalid[t] != nil {
+			continue
+		}
 		switch t.kind {
 		case Primitive, Void, Array, Opaque, Callable, ChoiceArm, Parameter:
 			inhabited[t] = true
@@ -79,13 +117,13 @@ func (g *graph) seal() error {
 	for changed := true; changed; {
 		changed = false
 		for _, t := range nodes {
-			if inhabited[t] {
+			if inhabited[t] || invalid[t] != nil {
 				continue
 			}
 			possible := t.kind == Record || t.kind == Error
 			if possible {
-				for _, f := range t.fields {
-					possible = possible && inhabited[f.Type]
+				for _, field := range t.fields {
+					possible = possible && inhabited[field.Type]
 				}
 			}
 			if t.kind == Variant {
@@ -100,12 +138,48 @@ func (g *graph) seal() error {
 		}
 	}
 	for _, t := range nodes {
-		if !inhabited[t] {
-			return fmt.Errorf("type has no finite inhabitant: %s", t.id)
+		if !inhabited[t] && invalid[t] == nil {
+			invalid[t] = fmt.Errorf("type has no finite inhabitant: %s", t.id)
+		}
+	}
+	propagate()
+	var problems []typeProblem
+	for _, t := range nodes {
+		if err := invalid[t]; err != nil {
+			problems = append(problems, typeProblem{t, err})
+		}
+	}
+	if len(problems) > 0 && !recovering {
+		return problems
+	}
+	if recovering && len(problems) > 0 {
+		rejected := newGraph()
+		for _, problem := range problems {
+			delete(g.nodes, problem.typ.id)
+			delete(g.leaves, problem.typ)
+			problem.typ.graph = rejected
+			rejected.nodes[problem.typ.id] = problem.typ
 		}
 	}
 	g.sealed = true
-	return nil
+	return problems
+}
+
+func typeDependencies(t *Type) []*Type {
+	out := append([]*Type(nil), t.arguments...)
+	out = append(out, t.alternatives...)
+	out = append(out, t.inputs...)
+	out = append(out, t.errors...)
+	if t.element != nil {
+		out = append(out, t.element)
+	}
+	if t.result != nil {
+		out = append(out, t.result)
+	}
+	for _, field := range t.fields {
+		out = append(out, field.Type)
+	}
+	return out
 }
 
 func (t *Type) Leaves() []*Type {

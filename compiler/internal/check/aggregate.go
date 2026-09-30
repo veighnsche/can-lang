@@ -1,7 +1,6 @@
 package check
 
 import (
-	"errors"
 	"fmt"
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
@@ -23,9 +22,32 @@ type deferredAggregate struct{}
 func (*deferredAggregate) Error() string {
 	return "all_failed.failures requires one expected named failure variant"
 }
+func onlyDeferredAggregate(err error) bool {
+	if err == nil {
+		return false
+	}
+	if _, ok := err.(*deferredAggregate); ok {
+		return true
+	}
+	if joined, ok := err.(interface{ Unwrap() []error }); ok {
+		children := joined.Unwrap()
+		if len(children) == 0 {
+			return false
+		}
+		for _, child := range children {
+			if !onlyDeferredAggregate(child) {
+				return false
+			}
+		}
+		return true
+	}
+	if wrapped, ok := err.(interface{ Unwrap() error }); ok {
+		return onlyDeferredAggregate(wrapped.Unwrap())
+	}
+	return false
+}
 func (c *regionChecker) deferAggregate(err error) bool {
-	var deferred *deferredAggregate
-	if c.aggregate == nil || !c.aggregate.discovery || !errors.As(err, &deferred) {
+	if c.aggregate == nil || !c.aggregate.discovery || !onlyDeferredAggregate(err) {
 		return false
 	}
 	c.aggregate.deferred = true

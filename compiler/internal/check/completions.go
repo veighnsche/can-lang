@@ -19,6 +19,8 @@ import (
 // Handlers use their own Identity/Parent and selected Result, with the enclosing
 // escaping error contract. Their callers later assemble coordination/native data.
 type CompletionContext struct {
+	Recover           bool
+	Checkpoint        func() func()
 	IntrinsicIdentity func(*resolve.Scope, syntax.QualifiedName) string
 	CatalogueType     func(string, map[string]*types.Type) (*types.Type, error)
 	InferCallback     func(*resolve.Scope, syntax.QualifiedName, []*types.Type, *types.Type, *Expressions) (ValueBinding, bool, error)
@@ -55,7 +57,7 @@ type CompletionContext struct {
 	Asset func(string) ir.AssetResolution
 	// SQLSite records one static descriptor name in the calling project
 	// and returns the splice the emitter renders for the call site.
-	SQLSite func(key, name string) ir.SQLCallSite
+	SQLSite func(key, name string, span source.Span) ir.SQLCallSite
 	// FormSite validates one static form name against its specialization
 	// and returns the adapter contract the emitter splices, if any.
 	FormSite func(operation, key, name string) (ir.FormActionSite, error)
@@ -204,7 +206,19 @@ func (c *regionChecker) lexical(scope bodyScope, name syntax.QualifiedName, call
 }
 func (c *regionChecker) expressions(scope bodyScope) *Expressions {
 	e := *c.context.Expressions
+	e.Recover = c.context.Recover
+	e.Checkpoint = c.childCheckpoint
 	e.Value = func(name syntax.QualifiedName) (ValueBinding, error) {
+		if name.Package == "" {
+			for local := scope.symbols; local != nil && local != c.context.Scope; local = local.Parent {
+				if symbol := local.Symbols[name.Name]; symbol != nil {
+					if symbol.Invalid != nil {
+						return ValueBinding{}, &source.BlockedError{Dependency: symbol.ID}
+					}
+					break
+				}
+			}
+		}
 		if b, ok := c.lexical(scope, name, false); ok {
 			return b, nil
 		}
@@ -270,63 +284,96 @@ func (c *regionChecker) block(block syntax.Block, parent bodyScope) (*ir.Block, 
 	out := &ir.Block{Span: block.Span}
 	var last *ir.Local
 	var lastChecker *Expressions
+	var problems []error
 	for _, step := range block.Steps {
-		switch n := step.(type) {
-		case *syntax.BindingStep:
-			typ, err := c.context.Type(n.Type, false)
-			if err != nil {
-				return nil, err
+		rollback := c.childCheckpoint()
+		restoreScope := saveMap(&scope.symbols.Symbols)
+		stepErr := func() error {
+			switch n := step.(type) {
+			case *syntax.BindingStep:
+				typ, err := c.context.Type(n.Type, false)
+				if err != nil {
+					return err
+				}
+				e := c.expressions(scope)
+				value, err := e.Check(n.Value, typ)
+				if err != nil && !c.deferAggregate(err) {
+					return err
+				}
+				// Freeze initializer lookup before inserting this local: later shadowing
+				// must not change I48's substitution and nested-type evidence.
+				before := *scope.symbols
+				before.Symbols = map[string]*resolve.Symbol{}
+				for k, v := range scope.symbols.Symbols {
+					before.Symbols[k] = v
+				}
+				lastChecker = c.expressions(bodyScope{&before})
+				local, err := c.bind(scope, n.Name.Text, typ)
+				if err != nil {
+					return err
+				}
+				out.Steps = append(out.Steps, ir.Statement{Local: local, Value: value})
+				last = local
+			case *syntax.CoordinationStep:
+				coordination, err := c.coordination(n.Coordination, scope, nil)
+				if err != nil {
+					return err
+				}
+				out.Steps = append(out.Steps, ir.Statement{Coordination: coordination})
+				last = nil
+			case *syntax.CallStep:
+				call, err := c.invocation(n.Call, scope)
+				if err != nil {
+					return err
+				}
+				if call.Result.Kind() != types.Void || len(call.Errors) != 0 {
+					return fmt.Errorf("call step requires void success and emits {}")
+				}
+				out.Steps = append(out.Steps, ir.Statement{Call: call})
+				last = nil
+			default:
+				return fmt.Errorf("step %T requires its owning native/coordination pass", step)
 			}
-			e := c.expressions(scope)
-			value, err := e.Check(n.Value, typ)
-			if err != nil && !c.deferAggregate(err) {
-				return nil, err
+			return nil
+		}()
+		if stepErr != nil {
+			rollback()
+			restoreScope()
+			stepErr = source.Locate(c.context.File.Name(), step.StepSpan(), stepErr)
+			if !c.context.Recover {
+				return nil, stepErr
 			}
-			// Freeze initializer lookup before inserting this local: later shadowing
-			// must not change I48's substitution and nested-type evidence.
-			before := *scope.symbols
-			before.Symbols = map[string]*resolve.Symbol{}
-			for k, v := range scope.symbols.Symbols {
-				before.Symbols[k] = v
+			problems = append(problems, stepErr)
+			if binding, ok := step.(*syntax.BindingStep); ok && scope.symbols.Symbols[binding.Name.Text] == nil {
+				_ = scope.symbols.Define(&resolve.Symbol{Name: binding.Name.Text, ID: c.region.ID + "/invalid/" + binding.Name.Text, Kind: resolve.Value, Invalid: stepErr})
 			}
-			lastChecker = c.expressions(bodyScope{&before})
-			local, err := c.bind(scope, n.Name.Text, typ)
-			if err != nil {
-				return nil, err
-			}
-			out.Steps = append(out.Steps, ir.Statement{Local: local, Value: value})
-			last = local
-		case *syntax.CoordinationStep:
-			coordination, err := c.coordination(n.Coordination, scope, nil)
-			if err != nil {
-				return nil, err
-			}
-			out.Steps = append(out.Steps, ir.Statement{Coordination: coordination})
 			last = nil
-		case *syntax.CallStep:
-			call, err := c.invocation(n.Call, scope)
-			if err != nil {
-				return nil, err
-			}
-			if call.Result.Kind() != types.Void || len(call.Errors) != 0 {
-				return nil, fmt.Errorf("call step requires void success and emits {}")
-			}
-			out.Steps = append(out.Steps, ir.Statement{Call: call})
-			last = nil
-		default:
-			return nil, fmt.Errorf("step %T requires its owning native/coordination pass", step)
 		}
+
 	}
 	var err error
-	out.Terminal, err = c.completion(block.Terminal, scope)
-	if err != nil {
-		return nil, err
+	if len(block.Invalid) > 0 {
+		problems = append(problems, &source.BlockedError{Dependency: c.context.File.Name() + ":syntax"})
 	}
-	if last != nil && !(c.aggregate != nil && c.aggregate.discovery) {
+	if block.Terminal != nil {
+		out.Terminal, err = c.completion(block.Terminal, scope)
+	} else if len(block.Invalid) == 0 {
+		err = fmt.Errorf("region requires an explicit terminal completion")
+	}
+	if err != nil {
+		problems = append(problems, err)
+	}
+	if last != nil && err == nil && !(c.aggregate != nil && c.aggregate.discovery) {
 		// Q2: the C8 shape is advisory. The detector still runs so the
 		// warning fires on exactly the old error's four-clause shape, but
 		// only internal context failures keep failing the check.
-		if err = CheckLocalForwarding(LocalForwarding{File: c.context.File, Block: block, Binding: ValueBinding{last.Identity, last.Type}, Uses: c.uses, Checker: lastChecker, Expected: c.region.Result}); err != nil {
+		forwardingBlock := block
+		if len(problems) != 0 {
+			// Earlier failed statements precede this binding in lexical scope;
+			// they cannot reference its newly introduced identity.
+			forwardingBlock.Steps = block.Steps[len(block.Steps)-1:]
+		}
+		if err = CheckLocalForwarding(LocalForwarding{File: c.context.File, Block: forwardingBlock, Binding: ValueBinding{last.Identity, last.Type}, Uses: c.uses, Checker: lastChecker, Expected: c.region.Result}); err != nil {
 			var diagnostic *UnnecessaryLocal
 			if errors.As(err, &diagnostic) {
 				c.unnecessaryLocalWarning(diagnostic)
@@ -334,6 +381,9 @@ func (c *regionChecker) block(block syntax.Block, parent bodyScope) (*ir.Block, 
 				return nil, err
 			}
 		}
+	}
+	if len(problems) > 0 {
+		return nil, errors.Join(problems...)
 	}
 	return out, nil
 }

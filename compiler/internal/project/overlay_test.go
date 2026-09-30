@@ -1,6 +1,7 @@
 package project
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -48,8 +49,8 @@ func TestOverlaySubstitutesBeforeParse(t *testing.T) {
 		t.Fatal("overlay did not retain the versioned buffer")
 	}
 	_, err = LoadWithOverlay(root, overlay)
-	sourceErr, ok := err.(*SourceError)
-	if !ok {
+	var sourceErr *SourceError
+	if !errors.As(err, &sourceErr) {
 		t.Fatalf("expected a source error, got %T %v", err, err)
 	}
 	if sourceErr.Path != real || sourceErr.File == nil || len(sourceErr.Diagnostics) == 0 {
@@ -83,19 +84,54 @@ func TestOverlaySubstitutesBeforeParse(t *testing.T) {
 	}
 }
 
-func TestOverlayIgnoresUnwalkedPaths(t *testing.T) {
+func TestOverlayLoadsUnsavedSource(t *testing.T) {
 	root := writeTestProject(t, map[string]string{"src/main.can": overlayMain})
 	overlay := NewOverlay()
-	ghost := filepath.Join(root, "src", "ghost.can")
-	if err := overlay.Set(ghost, 1, "package app\n"); err != nil {
+	if err := overlay.Set(filepath.Join(root, "src/new.can"), 1, "package app\n    provides []\n    uses []\n\nrecord new_record\n"); err != nil {
 		t.Fatal(err)
 	}
 	graph, err := LoadWithOverlay(root, overlay)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(graph.Root.Sources) != 1 {
-		t.Fatalf("overlay invented a source: %d", len(graph.Root.Sources))
+	if len(graph.Root.Sources) != 2 {
+		t.Fatalf("unsaved source absent: %d", len(graph.Root.Sources))
+	}
+}
+
+func TestOverlayUnsavedLockAndConfinedConfig(t *testing.T) {
+	root := writeTestProject(t, map[string]string{"src/main.can": overlayMain})
+	overlay := NewOverlay()
+	lock := filepath.Join(root, "can.lock.json")
+	if err := overlay.Set(lock, 1, "{"); err != nil {
+		t.Fatal(err)
+	}
+	graph, err := LoadWithOverlay(root, overlay)
+	if err == nil || graph == nil {
+		t.Fatal("absent lock overlay ignored")
+	}
+	located, ok := source.AsLocated(err)
+	if !ok || filepath.Base(located.File) != "can.lock.json" {
+		t.Fatalf("wrong config attribution: %v", err)
+	}
+	_ = overlay.Clear(lock)
+	external := t.TempDir()
+	externalRegistry := filepath.Join(external, "outside.json")
+	if err := os.WriteFile(externalRegistry, []byte(`{"active":[],"retired":[]}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	registry := filepath.Join(root, "can.errors.json")
+	if err := os.Remove(registry); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(externalRegistry, registry); err != nil {
+		t.Fatal(err)
+	}
+	if err := overlay.Set(registry, 2, `{"active":[],"retired":[]}`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := LoadWithOverlay(root, overlay); err == nil {
+		t.Fatal("config overlay bypassed symlink confinement")
 	}
 }
 
@@ -119,8 +155,8 @@ func TestOverlayRefusals(t *testing.T) {
 func TestSourceErrorPreservesCLIMessage(t *testing.T) {
 	real := filepath.Join(writeTestProject(t, map[string]string{"src/main.can": "package app\n\nfn broken( -> int\n    ok 1\n"}), "src", "main.can")
 	_, err := Load(filepath.Dir(filepath.Dir(real)))
-	sourceErr, ok := err.(*SourceError)
-	if !ok {
+	var sourceErr *SourceError
+	if !errors.As(err, &sourceErr) {
 		t.Fatalf("plain load lost the typed error: %T %v", err, err)
 	}
 	data, err := os.ReadFile(real)

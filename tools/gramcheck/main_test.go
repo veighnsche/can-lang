@@ -7,100 +7,61 @@ import (
 	"testing"
 )
 
-func fullCorpus() string {
-	var sb strings.Builder
-	for _, c := range cases {
-		for _, s := range c.samples {
-			sb.WriteString(s)
-			sb.WriteByte('\n')
-		}
-	}
-	return sb.String()
-}
+func fullCorpus() string { return strings.Join(fixtureSamples, "\n") }
 
-func TestRepoGrammar(t *testing.T) {
-	root, err := repoRoot()
-	if err != nil {
-		t.Skip("not in repo checkout")
-	}
-	corpus, err := loadCorpus(root)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if errs := check(filepath.Join(root, "editors", "vscode"), corpus); len(errs) > 0 {
-		t.Fatalf("repo grammar failed: %v", errs)
-	}
-}
-
-func writeGrammar(t *testing.T, patterns string) string {
+func writeAssets(t *testing.T, grammar string) string {
 	t.Helper()
 	dir := t.TempDir()
 	files := map[string]string{
-		"package.json":                `{"name": "x"}`,
-		"language-configuration.json": `{}`,
-		"syntaxes/can.tmGrammar.json": `{"scopeName": "source.can", "patterns": [` + patterns + `]}`,
+		"package.json":                `{"scripts":{"test:grammar":"node --test"}}`,
+		"language-configuration.json": `{"comments":{},"indentationRules":{}}`,
+		"syntaxes/can.tmGrammar.json": grammar,
 	}
 	for name, body := range files {
-		p := filepath.Join(dir, name)
-		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+		path := filepath.Join(dir, name)
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 			t.Fatal(err)
 		}
-		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+		if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
 			t.Fatal(err)
 		}
 	}
 	return dir
 }
 
-const errorRule = `{"match": "\\berror\\b", "name": "keyword.declaration.error.can"}`
-const keywordRule = `{"match": "\\b(fn|on|rev)\\b", "name": "keyword.control.can"}`
+const validGrammar = `{"scopeName":"source.can","repository":{"block-comment":{},"strings":{},"escapes":{},"headers":{},"declarations":{},"assertions":{},"numbers":{},"operators":{}}}`
 
-func TestMissingErrorRule(t *testing.T) {
-	dir := writeGrammar(t, keywordRule)
-	if errs := check(dir, fullCorpus()); !contains(errs, "exactly one error rule") {
-		t.Fatalf("expected error-rule violation, got %v", errs)
-	}
-}
-
-func TestRetiredKeywordRejected(t *testing.T) {
-	dir := writeGrammar(t, errorRule+","+keywordRule)
-	if errs := check(dir, fullCorpus()); !contains(errs, "retired rev must not be a keyword") {
-		t.Fatalf("expected retired-keyword violation, got %v", errs)
-	}
-}
-
-func TestRetiredScopeRejected(t *testing.T) {
-	pin := `{"match": "@[0-9]+", "name": "constant.numeric.version.can"}`
-	dir := writeGrammar(t, errorRule+","+pin)
-	if errs := check(dir, fullCorpus()); !contains(errs, "retired scope constant.numeric.version.can must go") {
-		t.Fatalf("expected retired-scope violation, got %v", errs)
-	}
-}
-
-func TestSamplePinnedToFixtures(t *testing.T) {
-	types := `{"match": "\\b(str)\\b", "name": "storage.type.primitive.can"}`
-	dir := writeGrammar(t, errorRule+","+types)
-	if errs := check(dir, "unrelated corpus"); !contains(errs, "not in the maintained fixtures") {
-		t.Fatalf("expected fixture-pinning violation, got %v", errs)
-	}
-}
-
-func TestBadJSON(t *testing.T) {
-	dir := writeGrammar(t, keywordRule)
-	bad := filepath.Join(dir, "syntaxes", "can.tmGrammar.json")
-	if err := os.WriteFile(bad, []byte(`{not json`), 0o644); err != nil {
+func TestRepoGrammar(t *testing.T) {
+	root, err := repoRoot()
+	if err != nil {
 		t.Fatal(err)
 	}
-	if errs := check(dir, fullCorpus()); len(errs) == 0 {
-		t.Fatal("expected JSON violation, got none")
+	corpus, err := loadCorpus(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if issues := check(filepath.Join(root, "editors", "vscode"), corpus); len(issues) != 0 {
+		t.Fatal(issues)
 	}
 }
 
-func contains(errs []string, sub string) bool {
-	for _, e := range errs {
-		if strings.Contains(e, sub) {
-			return true
-		}
+func TestInvalidJSONAndMissingRepository(t *testing.T) {
+	dir := writeAssets(t, `{bad`)
+	if issues := check(dir, fullCorpus()); len(issues) == 0 {
+		t.Fatal("invalid JSON accepted")
 	}
-	return false
+	dir = writeAssets(t, `{"scopeName":"source.can"}`)
+	if issues := check(dir, fullCorpus()); len(issues) == 0 {
+		t.Fatal("missing repository accepted")
+	}
+}
+
+func TestFixtureDrift(t *testing.T) {
+	dir := writeAssets(t, validGrammar)
+	if issues := check(dir, "unrelated"); len(issues) == 0 {
+		t.Fatal("missing compiler fixture samples accepted")
+	}
+	if issues := check(dir, fullCorpus()); len(issues) != 0 {
+		t.Fatal(issues)
+	}
 }

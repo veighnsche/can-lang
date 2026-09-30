@@ -4,10 +4,14 @@ import "github.com/veighnsche/can-lang/compiler/internal/source"
 
 // QualifiedName retains spelling and location without resolving a declaration.
 // Resolution belongs to the project checker, never to the parser.
+// QualifierSpan covers the package part of pkg::name (zero when unqualified);
+// MemberSpan covers the final name token. Span covers the whole name.
 type QualifiedName struct {
-	Span    source.Span
-	Package string
-	Name    string
+	Span          source.Span
+	QualifierSpan source.Span
+	MemberSpan    source.Span
+	Package       string
+	Name          string
 }
 
 type TypeNode interface {
@@ -84,20 +88,23 @@ type GroupExpr struct {
 }
 type UnaryExpr struct {
 	ExpressionLocation
-	Operator string
-	Operand  Expr
+	Operator     string
+	OperatorSpan source.Span
+	Operand      Expr
 }
 type BinaryExpr struct {
 	ExpressionLocation
-	Operator    string
-	Left, Right Expr
+	Operator     string
+	OperatorSpan source.Span
+	Left, Right  Expr
 }
 
 // ComparisonExpr preserves the chain instead of falsely nesting boolean results.
 type ComparisonExpr struct {
 	ExpressionLocation
-	Operands  []Expr
-	Operators []string
+	Operands      []Expr
+	Operators     []string
+	OperatorSpans []source.Span
 }
 type ArrayExpr struct {
 	ExpressionLocation
@@ -132,8 +139,9 @@ type CallExpr struct {
 }
 type ReferenceExpr struct {
 	ExpressionLocation
-	Callee Expr
-	Types  []TypeNode
+	KeywordSpan source.Span
+	Callee      Expr
+	Types       []TypeNode
 	// Bindings holds explicit Q3 near-input pins: `with param = expr`
 	// pairs in listed order. Empty keeps pure name-based capture.
 	Bindings []WithBinding
@@ -183,6 +191,11 @@ type MethodInvocation struct {
 }
 
 type File struct {
+	InvalidDeclarations map[Declaration][]source.Span
+	Incomplete          []IncompleteContext
+	InvalidNames        []Token
+	// Invalid contains non-executable regions discarded at canonical recovery boundaries.
+	Invalid      []source.Span
 	Source       *source.File
 	Header       PackageHeader
 	Declarations []Declaration
@@ -236,6 +249,7 @@ type ErrorDecl struct {
 	Fields     []Field
 }
 type FunctionDecl struct {
+	InvalidAssertions []source.Span
 	DeclarationLocation
 	Result     TypeNode
 	Name       Token
@@ -310,6 +324,7 @@ type Binding struct {
 	Value Expr
 }
 type Block struct {
+	Invalid  []source.Span
 	Span     source.Span
 	Steps    []Step
 	Terminal Body
@@ -482,3 +497,16 @@ type CoordinationStep struct{ Coordination Coordination }
 
 func (s *CoordinationStep) StepSpan() source.Span { return s.Coordination.Span }
 func (*CoordinationStep) step()                   {}
+
+// IncompleteContext is grammar-owned cursor evidence, never executable syntax.
+// ArgumentStarts includes a currently incomplete argument and respects nested
+// expressions because the parser records it before parsing each argument.
+type IncompleteContext struct {
+	Kind              string
+	Span, Open, Scope source.Span
+	Callee            Expr
+	Receiver          Expr
+	Name              QualifiedName
+	Arguments         []Argument
+	ArgumentStarts    []int
+}

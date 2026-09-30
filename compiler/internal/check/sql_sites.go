@@ -2,6 +2,7 @@ package check
 
 import (
 	"fmt"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"strings"
 	"unicode/utf8"
 
@@ -13,9 +14,13 @@ import (
 // Correspondence with the checked descriptor is validated once the
 // descriptor table is finished; see CheckSQLCallSites.
 type SQLSiteRecord struct {
-	Key   string
-	Owner string
-	Name  string
+	DescriptorFile  string
+	DescriptorSpans map[string]source.Span
+	File            string
+	Span            source.Span
+	Key             string
+	Owner           string
+	Name            string
 }
 
 // sqlQueryKey recovers the pool or transaction query operation from a
@@ -65,5 +70,5 @@ func (c *regionChecker) resolveSQLSite(operation, key string, args []syntax.Argu
 	if c.context.SQLSite == nil {
 		return ir.SQLCallSite{}, fmt.Errorf("sql query requires its calling project")
 	}
-	return c.context.SQLSite(key, name), nil
+	return c.context.SQLSite(key, name, literal.Token.Span), nil
 }

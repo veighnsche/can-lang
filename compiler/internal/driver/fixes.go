@@ -1,6 +1,7 @@
 package driver
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -45,8 +46,9 @@ func SuggestedFixes(snapshot *Snapshot, file string) []Fix {
 
 // ValidateFix proves one repair against an isolated snapshot: the edit must
 // still belong to the diagnosed buffer, preserve declared contracts,
-// assertions and completion ownership, and leave the project diagnosing
-// clean. Anything else is rejected with the reason. Validation never
+// assertions and completion ownership, resolve the target issue, and
+// introduce no error beyond unrelated unchanged findings. Anything else
+// is rejected with the reason. Validation never
 // builds, publishes, runs, dials out or mutates editor state.
 func ValidateFix(directory string, snapshot *Snapshot, overlay *project.Overlay, fix Fix) error {
 	if snapshot == nil || snapshot.Graph == nil {
@@ -67,6 +69,9 @@ func ValidateFix(directory string, snapshot *Snapshot, overlay *project.Overlay,
 	if err := checkFresh(overlay, snapshot, fix, before); err != nil {
 		return err
 	}
+	if err := checkSnapshotInputsFresh(snapshot, overlay); err != nil {
+		return err
+	}
 	if fix.End > len(before) {
 		return fmt.Errorf("fix %q range exceeds the diagnosed buffer", fix.Title)
 	}
@@ -85,13 +90,156 @@ func ValidateFix(directory string, snapshot *Snapshot, overlay *project.Overlay,
 	if err := isolated.Set(fix.File, fix.Version, after); err != nil {
 		return err
 	}
-	rechecked, err := CheckSnapshot(directory, fix.File, isolated)
+	var rechecked *Snapshot
+	var err error
+	if scratchSnapshot(snapshot) {
+		rechecked, err = CheckScratchSnapshot(context.Background(), fix.File, after)
+	} else {
+		rechecked, err = CheckSnapshot(directory, fix.File, isolated)
+	}
 	if err != nil {
 		return err
 	}
-	if len(rechecked.Diagnostics) != 0 {
-		first := rechecked.Diagnostics[0]
-		return fmt.Errorf("fix %q leaves %s: %s", fix.Title, first.Code, first.Message)
+	targetIndex := -1
+	for i := range snapshot.Diagnostics {
+		for _, proposed := range snapshot.Diagnostics[i].Fixes {
+			if proposed.File == fix.File && proposed.Start == fix.Start && proposed.End == fix.End && proposed.NewText == fix.NewText {
+				targetIndex = i
+				break
+			}
+		}
+	}
+	if targetIndex < 0 {
+		return fmt.Errorf("fix %q is not proposed by this diagnosis", fix.Title)
+	}
+	remaining := map[string]int{}
+	for i, diagnostic := range snapshot.Diagnostics {
+		if diagnostic.Severity == "error" || diagnostic.Severity == "" {
+			if i == targetIndex {
+				continue
+			}
+			mapped, ok := mapFixDiagnostic(diagnostic, before, after, fix)
+			if !ok {
+				return fmt.Errorf("fix %q overlaps an unrelated diagnostic", fix.Title)
+			}
+			remaining[fixIssueKey(mapped)]++
+		}
+	}
+	for _, diagnostic := range rechecked.Diagnostics {
+		if diagnostic.Severity != "error" && diagnostic.Severity != "" {
+			continue
+		}
+		key := fixIssueKey(diagnostic)
+		if remaining[key] == 0 {
+			return fmt.Errorf("fix %q introduces %s: %s", fix.Title, diagnostic.Code, diagnostic.Message)
+		}
+		remaining[key]--
+	}
+	return nil
+}
+
+func fixIssueKey(diagnostic Diagnostic) string {
+	return fmt.Sprintf("%q|%q|%q|%d:%d-%d:%d|%q|%#v", diagnostic.Severity, diagnostic.Code, diagnostic.File, diagnostic.Line, diagnostic.Start, diagnostic.EndLine, diagnostic.End, diagnostic.Message, diagnostic.Related)
+}
+
+func mapFixDiagnostic(d Diagnostic, before, after string, fix Fix) (Diagnostic, bool) {
+	d.Related = append([]RelatedDiagnostic(nil), d.Related...)
+	oldFile, err := source.New(fix.File, before)
+	if err != nil {
+		return d, false
+	}
+	newFile, err := source.New(fix.File, after)
+	if err != nil {
+		return d, false
+	}
+	mapSpan := func(path string, line, start, endLine, end int) (int, int, int, int, bool) {
+		if path != fix.File {
+			return line, start, endLine, end, true
+		}
+		a, ae := oldFile.Offset(source.UTF16Position{Line: line, Character: start})
+		if ae != nil {
+			return 0, 0, 0, 0, false
+		}
+		b, be := oldFile.Offset(source.UTF16Position{Line: endLine, Character: end})
+		if be != nil {
+			return 0, 0, 0, 0, false
+		}
+		if a < fix.Start && fix.Start < b || a == b && a == fix.Start {
+			return 0, 0, 0, 0, false
+		}
+		if a >= fix.Start {
+			a += len(fix.NewText)
+			b += len(fix.NewText)
+		}
+		first, fe := newFile.UTF16Position(a)
+		last, le := newFile.UTF16Position(b)
+		if fe != nil || le != nil {
+			return 0, 0, 0, 0, false
+		}
+		return first.Line, first.Character, last.Line, last.Character, true
+	}
+	var ok bool
+	d.Line, d.Start, d.EndLine, d.End, ok = mapSpan(d.File, d.Line, d.Start, d.EndLine, d.End)
+	if !ok {
+		return d, false
+	}
+	for i := range d.Related {
+		related := &d.Related[i]
+		related.Line, related.Start, related.EndLine, related.End, ok = mapSpan(related.File, related.Line, related.Start, related.EndLine, related.End)
+		if !ok {
+			return d, false
+		}
+	}
+	return d, true
+}
+
+func checkSnapshotInputsFresh(snapshot *Snapshot, overlay *project.Overlay) error {
+	if snapshot == nil {
+		return fmt.Errorf("stale diagnosis snapshot")
+	}
+	if snapshot.Analysis != nil {
+		for _, input := range snapshot.Analysis.Fingerprint.Docs() {
+			if overlay != nil {
+				if entry, ok := overlay.Get(input.Path); ok {
+					if entry.Version != input.Version || entry.Text != input.Text {
+						return fmt.Errorf("stale diagnosis: %s changed", input.Path)
+					}
+					continue
+				}
+			}
+			if input.Version != 0 {
+				return fmt.Errorf("stale diagnosis: missing overlay %s", input.Path)
+			}
+			if data, ok := snapshot.Graph.Inputs[input.Path]; ok && data == nil {
+				if _, err := os.Stat(input.Path); os.IsNotExist(err) {
+					continue
+				}
+			}
+			current, err := os.ReadFile(input.Path)
+			if err != nil || string(current) != input.Text {
+				return fmt.Errorf("stale diagnosis: %s changed", input.Path)
+			}
+		}
+	}
+	for path, data := range snapshot.Graph.Inputs {
+		if overlay != nil {
+			if entry, ok := overlay.Get(path); ok {
+				if entry.Text != string(data) {
+					return fmt.Errorf("stale diagnosis: %s changed", path)
+				}
+				continue
+			}
+		}
+		if data == nil {
+			if _, err := os.Stat(path); err == nil {
+				return fmt.Errorf("stale diagnosis: %s appeared", path)
+			}
+			continue
+		}
+		current, err := os.ReadFile(path)
+		if err != nil || string(current) != string(data) {
+			return fmt.Errorf("stale diagnosis: %s changed", path)
+		}
 	}
 	return nil
 }
@@ -100,6 +248,16 @@ func ValidateFix(directory string, snapshot *Snapshot, overlay *project.Overlay,
 // the overlay version must match and the current bytes must equal the
 // diagnosed bytes.
 func checkFresh(overlay *project.Overlay, snapshot *Snapshot, fix Fix, before string) error {
+	if scratchSnapshot(snapshot) {
+		if overlay == nil {
+			return fmt.Errorf("fix %q is stale: scratch buffer is closed", fix.Title)
+		}
+		entry, ok := overlay.Get(fix.File)
+		if !ok || entry.Version != fix.Version || entry.Text != before {
+			return fmt.Errorf("fix %q is stale: scratch buffer changed", fix.Title)
+		}
+		return nil
+	}
 	want := snapshot.Versions[fix.File]
 	if overlay == nil {
 		if want != 0 {
@@ -129,6 +287,10 @@ func checkFresh(overlay *project.Overlay, snapshot *Snapshot, fix Fix, before st
 		return fmt.Errorf("fix %q is stale: buffer changed since diagnosis", fix.Title)
 	}
 	return nil
+}
+
+func scratchSnapshot(snapshot *Snapshot) bool {
+	return snapshot != nil && snapshot.Graph != nil && snapshot.Graph.Root != nil && snapshot.Graph.Root.ID == "can.scratch"
 }
 
 // checkPreserved rejects repairs that change anything but match arms:

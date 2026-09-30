@@ -10,13 +10,19 @@ import (
 // parser owns a private token stream: splitting a generic closing angle must
 // not alter a lexer result retained by diagnostics or editor callers.
 type parser struct {
-	file             *source.File
-	tokens           []Token
-	pending          *Token
-	index            int
-	last             Token
-	depth            int
-	probabilityDepth int
+	recovering         bool
+	invalidDeclaration []source.Span
+	recovered          []Diagnostic
+	incomplete         []IncompleteContext
+	argumentContexts   []*IncompleteContext
+	declarationName    Token
+	file               *source.File
+	tokens             []Token
+	pending            *Token
+	index              int
+	last               Token
+	depth              int
+	probabilityDepth   int
 }
 
 type parseFailure struct{ diagnostic Diagnostic }
@@ -78,10 +84,12 @@ func (p *parser) closeAngle() {
 
 func (p *parser) qualified() QualifiedName {
 	first := p.expect(Name)
-	n := QualifiedName{Span: first.Span, Name: first.Text}
+	n := QualifiedName{Span: first.Span, MemberSpan: first.Span, Name: first.Text}
 	if p.at("::") {
 		p.take()
 		last := p.expect(Name)
+		n.QualifierSpan = first.Span
+		n.MemberSpan = last.Span
 		n.Package, n.Name, n.Span.End = n.Name, last.Text, last.Span.End
 	}
 	return n
@@ -143,7 +151,7 @@ func (p *parser) parseType() TypeNode {
 		node = &ChoiceArmType{Span: p.span(start), Result: result, Errors: bound}
 	case p.word("int") || p.word("float") || p.word("bool") || p.word("str") || p.word("void"):
 		t := p.take()
-		node = &NamedType{Span: t.Span, Name: QualifiedName{Span: t.Span, Name: t.Text}}
+		node = &NamedType{Span: t.Span, Name: QualifiedName{Span: t.Span, MemberSpan: t.Span, Name: t.Text}}
 	default:
 		name := p.qualified()
 		var arguments []TypeNode
@@ -220,5 +228,11 @@ func FormatType(node TypeNode) string {
 		return "choice_arm<" + FormatType(n.Result) + "> emits {" + list(n.Errors.Types) + "}"
 	default:
 		panic("unknown type node")
+	}
+}
+
+func (p *parser) rememberDeclarationName(name Token) {
+	if p.declarationName.Text == "" {
+		p.declarationName = name
 	}
 }

@@ -144,6 +144,7 @@ type WrapArm struct {
 func (p *parser) connection() Declaration {
 	start := p.expectWord("connection").Span.Start
 	name := p.expect(Name)
+	p.rememberDeclarationName(name)
 	p.expect(Newline)
 	p.expect(Indent)
 	var settings []ConnectionSetting
@@ -183,6 +184,7 @@ func (p *parser) nativeHeader(kind string) NativeHeader {
 	p.expectWord(kind)
 	result := p.parseType()
 	name := p.expect(Name)
+	p.rememberDeclarationName(name)
 	p.expectWord("from")
 	connection := p.qualified()
 	p.expect(Newline)
@@ -214,6 +216,7 @@ func (p *parser) nativeInputs(allowNear bool) []Input {
 			p.take()
 		}
 		name := p.expect(Name)
+		p.rememberDeclarationName(name)
 		if near && variadic {
 			p.fail("a near input cannot be variadic")
 		}
@@ -249,6 +252,7 @@ func (p *parser) nativeEntries(section string) []NativeEntry {
 	var entries []NativeEntry
 	for !p.at(Dedent) && !p.at(EOF) {
 		name := p.expect(Name)
+		p.rememberDeclarationName(name)
 		p.expect("=")
 		value := p.expression(1)
 		p.expect(Newline)
@@ -319,6 +323,7 @@ func (p *parser) llm() Declaration {
 func (p *parser) fixture() Declaration {
 	start := p.expectWord("fixture").Span.Start
 	name := p.expect(Name)
+	p.rememberDeclarationName(name)
 	p.expectWord("for")
 	target := p.qualified()
 	types := p.typeArguments()
@@ -353,6 +358,7 @@ func (p *parser) fixture() Declaration {
 func (p *parser) scenario() Declaration {
 	start := p.expectWord("scenario").Span.Start
 	name := p.expect(Name)
+	p.rememberDeclarationName(name)
 	p.expect(Newline)
 	return &ScenarioDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, Name: name}
 }
@@ -360,6 +366,7 @@ func (p *parser) scenario() Declaration {
 func (p *parser) action() Declaration {
 	start := p.expectWord("action").Span.Start
 	name := p.expect(Name)
+	p.rememberDeclarationName(name)
 	p.expect(Newline)
 	if !p.at(Indent) {
 		p.fail("action requires a method and path")
@@ -521,6 +528,7 @@ func (p *parser) fixtureCase() FixtureCase {
 func (p *parser) wrap() Declaration {
 	start := p.expectWord("wrap").Span.Start
 	name := p.expect(Name)
+	p.rememberDeclarationName(name)
 	p.expectWord("from")
 	base := p.qualified()
 	p.expect(Newline)
@@ -657,6 +665,7 @@ func (p *parser) choiceArm() Declaration {
 	start := p.expectWord("choice_arm").Span.Start
 	result := p.parseType()
 	name := p.expect(Name)
+	p.rememberDeclarationName(name)
 	p.expect(Newline)
 	p.expect(Indent)
 	bound := p.errorBound()
@@ -685,6 +694,7 @@ func (p *parser) question(start int, record *Token) Declaration {
 		key := p.take()
 		p.expectWord("as")
 		name := p.expect(Name)
+		p.rememberDeclarationName(name)
 		p.expect(Newline)
 		for _, b := range q.Binders {
 			if b.Kind.Text == key.Text {

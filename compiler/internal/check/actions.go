@@ -1,6 +1,7 @@
 package check
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"sort"
@@ -69,6 +70,7 @@ type ActionDeclaration struct {
 // Declarations carry no handlers, so a shared contract package checks and
 // exports its actions without importing anything executable.
 func (c *programChecker) checkActions(files []*resolve.File) error {
+	var problems []error
 	seen := map[string]string{}
 	type priorShape struct {
 		name     string
@@ -82,28 +84,43 @@ func (c *programChecker) checkActions(files []*resolve.File) error {
 			if !ok {
 				continue
 			}
-			action, shape, err := c.checkAction(file, d)
+			if c.world.Invalid[d] != nil {
+				continue
+			}
+			err := func() error {
+				action, shape, err := c.checkAction(file, d)
+				if err != nil {
+					return err
+				}
+				if prev, dup := seen[shape]; dup {
+					return source.Locate(file.Source.Path, d.Path.Span, fmt.Errorf("action %s duplicates the %s route of action %s", action.Symbol.ID, shape, prev))
+				}
+				segments := strings.Split(strings.SplitN(shape, " ", 2)[1], "/")
+				for _, prev := range prior {
+					if prev.method != action.Method {
+						continue
+					}
+					if actionShapesAmbiguous(prev.segments, segments) {
+						return source.Locate(file.Source.Path, d.Path.Span, fmt.Errorf("action %s ambiguously overlaps the %s route of action %s", action.Symbol.ID, shape, prev.name))
+					}
+				}
+				seen[shape] = action.Symbol.ID
+				prior = append(prior, priorShape{name: action.Symbol.ID, method: action.Method, segments: segments})
+				c.program.Actions = append(c.program.Actions, action)
+				return nil
+			}()
 			if err != nil {
-				return err
-			}
-			if prev, dup := seen[shape]; dup {
-				return source.Locate(file.Source.Path, d.Path.Span, fmt.Errorf("action %s duplicates the %s route of action %s", action.Symbol.ID, shape, prev))
-			}
-			segments := strings.Split(strings.SplitN(shape, " ", 2)[1], "/")
-			for _, prev := range prior {
-				if prev.method != action.Method {
-					continue
+				err = source.Locate(file.Source.Path, d.Name.Span, err)
+				if !c.recovering {
+					return err
 				}
-				if actionShapesAmbiguous(prev.segments, segments) {
-					return source.Locate(file.Source.Path, d.Path.Span, fmt.Errorf("action %s ambiguously overlaps the %s route of action %s", action.Symbol.ID, shape, prev.name))
-				}
+				problems = append(problems, err)
+				c.world.Invalid[d] = err
+				file.Package.Scope.Symbols[d.Name.Text].Invalid = err
 			}
-			seen[shape] = action.Symbol.ID
-			prior = append(prior, priorShape{name: action.Symbol.ID, method: action.Method, segments: segments})
-			c.program.Actions = append(c.program.Actions, action)
 		}
 	}
-	return nil
+	return errors.Join(problems...)
 }
 
 // actionShapesAmbiguous reports whether two same-method route shapes can

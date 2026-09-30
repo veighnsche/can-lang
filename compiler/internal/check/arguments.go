@@ -1,6 +1,7 @@
 package check
 
 import (
+	"errors"
 	"fmt"
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
@@ -95,99 +96,136 @@ func (c *regionChecker) arguments(e *Expressions, callee ValueBinding, args []sy
 	index := func(array *ir.Expression, i int) *ir.Expression {
 		return &ir.Expression{Kind: ir.Index, Span: array.Span, Type: array.Type.Element(), Inputs: []*ir.Expression{array, {Kind: ir.Literal, Span: array.Span, Type: integer, Text: strconv.Itoa(i)}}}
 	}
+	var problems []error
+	positionKnown := true
 	for _, arg := range args {
-		if arg.Group != nil {
-			return nil, nil, fmt.Errorf("state argument group requires its native declaration")
-		}
-		if !arg.Spread {
-			var want *types.Type
-			if len(values) < fixed {
-				want = inputs[len(values)]
-			} else if tail != nil {
-				want = tail.Type.Element()
-			} else {
-				return nil, nil, fmt.Errorf("call arity mismatch")
+		before := len(values)
+		rollback := c.childCheckpoint()
+		argErr := func() error {
+			if !positionKnown && arg.Value != nil {
+				_, err := e.Check(arg.Value, nil)
+				return err
 			}
-			value, err := e.Check(arg.Value, want)
+			if arg.Group != nil {
+				return fmt.Errorf("state argument group requires its native declaration")
+			}
+			if !arg.Spread {
+				var want *types.Type
+				if len(values) < fixed {
+					want = inputs[len(values)]
+				} else if tail != nil {
+					want = tail.Type.Element()
+				} else {
+					return fmt.Errorf("call arity mismatch")
+				}
+				value, err := e.Check(arg.Value, want)
+				if err != nil {
+					return err
+				}
+				value = save(value)
+				if len(values) < fixed {
+					values = append(values, value)
+				} else {
+					tail.Inputs = append(tail.Inputs, value)
+					tail.Spread = append(tail.Spread, false)
+				}
+				return nil
+			}
+			length, known := literalSpreadLength(arg.Value)
+			if len(values) < fixed && !known {
+				return fmt.Errorf("runtime-length spread cannot supply fixed inputs")
+			}
+			if !variadic && (!known || len(values)+length > fixed) {
+				return fmt.Errorf("spread arity mismatch")
+			}
+			var element *types.Type
+			if len(values) < fixed {
+				element = inputs[len(values)]
+			} else if tail != nil {
+				element = tail.Type.Element()
+			} else if known && length == 0 {
+				element = integer
+			}
+			if element == nil {
+				return fmt.Errorf("spread has no expected element contract")
+			}
+			expected, err := types.ArrayOfChecked(element)
 			if err != nil {
-				return nil, nil, err
+				return err
+			}
+			value, err := e.Check(arg.Value, nil)
+			if err != nil && known {
+				value, err = e.Check(arg.Value, expected)
+			}
+			if err == nil && value.Type.Kind() != types.Array {
+				err = fmt.Errorf("spread requires an array")
+			}
+			if err != nil {
+				return err
 			}
 			value = save(value)
-			if len(values) < fixed {
-				values = append(values, value)
-			} else {
-				tail.Inputs = append(tail.Inputs, value)
-				tail.Spread = append(tail.Spread, false)
-			}
-			continue
-		}
-		length, known := literalSpreadLength(arg.Value)
-		if len(values) < fixed && !known {
-			return nil, nil, fmt.Errorf("runtime-length spread cannot supply fixed inputs")
-		}
-		if !variadic && (!known || len(values)+length > fixed) {
-			return nil, nil, fmt.Errorf("spread arity mismatch")
-		}
-		var element *types.Type
-		if len(values) < fixed {
-			element = inputs[len(values)]
-		} else if tail != nil {
-			element = tail.Type.Element()
-		} else if known && length == 0 {
-			element = integer
-		}
-		if element == nil {
-			return nil, nil, fmt.Errorf("spread has no expected element contract")
-		}
-		expected, err := types.ArrayOfChecked(element)
-		if err != nil {
-			return nil, nil, err
-		}
-		value, err := e.Check(arg.Value, nil)
-		if err != nil && known {
-			value, err = e.Check(arg.Value, expected)
-		}
-		if err == nil && value.Type.Kind() != types.Array {
-			err = fmt.Errorf("spread requires an array")
-		}
-		if err != nil {
-			return nil, nil, err
-		}
-		value = save(value)
-		consumed := 0
-		if known {
-			for consumed < length && len(values) < fixed {
-				if !types.Assignable(value.Type.Element(), inputs[len(values)]) {
-					return nil, nil, fmt.Errorf("spread element type does not fit fixed input")
+			consumed := 0
+			if known {
+				for consumed < length && len(values) < fixed {
+					if !types.Assignable(value.Type.Element(), inputs[len(values)]) {
+						return fmt.Errorf("spread element type does not fit fixed input")
+					}
+					values = append(values, index(value, consumed))
+					consumed++
 				}
-				values = append(values, index(value, consumed))
-				consumed++
 			}
-		}
-		if tail != nil && (!known || consumed < length) {
-			if !types.Assignable(value.Type.Element(), tail.Type.Element()) {
-				return nil, nil, fmt.Errorf("spread element type does not fit variadic input")
+			if tail != nil && (!known || consumed < length) {
+				if !types.Assignable(value.Type.Element(), tail.Type.Element()) {
+					return fmt.Errorf("spread element type does not fit variadic input")
+				}
+				rest := value
+				if consumed > 0 {
+					rest = &ir.Expression{Kind: ir.Slice, Span: value.Span, Type: value.Type, Inputs: []*ir.Expression{value, {Kind: ir.Literal, Span: value.Span, Type: integer, Text: strconv.Itoa(consumed)}, nil}}
+				}
+				tail.Inputs = append(tail.Inputs, rest)
+				tail.Spread = append(tail.Spread, true)
 			}
-			rest := value
-			if consumed > 0 {
-				rest = &ir.Expression{Kind: ir.Slice, Span: value.Span, Type: value.Type, Inputs: []*ir.Expression{value, {Kind: ir.Literal, Span: value.Span, Type: integer, Text: strconv.Itoa(consumed)}, nil}}
+			return nil
+		}()
+		if argErr != nil {
+			rollback()
+			if !c.context.Recover {
+				return nil, nil, argErr
 			}
-			tail.Inputs = append(tail.Inputs, rest)
-			tail.Spread = append(tail.Spread, true)
+			problems = append(problems, c.locate(arg.Span, argErr))
+			count := 1
+			if arg.Spread {
+				var known bool
+				count, known = literalSpreadLength(arg.Value)
+				if !known {
+					positionKnown = false
+				}
+			}
+			values = values[:before]
+			for count > 0 && len(values) < fixed {
+				values = append(values, nil)
+				count--
+			}
 		}
 	}
-	if len(values) != fixed {
-		return nil, nil, fmt.Errorf("call arity mismatch")
+	if positionKnown && len(values) != fixed {
+		problems = append(problems, fmt.Errorf("call arity mismatch"))
 	}
 	if tail != nil {
 		values = append(values, tail)
 	}
 	for i, node := range state {
+		rollback := c.childCheckpoint()
 		value, err := e.Check(node, stateTypes[i])
 		if err != nil {
-			return nil, nil, err
+			rollback()
+			problems = append(problems, err)
+			continue
 		}
 		values = append(values, save(value))
+	}
+	if len(problems) != 0 {
+		return nil, nil, errors.Join(problems...)
 	}
 	return prepared, values, nil
 }

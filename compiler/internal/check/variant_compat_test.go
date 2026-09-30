@@ -95,7 +95,7 @@ fn option::value<int> absent
 		t.Run(name, func(t *testing.T) {
 			text := header + fn + programMain + "    ok\n"
 			err := mustReject(t, text)
-			if !strings.Contains(err, "expression type does not fit expected type at byte ") {
+			if !strings.Contains(err, "expression type does not fit expected type") {
 				t.Fatalf("wrong option diagnostic: %s", err)
 			}
 		})
@@ -142,7 +142,7 @@ fn wrap<str> convert
 		t.Run(name, func(t *testing.T) {
 			text := programHeader + fn + programMain + "    ok\n"
 			err := mustReject(t, text)
-			if !strings.Contains(err, "expression type does not fit expected type at byte ") {
+			if !strings.Contains(err, "expression type does not fit expected type") {
 				t.Fatalf("wrong incompatible-record diagnostic: %s", err)
 			}
 		})

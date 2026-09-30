@@ -4,11 +4,13 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
 
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 )
 
@@ -64,48 +66,64 @@ func FixtureDigest(files []Fixture) (string, error) {
 // stay confined to the project root. Missing files, escapes and symlink
 // violations fail the load; check-time loading serves these captured bytes
 // instead of rereading the working tree.
-func (p *Project) captureFixtures() error {
+func (p *Project) captureFixtures(inputs map[string][]byte) error {
 	confined, err := filepath.EvalSymlinks(p.Root)
 	if err != nil {
 		return err
 	}
 	captured := map[string][]byte{}
+	var problems []error
+	p.FixtureErrors = map[string]error{}
 	for _, src := range p.Sources {
-		paths, err := rawReferences(src.Syntax)
-		if err != nil {
-			return err
+		walker := &rawWalker{}
+		for _, decl := range src.Syntax.Declarations {
+			if err := walker.declaration(decl); err != nil {
+				problems = append(problems, source.Locate(src.Path, decl.DeclSpan(), err))
+			}
 		}
+		paths := walker.paths
 		directory := filepath.Dir(src.Path)
 		for _, path := range paths {
-			if path == "" || filepath.IsAbs(path) {
-				return fmt.Errorf("raw fixture %q must be a source-relative path", path)
+			captureErr := func() error {
+				if path == "" || filepath.IsAbs(path) {
+					return fmt.Errorf("raw fixture %q must be a source-relative path", path)
+				}
+				requested := filepath.Join(directory, filepath.FromSlash(path))
+				inputs[requested] = nil
+				real, err := filepath.EvalSymlinks(requested)
+				if err != nil {
+					return fmt.Errorf("raw fixture %q is not readable", path)
+				}
+				if !Contains(confined, real) {
+					return fmt.Errorf("raw fixture %q escapes its project", path)
+				}
+				rel, err := filepath.Rel(confined, real)
+				if err != nil {
+					return fmt.Errorf("raw fixture %q escapes its project", path)
+				}
+				relative := filepath.ToSlash(rel)
+				if err := NormalizePath(relative); err != nil {
+					return fmt.Errorf("raw fixture %q escapes its project", path)
+				}
+				if _, ok := captured[relative]; ok {
+					return nil
+				}
+				data, err := os.ReadFile(real)
+				inputs[real] = data
+				if err != nil {
+					return fmt.Errorf("raw fixture %q is not readable", path)
+				}
+				if len(data) > MaxFixtureBytes {
+					return fmt.Errorf("raw fixture %q exceeds its size bound", path)
+				}
+				captured[relative] = append([]byte(nil), data...)
+				return nil
+			}()
+			if captureErr != nil {
+				captureErr = source.LocateCode(src.Path, walker.spans[path], "CAN-PROJECT-FIXTURE", captureErr)
+				problems = append(problems, captureErr)
+				p.FixtureErrors[filepath.Join(directory, filepath.FromSlash(path))] = captureErr
 			}
-			real, err := filepath.EvalSymlinks(filepath.Join(directory, filepath.FromSlash(path)))
-			if err != nil {
-				return fmt.Errorf("raw fixture %q is not readable", path)
-			}
-			if !Contains(confined, real) {
-				return fmt.Errorf("raw fixture %q escapes its project", path)
-			}
-			rel, err := filepath.Rel(confined, real)
-			if err != nil {
-				return fmt.Errorf("raw fixture %q escapes its project", path)
-			}
-			relative := filepath.ToSlash(rel)
-			if err := NormalizePath(relative); err != nil {
-				return fmt.Errorf("raw fixture %q escapes its project", path)
-			}
-			if _, ok := captured[relative]; ok {
-				continue
-			}
-			data, err := os.ReadFile(real)
-			if err != nil {
-				return fmt.Errorf("raw fixture %q is not readable", path)
-			}
-			if len(data) > MaxFixtureBytes {
-				return fmt.Errorf("raw fixture %q exceeds its size bound", path)
-			}
-			captured[relative] = append([]byte(nil), data...)
 		}
 	}
 	p.CheckedFixtures = p.CheckedFixtures[:0]
@@ -113,13 +131,20 @@ func (p *Project) captureFixtures() error {
 		p.CheckedFixtures = append(p.CheckedFixtures, Fixture{Relative: relative, Bytes: captured[relative]})
 	}
 	p.FixturesSHA256, err = FixtureDigest(p.CheckedFixtures)
-	return err
+	if err != nil {
+		problems = append(problems, err)
+	}
+	return errors.Join(problems...)
 }
 
 // FixtureBytes serves one captured fixture to check-time loading. The path
 // resolves exactly as at capture; a missing entry fails closed instead of
 // rereading the working tree, so workers always observe captured bytes.
 func (p *Project) FixtureBytes(sourceDir, path string) ([]byte, error) {
+	requested := filepath.Join(sourceDir, filepath.FromSlash(path))
+	if p.FixtureErrors[requested] != nil {
+		return nil, &source.BlockedError{Dependency: requested}
+	}
 	if path == "" || filepath.IsAbs(path) {
 		return nil, fmt.Errorf("raw fixture %q must be a source-relative path", path)
 	}
@@ -163,11 +188,16 @@ func rawReferences(file *syntax.File) ([]string, error) {
 
 type rawWalker struct {
 	paths []string
+	spans map[string]source.Span
 }
 
 func (w *rawWalker) mode(mode *syntax.AssertionMode) {
 	if mode != nil && mode.Raw.Value != "" {
 		w.paths = append(w.paths, mode.Raw.Value)
+		if w.spans == nil {
+			w.spans = map[string]source.Span{}
+		}
+		w.spans[mode.Raw.Value] = mode.Raw.Span
 	}
 }
 

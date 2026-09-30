@@ -14,7 +14,7 @@ import (
 // function-local bindings by scope identity — and returns every indexed
 // occurrence sharing that identity. Shadowed or same-spelled bindings in
 // other scopes stay distinct; unresolved tokens decline to null; and
-// go-to-definition keeps declining locals rather than guessing.
+// go-to-definition uses the same binding identity for locals.
 
 const g03Main = `package app
     provides [run, shadowed]
@@ -166,7 +166,7 @@ func TestG03InitializeAdvertisesReferences(t *testing.T) {
 	if capabilities["referencesProvider"] != true {
 		t.Fatalf("references not advertised: %v", capabilities)
 	}
-	if capabilities["textDocumentSync"] != 1.0 || capabilities["definitionProvider"] != true || capabilities["documentFormattingProvider"] != true || capabilities["hoverProvider"] != true {
+	if !g01FullSync(capabilities) || capabilities["definitionProvider"] != true || capabilities["documentFormattingProvider"] != true || capabilities["hoverProvider"] != true {
 		t.Fatalf("existing capabilities regressed: %v", capabilities)
 	}
 }
@@ -305,19 +305,22 @@ func TestG03ReferencesUnresolvedReturnsNull(t *testing.T) {
 	}
 }
 
-// TestG03DefinitionStillDeclinesLocals pins the G03 boundary: references
-// own binding identity while go-to-definition keeps declining locals.
-func TestG03DefinitionStillDeclinesLocals(t *testing.T) {
+// Local definitions use the same binding identity as project references.
+func TestG03DefinitionLocals(t *testing.T) {
 	root := writeServerProject(t, map[string]string{"src/main.can": g03Main})
 	uri := uriFromPath(filepath.Join(root, "src/main.can"))
-	line, character := positionOf(t, g03Main, "call action(doub|led)")
-	frames := runExchange(t, []string{
-		didOpen(uri, g03Main, 1),
-		definition(2, uri, line, character),
-		`{"jsonrpc":"2.0","method":"exit"}`,
-	})
-	if result := g01Response(t, frames, 2); result != nil {
-		t.Fatalf("definition guessed a local: %v", result)
+	line, column := positionOf(t, g03Main, "call action(doub|led)")
+	frames := runExchange(t, []string{didOpen(uri, g03Main, 1), definition(2, uri, line, column), `{"jsonrpc":"2.0","method":"exit"}`})
+	result, ok := g01Response(t, frames, 2).(map[string]any)
+	if !ok || result["uri"] != uri {
+		t.Fatalf("local definition unavailable: %v", result)
+	}
+	rng := result["range"].(map[string]any)
+	start := rng["start"].(map[string]any)
+	end := rng["end"].(map[string]any)
+	declLine, declColumn := positionOf(t, g03Main, "int |doubled = seed")
+	if start["line"] != float64(declLine) || start["character"] != float64(declColumn) || end["character"] != float64(declColumn+7) {
+		t.Fatalf("definition missed local declaration: %v", rng)
 	}
 }
 

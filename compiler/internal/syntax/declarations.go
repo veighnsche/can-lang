@@ -13,24 +13,133 @@ func (r ParseResult) OK() bool { return len(r.Diagnostics) == 0 }
 // source text; it has no loader, runtime, environment or provider dependency.
 func Parse(file *source.File) (result ParseResult) {
 	lexed := Lex(file)
-	if !lexed.OK() {
-		return ParseResult{Diagnostics: lexed.Diagnostics}
-	}
 	p := newParser(lexed)
+	p.recovering = true
+	parsed := &File{Source: file, Comments: lexed.Comments, InvalidDeclarations: map[Declaration][]source.Span{}}
+	result = ParseResult{File: parsed, Diagnostics: append([]Diagnostic(nil), lexed.Diagnostics...)}
+	// Header failure makes package membership unprovable. Retain the source
+	// and diagnostics, but do not invent a package or expose its declarations.
+	if issue := p.attempt(func() { parsed.Header = p.packageHeader() }); issue != nil {
+		result.Diagnostics = append(result.Diagnostics, *issue)
+		parsed.Invalid = append(parsed.Invalid, source.Span{Start: file.BOMLength(), End: len(file.Text())})
+		return result
+	}
+	for !p.at(EOF) {
+		start := p.peek().Span.Start
+		contextStart := len(p.incomplete)
+		p.declarationName = Token{}
+		p.invalidDeclaration = nil
+		var declaration Declaration
+		issue := p.attempt(func() { declaration = p.declaration() })
+		if issue != nil {
+			// Synchronize against physical top-level token positions. Layout
+			// tokens have zero width and never count as declarations.
+			p.pending = nil
+			for !p.at(EOF) {
+				token := p.peek()
+				position, _ := file.Position(token.Span.Start)
+				if token.Span.Start > start && token.Span.End > token.Span.Start && position.Column == 1 && token.Kind != Newline {
+					break
+				}
+				p.take()
+			}
+			result.Diagnostics = append(result.Diagnostics, *issue)
+			if p.declarationName.Text != "" {
+				parsed.InvalidNames = append(parsed.InvalidNames, p.declarationName)
+			}
+			parsed.Invalid = append(parsed.Invalid, source.Span{Start: start, End: p.peek().Span.Start})
+			continue
+		}
+		if len(p.invalidDeclaration) != 0 {
+			parsed.InvalidDeclarations[declaration] = append([]source.Span(nil), p.invalidDeclaration...)
+			parsed.Invalid = append(parsed.Invalid, p.invalidDeclaration...)
+		}
+		damaged := false
+		for _, diagnostic := range lexed.Diagnostics {
+			if diagnostic.Span.Start >= start && diagnostic.Span.Start < declaration.DeclSpan().End {
+				damaged = true
+				break
+			}
+		}
+		if damaged {
+			if fn, ok := declaration.(*FunctionDecl); ok {
+				safe := true
+				for _, diagnostic := range lexed.Diagnostics {
+					if diagnostic.Span.Start >= start && diagnostic.Span.Start < declaration.DeclSpan().End {
+						assertionFault := false
+						for _, row := range fn.Assertions {
+							if diagnostic.Span.Start >= row.Span.Start && diagnostic.Span.Start <= row.Span.End {
+								fn.InvalidAssertions = append(fn.InvalidAssertions, row.Span)
+								assertionFault = true
+								break
+							}
+						}
+						for _, invalid := range fn.InvalidAssertions {
+							if diagnostic.Span.Start >= invalid.Start && diagnostic.Span.Start <= invalid.End {
+								assertionFault = true
+								break
+							}
+						}
+						if assertionFault {
+							continue
+						}
+						if diagnostic.Span.Start < fn.Body.Span.Start {
+							safe = false
+							break
+						}
+						fn.Body.Invalid = append(fn.Body.Invalid, diagnostic.Span)
+					}
+				}
+				validRows := fn.Assertions[:0]
+				for _, row := range fn.Assertions {
+					valid := true
+					for _, invalid := range fn.InvalidAssertions {
+						if row.Span.Start >= invalid.Start && row.Span.Start < invalid.End {
+							valid = false
+							break
+						}
+					}
+					if valid {
+						validRows = append(validRows, row)
+					}
+				}
+				fn.Assertions = validRows
+				if safe {
+					parsed.Declarations = append(parsed.Declarations, declaration)
+				} else {
+					parsed.Declarations = append(parsed.Declarations, declaration)
+					parsed.InvalidDeclarations[declaration] = append(parsed.InvalidDeclarations[declaration], declaration.DeclSpan())
+				}
+			} else {
+				parsed.Declarations = append(parsed.Declarations, declaration)
+				parsed.InvalidDeclarations[declaration] = append(parsed.InvalidDeclarations[declaration], declaration.DeclSpan())
+			}
+			parsed.Invalid = append(parsed.Invalid, declaration.DeclSpan())
+		} else {
+			parsed.Declarations = append(parsed.Declarations, declaration)
+		}
+		for i := contextStart; i < len(p.incomplete); i++ {
+			p.incomplete[i].Scope = declaration.DeclSpan()
+		}
+	}
+	result.Diagnostics = append(result.Diagnostics, p.recovered...)
+	parsed.Incomplete = p.incomplete
+	return result
+}
+
+// attempt catches only canonical grammar failures, never implementation bugs.
+func (p *parser) attempt(parse func()) (diagnostic *Diagnostic) {
 	defer func() {
 		if caught := recover(); caught != nil {
 			if failure, ok := caught.(parseFailure); ok {
-				result = ParseResult{Diagnostics: []Diagnostic{failure.diagnostic}}
+				diagnostic = &failure.diagnostic
 			} else {
 				panic(caught)
 			}
 		}
 	}()
-	parsed := &File{Source: file, Comments: lexed.Comments, Header: p.packageHeader()}
-	for !p.at(EOF) {
-		parsed.Declarations = append(parsed.Declarations, p.declaration())
-	}
-	return ParseResult{File: parsed}
+	parse()
+	return nil
 }
 
 func (p *parser) nameList(end Kind) []Token {
@@ -51,6 +160,7 @@ func (p *parser) nameList(end Kind) []Token {
 func (p *parser) packageHeader() PackageHeader {
 	start := p.expectWord("package").Span.Start
 	name := p.expect(Name)
+	p.rememberDeclarationName(name)
 	p.expect(Newline)
 	p.expect(Indent)
 	p.expectWord("provides")
@@ -64,6 +174,7 @@ func (p *parser) packageHeader() PackageHeader {
 	if !p.at("]") {
 		for {
 			name := p.expect(Name)
+			p.rememberDeclarationName(name)
 			var dependency *Token
 			if p.at("::") {
 				p.take()
@@ -112,6 +223,7 @@ func (p *parser) field() Field {
 	start := p.peek().Span.Start
 	typeNode := p.parseType()
 	name := p.expect(Name)
+	p.rememberDeclarationName(name)
 	return Field{Span: p.span(start), Type: typeNode, Name: name}
 }
 
@@ -147,6 +259,7 @@ func (p *parser) declaration() Declaration {
 		}
 		p.take()
 		name := p.expect(Name)
+		p.rememberDeclarationName(name)
 		parameters := p.parameters()
 		if p.word("choice") || p.word("score") {
 			if len(parameters) > 0 {
@@ -159,8 +272,9 @@ func (p *parser) declaration() Declaration {
 		if p.at(Indent) {
 			p.take()
 			for !p.at(Dedent) && !p.at(EOF) {
-				fields = append(fields, p.field())
-				p.expect(Newline)
+				if span, failed := p.recoverLine(func() { field := p.field(); p.expect(Newline); fields = append(fields, field) }); failed {
+					p.invalidDeclaration = append(p.invalidDeclaration, span)
+				}
 			}
 			p.expect(Dedent)
 		}
@@ -168,6 +282,7 @@ func (p *parser) declaration() Declaration {
 	case p.word("variant"):
 		p.take()
 		name := p.expect(Name)
+		p.rememberDeclarationName(name)
 		parameters := p.parameters()
 		p.expect(Newline)
 		p.expect(Indent)
@@ -182,6 +297,7 @@ func (p *parser) declaration() Declaration {
 	case p.word("error"):
 		p.take()
 		name := p.expect(Name)
+		p.rememberDeclarationName(name)
 		parameters := p.parameters()
 		p.expect("{")
 		var fields []Field
@@ -219,6 +335,7 @@ func (p *parser) function() Declaration {
 	start := p.expectWord("fn").Span.Start
 	result := p.parseType()
 	name := p.expect(Name)
+	p.rememberDeclarationName(name)
 	parameters := p.parameters()
 	p.expect(Newline)
 	p.expect(Indent)
@@ -237,35 +354,45 @@ func (p *parser) function() Declaration {
 		p.expect(Newline)
 		p.expect(Indent)
 		for !p.at(Dedent) && !p.at(EOF) {
-			start := p.peek().Span.Start
-			near := p.word("near")
-			if near {
-				p.take()
+			span, failed := p.recoverLine(func() {
+				start := p.peek().Span.Start
+				near := p.word("near")
+				if near {
+					p.take()
+				}
+				typeNode := p.parseType()
+				variadic := p.at("...")
+				if variadic {
+					p.take()
+				}
+				name := p.expect(Name)
+				p.rememberDeclarationName(name)
+				if near && variadic {
+					p.fail("a near input cannot be variadic")
+				}
+				inputs = append(inputs, Input{Field: Field{Span: p.span(start), Type: typeNode, Name: name}, Near: near, Variadic: variadic})
+				p.expect(Newline)
+			})
+			if failed {
+				p.invalidDeclaration = append(p.invalidDeclaration, span)
 			}
-			typeNode := p.parseType()
-			variadic := p.at("...")
-			if variadic {
-				p.take()
-			}
-			name := p.expect(Name)
-			if near && variadic {
-				p.fail("a near input cannot be variadic")
-			}
-			inputs = append(inputs, Input{Field: Field{Span: p.span(start), Type: typeNode, Name: name}, Near: near, Variadic: variadic})
-			p.expect(Newline)
 		}
 		p.expect(Dedent)
 	}
 	p.expectWord("asserts")
 	p.expect(Newline)
 	p.expect(Indent)
-	assertions := []Assertion{p.assertion(receiver != nil)}
+	var assertions []Assertion
+	var invalidAssertions []source.Span
 	for !p.at(Dedent) && !p.at(EOF) {
-		assertions = append(assertions, p.assertion(receiver != nil))
+		span, failed := p.recoverLine(func() { assertions = append(assertions, p.assertion(receiver != nil)) })
+		if failed {
+			invalidAssertions = append(invalidAssertions, span)
+		}
 	}
 	p.expect(Dedent)
 	body := p.block()
-	return &FunctionDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, Result: result, Name: name, Parameters: parameters, Receiver: receiver, Errors: bound, Inputs: inputs, Assertions: assertions, Body: body}
+	return &FunctionDecl{InvalidAssertions: invalidAssertions, DeclarationLocation: DeclarationLocation{p.span(start)}, Result: result, Name: name, Parameters: parameters, Receiver: receiver, Errors: bound, Inputs: inputs, Assertions: assertions, Body: body}
 }
 
 func (p *parser) expressionList(end Kind) []Expr {
@@ -456,34 +583,64 @@ func (p *parser) completion() Body {
 
 func (p *parser) block() Block {
 	start := p.peek().Span.Start
-	var steps []Step
+	block := Block{}
 	for {
-		if p.isCoordination() {
-			steps = append(steps, &CoordinationStep{Coordination: p.coordination()})
+		begin := p.peek().Span.Start
+		terminal := false
+		if !p.isCoordination() && (p.word("ok") || p.word("relay") || p.word("match") || p.word("inherit") || p.at(Name) && p.startsConstructor()) {
+			terminal = true
+		}
+		issue := p.attempt(func() {
+			if terminal {
+				block.Terminal = p.armBody(true)
+				p.expect(Dedent)
+				return
+			}
+			if p.at(Dedent) || p.at(EOF) {
+				p.fail("a block requires a terminal completion")
+			}
+			if p.isCoordination() {
+				block.Steps = append(block.Steps, &CoordinationStep{Coordination: p.coordination()})
+				return
+			}
+			if p.word("call") {
+				call := p.callExpression().(*CallExpr)
+				p.expect(Newline)
+				block.Steps = append(block.Steps, &CallStep{Span: call.Span, Call: call})
+				return
+			}
+			block.Steps = append(block.Steps, &BindingStep{Binding: p.binding()})
+		})
+		if issue == nil {
+			if terminal {
+				break
+			}
 			continue
 		}
-		if p.word("call") {
-			call := p.callExpression().(*CallExpr)
-			p.expect(Newline)
-			steps = append(steps, &CallStep{Span: call.Span, Call: call})
-			continue
+		if !p.recovering {
+			panic(parseFailure{*issue})
 		}
-		if p.word("ok") || p.word("relay") || p.word("match") || p.word("inherit") {
+		p.recovered = append(p.recovered, *issue)
+		p.pending = nil
+		// No statement crosses a physical line except explicit block syntax;
+		// nested layout tokens are skipped only inside the failed statement.
+		for !p.at(EOF) && !p.at(Dedent) && !p.at(Newline) {
+			p.take()
+		}
+		if p.at(Newline) {
+			p.take()
+		}
+		block.Invalid = append(block.Invalid, source.Span{Start: begin, End: p.peek().Span.Start})
+		if p.at(Dedent) {
+			p.take()
 			break
 		}
-		// An explicit constructor at statement position completes the region;
-		// all other admitted starts must be typed immutable bindings.
-		if p.at(Name) && p.startsConstructor() {
+		if p.at(EOF) {
 			break
 		}
-		if p.at(Dedent) || p.at(EOF) {
-			p.fail("a block requires a terminal completion")
-		}
-		steps = append(steps, &BindingStep{Binding: p.binding()})
 	}
-	terminal := p.armBody(true)
-	p.expect(Dedent)
-	return Block{Span: p.span(start), Steps: steps, Terminal: terminal}
+	block.Span = source.Span{Start: start, End: p.last.Span.End}
+	return block
 }
 
 func (p *parser) startsConstructor() (yes bool) {
@@ -549,4 +706,28 @@ func (p *parser) armBody(terminal bool) Body {
 	value := p.expression(1)
 	p.expect(Newline)
 	return &ValueBody{BodyLocation: BodyLocation{p.span(start)}, Value: value}
+}
+
+// recoverLine resumes only at canonical layout boundaries. Failed fragments
+// remain explicitly invalid and never become executable syntax.
+func (p *parser) recoverLine(parse func()) (source.Span, bool) {
+	start := p.peek().Span.Start
+	if !p.recovering {
+		parse()
+		return source.Span{}, false
+	}
+	issue := p.attempt(parse)
+	if issue == nil {
+		return source.Span{}, false
+	}
+	p.recovered = append(p.recovered, *issue)
+	p.pending = nil
+	for !p.at(Newline) && !p.at(Dedent) && !p.at(EOF) {
+		p.take()
+	}
+	end := p.peek().Span.Start
+	if p.at(Newline) {
+		end = p.take().Span.End
+	}
+	return source.Span{Start: start, End: end}, true
 }

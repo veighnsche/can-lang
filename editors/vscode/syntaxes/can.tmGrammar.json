@@ -1,1 +1,556 @@
-{"name":"CAN","patterns":[{"match":"//.*$","name":"comment.line.double-slash.can"},{"begin":"r\"\"\"","end":"\"\"\"","name":"string.quoted.triple.raw.can"},{"begin":"\"\"\"","end":"\"\"\"","name":"string.quoted.triple.can","patterns":[{"match":"\\\\.","name":"constant.character.escape.can"}]},{"begin":"r\"","end":"\"","name":"string.quoted.double.raw.can"},{"begin":"\"","end":"\"","name":"string.quoted.double.can","patterns":[{"match":"\\\\."}]},{"captures":{"1":{"name":"keyword.control.can"},"2":{"name":"entity.name.namespace.can"}},"match":"\\b(package|provides|uses|emits)\\b\\s*(\\w+)?"},{"match":"\\berror\\b","name":"keyword.declaration.error.can"},{"match":"\\b(fn|record|variant|given|near|asserts|call|callable|match|chain|do|ok|relay|on|with|and|or|not|is|as|when|concurrent|race)\\b","name":"keyword.control.can"},{"match":"\\b(true|false)\\b|\\b_\\b","name":"constant.language.can"},{"match":"\\b(int|float|bool|str|void)\\b","name":"storage.type.primitive.can"},{"match":"\\b(0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|[0-9]+(\\.[0-9]+)?([eE][+-]?[0-9]+)?)\\b","name":"constant.numeric.can"},{"captures":{"1":{"name":"entity.name.package.can"},"2":{"name":"constant.other.scoped-name.can"}},"match":"\\b([a-z][a-z0-9_]*)::([a-z_][a-z0-9_]*)\\b"},{"match":"(=>|->|==|>=|<=|!=|=|\\+|-|\\*|/|%|\\|)","name":"keyword.operator.can"},{"captures":{"1":{"name":"punctuation.definition.generic.can"},"2":{"name":"storage.type.generic.can"},"6":{"name":"punctuation.definition.generic.can"}},"match":"(<)([A-Za-z0-9_.]+(\\s*=\\s*[A-Za-z0-9_.]+)?(\\s*,\\s*[A-Za-z0-9_.]+(\\s*=\\s*[A-Za-z0-9_.]+)?)*)(>)"},{"begin":"^\\s*(given|asserts)\\s*$","captures":{"1":{"name":"keyword.control.can"}},"end":"(?=^\\S)","patterns":[{"captures":{"1":{"name":"entity.name.tag.can"},"2":{"name":"entity.name.tag.can"}},"match":"\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(?==>)|\\b([A-Za-z_][A-Za-z0-9_]*)\\s*:(?!:)"},{"include":"$self"}]},{"captures":{"1":{"name":"entity.name.tag.can"},"2":{"name":"punctuation.separator.key-value.can"}},"match":"\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(:)"},{"match":"\\b([a-z][a-z0-9_]*)\\b","name":"variable.other.readwrite.can"},{"match":"\\{|\\}","name":"punctuation.definition.error.can"}],"scopeName":"source.can"}
+{
+  "name": "Can",
+  "scopeName": "source.can",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#headers"
+    },
+    {
+      "include": "#declarations"
+    },
+    {
+      "include": "#assertions"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#calls"
+    },
+    {
+      "include": "#qualified"
+    },
+    {
+      "include": "#fields"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#punctuation"
+    },
+    {
+      "include": "#identifiers"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "match": "///.*$",
+          "name": "comment.line.documentation.can"
+        },
+        {
+          "match": "//.*$",
+          "name": "comment.line.double-slash.can"
+        },
+        {
+          "include": "#block-comment"
+        }
+      ]
+    },
+    "block-comment": {
+      "begin": "/\\*",
+      "end": "\\*/",
+      "name": "comment.block.can",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.comment.begin.can"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.comment.end.can"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#block-comment"
+        }
+      ]
+    },
+    "escapes": {
+      "patterns": [
+        {
+          "match": "\\\\[nrt0\"\\\\]",
+          "name": "constant.character.escape.can"
+        },
+        {
+          "match": "\\\\.",
+          "name": "invalid.illegal.escape.can"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "begin": "r\"\"\"",
+          "end": "\"\"\"",
+          "name": "string.quoted.triple.raw.can"
+        },
+        {
+          "begin": "\"\"\"",
+          "end": "\"\"\"",
+          "name": "string.quoted.triple.can",
+          "applyEndPatternLast": true,
+          "patterns": [
+            {
+              "include": "#escapes"
+            }
+          ]
+        },
+        {
+          "begin": "r\"",
+          "end": "\"|$",
+          "name": "string.quoted.double.raw.can"
+        },
+        {
+          "begin": "\"",
+          "end": "\"|$",
+          "name": "string.quoted.double.can",
+          "applyEndPatternLast": true,
+          "patterns": [
+            {
+              "include": "#escapes"
+            }
+          ]
+        }
+      ]
+    },
+    "headers": {
+      "patterns": [
+        {
+          "match": "^(package)([ ]+)([a-z][a-z0-9]*(?:_[a-z0-9]+)*)\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.control.module.can"
+            },
+            "3": {
+              "name": "entity.name.namespace.can"
+            }
+          }
+        },
+        {
+          "match": "^[ ]{4}(provides|uses)\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.control.module.can"
+            }
+          }
+        }
+      ]
+    },
+    "declarations": {
+      "patterns": [
+        {
+          "match": "^(error)([ ]+)([a-z][a-z0-9]*(?:_[a-z0-9]+)*)\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.error.can"
+            },
+            "3": {
+              "name": "entity.name.type.can"
+            }
+          }
+        },
+        {
+          "begin": "^(fn)([ ]+)((?:[a-z][a-z0-9]*(?:_[a-z0-9]+)*::)?[a-z][a-z0-9]*(?:_[a-z0-9]+)*)(?=<)",
+          "end": "([ ]+)([a-z][a-z0-9]*(?:_[a-z0-9]+)*)(?:(<)([a-z][a-z0-9]*(?:_[a-z0-9]+)*(?:[ ]*,[ ]*[a-z][a-z0-9]*(?:_[a-z0-9]+)*)*)(>))?(?=[ ]*$)",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.declaration.function.can"
+            },
+            "3": {
+              "name": "entity.name.type.can"
+            }
+          },
+          "endCaptures": {
+            "2": {
+              "name": "entity.name.function.can"
+            },
+            "3": {
+              "name": "punctuation.definition.generic.can"
+            },
+            "4": {
+              "name": "entity.name.type.parameter.can"
+            },
+            "5": {
+              "name": "punctuation.definition.generic.can"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#generic-type"
+            }
+          ]
+        },
+        {
+          "match": "^(fn)([ ]+)(int|float|bool|str|void)([ ]+)([a-z][a-z0-9]*(?:_[a-z0-9]+)*)(?:(<)([a-z][a-z0-9]*(?:_[a-z0-9]+)*(?:[ ]*,[ ]*[a-z][a-z0-9]*(?:_[a-z0-9]+)*)*)(>))?(?=[ ]*$)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.function.can"
+            },
+            "3": {
+              "name": "storage.type.primitive.can"
+            },
+            "5": {
+              "name": "entity.name.function.can"
+            },
+            "6": {
+              "name": "punctuation.definition.generic.can"
+            },
+            "7": {
+              "name": "entity.name.type.parameter.can"
+            },
+            "8": {
+              "name": "punctuation.definition.generic.can"
+            }
+          }
+        },
+        {
+          "match": "^(fn)([ ]+)((?:[a-z][a-z0-9]*(?:_[a-z0-9]+)*::)?[a-z][a-z0-9]*(?:_[a-z0-9]+)*)(<)((?:[a-z][a-z0-9]*(?:_[a-z0-9]+)*::)?[a-z][a-z0-9]*(?:_[a-z0-9]+)*(?:[ ]*,[ ]*(?:[a-z][a-z0-9]*(?:_[a-z0-9]+)*::)?[a-z][a-z0-9]*(?:_[a-z0-9]+)*)*)(>)([ ]+)([a-z][a-z0-9]*(?:_[a-z0-9]+)*)\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.function.can"
+            },
+            "3": {
+              "name": "entity.name.type.can"
+            },
+            "4": {
+              "name": "punctuation.definition.generic.can"
+            },
+            "5": {
+              "name": "entity.name.type.parameter.can"
+            },
+            "6": {
+              "name": "punctuation.definition.generic.can"
+            },
+            "8": {
+              "name": "entity.name.function.can"
+            }
+          }
+        },
+        {
+          "match": "^(fn)([ ]+)((?:[a-z][a-z0-9]*(?:_[a-z0-9]+)*::)?[a-z][a-z0-9]*(?:_[a-z0-9]+)*(?:<[^>\\n]+>)?)([ ]+)([a-z][a-z0-9]*(?:_[a-z0-9]+)*)(?:(<)([a-z][a-z0-9]*(?:_[a-z0-9]+)*(?:[ ]*,[ ]*[a-z][a-z0-9]*(?:_[a-z0-9]+)*)*)(>))?(?=[ ]*$)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.function.can"
+            },
+            "3": {
+              "name": "entity.name.type.can"
+            },
+            "5": {
+              "name": "entity.name.function.can"
+            },
+            "6": {
+              "name": "punctuation.definition.generic.can"
+            },
+            "7": {
+              "name": "entity.name.type.parameter.can"
+            },
+            "8": {
+              "name": "punctuation.definition.generic.can"
+            }
+          }
+        },
+        {
+          "match": "^(owner[ ]+)?(record|variant)([ ]+)([a-z][a-z0-9_]*)(<)([a-z][a-z0-9_]*(?:[ ]*,[ ]*[a-z][a-z0-9_]*)*)(>)",
+          "captures": {
+            "1": {
+              "name": "storage.modifier.can"
+            },
+            "2": {
+              "name": "keyword.declaration.can"
+            },
+            "4": {
+              "name": "entity.name.type.can"
+            },
+            "5": {
+              "name": "punctuation.definition.generic.can"
+            },
+            "6": {
+              "name": "entity.name.type.parameter.can"
+            },
+            "7": {
+              "name": "punctuation.definition.generic.can"
+            }
+          }
+        },
+        {
+          "match": "^(owner[ ]+)?(record|variant|connection|fetch|llm|judge|noul|choice|score|choice_arm|wrap|fixture|scenario|action)([ ]+)([a-z][a-z0-9]*(?:_[a-z0-9]+)*)\\b",
+          "captures": {
+            "1": {
+              "name": "storage.modifier.can"
+            },
+            "2": {
+              "name": "keyword.declaration.can"
+            },
+            "4": {
+              "name": "entity.name.type.can"
+            }
+          }
+        },
+        {
+          "match": "^(fn)\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.function.can"
+            }
+          }
+        },
+        {
+          "match": "^(record|variant|connection|fetch|llm|judge|noul|choice|score|choice_arm|wrap|fixture|scenario|action)\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.can"
+            }
+          }
+        },
+        {
+          "match": "\\b(error)(?=[ ]+[a-z][a-z0-9_]*[ ]*\\{)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.error.can"
+            }
+          }
+        }
+      ]
+    },
+    "assertions": {
+      "patterns": [
+        {
+          "match": "^([ ]+)(scenario)([ ]+)([a-z][a-z0-9]*(?:_[a-z0-9]+)*)(:)(?=.*=>)",
+          "captures": {
+            "2": {
+              "name": "keyword.control.assertion.can"
+            },
+            "4": {
+              "name": "entity.name.tag.can"
+            },
+            "5": {
+              "name": "punctuation.separator.key-value.can"
+            }
+          }
+        },
+        {
+          "match": "\\b(match)([ ]+)(call)([ ]+)(concurrent|race)(?=[ ]*(?:with[ ]+error)?[ ]*$)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.can"
+            },
+            "3": {
+              "name": "keyword.control.can"
+            },
+            "5": {
+              "name": "keyword.control.coordination.can"
+            }
+          }
+        },
+        {
+          "begin": "^([ ]*)(asserts)\\s*$",
+          "end": "^(?!\\1 {4}|[ ]*$)",
+          "beginCaptures": {
+            "2": {
+              "name": "keyword.control.assertion.can"
+            }
+          },
+          "patterns": [
+            {
+              "match": "^([ ]+)([a-z][a-z0-9]*(?:_[a-z0-9]+)*)(:)(?=.*=>)",
+              "captures": {
+                "2": {
+                  "name": "entity.name.tag.can"
+                },
+                "3": {
+                  "name": "punctuation.separator.key-value.can"
+                }
+              }
+            },
+            {
+              "include": "$base"
+            }
+          ]
+        },
+        {
+          "match": "^([ ]*)(given|emits|when|handles|cases|on|with|from|state|asks|returns|captures|input|result)\\b",
+          "captures": {
+            "2": {
+              "name": "keyword.control.section.can"
+            }
+          }
+        },
+        {
+          "match": "^([ ]+)([a-z][a-z0-9]*(?:_[a-z0-9]+)*)(:)(?=.*=>)",
+          "captures": {
+            "2": {
+              "name": "entity.name.tag.can"
+            },
+            "3": {
+              "name": "punctuation.separator.key-value.can"
+            }
+          }
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "match": "\\b(call|callable|match|chain|do|ok|relay|on|with|and|or|not|is|as|near)\\b",
+          "name": "keyword.control.can"
+        },
+        {
+          "match": "\\b(true|false)\\b|(?<![a-z0-9_])_(?![a-z0-9_])",
+          "name": "constant.language.can"
+        },
+        {
+          "match": "\\b(int|float|bool|str|void)\\b",
+          "name": "storage.type.primitive.can"
+        }
+      ]
+    },
+    "qualified": {
+      "patterns": [
+        {
+          "match": "\\b([a-z][a-z0-9]*(?:_[a-z0-9]+)*)(::)([a-z][a-z0-9]*(?:_[a-z0-9]+)*)\\b",
+          "captures": {
+            "1": {
+              "name": "entity.name.namespace.can"
+            },
+            "2": {
+              "name": "punctuation.accessor.can"
+            },
+            "3": {
+              "name": "entity.name.type.can"
+            }
+          }
+        }
+      ]
+    },
+    "calls": {
+      "patterns": [
+        {
+          "match": "\\b([a-z][a-z0-9]*(?:_[a-z0-9]+)*)(::)([a-z][a-z0-9]*(?:_[a-z0-9]+)*)(?=[ ]*\\()",
+          "captures": {
+            "1": {
+              "name": "entity.name.namespace.can"
+            },
+            "2": {
+              "name": "punctuation.accessor.can"
+            },
+            "3": {
+              "name": "entity.name.function.can"
+            }
+          }
+        },
+        {
+          "match": "\\b([a-z][a-z0-9]*(?:_[a-z0-9]+)*)(?=[ ]*\\()",
+          "captures": {
+            "1": {
+              "name": "entity.name.function.can"
+            }
+          }
+        }
+      ]
+    },
+    "fields": {
+      "patterns": [
+        {
+          "match": "(?<=\\.)([a-z][a-z0-9]*(?:_[a-z0-9]+)*)\\b",
+          "captures": {
+            "1": {
+              "name": "variable.other.property.can"
+            }
+          }
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "match": "\\b0x[0-9a-fA-F]+\\b",
+          "name": "constant.numeric.hex.can"
+        },
+        {
+          "match": "\\b0b[01]+\\b",
+          "name": "constant.numeric.binary.can"
+        },
+        {
+          "match": "\\b0o[0-7]+\\b",
+          "name": "constant.numeric.octal.can"
+        },
+        {
+          "match": "\\b[0-9]+(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?\\b",
+          "name": "constant.numeric.decimal.can"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "match": "\\.\\.\\.|\\.\\.|::|=>|\\*\\*|<<|>>|<=|>=|[=+*/%&|^~<>-]",
+          "name": "keyword.operator.can"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "match": "[()\\[\\]{}]",
+          "name": "punctuation.section.can"
+        },
+        {
+          "match": "[,.:]",
+          "name": "punctuation.separator.can"
+        }
+      ]
+    },
+    "identifiers": {
+      "patterns": [
+        {
+          "match": "\\b[a-z][a-z0-9]*(?:_[a-z0-9]+)*\\b",
+          "name": "variable.other.readwrite.can"
+        }
+      ]
+    },
+    "generic-type": {
+      "begin": "<",
+      "end": ">",
+      "name": "meta.generic.can",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.generic.can"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.generic.can"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#generic-type"
+        },
+        {
+          "include": "#qualified"
+        },
+        {
+          "match": "[a-z][a-z0-9]*(?:_[a-z0-9]+)*",
+          "name": "entity.name.type.parameter.can"
+        },
+        {
+          "match": "[,]",
+          "name": "punctuation.separator.can"
+        }
+      ]
+    }
+  }
+}

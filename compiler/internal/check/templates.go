@@ -1,6 +1,7 @@
 package check
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -38,6 +39,7 @@ type Template struct {
 // (wrapper targets need calculated contracts) and before native and
 // function bodies (whose when tables expand templates).
 func (c *programChecker) checkTemplates(program *Program, callables map[string]CallableDeclaration) error {
+	var problems []error
 	var files []*resolve.File
 	for _, file := range c.world.Files {
 		files = append(files, file)
@@ -46,17 +48,25 @@ func (c *programChecker) checkTemplates(program *Program, callables map[string]C
 	for _, file := range files {
 		for _, declaration := range file.Source.Syntax.Declarations {
 			d, ok := declaration.(*syntax.FixtureDecl)
-			if !ok {
+			if !ok || c.world.Invalid[declaration] != nil {
 				continue
 			}
+			rollback := c.unitCheckpoint()
 			if err := c.checkTemplate(program, file, d, callables); err != nil {
+				rollback()
 				err = stampCode(err, "CAN-CHECK-FIXTURE-DEFINITION")
 				err = source.LocateCode(file.Source.Syntax.Source.Name(), d.DeclSpan(), "CAN-CHECK-FIXTURE-DEFINITION", err)
-				return fmt.Errorf("fixture %s: %w", d.Name.Text, err)
+				err = fmt.Errorf("fixture %s: %w", d.Name.Text, err)
+				if !c.recovering {
+					return err
+				}
+				problems = append(problems, err)
+				c.world.Invalid[d] = err
+				file.Package.Scope.Symbols[d.Name.Text].Invalid = err
 			}
 		}
 	}
-	return nil
+	return errors.Join(problems...)
 }
 
 func (c *programChecker) checkTemplate(program *Program, file *resolve.File, d *syntax.FixtureDecl, callables map[string]CallableDeclaration) error {

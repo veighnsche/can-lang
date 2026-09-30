@@ -1,9 +1,11 @@
 package check
 
 import (
+	"errors"
 	"fmt"
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
 	"reflect"
@@ -135,112 +137,133 @@ func (c *programChecker) gatherNative(file *resolve.File, declaration syntax.Dec
 }
 
 func (c *programChecker) checkNativeContracts(program *Program) error {
+	var problems []error
 	for _, native := range program.Natives {
 		if native.Symbol.Kind == resolve.Wrapper {
 			continue
 		}
-		for _, field := range native.State {
-			if _, err := types.Schema(c.bindings[native.Symbol.ID+"/input/"+field.Name.Text]); err != nil {
-				return fmt.Errorf("native state %s: %w", field.Name.Text, err)
-			}
+		if native.Symbol.Invalid != nil {
+			continue
 		}
-		policy, connected := program.Connections[native.Connection]
-		if native.Symbol.Kind != resolve.ChoiceArm && !connected {
-			return fmt.Errorf("native declaration has no checked connection")
-		}
-		required := []string{}
-		intrinsic := []string{}
-		switch native.Symbol.Kind {
-		case resolve.Question:
-			if err := policy.CheckAI("typesafe_systemone_v1"); err != nil {
-				return err
-			}
-			required = []string{intrinsicInvalidQuestion, intrinsicInvalidAnswer}
-		case resolve.Judge:
-			if err := policy.CheckAI("typesafe_systemone_v1"); err != nil {
-				return err
-			}
-			required = []string{intrinsicRequestFailed, intrinsicInvalidQuestion, intrinsicInvalidAnswer}
-			intrinsic = []string{intrinsicInvalidRequest, intrinsicTransportFailed, intrinsicTimeout, intrinsicBodyLimit, intrinsicStatusError, intrinsicInvalidData}
-		case resolve.LLM:
-			if err := policy.CheckAI("openai_responses_v1"); err != nil {
-				return err
-			}
-			required = []string{intrinsicInvalidRequest, intrinsicTransportFailed, intrinsicTimeout, intrinsicBodyLimit, intrinsicStatusError, intrinsicInvalidData, intrinsicRefused, intrinsicTruncated, intrinsicInvalidResponse}
-		case resolve.Fetch:
-			required = []string{intrinsicRequestFailed}
-			intrinsic = []string{intrinsicInvalidRequest, intrinsicTransportFailed, intrinsicTimeout, intrinsicBodyLimit}
-			result := native.Signature.Result()
-			envelope := result.Declaration() == "can.std.http@1::response"
-			if envelope {
-				result = result.Arguments()[0]
-			} else {
-				intrinsic = append(intrinsic, intrinsicStatusError)
-			}
-			if !(scalar(result, "str") || result.Declaration() == "can.std.bytes@1::buffer" || result.Kind() == types.Record && result.Declaration() != "can.std.http@1::response") {
-				return fmt.Errorf("fetch result requires record, str, bytes or one response envelope")
-			}
-			declaration := native.Symbol.Declaration.(*syntax.FetchDecl)
-			if declaration.Method.Text == "head" && !scalar(result, "str") && result.Declaration() != "can.std.bytes@1::buffer" {
-				return fmt.Errorf("HEAD requires text or bytes result")
-			}
-			if result.Declaration() != "can.std.bytes@1::buffer" || declaration.BodyEncoding != nil && declaration.BodyEncoding.Text != "bytes" {
-				intrinsic = append(intrinsic, intrinsicInvalidData)
-			}
-		}
-		if native.Symbol.Kind == resolve.Fetch || native.Symbol.Kind == resolve.Judge {
-			if policy.BearerEnvironment != "" {
-				intrinsic = append(intrinsic, intrinsicCredentialsMissing)
-			}
-		} else if native.Symbol.Kind != resolve.Question && native.Symbol.Kind != resolve.ChoiceArm && policy.BearerEnvironment != "" {
-			required = append(required, intrinsicCredentialsMissing)
-		}
-		seen := map[string]bool{}
-		emitted := []string{}
-		for _, typ := range native.Signature.Errors() {
-			if _, ok := program.Registry.declarations[typ.Declaration()]; !ok {
-				return fmt.Errorf("unregistered native error")
-			}
-			seen[typ.Declaration()] = true
-			emitted = append(emitted, typ.Declaration())
-		}
-		for _, identity := range required {
-			if !seen[identity] {
-				return fmt.Errorf("native declaration %s emits omits required intrinsic error %s", native.Symbol.Name, identity)
-			}
-		}
-		// N holds the raw infrastructure obligations subject to boundary
-		// normalization; E holds the declared authored obligations. AI
-		// validation is required but preserved, hence E-only; only fetch
-		// and judge maintain a normalization boundary at all. The intrinsic
-		// normalized contribution alone is not an emitted-origin entry.
-		raw := map[string]bool{}
-		for _, identity := range intrinsic {
-			raw[identity] = true
-		}
-		registered := map[string]bool{}
-		for _, declaration := range program.Registry.Declarations() {
-			registered[declaration.Identity] = true
-		}
-		native.Native = []string{}
-		for identity := range raw {
-			if !registered[identity] {
-				return fmt.Errorf("intrinsic error %s has no registered identity", identity)
-			}
-			native.Native = append(native.Native, identity)
-		}
-		sort.Strings(native.Native)
-		if len(raw) > 0 {
-			kept := emitted[:0]
-			for _, identity := range emitted {
-				if identity != intrinsicRequestFailed {
-					kept = append(kept, identity)
+		nativeErr := func() error {
+			for _, field := range native.State {
+				if _, err := types.Schema(c.bindings[native.Symbol.ID+"/input/"+field.Name.Text]); err != nil {
+					return source.Locate(native.Symbol.Source.Path, field.Type.TypeSpan(), fmt.Errorf("native state %s: %w", field.Name.Text, err))
 				}
 			}
-			emitted = kept
+			policy, connected := program.Connections[native.Connection]
+			if native.Symbol.Kind != resolve.ChoiceArm && !connected {
+				return &source.BlockedError{Dependency: native.Connection}
+			}
+			required := []string{}
+			intrinsic := []string{}
+			switch native.Symbol.Kind {
+			case resolve.Question:
+				if err := policy.CheckAI("typesafe_systemone_v1"); err != nil {
+					return err
+				}
+				required = []string{intrinsicInvalidQuestion, intrinsicInvalidAnswer}
+			case resolve.Judge:
+				if err := policy.CheckAI("typesafe_systemone_v1"); err != nil {
+					return err
+				}
+				required = []string{intrinsicRequestFailed, intrinsicInvalidQuestion, intrinsicInvalidAnswer}
+				intrinsic = []string{intrinsicInvalidRequest, intrinsicTransportFailed, intrinsicTimeout, intrinsicBodyLimit, intrinsicStatusError, intrinsicInvalidData}
+			case resolve.LLM:
+				if err := policy.CheckAI("openai_responses_v1"); err != nil {
+					return err
+				}
+				required = []string{intrinsicInvalidRequest, intrinsicTransportFailed, intrinsicTimeout, intrinsicBodyLimit, intrinsicStatusError, intrinsicInvalidData, intrinsicRefused, intrinsicTruncated, intrinsicInvalidResponse}
+			case resolve.Fetch:
+				required = []string{intrinsicRequestFailed}
+				intrinsic = []string{intrinsicInvalidRequest, intrinsicTransportFailed, intrinsicTimeout, intrinsicBodyLimit}
+				result := native.Signature.Result()
+				envelope := result.Declaration() == "can.std.http@1::response"
+				if envelope {
+					result = result.Arguments()[0]
+				} else {
+					intrinsic = append(intrinsic, intrinsicStatusError)
+				}
+				if !(scalar(result, "str") || result.Declaration() == "can.std.bytes@1::buffer" || result.Kind() == types.Record && result.Declaration() != "can.std.http@1::response") {
+					return source.Locate(native.Symbol.Source.Path, syntax.NativeSignature(native.Symbol.Declaration).Result.TypeSpan(), fmt.Errorf("fetch result requires record, str, bytes or one response envelope"))
+				}
+				declaration := native.Symbol.Declaration.(*syntax.FetchDecl)
+				if declaration.Method.Text == "head" && !scalar(result, "str") && result.Declaration() != "can.std.bytes@1::buffer" {
+					return fmt.Errorf("HEAD requires text or bytes result")
+				}
+				if result.Declaration() != "can.std.bytes@1::buffer" || declaration.BodyEncoding != nil && declaration.BodyEncoding.Text != "bytes" {
+					intrinsic = append(intrinsic, intrinsicInvalidData)
+				}
+			}
+			if native.Symbol.Kind == resolve.Fetch || native.Symbol.Kind == resolve.Judge {
+				if policy.BearerEnvironment != "" {
+					intrinsic = append(intrinsic, intrinsicCredentialsMissing)
+				}
+			} else if native.Symbol.Kind != resolve.Question && native.Symbol.Kind != resolve.ChoiceArm && policy.BearerEnvironment != "" {
+				required = append(required, intrinsicCredentialsMissing)
+			}
+			seen := map[string]bool{}
+			emitted := []string{}
+			for _, typ := range native.Signature.Errors() {
+				if _, ok := program.Registry.declarations[typ.Declaration()]; !ok {
+					return fmt.Errorf("unregistered native error")
+				}
+				seen[typ.Declaration()] = true
+				emitted = append(emitted, typ.Declaration())
+			}
+			for _, identity := range required {
+				if !seen[identity] {
+					return source.Locate(native.Symbol.Source.Path, syntax.NativeSignature(native.Symbol.Declaration).Errors.Span, fmt.Errorf("native declaration %s emits omits required intrinsic error %s", native.Symbol.Name, identity))
+				}
+			}
+			// N holds the raw infrastructure obligations subject to boundary
+			// normalization; E holds the declared authored obligations. AI
+			// validation is required but preserved, hence E-only; only fetch
+			// and judge maintain a normalization boundary at all. The intrinsic
+			// normalized contribution alone is not an emitted-origin entry.
+			raw := map[string]bool{}
+			for _, identity := range intrinsic {
+				raw[identity] = true
+			}
+			registered := map[string]bool{}
+			for _, declaration := range program.Registry.Declarations() {
+				registered[declaration.Identity] = true
+			}
+			native.Native = []string{}
+			for identity := range raw {
+				if !registered[identity] {
+					return fmt.Errorf("intrinsic error %s has no registered identity", identity)
+				}
+				native.Native = append(native.Native, identity)
+			}
+			sort.Strings(native.Native)
+			if len(raw) > 0 {
+				kept := emitted[:0]
+				for _, identity := range emitted {
+					if identity != intrinsicRequestFailed {
+						kept = append(kept, identity)
+					}
+				}
+				emitted = kept
+			}
+			sort.Strings(emitted)
+			native.Emitted = emitted
+			return nil
+		}()
+		if nativeErr != nil {
+			span := native.Symbol.Declaration.DeclSpan()
+			if header := syntax.NativeSignature(native.Symbol.Declaration); header != nil {
+				span = header.Name.Span
+			}
+			nativeErr = source.Locate(native.Symbol.Source.Path, span, nativeErr)
+			if !c.recovering {
+				return nativeErr
+			}
+			native.Symbol.Invalid = nativeErr
+			c.world.Invalid[native.Symbol.Declaration] = nativeErr
+			problems = append(problems, nativeErr)
 		}
-		sort.Strings(emitted)
-		native.Emitted = emitted
+
 	}
 	// Wrappers share the original boundary sets of their root operation;
 	// policy lookup is against the original boundary, not the parent bound.
@@ -249,20 +272,34 @@ func (c *programChecker) checkNativeContracts(program *Program) error {
 		bySymbol[native.Symbol] = native
 	}
 	for _, native := range program.Natives {
-		if native.Symbol.Kind != resolve.Wrapper {
+		if native.Symbol.Kind != resolve.Wrapper || native.Symbol.Invalid != nil {
 			continue
 		}
-		file := c.world.Files[native.Symbol.Source]
-		_, root, _, err := c.world.WrapperOrigin(file, native.Symbol)
-		if err != nil {
-			return err
+		wrapperErr := func() error {
+			file := c.world.Files[native.Symbol.Source]
+			_, root, _, err := c.world.WrapperOrigin(file, native.Symbol)
+			if err != nil {
+				return err
+			}
+			original := bySymbol[root]
+			if original != nil && original.Symbol.Invalid != nil {
+				return &source.BlockedError{Dependency: original.Symbol.ID}
+			}
+			if original == nil {
+				return fmt.Errorf("wrapper %s root %s is not a checked operation", native.Symbol.Name, root.ID)
+			}
+			native.Native = append([]string(nil), original.Native...)
+			native.Emitted = append([]string(nil), original.Emitted...)
+			return nil
+		}()
+		if wrapperErr != nil {
+			if !c.recovering {
+				return wrapperErr
+			}
+			problems = append(problems, wrapperErr)
+			native.Symbol.Invalid = wrapperErr
+			c.world.Invalid[native.Symbol.Declaration] = wrapperErr
 		}
-		original := bySymbol[root]
-		if original == nil {
-			return fmt.Errorf("wrapper %s root %s is not a checked operation", native.Symbol.Name, root.ID)
-		}
-		native.Native = append([]string(nil), original.Native...)
-		native.Emitted = append([]string(nil), original.Emitted...)
 	}
-	return nil
+	return errors.Join(problems...)
 }

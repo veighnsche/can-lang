@@ -21,6 +21,9 @@ const (
 // and nil for bodyless GET. The call-site contract derives per resolved
 // action: the static name, the path captures in order, and the POST body.
 type FetchSpecialization struct {
+	Invalid   error
+	SiteFile  string
+	SiteSpan  source.Span
 	Operation string
 	Result    *types.Type
 	Data      *types.Type
@@ -86,10 +89,13 @@ func (c *programChecker) gatherFetch(file *resolve.File, site syntax.Expr, calle
 	if c.fetches == nil {
 		c.fetches = map[string]*FetchSpecialization{}
 	}
-	if c.fetches[key] != nil {
+	if prior := c.fetches[key]; prior != nil {
+		if prior.Invalid != nil {
+			return &source.BlockedError{Dependency: key}
+		}
 		return nil
 	}
-	special := &FetchSpecialization{Operation: symbol.ID, Result: arguments[0]}
+	special := &FetchSpecialization{SiteFile: file.Source.Path, SiteSpan: args[0].TypeSpan(), Operation: symbol.ID, Result: arguments[0]}
 	if symbol.ID == fetchJSONPost {
 		special.Data = arguments[1]
 	}

@@ -226,7 +226,7 @@ func TestGraphLockPinsContentAndDirectEdges(t *testing.T) {
 			edges := lock["edges"].(map[string]any)
 			delete(edges, "right")
 		})
-		if _, err := Load(root); err == nil || !strings.Contains(err.Error(), "edges do not match") {
+		if _, err := Load(root); err == nil || !strings.Contains(err.Error(), "missing dependency lock edge") {
 			t.Fatalf("dropped edge admitted: %v", err)
 		}
 	})

@@ -62,14 +62,14 @@ func New(name, text string) (*File, error) {
 	}
 	start := f.bom
 	for i := start; i < len(text); i++ {
-		if text[i] == '\n' {
-			end := i
-			if end > start && text[end-1] == '\r' {
-				end--
-			}
-			f.lines = append(f.lines, line{start, end})
-			start = i + 1
+		if text[i] != '\n' && text[i] != '\r' {
+			continue
 		}
+		f.lines = append(f.lines, line{start, i})
+		if text[i] == '\r' && i+1 < len(text) && text[i+1] == '\n' {
+			i++
+		}
+		start = i + 1
 	}
 	f.lines = append(f.lines, line{start, len(text)})
 	return f, nil

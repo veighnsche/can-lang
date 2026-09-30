@@ -1,6 +1,7 @@
 package check
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"sort"
@@ -51,7 +52,7 @@ func (c *programChecker) checkExportedGenerics(files []*resolve.File) error {
 				continue
 			}
 			symbol := file.Package.Scope.Symbols[d.Name.Text]
-			if symbol == nil || !symbol.Public {
+			if symbol == nil || !symbol.Public || symbol.Invalid != nil {
 				continue
 			}
 			units = append(units, &symbolicUnit{file: file, symbol: symbol, declaration: d})
@@ -272,34 +273,61 @@ func (c *programChecker) checkSymbolicComponents(units []*symbolicUnit, graph ma
 	for _, unit := range units {
 		byID[unit.symbol.ID] = unit
 	}
+	var problems []error
 	for number, component := range symbolicOrder(units, graph) {
 		for _, id := range component {
 			c.symbolicComponent[id] = number
 		}
-		functions := map[string]*ProgramFunction{}
-		for _, id := range component {
-			unit := byID[id]
-			fn, err := c.installSymbolicContract(unit.file, unit.symbol, unit.declaration)
-			if err != nil {
-				return err
+		rollback := c.unitCheckpoint()
+		unitErr := func() error {
+			for _, id := range component {
+				for _, dep := range graph[id] {
+					if byID[dep].symbol.Invalid != nil {
+						return &source.BlockedError{Dependency: dep}
+					}
+				}
 			}
-			functions[id] = fn
-		}
-		saved := c.current
-		for _, id := range component {
-			unit := byID[id]
-			c.current = functions[id]
-			if err := c.checkSymbolicBody(unit.file, unit.symbol, unit.declaration, functions[id]); err != nil {
-				c.current = saved
-				return err
+			functions := map[string]*ProgramFunction{}
+			for _, id := range component {
+				unit := byID[id]
+				fn, err := c.installSymbolicContract(unit.file, unit.symbol, unit.declaration)
+				if err != nil {
+					return err
+				}
+				functions[id] = fn
 			}
+			saved := c.current
+			defer func() { c.current = saved }()
+			var failures []error
+			for _, id := range component {
+				unit := byID[id]
+				c.current = functions[id]
+				if err := c.checkSymbolicBody(unit.file, unit.symbol, unit.declaration, functions[id]); err != nil {
+					if !c.recovering {
+						return err
+					}
+					failures = append(failures, err)
+				}
+			}
+			return errors.Join(failures...)
+		}()
+		if unitErr != nil {
+			rollback()
+			if !c.recovering {
+				return unitErr
+			}
+			problems = append(problems, unitErr)
+			for _, id := range component {
+				byID[id].symbol.Invalid = unitErr
+				c.world.Invalid[byID[id].declaration] = unitErr
+			}
+			continue
 		}
-		c.current = saved
 		for _, id := range component {
 			c.symbolicProofs[id] = true
 		}
 	}
-	return nil
+	return errors.Join(problems...)
 }
 
 // installSymbolicContract resolves a public generic's own symbolic signature
@@ -352,6 +380,7 @@ func (c *programChecker) checkSymbolicBody(file *resolve.File, symbol *resolve.S
 		err = fmt.Errorf("exported generic function %s: %w", symbol.ID, err)
 		return source.LocateCode(file.Source.Syntax.Source.Name(), d.DeclSpan(), "CAN-CHECK-EXPORTED-GENERIC", err)
 	}
+	context.Recover = c.recovering
 	if _, err := CheckRegion(context, d.Body); err != nil {
 		err = fmt.Errorf("exported generic function %s requires operations on type variables to be explicit named callable or dictionary inputs: %w", symbol.ID, err)
 		err = source.Relate(file.Source.Syntax.Source.Name(), d.DeclSpan(), "exported generic declared here", err)

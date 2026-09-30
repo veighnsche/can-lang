@@ -1,6 +1,7 @@
 package check
 
 import (
+	stderrors "errors"
 	"fmt"
 
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
@@ -105,151 +106,166 @@ func (c *regionChecker) completionArmsCall(arms []syntax.MatchArm, call *ir.Invo
 	}
 	var checked []ir.Arm
 	seen := map[string]bool{}
+	var problems []error
 	for _, arm := range arms {
-		if arm.Outcome == nil || len(arm.Patterns) != 0 {
-			return nil, fmt.Errorf("completion match requires exact outcome patterns")
-		}
-		a := ir.Arm{Span: arm.Span, Forward: arm.Forward}
-		pattern := arm.Outcome
-		armScope := c.child(scope)
-		var bindingType *types.Type
-		var bindingName string
-		var key string
-		switch {
-		case pattern.Success:
-			if pattern.StandardFailure || pattern.Error != nil {
-				return nil, fmt.Errorf("invalid success pattern")
+		rollback := c.childCheckpoint()
+		armErr := func() error {
+			if arm.Outcome == nil || len(arm.Patterns) != 0 {
+				return fmt.Errorf("completion match requires exact outcome patterns")
 			}
-			a.Outcome = "ok"
-			key = "ok"
-			bindingType = result
-			armScope = c.child(successScope)
-		case pattern.StandardFailure:
-			if pattern.Error != nil || arm.Forward {
-				return nil, fmt.Errorf("invalid standard pattern")
-			}
-			a.Outcome = "standard"
-			key = "standard"
-			// C9.1: a bound standard catch binds the opaque snapshot, never
-			// a string. The former canonical text is failure.message.
-			snapshot, err := c.context.Type(named("standard_failure"), false)
-			if err != nil {
-				return nil, c.locate(pattern.Span, err)
-			}
-			bindingType = snapshot
-		default:
-			name, ok := pattern.Error.(*syntax.NamedType)
-			if !ok {
-				return nil, c.locate(pattern.Span, fmt.Errorf("domain pattern must be an error head"))
-			}
-			var concrete ConcreteError
-			if len(name.Arguments) == 0 {
-				var declaration string
-				if c.context.ErrorName != nil {
-					declaration, err = c.context.ErrorName(name.Name)
+			a := ir.Arm{Span: arm.Span, Forward: arm.Forward}
+			pattern := arm.Outcome
+			armScope := c.child(scope)
+			var bindingType *types.Type
+			var bindingName string
+			var key string
+			switch {
+			case pattern.Success:
+				if pattern.StandardFailure || pattern.Error != nil {
+					return fmt.Errorf("invalid success pattern")
+				}
+				a.Outcome = "ok"
+				key = "ok"
+				bindingType = result
+				armScope = c.child(successScope)
+			case pattern.StandardFailure:
+				if pattern.Error != nil || arm.Forward {
+					return fmt.Errorf("invalid standard pattern")
+				}
+				a.Outcome = "standard"
+				key = "standard"
+				// C9.1: a bound standard catch binds the opaque snapshot, never
+				// a string. The former canonical text is failure.message.
+				snapshot, err := c.context.Type(named("standard_failure"), false)
+				if err != nil {
+					return c.locate(pattern.Span, err)
+				}
+				bindingType = snapshot
+			default:
+				name, ok := pattern.Error.(*syntax.NamedType)
+				if !ok {
+					return c.locate(pattern.Span, fmt.Errorf("domain pattern must be an error head"))
+				}
+				var concrete ConcreteError
+				if len(name.Arguments) == 0 {
+					var declaration string
+					if c.context.ErrorName != nil {
+						declaration, err = c.context.ErrorName(name.Name)
+					} else {
+						var typ *types.Type
+						typ, err = c.context.Type(name, false)
+						if err == nil {
+							declaration = typ.Declaration()
+						}
+					}
+					if err != nil {
+						return c.locate(pattern.Span, err)
+					}
+					concrete, err = bound.ResolveBareArm(declaration)
+					if err != nil {
+						if isExactSpecialization(err) {
+							err = c.locateCode(pattern.Span, "CAN-CHECK-EXACT-SPECIALIZATION", err)
+							return source.Relate(c.context.File.Name(), site.match, "matched bound carries several specializations", err)
+						}
+						return c.locate(pattern.Span, err)
+					}
 				} else {
-					var typ *types.Type
-					typ, err = c.context.Type(name, false)
-					if err == nil {
-						declaration = typ.Declaration()
+					resolved, resolveErr := c.context.Type(name, false)
+					if resolveErr != nil {
+						return c.locate(pattern.Span, resolveErr)
+					}
+					if _, concreteErr := c.context.Registry.Concrete(resolved); concreteErr != nil {
+						return c.locate(pattern.Span, concreteErr)
+					}
+					concrete, err = bound.ResolveExactArm(resolved.Identity())
+					if err != nil {
+						return c.locate(pattern.Span, err)
 					}
 				}
-				if err != nil {
-					return nil, c.locate(pattern.Span, err)
+				a.Outcome = "domain"
+				a.Error = concrete.Type
+				key = "domain:" + concrete.TypeIdentity
+				bindingType = concrete.Type
+				// An explicit alias binds the chosen payload under its own name;
+				// otherwise the existing short error-name alias is introduced.
+				bindingName = name.Name.Name
+				if pattern.Alias != nil {
+					bindingName = pattern.Alias.Text
 				}
-				concrete, err = bound.ResolveBareArm(declaration)
+			}
+			if seen[key] {
+				return c.locate(pattern.Span, fmt.Errorf("duplicate completion arm for %s", key))
+			}
+			// C5.1 order: every error arm, with the optional standard arm
+			// anywhere among those failures, precedes exactly one final ok.
+			// Individual failure order is unconstrained; only success-last is
+			// enforced, at the failure head that breaks it.
+			if a.Outcome != "ok" && seen["ok"] {
+				return c.locate(pattern.Span, fmt.Errorf("failure arms precede the final ok"))
+			}
+			seen[key] = true
+			if pattern.Binding != nil {
+				if a.Outcome == "domain" {
+					return c.locate(pattern.Span, fmt.Errorf("domain arm binds its declared error name"))
+				}
+				declared, err := c.context.Type(pattern.Binding.Type, false)
 				if err != nil {
-					if isExactSpecialization(err) {
-						err = c.locateCode(pattern.Span, "CAN-CHECK-EXACT-SPECIALIZATION", err)
-						return nil, source.Relate(c.context.File.Name(), site.match, "matched bound carries several specializations", err)
+					return err
+				}
+				if !types.Equal(declared, bindingType) {
+					if a.Outcome == "standard" {
+						return c.locate(pattern.Span, fmt.Errorf("standard catch binds the standard_failure snapshot; str and other binder types are rejected"))
 					}
-					return nil, c.locate(pattern.Span, err)
+					return fmt.Errorf("completion arm binding type mismatch")
 				}
-			} else {
-				resolved, resolveErr := c.context.Type(name, false)
-				if resolveErr != nil {
-					return nil, c.locate(pattern.Span, resolveErr)
+				bindingName = pattern.Binding.Name.Text
+			}
+			if bindingName != "" && !arm.Forward {
+				if a.Outcome == "domain" && pattern.Alias == nil {
+					a.Binding, err = c.bindErrorAlias(armScope, bindingName, bindingType)
+				} else {
+					a.Binding, err = c.bind(armScope, bindingName, bindingType)
 				}
-				if _, concreteErr := c.context.Registry.Concrete(resolved); concreteErr != nil {
-					return nil, c.locate(pattern.Span, concreteErr)
-				}
-				concrete, err = bound.ResolveExactArm(resolved.Identity())
 				if err != nil {
-					return nil, c.locate(pattern.Span, err)
+					return c.locate(pattern.Span, err)
 				}
 			}
-			a.Outcome = "domain"
-			a.Error = concrete.Type
-			key = "domain:" + concrete.TypeIdentity
-			bindingType = concrete.Type
-			// An explicit alias binds the chosen payload under its own name;
-			// otherwise the existing short error-name alias is introduced.
-			bindingName = name.Name.Name
-			if pattern.Alias != nil {
-				bindingName = pattern.Alias.Text
-			}
-		}
-		if seen[key] {
-			return nil, c.locate(pattern.Span, fmt.Errorf("duplicate completion arm for %s", key))
-		}
-		// C5.1 order: every error arm, with the optional standard arm
-		// anywhere among those failures, precedes exactly one final ok.
-		// Individual failure order is unconstrained; only success-last is
-		// enforced, at the failure head that breaks it.
-		if a.Outcome != "ok" && seen["ok"] {
-			return nil, c.locate(pattern.Span, fmt.Errorf("failure arms precede the final ok"))
-		}
-		seen[key] = true
-		if pattern.Binding != nil {
-			if a.Outcome == "domain" {
-				return nil, c.locate(pattern.Span, fmt.Errorf("domain arm binds its declared error name"))
-			}
-			declared, err := c.context.Type(pattern.Binding.Type, false)
-			if err != nil {
-				return nil, err
-			}
-			if !types.Equal(declared, bindingType) {
-				if a.Outcome == "standard" {
-					return nil, c.locate(pattern.Span, fmt.Errorf("standard catch binds the standard_failure snapshot; str and other binder types are rejected"))
+			if arm.Forward {
+				if arm.Body != nil || pattern.Binding != nil || pattern.Alias != nil {
+					return fmt.Errorf("forwarding arm cannot contain a body or binding")
 				}
-				return nil, fmt.Errorf("completion arm binding type mismatch")
-			}
-			bindingName = pattern.Binding.Name.Text
-		}
-		if bindingName != "" && !arm.Forward {
-			if a.Outcome == "domain" && pattern.Alias == nil {
-				a.Binding, err = c.bindErrorAlias(armScope, bindingName, bindingType)
-			} else {
-				a.Binding, err = c.bind(armScope, bindingName, bindingType)
-			}
-			if err != nil {
-				return nil, c.locate(pattern.Span, err)
-			}
-		}
-		if arm.Forward {
-			if arm.Body != nil || pattern.Binding != nil || pattern.Alias != nil {
-				return nil, fmt.Errorf("forwarding arm cannot contain a body or binding")
-			}
-			if a.Outcome == "ok" {
-				if !types.Assignable(result, c.region.Result) {
-					return nil, fmt.Errorf("forwarded success does not fit current region")
+				if a.Outcome == "ok" {
+					if !types.Assignable(result, c.region.Result) {
+						return fmt.Errorf("forwarded success does not fit current region")
+					}
+				} else {
+					actual, err := c.context.Registry.Bound([]*types.Type{a.Error})
+					if err != nil {
+						return err
+					}
+					if escapeErr := c.escaping(actual); escapeErr != nil {
+						return c.outward(arm.Span, site.match, escapeErr)
+					}
 				}
 			} else {
-				actual, err := c.context.Registry.Bound([]*types.Type{a.Error})
-				if err != nil {
-					return nil, err
-				}
-				if escapeErr := c.escaping(actual); escapeErr != nil {
-					return nil, c.outward(arm.Span, site.match, escapeErr)
+				a.Body, err = c.completion(arm.Body, armScope)
+				if err != nil && !c.deferAggregate(err) {
+					return err
 				}
 			}
-		} else {
-			a.Body, err = c.completion(arm.Body, armScope)
-			if err != nil && !c.deferAggregate(err) {
-				return nil, err
+			checked = append(checked, a)
+			return nil
+		}()
+		if armErr != nil {
+			rollback()
+			if !c.context.Recover {
+				return nil, armErr
 			}
+			problems = append(problems, c.locate(arm.Span, armErr))
 		}
-		checked = append(checked, a)
+	}
+	if len(problems) != 0 {
+		return nil, stderrors.Join(problems...)
 	}
 	if requireSuccess && !seen["ok"] {
 		return nil, c.missingArm(site, arms, call, "completion match requires exactly one success arm", "", nil, true)
@@ -417,118 +433,143 @@ func (c *regionChecker) valueMatch(n syntax.Match, scope bodyScope, valueType *t
 	}
 	out := &ir.Match{Span: n.Span, ValueResult: valueType}
 	var columns []*types.Type
+	var problems []error
 	for _, node := range n.Values {
+		rollback := c.childCheckpoint()
 		x, err := c.expressions(scope).Check(node, nil)
 		if err != nil {
-			return nil, err
+			rollback()
+			if !c.context.Recover {
+				return nil, err
+			}
+			problems = append(problems, err)
+			continue
 		}
 		out.Values = append(out.Values, x)
 		columns = append(columns, x.Type)
 	}
+	// Pattern columns require every scrutinee's proven type.
+	if len(problems) != 0 {
+		return nil, stderrors.Join(problems...)
+	}
 	var previous [][]*ir.Pattern
 	for _, arm := range n.Arms {
-		if arm.Outcome != nil || arm.Forward || len(arm.Patterns) != len(n.Values) {
-			return nil, fmt.Errorf("ordinary match requires one data pattern per scrutinee")
-		}
-		armScope := c.child(scope)
-		a := ir.Arm{Span: arm.Span}
-		bindings := map[string]*ir.Local{}
-		for i, node := range arm.Patterns {
-			pattern, err := c.pattern(node, columns[i], bindings)
+		rollback := c.childCheckpoint()
+		armErr := func() error {
+			if arm.Outcome != nil || arm.Forward || len(arm.Patterns) != len(n.Values) {
+				return fmt.Errorf("ordinary match requires one data pattern per scrutinee")
+			}
+			armScope := c.child(scope)
+			a := ir.Arm{Span: arm.Span}
+			bindings := map[string]*ir.Local{}
+			for i, node := range arm.Patterns {
+				pattern, err := c.pattern(node, columns[i], bindings)
+				if err != nil {
+					return err
+				}
+				a.Patterns = append(a.Patterns, pattern)
+			}
+			// Q1: ordinary Boolean arm order is free; the formatter
+			// canonicalizes true-first pairs to false-first. Coverage and
+			// exhaustiveness diagnostics below are unchanged.
+			useful, err := patternsUseful(previous, a.Patterns, columns)
 			if err != nil {
-				return nil, err
+				return err
 			}
-			a.Patterns = append(a.Patterns, pattern)
-		}
-		// Q1: ordinary Boolean arm order is free; the formatter
-		// canonicalizes true-first pairs to false-first. Coverage and
-		// exhaustiveness diagnostics below are unchanged.
-		useful, err := patternsUseful(previous, a.Patterns, columns)
-		if err != nil {
-			return nil, err
-		}
-		if !useful {
-			return nil, fmt.Errorf("match arm is fully covered by earlier arms")
-		}
-		for name, local := range bindings {
-			if err := c.install(armScope, name, local); err != nil {
-				return nil, err
+			if !useful {
+				return fmt.Errorf("match arm is fully covered by earlier arms")
 			}
-		}
-		// Repeated occurrences of the same resolved binding share one inferred
-		// arm-local narrowing. Parentheses preserve that binding identity. A pair
-		// of disjoint nominal requirements cannot both hold for one immutable value.
-		type narrowing struct {
-			typ   *types.Type
-			local *ir.Local
-		}
-		narrowed := map[string]narrowing{}
-		for i, node := range n.Values {
-			for {
-				group, ok := node.(*syntax.GroupExpr)
-				if !ok {
-					break
+			for name, local := range bindings {
+				if err := c.install(armScope, name, local); err != nil {
+					return err
 				}
-				node = group.Value
 			}
-			name, ok := node.(*syntax.NameExpr)
-			if !ok || name.Name.Package != "" {
-				continue
+			// Repeated occurrences of the same resolved binding share one inferred
+			// arm-local narrowing. Parentheses preserve that binding identity. A pair
+			// of disjoint nominal requirements cannot both hold for one immutable value.
+			type narrowing struct {
+				typ   *types.Type
+				local *ir.Local
 			}
-			narrow := patternNarrow(a.Patterns[i])
-			if narrow == nil || types.Equal(narrow, columns[i]) {
-				continue
-			}
-			resolved := out.Values[i]
-			if resolved.Kind != ir.Binding || resolved.Text == "" {
-				return nil, fmt.Errorf("missing resolved scrutinee identity")
-			}
-			prior := narrowed[resolved.Text]
-			if prior.typ != nil && !types.Equal(prior.typ, narrow) {
-				return nil, fmt.Errorf("incompatible nominal patterns for repeated scrutinee")
-			}
-			prior.typ = narrow
-			if _, explicit := bindings[name.Name.Name]; !explicit {
-				if prior.local == nil {
-					var err error
-					prior.local, err = c.bind(armScope, name.Name.Name, narrow)
-					if err != nil {
-						return nil, err
+			narrowed := map[string]narrowing{}
+			for i, node := range n.Values {
+				for {
+					group, ok := node.(*syntax.GroupExpr)
+					if !ok {
+						break
 					}
+					node = group.Value
 				}
-				a.Patterns[i].Narrow = prior.local
+				name, ok := node.(*syntax.NameExpr)
+				if !ok || name.Name.Package != "" {
+					continue
+				}
+				narrow := patternNarrow(a.Patterns[i])
+				if narrow == nil || types.Equal(narrow, columns[i]) {
+					continue
+				}
+				resolved := out.Values[i]
+				if resolved.Kind != ir.Binding || resolved.Text == "" {
+					return fmt.Errorf("missing resolved scrutinee identity")
+				}
+				prior := narrowed[resolved.Text]
+				if prior.typ != nil && !types.Equal(prior.typ, narrow) {
+					return fmt.Errorf("incompatible nominal patterns for repeated scrutinee")
+				}
+				prior.typ = narrow
+				if _, explicit := bindings[name.Name.Name]; !explicit {
+					if prior.local == nil {
+						var err error
+						prior.local, err = c.bind(armScope, name.Name.Name, narrow)
+						if err != nil {
+							return err
+						}
+					}
+					a.Patterns[i].Narrow = prior.local
+				}
+				narrowed[resolved.Text] = prior
 			}
-			narrowed[resolved.Text] = prior
-		}
-		if valueType != nil {
-			switch body := arm.Body.(type) {
-			case *syntax.ValueBody:
+			previous = append(previous, a.Patterns)
+			if valueType != nil {
+				switch body := arm.Body.(type) {
+				case *syntax.ValueBody:
+					var err error
+					a.Value, err = c.expressions(armScope).Check(body.Value, valueType)
+					if err != nil {
+						return err
+					}
+				case *syntax.MatchBody:
+					if body.Match.Kind != syntax.ValueMatch {
+						return fmt.Errorf("completion match is not a value")
+					}
+					nested, err := c.valueMatch(body.Match, armScope, valueType)
+					if err != nil {
+						return err
+					}
+					a.Value = &ir.Expression{Kind: ir.MatchValue, Type: valueType, Span: body.Span, Match: nested}
+				default:
+					return fmt.Errorf("value match cannot contain completion arms")
+				}
+			} else {
 				var err error
-				a.Value, err = c.expressions(armScope).Check(body.Value, valueType)
-				if err != nil {
-					return nil, err
+				a.Body, err = c.completion(arm.Body, armScope)
+				if err != nil && !c.deferAggregate(err) {
+					return err
 				}
-			case *syntax.MatchBody:
-				if body.Match.Kind != syntax.ValueMatch {
-					return nil, fmt.Errorf("completion match is not a value")
-				}
-				nested, err := c.valueMatch(body.Match, armScope, valueType)
-				if err != nil {
-					return nil, err
-				}
-				a.Value = &ir.Expression{Kind: ir.MatchValue, Type: valueType, Span: body.Span, Match: nested}
-			default:
-				return nil, fmt.Errorf("value match cannot contain completion arms")
 			}
-		} else {
-			var err error
-			a.Body, err = c.completion(arm.Body, armScope)
-			if err != nil && !c.deferAggregate(err) {
-				return nil, err
+			out.Arms = append(out.Arms, a)
+			return nil
+		}()
+		if armErr != nil {
+			rollback()
+			if !c.context.Recover {
+				return nil, armErr
 			}
+			problems = append(problems, c.locate(arm.Span, armErr))
 		}
-		out.Arms = append(out.Arms, a)
-		previous = append(previous, a.Patterns)
+	}
+	if len(problems) != 0 {
+		return nil, stderrors.Join(problems...)
 	}
 	any := make([]*ir.Pattern, len(columns))
 	for i, t := range columns {

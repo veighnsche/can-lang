@@ -110,8 +110,8 @@ func TestCheckSnapshotParseError(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(snapshot.Diagnostics) != 1 {
-		t.Fatalf("expected one diagnostic, got %+v", snapshot.Diagnostics)
+	if len(snapshot.Diagnostics) != 2 {
+		t.Fatalf("expected syntax and continuation findings, got %+v", snapshot.Diagnostics)
 	}
 	diagnostic := snapshot.Diagnostics[0]
 	if diagnostic.File != open || diagnostic.Severity != "error" {
@@ -139,7 +139,7 @@ func TestCheckSnapshotParseError(t *testing.T) {
 		if saveErr != nil {
 			t.Fatal(saveErr)
 		}
-		if len(saved.Diagnostics) != 1 || saved.Diagnostics[0].Message != diagnostic.Message || saved.Diagnostics[0].Code != diagnostic.Code || saved.Diagnostics[0].Line != diagnostic.Line {
+		if !reflect.DeepEqual(saved.Diagnostics, snapshot.Diagnostics) {
 			t.Fatalf("overlay diagnosis %+v differs from saved %+v", diagnostic, saved.Diagnostics)
 		}
 	}
@@ -165,7 +165,7 @@ func TestCheckSnapshotCheckErrorSpan(t *testing.T) {
 	// Located checker failures point at the offending expression in the
 	// true file with the CLI-identical message; the world still resolves,
 	// so navigation keeps working beneath the error.
-	if diagnostic.File != second || diagnostic.Line != 10 || diagnostic.EndLine != 10 || diagnostic.Start != 7 || diagnostic.End != 27 {
+	if diagnostic.File != second || diagnostic.Line != 10 || diagnostic.EndLine != 10 || diagnostic.Start != 12 || diagnostic.End != 22 {
 		t.Fatalf("check diagnostic mislocated: %+v", diagnostic)
 	}
 	if !strings.Contains(diagnostic.Message, "missing_fn") {
@@ -182,8 +182,8 @@ func TestCheckSnapshotCheckErrorSpan(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, cliErr := check.CheckAssertionProgram(graph)
-	if cliErr == nil || cliErr.Error() != diagnostic.Message {
-		t.Fatalf("editor message %q differs from CLI %q", diagnostic.Message, cliErr)
+	if cliErr == nil || !strings.HasSuffix(cliErr.Error(), diagnostic.Message) {
+		t.Fatalf("editor semantic message %q missing from CLI context %q", diagnostic.Message, cliErr)
 	}
 	saved, saveErr := CheckSnapshot(root, open, project.NewOverlay())
 	if saveErr != nil {
@@ -244,12 +244,12 @@ func TestSemanticDiagnosticUnavailable(t *testing.T) {
 	}
 	absent := source.Locate(filepath.Join(root, "src", "ghost.can"), source.Span{Start: 0, End: 5}, errors.New("boom"))
 	diagnostic := semanticDiagnostic(graph, open, absent)
-	if diagnostic.File != filepath.Join(root, "src", "ghost.can") || diagnostic.Code != source.SpanUnavailable {
+	if diagnostic.File != "" || !strings.Contains(diagnostic.Message, "ghost.can") || diagnostic.Code != source.SpanUnavailable {
 		t.Fatalf("absent file silently relocated: %+v", diagnostic)
 	}
 	stale := source.Locate(open, source.Span{Start: 1 << 30, End: (1 << 30) + 5}, errors.New("boom"))
 	diagnostic = semanticDiagnostic(graph, open, stale)
-	if diagnostic.File != open || diagnostic.Code != source.SpanUnavailable {
+	if diagnostic.File != "" || !strings.Contains(diagnostic.Message, open) || diagnostic.Code != source.SpanUnavailable {
 		t.Fatalf("out-of-range span silently anchored: %+v", diagnostic)
 	}
 	related := source.Relate(filepath.Join(root, "src", "ghost.can"), source.Span{Start: 0, End: 1}, "origin", source.Locate(open, source.Span{Start: 0, End: 7}, errors.New("boom")))
@@ -261,8 +261,8 @@ func TestSemanticDiagnosticUnavailable(t *testing.T) {
 		t.Fatalf("primary span lost beside unavailable related: %+v", diagnostic)
 	}
 	spanless := semanticDiagnostic(graph, open, errors.New("boom"))
-	if spanless.File != open || spanless.Line != 0 || spanless.Code != "" {
-		t.Fatalf("spanless failure lost its anchor: %+v", spanless)
+	if spanless.File != "" || spanless.Line != 0 || spanless.Code != "" {
+		t.Fatalf("spanless failure gained a source anchor: %+v", spanless)
 	}
 }
 
