@@ -1,0 +1,33 @@
+{
+  "model": "jev-latest",
+  "state": "The requested decision concerns Can's first native-testing executor, controller/workers and reference-versus-candidate trust. The user's present preference is the existing execution path with generic native oversight. AI agents author Can, so dependable generation, explicit effects and actionable repair evidence take priority over handwriting comfort. Full normal functions are required; test actions, oracles, scheduling and reporting belong to Can and foreign authored harnesses must be eliminated. Generic platform/driver mechanics are allowed. Preserve coverage and independent observations under strict laptop resource and cleanup constraints; old syntax/ABI has no compatibility claim. No execution experiments, builds or benchmarks are authorized now. Source inspection shows TypeScript/Bun lowering and checked IR, but no complete interpreter. Interpreting ordinary Can entails callable/opaque identity, failure identity, fixture queues, coordination, lifetime and every reachable native operation, while browser/DB access and external containment remain necessary. The current Go assertion driver already launches isolated Bun processes, applies outside deadlines, bounds diagnostics and validates output leases. Its assertion-specific protocol is not a live suite API or proof of descendant, disk and remote-session cleanup. Each concrete function currently needs offline assertions with supplied effects. Source-wide validation precedes selected assertion roots. A proposed development mode conservatively selects case/helper/fixture roots, falls back to all when uncertain and reports partial scope; full qualification covers all roots, obligations and environments. The candidate topology places a generic Go supervisor outside one Can controller and case workers executing a reference-produced suite. Can determines selection, order and verdicts; native code enforces bounds and cleanup, carries observations and requires final receipts. Keep candidate output separate from private evidence channels. Fresh-process, reusable-pool and thread tradeoffs have not been measured. The reference compiler/runtime/supervisor must be identified separately from the candidate compiler/runtime. A reference-built suite can be compiled once per run and loaded by each worker; only subject programs are compiled by the candidate. Incompatible suite syntax or missing reference APIs should require a separately reviewed toolchain refresh or prevent the run, never choose the candidate automatically. Refresh qualification uses compatible predecessor checks, independent vectors and seeded failures before explicit promotion; the first trusted seed remains a declared trust assumption. A candidate-built runner can be assessed as a separate subject. Competing trust choices are candidate-built tests with control comparisons, or a permanently selected prebuilt suite whose test content updates separately. Even an interpreted controller must invoke actual candidate production/browser artifacts for relevant obligations, and shared frontend/runtime defects are still possible. Artifacts are reusable within the owned run; retain compact identity evidence rather than default bulky caches or checkouts. An interpreter may merit reconsideration for a funded full-language purpose, useful independent semantics, or measured executor cost/observability problems that bounded changes cannot fix. Generated TypeScript by itself is not such evidence.",
+  "questions": {
+    "backend": {
+      "type": "choice",
+      "instructions": "Select the starting backend for the proposed full-Can suite architecture.",
+      "criteria": {
+        "existing_can": "Start with the established Can lowering and Bun runtime, add external generic enforcement and explicit live-suite interfaces.",
+        "full_interpreter": "Choose a new unrestricted interpreter over checked Can IR and implement semantic/platform parity plus containment for the suite.",
+        "new_codegen": "Adopt a new native target as the first test backend, including language lowering, platform runtime and external limits."
+      }
+    },
+    "worker_boundary": {
+      "type": "choice",
+      "instructions": "Pick the first worker lifecycle for bounded and attributable case execution.",
+      "criteria": {
+        "fresh_process": "Launch each case attempt in a new operating-system Bun process, leaving the controller outside its state and enforcing bounds externally, with concurrency one initially.",
+        "process_pool": "Reuse a fixed number of worker processes and prove reset/cleanup between case attempts, trading extra state-isolation machinery for lower repeated startup.",
+        "same_process_workers": "Use same-process Bun worker threads for case execution with a specified isolation contract and a native whole-process termination fallback."
+      }
+    },
+    "trust_relationship": {
+      "type": "choice",
+      "instructions": "Choose the authority boundary between the suite executor and candidate compiler.",
+      "criteria": {
+        "reference_builds_suite": "Use a named qualified compiler/runtime to build the current Can controller and checks, keep the candidate on subject production, and require independent reference refresh for new syntax/APIs.",
+        "candidate_with_controls": "Use candidate-produced runner code together with fixed failing controls and reference comparisons as the authority condition, retaining the risk of undetected correlated errors.",
+        "frozen_suite_artifact": "Make a prebuilt qualified runner artifact authoritative and require separate refresh for every suite-source change rather than compiling current source per run."
+      }
+    }
+  }
+}

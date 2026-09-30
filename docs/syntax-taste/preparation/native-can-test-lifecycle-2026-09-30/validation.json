@@ -1,0 +1,98 @@
+{
+  "checked_utc": "2026-09-30T12:46:09.283241+00:00",
+  "scope": "failure/lifecycle design, final review corrections, cross-document references, source links and consultation integrity",
+  "documents_checked": [
+    "docs/syntax-taste/native-can-test-lifecycle-2026-09-30.md",
+    "docs/syntax-taste/native-can-test-capabilities-2026-09-30.md",
+    "docs/syntax-taste/native-can-test-architecture-2026-09-30.md",
+    "docs/syntax-taste/native-can-test-authoring-2026-09-30.md",
+    "docs/syntax-taste/native-can-tests-completion-contract-2026-09-30.md",
+    "docs/syntax-taste/native-can-tests-migration-ledger-2026-09-30.md",
+    "docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/concurrency-reuse-review.md",
+    "docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/coverage-report-review.md",
+    "docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/final-coverage-review.md",
+    "docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/final-resource-review.md",
+    "docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/final-reuse-review.md",
+    "docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/findings.md",
+    "docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/resource-failure-review.md",
+    "docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/review.md"
+  ],
+  "local_links_checked": 216,
+  "missing_local_links": [],
+  "out_of_range_line_anchors": [],
+  "consultations": {
+    "count": 3,
+    "response_models": [
+      "jev-1.13.0",
+      "jev-1.13.0",
+      "jev-1.13.0"
+    ],
+    "checks": "valid JSON and response/alternative shapes; normalized probabilities; HTTP 200; every explanatory context/question/option field distinct across three requests; retained manual semantic audit",
+    "selected_probabilities": {
+      "coverage": [
+        1.0,
+        0.98,
+        1.0
+      ],
+      "continuation": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "reuse": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  },
+  "source_sha256": {
+    "compiler/internal/check/callables.go": "ca6316c5d3b6fed1874dcfc95f035365dda814d24da816decd1672de603d8b0f",
+    "compiler/internal/driver/assert.go": "5f8ba4de298be419bba0edd7a4f94e6ae9c32e6898212e8a7498863a54eb5f0b",
+    "compiler/internal/driver/commands.go": "305337581482b74b497b2739cc6bf73d00c1bb753e8f432c8eff7ed317f9f87b",
+    "compiler/internal/driver/diagnostics.go": "45c260e9ec4ead227c9914d10d56090f4f320c752fa1f3688bb9c2761056934b",
+    "compiler/internal/driver/output.go": "e15fd56e6ee808300a4094b3bb15fecc59f45ccfb13706652dd0948498fb8a36",
+    "compiler/internal/driver/run.go": "79f7b02c6467eb37f6987048c1a97f8751c5ca7241f81fb1e2390bfed36a7b2d",
+    "compiler/internal/driver/runtime.go": "d5021fe96f610196af1fe6e3cc4610e27a16517963cb2b3f8b7bacda1578d2ba",
+    "compiler/internal/driver/supervise.go": "176507bb7eaf4bed2c5a3bbdd26be7248dbd1bcd0c6fb38640b7b16ff791e1fc",
+    "compiler/internal/emit/program_entry.go": "b8cf72ca240d5b8c2128b16380a56131d191e421348b2250d2af67e4fee6e5fb",
+    "compiler/lsp_g03_test.go": "25f50638e72841748932de89c8ddff59e0b9132f8f078748956588250368ba7d",
+    "distribution/qualify.py": "9ed608efd6364224af88453a1ed438ff43081d6a9e8c4df91f1455df406e6b22",
+    "examples/process/src/main.can": "e75fd50e623425ca4c3a048583d9045472dd51a81645ff3fd84f93f5ab8fcd71",
+    "runtime/entry.ts": "87460f5f7a8abc23b02c652b2e1f33babcd1da0fa1d04603c61accb8833f3ad2",
+    "runtime/platform/files/path.ts": "197dceeab164675d5bb6d711951f71829659dae57afc824959f1ca2857a44686",
+    "runtime/platform/files/write.ts": "32df680f189509906ffe137bf9691dcdd118283c7eb39b3892acf101ccf166c4",
+    "runtime/platform/process/spawn.ts": "fddfaeff6f778d9e8e1d06248cab8bece7b3178e8939ada26fc0e2ec5204f87c",
+    "runtime/platform/process/wait.ts": "597a01560bd67f4acad9b6e4b46cf7fe4c409d9ed4601cfa81e5610c1d2a1511",
+    "runtime/platform/server.ts": "068d6aa438030ba26b4e78354832c5e121ca0ea4529ff6f8868bfc2213924859",
+    "runtime/platform/websocket.ts": "c67f2430d93f66230dc4d979f5a10fd9511acb0d6ccfdf1f3a05390e5848a2f5",
+    "tests/authoring-policies/README.md": "038d4a22b226a5497676b1de46dbdc18a742e1392d1320f153cc7415b5ee8e3a",
+    "tests/baseline/README.md": "b9407d6c4570e19b14e782e7f4f32568b2bb0791b22fc349f198fcdf6a0f1ee9",
+    "tests/browser-controls/x-r02-1.md": "70d1c20f7e6aa2a134128c82ed2a3b6877ad7548a3e6fb0d42c10a03f6ec9d61",
+    "tests/conformance/native.ts": "e1af4ae127651b10d08b4be6cf18d67b3bdda5403c8a51972053be1c0d380f35",
+    "tests/failure-conventions/README.md": "5320f94bcce0dce7b12e4e3c7c51432c725ad08f66126924257e67c236b9c46a",
+    "tests/host-discrimination/README.md": "4982e98bff2ebe911f588dde3aefcfcde4805cfe614c22a11b16e25dc6c0b837",
+    "tests/integration/browser/controls.mjs": "38e339e2dcdcf6ec881f4d0270506531f73eb8e77e808bc4b9971a8b5a66d43b",
+    "tests/integration/browser/firefox-remote.mjs": "7ae0a577bcd7bbb46ba77db53212ded3f0aa6729add7663882e0841d8797102f",
+    "tests/integration/browser/grid.mjs": "f1aa59787f98c0781043db6ed500024218eba8037228fd4706df3342bbd072ea",
+    "tests/integration/browser_controls_test.go": "c7e1a7bb5db50ac58db6a8b814fe88e89c848f376d72b40414d21dfbb750fa00",
+    "tests/integration/gate3_matrix_test.go": "5911af0cdfda30a3a546eea1eca03ef78c34fbce7d73c052c123f352a1784b4e",
+    "tests/integration/harness_test.go": "63bd7144614697ae7bf175ad095778dbbc498ae479737e98dd5935e078d67ba8",
+    "tests/integration/testdata/browser-controls/src/main.can": "dc3baf85ee3296cf7ec06178a2af90e77717b6a94c035a28d9b3b3fab14ec998",
+    "tests/support/tempcache/cache.go": "b5440a4e3124516b61986bcebbd374306fe172bee8cd8bf09ec8256bfbb7991e"
+  },
+  "preserved_existing_tracked_changes": [
+    "AGENTS.md"
+  ],
+  "unrelated_state": "Existing design artifacts, AGENTS.md changes and output/ preserved. No ownership of output/ was assumed.",
+  "not_performed": [
+    "compiler/runtime implementation",
+    "Can compilation",
+    "test execution",
+    "live services or native subjects",
+    "performance measurements",
+    "host enforcement or recovery qualification",
+    "reference bootstrap qualification"
+  ],
+  "cleanup": "No task-owned temporary execution directories, worktrees, builds, browsers, databases or other live subject resources allocated. Compact design/consultation evidence retained."
+}

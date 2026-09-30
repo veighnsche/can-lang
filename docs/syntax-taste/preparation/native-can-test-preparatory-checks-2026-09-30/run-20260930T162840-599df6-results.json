@@ -1,0 +1,1611 @@
+{
+  "kind": "can.preparatory.execution",
+  "run_id": "run-20260930T162840-599df6",
+  "integrated_qualification": false,
+  "jobs": [
+    {
+      "id": "PM-N1",
+      "status": "inconclusive",
+      "legs": [
+        {
+          "exit": 0,
+          "frames": [
+            {
+              "sequence": 0,
+              "id": null,
+              "event": "ready",
+              "mode": "positive"
+            },
+            {
+              "sequence": 1,
+              "id": 1,
+              "event": "reply",
+              "op": "make_then_getter",
+              "facts": {
+                "handle": 1,
+                "calls": 0
+              }
+            },
+            {
+              "sequence": 2,
+              "id": 2,
+              "event": "reply",
+              "op": "alias",
+              "facts": {
+                "handle": 2,
+                "calls": 0
+              }
+            },
+            {
+              "sequence": 3,
+              "id": 3,
+              "event": "reply",
+              "op": "observe",
+              "facts": {
+                "calls": 0,
+                "same": true,
+                "controlAssimilated": false
+              }
+            },
+            {
+              "sequence": 4,
+              "id": 4,
+              "event": "reply",
+              "op": "observe",
+              "facts": {
+                "calls": 0,
+                "same": true,
+                "controlAssimilated": false
+              }
+            },
+            {
+              "sequence": 5,
+              "id": 5,
+              "event": "reply",
+              "op": "get_then",
+              "facts": {
+                "calls": 1,
+                "thrown": "n1-then-getter"
+              }
+            },
+            {
+              "sequence": 6,
+              "id": 6,
+              "event": "reply",
+              "op": "close",
+              "facts": {
+                "calls": 1
+              },
+              "seal": true
+            }
+          ],
+          "trace": [
+            {
+              "received_ns": 21618303625458,
+              "frame": {
+                "sequence": 0,
+                "id": null,
+                "event": "ready",
+                "mode": "positive"
+              }
+            },
+            {
+              "sent_ns": 21618303649875,
+              "frame": {
+                "id": 1,
+                "op": "make_then_getter"
+              }
+            },
+            {
+              "received_ns": 21618322480208,
+              "frame": {
+                "sequence": 1,
+                "id": 1,
+                "event": "reply",
+                "op": "make_then_getter",
+                "facts": {
+                  "handle": 1,
+                  "calls": 0
+                }
+              }
+            },
+            {
+              "sent_ns": 21618322501791,
+              "frame": {
+                "id": 2,
+                "op": "alias",
+                "handle": 1
+              }
+            },
+            {
+              "received_ns": 21618337572791,
+              "frame": {
+                "sequence": 2,
+                "id": 2,
+                "event": "reply",
+                "op": "alias",
+                "facts": {
+                  "handle": 2,
+                  "calls": 0
+                }
+              }
+            },
+            {
+              "sent_ns": 21618337589541,
+              "frame": {
+                "id": 3,
+                "op": "observe",
+                "handles": [
+                  1,
+                  2
+                ]
+              }
+            },
+            {
+              "received_ns": 21618356406083,
+              "frame": {
+                "sequence": 3,
+                "id": 3,
+                "event": "reply",
+                "op": "observe",
+                "facts": {
+                  "calls": 0,
+                  "same": true,
+                  "controlAssimilated": false
+                }
+              }
+            },
+            {
+              "sent_ns": 21618356424750,
+              "frame": {
+                "id": 4,
+                "op": "observe",
+                "handles": [
+                  1,
+                  2
+                ]
+              }
+            },
+            {
+              "received_ns": 21618374768041,
+              "frame": {
+                "sequence": 4,
+                "id": 4,
+                "event": "reply",
+                "op": "observe",
+                "facts": {
+                  "calls": 0,
+                  "same": true,
+                  "controlAssimilated": false
+                }
+              }
+            },
+            {
+              "sent_ns": 21618374795541,
+              "frame": {
+                "id": 5,
+                "op": "get_then",
+                "handle": 1
+              }
+            },
+            {
+              "received_ns": 21618393618708,
+              "frame": {
+                "sequence": 5,
+                "id": 5,
+                "event": "reply",
+                "op": "get_then",
+                "facts": {
+                  "calls": 1,
+                  "thrown": "n1-then-getter"
+                }
+              }
+            },
+            {
+              "sent_ns": 21618393635958,
+              "frame": {
+                "id": 6,
+                "op": "close"
+              }
+            },
+            {
+              "received_ns": 21618411185791,
+              "frame": {
+                "sequence": 6,
+                "id": 6,
+                "event": "reply",
+                "op": "close",
+                "facts": {
+                  "calls": 1
+                },
+                "seal": true
+              }
+            }
+          ],
+          "stderr": "",
+          "mode": "positive",
+          "zero_access_oracle": "pass"
+        },
+        {
+          "exit": 0,
+          "frames": [
+            {
+              "sequence": 0,
+              "id": null,
+              "event": "ready",
+              "mode": "control"
+            },
+            {
+              "sequence": 1,
+              "id": 1,
+              "event": "reply",
+              "op": "make_then_getter",
+              "facts": {
+                "handle": 1,
+                "calls": 0
+              }
+            },
+            {
+              "sequence": 2,
+              "id": 2,
+              "event": "reply",
+              "op": "alias",
+              "facts": {
+                "handle": 2,
+                "calls": 0
+              }
+            },
+            {
+              "sequence": 3,
+              "id": 3,
+              "event": "reply",
+              "op": "observe",
+              "facts": {
+                "calls": 1,
+                "same": true,
+                "controlAssimilated": true
+              }
+            },
+            {
+              "sequence": 4,
+              "id": 4,
+              "event": "reply",
+              "op": "observe",
+              "facts": {
+                "calls": 1,
+                "same": true,
+                "controlAssimilated": true
+              }
+            },
+            {
+              "sequence": 5,
+              "id": 5,
+              "event": "reply",
+              "op": "get_then",
+              "facts": {
+                "calls": 2,
+                "thrown": "n1-then-getter"
+              }
+            },
+            {
+              "sequence": 6,
+              "id": 6,
+              "event": "reply",
+              "op": "close",
+              "facts": {
+                "calls": 2
+              },
+              "seal": true
+            }
+          ],
+          "trace": [
+            {
+              "received_ns": 21618441824416,
+              "frame": {
+                "sequence": 0,
+                "id": null,
+                "event": "ready",
+                "mode": "control"
+              }
+            },
+            {
+              "sent_ns": 21618441841708,
+              "frame": {
+                "id": 1,
+                "op": "make_then_getter"
+              }
+            },
+            {
+              "received_ns": 21618460715583,
+              "frame": {
+                "sequence": 1,
+                "id": 1,
+                "event": "reply",
+                "op": "make_then_getter",
+                "facts": {
+                  "handle": 1,
+                  "calls": 0
+                }
+              }
+            },
+            {
+              "sent_ns": 21618460735500,
+              "frame": {
+                "id": 2,
+                "op": "alias",
+                "handle": 1
+              }
+            },
+            {
+              "received_ns": 21618479555666,
+              "frame": {
+                "sequence": 2,
+                "id": 2,
+                "event": "reply",
+                "op": "alias",
+                "facts": {
+                  "handle": 2,
+                  "calls": 0
+                }
+              }
+            },
+            {
+              "sent_ns": 21618479580541,
+              "frame": {
+                "id": 3,
+                "op": "observe",
+                "handles": [
+                  1,
+                  2
+                ]
+              }
+            },
+            {
+              "received_ns": 21618498413083,
+              "frame": {
+                "sequence": 3,
+                "id": 3,
+                "event": "reply",
+                "op": "observe",
+                "facts": {
+                  "calls": 1,
+                  "same": true,
+                  "controlAssimilated": true
+                }
+              }
+            },
+            {
+              "sent_ns": 21618498438208,
+              "frame": {
+                "id": 4,
+                "op": "observe",
+                "handles": [
+                  1,
+                  2
+                ]
+              }
+            },
+            {
+              "received_ns": 21618517311291,
+              "frame": {
+                "sequence": 4,
+                "id": 4,
+                "event": "reply",
+                "op": "observe",
+                "facts": {
+                  "calls": 1,
+                  "same": true,
+                  "controlAssimilated": true
+                }
+              }
+            },
+            {
+              "sent_ns": 21618517336875,
+              "frame": {
+                "id": 5,
+                "op": "get_then",
+                "handle": 1
+              }
+            },
+            {
+              "received_ns": 21618536155000,
+              "frame": {
+                "sequence": 5,
+                "id": 5,
+                "event": "reply",
+                "op": "get_then",
+                "facts": {
+                  "calls": 2,
+                  "thrown": "n1-then-getter"
+                }
+              }
+            },
+            {
+              "sent_ns": 21618536171333,
+              "frame": {
+                "id": 6,
+                "op": "close"
+              }
+            },
+            {
+              "received_ns": 21618555035458,
+              "frame": {
+                "sequence": 6,
+                "id": 6,
+                "event": "reply",
+                "op": "close",
+                "facts": {
+                  "calls": 2
+                },
+                "seal": true
+              }
+            }
+          ],
+          "stderr": "",
+          "mode": "control",
+          "zero_access_oracle": "failed_as_seeded"
+        }
+      ],
+      "resources": {
+        "peak_rss_bytes": 29655040,
+        "peak_processes": 3,
+        "peak_scratch_bytes": 61846,
+        "io_bytes": 1687
+      },
+      "cleanup": {
+        "confirmed": true,
+        "direct_children_reaped": [
+          {
+            "pid": 51277,
+            "exit": 0
+          },
+          {
+            "pid": 51284,
+            "exit": 0
+          }
+        ],
+        "remaining_pids": [],
+        "forced_actions": [],
+        "errors": [],
+        "job_scratch_removed": true
+      },
+      "elapsed_seconds": 0.375,
+      "observation_outcome": "mechanism_supported",
+      "acceptance_pending": "batch root cleanup receipt"
+    },
+    {
+      "id": "PM-N2",
+      "status": "inconclusive",
+      "legs": [
+        {
+          "exit": 0,
+          "frames": [
+            {
+              "sequence": 0,
+              "id": null,
+              "event": "ready",
+              "mode": "positive"
+            },
+            {
+              "sequence": 1,
+              "id": 1,
+              "event": "reply",
+              "op": "witness",
+              "facts": {
+                "encodedHex": "5b315d"
+              }
+            },
+            {
+              "sequence": 2,
+              "id": 2,
+              "event": "reply",
+              "op": "make_array",
+              "facts": {
+                "handle": 1,
+                "calls": 0
+              }
+            },
+            {
+              "sequence": 3,
+              "id": 3,
+              "event": "reply",
+              "op": "encode",
+              "facts": {
+                "reason": "type",
+                "path": "",
+                "calls": 0,
+                "invoked": true,
+                "controlMarker": null
+              }
+            },
+            {
+              "sequence": 4,
+              "id": 4,
+              "event": "reply",
+              "op": "close",
+              "facts": {
+                "calls": 0
+              },
+              "seal": true
+            }
+          ],
+          "trace": [
+            {
+              "received_ns": 21618676885500,
+              "frame": {
+                "sequence": 0,
+                "id": null,
+                "event": "ready",
+                "mode": "positive"
+              }
+            },
+            {
+              "sent_ns": 21618676907375,
+              "frame": {
+                "id": 1,
+                "op": "witness"
+              }
+            },
+            {
+              "received_ns": 21618695770625,
+              "frame": {
+                "sequence": 1,
+                "id": 1,
+                "event": "reply",
+                "op": "witness",
+                "facts": {
+                  "encodedHex": "5b315d"
+                }
+              }
+            },
+            {
+              "sent_ns": 21618695784291,
+              "frame": {
+                "id": 2,
+                "op": "make_array"
+              }
+            },
+            {
+              "received_ns": 21618714651000,
+              "frame": {
+                "sequence": 2,
+                "id": 2,
+                "event": "reply",
+                "op": "make_array",
+                "facts": {
+                  "handle": 1,
+                  "calls": 0
+                }
+              }
+            },
+            {
+              "sent_ns": 21618714682625,
+              "frame": {
+                "id": 3,
+                "op": "encode",
+                "handle": 1
+              }
+            },
+            {
+              "received_ns": 21618733522041,
+              "frame": {
+                "sequence": 3,
+                "id": 3,
+                "event": "reply",
+                "op": "encode",
+                "facts": {
+                  "reason": "type",
+                  "path": "",
+                  "calls": 0,
+                  "invoked": true,
+                  "controlMarker": null
+                }
+              }
+            },
+            {
+              "sent_ns": 21618733535125,
+              "frame": {
+                "id": 4,
+                "op": "close"
+              }
+            },
+            {
+              "received_ns": 21618752392291,
+              "frame": {
+                "sequence": 4,
+                "id": 4,
+                "event": "reply",
+                "op": "close",
+                "facts": {
+                  "calls": 0
+                },
+                "seal": true
+              }
+            }
+          ],
+          "stderr": "",
+          "mode": "positive",
+          "zero_access_oracle": "pass"
+        },
+        {
+          "exit": 0,
+          "frames": [
+            {
+              "sequence": 0,
+              "id": null,
+              "event": "ready",
+              "mode": "control"
+            },
+            {
+              "sequence": 1,
+              "id": 1,
+              "event": "reply",
+              "op": "witness",
+              "facts": {
+                "encodedHex": "5b315d"
+              }
+            },
+            {
+              "sequence": 2,
+              "id": 2,
+              "event": "reply",
+              "op": "make_array",
+              "facts": {
+                "handle": 1,
+                "calls": 0
+              }
+            },
+            {
+              "sequence": 3,
+              "id": 3,
+              "event": "reply",
+              "op": "encode",
+              "facts": {
+                "reason": "type",
+                "path": "",
+                "calls": 1,
+                "invoked": true,
+                "controlMarker": "n2-index-getter"
+              }
+            },
+            {
+              "sequence": 4,
+              "id": 4,
+              "event": "reply",
+              "op": "close",
+              "facts": {
+                "calls": 1
+              },
+              "seal": true
+            }
+          ],
+          "trace": [
+            {
+              "received_ns": 21618787260583,
+              "frame": {
+                "sequence": 0,
+                "id": null,
+                "event": "ready",
+                "mode": "control"
+              }
+            },
+            {
+              "sent_ns": 21618787286166,
+              "frame": {
+                "id": 1,
+                "op": "witness"
+              }
+            },
+            {
+              "received_ns": 21618806194666,
+              "frame": {
+                "sequence": 1,
+                "id": 1,
+                "event": "reply",
+                "op": "witness",
+                "facts": {
+                  "encodedHex": "5b315d"
+                }
+              }
+            },
+            {
+              "sent_ns": 21618806205416,
+              "frame": {
+                "id": 2,
+                "op": "make_array"
+              }
+            },
+            {
+              "received_ns": 21618824771750,
+              "frame": {
+                "sequence": 2,
+                "id": 2,
+                "event": "reply",
+                "op": "make_array",
+                "facts": {
+                  "handle": 1,
+                  "calls": 0
+                }
+              }
+            },
+            {
+              "sent_ns": 21618824784333,
+              "frame": {
+                "id": 3,
+                "op": "encode",
+                "handle": 1
+              }
+            },
+            {
+              "received_ns": 21618841522000,
+              "frame": {
+                "sequence": 3,
+                "id": 3,
+                "event": "reply",
+                "op": "encode",
+                "facts": {
+                  "reason": "type",
+                  "path": "",
+                  "calls": 1,
+                  "invoked": true,
+                  "controlMarker": "n2-index-getter"
+                }
+              }
+            },
+            {
+              "sent_ns": 21618841542750,
+              "frame": {
+                "id": 4,
+                "op": "close"
+              }
+            },
+            {
+              "received_ns": 21618860430291,
+              "frame": {
+                "sequence": 4,
+                "id": 4,
+                "event": "reply",
+                "op": "close",
+                "facts": {
+                  "calls": 1
+                },
+                "seal": true
+              }
+            }
+          ],
+          "stderr": "",
+          "mode": "control",
+          "zero_access_oracle": "failed_as_seeded"
+        }
+      ],
+      "resources": {
+        "peak_rss_bytes": 31768576,
+        "peak_processes": 3,
+        "peak_scratch_bytes": 1362760,
+        "io_bytes": 1122
+      },
+      "cleanup": {
+        "confirmed": true,
+        "direct_children_reaped": [
+          {
+            "pid": 51289,
+            "exit": 0
+          },
+          {
+            "pid": 51291,
+            "exit": 0
+          }
+        ],
+        "remaining_pids": [],
+        "forced_actions": [],
+        "errors": [],
+        "job_scratch_removed": true
+      },
+      "elapsed_seconds": 0.302,
+      "observation_outcome": "mechanism_supported",
+      "acceptance_pending": "batch root cleanup receipt"
+    },
+    {
+      "id": "PM-F1",
+      "status": "inconclusive",
+      "legs": [
+        {
+          "mode": "positive",
+          "exit": 0,
+          "frames": [
+            {
+              "event": "before_import"
+            },
+            {
+              "event": "observation",
+              "stdinHex": "00ff0a0d41420043",
+              "text": {
+                "present": true,
+                "value": "\u03bb-\u00e9"
+              },
+              "empty": {
+                "present": true,
+                "value": ""
+              },
+              "absent": {
+                "present": false
+              },
+              "seal": true
+            }
+          ],
+          "trace": [
+            {
+              "received_ns": 21618969276166,
+              "frame": {
+                "event": "before_import"
+              }
+            },
+            {
+              "received_ns": 21618980605541,
+              "frame": {
+                "event": "observation",
+                "stdinHex": "00ff0a0d41420043",
+                "text": {
+                  "present": true,
+                  "value": "\u03bb-\u00e9"
+                },
+                "empty": {
+                  "present": true,
+                  "value": ""
+                },
+                "absent": {
+                  "present": false
+                },
+                "seal": true
+              }
+            }
+          ],
+          "stderr": ""
+        },
+        {
+          "mode": "withheld_eof",
+          "delivery_verdict": "fd3_eof_timeout",
+          "sticky_failure": true,
+          "exit": 0,
+          "frames": [
+            {
+              "event": "before_import"
+            },
+            {
+              "event": "observation",
+              "stdinHex": "00ff0a0d41420043",
+              "text": {
+                "present": true,
+                "value": "\u03bb-\u00e9"
+              },
+              "empty": {
+                "present": true,
+                "value": ""
+              },
+              "absent": {
+                "present": false
+              },
+              "seal": true
+            }
+          ],
+          "trace": [
+            {
+              "received_ns": 21619005582083,
+              "frame": {
+                "event": "before_import"
+              }
+            },
+            {
+              "received_ns": 21621032196791,
+              "frame": {
+                "event": "observation",
+                "stdinHex": "00ff0a0d41420043",
+                "text": {
+                  "present": true,
+                  "value": "\u03bb-\u00e9"
+                },
+                "empty": {
+                  "present": true,
+                  "value": ""
+                },
+                "absent": {
+                  "present": false
+                },
+                "seal": true
+              }
+            }
+          ],
+          "stderr": ""
+        },
+        {
+          "mode": "malformed",
+          "exit": 1,
+          "frames": [
+            {
+              "event": "before_import"
+            }
+          ],
+          "trace": [
+            {
+              "received_ns": 21621075260250,
+              "frame": {
+                "event": "before_import"
+              }
+            }
+          ],
+          "stderr": "Error: invalid launcher environment snapshot\n"
+        },
+        {
+          "mode": "nonreader",
+          "offered_bytes": 1048576,
+          "written_bytes": 65536,
+          "writer_stopped": true,
+          "exit": 0,
+          "frames": [
+            {
+              "event": "nonreader_exit",
+              "seal": true
+            }
+          ],
+          "trace": [
+            {
+              "received_ns": 21621202152833,
+              "frame": {
+                "event": "nonreader_exit",
+                "seal": true
+              }
+            }
+          ],
+          "stderr": ""
+        }
+      ],
+      "resources": {
+        "peak_rss_bytes": 44482560,
+        "peak_processes": 3,
+        "peak_scratch_bytes": 51040,
+        "io_bytes": 66155
+      },
+      "cleanup": {
+        "confirmed": true,
+        "direct_children_reaped": [
+          {
+            "pid": 51296,
+            "exit": 0
+          },
+          {
+            "pid": 51298,
+            "exit": 0
+          },
+          {
+            "pid": 51322,
+            "exit": 1
+          },
+          {
+            "pid": 51324,
+            "exit": 0
+          }
+        ],
+        "remaining_pids": [],
+        "forced_actions": [],
+        "errors": [],
+        "job_scratch_removed": true
+      },
+      "elapsed_seconds": 2.338,
+      "observation_outcome": "mechanism_supported",
+      "acceptance_pending": "batch root cleanup receipt"
+    },
+    {
+      "id": "PM-B1",
+      "status": "mechanism_failed",
+      "legs": [
+        {
+          "exit": 0,
+          "frames": [
+            {
+              "seq": 1,
+              "timeNs": "333449291",
+              "event": "ready",
+              "id": "",
+              "operationId": ""
+            },
+            {
+              "seq": 2,
+              "timeNs": "674730500",
+              "event": "prepared",
+              "id": "1",
+              "operationId": "1",
+              "mode": "positive",
+              "origin": "http://127.0.0.1:57240"
+            },
+            {
+              "seq": 3,
+              "timeNs": "1691235958",
+              "event": "route_arrived",
+              "id": "2",
+              "operationId": "1",
+              "token": "1:route:1",
+              "method": "POST",
+              "path": "/held",
+              "postDataLength": 0
+            },
+            {
+              "seq": 4,
+              "timeNs": "1699780750",
+              "event": "pong",
+              "id": "3",
+              "operationId": "1"
+            },
+            {
+              "seq": 5,
+              "timeNs": "1718636666",
+              "event": "resolve_received",
+              "id": "4",
+              "operationId": "1",
+              "token": "1:route:1",
+              "marker": "run-20260930T162840-599df6-positive"
+            },
+            {
+              "seq": 6,
+              "timeNs": "1720255666",
+              "event": "resolved",
+              "id": "1",
+              "operationId": "1",
+              "token": "1:route:1",
+              "marker": "run-20260930T162840-599df6-positive"
+            },
+            {
+              "seq": 7,
+              "timeNs": "1720726666",
+              "event": "response_observed",
+              "id": "2",
+              "operationId": "1",
+              "status": 200,
+              "path": "/held"
+            },
+            {
+              "seq": 8,
+              "timeNs": "1722589833",
+              "event": "input_settled",
+              "id": "2",
+              "operationId": "1",
+              "status": "fulfilled"
+            },
+            {
+              "seq": 9,
+              "timeNs": "1738739125",
+              "event": "observation",
+              "id": "2",
+              "operationId": "1",
+              "marker": "run-20260930T162840-599df6-positive"
+            },
+            {
+              "seq": 10,
+              "timeNs": "1758921333",
+              "event": "seal",
+              "id": "5",
+              "operationId": "1",
+              "clickOutcome": "fulfilled",
+              "routeOutcome": "fulfilled",
+              "routeCount": 1,
+              "diagnosticCount": 0,
+              "pendingRoute": false
+            }
+          ],
+          "trace": [
+            {
+              "received_ns": 21622313359416,
+              "frame": {
+                "seq": 1,
+                "timeNs": "333449291",
+                "event": "ready",
+                "id": "",
+                "operationId": ""
+              }
+            },
+            {
+              "sent_ns": 21622313416166,
+              "frame": {
+                "id": "1",
+                "endpoint": "ws://127.0.0.1:57241/devtools/browser/26587d8e-77db-48e0-86d5-df44c42dfd0d",
+                "url": "http://127.0.0.1:57240/",
+                "mode": "positive",
+                "event": "start"
+              }
+            },
+            {
+              "received_ns": 21622654563958,
+              "frame": {
+                "seq": 2,
+                "timeNs": "674730500",
+                "event": "prepared",
+                "id": "1",
+                "operationId": "1",
+                "mode": "positive",
+                "origin": "http://127.0.0.1:57240"
+              }
+            },
+            {
+              "sent_ns": 21622654590166,
+              "frame": {
+                "id": "2",
+                "event": "input"
+              }
+            },
+            {
+              "received_ns": 21623673489041,
+              "frame": {
+                "seq": 3,
+                "timeNs": "1691235958",
+                "event": "route_arrived",
+                "id": "2",
+                "operationId": "1",
+                "token": "1:route:1",
+                "method": "POST",
+                "path": "/held",
+                "postDataLength": 0
+              }
+            },
+            {
+              "sent_ns": 21623673531041,
+              "frame": {
+                "id": "3",
+                "event": "ping"
+              }
+            },
+            {
+              "received_ns": 21623692385166,
+              "frame": {
+                "seq": 4,
+                "timeNs": "1699780750",
+                "event": "pong",
+                "id": "3",
+                "operationId": "1"
+              }
+            },
+            {
+              "sent_ns": 21623692408041,
+              "frame": {
+                "id": "4",
+                "token": "1:route:1",
+                "marker": "run-20260930T162840-599df6-positive",
+                "event": "resolve"
+              }
+            },
+            {
+              "received_ns": 21623708094166,
+              "frame": {
+                "seq": 5,
+                "timeNs": "1718636666",
+                "event": "resolve_received",
+                "id": "4",
+                "operationId": "1",
+                "token": "1:route:1",
+                "marker": "run-20260930T162840-599df6-positive"
+              }
+            },
+            {
+              "received_ns": 21623708100166,
+              "frame": {
+                "seq": 6,
+                "timeNs": "1720255666",
+                "event": "resolved",
+                "id": "1",
+                "operationId": "1",
+                "token": "1:route:1",
+                "marker": "run-20260930T162840-599df6-positive"
+              }
+            },
+            {
+              "received_ns": 21623708103583,
+              "frame": {
+                "seq": 7,
+                "timeNs": "1720726666",
+                "event": "response_observed",
+                "id": "2",
+                "operationId": "1",
+                "status": 200,
+                "path": "/held"
+              }
+            },
+            {
+              "received_ns": 21623708106291,
+              "frame": {
+                "seq": 8,
+                "timeNs": "1722589833",
+                "event": "input_settled",
+                "id": "2",
+                "operationId": "1",
+                "status": "fulfilled"
+              }
+            },
+            {
+              "received_ns": 21623724740916,
+              "frame": {
+                "seq": 9,
+                "timeNs": "1738739125",
+                "event": "observation",
+                "id": "2",
+                "operationId": "1",
+                "marker": "run-20260930T162840-599df6-positive"
+              }
+            },
+            {
+              "sent_ns": 21623724763666,
+              "frame": {
+                "id": "5",
+                "event": "finish"
+              }
+            },
+            {
+              "received_ns": 21623740519583,
+              "frame": {
+                "seq": 10,
+                "timeNs": "1758921333",
+                "event": "seal",
+                "id": "5",
+                "operationId": "1",
+                "clickOutcome": "fulfilled",
+                "routeOutcome": "fulfilled",
+                "routeCount": 1,
+                "diagnosticCount": 0,
+                "pendingRoute": false
+              }
+            }
+          ],
+          "stderr": "",
+          "mode": "positive",
+          "server_trace": [
+            {
+              "method": "GET",
+              "path": "/"
+            }
+          ],
+          "control_failure": null,
+          "chrome_diagnostics": "\nDevTools listening on ws://127.0.0.1:57241/devtools/browser/26587d8e-77db-48e0-86d5-df44c42dfd0d\n2026-09-30 16:33:48.589 Google Chrome Helper (Alerts)[51343:433692] ApplePersistence=NO\n2026-09-30 16:33:48.600 Google Chrome[51329:433569] ApplePersistence=NO\nTrying to load the allocator multiple times. This is *not* supported.\n[51338:433657:0930/163348.885220:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51338:433719:0930/163348.885622:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51338:433657:0930/163348.885785:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51338:433719:0930/163348.885807:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51338:433657:0930/163348.885890:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51338:433719:0930/163348.885914:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51338:433657:0930/163348.885981:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51338:433719:0930/163348.886003:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51338:433657:0930/163348.886062:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51338:433719:0930/163348.886080:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51338:433657:0930/163348.896069:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51338:433719:0930/163348.896108:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51338:433657:0930/163349.756952:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51338:433719:0930/163349.757003:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51338:433657:0930/163349.935607:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51338:433719:0930/163349.936204:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51338:433657:0930/163350.055454:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51338:433719:0930/163350.055503:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n",
+          "cleanup": {
+            "confirmed": true,
+            "direct_children_reaped": [
+              {
+                "pid": 51329,
+                "exit": 0
+              },
+              {
+                "pid": 51345,
+                "exit": 0
+              }
+            ],
+            "remaining_pids": [],
+            "forced_actions": [
+              {
+                "pid": 51329,
+                "signal": "TERM"
+              }
+            ],
+            "errors": []
+          }
+        }
+      ],
+      "reason": "CheckFailure: control route cleanup incomplete",
+      "partial_observations": [
+        {
+          "role": "Chrome",
+          "pid": 51380,
+          "frames": [],
+          "trace": [],
+          "stderr": "\nDevTools listening on ws://127.0.0.1:57252/devtools/browser/18182b74-dd37-4118-bff1-5a3b04068317\n2026-09-30 16:33:50.677 Google Chrome[51380:434109] ApplePersistence=NO\n2026-09-30 16:33:50.694 Google Chrome Helper (Alerts)[51388:434170] ApplePersistence=NO\nTrying to load the allocator multiple times. This is *not* supported.\n[51385:434146:0930/163350.810089:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51385:434219:0930/163350.810294:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51385:434146:0930/163350.811625:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51385:434219:0930/163350.811652:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51385:434146:0930/163350.812505:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51385:434219:0930/163350.812529:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51385:434146:0930/163350.812641:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51385:434219:0930/163350.812660:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51385:434146:0930/163350.812720:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51385:434219:0930/163350.812737:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51385:434146:0930/163350.820488:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51385:434219:0930/163350.820517:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[51385:434146:0930/163351.038004:ERROR:ui/display/ma"
+        },
+        {
+          "role": "browser-driver.ts",
+          "pid": 51389,
+          "frames": [
+            {
+              "seq": 1,
+              "timeNs": "289157875",
+              "event": "ready",
+              "id": "",
+              "operationId": ""
+            },
+            {
+              "seq": 2,
+              "timeNs": "457345500",
+              "event": "prepared",
+              "id": "1",
+              "operationId": "1",
+              "mode": "control",
+              "origin": "http://127.0.0.1:57251"
+            },
+            {
+              "seq": 3,
+              "timeNs": "533709042",
+              "event": "route_arrived",
+              "id": "2",
+              "operationId": "1",
+              "token": "1:route:1",
+              "method": "POST",
+              "path": "/held",
+              "postDataLength": 0
+            },
+            {
+              "seq": 4,
+              "timeNs": "3559381333",
+              "event": "closing",
+              "id": "5",
+              "operationId": "1",
+              "clickOutcome": "pending",
+              "routeOutcome": "pending",
+              "pendingRoute": true
+            },
+            {
+              "seq": 5,
+              "timeNs": "3561046958",
+              "event": "route_aborted",
+              "id": "1",
+              "operationId": "1",
+              "token": "1:route:1"
+            },
+            {
+              "seq": 6,
+              "timeNs": "3564075083",
+              "event": "input_settled",
+              "id": "2",
+              "operationId": "1",
+              "status": "fulfilled"
+            },
+            {
+              "seq": 7,
+              "timeNs": "3571813958",
+              "event": "observation_error",
+              "id": "1",
+              "operationId": "1",
+              "message": "Error: content: Target page, context or browser has been closed\nCall log:\n  - waiting for locator('#result')\n"
+            },
+            {
+              "seq": 8,
+              "timeNs": "3572302875",
+              "event": "closed",
+              "id": "5",
+              "operationId": "1",
+              "clickOutcome": "fulfilled",
+              "routeOutcome": "aborted",
+              "routeCount": 1,
+              "diagnosticCount": 1,
+              "pendingRoute": false
+            }
+          ],
+          "trace": [
+            {
+              "received_ns": 21624401088416,
+              "frame": {
+                "seq": 1,
+                "timeNs": "289157875",
+                "event": "ready",
+                "id": "",
+                "operationId": ""
+              }
+            },
+            {
+              "sent_ns": 21624401107750,
+              "frame": {
+                "id": "1",
+                "endpoint": "ws://127.0.0.1:57252/devtools/browser/18182b74-dd37-4118-bff1-5a3b04068317",
+                "url": "http://127.0.0.1:57251/",
+                "mode": "control",
+                "event": "start"
+              }
+            },
+            {
+              "received_ns": 21624575863125,
+              "frame": {
+                "seq": 2,
+                "timeNs": "457345500",
+                "event": "prepared",
+                "id": "1",
+                "operationId": "1",
+                "mode": "control",
+                "origin": "http://127.0.0.1:57251"
+              }
+            },
+            {
+              "sent_ns": 21624575883208,
+              "frame": {
+                "id": "2",
+                "event": "input"
+              }
+            },
+            {
+              "received_ns": 21624660124625,
+              "frame": {
+                "seq": 3,
+                "timeNs": "533709042",
+                "event": "route_arrived",
+                "id": "2",
+                "operationId": "1",
+                "token": "1:route:1",
+                "method": "POST",
+                "path": "/held",
+                "postDataLength": 0
+              }
+            },
+            {
+              "sent_ns": 21624660147083,
+              "frame": {
+                "id": "3",
+                "event": "ping"
+              }
+            },
+            {
+              "sent_ns": 21624660169375,
+              "frame": {
+                "id": "4",
+                "token": "1:route:1",
+                "marker": "run-20260930T162840-599df6-control",
+                "event": "resolve"
+              }
+            },
+            {
+              "sent_ns": 21627668768333,
+              "frame": {
+                "id": "5",
+                "event": "close"
+              }
+            },
+            {
+              "received_ns": 21627684262208,
+              "frame": {
+                "seq": 4,
+                "timeNs": "3559381333",
+                "event": "closing",
+                "id": "5",
+                "operationId": "1",
+                "clickOutcome": "pending",
+                "routeOutcome": "pending",
+                "pendingRoute": true
+              }
+            },
+            {
+              "received_ns": 21627684270583,
+              "frame": {
+                "seq": 5,
+                "timeNs": "3561046958",
+                "event": "route_aborted",
+                "id": "1",
+                "operationId": "1",
+                "token": "1:route:1"
+              }
+            },
+            {
+              "received_ns": 21627684275250,
+              "frame": {
+                "seq": 6,
+                "timeNs": "3564075083",
+                "event": "input_settled",
+                "id": "2",
+                "operationId": "1",
+                "status": "fulfilled"
+              }
+            },
+            {
+              "received_ns": 21627684280083,
+              "frame": {
+                "seq": 7,
+                "timeNs": "3571813958",
+                "event": "observation_error",
+                "id": "1",
+                "operationId": "1",
+                "message": "Error: content: Target page, context or browser has been closed\nCall log:\n  - waiting for locator('#result')\n"
+              }
+            },
+            {
+              "received_ns": 21627684284666,
+              "frame": {
+                "seq": 8,
+                "timeNs": "3572302875",
+                "event": "closed",
+                "id": "5",
+                "operationId": "1",
+                "clickOutcome": "fulfilled",
+                "routeOutcome": "aborted",
+                "routeCount": 1,
+                "diagnosticCount": 1,
+                "pendingRoute": false
+              }
+            }
+          ],
+          "stderr": ""
+        }
+      ],
+      "resources": {
+        "peak_rss_bytes": 1846968320,
+        "peak_processes": 15,
+        "peak_scratch_bytes": 13417893,
+        "io_bytes": 11203
+      },
+      "cleanup": {
+        "confirmed": true,
+        "direct_children_reaped": [
+          {
+            "pid": 51380,
+            "exit": 0
+          },
+          {
+            "pid": 51389,
+            "exit": 0
+          }
+        ],
+        "remaining_pids": [],
+        "forced_actions": [
+          {
+            "pid": 51380,
+            "signal": "TERM"
+          }
+        ],
+        "errors": [],
+        "job_scratch_removed": true
+      },
+      "elapsed_seconds": 6.536,
+      "observation_outcome": "mechanism_failed"
+    }
+  ],
+  "inputs": {
+    "source_commit": "4cf8f91d97f45cf937c3464de54bc6275e70d49f",
+    "python_sha256": "87d4df53fd91304be5bac391fb204643c36b7df2023c04a0953bcbc7d4fdf634",
+    "bun_sha256": "35d20dd0263e5c950194434b925454fdfa9ba6e4467da960410fa05b08a7a5b5",
+    "runtime_import_closure": {
+      "/Users/vince/Projects/can-lang/runtime/environment.ts": "725e8905f735f17e4f431c5bf0a93e5514926664f87632555c6a2dfd7d3bcbe5",
+      "/Users/vince/Projects/can-lang/runtime/codec/json.ts": "dfec8bb23db3717216f45e5aef4d669994e61a7e2e571bb78710afe58b9de6a5",
+      "/Users/vince/Projects/can-lang/runtime/transport/stream/lifecycle.ts": "2fad775716462b446100fc7fbeca57d1a25e9517e9d56090f87cdaa406e9208f",
+      "/Users/vince/Projects/can-lang/runtime/owner.ts": "08a45a9727ad0c23f8913c0da794aa88f4dc144663ec5362c30f5a301cb2320d",
+      "/Users/vince/Projects/can-lang/runtime/owner-core.ts": "e873b5c4a1d053bf4b2e5986ede72152f83e9378db0f6f92c10c6fda11db31aa",
+      "/Users/vince/Projects/can-lang/runtime/failure.ts": "aaa727822973b77f6d4187955dbca57f2e0868c0793a00ee2ee3ad2450eb1dd9",
+      "/Users/vince/Projects/can-lang/runtime/primitive.ts": "5dc6cd84f03ae25c786f7586bccad455f2be8e0279a48e480a940a498591a330",
+      "/Users/vince/Projects/can-lang/runtime/reflect.ts": "e670aad178c632910855686567f26aff79f2088196d7c528b0869f2253c47d96",
+      "/Users/vince/Projects/can-lang/runtime/data.ts": "3f9d7b794e3291d6fd9773351a9b1fad8b8c92362d57c68e98854f322adbb09a",
+      "/Users/vince/Projects/can-lang/runtime/completion.ts": "50421c31aa4280b17f36a6c2703753b2038f877d36950d7b6f54ef704b37e51e",
+      "/Users/vince/Projects/can-lang/runtime/domain.ts": "d818dfe9d1b12eb975be1ae00b6573c44d22796ef5d711dd065db9f31f7633ee",
+      "/Users/vince/Projects/can-lang/runtime/domain-core.ts": "ad4a47041f9b63b97bb59ffbc2dc2707730b445a4d152b98351a0f9b11bfabfd",
+      "/Users/vince/Projects/can-lang/runtime/catalogue.ts": "d8c62bdd63507d62441798ef84a2a123e1cb0ddb6469eb1b1275e45b1157f9dd",
+      "/Users/vince/Projects/can-lang/runtime/assert/context.ts": "354e000784115fd91881862a22a21ef4782ddaa0ad925eae0b805326d63dd7d1",
+      "/Users/vince/Projects/can-lang/runtime/assert/report.ts": "104be77b26fa60b5f04b7f33ac55046ecc14b01cf179f7145ac05c9562221905",
+      "/Users/vince/Projects/can-lang/runtime/assert/queue.ts": "8b6fee516ff74285ab52c8d889c374ba98afed555335a04983135823f2999ceb",
+      "/Users/vince/Projects/can-lang/runtime/assert/lineage.ts": "42ff5c5e11c9d8372f9f19a34f8524b4364e3b52cc3c9effe3f0aff42a5f86fd",
+      "/Users/vince/Projects/can-lang/runtime/assert/barrier.ts": "79a47d7d3a36a85d96e7c15e883b3f0ed3e57919922e91911373479ea267f1f8",
+      "/Users/vince/Projects/can-lang/runtime/diagnostics.ts": "3455947187a92e96752ac2ae41c902fd3b501dadd126b75d229d357d057c17f9",
+      "/Users/vince/Projects/can-lang/runtime/diagnostics-core.ts": "4240ba1273a67c1b4b8d182ac7729593f61c680a2f88e7aa6b587c2a3f0637f0",
+      "/Users/vince/Projects/can-lang/runtime/vendor/trace-mapping.ts": "bb71555d3b1f2db8516030978157e956a50c7faf06fd3b96818eb61d324e407b",
+      "/Users/vince/Projects/can-lang/runtime/codec/project.ts": "55606e40786d1200b8a40764f6fcfb8d0693702a1741d4fc48b28a76f9a3d12b",
+      "/Users/vince/Projects/can-lang/runtime/codec/numbers.ts": "e5105ccc4fa79f3c6de8279e7945a14e83cdad855fb4b869e21048315a7c38c9",
+      "/Users/vince/Projects/can-lang/runtime/codec/budget.ts": "3383eaa615a085e0b1702bc9487b421be31fa60d2ef09bb386e37062e3a35ada",
+      "/Users/vince/Projects/can-lang/runtime/codec/jsonl.ts": "a0cc9b9b8565cab8357206e12a916038cac17cd1622ebec595524fa6ba404ab6",
+      "/Users/vince/Projects/can-lang/runtime/codec/document.ts": "4e434d5f23fcc41b804a391f8b888a10baad05a384c57b273084ee4537766cbf",
+      "/Users/vince/Projects/can-lang/runtime/codec/duplicates.ts": "ce99d46dabc15fd8c1477d40590376f0d3b377fd67dfcaec05bff3cf9dba794a",
+      "/Users/vince/Projects/can-lang/runtime/bytes.ts": "c41e33946d8c0cd714a170de78374c4d4fb535cd12ebdd6cd644dbc68e2008a9",
+      "/Users/vince/Projects/can-lang/runtime/codec/formats.ts": "18be231e371ad83cc2328e6648abfdae201f5de6d3cb7e7c96f12993ca48b21d"
+    },
+    "playwright": {
+      "files": 118,
+      "bytes": 4101480,
+      "manifest_sha256": "7be25022794c4134f55a34fdbcf76c89354019d18bf24438504a62208fe6cc51"
+    },
+    "playwright_core": {
+      "files": 337,
+      "bytes": 8031764,
+      "manifest_sha256": "99c5110f41c87b25b6f44b1adea527a026931dc1631a3d6b13237752a8e841b7"
+    },
+    "chrome": {
+      "files": 704,
+      "bytes": 1501452852,
+      "manifest_sha256": "fca807a6b579f1aaf34fe2df5eaa07de2046b115fa496f82408774328b506e74"
+    },
+    "instruments": {
+      "codec-subject.ts": "107c4d3dbd48aef25f18ef8278b2aa0f8fa42dab9b9f600afbb8e401e796d6da",
+      "browser-driver.ts": "d687241fdf9cbcd45e2190e20081ba6cb1899c9a39ffaf2bf5ddf4adaa1efe50",
+      "owner.py": "24a9b44d59da9f77de080f33b120225d2c6e658aeee46f1fa21a10e7d92df1f3",
+      "nonreader-subject.ts": "148abd0d5cb87afb557d652249205f38bddfdadcea7b709fd5d321f1792549e1",
+      "descriptor-subject.ts": "a4ba7dfac89589b57bff77836d7ac5e320fbc60de5dcd4df564c677644148e4b",
+      "native-subject.ts": "67c776d94246b7c6d4e4a4bfc17efa6d9f0cd2504e512bba9388b378fd053970"
+    }
+  },
+  "preflight_seconds": 1.243,
+  "batch_seconds": 10.828,
+  "cleanup_owner_survived": true
+}

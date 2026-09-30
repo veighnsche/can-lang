@@ -1,0 +1,24 @@
+{
+  "model": "jev-latest",
+  "state": "The project replaces foreign test harnesses with ordinary, unrestricted Can helper and case functions. An AI agent is the intended author; explicit types, local reasoning and machine-readable errors take priority over reducing typing. R is the separately accepted compiler/runtime for the Can oracle, initially emitting TypeScript executed by Bun; C supplies the tested artifacts; external Go N retains process/resource ownership. Neither an accepted R/N binary nor the compiled Can live-entry bridge is available. Preparatory scripts, supervised by a disposable Python POSIX parent, supplied limited evidence. In PM-N1 a numeric handle table kept a then getter untouched and preserved same-object identity; the designated read incremented once, whereas a Promise-assimilating fault failed the zero-access check. In PM-N2 the real runtime/codec/json.ts::encodeJSON accepted [1n] to yield [1] and rejected an index accessor without invoking it; a contaminated shim increased its counter. That call did not exercise generated Can/createCodec or a reference-built oracle. PM-F1 demonstrated fd 0 binary input alongside fd 3 UTF-8 environment data, empty-versus-missing distinction, EOF deadline, invalid snapshot rejection and disposal of a writer when its nonreading child exited. It supplied no Go ExtraFiles/product-launcher evidence. In PM-B1 the external controller received a route token and ping during a pending real Playwright click, released the route and observed the marker. The deliberately serialized path blocked. Cleanup's route abort sometimes completed the click successfully; the repaired observation therefore recorded both input termination and delivery effects separately. These protocol facts coexist with a failed isolation result: a macOS Keychain prompt appeared from the run's Chrome activity. The directly spawned headless Chrome had a temporary HOME and profile and a local CDP endpoint; --password-store=basic and --use-mock-keychain were missing although pinned Playwright supplies them. The explanation is plausible, but the original dialog's process was not independently identified. The user already dismissed it and every owned process/directory was removed. Do not launch browsers in this review. Any later admission must demonstrate test-only credential behavior without host UI and external disposal despite worker/driver failure. Browser sampling reached 1.72 GiB across 15 processes; these are observations without hard containment. The initial quick envelope allows 4 GiB memory, 64 processes and 512 MiB temporary data, with one case and one browser context active. Required strict limits have no qualified Mac enforcement yet. The laptop disk is 256 GB; large builds and timing campaigns remain deferred. No replacement coverage or integrated N1/N2/B1/F1 success follows from preparation. The task now is to reconcile design and then enable an ordered implementation plan, preserving open acceptance dependencies.",
+  "questions": {
+    "browser_launch": {
+      "type": "choice",
+      "instructions": "For the next design revision, which approach best establishes browser startup without sacrificing outside-worker disposal?",
+      "criteria": {
+        "driver_launch": "Have a resource service owned by N invoke the identified Playwright launcher after registering acquisition intent; retain test credential defaults, capture actual options, and admit only after host-UI and driver-death controls.",
+        "direct_launch": "Maintain parent-side Chrome spawning using an explicitly versioned full command contract checked against the installed driver switches; prove noninteractive credentials and tree reclamation separately.",
+        "isolated_host": "Make an independently prepared isolated browser host a prerequisite for browser implementation, while preserving Can-directed operations and identity/cleanup evidence."
+      }
+    },
+    "bridge_order": {
+      "type": "choice",
+      "instructions": "Where should generated-Can hostile-value ingress evidence sit relative to implementation planning?",
+      "criteria": {
+        "gated_lane": "Draft dependencies now with an early minimal C artifact and same-realm typed bridge, accepted R/N and negative controls gating native migration; revisit the bridge if this fails.",
+        "probe_first": "Delay all lane planning until one more compiled-Can spike supplies the missing result, first providing its small compiler, entry and cleanup pieces.",
+        "interpreter_first": "Investigate replacing execution with a complete interpreter before arranging further bridge implementation."
+      }
+    }
+  }
+}

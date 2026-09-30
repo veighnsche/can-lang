@@ -1,0 +1,33 @@
+{
+  "model": "jev-latest",
+  "state": "The task is design-only shared platform contracts for AI-authored Can testing, with no builds, benchmarks or live tests. Can cases/helpers are ordinary full-language functions and own actions, oracles, scheduling, polling and reporting; foreign authored test harnesses are to be removed. A qualified reference toolchain runs a Can controller and separate fresh Bun workers, while a generic Go parent supervises them and candidate compiler/runtime/browser output is exercised as a subject. Preserve bounded laptop resources and cleanup. The present assertion supervisor reaps only its immediate worker and truncates diagnostics after buffering; it is not a proven disk/process-tree sandbox. Existing process::run spawns detached children through Bun and installs worker-owned cleanup after launch, which cannot execute after SIGKILL. Proposed acquisition must reserve ownership externally before exposing resources, using request identity/digests, bounded evidence and explicit recovery/partial-result states. Checking a pathname is insufficient containment; advertise strict host enforcement only when proved, otherwise reject that capability. Process creation and signal receipts are mechanical facts, not health checks, and exit codes including failure are data. Time limits do not necessarily undo state changes, making unqualified automatic retries unsafe. Browser coverage needs real input and synthetic events, native live-property/attribute distinctions, paused requests answered by Can and event recording active before navigation with bounded final drainage. A remote browser service can remain shared even though its context is case-owned. Arbitrary JavaScript source execution or fixed native test legs violate the intended policy boundary. Generic native-value builders and factual observations/counters should expose hostile getters/proxies, thenables and identity; extra callbacks can be ordinary compiled Can probes inside a disposable candidate realm. No expected verdict belongs to the observer, and raw handles stay in their heap. Fault installation is confined to candidate probe processes. Independent SQL observation identifies its separate connection/decoder and preserves raw values. The current inert CheckSnapshot returns structured diagnostics and UTF16 ranges but represents project errors as diagnostics and lacks diagnostic phase metadata. A public canlc check --json interface must distinguish completed source acceptance/rejection from invocation/IO/internal faults, expose pipeline provenance, bind versioned output to input/compiler identity and avoid assertions, code emission or publication. A crash, truncated output or cancelled check cannot satisfy a rejection expectation. Failure categories need producer-level metadata, not parsing English messages.",
+  "questions": {
+    "resource_authority": {
+      "type": "choice",
+      "instructions": "Select the resource lifetime boundary for the capability specification.",
+      "criteria": {
+        "outside_worker": "Place ownership and recovery in the supervised external resource service, register reservations before use and preserve partial effects with idempotent request identities and enforced bounds.",
+        "worker_scopes": "Use the worker's existing resource owner for lifetime and cleanup, letting parent supervision report that cleanup may be incomplete after abrupt worker loss.",
+        "recovery_scan": "Prefer direct worker acquisition followed by external ownership discovery and recovery scans, documenting the gap before resources are fully identified."
+      }
+    },
+    "observation_boundary": {
+      "type": "choice",
+      "instructions": "Choose the shared external observation interface under full Can authorship.",
+      "criteria": {
+        "typed_facts": "Use general typed operations and sealed observations with Can-driven decisions, native value/counter mechanics and compiled Can callback programs where necessary.",
+        "source_eval": "Provide a JavaScript evaluation channel for observations and leave top-level expectations in Can, accepting embedded host-authored scenario fragments.",
+        "scenario_adapters": "Move each multi-step observation leg into a native family-specific adapter that yields a summary for Can to assess."
+      }
+    },
+    "compiler_diagnostics": {
+      "type": "choice",
+      "instructions": "Select how Can cases should obtain candidate compiler analysis facts.",
+      "criteria": {
+        "product_cli": "Add a structured product checking command that separates completed diagnostics from infrastructure failure, run it as the candidate process and keep interpretation in Can.",
+        "language_primitive": "Introduce a compiler-check language binding that invokes an identified isolated candidate and returns typed diagnostics directly, with a new native API contract.",
+        "stderr_adapter": "Use current failing invocations and Can-owned text parsing for diagnostic identity and stage, accepting dependencies on stderr shape."
+      }
+    }
+  }
+}

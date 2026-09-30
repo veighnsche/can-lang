@@ -1,0 +1,24 @@
+{
+  "performed_before_send": true,
+  "time_utc": "2026-09-30T14:57:38.237781+00:00",
+  "semantic_review": "All three preserve authoring/authority constraints, four probe facts and limitations, host UI incident and uncertainty, cleanup, numeric ceilings, no execution authorization, and identical alternatives. Manually compared before sending.",
+  "wording_check": "Each state, instruction and option description differs in full wording; technical identifiers and stable keys intentionally retained.",
+  "facts": [
+    "ordinary unrestricted Can; AI authors",
+    "R/TS/Bun, C subject, Go N; missing artifacts",
+    "N1 numeric inert handles and fault",
+    "N2 real source codec, generated ingress absent",
+    "F1 POSIX success excludes Go launcher",
+    "B1 concurrency success, abort settlement independent, UI failure",
+    "missing Chrome flags plausible, no exact attribution",
+    "user canceled; owned resources gone; no launches",
+    "1.72 GiB/15 sampled; 4 GiB/64/512 MiB strict unqualified",
+    "256 GB disk; deferred builds/measurements",
+    "no migration or integrated qualification"
+  ],
+  "request_sha256": {
+    "1": "81419c553d6fb463fbc4bff349003e12b8986f4fcd944bce0a84100784add135",
+    "2": "579cda89e3b201f10038626b2d2f2d84c9d0bd77933b67c0e5ec0f59a90862eb",
+    "3": "1b41cd478a1b82c554a01700bf561f8eb692814461ad9a9de0933852dedd889b"
+  }
+}

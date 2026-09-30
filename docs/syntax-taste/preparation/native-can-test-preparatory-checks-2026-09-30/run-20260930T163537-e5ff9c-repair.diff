@@ -1,0 +1,65 @@
+--- attempt1/browser-driver.ts
++++ repair/browser-driver.ts
+@@ -151,6 +151,7 @@
+     async () => {
+       clickOutcome = "fulfilled";
+       emit("input_settled", id, { status: "fulfilled" });
++      if (closing) return; // Cleanup preserves settlement facts but has no delivered marker to inspect.
+       try {
+         const marker = await page.locator("#result").textContent({ timeout: 5_000 });
+         emit("observation", id, { marker });
+--- attempt1/owner.py
++++ repair/owner.py
+@@ -5,7 +5,7 @@
+ CHROME=pathlib.Path('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
+ REPORT={'kind':'can.preparatory.execution','run_id':RUN_ID,'integrated_qualification':False,'jobs':[]}
+ PROCS=[]; FDS=set(); KNOWN={}; CURRENT=None; SERVER=None; THREAD=None
+-START=time.monotonic(); BATCH_END=START+240
++START=time.monotonic(); BATCH_END=START+135
+ class CheckFailure(Exception): pass
+ class Blocked(Exception): pass
+ class Inconclusive(Exception): pass
+@@ -13,7 +13,7 @@
+     if not ok: raise CheckFailure(message)
+ def alarm(signum,frame): raise TimeoutError('external deadline')
+ signal.signal(signal.SIGALRM,alarm)
+-signal.setitimer(signal.ITIMER_REAL,240)
++signal.setitimer(signal.ITIMER_REAL,135)
+ def sha(path):
+     h=hashlib.sha256()
+     with pathlib.Path(path).open('rb') as f:
+@@ -411,7 +411,7 @@
+         if mode=='control':
+             send(p,{'id':5,'op':'close'})
+             closed=wait_for(p,lambda f:f.get('event')=='closed',3)
+-            require(closed.get('pendingRoute') is False and closed.get('routeOutcome')=='aborted' and closed.get('clickOutcome')=='rejected' and closed.get('diagnosticCount')==0,'control route cleanup incomplete')
++            require(closed.get('pendingRoute') is False and closed.get('routeOutcome')=='aborted' and closed.get('clickOutcome') in ['fulfilled','rejected'] and closed.get('diagnosticCount')==0,'control route cleanup incomplete')
+         facts=finish_child(p)
+         require(len(p.trace)<=16,'browser message cap exceeded')
+         events=[f['event'] for f in p.frames]
+@@ -422,7 +422,8 @@
+             require([events.index(e) for e in order]==sorted(events.index(e) for e in order),'browser causal order')
+             require(next(f for f in p.frames if f['event']=='response_observed')['status']==200,'wrong delivered HTTP status')
+         else:
+-            require(events.index('closing')<events.index('input_settled')<events.index('closed'),'control settled before cleanup')
++            require(events.index('closing')<events.index('route_aborted')<events.index('input_settled')<events.index('closed'),'control settled before cleanup')
++            require(next(f for f in p.frames if f['event']=='input_settled')['status']==closed['clickOutcome'],'control settlement facts disagree')
+         require(not p.error,'browser driver stderr')
+         facts.update(mode=mode,server_trace=list(trace),control_failure='route_decision_deadlock' if mode=='control' else None)
+         facts['chrome_diagnostics']=chrome.error.decode(errors='replace')[:4096]
+@@ -490,14 +491,10 @@
+     REPORT['preflight_seconds']=round(time.monotonic()-pre,3)
+     require(REPORT['preflight_seconds']<=45,'preflight budget exceeded')
+     signal.setitimer(signal.ITIMER_REAL,max(.1,BATCH_END-time.monotonic()))
+-    state=run_job('PM-N1',30,10,3,512,8,64,native)
+-    if state=='mechanism_supported': run_job('PM-N2',30,10,3,512,8,64,codec)
+-    else: REPORT['jobs'].append({'id':'PM-N2','status':'blocked','reason':'PM-N1 prerequisite not supported','executed':False})
+-    run_job('PM-F1',45,10,3,512,8,2048,descriptors)
+     run_job('PM-B1',90,15,24,2048,128,4096,browser)
+ except BaseException as exc:
+     REPORT['batch_exception']=type(exc).__name__+': '+str(exc)
+-    for id in ['PM-N1','PM-N2','PM-B1','PM-F1']:
++    for id in ['PM-B1']:
+         if not any(j['id']==id for j in REPORT['jobs']): REPORT['jobs'].append({'id':id,'status':'blocked','executed':False,'reason':REPORT['batch_exception']})
+ finally:
+     signal.setitimer(signal.ITIMER_REAL,0)

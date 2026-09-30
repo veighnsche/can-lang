@@ -1,0 +1,2146 @@
+{
+  "rows": [
+    {
+      "id": "CORE-001",
+      "kind": "go_test",
+      "source": "tests/integration/arrays_test.go",
+      "line": 16,
+      "symbol": "TestCurrentBundledArrays",
+      "protects": [
+        "Array map/filter/search/reduce/sort/copy preserve order, aliases, immutable sources, callback scheduling and failure stop",
+        "main and contracts fixtures yield 46 and 28 passing Can assertion roots",
+        "production run is silent and strict emitted TypeScript optionally typechecks"
+      ],
+      "observes": [
+        "Staged runtime/array.test.ts plus Can assert JSON and run exit/stdout/stderr",
+        "optional strict tsc"
+      ],
+      "variants": [
+        "main 46 roots",
+        "contracts 28 roots",
+        "callback failure, owner context, thenable/getter hostility and native delegation"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional with CAN_BUN"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "NATIVE",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Array map/filter/search/reduce/sort/copy preserve order, aliases, immutable sources, callback scheduling and failure stop. Native infrastructure may supply raw process, file, or host observations only. Every related runtime TypeScript test scenario and pass/fail oracle must be reauthored in Can; for host-only malformed values, a generic native probe may construct Can-selected inputs and return raw observations.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "runtime/test/array.test.ts",
+        "compiler/testdata/current/arrays/main.can",
+        "compiler/testdata/current/arrays/contracts.can"
+      ],
+      "notes": "The Go test matches a pinned human-readable Bun pass-count substring; source currently contains more textual Bun test declarations (and array has dynamic callback variants). Reconcile per-declaration obligations and actual selection before migration; do not inherit the old count as a compatibility target. No suite run or failure claimed."
+    },
+    {
+      "id": "CORE-002",
+      "kind": "go_test",
+      "source": "tests/integration/assertions_test.go",
+      "line": 16,
+      "symbol": "TestCurrentBundledAssertions",
+      "protects": [
+        "Structured assertion report, full and selected scopes, supplied versus real completion",
+        "mismatch and malformed/static fixtures fail and do not publish",
+        "duplicate/ambiguous selectors and exact full selector",
+        "native fixture argument validation, shared queue exhaustion/leftovers and callable creation path",
+        "caught external I/O cannot make missing fixture pass, supplied boundary can, domain completion and initialization failure"
+      ],
+      "observes": [
+        "canlc assert JSON kind/schema/roots/evidence/status with separate stderr",
+        "dist/current.json before/after",
+        "optional strict tsc"
+      ],
+      "variants": [
+        "basic, native-slice, queues fixtures",
+        "full, short and qualified selectors",
+        "bad expected value, bad fixture type, duplicate root, bad arguments, missing/unused rows, caught I/O, domain and initializer"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional with CAN_BUN"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "DIAG",
+        "BUILD",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Structured assertion report, full and selected scopes, supplied versus real completion. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/assertions/basic.can",
+        "compiler/testdata/current/assertions/native-slice.can",
+        "compiler/testdata/current/assertions/queues.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-003",
+      "kind": "go_test",
+      "source": "tests/integration/assertions_test.go",
+      "line": 262,
+      "symbol": "TestAssertionFailureLocations",
+      "protects": [
+        "Initialization failure across two roots and caught sticky missing-fixture violation retain exact Can source byte span, line and column",
+        "failure reports omit private paths, secret, stack and application payload"
+      ],
+      "observes": [
+        "Assertion JSON entries/reason/frames and rejected status with empty stderr",
+        "scan output for forbidden host details"
+      ],
+      "variants": [
+        "initialization failure",
+        "caught io::stdout_write fixture violation"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "DIAG",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Initialization failure across two roots and caught sticky missing-fixture violation retain exact Can source byte span, line and column. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-004",
+      "kind": "go_test",
+      "source": "tests/integration/bytes_test.go",
+      "line": 15,
+      "symbol": "TestCurrentBundledBytes",
+      "protects": [
+        "Byte roundtrip Can assertions and production execution preserve byte data and offline behavior"
+      ],
+      "observes": [
+        "canlc assert JSON roots and run output/status"
+      ],
+      "variants": [
+        "roundtrip.can"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Byte roundtrip Can assertions and production execution preserve byte data and offline behavior. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/bytes/roundtrip.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-005",
+      "kind": "go_test",
+      "source": "tests/integration/callables_test.go",
+      "line": 16,
+      "symbol": "TestCurrentBundledCallables",
+      "protects": [
+        "captures.can has 11 passing Can assertion roots and a silent production run",
+        "Captured callable invocation retains selected assertion root context: unsupplied I/O boundary is a missing fixture without leaking payload; merely constructing callable reference does not execute its target"
+      ],
+      "observes": [
+        "canlc assert JSON roots and run output/status"
+      ],
+      "variants": [
+        "captures fixture",
+        "selected guarded callable with and without relay"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "DIAG",
+        "BUILD",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Callable capture fixture assertions and production execution preserve closure/capture behavior. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/callables/captures.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-006",
+      "kind": "go_test",
+      "source": "tests/integration/checks_test.go",
+      "line": 16,
+      "symbol": "TestCurrentBundledChecks",
+      "protects": [
+        "checks require true/false reason, source occurrence, hostile reason validation, JSON preservation and sticky harness violation",
+        "main fixture assertions and silent production run"
+      ],
+      "observes": [
+        "Staged runtime/checks.test.ts",
+        "Can assert JSON/report root count and run exit/output",
+        "optional strict tsc"
+      ],
+      "variants": [
+        "main fixture",
+        "hostile reasons and caught failures"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional with CAN_BUN"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "NATIVE",
+        "DIAG",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: checks require true/false reason, source occurrence, hostile reason validation, JSON preservation and sticky harness violation. Native infrastructure may supply raw process, file, or host observations only. Every related runtime TypeScript test scenario and pass/fail oracle must be reauthored in Can; for host-only malformed values, a generic native probe may construct Can-selected inputs and return raw observations.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "runtime/test/checks.test.ts",
+        "compiler/testdata/current/checks/main.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-007",
+      "kind": "go_test",
+      "source": "tests/integration/checks_test.go",
+      "line": 119,
+      "symbol": "TestChecksMismatchSpan",
+      "protects": [
+        "Failed require over decoded value records explicit reason call site, frames, evidence and exact public source span while suppressing private root/bundle paths"
+      ],
+      "observes": [
+        "Failed assert report JSON, status 1, empty stderr, inspected frames/evidence and redaction"
+      ],
+      "variants": [
+        "one failing decoded-value require"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "DIAG",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Failed require over decoded value records explicit reason call site, frames, evidence and exact public source span while suppressing private root/bundle paths. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-008",
+      "kind": "go_test",
+      "source": "tests/integration/cli_test.go",
+      "line": 16,
+      "symbol": "TestCurrentBundledCLI",
+      "protects": [
+        "Offline staged CLI via symlink ignores hostile BUN_OPTIONS, forwards Unicode, flag-like and empty argv literally, and emits exact stdout",
+        "Closed stdout pipe maps to io::write_failed; cross-file call and forward initializer work",
+        "Build JSON identity, static entry/type failures, runtime bounds, initializer failure, domain redaction and malformed CLI usage preserve correct status and current selection"
+      ],
+      "observes": [
+        "canlc build/run/assert status and separated streams",
+        "pipe failure",
+        "current.json identity",
+        "diagnostic JSON"
+      ],
+      "variants": [
+        "argv: Unicode/newline, --inspect, --, -e, preload-like, empty, BOM and spaces",
+        "closed pipe",
+        "cross-module forward initializer",
+        "bad entry, static mismatch, bounds, initializer, domain failure, malformed invocations"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "DIAG",
+        "BUILD",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Offline staged CLI forwards literal argv and emits expected stdout. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/cli/echo.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-009",
+      "kind": "go_test",
+      "source": "tests/integration/codec_test.go",
+      "line": 15,
+      "symbol": "TestCurrentBundledCodec",
+      "protects": [
+        "Codec roundtrip Can assertions and production execution preserve encoding/decoding behavior"
+      ],
+      "observes": [
+        "canlc assert JSON roots and run output/status"
+      ],
+      "variants": [
+        "roundtrip.can"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Codec roundtrip Can assertions and production execution preserve encoding/decoding behavior. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/codec/roundtrip.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-010",
+      "kind": "go_test",
+      "source": "tests/integration/collections_test.go",
+      "line": 16,
+      "symbol": "TestCurrentBundledCollections",
+      "protects": [
+        "Map/set immutable copy and nominal key behavior",
+        "forged and revoked values reject safely",
+        "native set order/equality and atomic bulk construction",
+        "Can fixture assertions and silent production run"
+      ],
+      "observes": [
+        "Staged runtime/collections.test.ts",
+        "Can assert JSON/report count and run output",
+        "optional strict tsc"
+      ],
+      "variants": [
+        "main 19 roots",
+        "duplicate bulk key, forged token, revoked backing, intersection branches"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional with CAN_BUN"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "NATIVE",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Map/set immutable copy and nominal key behavior. Native infrastructure may supply raw process, file, or host observations only. Every related runtime TypeScript test scenario and pass/fail oracle must be reauthored in Can; for host-only malformed values, a generic native probe may construct Can-selected inputs and return raw observations.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "runtime/test/collections.test.ts",
+        "std/map/current/src/main.can"
+      ],
+      "notes": "The Go test matches a pinned human-readable Bun pass-count substring; source currently contains more textual Bun test declarations (and array has dynamic callback variants). Reconcile per-declaration obligations and actual selection before migration; do not inherit the old count as a compatibility target. No suite run or failure claimed."
+    },
+    {
+      "id": "CORE-011",
+      "kind": "go_test",
+      "source": "tests/integration/cookies_csrf_test.go",
+      "line": 17,
+      "symbol": "TestCurrentBundledCookiesCSRF",
+      "protects": [
+        "18 Can assertion roots include supplied-completion and real-can evidence",
+        "Compiled boot/mint plus owned server: establish returns session cookie; token without cookie, wrong session and bogus token reject; correct session succeeds; stop and wait cleanly"
+      ],
+      "observes": [
+        "Can assert JSON and production build/run; generated-function presence and optional strict tsc",
+        "Current embedded TypeScript harness supplies HTTP scenario and oracle for status/body/cookies plus owner cleanup; this must move to Can"
+      ],
+      "variants": [
+        "establish; bare token; matching theme/session cookie; wrong session; bogus token; stop/wait"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "HTTP",
+        "CHILD",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Write ordinary Can scenario/helpers that boot server, mint token, issue each request, compare status/body/Set-Cookie and assert owned stop/wait completion; generic native HTTP/process mechanics may expose observations. Keep staged Can assertion roots as separate coverage; retire the embedded TypeScript scenario only after parity.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/cookies/session.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-012",
+      "kind": "go_test",
+      "source": "tests/integration/coordination_test.go",
+      "line": 16,
+      "symbol": "TestCurrentBundledCoordination",
+      "protects": [
+        "Promise all/allSettled/any/race selection, ordered outcomes, empty modes, domain/standard failures, owner retention and native delegation",
+        "Can fixture assertions and silent production run"
+      ],
+      "observes": [
+        "Staged runtime/coordination.test.ts",
+        "assert JSON and run status/output",
+        "optional strict tsc"
+      ],
+      "variants": [
+        "main fixture",
+        "late/losing failures, handler faults, empty race and snapshot identity"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional with CAN_BUN"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "NATIVE",
+        "CHILD",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Promise all/allSettled/any/race selection, ordered outcomes, empty modes, domain/standard failures, owner retention and native delegation. Native infrastructure may supply raw process, file, or host observations only. Every related runtime TypeScript test scenario and pass/fail oracle must be reauthored in Can; for host-only malformed values, a generic native probe may construct Can-selected inputs and return raw observations.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "runtime/test/coordination.test.ts",
+        "compiler/testdata/current/coordination/main.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-013",
+      "kind": "go_test",
+      "source": "tests/integration/coordination_test.go",
+      "line": 118,
+      "symbol": "TestStandardSnapshotIdentity",
+      "protects": [
+        "One standard occurrence seen through ordinary catch and coordination aggregate retains identity rather than minting a new error"
+      ],
+      "observes": [
+        "Can assertion report and optional generated TypeScript typecheck"
+      ],
+      "variants": [
+        "catch then aggregate of same standard occurrence"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional with CAN_BUN"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "NATIVE",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: One standard occurrence seen through ordinary catch and coordination aggregate retains identity rather than minting a new error. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-014",
+      "kind": "go_test",
+      "source": "tests/integration/crypto_test.go",
+      "line": 49,
+      "symbol": "TestCurrentCryptoCommands",
+      "protects": [
+        "Crypto assertions, deterministic build identity across rebuild and relocation, production crypto wiring, strict emission and live native commands",
+        "wrong argument type and missing emits reject",
+        "roundtrip/HMAC/password cases pass, key misuse and tampering return domain errors"
+      ],
+      "observes": [
+        "Can assert JSON, build IDs/artifact inspection, optional tsc",
+        "fd-3 env snapshot",
+        "production process output/status"
+      ],
+      "variants": [
+        "roundtrip, hmac, ask correct/wrong, misuse, tamper",
+        "two negative source mutations"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "NATIVE",
+        "DIAG",
+        "BUILD",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Crypto assertions, deterministic build identity across rebuild and relocation, production crypto wiring, strict emission and live native commands. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/crypto/commands.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-015",
+      "kind": "go_test",
+      "source": "tests/integration/distribution_test.go",
+      "line": 19,
+      "symbol": "TestDevelopmentSidecar",
+      "protects": [
+        "Pinned macOS arm64 distribution build is offline, immutable, non-overwriting and symlink launcher uses packaged Bun while ignoring hostile ambient configs and keeping env/argv",
+        "Parser rendering is inert and idempotent; obsolete grammar rejects; project identities remain relocation-stable and read-only, stale lock rejects; type inspection rejects uninhabited record",
+        "Native data, primitive, failure/domain and completion contracts from delegated runtime suites; missing, non-executable, tampered, wrong-arch and symlinked sidecar plus tampered manifest/tool reject"
+      ],
+      "observes": [
+        "Independent source/bundle tree hashes",
+        "packaged runtime-check JSON and parse/inspect diagnostics",
+        "staged native suite reports",
+        "mutation exit codes"
+      ],
+      "variants": [
+        "parser, project, declaration, native data/primitives/failures/completions",
+        "sidecar missing/permission/integrity/arch/path",
+        "manifest and tool corruption"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE pinned archive",
+        "macOS arm64",
+        "sandbox-exec"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "ARCHIVE",
+        "NATIVE",
+        "DIAG",
+        "BUILD",
+        "ENV",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-owned cases select all distribution, parser, identity, negative mutation and native contract scenarios and compare independent process/file/host observations. Delegated runtime/data, primitive, failure, domain and completion test declarations require Can oracles, not a Can call to bun test; archive/signature mechanics may remain native.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/parser/offline.can",
+        "compiler/testdata/current/project",
+        "runtime/data.test.ts",
+        "runtime/primitive.test.ts",
+        "runtime/failure.test.ts",
+        "runtime/domain.test.ts",
+        "runtime/completion.test.ts",
+        "distribution"
+      ],
+      "notes": "Current runnable obligation, with packaged native suite pass counts as smoke evidence only. No exact old generated layout is a compatibility target."
+    },
+    {
+      "id": "CORE-016",
+      "kind": "go_test",
+      "source": "tests/integration/distribution_test.go",
+      "line": 359,
+      "symbol": "TestDistributionShipsBrowserBundleTool",
+      "protects": [
+        "Distribution manifest binds browser bundle tool and browser/runtime dependencies",
+        "tool has native browser bundling protocol and excludes plugin/alias/external injection machinery"
+      ],
+      "observes": [
+        "Read shipped bytes and verify digest against distribution manifest",
+        "inspect required and forbidden tool content"
+      ],
+      "variants": [
+        "browser bundle tool and named browser runtime assets"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE pinned archive"
+      ],
+      "capabilities": [
+        "CAN",
+        "FILES",
+        "ARCHIVE",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Distribution manifest binds browser bundle tool and browser/runtime dependencies. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "tools/runtime/browser-bundle.ts",
+        "runtime/browser/formats.ts",
+        "runtime/browser/cookies.ts",
+        "runtime/browser/csrf.ts",
+        "runtime/browser/clock.ts",
+        "runtime/browser/log.ts",
+        "runtime/browser/markdown.ts",
+        "runtime/browser/assets.ts",
+        "runtime/assert/lineage.ts"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-017",
+      "kind": "go_test",
+      "source": "tests/integration/exact_amount_test.go",
+      "line": 16,
+      "symbol": "TestCurrentBundledExactAmounts",
+      "protects": [
+        "Signed exact divmod, half-even rounding, large rational/minor units and zero-denominator domain errors",
+        "main Can assertions and silent production run"
+      ],
+      "observes": [
+        "Staged runtime/exact-amount.test.ts",
+        "Can assert JSON and run output/status",
+        "optional strict tsc"
+      ],
+      "variants": [
+        "main 23 roots",
+        "both signs, parity ties, huge integers, zero denominators"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional with CAN_BUN"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "NATIVE",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Signed exact divmod, half-even rounding, large rational/minor units and zero-denominator domain errors. Native infrastructure may supply raw process, file, or host observations only. Every related runtime TypeScript test scenario and pass/fail oracle must be reauthored in Can; for host-only malformed values, a generic native probe may construct Can-selected inputs and return raw observations.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "runtime/test/exact-amount.test.ts",
+        "std/ratio/current/src/main.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-018",
+      "kind": "go_test",
+      "source": "tests/integration/fetch_test.go",
+      "line": 83,
+      "symbol": "TestCurrentBundledFetch",
+      "protects": [
+        "Raw offline fetch fixtures and selective recovery cover eight operations plus null exchange",
+        "live server validates method, query duplicate/order/encoding, headers and auth, body media and exact big integer",
+        "response status/media/charset/malformed data fail correctly",
+        "invalid computed header blocks before credentials or requests"
+      ],
+      "observes": [
+        "Can assert JSON 20 roots",
+        "independent httptest request count/headers/body and process status/diagnostics",
+        "optional strict tsc"
+      ],
+      "variants": [
+        "GET/PUT/POST/PATCH/HEAD/DELETE/OPTIONS and envelope",
+        "status/media/charset/malformed",
+        "invalid header and missing credential"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_I26_TOKEN supplied",
+        "CAN_TSC optional with CAN_BUN"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "HTTP",
+        "NATIVE",
+        "DIAG",
+        "BUILD",
+        "SUITE",
+        "FAULT",
+        "PEER"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Raw offline fetch fixtures and selective recovery cover eight operations plus null exchange. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/fetch/main.can",
+        "compiler/testdata/current/fetch/fixtures"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-019",
+      "kind": "go_test",
+      "source": "tests/integration/files_test.go",
+      "line": 64,
+      "symbol": "TestCurrentBundledFiles",
+      "protects": [
+        "Native file bytes/text, errors, limits, exclusive create, symlinks, list/copy/move/remove/glob/path and unsupplied-assertion isolation",
+        "Can live file tree writes and reads",
+        "wrong type, unhandled error and unknown operation reject with source diagnostics",
+        "generated code uses native file operations"
+      ],
+      "observes": [
+        "Staged runtime/test/files.test.ts",
+        "Can assert JSON and run output plus independent disk bytes",
+        "compiler rejection diagnostics and production artifact inspection"
+      ],
+      "variants": [
+        "15 runtime cases",
+        "live file tree",
+        "three rejection programs"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "NATIVE",
+        "DIAG",
+        "BUILD",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Native file bytes/text, errors, limits, exclusive create, symlinks, list/copy/move/remove/glob/path and unsupplied-assertion isolation. Native infrastructure may supply raw process, file, or host observations only. Every related runtime TypeScript test scenario and pass/fail oracle must be reauthored in Can; for host-only malformed values, a generic native probe may construct Can-selected inputs and return raw observations.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "runtime/test/files.test.ts"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-020",
+      "kind": "go_test",
+      "source": "tests/integration/format_test.go",
+      "line": 35,
+      "symbol": "TestFormatPreservesExecution",
+      "protects": [
+        "Formatter changes messy source while retaining comments and assertion root identities",
+        "second format is byte-idempotent",
+        "invalid source exits 1 without touching file"
+      ],
+      "observes": [
+        "Before/after Can assert JSON roots",
+        "file byte comparison",
+        "format command status"
+      ],
+      "variants": [
+        "messy valid source, second pass, syntactically invalid source"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "FMT",
+        "DIAG",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Formatter changes messy source while retaining comments and assertion root identities. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-021",
+      "kind": "go_test",
+      "source": "tests/integration/formats_test.go",
+      "line": 49,
+      "symbol": "TestCurrentFormatsDocuments",
+      "protects": [
+        "Can assertions plus compiled CLI parse TOML, YAML, JSON5 and JSONL documents with exact output, including 64-bit JSONL numbers and blank lines",
+        "Usage paths for missing/unknown commands; absent file and malformed TOML/JSONL yield exact domain errors"
+      ],
+      "observes": [
+        "Can assertion JSON, production build artifact and fd-3 environment snapshot, output/status"
+      ],
+      "variants": [
+        "usage nil/bogus/toml",
+        "valid svc.toml, point.yaml, point.json5, points.jsonl",
+        "missing TOML, duplicate-key TOML, truncated JSONL"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "NATIVE",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Document format rendering/decoding and compiled CLI commands preserve bytes, output and domain failures. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "tests/integration/testdata/formats/main.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-022",
+      "kind": "go_test",
+      "source": "tests/integration/generation_test.go",
+      "line": 21,
+      "symbol": "TestCurrentBundledGeneration",
+      "protects": [
+        "LLM generation fixture assertions and live request/response path",
+        "refusal, truncation, invalid response and bad record decode map to distinct errors",
+        "blank ask and missing auth reject before launch",
+        "strict emitted TypeScript"
+      ],
+      "observes": [
+        "Can assert JSON, independent local HTTP request observations, run status/diagnostics and optional tsc"
+      ],
+      "variants": [
+        "refusal, truncated, invalid, record",
+        "blank ask, auth omission"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "CAN_I28_TOKEN supplied",
+        "macOS sandbox-exec",
+        "CAN_TSC optional"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "HTTP",
+        "NATIVE",
+        "DIAG",
+        "BUILD",
+        "SUITE",
+        "FAULT",
+        "PEER"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: LLM generation fixture assertions and live request/response path. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/native/generation.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-023",
+      "kind": "go_test",
+      "source": "tests/integration/generics_test.go",
+      "line": 20,
+      "symbol": "TestCurrentBundledGenerics",
+      "protects": [
+        "definitions/helper/main have six passing Can roots and silent production run",
+        "A reachable concrete generic instance rejects a wrong-type branch even when that branch is never taken at runtime",
+        "finite-transition, finite-field-chain and spread-inferred source variants each assert and run successfully, including added array/terminal/inferred forms"
+      ],
+      "observes": [
+        "Can assert JSON six roots, silent run, build rejection and diagnostics"
+      ],
+      "variants": [
+        "definitions/helper/main",
+        "wrong-type unreachable runtime branch",
+        "finite-transition base, extra array, inferred call",
+        "finite-field-chain base, terminal before/after",
+        "spread-inferred"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "DIAG",
+        "BUILD",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Generic definitions/helper/main assert and run. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/generics/definitions.can",
+        "compiler/testdata/current/generics/helper.can",
+        "compiler/testdata/current/generics/main.can",
+        "compiler/testdata/current/generics/finite-transition.can",
+        "compiler/testdata/current/generics/finite-field-chain.can",
+        "compiler/testdata/current/generics/spread-inferred.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-024",
+      "kind": "go_test",
+      "source": "tests/integration/generics_test.go",
+      "line": 142,
+      "symbol": "TestCurrentBundledGenericChain",
+      "protects": [
+        "Public generic dependency chain verifies locked source/fixture identity, nested concrete instance behavior, canonical instance emission and source-map links",
+        "strict TS and nonvacuous expected-value corruption",
+        "stale lock, failed component, owner negatives reject without false publication"
+      ],
+      "observes": [
+        "Can assertions/build/run output, independent lock digest, production artifact and map inspection, optional tsc",
+        "source mutations"
+      ],
+      "variants": [
+        "root and local dependency",
+        "nested<int>, identity<box<int>>",
+        "14 instances",
+        "assertion corruption, stale lock, symbolic component and owner negatives"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "DIAG",
+        "BUILD",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Public generic dependency chain verifies locked source/fixture identity, nested concrete instance behavior, canonical instance emission and source-map links. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/generics"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-025",
+      "kind": "go_test",
+      "source": "tests/integration/html_test.go",
+      "line": 18,
+      "symbol": "TestCurrentBundledHTML",
+      "protects": [
+        "Can HTML assertions carry real-can evidence",
+        "Request-derived hostile text is escaped in title and fragment; output retains expected htmx attributes/assets, two safe scripts and no injected script/image; fragment render equals native escape result"
+      ],
+      "observes": [
+        "Can assert and build plus optional strict tsc",
+        "Current embedded TypeScript harness fetches hostile request text, renders compiled Can functions, compares HTML bytes and injection absence"
+      ],
+      "variants": [
+        "hostile input with script/image/ampersand/quotes; page and fragment"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "HTTP",
+        "NATIVE",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can scenario chooses hostile request input, calls render/fragment and compares complete relevant HTML observations including escaping and forbidden injected tags; native HTTP and HTML serialization may provide raw bytes only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/html/main.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-026",
+      "kind": "go_test",
+      "source": "tests/integration/http_test.go",
+      "line": 17,
+      "symbol": "TestCurrentBundledHTTP",
+      "protects": [
+        "18 Can assertion roots include supplied-completion and real-can evidence",
+        "Compiled mounted router handles GET query cardinality/encoding, POST JSON/media/malformed and form duplicate/empty/invalid percent cases",
+        "Generic/wrapped routes, 404/405 with Allow, PUT/PATCH/DELETE/OPTIONS/HEAD behavior, bounded upload, stream echo, event stream and multipart attachment preserve exact status/header/body"
+      ],
+      "observes": [
+        "Can assert JSON and build/run; optional strict tsc",
+        "Current embedded TypeScript harness drives private ingress and checks replies; its scenario/oracle must move to Can"
+      ],
+      "variants": [
+        "GET /a valid, absent, repeated, plus and percent-encoded query",
+        "POST /b JSON, media and malformed; /s form duplicate/optional/empty/invalid",
+        "/g and /w; missing/method mismatches and Allow",
+        "PUT/PATCH/DELETE/OPTIONS/HEAD; upload/echo/events/multipart"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "HTTP",
+        "CHILD",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-owned normal scenario builds router, selects every listed request, dispatches over generic loopback ingress and compares status, headers, body, Allow and cleanup. Native ingress and HTTP client may return raw observations, never case-specific verdicts.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/http/main.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-027",
+      "kind": "go_test",
+      "source": "tests/integration/input_capture_test.go",
+      "line": 46,
+      "symbol": "TestCurrentBundledInputCapture",
+      "protects": [
+        "Four assertion roots include raw-provider-fixture evidence and timeout policy; independently length-framed lock digest binds vendor source and raw fixture trees",
+        "Changing only timeout from 5000 to 6000 yields new options identity with unchanged source/dependency identity and second staged generation",
+        "Staged modules carry captured raw response bytes; fixture-only dependency change rejects as stale digest without rewriting lock"
+      ],
+      "observes": [
+        "Can assert JSON/timeout/evidence; independently computed source and fixture lock digests",
+        "Staged manifest input identities and emitted fixture byte marker; rejection diagnostic and unchanged lock"
+      ],
+      "variants": [
+        "assert timeout 5000 and 6000",
+        "fixture bytes before and after mutation"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "BUILD",
+        "NATIVE",
+        "DIAG",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Captured dependency source and raw fixture bytes affect build identity. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-028",
+      "kind": "go_test",
+      "source": "tests/integration/io_env_test.go",
+      "line": 15,
+      "symbol": "TestCurrentBundledInputEnvironment",
+      "protects": [
+        "Original environment lookup preserves Unicode, empty value and hostile BUN_OPTIONS as data",
+        "missing/invalid names fail with allocated errors",
+        "bounds/fixture mutation remain consistent",
+        "assertions, live run and strict emission"
+      ],
+      "observes": [
+        "Can assert report, process stdout/stderr/status under hostile environment and optional tsc"
+      ],
+      "variants": [
+        "VALUE, EMPTY, BUN_OPTIONS, MISSING, lower, A=B and empty name",
+        "per-fixture subtests"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "ENV",
+        "NATIVE",
+        "DIAG",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Original environment lookup preserves Unicode, empty value and hostile BUN_OPTIONS as data. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/cli"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-029",
+      "kind": "go_test",
+      "source": "tests/integration/judge_test.go",
+      "line": 21,
+      "symbol": "TestCurrentBundledNoulJudge",
+      "protects": [
+        "Noul judge ordinary consumer uses supplied completion and live provider",
+        "invalid answer, blank descriptor and faulty handler are rejected at correct stage",
+        "raw provider fixture drives compiled Can without host verdict"
+      ],
+      "observes": [
+        "Can assert report, independent HTTP provider request observations, build/run status and raw response data"
+      ],
+      "variants": [
+        "normal, invalid answer, blank descriptor, faulty handler, raw provider"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_I17_TOKEN supplied"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "HTTP",
+        "NATIVE",
+        "DIAG",
+        "BUILD",
+        "SUITE",
+        "FAULT",
+        "PEER"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Noul judge ordinary consumer uses supplied completion and live provider. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/native/noul.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-030",
+      "kind": "go_test",
+      "source": "tests/integration/markdown_test.go",
+      "line": 34,
+      "symbol": "TestCurrentMarkdownRender",
+      "protects": [
+        "Can markdown assertion fixture passes",
+        "Compiled CLI renders heading, preserves raw HTML per current markdown contract and gives exact usage text for missing/unknown arguments",
+        "Replacing render_safe with text HTML cannot bind html::safe; omitted html::invalid_url emits rejects at build"
+      ],
+      "observes": [
+        "Can assert report, build and fd-3 CLI output/status",
+        "Compiler diagnostics for two source mutations"
+      ],
+      "variants": [
+        "heading; raw script input; nil/bogus/incomplete usage; two compiler negatives"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "DIAG",
+        "BUILD",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Markdown rendering Can fixture assertions and compiled output preserve supported formatting and escaping. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/markdown/main.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-031",
+      "kind": "go_test",
+      "source": "tests/integration/native_test.go",
+      "line": 15,
+      "symbol": "TestCurrentBundledNativeDeclarations",
+      "protects": [
+        "Native declaration fixture and committed raw fixtures build successfully",
+        "Six changed declarations reject: dynamic question descriptor, unknown model field, wrong result type, missing exported member, dynamic ask and bytes where string is required"
+      ],
+      "observes": [
+        "canlc build status and diagnostics for baseline and six mutated Can sources"
+      ],
+      "variants": [
+        "valid declarations plus six compiler-rejection mutations"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "DIAG",
+        "BUILD",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-owned cases select valid and six invalid source variants, invoke production compiler and compare rejection phase/diagnostic and build result; static raw fixtures remain inputs.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/native/declarations.can",
+        "compiler/testdata/current/native/fixtures"
+      ],
+      "notes": "This Go function checks build acceptance/rejection only; it does not run Can assertions or production entry."
+    },
+    {
+      "id": "CORE-032",
+      "kind": "go_test",
+      "source": "tests/integration/numbers_test.go",
+      "line": 16,
+      "symbol": "TestCurrentBundledNumbers",
+      "protects": [
+        "Native number formatting/conversion/parsing/predicates preserve bigint, IEEE and grammar boundaries",
+        "main Can assertions and silent production run"
+      ],
+      "observes": [
+        "Staged runtime/number.test.ts",
+        "Can assert JSON and run output",
+        "optional strict tsc"
+      ],
+      "variants": [
+        "main 40 roots",
+        "bigint, NaN/infinity, exact represented values and invalid parses"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional with CAN_BUN"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "NATIVE",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Native number formatting/conversion/parsing/predicates preserve bigint, IEEE and grammar boundaries. Native infrastructure may supply raw process, file, or host observations only. Every related runtime TypeScript test scenario and pass/fail oracle must be reauthored in Can; for host-only malformed values, a generic native probe may construct Can-selected inputs and return raw observations.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "runtime/test/number.test.ts",
+        "std/scalars/current/src/main.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-033",
+      "kind": "go_test",
+      "source": "tests/integration/owners_test.go",
+      "line": 13,
+      "symbol": "TestBundledOwnershipOffline",
+      "protects": [
+        "Owner scopes preserve losing outcomes once, deduplicated late diagnostics, leases, native async context and cross-root rejection",
+        "Automatic reverse cleanup reports omitted/failed closes; reentrant close is idempotent, wrong-kind/forged handles fail without touching native state",
+        "CLI/assertion wait for late work; external supervisor kills nonsettling leased and unleased owners"
+      ],
+      "observes": [
+        "Staged runtime owner/owner-roots/owner-hung Bun suites currently contain scenarios and pass/fail oracles; Go checks zero fail and named evidence strings"
+      ],
+      "variants": [
+        "leased=false and true hung owner; omitted/automatic close; late loser; forged/cross-root/escaped handle"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "CHILD",
+        "NATIVE",
+        "FAULT",
+        "SUITE"
+      ],
+      "replacement": "Can cases and normal helper functions construct owner/lease scenarios, compare order, errors and cleanup; generic native scope/supervisor mechanics expose the independent trace, including forced kill. Migrate each delegated runtime test oracle, not just the Bun suite exit code.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "runtime/test/owner.test.ts",
+        "runtime/test/owner-roots.test.ts",
+        "runtime/test/owner-hung.test.ts"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-034",
+      "kind": "go_test",
+      "source": "tests/integration/process_test.go",
+      "line": 48,
+      "symbol": "TestCurrentBundledProcess",
+      "protects": [
+        "Native process stdout/stderr/stdin, exit/signal, literal argv, cwd/env, output/deadline limits, descendant kill and abandoned-run cleanup",
+        "live Can /bin/echo",
+        "wrong type, missing arm, unknown operation reject",
+        "generated code delegates to Bun.spawn/which"
+      ],
+      "observes": [
+        "Staged runtime/test/process.test.ts",
+        "Can assert JSON, live process status/output, compiler diagnostics and artifact inspection"
+      ],
+      "variants": [
+        "13 runtime cases",
+        "live echo",
+        "three rejection programs"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "/bin/echo",
+        "system PATH"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "CHILD",
+        "NATIVE",
+        "DIAG",
+        "BUILD",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Native process stdout/stderr/stdin, exit/signal, literal argv, cwd/env, output/deadline limits, descendant kill and abandoned-run cleanup. Native infrastructure may supply raw process, file, or host observations only. Every related runtime TypeScript test scenario and pass/fail oracle must be reauthored in Can; for host-only malformed values, a generic native probe may construct Can-selected inputs and return raw observations.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "runtime/test/process.test.ts"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-035",
+      "kind": "go_test",
+      "source": "tests/integration/questions_test.go",
+      "line": 56,
+      "symbol": "TestCurrentBundledMixedQuestions",
+      "protects": [
+        "Mixed question consumer handles boolean/string/choice/number/confidence and nested followup",
+        "invalid answer, duplicate criterion, faulty handler/record reject before launch",
+        "lower confidence selects fallback",
+        "raw provider fixture request comparison and strict emission"
+      ],
+      "observes": [
+        "Can assert report",
+        "independent provider requests/response traces, run diagnostics and optional tsc"
+      ],
+      "variants": [
+        "normal, invalid, duplicate, handler/record faults, confidence fallback, two-stage followup, raw provider"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_I27_TOKEN supplied",
+        "CAN_TSC optional"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "HTTP",
+        "NATIVE",
+        "DIAG",
+        "BUILD",
+        "SUITE",
+        "FAULT",
+        "PEER"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Mixed question consumer handles boolean/string/choice/number/confidence and nested followup. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/native/questions.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-036",
+      "kind": "go_test",
+      "source": "tests/integration/release_test.go",
+      "line": 28,
+      "symbol": "TestReleaseInstallUpdate",
+      "protects": [
+        "Offline signed release install/update and old-version continuity",
+        "detached record, payload, manifest and archive tampering reject",
+        "failed/racing updates preserve selection and reject conflicts"
+      ],
+      "observes": [
+        "Independent archive/signature/hash and installed tree checks",
+        "selected symlink and executable output/status"
+      ],
+      "variants": [
+        "valid install/update",
+        "flipped record byte, edited zip/manifest, failed update, racing installs"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE pinned archive",
+        "macOS arm64"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "ARCHIVE",
+        "BUILD",
+        "ENV",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Offline signed release install/update and old-version continuity. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "distribution"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-037",
+      "kind": "go_test",
+      "source": "tests/integration/release_test.go",
+      "line": 360,
+      "symbol": "TestInstallRootRefusals",
+      "protects": [
+        "Update refuses a symlink install root before reading deliberately nonexistent archive/record paths",
+        "Selection on an absent empty root returns no selected version without error"
+      ],
+      "observes": [
+        "distribution.Update error text with nonexistent inputs; distribution.Selection empty result"
+      ],
+      "variants": [
+        "symlink root; absent root"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE presence only"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "ARCHIVE",
+        "DIAG",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-owned cases choose symlink and absent-root inputs and compare independent installer/selection observations; archive operation mechanics may remain native.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "distribution"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-038",
+      "kind": "go_test",
+      "source": "tests/integration/server_test.go",
+      "line": 17,
+      "symbol": "TestCurrentBundledServer",
+      "protects": [
+        "Seven Can assertion roots include supplied-completion and real-can evidence",
+        "Compiled Can boot serves /health as 200 healthy; owned stop/wait succeeds, then serve(0) completes with clean owner cleanup"
+      ],
+      "observes": [
+        "Can assert JSON and build/run; optional strict tsc",
+        "Embedded TypeScript harness currently owns health request, status/body expectation and owner cleanup verdict"
+      ],
+      "variants": [
+        "boot fixed loopback port; GET /health; stop/wait; serve(0)"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "HTTP",
+        "CHILD",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-owned ordinary scenario calls boot and serve, issues health request, compares status/body and checks stop/wait and cleanup observations; generic native server/client mechanics may expose values.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/http/server.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-039",
+      "kind": "go_test",
+      "source": "tests/integration/stdlib_test.go",
+      "line": 199,
+      "symbol": "TestStdlibMaintained",
+      "protects": [
+        "Every discovered maintained std/example project has nonempty real-Can assertions",
+        "two builds share identity and no stray emit",
+        "standard projects run clean",
+        "browser-shaped invoice projects use browser target and are covered live elsewhere"
+      ],
+      "observes": [
+        "Can assert JSON/evidence",
+        "independent build IDs and emit filesystem scan",
+        "run status for std projects"
+      ],
+      "variants": [
+        "dynamic discoverMaintained std/ and examples/ projects",
+        "browser target invoice-grid/invoice-compare",
+        "optional fresh emit copies"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_FRESH_EMIT_DIR optional"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "BUILD",
+        "BROWSER",
+        "SUITE"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Every discovered maintained std/example project has nonempty real-Can assertions. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "std",
+        "examples"
+      ],
+      "notes": "Discovery set must be enumerated in final file map; browser runtime claims remain tied to applications/gate5 cases."
+    },
+    {
+      "id": "CORE-040",
+      "kind": "go_test",
+      "source": "tests/integration/streams_test.go",
+      "line": 196,
+      "symbol": "TestCurrentBundledStreams",
+      "protects": [
+        "Native byte/line readers and writers preserve order, UTF-8 framing, caps, cancellation, close/failure semantics and copies",
+        "Can live stream tree, overrun/underrun transcript violations",
+        "wrong type, missing arm, wrong result binding and unknown operation reject"
+      ],
+      "observes": [
+        "Staged runtime/test/streams.test.ts",
+        "Can assert JSON, independent disk bytes and live output, compiler diagnostics"
+      ],
+      "variants": [
+        "11 runtime cases",
+        "live tree",
+        "transcript over/underrun",
+        "four rejection programs"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "NATIVE",
+        "DIAG",
+        "BUILD",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Native byte/line readers and writers preserve order, UTF-8 framing, caps, cancellation, close/failure semantics and copies. Native infrastructure may supply raw process, file, or host observations only. Every related runtime TypeScript test scenario and pass/fail oracle must be reauthored in Can; for host-only malformed values, a generic native probe may construct Can-selected inputs and return raw observations.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "runtime/test/streams.test.ts"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-041",
+      "kind": "go_test",
+      "source": "tests/integration/templates_test.go",
+      "line": 20,
+      "symbol": "TestCurrentBundledTemplates",
+      "protects": [
+        "Target/helper/consumer fixture rows verify across two Can files",
+        "production erases fixture declarations and live run uses real function",
+        "wrong exact target fails staged build",
+        "strict emission"
+      ],
+      "observes": [
+        "Can assert JSON 13 roots, production artifact and run output, build diagnostic and optional tsc"
+      ],
+      "variants": [
+        "main/helpers",
+        "wrong target mutation"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional with CAN_BUN"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "DIAG",
+        "BUILD",
+        "SUITE",
+        "FAULT"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Target/helper/consumer fixture rows verify across two Can files. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/templates/main.can",
+        "compiler/testdata/current/templates/helpers.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-042",
+      "kind": "go_test",
+      "source": "tests/integration/text_test.go",
+      "line": 16,
+      "symbol": "TestCurrentBundledText",
+      "protects": [
+        "Native Unicode/code-unit/grapheme, replacement/split, scalar validity and regex matching caps/offsets",
+        "Can fixture assertions and silent production run"
+      ],
+      "observes": [
+        "Staged runtime/text.test.ts",
+        "Can assert JSON and run output",
+        "optional strict tsc"
+      ],
+      "variants": [
+        "main 45 roots",
+        "malformed surrogate/scalar, bad regex, zero-width matches"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional with CAN_BUN"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "NATIVE",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Native Unicode/code-unit/grapheme, replacement/split, scalar validity and regex matching caps/offsets. Native infrastructure may supply raw process, file, or host observations only. Every related runtime TypeScript test scenario and pass/fail oracle must be reauthored in Can; for host-only malformed values, a generic native probe may construct Can-selected inputs and return raw observations.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "runtime/test/text.test.ts",
+        "std/text/current/src/main.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-043",
+      "kind": "go_test",
+      "source": "tests/integration/tls_test.go",
+      "line": 17,
+      "symbol": "TestCurrentBundledTLS",
+      "protects": [
+        "Compiled Can TLS server with fresh local self-signed chain serves expected health response and rejects untrusted fetch",
+        "production source and strict emission maintain TLS lifecycle"
+      ],
+      "observes": [
+        "Can assert JSON, openssl certificate generation, independent HTTPS client and failure observation, artifact inspection/optional tsc"
+      ],
+      "variants": [
+        "healthy trusted request",
+        "untrusted request",
+        "cert/chain lifecycle"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "openssl",
+        "CAN_TSC optional"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "HTTP",
+        "CHILD",
+        "NATIVE",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Compiled Can TLS server with fresh local self-signed chain serves expected health response and rejects untrusted fetch. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/http/tls.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-044",
+      "kind": "go_test",
+      "source": "tests/integration/transport_test.go",
+      "line": 13,
+      "symbol": "TestBundledTransportLoopback",
+      "protects": [
+        "Request preparation validates URLs, auth and headers before launch while preserving duplicate cookies and normalizing fields",
+        "Raw and named fetch observe exact bodies, media/charset, redirects, timeout/cancellation phases, byte caps and nominal transport errors",
+        "Owned continuations drain and retain resources; late decoder/transport faults preserve chosen timeout and report diagnostics correctly"
+      ],
+      "observes": [
+        "Seven staged transport runtime suites currently contain case actions and assertions; Go checks zero fail and named evidence strings"
+      ],
+      "variants": [
+        "body/request/owned/fetch/http/named/late suites; one-attempt, stalled body, redirect, malformed reply, late fault"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "localhost bind/outbound"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "WIRE",
+        "HTTP",
+        "CHILD",
+        "NATIVE",
+        "FAULT",
+        "CLOCK",
+        "SUITE"
+      ],
+      "replacement": "Can-authored ordinary cases configure request/peer faults, issue operations, and compare raw transport observations, timing phase and owner trace; generic native network/clock/ownership mechanics may supply events. Migrate delegated runtime oracles individually.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "runtime/test/transport-body.test.ts",
+        "runtime/test/transport-request.test.ts",
+        "runtime/test/transport-owned.test.ts",
+        "runtime/test/transport-fetch.test.ts",
+        "runtime/test/transport-http.test.ts",
+        "runtime/test/transport-named.test.ts",
+        "runtime/test/transport-late.test.ts"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-045",
+      "kind": "go_test",
+      "source": "tests/integration/utilities_test.go",
+      "line": 15,
+      "symbol": "TestCurrentBundledUtilities",
+      "protects": [
+        "Native URL normalization/query and datetime zone/locale/civil edge cases",
+        "compiled Can utilities conversion/bounds and silent production run",
+        "strict emission"
+      ],
+      "observes": [
+        "Staged runtime/test/url.test.ts and datetime.test.ts",
+        "Can assert JSON/run output and optional tsc"
+      ],
+      "variants": [
+        "URL 5 cases",
+        "datetime 7 cases",
+        "Can utility from/to conversion table"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "pinned ICU",
+        "CAN_TSC optional"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "NATIVE",
+        "DIAG",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Native URL normalization/query and datetime zone/locale/civil edge cases. Native infrastructure may supply raw process, file, or host observations only. Every related runtime TypeScript test scenario and pass/fail oracle must be reauthored in Can; for host-only malformed values, a generic native probe may construct Can-selected inputs and return raw observations.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "runtime/test/url.test.ts",
+        "runtime/test/datetime.test.ts",
+        "compiler/testdata/current/cli/utilities.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-046",
+      "kind": "go_test",
+      "source": "tests/integration/verified_build_test.go",
+      "line": 22,
+      "symbol": "TestCurrentBundledVerifiedBuild",
+      "protects": [
+        "Passing complete build binds source/dependency/catalogue/compiler/runtime/options identities, verifies all roots and publishes production without assertion runner",
+        "failed, timed-out, uncovered native and sticky fixture builds never publish",
+        "selected assert is partial and never publishes",
+        "prior selected generation survives failed rebuild",
+        "locked dependency roots gate publication",
+        "offline build makes zero live HTTP requests and published run makes one"
+      ],
+      "observes": [
+        "Build/assert JSON, current/manifest hash, production artifact inspection, independent HTTP count, run status and negative diagnostics"
+      ],
+      "variants": [
+        "passing, wrong assertion, failed rebuild, selected assert, timeout, uncovered native, unused fixture, locked vendor mutation, live fetch"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "BUILD",
+        "HTTP",
+        "NATIVE",
+        "DIAG",
+        "SUITE",
+        "FAULT",
+        "PEER"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Passing complete build binds source/dependency/catalogue/compiler/runtime/options identities, verifies all roots and publishes production without assertion runner. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "docs/syntax-taste/evidence/2026-09-22/implementation-gaps/projects"
+      ],
+      "notes": "The frozen projects under docs/syntax-taste/evidence are current test inputs here, not proof that this live build/negative qualification has already passed. Proposed migration only."
+    },
+    {
+      "id": "CORE-047",
+      "kind": "go_test",
+      "source": "tests/integration/websocket_test.go",
+      "line": 17,
+      "symbol": "TestCurrentBundledWebSocket",
+      "protects": [
+        "13 Can assertion roots include supplied-completion and real-can evidence",
+        "Compiled boot/link/push/push_raw/drain/bye/release sequence preserves text and binary frames, close code/reason, final empty drain, stop/wait and clean owner result"
+      ],
+      "observes": [
+        "Can assert JSON and build/run plus optional strict tsc",
+        "Current embedded TypeScript harness owns websocket sequence and expected values; this oracle must move to Can"
+      ],
+      "variants": [
+        "text hi, bytes [1,2,3], close 1000 done, empty drain"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_TSC optional"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "WIRE",
+        "CHILD",
+        "BUILD",
+        "SUITE"
+      ],
+      "replacement": "Can-owned ordinary scenario drives socket lifecycle and compares protocol, send counts, text/binary frame contents, close event and owner cleanup. Native websocket mechanics expose events and bytes without fixed case assertions.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/ws/socket.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-048",
+      "kind": "go_test",
+      "source": "tests/integration/wrap_test.go",
+      "line": 20,
+      "symbol": "TestCurrentBundledWrappers",
+      "protects": [
+        "Nested wrapper/recovery policies preserve selected fixture rows and error identity",
+        "404 and 429/503 recovery paths, successful load bypass, and wrong emitted local key fail verification",
+        "strict emission"
+      ],
+      "observes": [
+        "Can assert JSON 13 roots, independent HTTP server modes/counts, run status and optional tsc"
+      ],
+      "variants": [
+        "404, 429 busy, 503 broken, success, missing local key"
+      ],
+      "gates": [
+        "CAN_BUN_ARCHIVE",
+        "macOS sandbox-exec",
+        "CAN_I17_TOKEN supplied",
+        "CAN_TSC optional"
+      ],
+      "capabilities": [
+        "CAN",
+        "PROC",
+        "FILES",
+        "WORK",
+        "HTTP",
+        "NATIVE",
+        "DIAG",
+        "BUILD",
+        "SUITE",
+        "FAULT",
+        "PEER"
+      ],
+      "replacement": "Can-authored normal functions select these scenarios, perform the actions, and compare returned observations against Can expectations: Nested wrapper/recovery policies preserve selected fixture rows and error identity. Native infrastructure may supply raw process, file, or host observations only.",
+      "disposition": "migrate",
+      "delete_when": "Delete this Go check only after identified Can cases and helpers reproduce every protected behavior, observation, variant, negative control and required environment in this row on the production candidate; record independent qualification evidence and rewire active callers first.",
+      "related_sources": [
+        "compiler/testdata/current/wrap/main.can"
+      ],
+      "notes": "Proposed migration only; no backend selected or qualification run."
+    },
+    {
+      "id": "CORE-049",
+      "kind": "support",
+      "source": "tests/integration/raw_fixtures_test.go",
+      "line": 16,
+      "symbol": "stageRawFixtures",
+      "protects": [
+        "Raw fixture staging rewrites only selected origin/endpoint references while preserving exact request/response bytes and required fixture set; static fixture files remain inputs rather than scenarios"
+      ],
+      "observes": [
+        "Current Go helper copies and rewrites compiler/testdata/current/<area>/fixtures before Can assert/build"
+      ],
+      "variants": [
+        "fetch and other current raw-fixture areas; URL relocation"
+      ],
+      "gates": [],
+      "capabilities": [
+        "FILES",
+        "NATIVE",
+        "SUITE"
+      ],
+      "replacement": "Can scenario chooses fixture inputs and expected raw exchange; generic native file copy/read may stage bytes and report observations without choosing cases or judging matches.",
+      "disposition": "replace_support",
+      "delete_when": "Remove this helper after all calling Go scenarios are migrated and Can-owned cases demonstrate exact raw-exchange comparisons, fixture provenance and endpoint relocation without host-authored case policy.",
+      "related_sources": [
+        "compiler/testdata/current/fetch/fixtures",
+        "compiler/testdata/current/native/fixtures",
+        "compiler/testdata/current/templates/fixtures",
+        "compiler/testdata/current/wrap/fixtures",
+        "tests/integration/fetch_test.go",
+        "tests/integration/templates_test.go",
+        "tests/integration/judge_test.go",
+        "tests/integration/native_test.go",
+        "tests/integration/questions_test.go",
+        "tests/integration/generation_test.go",
+        "tests/integration/wrap_test.go"
+      ],
+      "notes": "Proposed support migration; static fixture files can remain when used as inputs."
+    },
+    {
+      "id": "CORE-050",
+      "kind": "support",
+      "source": "tests/integration/raw_fixtures_test.go",
+      "line": 44,
+      "symbol": "stripStagedAuthorization",
+      "protects": [
+        "Removes staged authorization request-header pairs from raw fixtures for direct conformance probes; preserves other headers and refuses malformed fixture structure"
+      ],
+      "observes": [
+        "Current helper rewrites staged can.native-fixture.v1 JSON inputs for direct native conformance probes"
+      ],
+      "variants": [
+        "judge, questions and generation direct raw-provider probes"
+      ],
+      "gates": [],
+      "capabilities": [
+        "FILES",
+        "NATIVE",
+        "SUITE"
+      ],
+      "replacement": "Can scenario selects fixture variant and its expected raw exchange; native fixture copier may apply Can-selected environment/header transformation without owning scenario or verdict.",
+      "disposition": "replace_support",
+      "delete_when": "Remove after all listed callers are migrated and Can cases demonstrate raw-provider behavior with transformed fixtures and no hidden host policy.",
+      "related_sources": [
+        "tests/integration/judge_test.go",
+        "tests/integration/questions_test.go",
+        "tests/integration/generation_test.go"
+      ],
+      "notes": "Proposed support replacement; static raw fixtures may remain as input."
+    },
+    {
+      "id": "CORE-051",
+      "kind": "support",
+      "source": "tests/integration/raw_fixtures_test.go",
+      "line": 102,
+      "symbol": "clearStagedFixtureEnvironments",
+      "protects": [
+        "Empties per-fixture environment snapshots for direct conformance probes while retaining exchange body and request comparisons"
+      ],
+      "observes": [
+        "Current helper rewrites staged can.native-fixture.v1 JSON inputs for direct native conformance probes"
+      ],
+      "variants": [
+        "judge, questions and generation direct raw-provider probes"
+      ],
+      "gates": [],
+      "capabilities": [
+        "FILES",
+        "NATIVE",
+        "SUITE"
+      ],
+      "replacement": "Can scenario selects fixture variant and its expected raw exchange; native fixture copier may apply Can-selected environment/header transformation without owning scenario or verdict.",
+      "disposition": "replace_support",
+      "delete_when": "Remove after all listed callers are migrated and Can cases demonstrate raw-provider behavior with transformed fixtures and no hidden host policy.",
+      "related_sources": [
+        "tests/integration/judge_test.go",
+        "tests/integration/questions_test.go",
+        "tests/integration/generation_test.go"
+      ],
+      "notes": "Proposed support replacement; static raw fixtures may remain as input."
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "model": "jev-latest",
+  "state": "Can is designed for AI coding agents, not comfortable human hand-writing. Evaluate reliable generation, local reasoning, explicit contracts, precise diagnostics and safe mechanical edits; useful repetition is acceptable. This is a design-only review with no builds, agent trials or benchmarks authorized. Tests must support arbitrary normal Can functions; Can owns scenarios, expected values, policy and reports; authored foreign harnesses must disappear. Generic native mechanics are allowed. Coverage, bounded laptop load/storage and cleanup remain mandatory. There are no compatibility constraints; the execution backend is open. The current proposal uses ordinary case functions, a static callable registry, manual string required_checks plus string check IDs in expectation calls, constructible context with reporter/operation callables, mandatory offline roots supplying boundary results through match call/when/scenario links, and separate live workers. Current Can requires assertions on every concrete fn; when cannot decorate match chain; opaque context inputs are not generally elided; nested record callable equality needs care. These are current constraints, not immutable language goals. A declared check inventory catches early ok only if independent from executed calls; deriving obligations from observed events is unsafe. Shared typed Can check descriptors can give IDs one source while keeping a separate declared obligation plan, but need library validation and cannot alone prove an oracle correct. Plain strings with validation are simpler to implement; compiler-owned test declarations would add discovery/checking semantics while allowing ordinary bodies. The proposal also requires whole-suite offline verification before any selected live run. Existing canlc assert checks the whole source graph but permits selected root execution. A proposed focused development path could check all source, verify the selected case and a conservatively known dependency/fixture closure, fall back to all roots when uncertain, and label results partial. Full qualification would still require all roots/cases and environments; candidate/executor/suite digests bind evidence, and no full bundles persist by default. No performance or agent-repair advantage has been measured.",
+  "questions": {
+    "case_contract": {
+      "type": "choice",
+      "instructions": "Which direction should the next authoring revision explore first for agent-safe check identity and case registration, preserving independent obligations?",
+      "criteria": {
+        "typed_can_descriptors": "Use shared typed check descriptors in ordinary Can, referenced by both an explicit obligation plan and expectation calls; retain Can registry policy and require validation of identity, ownership and missing evidence.",
+        "validated_strings": "Retain manually written string IDs in registry and bodies, with runtime/preflight diagnostics for mismatches; prioritize a smaller implementation and tolerate synchronized edits.",
+        "compiler_declarations": "Introduce compiler-recognized test registration/check declarations with ordinary Can bodies, moving identity/discovery validation into language tooling and accepting new syntax/checker work."
+      }
+    },
+    "feedback_scope": {
+      "type": "choice",
+      "instructions": "Which verification scope should the next design use for a focused development run, with full qualification still separate?",
+      "criteria": {
+        "conservative_selected_closure": "Check the whole suite source, verify selected roots and a justified conservative dependency/fixture closure, fall back to all roots if uncertain, and label evidence partial; keep full qualification mandatory separately.",
+        "always_all_roots": "Keep whole-suite offline verification before each selected live run, avoiding dependency-closure machinery and retaining a simple complete verification receipt despite potentially broader work.",
+        "selected_case_roots_only": "After whole-source checking, execute only the selected case's attached roots before live work; mark the run partial and leave transitive helper verification to the full gate."
+      }
+    }
+  }
+}

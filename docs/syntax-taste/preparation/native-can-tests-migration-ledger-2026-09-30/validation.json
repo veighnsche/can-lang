@@ -1,0 +1,64 @@
+{
+  "scope": "Documentation/source audit only; no suite execution, build, installation or benchmark.",
+  "baseline_head": "8f6e884f3d57f88b2959a7e52d9d86c6e6175afd",
+  "status": "passed",
+  "errors": [],
+  "checks": [
+    "Unique IDs",
+    "Row fields and capability identifiers",
+    "Existing source and related paths",
+    "All 146 Go test declaration sites exactly once",
+    "All 58 Bun declaration sites exactly once",
+    "Both TestMain entrypoints",
+    "All 224 captured test file hashes unchanged",
+    "Current tracked test paths match inventory",
+    "Dedicated rows for authored host executable files",
+    "Every tracked test file has a role and ledger route"
+  ],
+  "limits": "Source/declaration completeness is not runtime parity. Browser call-site and dynamic variant semantic completeness requires review; no assertion is made that current suites pass.",
+  "counts": {
+    "rows": 292,
+    "parts": {
+      "core": 51,
+      "browser": 56,
+      "sql-history": 143,
+      "lifecycle": 26,
+      "external-callers": 16
+    },
+    "kinds": {
+      "go_test": 146,
+      "support": 33,
+      "scenario": 24,
+      "historical": 14,
+      "bun_test": 58,
+      "caller": 17
+    },
+    "files": 224,
+    "delegated_suites": 30,
+    "delegated_declarations": 243,
+    "capability_rows": {
+      "SUITE": 180,
+      "CAN": 132,
+      "PROC": 82,
+      "FILES": 123,
+      "WORK": 182,
+      "DIAG": 50,
+      "BUILD": 120,
+      "FMT": 1,
+      "NATIVE": 131,
+      "CHILD": 39,
+      "HTTP": 57,
+      "WIRE": 14,
+      "BROWSER": 38,
+      "DB": 59,
+      "STORE": 2,
+      "ARCHIVE": 9,
+      "ENV": 28,
+      "FAULT": 132,
+      "DOC": 48,
+      "PEER": 8,
+      "CLOCK": 23,
+      "METRIC": 3
+    }
+  }
+}

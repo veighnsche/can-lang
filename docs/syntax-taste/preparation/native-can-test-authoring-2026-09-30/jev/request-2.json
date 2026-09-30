@@ -1,0 +1,45 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "requirements": "The present deliverable is an authoring/execution specification illustrated by compilation rejection, child results, service lifetime, browser actions and native observations; no code migration or performance run is authorized. Tests must admit the full normal Can language. Foreign-language harness decisions, case choreography and comparisons must disappear, although native platform/compiler mechanics may remain. No test backend has been chosen; it need not emit TypeScript. Retained behavioral obligations, explicit budgets, early ownership and reliable reclamation are mandatory, as is truthful reporting of incomplete scope. Legacy spellings and representation snapshots have no compatibility entitlement.",
+    "language": "Available language machinery includes records and arrays, typed callable members, captured near inputs, ordinary declared-error functions, match chain and relay call, plus standard-fault propagation. checks::require already checks conditions. Named attached asserts/when rows execute helper logic but deny real effects without supplied fixtures. process::run can launch a bounded one-shot command with explicit input/environment/location and report stdout, stderr, exit code and signal; it does not expose a running child. There is neither general finally nor reflective lookup of a function string. Can code can assemble a uniform callback-record list and rebuild it inside each worker for identifier dispatch, avoiding callable transport.",
+    "platform_gaps": "The unresolved substrate comprises temporary-resource ownership, live child lifecycle operations including descriptors, browser-driver actions/events/interception, and native/database observation independent of the tested adapters. Non-yielding case code defeats its own timeout, so external enforcement and abandoned-resource recovery are required for worker or controller loss. Can must still decide scenario readiness and retention/cleanup policy. Current in-page browser operations do not drive another browser. Migrated Playwright callbacks presently evaluate JavaScript and control routes, while host qualification probes compare JSON source lexemes, signed zero, raw JSON, promise assimilation and missing APIs. Wrappers, moved scripts or foreign-code strings would not remove those harnesses.",
+    "diagnostics_and_reports": "Semantic diagnostics exist internally through CheckSnapshot with source locations, severity, code and wording, but there is no exposed canlc check --json; the parse command only establishes grammatical acceptance. To prove intended rejection, run an equivalent good control and inspect the bad program's particular stage, diagnostic and span rather than any failure status. Consider a bounded private worker-event stream carrying run, case, variant and attempt identity, isolated from child output. Can code would aggregate verdicts while the supervisor reports mechanical exit and cleanup facts. Simply returning ok after catching an expectation error risks hiding that mismatch; deterministic comparator tests can remain attached asserts with no live event commitment. Missing/bad evidence, unexpected faults or cleanup errors must prevent success."
+  },
+  "questions": {
+    "registration": {
+      "type": "choice",
+      "instructions": "Select the first test-definition and discovery model that fits the stated language and migration constraints while leaving execution technology open.",
+      "criteria": {
+        "can_library": "Define cases as existing Can functions, list their equal-signature callables and data in authored Can, and rebuild the list in workers. Supply the missing APIs without a test keyword or dynamic lookup.",
+        "new_test_syntax": "Create a dedicated test declaration form whose body accepts the complete language; have the compiler discover/register it, with corresponding syntax and checking work up front.",
+        "manifest_entrypoints": "Use an external data inventory to name individual Can case programs and their requirements, while leaving all scenario logic in those programs and defining validation/build behavior."
+      }
+    },
+    "observation": {
+      "type": "choice",
+      "instructions": "Choose the proposed observation interface for driver interactions and host values ordinary Can cannot safely construct.",
+      "criteria": {
+        "typed_mechanics": "Expose reviewed platform operations returning facts and controlled fault handles, leaving choreography and comparisons to Can; author any required page probe in Can too. Record unexpressible cases until more generic mechanics exist, rather than declaring comprehensive support.",
+        "foreign_source_eval": "Provide a raw JavaScript evaluation escape hatch for browser/native actions and let Can compare outputs, while explicitly retaining foreign code for the evaluated sequences.",
+        "special_case_adapters": "Place each family-specific scenario procedure in a native adapter and return an observation report for Can's final verdict and scheduling."
+      }
+    },
+    "expectation_failure": {
+      "type": "choice",
+      "instructions": "Select how the case outcome should account for an expectation error caught by ordinary Can code.",
+      "criteria": {
+        "recorded_mismatch": "Have ordinary helpers record failed comparisons and then return their declared failure. The Can aggregator treats recorded mismatches as lasting failures, while offline comparator tests inspect values without event commitment; the native channel supplies storage/transport only.",
+        "uncaught_only": "Let an ok function completion pass once cleanup succeeds even after a handled expectation failure; document author responsibility for not hiding accidental failures."
+      }
+    },
+    "compiler_rejection": {
+      "type": "choice",
+      "instructions": "Choose the planned public observation surface for the compiler-negative case, accounting for current internal diagnostic support.",
+      "criteria": {
+        "structured_check": "Expose the compiler's existing semantic analysis through a new structured check CLI, with stage/code/location results consumed by Can. Specify transport statuses and coordinate conventions while clearly marking implementation pending.",
+        "stderr_contract": "Initially drive current compiler commands and interpret their failure text and status in Can, specifying the diagnostic parser and stage checks instead of extending the compiler CLI."
+      }
+    }
+  }
+}

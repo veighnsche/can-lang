@@ -1,0 +1,8 @@
+{
+  "request_sha256": "e4916b381a10bd5e4d75c3b49ac036236febc75de888c5fd112fd0f63a1f901b",
+  "attempt": 2,
+  "prior_attempt": "Sandbox DNS failed before a service response; permission-supported transport retry.",
+  "http_status": 200,
+  "status": "success",
+  "elapsed_seconds": 0.362
+}

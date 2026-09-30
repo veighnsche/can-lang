@@ -1,0 +1,24 @@
+{
+  "model": "jev-latest",
+  "state": "The current deliverable defines four bounded experiments; execution and production implementation are later steps. Our replacement suite must use normal Can code for helpers, scenarios and assertions, optimized for AI agents. Its selected architecture separates an accepted reference R, candidate C and generic Go supervisor N, but R/N binaries and the ordinary-Can live entry do not yet exist. Early foreign-language mechanics evidence gives no reference promotion, migration coverage or old-harness deletion authority. Available tools include Bun 1.4.2 pinned locally, Python 3.14.7 exposing os.posix_spawn file actions, Go 1.27.1 and Playwright 1.55.1; a built Can compiler is unavailable. Storage/load matter on a 256 GB MacBook, and broad compilation, dependency downloads and benchmarks remain postponed. Every scoped experiment requires a single falsifiable question, independent expected facts, a seeded defect, bounded time and cleanup outside the subject. One option is a short-lived Python controller for a known process tree: pre-record ownership, map a JSON pipe to fd 3 while reserving fd 0 for bytes, reap stopped children and delete only its owned directory on normal/error/signal exits. That demonstrates POSIX descriptor delivery to Bun, not the Go launcher implementation. Controller death and unconstrained detached descendants are outside its proof. A second option builds a tiny Go stdlib controller using os.Pipe/exec.Cmd.ExtraFiles, closer to the product but adding compilation and cache limits. Completing N instead would move substantial implementation ahead of the feasibility study. Numeric handles in PM-N1 protect an object whose then getter counts and throws. The smallest PM-N2 imports the existing candidate export runtime/codec/json.ts::encodeJSON, with a minimal int-array schema and getter-bearing array. A separate parent expects type rejection at the empty path without any index read; deliberately accessing the index in a disposable shim supplies the failure control. Such evidence concerns direct source-module access only, leaving emitted Can calls, generated factory state and reference judging unverified. Integrated N2 continues to require a compiled C subject, typed same-realm access, a call witness and accepted R/N. Building C now would test more but expand this preparation; postponing all ingress observation is another alternative. The browser proposal intercepts form POST navigation and measures the real click promise while an external decision releases the route; a click that already settled leaves the pending-input question unanswered. It uses no database. Nothing has been executed in this scoping round.",
+  "questions": {
+    "temporary_owner": {
+      "type": "choice",
+      "instructions": "Choose the appropriate first host controller for these limited mechanics observations.",
+      "criteria": {
+        "python_scoped": "Select temporary Python supervision of the fixed graph, credit only POSIX-to-Bun mechanics and leave Go launcher and supervisor-loss acceptance for later.",
+        "go_small": "Choose a minimal Go executable as the early controller, accepting an explicitly limited build/cache allocation to match product descriptor setup.",
+        "full_owner": "Delay all four mechanics checks until complete N supervision is implemented and qualified."
+      }
+    },
+    "source_ingress": {
+      "type": "choice",
+      "instructions": "Select the first empirical boundary to investigate for PM-N2.",
+      "criteria": {
+        "source_partial": "Investigate the existing codec export first as partial mechanics evidence, preserving the generated-Can gate as unfinished.",
+        "compiled_now": "Materialize a candidate compiler/Can output and its binding during this preparatory stage to examine the complete subject ingress.",
+        "defer": "Postpone empirical ingress work entirely until production implementation supplies the compiled subject and interface."
+      }
+    }
+  }
+}

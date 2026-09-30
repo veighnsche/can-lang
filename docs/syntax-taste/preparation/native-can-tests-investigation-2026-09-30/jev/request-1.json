@@ -1,0 +1,47 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "inventory": {
+      "tracked_files": 224,
+      "normal_go_tests": 146,
+      "go_test_main": 2,
+      "can_files": 30
+    },
+    "objective": "Investigate replacing all first-party test cases and orchestration under /tests with Can. The user explicitly rejects retaining host test harnesses. This is research only; no migration is authorized in this round. Ordinary Go compiler and Bun/platform implementations remain a substrate, but moving former tests into native helper bodies does not meet the objective.",
+    "capabilities": "Can has ordinary functions, mandatory attached asserts, lexical when queues, scenarios, fixture templates, checks::require, JSON codecs, files operations, and process::run. The process result has stdout, stderr, exit code and signal; options bound time and output and control cwd/env/stdin. Production main can run real effects. Attached asserts refuse live platform operations, and no general finally exists. Registered native resource scopes clean owned handles, while a forcibly killed process cannot promise completed cleanup.",
+    "runner": "canlc assert checks the full project graph before selection, executes isolated supervised roots with --assert-jobs and timeouts, and returns structured reports. canlc run verifies attached assertions, builds/publishes, then starts main. There is no current native repository integration-suite discovery/reporting protocol. Negative fixtures can run in separate child projects and inspect nonzero/stderr, but a structured semantic check CLI is absent. The current diagnostic API can support one.",
+    "gaps": "process::run waits until exit: it offers no public long-running child handle, arbitrary inherited fd setup or explicit signal control. Tests currently need fd-3 credential delivery, graceful/crash restart, ports, temporary workspaces and abandoned-run recovery. Named fetch http::response<bytes::buffer> already gives normal HTTP status, normalized headers and body; malformed wire traffic, slow trickle and disconnect injection still need lower-level mechanics.",
+    "browser": "Existing browser::* APIs manipulate the application DOM in-page, not remote automation. Current test scripts use Playwright across Chromium/WebKit/Firefox for navigation, user events, network interception, console/DOM observations and hostile boundary probes. Conformance cases directly inspect or perturb native Bun APIs, including proxy/thenable behavior that ordinary safe Can data cannot represent. Can-authored tests need independent observations rather than checking a production adapter solely through itself.",
+    "constraints": "There are zero external users and no compatibility requirement. Preserve coverage obligations rather than old layouts or test counts. The machine has a 256 GB disk; no broad builds, performance runs, persistent private caches or dependency copies. Reuse one candidate build within a run, bound jobs/time/output, and register cleanup immediately. /tests includes static fixtures and historical reports, not only runnable cases. A candidate compiler can miscompile the Can runner itself; a pinned known-good runner artifact avoids using the candidate to execute every oracle, but maintaining it has a refresh cost."
+  },
+  "questions": {
+    "execution": {
+      "type": "choice",
+      "instructions": "Which starting architecture best serves the complete host-harness removal while preserving deterministic asserts and limiting unnecessary language complexity? Choose a direction to prototype, not a claim that missing mechanisms already exist.",
+      "criteria": {
+        "suite_program": "Author a separate Can suite main using existing functions, process/files/JSON/checks operations; add narrowly needed lifecycle and observation primitives. Test its pure logic with attached asserts. A later canlc test command can invoke this Can-owned scheduler.",
+        "live_assertions": "Add an explicit effectful assertion mode alongside existing offline asserts. Extend selection, worker supervision and reporting so live cases are excluded from ordinary verified builds unless selected. Keep suite policy authored in Can.",
+        "test_declarations": "Create a distinct first-class Can test declaration family with discovery, case identity and suite lifecycle, separate from attached asserts; use a Can-authored suite orchestrator and native primitives underneath.",
+        "undetermined": "The evidence does not yet justify selecting one of these approaches; gather a focused additional fact first."
+      }
+    },
+    "browser": {
+      "type": "choice",
+      "instructions": "For the browser portion of this strict migration, what boundary should be investigated first, keeping all test scenarios and verdicts in Can and preserving actual multi-engine observations?",
+      "criteria": {
+        "typed_driver": "Provide maintained typed browser automation primitives backed by upstream Playwright. Adapter bodies perform generic operations and return observations; Can owns actions, test sequences and expectations. Do not expose old test scripts as pass/fail operations.",
+        "can_protocol": "Implement the browser automation client in Can over existing HTTP/WebSocket plus owned driver processes, using upstream browser-driver protocols. Qualify each required feature across engines and accept the extra protocol-maintenance work.",
+        "capability_spike": "First build a small capability matrix/prototype for hardest existing browser actions before choosing typed Playwright bindings or a Can protocol client."
+      }
+    },
+    "bootstrap": {
+      "type": "choice",
+      "instructions": "Which trust arrangement is the best default for compiler integration tests after suite logic is written in Can, given cost limits and the need to detect candidate-compiler defects?",
+      "criteria": {
+        "known_good": "Use a digest-pinned runner artifact built by a known-good toolchain to drive the candidate compiler and its outputs, with independent expected vectors; update the runner deliberately as its source changes.",
+        "candidate_only": "Build and execute the suite with the candidate itself, relying on seeded failing cases, fixed vectors and existing compiler/runtime unit suites outside /tests to expose common-mode errors.",
+        "dual": "For each run, execute the relevant suite through both a pinned known-good runner and a candidate-built runner and compare their observations, paying the additional build/run cost."
+      }
+    }
+  }
+}

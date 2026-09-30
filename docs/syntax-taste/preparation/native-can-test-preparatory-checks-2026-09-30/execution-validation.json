@@ -1,0 +1,16 @@
+{
+  "kind": "can.preparatory.execution.validation",
+  "recorded_utc": "2026-09-30T14:51:13.706862+00:00",
+  "status": "passed for record consistency, not all probe acceptance",
+  "outcomes": {
+    "PM-N1": "mechanism_supported",
+    "PM-N2": "mechanism_supported",
+    "PM-F1": "mechanism_supported",
+    "PM-B1": "mechanism_failed"
+  },
+  "all_owned_roots_removed": true,
+  "dialog": "user canceled; no further UI actions",
+  "no_integrated_promotion": true,
+  "retained_failures": true,
+  "json_and_local_links_valid": true
+}

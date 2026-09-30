@@ -1,0 +1,33 @@
+{
+  "kind": "can.preparatory.cleanup-finalization",
+  "run_id": "run-20260930T162840-599df6",
+  "recorded_utc": "2026-09-30T14:35:30.276836+00:00",
+  "raw_results": "run-20260930T162840-599df6-results.json",
+  "owner_receipt": "run-20260930T162840-599df6-intent.json",
+  "root_removed": true,
+  "root_absence_independently_checked": true,
+  "runtime_input_drift": [],
+  "job_results": {
+    "PM-N1": {
+      "status": "mechanism_supported",
+      "retained_fact_bytes": 5136,
+      "job_cleanup_confirmed": true
+    },
+    "PM-N2": {
+      "status": "mechanism_supported",
+      "retained_fact_bytes": 3746,
+      "job_cleanup_confirmed": true
+    },
+    "PM-F1": {
+      "status": "mechanism_supported",
+      "retained_fact_bytes": 2301,
+      "job_cleanup_confirmed": true
+    },
+    "PM-B1": {
+      "status": "mechanism_failed",
+      "retained_fact_bytes": 13112,
+      "job_cleanup_confirmed": true
+    }
+  },
+  "integrated_qualification": false
+}

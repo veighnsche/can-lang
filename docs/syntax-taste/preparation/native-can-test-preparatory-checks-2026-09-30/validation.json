@@ -1,0 +1,28 @@
+{
+  "kind": "can.preparatory-scope.static-validation",
+  "recorded_utc": "2026-09-30T14:14:19.528808+00:00",
+  "status": "passed",
+  "checks": [
+    "four job cards have every requested field",
+    "scope status remains unrun",
+    "240-second batch arithmetic including preflight and cleanup",
+    "PM-N2 dependency present",
+    "integrated admission still false; no R/N promotion",
+    "all three consultation requests rewrite every explanatory field",
+    "consultation responses saved and decoded",
+    "consultation helper parses without executing a probe",
+    "relative documentation links resolve",
+    "no trailing whitespace in scoped/relinked Markdown",
+    "JSON artifacts parse"
+  ],
+  "local_links_checked": 47,
+  "missing_links": [],
+  "whitespace_errors": [],
+  "subjects_executed": 0,
+  "tests_run": 0,
+  "builds": 0,
+  "services_started": 0,
+  "execution_scratch_allocated": 0,
+  "implementation_files_modified": 0,
+  "review": "Independent source review by prep_native_scope found no blocking issue; normal codec witness and per-leg budget wording incorporated. Browser scope checked by prep_browser_scope."
+}

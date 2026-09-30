@@ -1,0 +1,33 @@
+{
+  "model": "jev-latest",
+  "state": "Design contracts, without executing code or measurements, for shared capabilities in a native Can suite. The author is an AI agent; keep full ordinary Can and assign scenario choices, expected observations, selection, readiness/retry logic and verdicts to Can rather than host harnesses. Initial architecture is reference-built Can orchestration and fresh Bun workers under an external generic Go supervisor; candidate compiler, runtime and browser artifacts are subjects. Hard laptop load/storage and owned cleanup remain requirements. Source evidence shows direct-worker termination and post-buffer diagnostic truncation in the assertion supervisor; complete tree/filesystem containment is absent. The one-shot process::run performs detached Bun.spawn then worker-local cleanup registration, leaving cleanup unavailable if that worker is killed. The new interface needs parent-owned reservations before resource exposure, deduplicated operation identities tied to arguments, bounded facts, partial effects and recovery records. Path normalization cannot substitute for OS enforcement; a host lacking a promised hard limit must report unsupported. Spawn and signal acknowledge native actions rather than service readiness; normal returned process facts include nonzero exit. Interrupted side effects can remain applied or indeterminate, so a timed-out call cannot be assumed safe to repeat. Browser primitives must cover physical input, synthetic dispatch, independent property/attribute reads, deferred interception decisions and event collection armed before navigation with a closing barrier. Shared remote Firefox ownership stops at the owned connection/context. Neither JavaScript strings nor native scenario-sized procedures satisfy Can ownership. Primitive foreign-value construction and single-operation observation can provide getter/proxy/thenable counters and raw identity, supplemented by normal Can programs for richer callbacks in the candidate process. Comparisons are Can code; handles stay process-local and faults affect only disposable subjects. SQL observation needs separate connection/decoder provenance and raw data. Compiler CheckSnapshot is inert and supplies structured code/severity/UTF16 location data, while converting project faults into diagnostics and lacking individual pipeline-stage fields. A general product canlc check --json must add an explicit schema, phase/error taxonomy and input identity, returning complete analysis acceptance/rejection separately from unavailable or broken execution. It must never execute assertions or subjects, emit code or publish. Unexpected death, malformed results, cancellation and filesystem failures are not source rejection, and categorization must originate in the frontend rather than stderr wording.",
+  "questions": {
+    "resource_authority": {
+      "type": "choice",
+      "instructions": "Choose the acquisition and cleanup authority model to document.",
+      "criteria": {
+        "outside_worker": "Use an external native resource ledger and acquisition reservations, keeping cleanup viable after worker death and reporting bounded facts including uncertainty and unsupported enforcement.",
+        "worker_scopes": "Base the contract on local scope finalization inside each worker, acknowledging that outer process termination cannot itself reclaim every worker-owned resource.",
+        "recovery_scan": "Keep native launch local and reconstruct cleanup ownership after failures from persisted markers and scans, trading simpler active calls for uncertain pre-registration recovery."
+      }
+    },
+    "observation_boundary": {
+      "type": "choice",
+      "instructions": "How should these contracts expose browser and raw native behavior to Can cases?",
+      "criteria": {
+        "typed_facts": "Specify small native mechanisms returning facts and supporting raw-value handles, while full Can code supplies choreography, callbacks requiring logic and comparisons.",
+        "source_eval": "Adopt source-string execution inside the browser/probe as the extensibility mechanism, with Can consuming results and foreign code defining those local actions.",
+        "scenario_adapters": "Package complete driver/probe sequences into native calls and expose their aggregate observations to the Can suite."
+      }
+    },
+    "compiler_diagnostics": {
+      "type": "choice",
+      "instructions": "Choose the diagnostic interface to specify for compiler rejection cases.",
+      "criteria": {
+        "product_cli": "Specify a candidate CLI JSON analysis protocol with source identities, stage taxonomy and unambiguous status meanings, accessed through ordinary process and Can parsing helpers.",
+        "language_primitive": "Make compiler analysis a native Can primitive carrying candidate provenance and isolated execution, accepting compiler-specific runtime integration.",
+        "stderr_adapter": "Specify exit-plus-stderr analysis in Can over the existing CLI, with explicit textual parsing contracts instead of adding structured check output."
+      }
+    }
+  }
+}

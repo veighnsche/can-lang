@@ -1,0 +1,16 @@
+{
+  "status": "reviewed before send",
+  "method": "Manual semantic comparison and full-field inequality across all three complete contexts, questions and option descriptions. Exact technical identifiers and alternatives preserved; prior answers are not reused.",
+  "equivalent_facts": [
+    "agent/full-Can and Can-owned scenarios/oracles",
+    "chosen reference/candidate/process architecture",
+    "design-only resource limits and cleanup",
+    "current native containment/registration/output gaps",
+    "external ownership, partial effects, deadlines and retry ambiguity",
+    "browser input/interception/sealed-events and shared-service ownership",
+    "typed raw native value/callback/fault boundaries",
+    "independent SQL provenance",
+    "CheckSnapshot strengths and producer-level classification gaps"
+  ],
+  "limits": "Rewording and agreement do not prove bias removal, enforceability or correctness."
+}

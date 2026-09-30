@@ -1,0 +1,12 @@
+{
+  "status": "checked before sending",
+  "method": "Manual semantic review of all four state fields, four instructions and ten option descriptions across three requests, plus complete-field text inequality checks. Each explanatory field is fully rephrased; exact Can/API identifiers and option keys are intentionally stable. No earlier response feeds a later request.",
+  "equivalence": [
+    "same five examples and full-Can/no-host-harness requirements",
+    "same language support and explicit missing operations",
+    "same backend uncertainty and budget/cleanup constraints",
+    "same compiler API facts, paired controls and evidence failure conditions",
+    "same three registration alternatives, three observation alternatives, two outcome alternatives and two compiler alternatives"
+  ],
+  "limitations": "Equal facts and wording variation reduce one framing risk; they do not prove bias removal, independent reasoning or design correctness. Agreement is advisory."
+}

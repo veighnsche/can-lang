@@ -1,0 +1,12 @@
+{
+  "status": "checked before sending",
+  "explanatory_fields_per_request": 13,
+  "all_corresponding_prose_fields_differ": true,
+  "no_exact_explanatory_string_reused_across_requests": true,
+  "semantic_review": "Manually compared all three variants: same user constraints, current frontend/IR/Bun and supervisor facts, absent interpreter, semantic obligations, missing capability work, trust limits, machine constraints and four alternatives. No recommendation is supplied in state. Stable model, identifiers, primitive types and technical names are intentional. Rewording does not prove bias removal.",
+  "request_sha256": {
+    "request-1.json": "b0bb8d5051be129b255c49cfb1c75cb66ae38efdec879604b47ca084a0a485b1",
+    "request-2.json": "5e2a21fa70410c8de9c622d80abb961dbd036c073898d9ba8235e9ea6f1599ef",
+    "request-3.json": "0a2fb6f6706d2d0fc9579698da7469494b85659f7c80cb1898e267a734ce1d50"
+  }
+}

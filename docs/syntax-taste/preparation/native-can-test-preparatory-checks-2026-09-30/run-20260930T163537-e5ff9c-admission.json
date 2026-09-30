@@ -1,0 +1,17 @@
+{
+  "kind": "can.preparatory.repair.admission",
+  "run_id": "run-20260930T163537-e5ff9c",
+  "only_job": "PM-B1",
+  "prior_run": "run-20260930T162840-599df6",
+  "reason": "Measured route abortion can fulfill Playwright click; old control wrongly required rejection and attempted DOM observation during close",
+  "change": "Preserve actual settlement event, skip marker query only after closing starts, accept either terminal action outcome after closing while requiring route abortion and no pending callback; normal positive oracle unchanged",
+  "acceptance": "same held-click roundtrip and seeded deadlock; exact terminal events and all cleanup confirmed",
+  "job_seconds": 90,
+  "cleanup_reserve_seconds": 15,
+  "preflight_seconds": 45,
+  "total_seconds": 135,
+  "limits_unchanged": true,
+  "automatic_retries": false,
+  "maximum_repair_attempts": 1,
+  "integrated_qualification": false
+}

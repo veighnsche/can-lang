@@ -1,0 +1,84 @@
+{
+  "kind": "can.preparatory.owner",
+  "run_id": "run-20260930T163537-e5ff9c",
+  "root": "/private/tmp/can-native-prep-run-20260930T163537-e5ff9c",
+  "owner_pid": 51616,
+  "owner_start": 1790778937.793121,
+  "phase": "cleaned",
+  "root_identity": [
+    16777231,
+    394104334
+  ],
+  "marker_identity": [
+    16777231,
+    394104335
+  ],
+  "safe_to_remove": true,
+  "cleanup_errors": [],
+  "owner_kernel_start": "Wed Sep 30 16:35:37 2026",
+  "allocations": [
+    {
+      "directory": "/private/tmp/can-native-prep-run-20260930T163537-e5ff9c/b1-positive",
+      "cleanup": "T removes after child release"
+    },
+    {
+      "listener": "127.0.0.1:ephemeral",
+      "profile": "/private/tmp/can-native-prep-run-20260930T163537-e5ff9c/b1-positive/profile"
+    },
+    {
+      "directory": "/private/tmp/can-native-prep-run-20260930T163537-e5ff9c/b1-control",
+      "cleanup": "T removes after child release"
+    },
+    {
+      "listener": "127.0.0.1:ephemeral",
+      "profile": "/private/tmp/can-native-prep-run-20260930T163537-e5ff9c/b1-control/profile"
+    }
+  ],
+  "spawn_intents": [
+    {
+      "role": "Chrome",
+      "profile": "/private/tmp/can-native-prep-run-20260930T163537-e5ff9c/b1-positive/profile",
+      "descendants": "selected Chrome launch only"
+    },
+    {
+      "role": "browser-driver.ts",
+      "work": "/private/tmp/can-native-prep-run-20260930T163537-e5ff9c/b1-positive",
+      "group": "new session",
+      "descendants": "none"
+    },
+    {
+      "role": "Chrome",
+      "profile": "/private/tmp/can-native-prep-run-20260930T163537-e5ff9c/b1-control/profile",
+      "descendants": "selected Chrome launch only"
+    },
+    {
+      "role": "browser-driver.ts",
+      "work": "/private/tmp/can-native-prep-run-20260930T163537-e5ff9c/b1-control",
+      "group": "new session",
+      "descendants": "none"
+    }
+  ],
+  "children": [
+    {
+      "pid": 51646,
+      "role": "Chrome",
+      "group": 51646
+    },
+    {
+      "pid": 51659,
+      "role": "browser-driver.ts",
+      "group": 51659
+    },
+    {
+      "pid": 51679,
+      "role": "Chrome",
+      "group": 51679
+    },
+    {
+      "pid": 51688,
+      "role": "browser-driver.ts",
+      "group": 51688
+    }
+  ],
+  "root_removed": true
+}

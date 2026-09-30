@@ -1,0 +1,18 @@
+{
+  "kind": "can.preparatory.cleanup-finalization",
+  "run_id": "run-20260930T163537-e5ff9c",
+  "recorded_utc": "2026-09-30T14:37:34.154523+00:00",
+  "raw_results": "run-20260930T163537-e5ff9c-results.json",
+  "owner_receipt": "run-20260930T163537-e5ff9c-intent.json",
+  "root_removed": true,
+  "root_absence_independently_checked": true,
+  "runtime_input_drift": [],
+  "job_results": {
+    "PM-B1": {
+      "status": "mechanism_supported",
+      "retained_fact_bytes": 13947,
+      "job_cleanup_confirmed": true
+    }
+  },
+  "integrated_qualification": false
+}

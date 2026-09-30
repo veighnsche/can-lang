@@ -1,0 +1,33 @@
+{
+  "model": "jev-latest",
+  "state": "Design the failure and lifetime rules for a Can-owned test replacement; all work now is paper/source review, excluding live trials, builds and performance runs. The authors are AI agents using unrestricted normal Can functions. Native mechanics must not retain the old host-authored scenarios, oracle logic, scheduling or report policy. The chosen topology places reference-built Can judges/controller under external supervisor N, with a new Bun process per case and candidate toolchain C exercised solely as a subject. Reference R is explicitly qualified. N owns bounded resources, transport and recovery facts, while final success also depends on a valid Can report. The capability agreement already requires registration before acquisition effects, distinct native completion versus assertion outcomes, charged unresolved resources and reconciliation rather than automatic replay after uncertainty. Every retained coverage/environment obligation and mandatory offline root is necessary for qualification; all roots run at bootstrap and later focused closure requires a separately trusted conservative planner. Existing proposed statuses are 0 for complete success of a nonempty declared selection, 1 for fully executed behavioral failures and 2 for blocked, incomplete, execution or cleanup errors. A missing required service cannot be skipped into success; pre-admission absence and in-flight loss have different causes. Only an active reference judge can recognize a deliberately expected subject crash/deadline with sufficient observations and resolved cleanup; its own termination cannot prove that case. Keep the vector of mismatch, missing checks and disposal faults rather than replacing one with another. On interruption, stop scheduling, preserve prior results and have N reclaim pending resources; retain all unstarted selected obligations in the report. Unknown containment or leftovers stop further live admission; after a local failure is contained and cleaned, independent cases can still be useful. A later passing attempt cannot wipe earlier failures. The present Go harness defaults to three heavy cases and reuses verified bundles by input key during one process, bypassing the cache for build-focused cases. It silently rebuilds changed cache entries and reaps old fill locks by age, neither of which proves sound new evidence/recovery. The current tempcache uses ownership markers, leases, path identity and cautious ps/lsof checks; its lessons must extend to durable unresolved cleanup after owner death. Current assertion deadlines/reaping cover immediate workers, not all descendant or storage limits. Start with one active case, one verification worker and one build producer under explicit finite total budgets, without background prebuild overlap; multiple subject processes inside a declared case remain possible. Existing lifecycle cases reserve 12-30 minutes, so the earlier ten-minute quick envelope is not a full-suite promise or an automatic omission rule. Builds can be shared only as immutable verified same-run artifacts keyed by exact source/dependency/compiler/runtime/options/target identity with tracked leases. Build, reproducibility and corruption scenarios request independent production. Do not persist full execution caches or bundle trees; reclaim all staging/results, never publish failed fills to consumers, and recover old ownership for disposal rather than cross-run reuse.",
+  "questions": {
+    "coverage": {
+      "type": "choice",
+      "instructions": "Choose how this design should represent completion and qualification under failures.",
+      "criteria": {
+        "separate_axes": "Report orthogonal facts for declared scope, performed checks, comparison results and execution/cleanup completion; distinguish successful limited scope from missing selected evidence and gate full qualification on all required coverage.",
+        "single_terminal": "Represent each attempt through one final status selected by priority rules, inferring completed coverage from status counts and leaving other conditions in attached messages.",
+        "environment_optional": "Automatically narrow coverage to available services and compare only executed cases for success, listing unavailable variants as omissions outside the resulting selection."
+      }
+    },
+    "continuation": {
+      "type": "choice",
+      "instructions": "Select the boundary for continuing useful work after one case goes wrong.",
+      "criteria": {
+        "containment_gated": "Use confirmed isolation and release as the condition for further cases; global trust/channel faults, interruption or unknown cleanup stop the run while completed observations remain recorded.",
+        "always_fail_fast": "Make every behavioral or mechanical failure terminate the remaining plan after cleanup, using universal fail-fast as the default.",
+        "budget_only": "Continue subsequent cases while scheduling budgets permit and annotate containment/shared-state uncertainty, rather than stopping at those conditions."
+      }
+    },
+    "reuse": {
+      "type": "choice",
+      "instructions": "Choose the ownership and invalidation contract for build results reused by cases.",
+      "criteria": {
+        "same_run_verified": "Keep a run-local table of ready immutable artifacts with full provenance and single producers, explicit fresh-build cases and charged leases; failed/changed entries cannot be hits and integrity loss stops dependent admission.",
+        "fresh_every_case": "Give every case a fresh compilation even for identical immutable inputs, avoiding shared-entry logic at the cost of extra resource use.",
+        "repair_hits": "Treat changed shared results as replaceable cache misses, rebuild under the same identity key and continue cases while recording repair details rather than stopping affected admission."
+      }
+    }
+  }
+}

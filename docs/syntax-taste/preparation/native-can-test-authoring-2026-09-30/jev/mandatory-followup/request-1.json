@@ -1,0 +1,24 @@
+{
+  "model": "jev-latest",
+  "state": "Design-only Can-native test authoring must allow all normal functions, eliminate host-authored scenarios/oracles/policy, preserve coverage and bounded cleanup, and leave the executor backend open. New source evidence: every concrete fn requires attached asserts; omitting them is invalid. Live I/O is forbidden in offline assertions unless supplied. when tables attach only to match call, not match chain, and scenario links explicitly activate exported fixtures across packages. Generic opaque assertion arguments cannot be omitted like special request-scope inputs. A package-level array of callable records is legal and avoids an unnecessary registry function. Cases can receive a constructible data context with a worker-local reporting callable: live reporting holds a scoped channel, while the offline recorder performs no I/O and the actual comparisons/errors still execute. Per-case match-call observation helpers can supply only boundary results; linked scenario rows/templates avoid replacing the complete case with canned success. All real action steps and expected values remain Can functions. A substantive mandatory root should execute the scenario under supplied boundaries, with separate mutant rows where useful; it cannot count as live evidence. Separately, server SIGTERM calls expireScopes and closeServerSessions before awaiting closeResource. The closer invokes Bun stop(false) only after active resource leases drain, so waiting for listener refusal while a held handler owns a lease can deadlock. An external WebSocket session receives native close code 1001/reason shutdown before lease drainage. A Can case can observe that close while its held request remains pending, then release a peer and require response plus normal child exit. This witnesses the signal path, not listener closure. No test/build has verified the proposed full example.",
+  "questions": {
+    "mandatory_assertions": {
+      "type": "choice",
+      "instructions": "Which authoring resolution should this design adopt for compulsory offline assertions without weakening the ordinary-function requirement?",
+      "criteria": {
+        "explicit_boundary_fixtures": "Keep current function/assertion rules. Use a static registry, constructible injected context and meaningful attached scenario assertions, with Can match-call helpers supplying individual observation/report boundaries and live execution separately qualified.",
+        "assertion_exemption": "Add a compiler exception so registered test functions need no attached assertions; specify the new registration-sensitive checking rule and its effect on verification.",
+        "live_assertion_mode": "Create an explicit assertion mode allowing real platform effects and use those roots as live cases; specify changed discovery, build and fixture semantics."
+      }
+    },
+    "shutdown_witness": {
+      "type": "choice",
+      "instructions": "Which causal witness should the representative server example specify without quietly changing production shutdown behavior?",
+      "criteria": {
+        "external_websocket": "Use an explicitly opened external WebSocket and require close(1001,shutdown) while the held HTTP request is still pending, then release and check reply/exit. Record the extra generic client API and the limited claim; validate the full sequence later.",
+        "new_runtime_event": "Add a generic runtime lifecycle event after signal processing and observe it before releasing the peer; document its instrumentation and weaker self-reported independence.",
+        "change_stop_order": "Change runtime shutdown to stop listening before lease drain, then observe connection refusal while the handler is held; treat this as a production semantic change requiring separate qualification."
+      }
+    }
+  }
+}

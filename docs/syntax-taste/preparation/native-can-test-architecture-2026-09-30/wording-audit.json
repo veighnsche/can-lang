@@ -1,0 +1,16 @@
+{
+  "status": "reviewed before send",
+  "method": "Every context passage, question and option description was fully reworded. Manual semantic review plus whole-field inequality checks preserved facts and alternatives; exact technical identifiers remain stable. No earlier responses are supplied.",
+  "equivalent_constraints": [
+    "AI author and full normal Can/no authored host harnesses",
+    "coverage, independent observations, resource bounds, cleanup and no compatibility",
+    "documentation only and no performance evidence",
+    "current TypeScript/Bun, checked IR and missing complete interpreter",
+    "existing assertion supervision and absent comprehensive live containment",
+    "mandatory offline roots and partial/full verification",
+    "separate reference and candidate identities, refresh and explicit first seed",
+    "production artifact coverage and shared-bug limits",
+    "bounded within-run reuse and interpreter reconsideration conditions"
+  ],
+  "limits": "Agreement and wording differences do not prove unbiased advice, semantic correctness or implementation feasibility."
+}

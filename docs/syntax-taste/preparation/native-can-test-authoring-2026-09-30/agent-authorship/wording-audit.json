@@ -1,0 +1,15 @@
+{
+  "status": "reviewed before sending",
+  "method": "Manual semantic comparison plus full-field text inequality for all context, question and option prose across three requests. Stable exact technical identifiers and alternative keys retained. No prior responses supplied.",
+  "equivalent_facts": [
+    "AI authors and optimization criteria",
+    "normal Can/no host harnesses/coverage/resource constraints",
+    "design-only and open backend/no compatibility",
+    "current assertion/fixture/equality rules and draft metadata",
+    "independent planned obligations and descriptor limits",
+    "current whole-source checking and root selection",
+    "conservative dependency closure, full fallback, partial scope and complete qualification",
+    "provenance/no persistent full bundles and lack of measured advantage"
+  ],
+  "limits": "Wording changes and agreement cannot establish absence of bias or design correctness."
+}

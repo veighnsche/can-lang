@@ -1,0 +1,24 @@
+{
+  "model": "jev-latest",
+  "state": "We are scoping, not running, four small native mechanics checks before writing an implementation plan for replacing host tests with ordinary Can functions and Can-owned scenarios/expectations. Can targets AI authors. The eventual design has reference R judging candidate C under external Go owner N; accepted R/N executables and a Can live-entry binding are absent. Preparatory host observations cannot qualify R/N, credit migration, or retire tests. Existing local inputs are pinned Bun 1.4.2, Python 3.14.7 with os.posix_spawn descriptor actions, Go 1.27.1, and Playwright 1.55.1; no compiler distribution is materialized. The MacBook has a 256 GB disk; broad builds, downloads and measurements are deferred. Each proposed job has one question, independent fixed observations, a deliberate failing control, a finite deadline and external cleanup. A temporary Python parent can own a fixed child graph, pipe fd 3 JSON independently of binary fd 0, record ownership before effects, stop/reap on all handled exits and remove its own scratch. This would investigate POSIX-to-Bun transport, not Go ExtraFiles or the product launcher. It cannot prove recovery after its own death or arbitrary detached-child containment; those stay open. A Go parent could instead use os.Pipe and exec.Cmd.ExtraFiles like the product, requiring a small stdlib build and bounded cache accounting. Building full N first would add the runner implementation before mechanics research. PM-N1 uses numeric handles to keep a getter-backed then object inert. PM-N2 can directly import C runtime/codec/json.ts::encodeJSON, supply a tiny array/int schema, pass an array with a throwing index getter and independently expect reason type, empty path and zero getter calls. Reading the index in a disposable control must fail that expectation. This proves only this source-module ingress: no compiled Can invocation, generated state or R oracle. The integrated N2 still needs a C artifact, same-realm typed binding, invocation witness and qualified R/N. A full compiler build now might reach that boundary but exceeds the small source-mechanics scope; deferring this check entirely would retain the source-derived uncertainty. Browser scope has a held POST form navigation, actual click settlement observation and external route decision; early native click settlement is inconclusive. No DB is needed. All outcomes remain unrun at this design step.",
+  "questions": {
+    "temporary_owner": {
+      "type": "choice",
+      "instructions": "Which initial resource-owner instrument best fits the bounded preparatory scope?",
+      "criteria": {
+        "python_scoped": "Use the reviewed Python parent and POSIX descriptor mapping, explicitly excluding Go/product and owner-death guarantees; retain full N qualification later.",
+        "go_small": "Build a small Go parent now so descriptor preparation uses os.Pipe/ExtraFiles, with a separately bounded stdlib compilation and temporary cache.",
+        "full_owner": "Require the full generic Go N implementation and its acceptance before any of these preliminary native observations."
+      }
+    },
+    "source_ingress": {
+      "type": "choice",
+      "instructions": "Which next probe scope is appropriate for the candidate ingress uncertainty?",
+      "criteria": {
+        "source_partial": "Scope the direct encodeJSON source-module check now and leave compiled ordinary-Can ingress explicitly unproven.",
+        "compiled_now": "Expand preparation to build C and a tiny ordinary Can subject with a typed hostile-value seam before collecting ingress evidence.",
+        "defer": "Skip source-module execution and leave all candidate ingress experimentation until the implementation lanes provide C and its binding."
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "status": "passed before requests sent",
+  "method": "Every explanatory state field, instruction and criterion was separately written and checked for full-field inequality across all three requests. Manual semantic review confirms each corresponding field preserves the same facts, constraints and alternatives. Stable identifiers, schema fields and numeric counts intentionally repeat. This does not prove unbiased phrasing.",
+  "compared_fields": [
+    "state.objective",
+    "state.capabilities",
+    "state.runner",
+    "state.gaps",
+    "state.browser",
+    "state.constraints",
+    "questions.execution.instructions",
+    "questions.execution.criteria.suite_program",
+    "questions.execution.criteria.live_assertions",
+    "questions.execution.criteria.test_declarations",
+    "questions.execution.criteria.undetermined",
+    "questions.browser.instructions",
+    "questions.browser.criteria.typed_driver",
+    "questions.browser.criteria.can_protocol",
+    "questions.browser.criteria.capability_spike",
+    "questions.bootstrap.instructions",
+    "questions.bootstrap.criteria.known_good",
+    "questions.bootstrap.criteria.candidate_only",
+    "questions.bootstrap.criteria.dual"
+  ],
+  "semantic_topics": [
+    "strict removal of host test orchestration, not host compiler/platform implementations",
+    "ordinary asserts remain deterministic; production Can may use existing effects",
+    "current process/files/codec/checks support and worker jobs",
+    "no structured semantic check CLI yet",
+    "service descriptors/signals/workspace lifetimes missing",
+    "ordinary HTTP envelope supported; raw faults missing",
+    "browser in-page API differs from remote automation",
+    "native conformance values and independent observation",
+    "disk/load/build reuse/cleanup and zero compatibility",
+    "runner compiler provenance and artifact maintenance tradeoff"
+  ],
+  "request_sha256": {
+    "request-1.json": "e4916b381a10bd5e4d75c3b49ac036236febc75de888c5fd112fd0f63a1f901b",
+    "request-2.json": "523490586ac83d530bd849c0753d07deea91ef1cb9ff626c28bd11bc1b0b787e",
+    "request-3.json": "3012990a273946330400c640f6d4d94cf1f5fa911ca3ccd7234af88ef67f6c44"
+  }
+}

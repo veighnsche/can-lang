@@ -1,0 +1,173 @@
+{
+  "kind": "can.preparatory-checks.scope",
+  "schema_version": 1,
+  "status": "executed_with_browser_isolation_failure",
+  "step": 9,
+  "next_step": "reconcile design using actual findings; browser re-admission requires isolated noninteractive credential behavior",
+  "execution_performed": true,
+  "common_ownership": {
+    "cleanup_owner": "T: separately reviewed Python 3.14.7 parent outside tested children; exact process/script identity assigned before effects",
+    "allocation": "intent and cleanup registered before exclusive marked scratch allocation or child/pipe/server effects",
+    "on_all_handled_exits": "stop effects, close pipes/routes, stop direct children and owned descendants, wait direct children, verify descendants gone, remove exact inode/marker-verified scratch, record errors",
+    "parent_loss": "no successful receipt; locked ownership/inactivity reconciliation before any later admission; no intentional T death control",
+    "qualification_claims_forbidden": [
+      "R promotion",
+      "N qualification",
+      "compiled Can qualification",
+      "migration coverage",
+      "old harness deletion"
+    ]
+  },
+  "execution_order": [
+    "PM-N1",
+    "PM-N2",
+    "PM-F1",
+    "PM-B1"
+  ],
+  "live_concurrency": 1,
+  "batch_wall_seconds": 240,
+  "combined_job_seconds": 195,
+  "preflight_allowance_seconds": 45,
+  "free_disk_floor_gib": 10,
+  "checks": [
+    {
+      "id": "PM-N1",
+      "status": "mechanism_supported",
+      "question": "Does inert handle transport avoid getter access/thenable assimilation before an explicit read?",
+      "minimal_setup": "T and one pinned-Bun child; one getter-backed then object, at most four numeric handles; fresh control child",
+      "independent_observation": "Fixed parent action/count expectations plus same-realm raw Object.is, getter counters and sealed action log",
+      "acceptance_condition": "Zero access before explicit read, true alias identity, exactly one explicit getter call/marker, complete facts and cleanup; seeded control detected",
+      "negative_control": "Promise.resolve on retrieved object before observation; zero-access expectation must fail",
+      "resource_budget": {
+        "total_seconds": 30,
+        "cleanup_reserve_seconds": 10,
+        "owned_processes_including_observer": 3,
+        "rss_stop_mib": 512,
+        "scratch_stop_mib": 8,
+        "total_io_kib": 64,
+        "retained_facts_kib": 16,
+        "sampling_is_not_strict_os_quota": true
+      },
+      "cleanup_owner": "T: separately reviewed Python 3.14.7 parent outside tested children; exact process/script identity assigned before effects",
+      "cleanup_contract": "common_ownership",
+      "depends_on": [],
+      "detail": "native-scope.md",
+      "related_integrated_gate": "N1",
+      "integrated_gate_state": "unrun",
+      "remaining_unproven": [
+        "other hostile/native values",
+        "exact numeric encodings",
+        "ordinary Can handle binding and expectations"
+      ],
+      "result": "execution-summary.json"
+    },
+    {
+      "id": "PM-N2",
+      "status": "mechanism_supported",
+      "question": "Can the existing candidate encodeJSON export reject a getter-backed int array without reading the accessor?",
+      "minimal_setup": "T and one pinned-Bun source-module child; two-node int-array schema; normal [1n] setup witness, hostile array and separate contaminated-shim variant",
+      "independent_observation": "Parent expects exact [1] witness bytes then CodecIssue type at empty path with zero getter calls and direct-call fact",
+      "acceptance_condition": "Valid witness, expected hostile rejection, complete trace, counter-control detection and verified cleanup",
+      "negative_control": "Shim reads index 0 and catches fixed marker before same encodeJSON call; zero-access oracle must fail",
+      "resource_budget": {
+        "total_seconds": 30,
+        "cleanup_reserve_seconds": 10,
+        "owned_processes_including_observer": 3,
+        "rss_stop_mib": 512,
+        "scratch_stop_mib": 8,
+        "total_io_kib": 64,
+        "retained_facts_kib": 16,
+        "sampling_is_not_strict_os_quota": true
+      },
+      "cleanup_owner": "T: separately reviewed Python 3.14.7 parent outside tested children; exact process/script identity assigned before effects",
+      "cleanup_contract": "common_ownership",
+      "depends_on": [
+        "PM-N1"
+      ],
+      "detail": "native-scope.md",
+      "related_integrated_gate": "N2",
+      "integrated_gate_state": "unrun",
+      "remaining_unproven": [
+        "compiled Can invocation",
+        "emitted createCodec state wiring",
+        "typed hostile ingress",
+        "R oracle and output identity"
+      ],
+      "result": "execution-summary.json"
+    },
+    {
+      "id": "PM-F1",
+      "status": "mechanism_supported",
+      "question": "Can fd 3 EOF-delimited JSON and fd 0 binary input stay separate and leave no writer blocked after non-reader exit?",
+      "minimal_setup": "T uses Python posix_spawn/dup2 pipes with pinned Bun; actual runtime/environment.ts; four sequential legs",
+      "independent_observation": "Parent-fixed stdin hex and snapshot values, tagged absent/empty facts, actual child exits and writer/EOF states",
+      "acceptance_condition": "Valid delivery matches; withheld EOF detected; malformed snapshot rejected; non-reader leaves no writer; every leg cleaned",
+      "negative_control": "Keep fd 3 writer open after complete JSON; require sticky fd3_eof_timeout, then close/reap",
+      "resource_budget": {
+        "total_seconds": 45,
+        "cleanup_reserve_seconds": 10,
+        "owned_processes_including_observer": 3,
+        "rss_stop_mib": 512,
+        "scratch_stop_mib": 8,
+        "total_io_kib": 2048,
+        "retained_facts_kib": 64,
+        "sampling_is_not_strict_os_quota": true
+      },
+      "cleanup_owner": "T: separately reviewed Python 3.14.7 parent outside tested children; exact process/script identity assigned before effects",
+      "cleanup_contract": "common_ownership",
+      "depends_on": [],
+      "detail": "descriptor-scope.md",
+      "related_integrated_gate": "F1",
+      "integrated_gate_state": "unrun",
+      "remaining_unproven": [
+        "Go ExtraFiles and product launcher",
+        "CLI startup-control isolation",
+        "generated Can env/auth/stdin access",
+        "fd 4 leases"
+      ],
+      "result": "execution-summary.json"
+    },
+    {
+      "id": "PM-B1",
+      "status": "mechanism_failed",
+      "question": "Can an external decision resolve an intercepted POST while the actual Playwright click remains pending?",
+      "minimal_setup": "T loopback server/direct Chrome launch with owned profile and CDP; pinned Bun/Playwright driver; one form-navigation page",
+      "independent_observation": "Parent HTTP/message trace plus directly instrumented click settlement and exact DOM marker",
+      "acceptance_condition": "Route and ping serviced before resolve, click unsettled until resolution then fulfilled, exact marker/no upstream POST, control detected and browser graph cleaned",
+      "negative_control": "Queue decision handling behind await click; classify bounded deadlock; do not manufacture pending state if native click settles early",
+      "resource_budget": {
+        "total_seconds": 90,
+        "cleanup_reserve_seconds": 15,
+        "owned_processes_including_observer": 24,
+        "rss_stop_mib": 2048,
+        "scratch_stop_mib": 128,
+        "total_io_kib": 4096,
+        "retained_facts_kib": 256,
+        "sampling_is_not_strict_os_quota": true
+      },
+      "cleanup_owner": "T: separately reviewed Python 3.14.7 parent outside tested children; exact process/script identity assigned before effects",
+      "cleanup_contract": "common_ownership",
+      "depends_on": [],
+      "detail": "browser-scope.md",
+      "related_integrated_gate": "B1",
+      "integrated_gate_state": "unrun",
+      "remaining_unproven": [
+        "ordinary Can decisions and native API",
+        "upstream fetch/corruption/replay",
+        "durable effect observations",
+        "other engines",
+        "owner/worker death"
+      ],
+      "result": "execution-summary.json"
+    }
+  ],
+  "result_statuses": [
+    "mechanism_supported",
+    "mechanism_failed",
+    "blocked",
+    "inconclusive"
+  ],
+  "no_automatic_retries": true,
+  "integrated_admission_changed": false,
+  "execution_summary": "execution-summary.json"
+}

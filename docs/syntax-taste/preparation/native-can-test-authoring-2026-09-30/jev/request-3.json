@@ -1,0 +1,45 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "requirements": "Work out the developer experience using five sample cases: a rejected program, an executed command, a managed server, a driven browser and a host-runtime fact. This is documentation work only, excluding implementation and benchmarking. All regular Can functions must be usable, with Can responsible for test sequences, expected answers and runner policy instead of host harnesses. Native execution infrastructure is permitted. The executor remains an open decision independent of the production TypeScript path. Maintain useful coverage and bounded resources, register ownership at acquisition, clean after failure too, and expose missing qualification. Historic syntax/ABI/output forms are not preservation requirements.",
+    "language": "The existing surface provides normal functions with domain-error bounds, standard faults, records, arrays, callable record slots and lexical near captures; match chain and relay call compose them. Boolean requirements use checks::require. Offline asserts select named when inputs and reject unsupplied platform effects. A terminating command is already expressible through process::run, including bounded output/time, explicit cwd/env/stdin and distinct stdout/stderr/code/signal. It cannot act as a managed service handle. General finally and dynamic function-name lookup are absent. An authored registry function may instead build equal-signature callback records anew in every worker and dispatch by data ID, without encoding live closures.",
+    "platform_gaps": "A complete design still needs parent-owned temporary storage, ongoing child handles with stream/readiness observations, fd setup, signals and waiting, external browser control with routes/events, and raw native or SQL evidence. Deadline enforcement and crash recovery must operate outside a worker that might hang; foreign and active resources must remain untouched. Can retains service-readiness choices and retention decisions. The browser catalogue serves page programs rather than external automation. Existing tests use JavaScript page evaluation and interception, and native test probes themselves assert token-source fidelity, -0, raw JSON, nonthenable boxes and API absence. Keeping that foreign scenario code behind a Can facade fails the requested boundary.",
+    "diagnostics_and_reports": "CheckSnapshot provides structured internal diagnostics, including codes/severity/text and positions. CLI users lack a semantic canlc check --json surface, and parse is only syntactic. A negative compiler example therefore needs a matching accepted control plus evidence for the intended diagnostic, stage and source span; a crash is not sufficient rejection. The candidate reporting shape uses identity-bound, size-limited events over a dedicated worker channel that candidate output cannot impersonate. Suite aggregation and verdicts belong in Can; termination and reclamation observations belong in native supervision. With uncaught-only handling, catching a failed expectation and later returning ok can mask it. Attached asserts can exercise pure comparator results separately. Absent or malformed records, unforeseen faults and unresolved cleanup cannot count as passed."
+  },
+  "questions": {
+    "registration": {
+      "type": "choice",
+      "instructions": "Choose the registration approach to specify for the five examples, holding the unresolved backend choice independent.",
+      "criteria": {
+        "can_library": "Adopt a Can library with an authored callback-record catalogue; worker-local construction resolves stable IDs to regular functions. Extend mechanics as needed while leaving the language grammar unchanged.",
+        "new_test_syntax": "Add test-specific source declarations with unrestricted Can implementations and compiler-generated case indexing, establishing the extra frontend rules first.",
+        "manifest_entrypoints": "Choose a manifest listing IDs and Can executable entrypoints, with metadata only rather than scenario scripts; account for manifest checking and per-entry compilation."
+      }
+    },
+    "observation": {
+      "type": "choice",
+      "instructions": "How should browser/native evidence cross into Can without retaining foreign scenarios or verdicts?",
+      "criteria": {
+        "typed_mechanics": "Specify data-returning native/browser bindings plus isolated perturbations, composed by normal Can test functions. Use compiled Can for page-side logic and leave missing low-level operations unresolved until designed; do not infer universal coverage from five examples.",
+        "foreign_source_eval": "Embed arbitrary host-language programs in Can calls to construct observations, with final assertions in Can despite the embedded action logic remaining JavaScript.",
+        "special_case_adapters": "Use native helper procedures containing the predetermined browser or host-probe choreography; Can owns their invocation and report comparison."
+      }
+    },
+    "expectation_failure": {
+      "type": "choice",
+      "instructions": "What rule should connect failed expectations, subsequent recovery and the final live-test verdict?",
+      "criteria": {
+        "recorded_mismatch": "Commit each expectation defect as a Can-authored event, then emit the ordinary error. Later ok cannot erase the event in Can's outcome rules. Test comparator logic independently through asserts, with native code limited to bounded event mechanics.",
+        "uncaught_only": "Use terminal completion alone for behavior status, allowing recovered comparison errors to disappear from the verdict, and enforce correct recovery through review/convention."
+      }
+    },
+    "compiler_rejection": {
+      "type": "choice",
+      "instructions": "What compiler boundary should this authoring design specify for distinguishing intentional rejection from other failures?",
+      "criteria": {
+        "structured_check": "Design a general-purpose check/report command backed by current diagnostic machinery, keeping expected-error matching in the Can library. Record the required public contract, including status and positions, as a gap.",
+        "stderr_contract": "Base rejection cases on present build/assert stderr and exit behavior with a Can parser for wording and stage, postponing a structured semantic command."
+      }
+    }
+  }
+}
