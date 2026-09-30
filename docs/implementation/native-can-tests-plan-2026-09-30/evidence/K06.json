@@ -1,0 +1,83 @@
+{
+  "status": "complete",
+  "executor": "Muse (muse-spark-1.3-contributor) via worker-t-k06; integrator review/commit",
+  "writing_owner": "native-values",
+  "task_id": "K06",
+  "row_or_file_slice": null,
+  "start_prerequisite_receipts": [
+    "K03 complete in 143ec9c6",
+    "K05 complete in b0f071d6",
+    "P09 complete",
+    "P11 complete in 3905837d"
+  ],
+  "acceptance_prerequisite_receipts": [],
+  "commits": [
+    "TBD late native events"
+  ],
+  "changed_paths": [
+    "tools/runtime/test-services/native-values/late.ts",
+    "tools/runtime/test-services/native-values/late-check.ts"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "bun tools/runtime/test-services/native-values/late-check.ts",
+      "deadline": "120s",
+      "result": "21/21 pass incl. 3 new integrator checks + 1 counter assertion (integrator re-run)"
+    },
+    {
+      "command": "bun run lint:fix:runtime + format:runtime + check:runtime + typecheck",
+      "deadline": "300s",
+      "result": "lint 0 warnings 0 errors, format clean, tsc clean (integrator re-run)"
+    },
+    {
+      "command": "bun schema/session/observe/c-ingress/c-witness checks",
+      "deadline": "120s",
+      "result": "K01 15/15, K02 11/11, K03 10/10, K04 19/19, K05 20/20 still pass (integrator re-run)"
+    }
+  ],
+  "identities": {
+    "reference": null,
+    "owner": null,
+    "candidate": null,
+    "suite": null,
+    "artifact": null,
+    "host_profile": null,
+    "observer": null
+  },
+  "coverage": {
+    "case_check_ids": [],
+    "retained_facets": [
+      "occurrence swap detectable (cross-participant observe and lease read/release reject wrong-owner; matching claims bind)",
+      "dropped late event detectable (seq gap recorded, stays reported on later reconciliations, counters show dropped)",
+      "early release detectable (pre-terminal observeLease/releaseLease reject permission as unbound; one-sided terminal binds only the witnessed side)",
+      "worker death is incomplete (killWorker closes worker admission; outcome incomplete/worker-dead; observer finishing never flips to complete)",
+      "terminal closes admission (post-terminal emits reject; terminal binding always covers every admitted occurrence)",
+      "labeled terminal-kind occurrences are not the witnessed terminal (lease facts stay unbound until terminal() runs)",
+      "clean two-participant run (pre-gate + late admissions, both terminals, bound lease read/release, complete outcome, exact counters incl. join-once release counting)"
+    ],
+    "unrun_or_blocked": [
+      "live host-dependent controls wait for the corresponding qualified profile and Q task; QN3 holds credit (per K06 scope)"
+    ],
+    "variants_and_environments": []
+  },
+  "integrator_fixes": [
+    "emit-after-terminal now rejects (permission, admission closed): previously a participant could emit after its terminal event, silently understating the terminal binding while outcome() reported complete; pinned by terminal-closes-admission",
+    "unbounded seq-gap allocation closed: emit now rejects gaps wider than MAX_LATE_EVENTS (resource-limit), since one call with seq MAX_SAFE_INTEGER previously looped ~9e15 times building the dropped list (hang/OOM, proven by loop analysis, not executed); pinned by bounds-gap-cap on both sides of the boundary",
+    "release repeats now truly join (no additional count), matching the documented join semantics and the K02 close precedent; pinned with a counter assertion",
+    "emit comment corrected: skipped numbers are recorded as dropped (gaps anywhere report, not only post-gate); added terminal-kind-event-is-not-the-witness pin for the vocabulary overlap"
+  ],
+  "resource_and_cleanup_receipts": [
+    "pure in-memory mechanics; no /tmp scratch, no services, no live runtimes",
+    "no repo writes outside owned K06 late* paths"
+  ],
+  "correction_registry_head": null,
+  "relevance_decision": null,
+  "retirement_eligible": false,
+  "retirement_commit": null,
+  "reviewer_disposition": "integrator accepted: read late.ts (642 lines) and late-check.ts (343 lines) in full; re-ran the self-check, all runtime gates, and K01-K05 checks. Found and fixed 2 real gaps (post-terminal admission left the terminal binding stale while outcome reported complete; unbounded gap loop on adversarial seq) plus 1 counting inconsistency (release-repeat double-count vs documented join) and 1 doc precision issue, each with a regression pin. The kind-terminal-vs-witnessed-terminal overlap is now pinned non-confusing. No remaining gaps. Independent final review deferred to Z06.",
+  "limitations": [
+    "bounded local mechanics only: no I/O, timers, transports, services, or live runtimes",
+    "pre-gate sequence skips also land in the dropped list (superset reporting; gaps anywhere are reconciliation facts, not only post-gate late events)",
+    "post-terminal lease grants are allowed and bind immediately (coherent: the terminal event witnessed before the lease existed); only occurrence admission closes at terminal"
+  ]
+}
