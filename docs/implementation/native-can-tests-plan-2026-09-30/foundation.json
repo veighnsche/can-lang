@@ -105,7 +105,7 @@
       "acceptance": "A new binding/syntax cannot self-promote via the candidate, and provisional suite edits do not rewrite R acceptance.",
       "evidence": "Save simulated promotion/rollback control; commit refresh machinery before it is needed.",
       "commit": "feat(testing): define separate reference capability refresh",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P05"
       ],
@@ -198,7 +198,7 @@
       "acceptance": "F1 fd 3 non-reader, delayed EOF, malformed frame, orphan/detached-child and PID reuse controls cannot produce clean release; fd 4 lease remains distinct. Bounded kernel-level control observes protection across launcher exit and loss after missing/early fd close, with independent release witness; Can scenario acceptance is QF2.",
       "evidence": "Save OS-specific control record; commit process owner.",
       "commit": "feat(testing): own processes and descriptors",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P08"
       ],
