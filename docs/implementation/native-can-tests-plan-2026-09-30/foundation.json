@@ -260,7 +260,7 @@
       "acceptance": "Quick envelope (64 processes, 4 GiB, 512 MiB) and bounded-job envelope (64, 6 GiB, 2 GiB) are admitted only where enforcing mechanisms and disposal reserve are demonstrated. Poll-and-kill or sample peaks cannot qualify them; unavailable host remains blocked.",
       "evidence": "Save host-specific negative controls; commit profile acceptance separately.",
       "commit": "test(testing): qualify strict host enforcement",
-      "status": "active",
+      "status": "complete",
       "start_after": [
         "P12",
         "P25"
