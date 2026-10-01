@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: d9660fe17b89b053887fb427f4f73fd92eae6c21ec96a9db5b5403bd0c5a23d3.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 09f5aa725600e45e5801c4135f58e075e545243eaef6b61203036a4243acbcda.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -736,6 +736,13 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | native::install_fault | native::session session, str target, str mode → native::fault | {} |  | JSON.stringify, JSON.parse | N-owner reviewed-fault install on a fresh session only. (services K06; merge-defined shapes) | supplied | NT-I01 / N1,N3 |
 | native::restore | native::fault fault → native::restore_outcome | {} |  | JSON.stringify, JSON.parse | N-owner fault removal with timing/outcome report. (services K06; merge-defined shapes) | supplied | NT-I01 / N1,N3 |
 | native::close | native::session session, native::deadline deadline → native::close_receipt | {} |  | JSON.stringify, JSON.parse | N-owner session close: stop admission, settle/cancel work, destroy handles, return receipt. (services K02: schema-handles.ts) | supplied | NT-I01 / N1,N2,N3 |
+| descriptor::launch_child | test::owner owner, str op_id, descriptor::spec spec → descriptor::launch | {test::stale_handle, descriptor::descriptor_fault} |  | JSON.stringify, JSON.parse | Launch one owner child with F1 fd wiring (fd 0 null, fd 1 status pipe, fd 2 buffer, fd 3 env snapshot); op_id is the journal key. with_lease rejected until I12 threads leases. | supplied | NT-I11 / NT-I11 |
+| descriptor::collect_status | test::owner owner, descriptor::launch launch, int ack_timeout_ms, int eof_timeout_ms → void | {test::stale_handle, descriptor::descriptor_fault} |  | JSON.stringify, JSON.parse | Collect the content-bound status ack then clean EOF within the two bounded timeouts; records accepted/malformed/eof facts. | supplied | NT-I11 / NT-I11 |
+| descriptor::wait_child | test::owner owner, descriptor::launch launch, int timeout_ms → descriptor::exit | {test::stale_handle, descriptor::descriptor_fault} |  | JSON.stringify, JSON.parse | Block until the child exits or the timeout elapses; records the reaped child-exit fact. Repeat waits join the same outcome. | supplied | NT-I11 / NT-I11 |
+| descriptor::kill_child | test::owner owner, descriptor::launch launch → void | {test::stale_handle} |  | JSON.stringify, JSON.parse | SIGKILL the direct child only (cleanup primitive, never a release path); grandchildren keep the status pipe open. | supplied | NT-I11 / NT-I11 |
+| descriptor::release_launch | test::owner owner, descriptor::launch launch → descriptor::report | {test::stale_handle, descriptor::descriptor_fault} |  | JSON.stringify, JSON.parse | Decide clean release: offered, accepted, clean EOF, reaped exit 0, live identity, lease clauses, no orphan. Not-clean is a decision, not an error. | supplied | NT-I11 / NT-I11 |
+| descriptor::read_facts | test::owner owner, descriptor::launch launch → descriptor::facts | {test::stale_handle} |  | JSON.stringify, JSON.parse | Copy the current separate per-process facts without blocking; no fact implies any other. | supplied | NT-I11 / NT-I11 |
+| descriptor::expected_ack | test::owner owner, descriptor::launch launch → int[] | {test::stale_handle} |  | JSON.stringify, JSON.parse | Return the exact encoded status frame the owner expects for this launch (opID + env digest binding). | supplied | NT-I11 / NT-I11 |
 
 ## Native declaration profiles
 

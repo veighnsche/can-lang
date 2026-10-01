@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "d9660fe17b89b053887fb427f4f73fd92eae6c21ec96a9db5b5403bd0c5a23d3";
+export const catalogueSHA256 = "09f5aa725600e45e5801c4135f58e075e545243eaef6b61203036a4243acbcda";
 export const catalogue = freeze({
  "schemaVersion": 1,
  "revision": 1,
@@ -18363,6 +18363,278 @@ export const catalogue = freeze({
     "N1",
     "N2",
     "N3"
+   ]
+  },
+  {
+   "name": "descriptor::launch_child",
+   "identity": "can.std.descriptor@1::launch_child",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "op_id",
+     "type": "str"
+    },
+    {
+     "name": "spec",
+     "type": "descriptor::spec"
+    }
+   ],
+   "staticInputs": [],
+   "result": "descriptor::launch",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "descriptor::descriptor_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "Launch one owner child with F1 fd wiring (fd 0 null, fd 1 status pipe, fd 2 buffer, fd 3 env snapshot); op_id is the journal key. with_lease rejected until I12 threads leases.",
+    "task": "NT-I11"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I11"
+   ]
+  },
+  {
+   "name": "descriptor::collect_status",
+   "identity": "can.std.descriptor@1::collect_status",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "launch",
+     "type": "descriptor::launch"
+    },
+    {
+     "name": "ack_timeout_ms",
+     "type": "int"
+    },
+    {
+     "name": "eof_timeout_ms",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "descriptor::descriptor_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "Collect the content-bound status ack then clean EOF within the two bounded timeouts; records accepted/malformed/eof facts.",
+    "task": "NT-I11"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I11"
+   ]
+  },
+  {
+   "name": "descriptor::wait_child",
+   "identity": "can.std.descriptor@1::wait_child",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "launch",
+     "type": "descriptor::launch"
+    },
+    {
+     "name": "timeout_ms",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "descriptor::exit",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "descriptor::descriptor_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "Block until the child exits or the timeout elapses; records the reaped child-exit fact. Repeat waits join the same outcome.",
+    "task": "NT-I11"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I11"
+   ]
+  },
+  {
+   "name": "descriptor::kill_child",
+   "identity": "can.std.descriptor@1::kill_child",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "launch",
+     "type": "descriptor::launch"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "SIGKILL the direct child only (cleanup primitive, never a release path); grandchildren keep the status pipe open.",
+    "task": "NT-I11"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I11"
+   ]
+  },
+  {
+   "name": "descriptor::release_launch",
+   "identity": "can.std.descriptor@1::release_launch",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "launch",
+     "type": "descriptor::launch"
+    }
+   ],
+   "staticInputs": [],
+   "result": "descriptor::report",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "descriptor::descriptor_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "Decide clean release: offered, accepted, clean EOF, reaped exit 0, live identity, lease clauses, no orphan. Not-clean is a decision, not an error.",
+    "task": "NT-I11"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I11"
+   ]
+  },
+  {
+   "name": "descriptor::read_facts",
+   "identity": "can.std.descriptor@1::read_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "launch",
+     "type": "descriptor::launch"
+    }
+   ],
+   "staticInputs": [],
+   "result": "descriptor::facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "Copy the current separate per-process facts without blocking; no fact implies any other.",
+    "task": "NT-I11"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I11"
+   ]
+  },
+  {
+   "name": "descriptor::expected_ack",
+   "identity": "can.std.descriptor@1::expected_ack",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "launch",
+     "type": "descriptor::launch"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int[]",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "Return the exact encoded status frame the owner expects for this launch (opID + env digest binding).",
+    "task": "NT-I11"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I11"
    ]
   }
  ],

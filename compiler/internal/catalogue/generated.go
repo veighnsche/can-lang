@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "d9660fe17b89b053887fb427f4f73fd92eae6c21ec96a9db5b5403bd0c5a23d3"
+const GeneratedSourceSHA256 = "09f5aa725600e45e5801c4135f58e075e545243eaef6b61203036a4243acbcda"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -790,3 +790,10 @@ const OpNativeRelease = "native::release"
 const OpNativeInstallFault = "native::install_fault"
 const OpNativeRestore = "native::restore"
 const OpNativeClose = "native::close"
+const OpDescriptorLaunchChild = "descriptor::launch_child"
+const OpDescriptorCollectStatus = "descriptor::collect_status"
+const OpDescriptorWaitChild = "descriptor::wait_child"
+const OpDescriptorKillChild = "descriptor::kill_child"
+const OpDescriptorReleaseLaunch = "descriptor::release_launch"
+const OpDescriptorReadFacts = "descriptor::read_facts"
+const OpDescriptorExpectedAck = "descriptor::expected_ack"
