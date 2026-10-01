@@ -1,5 +1,5 @@
 {
-  "status": "active",
+  "status": "complete",
   "executor": "Muse (muse-spark-1.3-contributor) via worker-p-p12; integrator review/commit",
   "writing_owner": "native-owner",
   "task_id": "P12",
@@ -13,7 +13,8 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "f219a318632169e3d3693c5e1996ba16a12b4365"
+    "f219a318632169e3d3693c5e1996ba16a12b4365 reservation/deadline gate (preserved)",
+    "d24e576e0087f1fb5c3102f58c9a636aef48bd77 admission floor + finite capability limits"
   ],
   "changed_paths": [
     "tools/native-test-owner/admission/"
@@ -123,8 +124,10 @@
         "P10 complete in b4eaa2f5",
         "P11 complete in 3905837d"
       ],
-      "commits": [],
-      "commit_note": "Integrator fills SHAs on commit.",
+      "commits": [
+        "d24e576e0087f1fb5c3102f58c9a636aef48bd77 admission floor + finite capability limits"
+      ],
+      "commit_note": "Downstream handoff committed separately as 15380bd21243a218d985e5c5aca256b0c693ab4a (host/acceptance test adaptation; touches no P12-owned path, so not in this array).",
       "changed_paths": [
         "tools/native-test-owner/admission/admission.go",
         "tools/native-test-owner/admission/admission_test.go",

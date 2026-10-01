@@ -214,7 +214,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P12 — Reserve host capacity and deadlines
 
-- [ ] **P12: active** — owner lane: `native-owner`. Evidence: [evidence/P12.json](evidence/P12.json).
+- [x] **P12: complete** — owner lane: `native-owner`. Evidence: [evidence/P12.json](evidence/P12.json). Admission-floor slice accepted in `d24e576e`; downstream caller handoff in `15380bd2`.
 
 **Audit correction:** The authoritative lifecycle requires a 10 GiB free-disk admission floor and recheck before allocation. The card omitted it, and admission/host source and recorded controls do not implement or demonstrate it. Existing reservation/deadline controls remain useful local evidence.
 

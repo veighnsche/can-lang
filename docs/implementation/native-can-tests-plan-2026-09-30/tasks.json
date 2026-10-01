@@ -406,7 +406,7 @@
       "acceptance": "Two repository roots cannot bypass the gate; nested producer demand does not deadlock; deadline-at-success is failure; no case starts if body plus cleanup cannot fit. Below-floor disk and omitted finite capability limits refuse before effect; recheck the 10 GiB floor before each allocation. Preserve all strict-envelope qualification requirements in P13.",
       "evidence": "Save bounded race controls; commit admission.",
       "commit": "feat(testing): reserve host capacity and deadlines",
-      "status": "active",
+      "status": "complete",
       "start_after": [
         "P07",
         "P08",
