@@ -1,0 +1,324 @@
+package m09core008run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M09 CORE-008 "bundled CLI: run shape, echo/fault/usage split".
+/// Source: tests/integration/cli_test.go symbol
+/// TestCurrentBundledCLI (L16-168).
+/// Related fixture: compiler/testdata/current/cli/echo.can (the echo
+/// entry behind every run leg; staged as src/main.can at L58).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): production process shape of the staged CLI.
+/// Unlike rows with a silent entry, the echo entry emits its argv on
+/// stdout by design (Go L79-81), so the non-silent stdouts are pinned
+/// verbatim here (nine stdout pins) and the silence pins land where
+/// silence holds: empty stderr on the ok and build paths, empty stdout
+/// on the fault path.
+/// ADAPTATIONS (recorded, with source lines): the build stdout carries
+/// the JSON report with a nondeterministic 64-char buildID and temp-dir
+/// paths (L113-122), so build-stdout-report is a bool shape pin while
+/// the stable report fields live in cli-semantics; usage stdout is
+/// unpinned because the Go test discards it (L163 binds out to _), so
+/// no usage-stdout check is authored.
+/// The roots-green pin lives in core-008-roots-green.can; argv values,
+/// hostile env, pipe mapping, cross-file behavior, build fields,
+/// failure needles and usage shapes live in
+/// core-008-cli-semantics.can.
+/// Variants: ok path (eight argv echoes plus the cross-file echo),
+/// build path, fault path (broken pipe, bad entry, static mismatch,
+/// bounds, startup, domain), usage path (three malformed shapes).
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/WORK/PROC/N1
+/// and C/R/N/S/A identities bind at P23; no live run now. Descriptor
+/// timeout 300000ms mirrors the Go 5-minute ctx (L26).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QF1 unmet).
+/// Case cli/bundled-run checks: run-exit, run-stderr-empty,
+/// stdout-argv-unicode, stdout-argv-inspect, stdout-argv-separator,
+/// stdout-argv-eval, stdout-argv-preload, stdout-argv-empty,
+/// stdout-argv-bom, stdout-argv-spaces, stdout-cross-file, build-exit,
+/// build-stderr-empty, build-stdout-report, fault-exit,
+/// fault-stdout-empty, usage-exit, usage-stderr, sandbox-profile,
+/// offline-path, symlink-launch, offline-ok.
+/// Facet map (cli_test.go legs): run-exit pins exit 0 on the ok path
+/// (L80: argv loop; L105: cross-file); run-stderr-empty pins empty
+/// stderr on the ok path (L80, L105); stdout-argv-unicode pins the
+/// verbatim echo of he-double-acute-llo space emoji newline (L78-81);
+/// stdout-argv-inspect pins "--inspect" echoed after "--" (L78-81);
+/// stdout-argv-separator pins "--" echoed as data (L78-81);
+/// stdout-argv-eval pins "-e" echoed as data (L78-81);
+/// stdout-argv-preload pins "--preload=/missing.ts" echoed (L78-81);
+/// stdout-argv-empty pins empty stdout for the empty argv (L78-81);
+/// stdout-argv-bom pins U+FEFF + "BOM" echoed (L78 Go "\ufeffBOM";
+/// verbatim U+FEFF since Can has no \u escape); stdout-argv-spaces
+/// pins "space argument" echoed (L78-81); stdout-cross-file pins
+/// "multi-file!" (L105-106); build-exit pins exit 0 for build (L110);
+/// build-stderr-empty pins empty build stderr (L110);
+/// build-stdout-report pins that build stdout parses as the can.build
+/// report (L113-122; nondeterministic buildID, see adaptation);
+/// fault-exit pins exit 1 across the six fault legs (L100/L129/L138/
+/// L143/L153/L159); fault-stdout-empty pins empty stdout across the
+/// same six legs; usage-exit pins exit 2 (L163-164); usage-stderr
+/// pins the "usage:" needle (L164); sandbox-profile pins the
+/// invocation shape (L61/L91: "(version 1)(allow default)(deny
+/// network*)" verbatim); offline-path pins the cleared environment
+/// (L63/L93: "PATH=/nonexistent" verbatim); symlink-launch pins the
+/// outside-bundle symlink invocation (L34-37 staged, L61/L91 run);
+/// offline-ok pins the offline behavior (L79-83: the sandboxed
+/// deny-network argv loop with hostile BUN_OPTIONS stays green).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int run_exit
+    bool run_stderr_empty
+    str stdout_argv_unicode
+    str stdout_argv_inspect
+    str stdout_argv_separator
+    str stdout_argv_eval
+    str stdout_argv_preload
+    str stdout_argv_empty
+    str stdout_argv_bom
+    str stdout_argv_spaces
+    str stdout_cross_file
+    int build_exit
+    bool build_stderr_empty
+    bool build_stdout_report
+    int fault_exit
+    bool fault_stdout_empty
+    int usage_exit
+    str usage_stderr
+    str sandbox_profile
+    str offline_path
+    bool symlink_launch
+    bool offline_ok
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("cli/bundled-run", "default", "", "offline"), "run-exit" => ok "case cli/bundled-run variant default root run-exit run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("cli/bundled-run", "default", "", "offline"), "run-stderr-empty" => ok evidence("run-stderr-empty", "true", "true", true, "case cli/bundled-run variant default root run-stderr-empty run offline")
+        different: false, true, context("cli/bundled-run", "default", "", "offline"), "run-stderr-empty" => failed{"run-stderr-empty"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("cli/bundled-run", "default", "", "offline"), "run-exit" => ok evidence("run-exit", "0", "0", true, "case cli/bundled-run variant default root run-exit run offline")
+        different: 1, 0, context("cli/bundled-run", "default", "", "offline"), "run-exit" => failed{"run-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "(version 1)(allow default)(deny network*)", "(version 1)(allow default)(deny network*)", context("cli/bundled-run", "default", "", "offline"), "sandbox-profile" => ok evidence("sandbox-profile", "(version 1)(allow default)(deny network*)", "(version 1)(allow default)(deny network*)", true, "case cli/bundled-run variant default root sandbox-profile run offline")
+        different: "(version 1)(allow default)", "(version 1)(allow default)(deny network*)", context("cli/bundled-run", "default", "", "offline"), "sandbox-profile" => failed{"sandbox-profile"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_run_exit_drift: "seed-run-exit-drift" => ok observation(1, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_run_stderr_empty_drift: "seed-run-stderr-empty-drift" => ok observation(0, false, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_stdout_argv_unicode_drift: "seed-stdout-argv-unicode-drift" => ok observation(0, true, "héllo 😀", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_stdout_argv_inspect_drift: "seed-stdout-argv-inspect-drift" => ok observation(0, true, "héllo 😀\n", "--inspect=true", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_stdout_argv_separator_drift: "seed-stdout-argv-separator-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "---", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_stdout_argv_eval_drift: "seed-stdout-argv-eval-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-E", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_stdout_argv_preload_drift: "seed-stdout-argv-preload-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/other.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_stdout_argv_empty_drift: "seed-stdout-argv-empty-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "x", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_stdout_argv_bom_drift: "seed-stdout-argv-bom-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_stdout_argv_spaces_drift: "seed-stdout-argv-spaces-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space  argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_stdout_cross_file_drift: "seed-stdout-cross-file-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_build_exit_drift: "seed-build-exit-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 1, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_build_stderr_empty_drift: "seed-build-stderr-empty-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, false, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_build_stdout_report_drift: "seed-build-stdout-report-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, false, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_fault_exit_drift: "seed-fault-exit-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 0, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_fault_stdout_empty_drift: "seed-fault-stdout-empty-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, false, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_usage_exit_drift: "seed-usage-exit-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 1, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_usage_stderr_drift: "seed-usage-stderr-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "Usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        seed_sandbox_profile_drift: "seed-sandbox-profile-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)", "PATH=/nonexistent", true, true)
+        seed_offline_path_drift: "seed-offline-path-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/usr/bin", true, true)
+        seed_symlink_launch_drift: "seed-symlink-launch-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", false, true)
+        seed_offline_ok_drift: "seed-offline-ok-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, false)
+    match variant_id
+        "seed-run-exit-drift" => ok observation(1, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-run-stderr-empty-drift" => ok observation(0, false, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-stdout-argv-unicode-drift" => ok observation(0, true, "héllo 😀", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-stdout-argv-inspect-drift" => ok observation(0, true, "héllo 😀\n", "--inspect=true", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-stdout-argv-separator-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "---", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-stdout-argv-eval-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-E", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-stdout-argv-preload-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/other.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-stdout-argv-empty-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "x", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-stdout-argv-bom-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-stdout-argv-spaces-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space  argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-stdout-cross-file-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-build-exit-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 1, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-build-stderr-empty-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, false, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-build-stdout-report-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, false, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-fault-exit-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 0, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-fault-stdout-empty-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, false, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-usage-exit-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 1, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-usage-stderr-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "Usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+        "seed-sandbox-profile-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)", "PATH=/nonexistent", true, true)
+        "seed-offline-path-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/usr/bin", true, true)
+        "seed-symlink-launch-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", false, true)
+        "seed-offline-ok-drift" => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, false)
+        _ => ok observation(0, true, "héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", "multi-file!", 0, true, true, 1, true, 2, "usage:", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m09_008: "m09-008" => ok [check("run-exit", "ok runs exit 0"), check("run-stderr-empty", "ok runs keep stderr empty"), check("stdout-argv-unicode", "unicode/newline stdout echoes byte-exact"), check("stdout-argv-inspect", "inspect stdout forwards literally"), check("stdout-argv-separator", "separator stdout forwards as data"), check("stdout-argv-eval", "eval stdout forwards as data"), check("stdout-argv-preload", "preload-like stdout forwards literally"), check("stdout-argv-empty", "empty stdout equals the empty argv"), check("stdout-argv-bom", "BOM stdout echoes byte-exact"), check("stdout-argv-spaces", "spaced stdout echoes verbatim"), check("stdout-cross-file", "cross-file stdout is multi-file!"), check("build-exit", "build exits 0"), check("build-stderr-empty", "build keeps stderr empty"), check("build-stdout-report", "build stdout carries the JSON report"), check("fault-exit", "fault runs exit 1"), check("fault-stdout-empty", "fault runs keep stdout empty"), check("usage-exit", "malformed invocations exit 2"), check("usage-stderr", "malformed stderr carries usage:"), check("sandbox-profile", "invocation pins the deny-network profile"), check("offline-path", "invocation clears PATH to /nonexistent"), check("symlink-launch", "CLI runs through the outside symlink"), check("offline-ok", "offline sandboxed invocation succeeds")]
+        other: "nope" => ok []
+    match scope is "m09-008"
+        false => ok []
+        true => ok [check("run-exit", "ok runs exit 0"), check("run-stderr-empty", "ok runs keep stderr empty"), check("stdout-argv-unicode", "unicode/newline stdout echoes byte-exact"), check("stdout-argv-inspect", "inspect stdout forwards literally"), check("stdout-argv-separator", "separator stdout forwards as data"), check("stdout-argv-eval", "eval stdout forwards as data"), check("stdout-argv-preload", "preload-like stdout forwards literally"), check("stdout-argv-empty", "empty stdout equals the empty argv"), check("stdout-argv-bom", "BOM stdout echoes byte-exact"), check("stdout-argv-spaces", "spaced stdout echoes verbatim"), check("stdout-cross-file", "cross-file stdout is multi-file!"), check("build-exit", "build exits 0"), check("build-stderr-empty", "build keeps stderr empty"), check("build-stdout-report", "build stdout carries the JSON report"), check("fault-exit", "fault runs exit 1"), check("fault-stdout-empty", "fault runs keep stdout empty"), check("usage-exit", "malformed invocations exit 2"), check("usage-stderr", "malformed stderr carries usage:"), check("sandbox-profile", "invocation pins the deny-network profile"), check("offline-path", "invocation clears PATH to /nonexistent"), check("symlink-launch", "CLI runs through the outside symlink"), check("offline-ok", "offline sandboxed invocation succeeds")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "cli/bundled-run" => ok [expected_check("run-exit", "0"), expected_check("run-stderr-empty", "true"), expected_check("stdout-argv-unicode", "héllo 😀\n"), expected_check("stdout-argv-inspect", "--inspect"), expected_check("stdout-argv-separator", "--"), expected_check("stdout-argv-eval", "-e"), expected_check("stdout-argv-preload", "--preload=/missing.ts"), expected_check("stdout-argv-empty", ""), expected_check("stdout-argv-bom", "﻿BOM"), expected_check("stdout-argv-spaces", "space argument"), expected_check("stdout-cross-file", "multi-file!"), expected_check("build-exit", "0"), expected_check("build-stderr-empty", "true"), expected_check("build-stdout-report", "true"), expected_check("fault-exit", "1"), expected_check("fault-stdout-empty", "true"), expected_check("usage-exit", "2"), expected_check("usage-stderr", "usage:"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("offline-path", "PATH=/nonexistent"), expected_check("symlink-launch", "true"), expected_check("offline-ok", "true")]
+        unknown: "nope" => ok []
+    match case is "cli/bundled-run"
+        false => ok []
+        true => ok [expected_check("run-exit", "0"), expected_check("run-stderr-empty", "true"), expected_check("stdout-argv-unicode", "héllo 😀\n"), expected_check("stdout-argv-inspect", "--inspect"), expected_check("stdout-argv-separator", "--"), expected_check("stdout-argv-eval", "-e"), expected_check("stdout-argv-preload", "--preload=/missing.ts"), expected_check("stdout-argv-empty", ""), expected_check("stdout-argv-bom", "﻿BOM"), expected_check("stdout-argv-spaces", "space argument"), expected_check("stdout-cross-file", "multi-file!"), expected_check("build-exit", "0"), expected_check("build-stderr-empty", "true"), expected_check("build-stdout-report", "true"), expected_check("fault-exit", "1"), expected_check("fault-stdout-empty", "true"), expected_check("usage-exit", "2"), expected_check("usage-stderr", "usage:"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("offline-path", "PATH=/nonexistent"), expected_check("symlink-launch", "true"), expected_check("offline-ok", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("cli/bundled-run", "default", "", "offline") => ok
+        seed_run_exit_drift: context("cli/bundled-run", "seed-run-exit-drift", "", "offline") => failed{"run-exit"}
+        seed_run_stderr_empty_drift: context("cli/bundled-run", "seed-run-stderr-empty-drift", "", "offline") => failed{"run-stderr-empty"}
+        seed_stdout_argv_unicode_drift: context("cli/bundled-run", "seed-stdout-argv-unicode-drift", "", "offline") => failed{"stdout-argv-unicode"}
+        seed_stdout_argv_inspect_drift: context("cli/bundled-run", "seed-stdout-argv-inspect-drift", "", "offline") => failed{"stdout-argv-inspect"}
+        seed_stdout_argv_separator_drift: context("cli/bundled-run", "seed-stdout-argv-separator-drift", "", "offline") => failed{"stdout-argv-separator"}
+        seed_stdout_argv_eval_drift: context("cli/bundled-run", "seed-stdout-argv-eval-drift", "", "offline") => failed{"stdout-argv-eval"}
+        seed_stdout_argv_preload_drift: context("cli/bundled-run", "seed-stdout-argv-preload-drift", "", "offline") => failed{"stdout-argv-preload"}
+        seed_stdout_argv_empty_drift: context("cli/bundled-run", "seed-stdout-argv-empty-drift", "", "offline") => failed{"stdout-argv-empty"}
+        seed_stdout_argv_bom_drift: context("cli/bundled-run", "seed-stdout-argv-bom-drift", "", "offline") => failed{"stdout-argv-bom"}
+        seed_stdout_argv_spaces_drift: context("cli/bundled-run", "seed-stdout-argv-spaces-drift", "", "offline") => failed{"stdout-argv-spaces"}
+        seed_stdout_cross_file_drift: context("cli/bundled-run", "seed-stdout-cross-file-drift", "", "offline") => failed{"stdout-cross-file"}
+        seed_build_exit_drift: context("cli/bundled-run", "seed-build-exit-drift", "", "offline") => failed{"build-exit"}
+        seed_build_stderr_empty_drift: context("cli/bundled-run", "seed-build-stderr-empty-drift", "", "offline") => failed{"build-stderr-empty"}
+        seed_build_stdout_report_drift: context("cli/bundled-run", "seed-build-stdout-report-drift", "", "offline") => failed{"build-stdout-report"}
+        seed_fault_exit_drift: context("cli/bundled-run", "seed-fault-exit-drift", "", "offline") => failed{"fault-exit"}
+        seed_fault_stdout_empty_drift: context("cli/bundled-run", "seed-fault-stdout-empty-drift", "", "offline") => failed{"fault-stdout-empty"}
+        seed_usage_exit_drift: context("cli/bundled-run", "seed-usage-exit-drift", "", "offline") => failed{"usage-exit"}
+        seed_usage_stderr_drift: context("cli/bundled-run", "seed-usage-stderr-drift", "", "offline") => failed{"usage-stderr"}
+        seed_sandbox_profile_drift: context("cli/bundled-run", "seed-sandbox-profile-drift", "", "offline") => failed{"sandbox-profile"}
+        seed_offline_path_drift: context("cli/bundled-run", "seed-offline-path-drift", "", "offline") => failed{"offline-path"}
+        seed_symlink_launch_drift: context("cli/bundled-run", "seed-symlink-launch-drift", "", "offline") => failed{"symlink-launch"}
+        seed_offline_ok_drift: context("cli/bundled-run", "seed-offline-ok-drift", "", "offline") => failed{"offline-ok"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.run_exit, 0, c, "run-exit")
+            failed
+            ok evidence exit_evidence => match call require_bool(got.run_stderr_empty, true, c, "run-stderr-empty")
+                failed
+                ok evidence stderr_evidence => match call require_text(got.stdout_argv_unicode, "héllo 😀\n", c, "stdout-argv-unicode")
+                    failed
+                    ok evidence unicode_evidence => match call require_text(got.stdout_argv_inspect, "--inspect", c, "stdout-argv-inspect")
+                        failed
+                        ok evidence inspect_evidence => match call require_text(got.stdout_argv_separator, "--", c, "stdout-argv-separator")
+                            failed
+                            ok evidence separator_evidence => match call require_text(got.stdout_argv_eval, "-e", c, "stdout-argv-eval")
+                                failed
+                                ok evidence eval_evidence => match call require_text(got.stdout_argv_preload, "--preload=/missing.ts", c, "stdout-argv-preload")
+                                    failed
+                                    ok evidence preload_evidence => match call require_text(got.stdout_argv_empty, "", c, "stdout-argv-empty")
+                                        failed
+                                        ok evidence empty_evidence => match call require_text(got.stdout_argv_bom, "﻿BOM", c, "stdout-argv-bom")
+                                            failed
+                                            ok evidence bom_evidence => match call require_text(got.stdout_argv_spaces, "space argument", c, "stdout-argv-spaces")
+                                                failed
+                                                ok evidence spaces_evidence => match call require_text(got.stdout_cross_file, "multi-file!", c, "stdout-cross-file")
+                                                    failed
+                                                    ok evidence cross_evidence => match call require_int(got.build_exit, 0, c, "build-exit")
+                                                        failed
+                                                        ok evidence build_exit_evidence => match call require_bool(got.build_stderr_empty, true, c, "build-stderr-empty")
+                                                            failed
+                                                            ok evidence build_stderr_evidence => match call require_bool(got.build_stdout_report, true, c, "build-stdout-report")
+                                                                failed
+                                                                ok evidence report_evidence => match call require_int(got.fault_exit, 1, c, "fault-exit")
+                                                                    failed
+                                                                    ok evidence fault_evidence => match call require_bool(got.fault_stdout_empty, true, c, "fault-stdout-empty")
+                                                                        failed
+                                                                        ok evidence fault_stdout_evidence => match call require_int(got.usage_exit, 2, c, "usage-exit")
+                                                                            failed
+                                                                            ok evidence usage_exit_evidence => match call require_text(got.usage_stderr, "usage:", c, "usage-stderr")
+                                                                                failed
+                                                                                ok evidence usage_stderr_evidence => match call require_text(got.sandbox_profile, "(version 1)(allow default)(deny network*)", c, "sandbox-profile")
+                                                                                    failed
+                                                                                    ok evidence profile_evidence => match call require_text(got.offline_path, "PATH=/nonexistent", c, "offline-path")
+                                                                                        failed
+                                                                                        ok evidence path_evidence => match call require_bool(got.symlink_launch, true, c, "symlink-launch")
+                                                                                            failed
+                                                                                            ok evidence symlink_evidence => match call require_bool(got.offline_ok, true, c, "offline-ok")
+                                                                                                failed
+                                                                                                ok evidence offline_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m09_008: "m09-008" => ok test_case("cli/bundled-run", ["cli", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("run-exit"), check_ref("run-stderr-empty"), check_ref("stdout-argv-unicode"), check_ref("stdout-argv-inspect"), check_ref("stdout-argv-separator"), check_ref("stdout-argv-eval"), check_ref("stdout-argv-preload"), check_ref("stdout-argv-empty"), check_ref("stdout-argv-bom"), check_ref("stdout-argv-spaces"), check_ref("stdout-cross-file"), check_ref("build-exit"), check_ref("build-stderr-empty"), check_ref("build-stdout-report"), check_ref("fault-exit"), check_ref("fault-stdout-empty"), check_ref("usage-exit"), check_ref("usage-stderr"), check_ref("sandbox-profile"), check_ref("offline-path"), check_ref("symlink-launch"), check_ref("offline-ok")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m09-008"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("cli/bundled-run", ["cli", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("run-exit"), check_ref("run-stderr-empty"), check_ref("stdout-argv-unicode"), check_ref("stdout-argv-inspect"), check_ref("stdout-argv-separator"), check_ref("stdout-argv-eval"), check_ref("stdout-argv-preload"), check_ref("stdout-argv-empty"), check_ref("stdout-argv-bom"), check_ref("stdout-argv-spaces"), check_ref("stdout-cross-file"), check_ref("build-exit"), check_ref("build-stderr-empty"), check_ref("build-stdout-report"), check_ref("usage-exit"), check_ref("usage-stderr"), check_ref("sandbox-profile"), check_ref("offline-path"), check_ref("symlink-launch"), check_ref("offline-ok")], callable case_body)

@@ -1,0 +1,389 @@
+package m09core008cli
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M09 CORE-008 "bundled CLI: argv, pipe, build and failure semantics".
+/// Source: tests/integration/cli_test.go symbol
+/// TestCurrentBundledCLI (L16-168).
+/// Related fixture: compiler/testdata/current/cli/echo.can (read at L54,
+/// staged as src/main.can at L58; the echo entry behind every run leg).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): argv forwarding (all eight values byte-exact),
+/// hostile BUN_OPTIONS ignored, closed-pipe io::write_failed mapping,
+/// cross-file call with forward initializer, build JSON identity fields,
+/// static entry/type failures, runtime bounds, initializer failure,
+/// domain redaction, and malformed-usage rejection.
+/// The roots-green pin lives in core-008-roots-green.can; the production
+/// process shape lives in core-008-run-shape.can.
+/// Variants: argv Unicode/newline, --inspect, --, -e, preload-like,
+/// empty, BOM, spaces (Go L78); closed pipe (L86-102); cross-module
+/// forward initializer (L103-107); bad entry, static mismatch, bounds,
+/// initializer, domain failure, three malformed invocations (L127-167).
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/WORK/PROC/N1
+/// and C/R/N/S/A identities bind at P23; no live run now. Descriptor
+/// timeout 300000ms mirrors the Go 5-minute ctx (L26).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QF1 unmet).
+/// Case cli/bundled-cli checks: argv-unicode, argv-inspect,
+/// argv-separator, argv-eval, argv-preload, argv-empty, argv-bom,
+/// argv-spaces, argv-exit, argv-stderr-empty, hostile-bun-options,
+/// broken-pipe-exit, broken-pipe-identity, cross-file-output,
+/// forward-initializer, build-schema, build-kind, build-id-length,
+/// build-entry, bad-entry-message, current-preserved,
+/// static-mismatch-diagnosed, bounds-category, bounds-no-leak,
+/// startup-verify, startup-init, domain-identity, domain-secret-absent,
+/// usage-count, usage-exit, usage-needle.
+/// Facet map (cli_test.go legs): argv-unicode pins he-double-acute-llo
+/// space emoji newline (L78 first value, Go "h\u00e9llo \U0001F600\n":
+/// stdout echoes it byte-exact per L79-81); argv-inspect pins
+/// "--inspect" after "--" forwarded literally (L78-81, not a flag);
+/// argv-separator pins "--" forwarded as data (L78-81);
+/// argv-eval pins "-e" forwarded as data (L78-81); argv-preload pins
+/// "--preload=/missing.ts" forwarded literally (L78-81); argv-empty
+/// pins "" with empty stdout equal to the empty argv (L78-81);
+/// argv-bom pins U+FEFF + "BOM" (L78 Go "\ufeffBOM"; Can has no \u
+/// escape so the pin embeds a verbatim U+FEFF); argv-spaces pins
+/// "space argument" verbatim (L78-81); argv-exit pins exit 0 for all
+/// eight argv runs (L79-80); argv-stderr-empty pins empty stderr for
+/// all eight argv runs (L79-80); hostile-bun-options pins the exact
+/// hostile entry "BUN_OPTIONS=--preload=/missing/injected.ts" (L63)
+/// which the staged CLI ignores (argv loop green despite it; the
+/// broken-pipe leg instead uses a bare PATH+HOME env at L93);
+/// broken-pipe-exit pins exit 1 with the reader closed pre-start
+/// (L86-100); broken-pipe-identity pins the catalogue mapping
+/// "identity":"can.error.v2:can.std.io@1::write_failed" (L100);
+/// cross-file-output pins "multi-file!" (L105-106: decorate appends
+/// the forwarded suffix); forward-initializer pins the verbatim line
+/// "str suffix = later" (L103: suffix resolves the later-declared
+/// "!" binding); build-schema pins schemaVersion 1 (L120);
+/// build-kind pins kind "can.build" (L120); build-id-length pins a
+/// 64-char buildID (L120); build-entry pins entry "entry.ts" (L120);
+/// bad-entry-message pins the "entry must" needle (L129: int args
+/// rejects the str[] argv entry); current-preserved pins current.json
+/// byte-identical after the static failure (L132-135); the static
+/// mismatch leg (L137-140: args[0] replaced by true) pins exit 1
+/// with empty stdout and non-empty stderr but no substring, so
+/// static-mismatch-diagnosed is a bool pin; bounds-category pins
+/// "category":"bounds" (L143: run with no argv faults echo args[0]);
+/// bounds-no-leak pins that the diagnostic discloses neither the
+/// root path nor "stack" (L146-148); startup-verify pins "build
+/// verification failed" (L153: int startup = 1 / 0 at L151);
+/// startup-init pins "initialization failed" (L153);
+/// domain-identity pins
+/// "identity":"can.error.v2:can.project.root/app::failed" (L159;
+/// registry actives app::failed at L156); domain-secret-absent pins
+/// "must-not-disclose" absent from the diagnostic (L159);
+/// usage-count pins the three malformed shapes (L162: ["build"],
+/// ["run", root, "--inspect"], ["build", root, "extra"]); usage-exit
+/// pins exit 2 (L163-164); usage-needle pins "usage:" (L164).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str argv_unicode
+    str argv_inspect
+    str argv_separator
+    str argv_eval
+    str argv_preload
+    str argv_empty
+    str argv_bom
+    str argv_spaces
+    int argv_exit
+    bool argv_stderr_empty
+    str hostile_bun_options
+    int broken_pipe_exit
+    str broken_pipe_identity
+    str cross_file_output
+    str forward_initializer
+    int build_schema
+    str build_kind
+    int build_id_length
+    str build_entry
+    str bad_entry_message
+    bool current_preserved
+    bool static_mismatch_diagnosed
+    str bounds_category
+    bool bounds_no_leak
+    str startup_verify
+    str startup_init
+    str domain_identity
+    bool domain_secret_absent
+    int usage_count
+    int usage_exit
+    str usage_needle
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("cli/bundled-cli", "default", "", "offline"), "argv-unicode" => ok "case cli/bundled-cli variant default root argv-unicode run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("cli/bundled-cli", "default", "", "offline"), "argv-stderr-empty" => ok evidence("argv-stderr-empty", "true", "true", true, "case cli/bundled-cli variant default root argv-stderr-empty run offline")
+        different: false, true, context("cli/bundled-cli", "default", "", "offline"), "argv-stderr-empty" => failed{"argv-stderr-empty"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("cli/bundled-cli", "default", "", "offline"), "argv-exit" => ok evidence("argv-exit", "0", "0", true, "case cli/bundled-cli variant default root argv-exit run offline")
+        different: 1, 0, context("cli/bundled-cli", "default", "", "offline"), "argv-exit" => failed{"argv-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "--inspect", "--inspect", context("cli/bundled-cli", "default", "", "offline"), "argv-inspect" => ok evidence("argv-inspect", "--inspect", "--inspect", true, "case cli/bundled-cli variant default root argv-inspect run offline")
+        different: "--inspect=true", "--inspect", context("cli/bundled-cli", "default", "", "offline"), "argv-inspect" => failed{"argv-inspect"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_argv_unicode_drift: "seed-argv-unicode-drift" => ok observation("héllo 😀", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_argv_inspect_drift: "seed-argv-inspect-drift" => ok observation("héllo 😀\n", "--inspect=true", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_argv_separator_drift: "seed-argv-separator-drift" => ok observation("héllo 😀\n", "--inspect", "---", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_argv_eval_drift: "seed-argv-eval-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-E", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_argv_preload_drift: "seed-argv-preload-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/other.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_argv_empty_drift: "seed-argv-empty-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "x", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_argv_bom_drift: "seed-argv-bom-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_argv_spaces_drift: "seed-argv-spaces-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space  argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_argv_exit_drift: "seed-argv-exit-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 1, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_argv_stderr_empty_drift: "seed-argv-stderr-empty-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, false, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_hostile_bun_options_drift: "seed-hostile-bun-options-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/other.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_broken_pipe_exit_drift: "seed-broken-pipe-exit-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 0, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_broken_pipe_identity_drift: "seed-broken-pipe-identity-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::read_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_cross_file_output_drift: "seed-cross-file-output-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_forward_initializer_drift: "seed-forward-initializer-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = \"!\"", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_build_schema_drift: "seed-build-schema-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 2, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_build_kind_drift: "seed-build-kind-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build.report", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_build_id_length_drift: "seed-build-id-length-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 63, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_build_entry_drift: "seed-build-entry-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "main.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_bad_entry_message_drift: "seed-bad-entry-message-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry should", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_current_preserved_drift: "seed-current-preserved-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", false, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_static_mismatch_diagnosed_drift: "seed-static-mismatch-diagnosed-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, false, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_bounds_category_drift: "seed-bounds-category-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"type\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_bounds_no_leak_drift: "seed-bounds-no-leak-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", false, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_startup_verify_drift: "seed-startup-verify-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification passed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_startup_init_drift: "seed-startup-init-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization ok", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        seed_domain_identity_drift: "seed-domain-identity-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::denied\"", true, 3, 2, "usage:")
+        seed_domain_secret_absent_drift: "seed-domain-secret-absent-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", false, 3, 2, "usage:")
+        seed_usage_count_drift: "seed-usage-count-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 2, 2, "usage:")
+        seed_usage_exit_drift: "seed-usage-exit-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 1, "usage:")
+        seed_usage_needle_drift: "seed-usage-needle-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "Usage:")
+    match variant_id
+        "seed-argv-unicode-drift" => ok observation("héllo 😀", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-argv-inspect-drift" => ok observation("héllo 😀\n", "--inspect=true", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-argv-separator-drift" => ok observation("héllo 😀\n", "--inspect", "---", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-argv-eval-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-E", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-argv-preload-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/other.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-argv-empty-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "x", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-argv-bom-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-argv-spaces-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space  argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-argv-exit-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 1, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-argv-stderr-empty-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, false, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-hostile-bun-options-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/other.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-broken-pipe-exit-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 0, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-broken-pipe-identity-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::read_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-cross-file-output-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-forward-initializer-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = \"!\"", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-build-schema-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 2, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-build-kind-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build.report", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-build-id-length-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 63, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-build-entry-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "main.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-bad-entry-message-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry should", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-current-preserved-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", false, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-static-mismatch-diagnosed-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, false, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-bounds-category-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"type\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-bounds-no-leak-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", false, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-startup-verify-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification passed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-startup-init-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization ok", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+        "seed-domain-identity-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::denied\"", true, 3, 2, "usage:")
+        "seed-domain-secret-absent-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", false, 3, 2, "usage:")
+        "seed-usage-count-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 2, 2, "usage:")
+        "seed-usage-exit-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 1, "usage:")
+        "seed-usage-needle-drift" => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "Usage:")
+        _ => ok observation("héllo 😀\n", "--inspect", "--", "-e", "--preload=/missing.ts", "", "﻿BOM", "space argument", 0, true, "BUN_OPTIONS=--preload=/missing/injected.ts", 1, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", "multi-file!", "str suffix = later", 1, "can.build", 64, "entry.ts", "entry must", true, true, "\"category\":\"bounds\"", true, "build verification failed", "initialization failed", "\"identity\":\"can.error.v2:can.project.root/app::failed\"", true, 3, 2, "usage:")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m09_008: "m09-008" => ok [check("argv-unicode", "unicode/newline argv echoes byte-exact"), check("argv-inspect", "--inspect after -- forwards literally"), check("argv-separator", "-- forwards literally as data"), check("argv-eval", "-e forwards literally as data"), check("argv-preload", "preload-like argv forwards literally"), check("argv-empty", "empty argv echoes as empty stdout"), check("argv-bom", "BOM-prefixed argv echoes byte-exact"), check("argv-spaces", "spaced argv echoes verbatim"), check("argv-exit", "all eight argv runs exit 0"), check("argv-stderr-empty", "all eight argv runs keep stderr empty"), check("hostile-bun-options", "staged CLI ignores the hostile BUN_OPTIONS preload"), check("broken-pipe-exit", "closed stdout pipe exits 1"), check("broken-pipe-identity", "closed stdout pipe maps to io::write_failed"), check("cross-file-output", "cross-module decorate run prints multi-file!"), check("forward-initializer", "forward initializer resolves the later binding"), check("build-schema", "build report schemaVersion is 1"), check("build-kind", "build report kind is can.build"), check("build-id-length", "build report buildID is 64 chars"), check("build-entry", "build report entry is entry.ts"), check("bad-entry-message", "bad entry diagnostic says entry must"), check("current-preserved", "static failure preserves current.json bytes"), check("static-mismatch-diagnosed", "static mismatch exits 1 with a diagnostic"), check("bounds-category", "empty-argv run reports bounds category"), check("bounds-no-leak", "bounds diagnostic leaks no root or stack"), check("startup-verify", "initializer failure reports verification failure"), check("startup-init", "initializer failure reports initialization failure"), check("domain-identity", "domain failure reports the app::failed identity"), check("domain-secret-absent", "domain diagnostic redacts the secret payload"), check("usage-count", "three malformed shapes pinned"), check("usage-exit", "malformed invocations exit 2"), check("usage-needle", "malformed invocations print usage:")]
+        other: "nope" => ok []
+    match scope is "m09-008"
+        false => ok []
+        true => ok [check("argv-unicode", "unicode/newline argv echoes byte-exact"), check("argv-inspect", "--inspect after -- forwards literally"), check("argv-separator", "-- forwards literally as data"), check("argv-eval", "-e forwards literally as data"), check("argv-preload", "preload-like argv forwards literally"), check("argv-empty", "empty argv echoes as empty stdout"), check("argv-bom", "BOM-prefixed argv echoes byte-exact"), check("argv-spaces", "spaced argv echoes verbatim"), check("argv-exit", "all eight argv runs exit 0"), check("argv-stderr-empty", "all eight argv runs keep stderr empty"), check("hostile-bun-options", "staged CLI ignores the hostile BUN_OPTIONS preload"), check("broken-pipe-exit", "closed stdout pipe exits 1"), check("broken-pipe-identity", "closed stdout pipe maps to io::write_failed"), check("cross-file-output", "cross-module decorate run prints multi-file!"), check("forward-initializer", "forward initializer resolves the later binding"), check("build-schema", "build report schemaVersion is 1"), check("build-kind", "build report kind is can.build"), check("build-id-length", "build report buildID is 64 chars"), check("build-entry", "build report entry is entry.ts"), check("bad-entry-message", "bad entry diagnostic says entry must"), check("current-preserved", "static failure preserves current.json bytes"), check("static-mismatch-diagnosed", "static mismatch exits 1 with a diagnostic"), check("bounds-category", "empty-argv run reports bounds category"), check("bounds-no-leak", "bounds diagnostic leaks no root or stack"), check("startup-verify", "initializer failure reports verification failure"), check("startup-init", "initializer failure reports initialization failure"), check("domain-identity", "domain failure reports the app::failed identity"), check("domain-secret-absent", "domain diagnostic redacts the secret payload"), check("usage-count", "three malformed shapes pinned"), check("usage-exit", "malformed invocations exit 2"), check("usage-needle", "malformed invocations print usage:")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "cli/bundled-cli" => ok [expected_check("argv-unicode", "héllo 😀\n"), expected_check("argv-inspect", "--inspect"), expected_check("argv-separator", "--"), expected_check("argv-eval", "-e"), expected_check("argv-preload", "--preload=/missing.ts"), expected_check("argv-empty", ""), expected_check("argv-bom", "﻿BOM"), expected_check("argv-spaces", "space argument"), expected_check("argv-exit", "0"), expected_check("argv-stderr-empty", "true"), expected_check("hostile-bun-options", "BUN_OPTIONS=--preload=/missing/injected.ts"), expected_check("broken-pipe-exit", "1"), expected_check("broken-pipe-identity", "\"identity\":\"can.error.v2:can.std.io@1::write_failed\""), expected_check("cross-file-output", "multi-file!"), expected_check("forward-initializer", "str suffix = later"), expected_check("build-schema", "1"), expected_check("build-kind", "can.build"), expected_check("build-id-length", "64"), expected_check("build-entry", "entry.ts"), expected_check("bad-entry-message", "entry must"), expected_check("current-preserved", "true"), expected_check("static-mismatch-diagnosed", "true"), expected_check("bounds-category", "\"category\":\"bounds\""), expected_check("bounds-no-leak", "true"), expected_check("startup-verify", "build verification failed"), expected_check("startup-init", "initialization failed"), expected_check("domain-identity", "\"identity\":\"can.error.v2:can.project.root/app::failed\""), expected_check("domain-secret-absent", "true"), expected_check("usage-count", "3"), expected_check("usage-exit", "2"), expected_check("usage-needle", "usage:")]
+        unknown: "nope" => ok []
+    match case is "cli/bundled-cli"
+        false => ok []
+        true => ok [expected_check("argv-unicode", "héllo 😀\n"), expected_check("argv-inspect", "--inspect"), expected_check("argv-separator", "--"), expected_check("argv-eval", "-e"), expected_check("argv-preload", "--preload=/missing.ts"), expected_check("argv-empty", ""), expected_check("argv-bom", "﻿BOM"), expected_check("argv-spaces", "space argument"), expected_check("argv-exit", "0"), expected_check("argv-stderr-empty", "true"), expected_check("hostile-bun-options", "BUN_OPTIONS=--preload=/missing/injected.ts"), expected_check("broken-pipe-exit", "1"), expected_check("broken-pipe-identity", "\"identity\":\"can.error.v2:can.std.io@1::write_failed\""), expected_check("cross-file-output", "multi-file!"), expected_check("forward-initializer", "str suffix = later"), expected_check("build-schema", "1"), expected_check("build-kind", "can.build"), expected_check("build-id-length", "64"), expected_check("build-entry", "entry.ts"), expected_check("bad-entry-message", "entry must"), expected_check("current-preserved", "true"), expected_check("static-mismatch-diagnosed", "true"), expected_check("bounds-category", "\"category\":\"bounds\""), expected_check("bounds-no-leak", "true"), expected_check("startup-verify", "build verification failed"), expected_check("startup-init", "initialization failed"), expected_check("domain-identity", "\"identity\":\"can.error.v2:can.project.root/app::failed\""), expected_check("domain-secret-absent", "true"), expected_check("usage-count", "3"), expected_check("usage-exit", "2"), expected_check("usage-needle", "usage:")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("cli/bundled-cli", "default", "", "offline") => ok
+        seed_argv_unicode_drift: context("cli/bundled-cli", "seed-argv-unicode-drift", "", "offline") => failed{"argv-unicode"}
+        seed_argv_inspect_drift: context("cli/bundled-cli", "seed-argv-inspect-drift", "", "offline") => failed{"argv-inspect"}
+        seed_argv_separator_drift: context("cli/bundled-cli", "seed-argv-separator-drift", "", "offline") => failed{"argv-separator"}
+        seed_argv_eval_drift: context("cli/bundled-cli", "seed-argv-eval-drift", "", "offline") => failed{"argv-eval"}
+        seed_argv_preload_drift: context("cli/bundled-cli", "seed-argv-preload-drift", "", "offline") => failed{"argv-preload"}
+        seed_argv_empty_drift: context("cli/bundled-cli", "seed-argv-empty-drift", "", "offline") => failed{"argv-empty"}
+        seed_argv_bom_drift: context("cli/bundled-cli", "seed-argv-bom-drift", "", "offline") => failed{"argv-bom"}
+        seed_argv_spaces_drift: context("cli/bundled-cli", "seed-argv-spaces-drift", "", "offline") => failed{"argv-spaces"}
+        seed_argv_exit_drift: context("cli/bundled-cli", "seed-argv-exit-drift", "", "offline") => failed{"argv-exit"}
+        seed_argv_stderr_empty_drift: context("cli/bundled-cli", "seed-argv-stderr-empty-drift", "", "offline") => failed{"argv-stderr-empty"}
+        seed_hostile_bun_options_drift: context("cli/bundled-cli", "seed-hostile-bun-options-drift", "", "offline") => failed{"hostile-bun-options"}
+        seed_broken_pipe_exit_drift: context("cli/bundled-cli", "seed-broken-pipe-exit-drift", "", "offline") => failed{"broken-pipe-exit"}
+        seed_broken_pipe_identity_drift: context("cli/bundled-cli", "seed-broken-pipe-identity-drift", "", "offline") => failed{"broken-pipe-identity"}
+        seed_cross_file_output_drift: context("cli/bundled-cli", "seed-cross-file-output-drift", "", "offline") => failed{"cross-file-output"}
+        seed_forward_initializer_drift: context("cli/bundled-cli", "seed-forward-initializer-drift", "", "offline") => failed{"forward-initializer"}
+        seed_build_schema_drift: context("cli/bundled-cli", "seed-build-schema-drift", "", "offline") => failed{"build-schema"}
+        seed_build_kind_drift: context("cli/bundled-cli", "seed-build-kind-drift", "", "offline") => failed{"build-kind"}
+        seed_build_id_length_drift: context("cli/bundled-cli", "seed-build-id-length-drift", "", "offline") => failed{"build-id-length"}
+        seed_build_entry_drift: context("cli/bundled-cli", "seed-build-entry-drift", "", "offline") => failed{"build-entry"}
+        seed_bad_entry_message_drift: context("cli/bundled-cli", "seed-bad-entry-message-drift", "", "offline") => failed{"bad-entry-message"}
+        seed_current_preserved_drift: context("cli/bundled-cli", "seed-current-preserved-drift", "", "offline") => failed{"current-preserved"}
+        seed_static_mismatch_diagnosed_drift: context("cli/bundled-cli", "seed-static-mismatch-diagnosed-drift", "", "offline") => failed{"static-mismatch-diagnosed"}
+        seed_bounds_category_drift: context("cli/bundled-cli", "seed-bounds-category-drift", "", "offline") => failed{"bounds-category"}
+        seed_bounds_no_leak_drift: context("cli/bundled-cli", "seed-bounds-no-leak-drift", "", "offline") => failed{"bounds-no-leak"}
+        seed_startup_verify_drift: context("cli/bundled-cli", "seed-startup-verify-drift", "", "offline") => failed{"startup-verify"}
+        seed_startup_init_drift: context("cli/bundled-cli", "seed-startup-init-drift", "", "offline") => failed{"startup-init"}
+        seed_domain_identity_drift: context("cli/bundled-cli", "seed-domain-identity-drift", "", "offline") => failed{"domain-identity"}
+        seed_domain_secret_absent_drift: context("cli/bundled-cli", "seed-domain-secret-absent-drift", "", "offline") => failed{"domain-secret-absent"}
+        seed_usage_count_drift: context("cli/bundled-cli", "seed-usage-count-drift", "", "offline") => failed{"usage-count"}
+        seed_usage_exit_drift: context("cli/bundled-cli", "seed-usage-exit-drift", "", "offline") => failed{"usage-exit"}
+        seed_usage_needle_drift: context("cli/bundled-cli", "seed-usage-needle-drift", "", "offline") => failed{"usage-needle"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.argv_unicode, "héllo 😀\n", c, "argv-unicode")
+            failed
+            ok evidence argv_unicode_evidence => match call require_text(got.argv_inspect, "--inspect", c, "argv-inspect")
+                failed
+                ok evidence argv_inspect_evidence => match call require_text(got.argv_separator, "--", c, "argv-separator")
+                    failed
+                    ok evidence argv_separator_evidence => match call require_text(got.argv_eval, "-e", c, "argv-eval")
+                        failed
+                        ok evidence argv_eval_evidence => match call require_text(got.argv_preload, "--preload=/missing.ts", c, "argv-preload")
+                            failed
+                            ok evidence argv_preload_evidence => match call require_text(got.argv_empty, "", c, "argv-empty")
+                                failed
+                                ok evidence argv_empty_evidence => match call require_text(got.argv_bom, "﻿BOM", c, "argv-bom")
+                                    failed
+                                    ok evidence argv_bom_evidence => match call require_text(got.argv_spaces, "space argument", c, "argv-spaces")
+                                        failed
+                                        ok evidence argv_spaces_evidence => match call require_int(got.argv_exit, 0, c, "argv-exit")
+                                            failed
+                                            ok evidence argv_exit_evidence => match call require_bool(got.argv_stderr_empty, true, c, "argv-stderr-empty")
+                                                failed
+                                                ok evidence argv_stderr_evidence => match call require_text(got.hostile_bun_options, "BUN_OPTIONS=--preload=/missing/injected.ts", c, "hostile-bun-options")
+                                                    failed
+                                                    ok evidence hostile_evidence => match call require_int(got.broken_pipe_exit, 1, c, "broken-pipe-exit")
+                                                        failed
+                                                        ok evidence pipe_exit_evidence => match call require_text(got.broken_pipe_identity, "\"identity\":\"can.error.v2:can.std.io@1::write_failed\"", c, "broken-pipe-identity")
+                                                            failed
+                                                            ok evidence pipe_identity_evidence => match call require_text(got.cross_file_output, "multi-file!", c, "cross-file-output")
+                                                                failed
+                                                                ok evidence cross_evidence => match call require_text(got.forward_initializer, "str suffix = later", c, "forward-initializer")
+                                                                    failed
+                                                                    ok evidence forward_evidence => match call require_int(got.build_schema, 1, c, "build-schema")
+                                                                        failed
+                                                                        ok evidence schema_evidence => match call require_text(got.build_kind, "can.build", c, "build-kind")
+                                                                            failed
+                                                                            ok evidence kind_evidence => match call require_int(got.build_id_length, 64, c, "build-id-length")
+                                                                                failed
+                                                                                ok evidence idlen_evidence => match call require_text(got.build_entry, "entry.ts", c, "build-entry")
+                                                                                    failed
+                                                                                    ok evidence entry_evidence => match call require_text(got.bad_entry_message, "entry must", c, "bad-entry-message")
+                                                                                        failed
+                                                                                        ok evidence badentry_evidence => match call require_bool(got.current_preserved, true, c, "current-preserved")
+                                                                                            failed
+                                                                                            ok evidence current_evidence => match call require_bool(got.static_mismatch_diagnosed, true, c, "static-mismatch-diagnosed")
+                                                                                                failed
+                                                                                                ok evidence mismatch_evidence => match call require_text(got.bounds_category, "\"category\":\"bounds\"", c, "bounds-category")
+                                                                                                    failed
+                                                                                                    ok evidence bounds_evidence => match call require_bool(got.bounds_no_leak, true, c, "bounds-no-leak")
+                                                                                                        failed
+                                                                                                        ok evidence noleak_evidence => match call require_text(got.startup_verify, "build verification failed", c, "startup-verify")
+                                                                                                            failed
+                                                                                                            ok evidence verify_evidence => match call require_text(got.startup_init, "initialization failed", c, "startup-init")
+                                                                                                                failed
+                                                                                                                ok evidence init_evidence => match call require_text(got.domain_identity, "\"identity\":\"can.error.v2:can.project.root/app::failed\"", c, "domain-identity")
+                                                                                                                    failed
+                                                                                                                    ok evidence domain_evidence => match call require_bool(got.domain_secret_absent, true, c, "domain-secret-absent")
+                                                                                                                        failed
+                                                                                                                        ok evidence secret_evidence => match call require_int(got.usage_count, 3, c, "usage-count")
+                                                                                                                            failed
+                                                                                                                            ok evidence usage_count_evidence => match call require_int(got.usage_exit, 2, c, "usage-exit")
+                                                                                                                                failed
+                                                                                                                                ok evidence usage_exit_evidence => match call require_text(got.usage_needle, "usage:", c, "usage-needle")
+                                                                                                                                    failed
+                                                                                                                                    ok evidence needle_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m09_008: "m09-008" => ok test_case("cli/bundled-cli", ["cli", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("argv-unicode"), check_ref("argv-inspect"), check_ref("argv-separator"), check_ref("argv-eval"), check_ref("argv-preload"), check_ref("argv-empty"), check_ref("argv-bom"), check_ref("argv-spaces"), check_ref("argv-exit"), check_ref("argv-stderr-empty"), check_ref("hostile-bun-options"), check_ref("broken-pipe-exit"), check_ref("broken-pipe-identity"), check_ref("cross-file-output"), check_ref("forward-initializer"), check_ref("build-schema"), check_ref("build-kind"), check_ref("build-id-length"), check_ref("build-entry"), check_ref("bad-entry-message"), check_ref("current-preserved"), check_ref("static-mismatch-diagnosed"), check_ref("bounds-category"), check_ref("bounds-no-leak"), check_ref("startup-verify"), check_ref("startup-init"), check_ref("domain-identity"), check_ref("domain-secret-absent"), check_ref("usage-count"), check_ref("usage-exit"), check_ref("usage-needle")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m09-008"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("cli/bundled-cli", ["cli", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("argv-unicode"), check_ref("argv-inspect"), check_ref("argv-separator"), check_ref("argv-eval"), check_ref("argv-preload"), check_ref("argv-empty"), check_ref("argv-bom"), check_ref("argv-spaces"), check_ref("argv-exit"), check_ref("argv-stderr-empty"), check_ref("hostile-bun-options"), check_ref("broken-pipe-exit"), check_ref("broken-pipe-identity"), check_ref("cross-file-output"), check_ref("forward-initializer"), check_ref("build-schema"), check_ref("build-kind"), check_ref("build-id-length"), check_ref("build-entry"), check_ref("bad-entry-message"), check_ref("current-preserved"), check_ref("static-mismatch-diagnosed"), check_ref("bounds-category"), check_ref("bounds-no-leak"), check_ref("startup-verify"), check_ref("startup-init"), check_ref("domain-identity"), check_ref("domain-secret-absent"), check_ref("usage-count"), check_ref("usage-exit"), check_ref("usage-needle")], callable case_body)
