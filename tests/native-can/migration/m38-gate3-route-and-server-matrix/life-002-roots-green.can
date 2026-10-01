@@ -1,0 +1,294 @@
+package m38life002roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M38 LIFE-002 "route rebuild: served
+/// verdicts" green pact.
+/// Source: tests/integration/gate3_matrix_test.go
+/// symbol TestGate3RouteRebuildLive (L269-328):
+/// the served edit page follows its checked
+/// action URL, the stale route answers 404,
+/// and the rebuilt route answers 200 with a
+/// saved revision plus row proof.
+/// Disposition: migrate (this row owns the
+/// served-form facet as reviewable Can facts;
+/// the old Go check stays until the
+/// integrator retires it after every linked
+/// row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): facet two, namely
+/// that the served form follows the checked
+/// new URL while the old route refuses and
+/// the new route commits the wanted row (form
+/// path, checked post target, stale 404 leg,
+/// rebuilt 200 leg, saved body; row proof in
+/// the run-shape file).
+/// ADAPTATION (recorded, with source lines):
+/// path pins hold staged URL spellings
+/// (L303, L307, L319, L322); message pins
+/// hold refusal spellings (L305, L308, L320,
+/// L323); status pins hold ints from the
+/// guard legs (L304, L319, L322); the excerpt
+/// pin holds int (800) from L308.
+/// form-path pins
+/// /invoices/form?tenant_id=1&invoice_id=7
+/// (L303); checked-hx-post pins
+/// hx-post="/t/1/i/7" (L307); stale-post-path
+/// pins /tenants/1/invoices/7 (L319);
+/// rebuilt-post-path pins /t/1/i/7 (L322);
+/// saved-body pins saved revision 2 (L322);
+/// form-message pins edited form page (L305);
+/// hx-message pins the checked-post refusal
+/// (L308); stale-message pins stale route
+/// post (L320); rebuilt-message pins rebuilt
+/// route post (L323); session-value pins
+/// tok-alice (L303); form-status pins int
+/// (200) from L304; stale-status pins int
+/// (404) from L319; rebuilt-status pins int
+/// (200) from L322; page-excerpt pins int
+/// (800) from L308.
+/// Facet map (literal order): form-path,
+/// checked-hx-post, stale-post-path,
+/// rebuilt-post-path, saved-body,
+/// form-message, hx-message, stale-message,
+/// rebuilt-message, session-value,
+/// form-status, stale-status, rebuilt-status,
+/// page-excerpt.
+/// The rebuild-identity pins live in
+/// life-002-base-semantics.can; the run shape
+/// plus row verdicts live in
+/// life-002-run-shape.can.
+/// Variants: old/new route plus repeat build
+/// (the stale 404 leg and the rebuilt 200 leg
+/// on this page; default plus seeded drifts
+/// only).
+/// Environment: CAN_BUN_ARCHIVE plus staged
+/// bundled compiler/runtime, isolated homes,
+/// free loopback ports, disposable SQLite,
+/// managed server and fd-3 snapshot (row lists
+/// three gates; binds at QHTTP/QD1; no live
+/// run now).
+/// Logical gates BUILD/DIAG/DB/HTTP bind at
+/// P23/QHTTP/QD1; no live run now.
+/// Timeout 120000ms is the offline default
+/// bound (the Go ten-minute staged bound is
+/// pinned as timeout-minutes in the run-shape
+/// file; binds at P23 like the M35 no-run
+/// rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23/QHTTP/QD1
+/// accept gates unmet).
+/// Case life/route-rebuild-roots
+/// checks: form-path, checked-hx-post,
+/// stale-post-path, rebuilt-post-path,
+/// saved-body, form-message, hx-message,
+/// stale-message, rebuilt-message,
+/// session-value, form-status, stale-status,
+/// rebuilt-status, page-excerpt.
+/// Shared old files untouched; retirement is a
+/// later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str form_path
+    str checked_hx_post
+    str stale_post_path
+    str rebuilt_post_path
+    str saved_body
+    str form_message
+    str hx_message
+    str stale_message
+    str rebuilt_message
+    str session_value
+    int form_status
+    int stale_status
+    int rebuilt_status
+    int page_excerpt
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/route-rebuild-roots", "default", "", "offline"), "form-path" => ok "case life/route-rebuild-roots variant default root form-path run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/route-rebuild-roots", "default", "", "offline"), "form-path" => ok evidence("form-path", "true", "true", true, "case life/route-rebuild-roots variant default root form-path run offline")
+        different: false, true, context("life/route-rebuild-roots", "default", "", "offline"), "form-path" => failed{"form-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 200, 200, context("life/route-rebuild-roots", "default", "", "offline"), "form-status" => ok evidence("form-status", "200", "200", true, "case life/route-rebuild-roots variant default root form-status run offline")
+        different: 199, 200, context("life/route-rebuild-roots", "default", "", "offline"), "form-status" => failed{"form-status"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "/invoices/form?tenant_id=1&invoice_id=7", "/invoices/form?tenant_id=1&invoice_id=7", context("life/route-rebuild-roots", "default", "", "offline"), "form-path" => ok evidence("form-path", "/invoices/form?tenant_id=1&invoice_id=7", "/invoices/form?tenant_id=1&invoice_id=7", true, "case life/route-rebuild-roots variant default root form-path run offline")
+        different: "/invoices/form?tenant_id=1&invoice_id=7_2", "/invoices/form?tenant_id=1&invoice_id=7", context("life/route-rebuild-roots", "default", "", "offline"), "form-path" => failed{"form-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+        seed_form_path: "seed-form-path-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7_2", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+        seed_checked_hx_post: "seed-checked-hx-post-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"_2", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+        seed_stale_post_path: "seed-stale-post-path-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7_2", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+        seed_rebuilt_post_path: "seed-rebuilt-post-path-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7_2", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+        seed_saved_body: "seed-saved-body-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2_2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+        seed_form_message: "seed-form-message-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s_2", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+        seed_hx_message: "seed-hx-message-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s_2", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+        seed_stale_message: "seed-stale-message-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404_2", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+        seed_rebuilt_message: "seed-rebuilt-message-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved_2", "tok-alice", 200, 404, 200, 800)
+        seed_session_value: "seed-session-value-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice_2", 200, 404, 200, 800)
+        seed_form_status: "seed-form-status-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 199, 404, 200, 800)
+        seed_stale_status: "seed-stale-status-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 403, 200, 800)
+        seed_rebuilt_status: "seed-rebuilt-status-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 199, 800)
+        seed_page_excerpt: "seed-page-excerpt-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 799)
+    match variant_id
+        "seed-form-path-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7_2", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+        "seed-checked-hx-post-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"_2", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+        "seed-stale-post-path-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7_2", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+        "seed-rebuilt-post-path-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7_2", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+        "seed-saved-body-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2_2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+        "seed-form-message-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s_2", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+        "seed-hx-message-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s_2", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+        "seed-stale-message-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404_2", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+        "seed-rebuilt-message-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved_2", "tok-alice", 200, 404, 200, 800)
+        "seed-session-value-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice_2", 200, 404, 200, 800)
+        "seed-form-status-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 199, 404, 200, 800)
+        "seed-stale-status-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 403, 200, 800)
+        "seed-rebuilt-status-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 199, 800)
+        "seed-page-excerpt-drift" => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 799)
+        _ => ok observation("/invoices/form?tenant_id=1&invoice_id=7", "hx-post=\"/t/1/i/7\"", "/tenants/1/invoices/7", "/t/1/i/7", "saved revision 2", "edited form page: %d %s", "edited page lost its checked hx-post in %.800s", "stale route post: %d %s, want 404", "rebuilt route post: %d %s, want 200 saved", "tok-alice", 200, 404, 200, 800)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m38_life002: "m38-life002" => ok [check("form-path", "form path keeps its bytes"), check("checked-hx-post", "page keeps its checked post target"), check("stale-post-path", "stale post path keeps its bytes"), check("rebuilt-post-path", "rebuilt post path keeps its bytes"), check("saved-body", "saved body keeps its bytes"), check("form-message", "form refusal keeps its bytes"), check("hx-message", "checked post refusal keeps its bytes"), check("stale-message", "stale refusal keeps its bytes"), check("rebuilt-message", "rebuilt refusal keeps its bytes"), check("session-value", "session value keeps its bytes"), check("form-status", "served form wants 200"), check("stale-status", "stale post wants 404"), check("rebuilt-status", "rebuilt post wants 200"), check("page-excerpt", "page excerpt spans 800 runes")]
+        other: "nope" => ok []
+    match scope is "m38-life002"
+        false => ok []
+        true => ok [check("form-path", "form path keeps its bytes"), check("checked-hx-post", "page keeps its checked post target"), check("stale-post-path", "stale post path keeps its bytes"), check("rebuilt-post-path", "rebuilt post path keeps its bytes"), check("saved-body", "saved body keeps its bytes"), check("form-message", "form refusal keeps its bytes"), check("hx-message", "checked post refusal keeps its bytes"), check("stale-message", "stale refusal keeps its bytes"), check("rebuilt-message", "rebuilt refusal keeps its bytes"), check("session-value", "session value keeps its bytes"), check("form-status", "served form wants 200"), check("stale-status", "stale post wants 404"), check("rebuilt-status", "rebuilt post wants 200"), check("page-excerpt", "page excerpt spans 800 runes")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/route-rebuild-roots" => ok [expected_check("form-path", "/invoices/form?tenant_id=1&invoice_id=7"), expected_check("checked-hx-post", "hx-post=\"/t/1/i/7\""), expected_check("stale-post-path", "/tenants/1/invoices/7"), expected_check("rebuilt-post-path", "/t/1/i/7"), expected_check("saved-body", "saved revision 2"), expected_check("form-message", "edited form page: %d %s"), expected_check("hx-message", "edited page lost its checked hx-post in %.800s"), expected_check("stale-message", "stale route post: %d %s, want 404"), expected_check("rebuilt-message", "rebuilt route post: %d %s, want 200 saved"), expected_check("session-value", "tok-alice"), expected_check("form-status", "200"), expected_check("stale-status", "404"), expected_check("rebuilt-status", "200"), expected_check("page-excerpt", "800")]
+        unknown: "nope" => ok []
+    match case is "life/route-rebuild-roots"
+        false => ok []
+        true => ok [expected_check("form-path", "/invoices/form?tenant_id=1&invoice_id=7"), expected_check("checked-hx-post", "hx-post=\"/t/1/i/7\""), expected_check("stale-post-path", "/tenants/1/invoices/7"), expected_check("rebuilt-post-path", "/t/1/i/7"), expected_check("saved-body", "saved revision 2"), expected_check("form-message", "edited form page: %d %s"), expected_check("hx-message", "edited page lost its checked hx-post in %.800s"), expected_check("stale-message", "stale route post: %d %s, want 404"), expected_check("rebuilt-message", "rebuilt route post: %d %s, want 200 saved"), expected_check("session-value", "tok-alice"), expected_check("form-status", "200"), expected_check("stale-status", "404"), expected_check("rebuilt-status", "200"), expected_check("page-excerpt", "800")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/route-rebuild-roots", "default", "", "offline") => ok
+        seed_form_path: context("life/route-rebuild-roots", "seed-form-path-drift", "", "offline") => failed{"form-path"}
+        seed_checked_hx_post: context("life/route-rebuild-roots", "seed-checked-hx-post-drift", "", "offline") => failed{"checked-hx-post"}
+        seed_stale_post_path: context("life/route-rebuild-roots", "seed-stale-post-path-drift", "", "offline") => failed{"stale-post-path"}
+        seed_rebuilt_post_path: context("life/route-rebuild-roots", "seed-rebuilt-post-path-drift", "", "offline") => failed{"rebuilt-post-path"}
+        seed_saved_body: context("life/route-rebuild-roots", "seed-saved-body-drift", "", "offline") => failed{"saved-body"}
+        seed_form_message: context("life/route-rebuild-roots", "seed-form-message-drift", "", "offline") => failed{"form-message"}
+        seed_hx_message: context("life/route-rebuild-roots", "seed-hx-message-drift", "", "offline") => failed{"hx-message"}
+        seed_stale_message: context("life/route-rebuild-roots", "seed-stale-message-drift", "", "offline") => failed{"stale-message"}
+        seed_rebuilt_message: context("life/route-rebuild-roots", "seed-rebuilt-message-drift", "", "offline") => failed{"rebuilt-message"}
+        seed_session_value: context("life/route-rebuild-roots", "seed-session-value-drift", "", "offline") => failed{"session-value"}
+        seed_form_status: context("life/route-rebuild-roots", "seed-form-status-drift", "", "offline") => failed{"form-status"}
+        seed_stale_status: context("life/route-rebuild-roots", "seed-stale-status-drift", "", "offline") => failed{"stale-status"}
+        seed_rebuilt_status: context("life/route-rebuild-roots", "seed-rebuilt-status-drift", "", "offline") => failed{"rebuilt-status"}
+        seed_page_excerpt: context("life/route-rebuild-roots", "seed-page-excerpt-drift", "", "offline") => failed{"page-excerpt"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.form_path, "/invoices/form?tenant_id=1&invoice_id=7", c, "form-path")
+            failed
+            ok evidence form_path_evidence => match call require_text(got.checked_hx_post, "hx-post=\"/t/1/i/7\"", c, "checked-hx-post")
+                failed
+                ok evidence checked_hx_post_evidence => match call require_text(got.stale_post_path, "/tenants/1/invoices/7", c, "stale-post-path")
+                    failed
+                    ok evidence stale_post_path_evidence => match call require_text(got.rebuilt_post_path, "/t/1/i/7", c, "rebuilt-post-path")
+                        failed
+                        ok evidence rebuilt_post_path_evidence => match call require_text(got.saved_body, "saved revision 2", c, "saved-body")
+                            failed
+                            ok evidence saved_body_evidence => match call require_text(got.form_message, "edited form page: %d %s", c, "form-message")
+                                failed
+                                ok evidence form_message_evidence => match call require_text(got.hx_message, "edited page lost its checked hx-post in %.800s", c, "hx-message")
+                                    failed
+                                    ok evidence hx_message_evidence => match call require_text(got.stale_message, "stale route post: %d %s, want 404", c, "stale-message")
+                                        failed
+                                        ok evidence stale_message_evidence => match call require_text(got.rebuilt_message, "rebuilt route post: %d %s, want 200 saved", c, "rebuilt-message")
+                                            failed
+                                            ok evidence rebuilt_message_evidence => match call require_text(got.session_value, "tok-alice", c, "session-value")
+                                                failed
+                                                ok evidence session_value_evidence => match call require_int(got.form_status, 200, c, "form-status")
+                                                    failed
+                                                    ok evidence form_status_evidence => match call require_int(got.stale_status, 404, c, "stale-status")
+                                                        failed
+                                                        ok evidence stale_status_evidence => match call require_int(got.rebuilt_status, 200, c, "rebuilt-status")
+                                                            failed
+                                                            ok evidence rebuilt_status_evidence => match call require_int(got.page_excerpt, 800, c, "page-excerpt")
+                                                                failed
+                                                                ok evidence page_excerpt_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m38_life002: "m38-life002" => ok test_case("life/route-rebuild-roots", ["life", "m38"], [], 120000, [check_ref("form-path"), check_ref("checked-hx-post"), check_ref("stale-post-path"), check_ref("rebuilt-post-path"), check_ref("saved-body"), check_ref("form-message"), check_ref("hx-message"), check_ref("stale-message"), check_ref("rebuilt-message"), check_ref("session-value"), check_ref("form-status"), check_ref("stale-status"), check_ref("rebuilt-status"), check_ref("page-excerpt")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m38-life002"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/route-rebuild-roots", ["life", "m38"], [], 120000, [check_ref("form-path"), check_ref("checked-hx-post"), check_ref("stale-post-path"), check_ref("rebuilt-post-path"), check_ref("saved-body"), check_ref("form-message"), check_ref("hx-message"), check_ref("stale-message"), check_ref("rebuilt-message"), check_ref("session-value"), check_ref("form-status"), check_ref("stale-status"), check_ref("rebuilt-status"), check_ref("page-excerpt")], callable case_body)

@@ -1,0 +1,293 @@
+package m38life002base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M38 LIFE-002 "route rebuild: base
+/// semantics" green pact.
+/// Source: tests/integration/gate3_matrix_test.go
+/// symbol TestGate3RouteRebuildLive (L269-328):
+/// a shared-route edit plus its lock update
+/// rebuilds twice with one stable id, and the
+/// emitted bundle carries the new route.
+/// Disposition: migrate (this row owns the
+/// rebuild-identity facet as reviewable Can
+/// facts; the old Go check stays until the
+/// integrator retires it after every linked
+/// row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): facet one, namely
+/// that a relocked route change yields one
+/// stable rebuilt id plus an updated emitted
+/// route (rewrite operands, lock lineage,
+/// relock call, build pair, edited assert).
+/// ADAPTATION (recorded, with source lines):
+/// rewrite pins hold the two staged operand
+/// spellings (L283); emitted-route pins the
+/// bundle grep spelling (L293); count pins
+/// hold ints tallied from the rewrite guard
+/// (L85), the build pair (L288-289), the
+/// assert leg (L285) and the id log slice
+/// (L327).
+/// test-name pins TestGate3RouteRebuildLive
+/// (L269); rewrite-old pins the old staged
+/// operand (L283); rewrite-new pins the new
+/// staged operand (L283); emitted-route pins
+/// /t/:tenant_id/i/:invoice_id (L293);
+/// contract-file pins
+/// vendor/billing/src/invoice_contract/invoice_contract.can
+/// (L283); lock-lineage pins
+/// can.project.lineage/billing (L239);
+/// relock-call pins gate3WriteLock(t, root)
+/// (L284); build-call pins
+/// applicationBuild(t, ctx, bundle, home, root)
+/// (L288-289); drift-message pins edited
+/// rebuild drifted (L291); assert-message pins
+/// edited assert (L286); rewrite-site-count
+/// pins int (1) from L85; build-count pins int
+/// (2) from L288-289; assert-status pins int
+/// (0) from L285; build-id-prefix pins int
+/// (12) from L327.
+/// Facet map (literal order): test-name,
+/// rewrite-old, rewrite-new, emitted-route,
+/// contract-file, lock-lineage, relock-call,
+/// build-call, drift-message, assert-message,
+/// rewrite-site-count, build-count,
+/// assert-status, build-id-prefix.
+/// The served-page plus HTTP verdicts live in
+/// life-002-roots-green.can; the run shape
+/// plus row verdicts live in
+/// life-002-run-shape.can.
+/// Variants: old/new route plus repeat build
+/// (the stale 404 leg, the rebuilt 200 leg,
+/// and the twice-built stable id; default
+/// plus seeded drifts only).
+/// Environment: CAN_BUN_ARCHIVE plus staged
+/// bundled compiler/runtime, isolated homes,
+/// free loopback ports, disposable SQLite,
+/// managed server and fd-3 snapshot (row lists
+/// three gates; binds at QHTTP/QD1; no live
+/// run now).
+/// Logical gates BUILD/DIAG/DB/HTTP bind at
+/// P23/QHTTP/QD1; no live run now.
+/// Timeout 120000ms is the offline default
+/// bound (the Go ten-minute staged bound is
+/// pinned as timeout-minutes in the run-shape
+/// file; binds at P23 like the M35 no-run
+/// rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23/QHTTP/QD1
+/// accept gates unmet).
+/// Case life/route-rebuild-base
+/// checks: test-name, rewrite-old,
+/// rewrite-new, emitted-route, contract-file,
+/// lock-lineage, relock-call, build-call,
+/// drift-message, assert-message,
+/// rewrite-site-count, build-count,
+/// assert-status, build-id-prefix.
+/// Shared old files untouched; retirement is a
+/// later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str test_name
+    str rewrite_old
+    str rewrite_new
+    str emitted_route
+    str contract_file
+    str lock_lineage
+    str relock_call
+    str build_call
+    str drift_message
+    str assert_message
+    int rewrite_site_count
+    int build_count
+    int assert_status
+    int build_id_prefix
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/route-rebuild-base", "default", "", "offline"), "test-name" => ok "case life/route-rebuild-base variant default root test-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/route-rebuild-base", "default", "", "offline"), "test-name" => ok evidence("test-name", "true", "true", true, "case life/route-rebuild-base variant default root test-name run offline")
+        different: false, true, context("life/route-rebuild-base", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("life/route-rebuild-base", "default", "", "offline"), "rewrite-site-count" => ok evidence("rewrite-site-count", "1", "1", true, "case life/route-rebuild-base variant default root rewrite-site-count run offline")
+        different: 0, 1, context("life/route-rebuild-base", "default", "", "offline"), "rewrite-site-count" => failed{"rewrite-site-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "TestGate3RouteRebuildLive", "TestGate3RouteRebuildLive", context("life/route-rebuild-base", "default", "", "offline"), "test-name" => ok evidence("test-name", "TestGate3RouteRebuildLive", "TestGate3RouteRebuildLive", true, "case life/route-rebuild-base variant default root test-name run offline")
+        different: "TestGate3RouteRebuildLive_2", "TestGate3RouteRebuildLive", context("life/route-rebuild-base", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+        seed_test_name: "seed-test-name-drift" => ok observation("TestGate3RouteRebuildLive_2", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+        seed_rewrite_old: "seed-rewrite-old-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"_2", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+        seed_rewrite_new: "seed-rewrite-new-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"_2", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+        seed_emitted_route: "seed-emitted-route-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id_2", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+        seed_contract_file: "seed-contract-file-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can_2", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+        seed_lock_lineage: "seed-lock-lineage-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing_2", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+        seed_relock_call: "seed-relock-call-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)_2", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+        seed_build_call: "seed-build-call-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)_2", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+        seed_drift_message: "seed-drift-message-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s_2", "edited assert: %d %s %s", 1, 2, 0, 12)
+        seed_assert_message: "seed-assert-message-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s_2", 1, 2, 0, 12)
+        seed_rewrite_site_count: "seed-rewrite-site-count-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 0, 2, 0, 12)
+        seed_build_count: "seed-build-count-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 1, 0, 12)
+        seed_assert_status: "seed-assert-status-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, -1, 12)
+        seed_build_id_prefix: "seed-build-id-prefix-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 11)
+    match variant_id
+        "seed-test-name-drift" => ok observation("TestGate3RouteRebuildLive_2", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+        "seed-rewrite-old-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"_2", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+        "seed-rewrite-new-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"_2", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+        "seed-emitted-route-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id_2", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+        "seed-contract-file-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can_2", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+        "seed-lock-lineage-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing_2", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+        "seed-relock-call-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)_2", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+        "seed-build-call-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)_2", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+        "seed-drift-message-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s_2", "edited assert: %d %s %s", 1, 2, 0, 12)
+        "seed-assert-message-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s_2", 1, 2, 0, 12)
+        "seed-rewrite-site-count-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 0, 2, 0, 12)
+        "seed-build-count-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 1, 0, 12)
+        "seed-assert-status-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, -1, 12)
+        "seed-build-id-prefix-drift" => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 11)
+        _ => ok observation("TestGate3RouteRebuildLive", "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", "    post \"/t/:tenant_id/i/:invoice_id\"", "/t/:tenant_id/i/:invoice_id", "vendor/billing/src/invoice_contract/invoice_contract.can", "can.project.lineage/billing", "gate3WriteLock(t, root)", "applicationBuild(t, ctx, bundle, home, root)", "edited rebuild drifted: %s vs %s", "edited assert: %d %s %s", 1, 2, 0, 12)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m38_life002: "m38-life002" => ok [check("test-name", "test name keeps its bytes"), check("rewrite-old", "old rewrite operand keeps its bytes"), check("rewrite-new", "new rewrite operand keeps its bytes"), check("emitted-route", "emitted bundle keeps the new route"), check("contract-file", "staged contract path keeps its bytes"), check("lock-lineage", "lock lineage id keeps its bytes"), check("relock-call", "relock call keeps its spelling"), check("build-call", "build call keeps its spelling"), check("drift-message", "drift refusal keeps its bytes"), check("assert-message", "edited assert refusal keeps its bytes"), check("rewrite-site-count", "one rewrite site is wanted"), check("build-count", "two builds are wanted"), check("assert-status", "zero assert status is wanted"), check("build-id-prefix", "twelve id runes are logged")]
+        other: "nope" => ok []
+    match scope is "m38-life002"
+        false => ok []
+        true => ok [check("test-name", "test name keeps its bytes"), check("rewrite-old", "old rewrite operand keeps its bytes"), check("rewrite-new", "new rewrite operand keeps its bytes"), check("emitted-route", "emitted bundle keeps the new route"), check("contract-file", "staged contract path keeps its bytes"), check("lock-lineage", "lock lineage id keeps its bytes"), check("relock-call", "relock call keeps its spelling"), check("build-call", "build call keeps its spelling"), check("drift-message", "drift refusal keeps its bytes"), check("assert-message", "edited assert refusal keeps its bytes"), check("rewrite-site-count", "one rewrite site is wanted"), check("build-count", "two builds are wanted"), check("assert-status", "zero assert status is wanted"), check("build-id-prefix", "twelve id runes are logged")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/route-rebuild-base" => ok [expected_check("test-name", "TestGate3RouteRebuildLive"), expected_check("rewrite-old", "    post \"/tenants/:tenant_id/invoices/:invoice_id\""), expected_check("rewrite-new", "    post \"/t/:tenant_id/i/:invoice_id\""), expected_check("emitted-route", "/t/:tenant_id/i/:invoice_id"), expected_check("contract-file", "vendor/billing/src/invoice_contract/invoice_contract.can"), expected_check("lock-lineage", "can.project.lineage/billing"), expected_check("relock-call", "gate3WriteLock(t, root)"), expected_check("build-call", "applicationBuild(t, ctx, bundle, home, root)"), expected_check("drift-message", "edited rebuild drifted: %s vs %s"), expected_check("assert-message", "edited assert: %d %s %s"), expected_check("rewrite-site-count", "1"), expected_check("build-count", "2"), expected_check("assert-status", "0"), expected_check("build-id-prefix", "12")]
+        unknown: "nope" => ok []
+    match case is "life/route-rebuild-base"
+        false => ok []
+        true => ok [expected_check("test-name", "TestGate3RouteRebuildLive"), expected_check("rewrite-old", "    post \"/tenants/:tenant_id/invoices/:invoice_id\""), expected_check("rewrite-new", "    post \"/t/:tenant_id/i/:invoice_id\""), expected_check("emitted-route", "/t/:tenant_id/i/:invoice_id"), expected_check("contract-file", "vendor/billing/src/invoice_contract/invoice_contract.can"), expected_check("lock-lineage", "can.project.lineage/billing"), expected_check("relock-call", "gate3WriteLock(t, root)"), expected_check("build-call", "applicationBuild(t, ctx, bundle, home, root)"), expected_check("drift-message", "edited rebuild drifted: %s vs %s"), expected_check("assert-message", "edited assert: %d %s %s"), expected_check("rewrite-site-count", "1"), expected_check("build-count", "2"), expected_check("assert-status", "0"), expected_check("build-id-prefix", "12")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/route-rebuild-base", "default", "", "offline") => ok
+        seed_test_name: context("life/route-rebuild-base", "seed-test-name-drift", "", "offline") => failed{"test-name"}
+        seed_rewrite_old: context("life/route-rebuild-base", "seed-rewrite-old-drift", "", "offline") => failed{"rewrite-old"}
+        seed_rewrite_new: context("life/route-rebuild-base", "seed-rewrite-new-drift", "", "offline") => failed{"rewrite-new"}
+        seed_emitted_route: context("life/route-rebuild-base", "seed-emitted-route-drift", "", "offline") => failed{"emitted-route"}
+        seed_contract_file: context("life/route-rebuild-base", "seed-contract-file-drift", "", "offline") => failed{"contract-file"}
+        seed_lock_lineage: context("life/route-rebuild-base", "seed-lock-lineage-drift", "", "offline") => failed{"lock-lineage"}
+        seed_relock_call: context("life/route-rebuild-base", "seed-relock-call-drift", "", "offline") => failed{"relock-call"}
+        seed_build_call: context("life/route-rebuild-base", "seed-build-call-drift", "", "offline") => failed{"build-call"}
+        seed_drift_message: context("life/route-rebuild-base", "seed-drift-message-drift", "", "offline") => failed{"drift-message"}
+        seed_assert_message: context("life/route-rebuild-base", "seed-assert-message-drift", "", "offline") => failed{"assert-message"}
+        seed_rewrite_site_count: context("life/route-rebuild-base", "seed-rewrite-site-count-drift", "", "offline") => failed{"rewrite-site-count"}
+        seed_build_count: context("life/route-rebuild-base", "seed-build-count-drift", "", "offline") => failed{"build-count"}
+        seed_assert_status: context("life/route-rebuild-base", "seed-assert-status-drift", "", "offline") => failed{"assert-status"}
+        seed_build_id_prefix: context("life/route-rebuild-base", "seed-build-id-prefix-drift", "", "offline") => failed{"build-id-prefix"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.test_name, "TestGate3RouteRebuildLive", c, "test-name")
+            failed
+            ok evidence test_name_evidence => match call require_text(got.rewrite_old, "    post \"/tenants/:tenant_id/invoices/:invoice_id\"", c, "rewrite-old")
+                failed
+                ok evidence rewrite_old_evidence => match call require_text(got.rewrite_new, "    post \"/t/:tenant_id/i/:invoice_id\"", c, "rewrite-new")
+                    failed
+                    ok evidence rewrite_new_evidence => match call require_text(got.emitted_route, "/t/:tenant_id/i/:invoice_id", c, "emitted-route")
+                        failed
+                        ok evidence emitted_route_evidence => match call require_text(got.contract_file, "vendor/billing/src/invoice_contract/invoice_contract.can", c, "contract-file")
+                            failed
+                            ok evidence contract_file_evidence => match call require_text(got.lock_lineage, "can.project.lineage/billing", c, "lock-lineage")
+                                failed
+                                ok evidence lock_lineage_evidence => match call require_text(got.relock_call, "gate3WriteLock(t, root)", c, "relock-call")
+                                    failed
+                                    ok evidence relock_call_evidence => match call require_text(got.build_call, "applicationBuild(t, ctx, bundle, home, root)", c, "build-call")
+                                        failed
+                                        ok evidence build_call_evidence => match call require_text(got.drift_message, "edited rebuild drifted: %s vs %s", c, "drift-message")
+                                            failed
+                                            ok evidence drift_message_evidence => match call require_text(got.assert_message, "edited assert: %d %s %s", c, "assert-message")
+                                                failed
+                                                ok evidence assert_message_evidence => match call require_int(got.rewrite_site_count, 1, c, "rewrite-site-count")
+                                                    failed
+                                                    ok evidence rewrite_site_count_evidence => match call require_int(got.build_count, 2, c, "build-count")
+                                                        failed
+                                                        ok evidence build_count_evidence => match call require_int(got.assert_status, 0, c, "assert-status")
+                                                            failed
+                                                            ok evidence assert_status_evidence => match call require_int(got.build_id_prefix, 12, c, "build-id-prefix")
+                                                                failed
+                                                                ok evidence build_id_prefix_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m38_life002: "m38-life002" => ok test_case("life/route-rebuild-base", ["life", "m38"], [], 120000, [check_ref("test-name"), check_ref("rewrite-old"), check_ref("rewrite-new"), check_ref("emitted-route"), check_ref("contract-file"), check_ref("lock-lineage"), check_ref("relock-call"), check_ref("build-call"), check_ref("drift-message"), check_ref("assert-message"), check_ref("rewrite-site-count"), check_ref("build-count"), check_ref("assert-status"), check_ref("build-id-prefix")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m38-life002"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/route-rebuild-base", ["life", "m38"], [], 120000, [check_ref("test-name"), check_ref("rewrite-old"), check_ref("rewrite-new"), check_ref("emitted-route"), check_ref("contract-file"), check_ref("lock-lineage"), check_ref("relock-call"), check_ref("build-call"), check_ref("drift-message"), check_ref("assert-message"), check_ref("rewrite-site-count"), check_ref("build-count"), check_ref("assert-status"), check_ref("build-id-prefix")], callable case_body)
