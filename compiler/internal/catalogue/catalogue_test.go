@@ -12,7 +12,7 @@ import (
 func TestCompleteInventoryAndMirrors(t *testing.T) {
 	c := Builtin()
 	inv := c.Inventory()
-	if len(inv.Packages) != 38 || len(inv.Types) != 115 || len(inv.Errors) != 111 || len(inv.Operations) != 305 || len(inv.NativeDeclarations) != 10 {
+	if len(inv.Packages) != 39 || len(inv.Types) != 117 || len(inv.Errors) != 120 || len(inv.Operations) != 313 || len(inv.NativeDeclarations) != 10 {
 		t.Fatalf("inventory coverage changed: packages=%d types=%d errors=%d operations=%d modes=%d", len(inv.Packages), len(inv.Types), len(inv.Errors), len(inv.Operations), len(inv.NativeDeclarations))
 	}
 	if !reflect.DeepEqual(inv.StandardFailures, []string{"arithmetic", "bounds", "resource_state", "assertion", "native_exception", "cleanup"}) {
@@ -24,7 +24,7 @@ func TestCompleteInventoryAndMirrors(t *testing.T) {
 	if err := Generate("../../..", true); err != nil {
 		t.Fatal(err)
 	}
-	for _, p := range strings.Fields("action ai asset browser bytes checks cli clock codec collections crypto env files html htmx http image io json llm log number option path process random s3 sql stream text time url ws") {
+	for _, p := range strings.Fields("action ai asset browser bytes checks cli clock codec collections crypto env files html htmx http image io json llm log number option path process random s3 sql stream test text time url ws") {
 		if err := c.CheckProjectPackage(p); err == nil {
 			t.Errorf("allowed project catalogue owner %s", p)
 		}
@@ -286,12 +286,12 @@ func TestCallbackUnionRejectsConflictingKinds(t *testing.T) {
 }
 
 func TestTaskIDAdmitsProgramLanes(t *testing.T) {
-	for _, id := range []string{"I25", "LF01", "B1-13", "T22", "A05", "B01", "C03", "D01", "E01", "F01", "G01", "H14"} {
+	for _, id := range []string{"I25", "LF01", "B1-13", "T22", "A05", "B01", "C03", "D01", "E01", "F01", "G01", "H14", "NT-P28", "NT-K05", "NT-Z06"} {
 		if !taskID.MatchString(id) {
 			t.Errorf("taskID rejects admitted task %s", id)
 		}
 	}
-	for _, id := range []string{"", "A5", "a05", "A053", "I5", "UP11", "T2", "Z01", "A0B"} {
+	for _, id := range []string{"", "A5", "a05", "A053", "I5", "UP11", "T2", "Z01", "A0B", "P28", "NT-P2", "NT-p28", "NTP28", "NT-X28"} {
 		if taskID.MatchString(id) {
 			t.Errorf("taskID admits %q", id)
 		}

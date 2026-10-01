@@ -854,6 +854,18 @@
       "./budget.ts",
       "./numbers.ts",
       "./document.ts"
+    ],
+    "test-support/owner.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts"
+    ],
+    "test-support/transport.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../bytes.ts",
+      "../domain.ts",
+      "./owner.ts"
     ]
   }
 }

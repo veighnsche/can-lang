@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "bdc7874222d8eccc7dc651bc949d98871e9b4e87e313b44cf1ca0c51c2957659";
+export const catalogueSHA256 = "5fe532169d9319a382b98f98583e5cb84739662c0ebaf9ad2b24bbc47dfefd9d";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -164,6 +164,10 @@ export const catalogue = freeze({
     {
       "name": "action",
       "identity": "can.std.action@1"
+    },
+    {
+      "name": "test",
+      "identity": "can.std.test@1"
     }
   ],
   "prelude": [
@@ -2126,6 +2130,31 @@ export const catalogue = freeze({
       "leaves": [],
       "projections": [],
       "constructible": true
+    },
+    {
+      "name": "test::owner",
+      "identity": "can.std.test@1::owner",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "test::channel",
+      "identity": "can.std.test@1::channel",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [
+        {
+          "name": "kind",
+          "type": "str"
+        }
+      ],
+      "constructible": false
     }
   ],
   "errors": [
@@ -3402,6 +3431,105 @@ export const catalogue = freeze({
       "fields": [
         {
           "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::wrong_owner",
+      "identity": "can.std.test@1::wrong_owner",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "handle",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::stale_handle",
+      "identity": "can.std.test@1::stale_handle",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "handle",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::closed_handle",
+      "identity": "can.std.test@1::closed_handle",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "handle",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::transport_failure",
+      "identity": "can.std.test@1::transport_failure",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::channel_full",
+      "identity": "can.std.test@1::channel_full",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "handle",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::detached_transport",
+      "identity": "can.std.test@1::detached_transport",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "handle",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::channel_empty",
+      "identity": "can.std.test@1::channel_empty",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "handle",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::invalid_grant",
+      "identity": "can.std.test@1::invalid_grant",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::invalid_kind",
+      "identity": "can.std.test@1::invalid_kind",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "kind",
           "type": "str"
         }
       ]
@@ -14562,6 +14690,244 @@ export const catalogue = freeze({
         "A2",
         "A6"
       ]
+    },
+    {
+      "name": "test::grant_admit",
+      "identity": "can.std.test@1::grant_admit",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "grant",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "test::owner",
+      "callbacks": [],
+      "emits": [
+        "test::invalid_grant"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Map",
+          "domain.create"
+        ],
+        "adapter": "test owner adapter (runtime/test-support/owner.ts)",
+        "task": "NT-P28"
+      },
+      "assertion": "real",
+      "refs": [
+        "NT-P28"
+      ]
+    },
+    {
+      "name": "test::grant_release",
+      "identity": "can.std.test@1::grant_release",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "handle",
+          "type": "test::owner"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Map"
+        ],
+        "adapter": "test owner adapter (runtime/test-support/owner.ts)",
+        "task": "NT-P28"
+      },
+      "assertion": "real",
+      "refs": [
+        "NT-P28"
+      ]
+    },
+    {
+      "name": "test::channel_open",
+      "identity": "can.std.test@1::channel_open",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "handle",
+          "type": "test::owner"
+        },
+        {
+          "name": "kind",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "test::channel",
+      "callbacks": [],
+      "emits": [
+        "test::stale_handle",
+        "test::invalid_kind"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Map",
+          "domain.create"
+        ],
+        "adapter": "test transport adapter (runtime/test-support/transport.ts)",
+        "task": "NT-P28"
+      },
+      "assertion": "real",
+      "refs": [
+        "NT-P28"
+      ]
+    },
+    {
+      "name": "test::channel_send",
+      "identity": "can.std.test@1::channel_send",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "handle",
+          "type": "test::channel"
+        },
+        {
+          "name": "envelope",
+          "type": "codec::json_object"
+        }
+      ],
+      "staticInputs": [],
+      "result": "int",
+      "callbacks": [],
+      "emits": [
+        "test::stale_handle",
+        "test::closed_handle",
+        "test::channel_full",
+        "test::detached_transport",
+        "test::transport_failure"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Map",
+          "JSON.stringify",
+          "TextEncoder",
+          "domain.create"
+        ],
+        "adapter": "test transport adapter (runtime/test-support/transport.ts)",
+        "task": "NT-P28"
+      },
+      "assertion": "real",
+      "refs": [
+        "NT-P28"
+      ]
+    },
+    {
+      "name": "test::channel_recv",
+      "identity": "can.std.test@1::channel_recv",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "handle",
+          "type": "test::channel"
+        }
+      ],
+      "staticInputs": [],
+      "result": "codec::json_object",
+      "callbacks": [],
+      "emits": [
+        "test::stale_handle",
+        "test::closed_handle",
+        "test::detached_transport",
+        "test::channel_empty",
+        "test::transport_failure"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Map",
+          "TextDecoder",
+          "JSON.parse",
+          "domain.create"
+        ],
+        "adapter": "test transport adapter (runtime/test-support/transport.ts)",
+        "task": "NT-P28"
+      },
+      "assertion": "real",
+      "refs": [
+        "NT-P28"
+      ]
+    },
+    {
+      "name": "test::channel_close",
+      "identity": "can.std.test@1::channel_close",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "handle",
+          "type": "test::channel"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Map"
+        ],
+        "adapter": "test transport adapter (runtime/test-support/transport.ts)",
+        "task": "NT-P28"
+      },
+      "assertion": "real",
+      "refs": [
+        "NT-P28"
+      ]
+    },
+    {
+      "name": "test::channel_pending",
+      "identity": "can.std.test@1::channel_pending",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "handle",
+          "type": "test::channel"
+        }
+      ],
+      "staticInputs": [],
+      "result": "int",
+      "callbacks": [],
+      "emits": [
+        "test::stale_handle"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Map"
+        ],
+        "adapter": "test transport adapter (runtime/test-support/transport.ts)",
+        "task": "NT-P28"
+      },
+      "assertion": "real",
+      "refs": [
+        "NT-P28"
+      ]
     }
   ],
   "nativeDeclarations": [
@@ -17138,6 +17504,22 @@ export const catalogueTypeShapes = freeze([
     "leaves": []
   },
   {
+    "name": "test::owner",
+    "identity": "can.std.test@1::owner",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "test::channel",
+    "identity": "can.std.test@1::channel",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
     "name": "all_failed",
     "identity": "can.prelude@1::all_failed",
     "kind": "error",
@@ -19016,6 +19398,150 @@ export const catalogueTypeShapes = freeze([
     "fields": [
       {
         "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "test::wrong_owner",
+    "identity": "can.std.test@1::wrong_owner",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "handle",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "test::stale_handle",
+    "identity": "can.std.test@1::stale_handle",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "handle",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "test::closed_handle",
+    "identity": "can.std.test@1::closed_handle",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "handle",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "test::transport_failure",
+    "identity": "can.std.test@1::transport_failure",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "test::channel_full",
+    "identity": "can.std.test@1::channel_full",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "handle",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "test::detached_transport",
+    "identity": "can.std.test@1::detached_transport",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "handle",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "test::channel_empty",
+    "identity": "can.std.test@1::channel_empty",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "handle",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "test::invalid_grant",
+    "identity": "can.std.test@1::invalid_grant",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "test::invalid_kind",
+    "identity": "can.std.test@1::invalid_kind",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "kind",
         "type": {
           "name": "str",
           "arguments": null

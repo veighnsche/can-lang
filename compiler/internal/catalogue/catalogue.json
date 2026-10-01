@@ -154,6 +154,10 @@
     {
       "name": "action",
       "identity": "can.std.action@1"
+    },
+    {
+      "name": "test",
+      "identity": "can.std.test@1"
     }
   ],
   "prelude": [
@@ -2116,6 +2120,31 @@
       "leaves": [],
       "projections": [],
       "constructible": true
+    },
+    {
+      "name": "test::owner",
+      "identity": "can.std.test@1::owner",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "test::channel",
+      "identity": "can.std.test@1::channel",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [
+        {
+          "name": "kind",
+          "type": "str"
+        }
+      ],
+      "constructible": false
     }
   ],
   "errors": [
@@ -3392,6 +3421,105 @@
       "fields": [
         {
           "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::wrong_owner",
+      "identity": "can.std.test@1::wrong_owner",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "handle",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::stale_handle",
+      "identity": "can.std.test@1::stale_handle",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "handle",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::closed_handle",
+      "identity": "can.std.test@1::closed_handle",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "handle",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::transport_failure",
+      "identity": "can.std.test@1::transport_failure",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::channel_full",
+      "identity": "can.std.test@1::channel_full",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "handle",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::detached_transport",
+      "identity": "can.std.test@1::detached_transport",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "handle",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::channel_empty",
+      "identity": "can.std.test@1::channel_empty",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "handle",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::invalid_grant",
+      "identity": "can.std.test@1::invalid_grant",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "test::invalid_kind",
+      "identity": "can.std.test@1::invalid_kind",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "kind",
           "type": "str"
         }
       ]
@@ -14551,6 +14679,244 @@
       "refs": [
         "A2",
         "A6"
+      ]
+    },
+    {
+      "name": "test::grant_admit",
+      "identity": "can.std.test@1::grant_admit",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "grant",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "test::owner",
+      "callbacks": [],
+      "emits": [
+        "test::invalid_grant"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Map",
+          "domain.create"
+        ],
+        "adapter": "test owner adapter (runtime/test-support/owner.ts)",
+        "task": "NT-P28"
+      },
+      "assertion": "real",
+      "refs": [
+        "NT-P28"
+      ]
+    },
+    {
+      "name": "test::grant_release",
+      "identity": "can.std.test@1::grant_release",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "handle",
+          "type": "test::owner"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Map"
+        ],
+        "adapter": "test owner adapter (runtime/test-support/owner.ts)",
+        "task": "NT-P28"
+      },
+      "assertion": "real",
+      "refs": [
+        "NT-P28"
+      ]
+    },
+    {
+      "name": "test::channel_open",
+      "identity": "can.std.test@1::channel_open",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "handle",
+          "type": "test::owner"
+        },
+        {
+          "name": "kind",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "test::channel",
+      "callbacks": [],
+      "emits": [
+        "test::stale_handle",
+        "test::invalid_kind"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Map",
+          "domain.create"
+        ],
+        "adapter": "test transport adapter (runtime/test-support/transport.ts)",
+        "task": "NT-P28"
+      },
+      "assertion": "real",
+      "refs": [
+        "NT-P28"
+      ]
+    },
+    {
+      "name": "test::channel_send",
+      "identity": "can.std.test@1::channel_send",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "handle",
+          "type": "test::channel"
+        },
+        {
+          "name": "envelope",
+          "type": "codec::json_object"
+        }
+      ],
+      "staticInputs": [],
+      "result": "int",
+      "callbacks": [],
+      "emits": [
+        "test::stale_handle",
+        "test::closed_handle",
+        "test::channel_full",
+        "test::detached_transport",
+        "test::transport_failure"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Map",
+          "JSON.stringify",
+          "TextEncoder",
+          "domain.create"
+        ],
+        "adapter": "test transport adapter (runtime/test-support/transport.ts)",
+        "task": "NT-P28"
+      },
+      "assertion": "real",
+      "refs": [
+        "NT-P28"
+      ]
+    },
+    {
+      "name": "test::channel_recv",
+      "identity": "can.std.test@1::channel_recv",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "handle",
+          "type": "test::channel"
+        }
+      ],
+      "staticInputs": [],
+      "result": "codec::json_object",
+      "callbacks": [],
+      "emits": [
+        "test::stale_handle",
+        "test::closed_handle",
+        "test::detached_transport",
+        "test::channel_empty",
+        "test::transport_failure"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Map",
+          "TextDecoder",
+          "JSON.parse",
+          "domain.create"
+        ],
+        "adapter": "test transport adapter (runtime/test-support/transport.ts)",
+        "task": "NT-P28"
+      },
+      "assertion": "real",
+      "refs": [
+        "NT-P28"
+      ]
+    },
+    {
+      "name": "test::channel_close",
+      "identity": "can.std.test@1::channel_close",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "handle",
+          "type": "test::channel"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Map"
+        ],
+        "adapter": "test transport adapter (runtime/test-support/transport.ts)",
+        "task": "NT-P28"
+      },
+      "assertion": "real",
+      "refs": [
+        "NT-P28"
+      ]
+    },
+    {
+      "name": "test::channel_pending",
+      "identity": "can.std.test@1::channel_pending",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "handle",
+          "type": "test::channel"
+        }
+      ],
+      "staticInputs": [],
+      "result": "int",
+      "callbacks": [],
+      "emits": [
+        "test::stale_handle"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Map"
+        ],
+        "adapter": "test transport adapter (runtime/test-support/transport.ts)",
+        "task": "NT-P28"
+      },
+      "assertion": "real",
+      "refs": [
+        "NT-P28"
       ]
     }
   ],

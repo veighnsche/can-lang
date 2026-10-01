@@ -110,7 +110,16 @@
     "browser::stale_version",
     "browser::invalid_query",
     "action::invalid_path",
-    "image::invalid_image"
+    "image::invalid_image",
+    "test::wrong_owner",
+    "test::stale_handle",
+    "test::closed_handle",
+    "test::transport_failure",
+    "test::channel_full",
+    "test::detached_transport",
+    "test::channel_empty",
+    "test::invalid_grant",
+    "test::invalid_kind"
   ],
   "retired": []
 }

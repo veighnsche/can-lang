@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: bdc7874222d8eccc7dc651bc949d98871e9b4e87e313b44cf1ca0c51c2957659.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 5fe532169d9319a382b98f98583e5cb84739662c0ebaf9ad2b24bbc47dfefd9d.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -51,6 +51,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - ws → can.std.ws@1
 - markdown → can.std.markdown@1
 - action → can.std.action@1
+- test → can.std.test@1
 
 ## Types
 
@@ -171,6 +172,8 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | codec::json_array | record |  | codec::json_value[] values | true |
 | codec::json_object | record |  | codec::json_member[] members | true |
 | codec::json_member | record |  | str name, codec::json_value value | true |
+| test::owner | opaque |  |  | false |
+| test::channel | opaque |  | read-only: str kind | false |
 
 ## Domain errors
 
@@ -287,6 +290,15 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | browser::invalid_query | can.std.browser@1::invalid_query |  | str key, str reason |
 | action::invalid_path | can.std.action@1::invalid_path |  | str reason |
 | image::invalid_image | can.std.image@1::invalid_image |  | str reason |
+| test::wrong_owner | can.std.test@1::wrong_owner |  | str handle |
+| test::stale_handle | can.std.test@1::stale_handle |  | str handle |
+| test::closed_handle | can.std.test@1::closed_handle |  | str handle |
+| test::transport_failure | can.std.test@1::transport_failure |  | str reason |
+| test::channel_full | can.std.test@1::channel_full |  | str handle |
+| test::detached_transport | can.std.test@1::detached_transport |  | str handle |
+| test::channel_empty | can.std.test@1::channel_empty |  | str handle |
+| test::invalid_grant | can.std.test@1::invalid_grant |  | str reason |
+| test::invalid_kind | can.std.test@1::invalid_kind |  | str kind |
 
 ## Operations
 
@@ -604,6 +616,13 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | image::inspect | bytes::buffer bytes, int max_pixels → image::metadata | {image::invalid_image} |  | Bun.Image, Bun.Image.prototype.metadata | Sniff actual JPEG/PNG/WebP bytes and read dimensions using Bun metadata bounded by max_pixels; reject animated WebP (VP8X animation flag or ANIM/ANMF chunks), APNG (acTL), malformed and unsupported image data. | real | I13 / A2 |
 | codec::decode_json_value | bytes::buffer buffer → codec::json_value | {codec::invalid_data} |  | JSON.parse, JSON.rawJSON, JSON.stringify, TextEncoder, TextDecoder | Bounded immutable JSON values; integer-spelled tokens use exact ints, fraction/exponent tokens use finite floats; reject duplicate names, invalid scalar text and cycles. | real | I14 / A2,A6 |
 | codec::encode_json_value | codec::json_value value → bytes::buffer | {codec::invalid_data} |  | JSON.parse, JSON.rawJSON, JSON.stringify, TextEncoder, TextDecoder | Bounded immutable JSON values; integer-spelled tokens use exact ints, fraction/exponent tokens use finite floats; reject duplicate names, invalid scalar text and cycles. | real | I14 / A2,A6 |
+| test::grant_admit | str grant → test::owner | {test::invalid_grant} |  | Map, domain.create | test owner adapter (runtime/test-support/owner.ts) | real | NT-P28 / NT-P28 |
+| test::grant_release | test::owner handle → void | {} |  | Map | test owner adapter (runtime/test-support/owner.ts) | real | NT-P28 / NT-P28 |
+| test::channel_open | test::owner handle, str kind → test::channel | {test::stale_handle, test::invalid_kind} |  | Map, domain.create | test transport adapter (runtime/test-support/transport.ts) | real | NT-P28 / NT-P28 |
+| test::channel_send | test::channel handle, codec::json_object envelope → int | {test::stale_handle, test::closed_handle, test::channel_full, test::detached_transport, test::transport_failure} |  | Map, JSON.stringify, TextEncoder, domain.create | test transport adapter (runtime/test-support/transport.ts) | real | NT-P28 / NT-P28 |
+| test::channel_recv | test::channel handle → codec::json_object | {test::stale_handle, test::closed_handle, test::detached_transport, test::channel_empty, test::transport_failure} |  | Map, TextDecoder, JSON.parse, domain.create | test transport adapter (runtime/test-support/transport.ts) | real | NT-P28 / NT-P28 |
+| test::channel_close | test::channel handle → void | {} |  | Map | test transport adapter (runtime/test-support/transport.ts) | real | NT-P28 / NT-P28 |
+| test::channel_pending | test::channel handle → int | {test::stale_handle} |  | Map | test transport adapter (runtime/test-support/transport.ts) | real | NT-P28 / NT-P28 |
 
 ## Native declaration profiles
 
