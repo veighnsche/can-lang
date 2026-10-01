@@ -1,0 +1,232 @@
+package m35history129base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M35 HISTORY-129 "Changed identity: legs".
+/// Source: tests/conformance/native.test.ts
+/// symbol `refuse different ${key}`
+/// (L25-34): six legs, one per listed identity
+/// field, each pinning a key plus the shared
+/// title shape and the leg tally.
+/// Disposition: migrate (this row owns the
+/// refuse-different offline pact as reviewable Can
+/// facts; the old bun check stays until the
+/// integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the six L25-27 wrong
+/// keys in loop order, the leg tally, and the
+/// L29 title bytes.
+/// ADAPTATION (recorded, with source lines): key
+/// pins hold L25-27 member spellings in loop
+/// order; test-name holds L29 backtick bytes;
+/// counts pin ints tallied from the L25-27
+/// member list.
+/// variant-name pins name (L25);
+/// variant-version pins version (L25);
+/// variant-revision pins revision (L25);
+/// variant-sha256 pins sha256 (L25);
+/// variant-platform pins platform (L26);
+/// variant-architecture pins architecture (L27);
+/// variant-count pins int (6) from the L25-27
+/// list; test-name pins refuse different ${key}
+/// (L29).
+/// Facet map (legs in loop order): variant-name,
+/// variant-version, variant-revision,
+/// variant-sha256, variant-platform,
+/// variant-architecture, variant-count,
+/// test-name.
+/// Per-variant refusal heads live in
+/// history-129-roots-green.can; the run shape
+/// plus wrong values and guards live in
+/// history-129-run-shape.can.
+/// Variants: six listed (row lists six variants;
+/// each key above is one leg; default plus seeded
+/// drifts only).
+/// Environment: one gate (pinned Bun runtime/native
+/// host; parsed-history work only: no suite run, no
+/// global mutation; binds at QN1/QN2).
+/// Logical gates N1/N2/ENV/ARCHIVE bind at
+/// P23/QN1/QN2; no live run now.
+/// Timeout 120000ms is the offline default bound (no
+/// runner timeout in this row; binds at P23 like the
+/// M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23/QN1/QN2 accept
+/// gates unmet).
+/// Case history/changed-identity-base checks:
+/// variant-name, variant-version,
+/// variant-revision, variant-sha256,
+/// variant-platform, variant-architecture,
+/// variant-count, test-name.
+/// Shared old files unmoved; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str variant_name
+    str variant_version
+    str variant_revision
+    str variant_sha256
+    str variant_platform
+    str variant_architecture
+    int variant_count
+    str test_name
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/changed-identity-base", "default", "", "offline"), "variant-name" => ok "case history/changed-identity-base variant default root variant-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/changed-identity-base", "default", "", "offline"), "variant-name" => ok evidence("variant-name", "true", "true", true, "case history/changed-identity-base variant default root variant-name run offline")
+        different: false, true, context("history/changed-identity-base", "default", "", "offline"), "variant-name" => failed{"variant-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 6, 6, context("history/changed-identity-base", "default", "", "offline"), "variant-count" => ok evidence("variant-count", "6", "6", true, "case history/changed-identity-base variant default root variant-count run offline")
+        different: 5, 6, context("history/changed-identity-base", "default", "", "offline"), "variant-count" => failed{"variant-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "name", "name", context("history/changed-identity-base", "default", "", "offline"), "variant-name" => ok evidence("variant-name", "name", "name", true, "case history/changed-identity-base variant default root variant-name run offline")
+        different: "name_2", "name", context("history/changed-identity-base", "default", "", "offline"), "variant-name" => failed{"variant-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("name", "version", "revision", "sha256", "platform", "architecture", 6, "refuse different ${key}")
+        seed_variant_name: "seed-variant-name-drift" => ok observation("name_2", "version", "revision", "sha256", "platform", "architecture", 6, "refuse different ${key}")
+        seed_variant_version: "seed-variant-version-drift" => ok observation("name", "version_2", "revision", "sha256", "platform", "architecture", 6, "refuse different ${key}")
+        seed_variant_revision: "seed-variant-revision-drift" => ok observation("name", "version", "revision_2", "sha256", "platform", "architecture", 6, "refuse different ${key}")
+        seed_variant_sha256: "seed-variant-sha256-drift" => ok observation("name", "version", "revision", "sha256_2", "platform", "architecture", 6, "refuse different ${key}")
+        seed_variant_platform: "seed-variant-platform-drift" => ok observation("name", "version", "revision", "sha256", "platform_2", "architecture", 6, "refuse different ${key}")
+        seed_variant_architecture: "seed-variant-architecture-drift" => ok observation("name", "version", "revision", "sha256", "platform", "architecture_2", 6, "refuse different ${key}")
+        seed_variant_count: "seed-variant-count-drift" => ok observation("name", "version", "revision", "sha256", "platform", "architecture", 5, "refuse different ${key}")
+        seed_test_name: "seed-test-name-drift" => ok observation("name", "version", "revision", "sha256", "platform", "architecture", 6, "refuse different ${key}_2")
+    match variant_id
+        "seed-variant-name-drift" => ok observation("name_2", "version", "revision", "sha256", "platform", "architecture", 6, "refuse different ${key}")
+        "seed-variant-version-drift" => ok observation("name", "version_2", "revision", "sha256", "platform", "architecture", 6, "refuse different ${key}")
+        "seed-variant-revision-drift" => ok observation("name", "version", "revision_2", "sha256", "platform", "architecture", 6, "refuse different ${key}")
+        "seed-variant-sha256-drift" => ok observation("name", "version", "revision", "sha256_2", "platform", "architecture", 6, "refuse different ${key}")
+        "seed-variant-platform-drift" => ok observation("name", "version", "revision", "sha256", "platform_2", "architecture", 6, "refuse different ${key}")
+        "seed-variant-architecture-drift" => ok observation("name", "version", "revision", "sha256", "platform", "architecture_2", 6, "refuse different ${key}")
+        "seed-variant-count-drift" => ok observation("name", "version", "revision", "sha256", "platform", "architecture", 5, "refuse different ${key}")
+        "seed-test-name-drift" => ok observation("name", "version", "revision", "sha256", "platform", "architecture", 6, "refuse different ${key}_2")
+        _ => ok observation("name", "version", "revision", "sha256", "platform", "architecture", 6, "refuse different ${key}")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m35_h129: "m35-h129" => ok [check("variant-name", "name leg keeps its spelling"), check("variant-version", "version leg keeps its spelling"), check("variant-revision", "revision leg keeps its spelling"), check("variant-sha256", "sha256 leg keeps its spelling"), check("variant-platform", "platform leg keeps its spelling"), check("variant-architecture", "architecture leg keeps its spelling"), check("variant-count", "six legs exist"), check("test-name", "title keeps its bytes")]
+        other: "nope" => ok []
+    match scope is "m35-h129"
+        false => ok []
+        true => ok [check("variant-name", "name leg keeps its spelling"), check("variant-version", "version leg keeps its spelling"), check("variant-revision", "revision leg keeps its spelling"), check("variant-sha256", "sha256 leg keeps its spelling"), check("variant-platform", "platform leg keeps its spelling"), check("variant-architecture", "architecture leg keeps its spelling"), check("variant-count", "six legs exist"), check("test-name", "title keeps its bytes")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/changed-identity-base" => ok [expected_check("variant-name", "name"), expected_check("variant-version", "version"), expected_check("variant-revision", "revision"), expected_check("variant-sha256", "sha256"), expected_check("variant-platform", "platform"), expected_check("variant-architecture", "architecture"), expected_check("variant-count", "6"), expected_check("test-name", "refuse different ${key}")]
+        unknown: "nope" => ok []
+    match case is "history/changed-identity-base"
+        false => ok []
+        true => ok [expected_check("variant-name", "name"), expected_check("variant-version", "version"), expected_check("variant-revision", "revision"), expected_check("variant-sha256", "sha256"), expected_check("variant-platform", "platform"), expected_check("variant-architecture", "architecture"), expected_check("variant-count", "6"), expected_check("test-name", "refuse different ${key}")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/changed-identity-base", "default", "", "offline") => ok
+        seed_variant_name: context("history/changed-identity-base", "seed-variant-name-drift", "", "offline") => failed{"variant-name"}
+        seed_variant_version: context("history/changed-identity-base", "seed-variant-version-drift", "", "offline") => failed{"variant-version"}
+        seed_variant_revision: context("history/changed-identity-base", "seed-variant-revision-drift", "", "offline") => failed{"variant-revision"}
+        seed_variant_sha256: context("history/changed-identity-base", "seed-variant-sha256-drift", "", "offline") => failed{"variant-sha256"}
+        seed_variant_platform: context("history/changed-identity-base", "seed-variant-platform-drift", "", "offline") => failed{"variant-platform"}
+        seed_variant_architecture: context("history/changed-identity-base", "seed-variant-architecture-drift", "", "offline") => failed{"variant-architecture"}
+        seed_variant_count: context("history/changed-identity-base", "seed-variant-count-drift", "", "offline") => failed{"variant-count"}
+        seed_test_name: context("history/changed-identity-base", "seed-test-name-drift", "", "offline") => failed{"test-name"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.variant_name, "name", c, "variant-name")
+            failed
+            ok evidence variant_name_evidence => match call require_text(got.variant_version, "version", c, "variant-version")
+                failed
+                ok evidence variant_version_evidence => match call require_text(got.variant_revision, "revision", c, "variant-revision")
+                    failed
+                    ok evidence variant_revision_evidence => match call require_text(got.variant_sha256, "sha256", c, "variant-sha256")
+                        failed
+                        ok evidence variant_sha256_evidence => match call require_text(got.variant_platform, "platform", c, "variant-platform")
+                            failed
+                            ok evidence variant_platform_evidence => match call require_text(got.variant_architecture, "architecture", c, "variant-architecture")
+                                failed
+                                ok evidence variant_architecture_evidence => match call require_int(got.variant_count, 6, c, "variant-count")
+                                    failed
+                                    ok evidence variant_count_evidence => match call require_text(got.test_name, "refuse different ${key}", c, "test-name")
+                                        failed
+                                        ok evidence test_name_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m35_h129: "m35-h129" => ok test_case("history/changed-identity-base", ["history", "m35"], [], 120000, [check_ref("variant-name"), check_ref("variant-version"), check_ref("variant-revision"), check_ref("variant-sha256"), check_ref("variant-platform"), check_ref("variant-architecture"), check_ref("variant-count"), check_ref("test-name")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m35-h129"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/changed-identity-base", ["history", "m35"], [], 120000, [check_ref("variant-name"), check_ref("variant-version"), check_ref("variant-revision"), check_ref("variant-sha256"), check_ref("variant-platform"), check_ref("variant-architecture"), check_ref("variant-count"), check_ref("test-name")], callable case_body)

@@ -1,0 +1,327 @@
+package m35history129run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M35 HISTORY-129 "Changed identity: run shape".
+/// Source: tests/conformance/native.test.ts
+/// symbol `refuse different ${key}`
+/// (L25-34): wrong values plus guard roots plus
+/// loop and refusal call shape plus the two flags
+/// plus the three site tallies.
+/// Disposition: migrate (this row owns the
+/// refuse-different offline pact as reviewable Can
+/// facts; the old bun check stays until the
+/// integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the run shape: the
+/// sixteen value, guard, word, root and call
+/// pins, the two flags, and the three tallies.
+/// ADAPTATION (recorded, with source lines): value
+/// pins hold L25 quoted bytes; guard pins hold L26
+/// plus L27 member-path bytes; word pins hold
+/// quoted flip bytes; root pins hold loop idents;
+/// call pins hold call ident bytes; flags pin the
+/// L31 plus L32 bool words; counts pin ints
+/// tallied from the L25-34 span.
+/// wrong-name pins node (L25); wrong-version pins
+/// 0.0.0 (L25); wrong-revision pins wrong (L25);
+/// wrong-sha pins tampered (L25); platform-guard
+/// pins manifest.runtime.platform (L26); arch-guard
+/// pins manifest.runtime.architecture (L27);
+/// linux-word pins linux (L26); darwin-word pins
+/// darwin (L26); amd64-word pins amd64 (L27);
+/// arm64-word pins arm64 (L27); wrong-root pins
+/// wrongIdentity (L25 plus L28); entries-call pins
+/// entries (L28); qualify-call pins qualify (L30);
+/// passed-assert pins toBe (L31 plus L32);
+/// some-call pins some (L32); starts-with-call
+/// pins startsWith (L32); passed-flag pins bool
+/// (false) from L31; prefix-flag pins bool (true)
+/// from L32; assert-count pins int (2) from L31
+/// plus L32; wrong-literal-count pins int (4) from
+/// L25; ternary-count pins int (2) from L26 plus
+/// L27.
+/// Facet map (run in span order): wrong-name,
+/// wrong-version, wrong-revision, wrong-sha,
+/// platform-guard, arch-guard, linux-word,
+/// darwin-word, amd64-word, arm64-word,
+/// wrong-root, entries-call, qualify-call,
+/// passed-assert, some-call, starts-with-call,
+/// passed-flag, prefix-flag, assert-count,
+/// wrong-literal-count, ternary-count.
+/// The key legs live in
+/// history-129-base-semantics.can; the per-variant
+/// heads live in history-129-roots-green.can.
+/// Variants: six listed (row lists six variants;
+/// run shape is shared by all legs; default plus
+/// seeded drifts only).
+/// Environment: one gate (pinned Bun runtime/native
+/// host; parsed-history work only: no suite run, no
+/// global mutation; binds at QN1/QN2).
+/// Logical gates N1/N2/ENV/ARCHIVE bind at
+/// P23/QN1/QN2; no live run now.
+/// Timeout 120000ms is the offline default bound (no
+/// runner timeout in this row; binds at P23 like the
+/// M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23/QN1/QN2 accept
+/// gates unmet).
+/// Case history/changed-identity-run checks:
+/// wrong-name, wrong-version, wrong-revision,
+/// wrong-sha, platform-guard, arch-guard,
+/// linux-word, darwin-word, amd64-word,
+/// arm64-word, wrong-root, entries-call,
+/// qualify-call, passed-assert, some-call,
+/// starts-with-call, passed-flag, prefix-flag,
+/// assert-count, wrong-literal-count,
+/// ternary-count.
+/// Shared old files unmoved; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str wrong_name
+    str wrong_version
+    str wrong_revision
+    str wrong_sha
+    str platform_guard
+    str arch_guard
+    str linux_word
+    str darwin_word
+    str amd64_word
+    str arm64_word
+    str wrong_root
+    str entries_call
+    str qualify_call
+    str passed_assert
+    str some_call
+    str starts_with_call
+    bool passed_flag
+    bool prefix_flag
+    int assert_count
+    int wrong_literal_count
+    int ternary_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/changed-identity-run", "default", "", "offline"), "wrong-name" => ok "case history/changed-identity-run variant default root wrong-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/changed-identity-run", "default", "", "offline"), "passed-flag" => ok evidence("passed-flag", "true", "true", true, "case history/changed-identity-run variant default root passed-flag run offline")
+        different: false, true, context("history/changed-identity-run", "default", "", "offline"), "passed-flag" => failed{"passed-flag"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("history/changed-identity-run", "default", "", "offline"), "assert-count" => ok evidence("assert-count", "2", "2", true, "case history/changed-identity-run variant default root assert-count run offline")
+        different: 1, 2, context("history/changed-identity-run", "default", "", "offline"), "assert-count" => failed{"assert-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "node", "node", context("history/changed-identity-run", "default", "", "offline"), "wrong-name" => ok evidence("wrong-name", "node", "node", true, "case history/changed-identity-run variant default root wrong-name run offline")
+        different: "node_2", "node", context("history/changed-identity-run", "default", "", "offline"), "wrong-name" => failed{"wrong-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        seed_wrong_name: "seed-wrong-name-drift" => ok observation("node_2", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        seed_wrong_version: "seed-wrong-version-drift" => ok observation("node", "0.0.0_2", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        seed_wrong_revision: "seed-wrong-revision-drift" => ok observation("node", "0.0.0", "wrong_2", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        seed_wrong_sha: "seed-wrong-sha-drift" => ok observation("node", "0.0.0", "wrong", "tampered_2", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        seed_platform_guard: "seed-platform-guard-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform_2", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        seed_arch_guard: "seed-arch-guard-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture_2", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        seed_linux_word: "seed-linux-word-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux_2", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        seed_darwin_word: "seed-darwin-word-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin_2", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        seed_amd64_word: "seed-amd64-word-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64_2", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        seed_arm64_word: "seed-arm64-word-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64_2", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        seed_wrong_root: "seed-wrong-root-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity_2", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        seed_entries_call: "seed-entries-call-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries_2", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        seed_qualify_call: "seed-qualify-call-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify_2", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        seed_passed_assert: "seed-passed-assert-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe_2", "some", "startsWith", false, true, 2, 4, 2)
+        seed_some_call: "seed-some-call-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some_2", "startsWith", false, true, 2, 4, 2)
+        seed_starts_with_call: "seed-starts-with-call-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith_2", false, true, 2, 4, 2)
+        seed_passed_flag: "seed-passed-flag-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", true, true, 2, 4, 2)
+        seed_prefix_flag: "seed-prefix-flag-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, false, 2, 4, 2)
+        seed_assert_count: "seed-assert-count-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 1, 4, 2)
+        seed_wrong_literal_count: "seed-wrong-literal-count-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 3, 2)
+        seed_ternary_count: "seed-ternary-count-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 1)
+    match variant_id
+        "seed-wrong-name-drift" => ok observation("node_2", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        "seed-wrong-version-drift" => ok observation("node", "0.0.0_2", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        "seed-wrong-revision-drift" => ok observation("node", "0.0.0", "wrong_2", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        "seed-wrong-sha-drift" => ok observation("node", "0.0.0", "wrong", "tampered_2", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        "seed-platform-guard-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform_2", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        "seed-arch-guard-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture_2", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        "seed-linux-word-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux_2", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        "seed-darwin-word-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin_2", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        "seed-amd64-word-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64_2", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        "seed-arm64-word-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64_2", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        "seed-wrong-root-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity_2", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        "seed-entries-call-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries_2", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        "seed-qualify-call-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify_2", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+        "seed-passed-assert-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe_2", "some", "startsWith", false, true, 2, 4, 2)
+        "seed-some-call-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some_2", "startsWith", false, true, 2, 4, 2)
+        "seed-starts-with-call-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith_2", false, true, 2, 4, 2)
+        "seed-passed-flag-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", true, true, 2, 4, 2)
+        "seed-prefix-flag-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, false, 2, 4, 2)
+        "seed-assert-count-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 1, 4, 2)
+        "seed-wrong-literal-count-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 3, 2)
+        "seed-ternary-count-drift" => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 1)
+        _ => ok observation("node", "0.0.0", "wrong", "tampered", "manifest.runtime.platform", "manifest.runtime.architecture", "linux", "darwin", "amd64", "arm64", "wrongIdentity", "entries", "qualify", "toBe", "some", "startsWith", false, true, 2, 4, 2)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m35_h129: "m35-h129" => ok [check("wrong-name", "name drift keeps its value"), check("wrong-version", "version drift keeps its value"), check("wrong-revision", "revision drift keeps its value"), check("wrong-sha", "sha drift keeps its value"), check("platform-guard", "platform flip reads its guard"), check("arch-guard", "arch flip reads its guard"), check("linux-word", "linux flip keeps its bytes"), check("darwin-word", "darwin flip keeps its bytes"), check("amd64-word", "amd64 flip keeps its bytes"), check("arm64-word", "arm64 flip keeps its bytes"), check("wrong-root", "loop keeps its root"), check("entries-call", "loop keeps its call"), check("qualify-call", "report keeps its call"), check("passed-assert", "passed check keeps its call"), check("some-call", "scan keeps its call"), check("starts-with-call", "prefix check keeps its call"), check("passed-flag", "refusal keeps its flag"), check("prefix-flag", "prefix hit keeps its flag"), check("assert-count", "two asserts exist"), check("wrong-literal-count", "four wrong values exist"), check("ternary-count", "two flips exist")]
+        other: "nope" => ok []
+    match scope is "m35-h129"
+        false => ok []
+        true => ok [check("wrong-name", "name drift keeps its value"), check("wrong-version", "version drift keeps its value"), check("wrong-revision", "revision drift keeps its value"), check("wrong-sha", "sha drift keeps its value"), check("platform-guard", "platform flip reads its guard"), check("arch-guard", "arch flip reads its guard"), check("linux-word", "linux flip keeps its bytes"), check("darwin-word", "darwin flip keeps its bytes"), check("amd64-word", "amd64 flip keeps its bytes"), check("arm64-word", "arm64 flip keeps its bytes"), check("wrong-root", "loop keeps its root"), check("entries-call", "loop keeps its call"), check("qualify-call", "report keeps its call"), check("passed-assert", "passed check keeps its call"), check("some-call", "scan keeps its call"), check("starts-with-call", "prefix check keeps its call"), check("passed-flag", "refusal keeps its flag"), check("prefix-flag", "prefix hit keeps its flag"), check("assert-count", "two asserts exist"), check("wrong-literal-count", "four wrong values exist"), check("ternary-count", "two flips exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/changed-identity-run" => ok [expected_check("wrong-name", "node"), expected_check("wrong-version", "0.0.0"), expected_check("wrong-revision", "wrong"), expected_check("wrong-sha", "tampered"), expected_check("platform-guard", "manifest.runtime.platform"), expected_check("arch-guard", "manifest.runtime.architecture"), expected_check("linux-word", "linux"), expected_check("darwin-word", "darwin"), expected_check("amd64-word", "amd64"), expected_check("arm64-word", "arm64"), expected_check("wrong-root", "wrongIdentity"), expected_check("entries-call", "entries"), expected_check("qualify-call", "qualify"), expected_check("passed-assert", "toBe"), expected_check("some-call", "some"), expected_check("starts-with-call", "startsWith"), expected_check("passed-flag", "false"), expected_check("prefix-flag", "true"), expected_check("assert-count", "2"), expected_check("wrong-literal-count", "4"), expected_check("ternary-count", "2")]
+        unknown: "nope" => ok []
+    match case is "history/changed-identity-run"
+        false => ok []
+        true => ok [expected_check("wrong-name", "node"), expected_check("wrong-version", "0.0.0"), expected_check("wrong-revision", "wrong"), expected_check("wrong-sha", "tampered"), expected_check("platform-guard", "manifest.runtime.platform"), expected_check("arch-guard", "manifest.runtime.architecture"), expected_check("linux-word", "linux"), expected_check("darwin-word", "darwin"), expected_check("amd64-word", "amd64"), expected_check("arm64-word", "arm64"), expected_check("wrong-root", "wrongIdentity"), expected_check("entries-call", "entries"), expected_check("qualify-call", "qualify"), expected_check("passed-assert", "toBe"), expected_check("some-call", "some"), expected_check("starts-with-call", "startsWith"), expected_check("passed-flag", "false"), expected_check("prefix-flag", "true"), expected_check("assert-count", "2"), expected_check("wrong-literal-count", "4"), expected_check("ternary-count", "2")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/changed-identity-run", "default", "", "offline") => ok
+        seed_wrong_name: context("history/changed-identity-run", "seed-wrong-name-drift", "", "offline") => failed{"wrong-name"}
+        seed_wrong_version: context("history/changed-identity-run", "seed-wrong-version-drift", "", "offline") => failed{"wrong-version"}
+        seed_wrong_revision: context("history/changed-identity-run", "seed-wrong-revision-drift", "", "offline") => failed{"wrong-revision"}
+        seed_wrong_sha: context("history/changed-identity-run", "seed-wrong-sha-drift", "", "offline") => failed{"wrong-sha"}
+        seed_platform_guard: context("history/changed-identity-run", "seed-platform-guard-drift", "", "offline") => failed{"platform-guard"}
+        seed_arch_guard: context("history/changed-identity-run", "seed-arch-guard-drift", "", "offline") => failed{"arch-guard"}
+        seed_linux_word: context("history/changed-identity-run", "seed-linux-word-drift", "", "offline") => failed{"linux-word"}
+        seed_darwin_word: context("history/changed-identity-run", "seed-darwin-word-drift", "", "offline") => failed{"darwin-word"}
+        seed_amd64_word: context("history/changed-identity-run", "seed-amd64-word-drift", "", "offline") => failed{"amd64-word"}
+        seed_arm64_word: context("history/changed-identity-run", "seed-arm64-word-drift", "", "offline") => failed{"arm64-word"}
+        seed_wrong_root: context("history/changed-identity-run", "seed-wrong-root-drift", "", "offline") => failed{"wrong-root"}
+        seed_entries_call: context("history/changed-identity-run", "seed-entries-call-drift", "", "offline") => failed{"entries-call"}
+        seed_qualify_call: context("history/changed-identity-run", "seed-qualify-call-drift", "", "offline") => failed{"qualify-call"}
+        seed_passed_assert: context("history/changed-identity-run", "seed-passed-assert-drift", "", "offline") => failed{"passed-assert"}
+        seed_some_call: context("history/changed-identity-run", "seed-some-call-drift", "", "offline") => failed{"some-call"}
+        seed_starts_with_call: context("history/changed-identity-run", "seed-starts-with-call-drift", "", "offline") => failed{"starts-with-call"}
+        seed_passed_flag: context("history/changed-identity-run", "seed-passed-flag-drift", "", "offline") => failed{"passed-flag"}
+        seed_prefix_flag: context("history/changed-identity-run", "seed-prefix-flag-drift", "", "offline") => failed{"prefix-flag"}
+        seed_assert_count: context("history/changed-identity-run", "seed-assert-count-drift", "", "offline") => failed{"assert-count"}
+        seed_wrong_literal_count: context("history/changed-identity-run", "seed-wrong-literal-count-drift", "", "offline") => failed{"wrong-literal-count"}
+        seed_ternary_count: context("history/changed-identity-run", "seed-ternary-count-drift", "", "offline") => failed{"ternary-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.wrong_name, "node", c, "wrong-name")
+            failed
+            ok evidence wrong_name_evidence => match call require_text(got.wrong_version, "0.0.0", c, "wrong-version")
+                failed
+                ok evidence wrong_version_evidence => match call require_text(got.wrong_revision, "wrong", c, "wrong-revision")
+                    failed
+                    ok evidence wrong_revision_evidence => match call require_text(got.wrong_sha, "tampered", c, "wrong-sha")
+                        failed
+                        ok evidence wrong_sha_evidence => match call require_text(got.platform_guard, "manifest.runtime.platform", c, "platform-guard")
+                            failed
+                            ok evidence platform_guard_evidence => match call require_text(got.arch_guard, "manifest.runtime.architecture", c, "arch-guard")
+                                failed
+                                ok evidence arch_guard_evidence => match call require_text(got.linux_word, "linux", c, "linux-word")
+                                    failed
+                                    ok evidence linux_word_evidence => match call require_text(got.darwin_word, "darwin", c, "darwin-word")
+                                        failed
+                                        ok evidence darwin_word_evidence => match call require_text(got.amd64_word, "amd64", c, "amd64-word")
+                                            failed
+                                            ok evidence amd64_word_evidence => match call require_text(got.arm64_word, "arm64", c, "arm64-word")
+                                                failed
+                                                ok evidence arm64_word_evidence => match call require_text(got.wrong_root, "wrongIdentity", c, "wrong-root")
+                                                    failed
+                                                    ok evidence wrong_root_evidence => match call require_text(got.entries_call, "entries", c, "entries-call")
+                                                        failed
+                                                        ok evidence entries_call_evidence => match call require_text(got.qualify_call, "qualify", c, "qualify-call")
+                                                            failed
+                                                            ok evidence qualify_call_evidence => match call require_text(got.passed_assert, "toBe", c, "passed-assert")
+                                                                failed
+                                                                ok evidence passed_assert_evidence => match call require_text(got.some_call, "some", c, "some-call")
+                                                                    failed
+                                                                    ok evidence some_call_evidence => match call require_text(got.starts_with_call, "startsWith", c, "starts-with-call")
+                                                                        failed
+                                                                        ok evidence starts_with_call_evidence => match call require_bool(got.passed_flag, false, c, "passed-flag")
+                                                                            failed
+                                                                            ok evidence passed_flag_evidence => match call require_bool(got.prefix_flag, true, c, "prefix-flag")
+                                                                                failed
+                                                                                ok evidence prefix_flag_evidence => match call require_int(got.assert_count, 2, c, "assert-count")
+                                                                                    failed
+                                                                                    ok evidence assert_count_evidence => match call require_int(got.wrong_literal_count, 4, c, "wrong-literal-count")
+                                                                                        failed
+                                                                                        ok evidence wrong_literal_count_evidence => match call require_int(got.ternary_count, 2, c, "ternary-count")
+                                                                                            failed
+                                                                                            ok evidence ternary_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m35_h129: "m35-h129" => ok test_case("history/changed-identity-run", ["history", "m35"], [], 120000, [check_ref("wrong-name"), check_ref("wrong-version"), check_ref("wrong-revision"), check_ref("wrong-sha"), check_ref("platform-guard"), check_ref("arch-guard"), check_ref("linux-word"), check_ref("darwin-word"), check_ref("amd64-word"), check_ref("arm64-word"), check_ref("wrong-root"), check_ref("entries-call"), check_ref("qualify-call"), check_ref("passed-assert"), check_ref("some-call"), check_ref("starts-with-call"), check_ref("passed-flag"), check_ref("prefix-flag"), check_ref("assert-count"), check_ref("wrong-literal-count"), check_ref("ternary-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m35-h129"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/changed-identity-run", ["history", "m35"], [], 120000, [check_ref("wrong-name"), check_ref("wrong-version"), check_ref("wrong-revision"), check_ref("wrong-sha"), check_ref("platform-guard"), check_ref("arch-guard"), check_ref("linux-word"), check_ref("darwin-word"), check_ref("amd64-word"), check_ref("arm64-word"), check_ref("wrong-root"), check_ref("entries-call"), check_ref("qualify-call"), check_ref("passed-assert"), check_ref("some-call"), check_ref("starts-with-call"), check_ref("passed-flag"), check_ref("prefix-flag"), check_ref("assert-count"), check_ref("wrong-literal-count"), check_ref("ternary-count")], callable case_body)
