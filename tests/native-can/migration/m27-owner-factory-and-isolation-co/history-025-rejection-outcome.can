@@ -1,0 +1,143 @@
+package m27history025outcome
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M27 HISTORY-025 "owner-forge rejected: nonzero exit with no assert report".
+/// Source: tests/failure-conventions/owner_test.go symbol TestOwnerForgeRejected
+/// (owner_test.go:89-103) plus harness assertOutcome/runAssert
+/// (tests/failure-conventions/harness_test.go:60-68,350-383).
+/// Related fixtures: tests/failure-conventions/owner-forge/ (forged project).
+/// Disposition: RETAIN. The forged tier_for row constructs ids::user_id outside
+/// its declaring package, so canlc assert fails at check phase: nonzero exit
+/// and no decoded report (check failures print plain-text diagnostics instead
+/// of the JSON can.assertion-report).
+/// Protects (this file): exit-nonzero, report-absent pins.
+/// The confinement diagnostic text lives in
+/// history-025-diagnostic-confinement.can.
+/// Variants: forged owner source only. Green-setup (023), tainted frames
+/// (024), sneak-package factory call (026) and guided repair (027) are other
+/// rows, not this one.
+/// Environment: CONV_BUNDLE or CAN_BUN_ARCHIVE; requires
+/// conv-bundle-or-can-bun-archive. Logical gates SUITE/DIAG/FAULT and C/R/N/S/A
+/// identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case owner-forge/rejection-outcome checks: exit-nonzero, report-absent.
+/// Facet map: exit-nonzero pins the Go `Status != 0` predicate without
+/// over-pinning an exact code (exit_code stays observed evidence);
+/// report-absent pins Report == nil (no JSON report decodes from stdout).
+/// Check order matters: exit-nonzero gates report-absent, so an unobserved
+/// run refuses at exit-nonzero instead of passing report-absent vacuously.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int exit_code
+    bool exit_nonzero
+    bool report_present
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("owner-forge/rejection-outcome", "default", "", "offline"), "exit-nonzero" => ok "case owner-forge/rejection-outcome variant default root exit-nonzero run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("owner-forge/rejection-outcome", "default", "", "offline"), "exit-nonzero" => ok evidence("exit-nonzero", "true", "true", true, "case owner-forge/rejection-outcome variant default root exit-nonzero run offline")
+        different: false, true, context("owner-forge/rejection-outcome", "default", "", "offline"), "exit-nonzero" => failed{"exit-nonzero"}
+        same_false: false, false, context("owner-forge/rejection-outcome", "default", "", "offline"), "report-absent" => ok evidence("report-absent", "false", "false", true, "case owner-forge/rejection-outcome variant default root report-absent run offline")
+        different_false: true, false, context("owner-forge/rejection-outcome", "default", "", "offline"), "report-absent" => failed{"report-absent"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(1, true, false)
+        seed_suite_passed: "seed-suite-passed" => ok observation(0, false, true)
+        seed_report_present: "seed-report-present" => ok observation(1, true, true)
+        seed_evidence_missing: "seed-evidence-missing" => ok observation(0, false, false)
+    match variant_id
+        "seed-suite-passed" => ok observation(0, false, true)
+        "seed-report-present" => ok observation(1, true, true)
+        "seed-evidence-missing" => ok observation(0, false, false)
+        _ => ok observation(1, true, false)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m27_025: "m27-025" => ok [check("exit-nonzero", "canlc assert exits nonzero on the forged project"), check("report-absent", "no decoded assert report: check rejection prints plain-text diagnostics")]
+        other: "nope" => ok []
+    match scope is "m27-025"
+        false => ok []
+        true => ok [check("exit-nonzero", "canlc assert exits nonzero on the forged project"), check("report-absent", "no decoded assert report: check rejection prints plain-text diagnostics")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "owner-forge/rejection-outcome" => ok [expected_check("exit-nonzero", "true"), expected_check("report-absent", "false")]
+        unknown: "nope" => ok []
+    match case is "owner-forge/rejection-outcome"
+        false => ok []
+        true => ok [expected_check("exit-nonzero", "true"), expected_check("report-absent", "false")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("owner-forge/rejection-outcome", "default", "", "offline") => ok
+        seed_suite_passed: context("owner-forge/rejection-outcome", "seed-suite-passed", "", "offline") => failed{"exit-nonzero"}
+        seed_report_present: context("owner-forge/rejection-outcome", "seed-report-present", "", "offline") => failed{"report-absent"}
+        seed_evidence_missing: context("owner-forge/rejection-outcome", "seed-evidence-missing", "", "offline") => failed{"exit-nonzero"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.exit_nonzero, true, c, "exit-nonzero")
+            failed
+            ok evidence exit_evidence => match call require_bool(got.report_present, false, c, "report-absent")
+                failed
+                ok evidence absent_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m27_025: "m27-025" => ok test_case("owner-forge/rejection-outcome", ["owner", "m27", "forge"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("exit-nonzero"), check_ref("report-absent")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m27-025"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("owner-forge/rejection-outcome", ["owner", "m27", "forge"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("exit-nonzero"), check_ref("report-absent")], callable case_body)

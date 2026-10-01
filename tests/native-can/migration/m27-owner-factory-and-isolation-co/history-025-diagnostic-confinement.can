@@ -1,0 +1,155 @@
+package m27history025diagnostic
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M27 HISTORY-025 "owner-forge rejected: exact confinement diagnostic".
+/// Source: tests/failure-conventions/owner_test.go symbol TestOwnerForgeRejected
+/// (owner_test.go:89-103: the `want` containment pin at owner_test.go:98-101).
+/// Related fixtures: tests/failure-conventions/owner-forge/src/handler/handler.can
+/// (forged row `forged: ids::user_id(7)` at line 18, inside tier_for asserts)
+/// and tests/failure-conventions/owner-forge/src/ids/ids.can (owner record
+/// user_id declared at line 5; only ids constructs or reads it).
+/// Disposition: RETAIN. The foreign constructor is rejected at check phase with
+/// the fixed confinement diagnostic on the combined stdout+stderr stream.
+/// Protects (this file): diagnostic-present, diagnostic-exact pins.
+/// Exit/report outcome lives in history-025-rejection-outcome.can.
+/// Variants: forged owner source only. Green-setup (023), tainted frames
+/// (024), sneak-package factory call (026) and guided repair (027) are other
+/// rows, not this one.
+/// Environment: CONV_BUNDLE or CAN_BUN_ARCHIVE; requires
+/// conv-bundle-or-can-bun-archive. Logical gates SUITE/DIAG/FAULT and C/R/N/S/A
+/// identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case owner-forge/diagnostic-confinement checks: diagnostic-present,
+/// diagnostic-exact.
+/// Facet map: diagnostic-present pins that combined stdout+stderr carries a
+/// confinement diagnostic; diagnostic-exact pins the observed diagnostic line
+/// to exactly `owner record ids::user_id can only be constructed in its
+/// declaring package` (the Go `want`). Together they pin the Go
+/// strings.Contains predicate without over-pinning surrounding output.
+/// Check order matters: diagnostic-present gates diagnostic-exact, so empty
+/// output refuses at diagnostic-present instead of comparing empty text.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str diagnostic_text
+    bool diagnostic_found
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("owner-forge/diagnostic-confinement", "default", "", "offline"), "diagnostic-present" => ok "case owner-forge/diagnostic-confinement variant default root diagnostic-present run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("owner-forge/diagnostic-confinement", "default", "", "offline"), "diagnostic-present" => ok evidence("diagnostic-present", "true", "true", true, "case owner-forge/diagnostic-confinement variant default root diagnostic-present run offline")
+        different: false, true, context("owner-forge/diagnostic-confinement", "default", "", "offline"), "diagnostic-present" => failed{"diagnostic-present"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "owner record ids::user_id can only be constructed in its declaring package", "owner record ids::user_id can only be constructed in its declaring package", context("owner-forge/diagnostic-confinement", "default", "", "offline"), "diagnostic-exact" => ok evidence("diagnostic-exact", "owner record ids::user_id can only be constructed in its declaring package", "owner record ids::user_id can only be constructed in its declaring package", true, "case owner-forge/diagnostic-confinement variant default root diagnostic-exact run offline")
+        different: "owner record ids::user_id is private", "owner record ids::user_id can only be constructed in its declaring package", context("owner-forge/diagnostic-confinement", "default", "", "offline"), "diagnostic-exact" => failed{"diagnostic-exact"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("owner record ids::user_id can only be constructed in its declaring package", true)
+        seed_diagnostic_missing: "seed-diagnostic-missing" => ok observation("check failed", false)
+        seed_diagnostic_drift: "seed-diagnostic-drift" => ok observation("owner record ids::user_id is private", true)
+        seed_output_empty: "seed-output-empty" => ok observation("", false)
+    match variant_id
+        "seed-diagnostic-missing" => ok observation("check failed", false)
+        "seed-diagnostic-drift" => ok observation("owner record ids::user_id is private", true)
+        "seed-output-empty" => ok observation("", false)
+        _ => ok observation("owner record ids::user_id can only be constructed in its declaring package", true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m27_025: "m27-025" => ok [check("diagnostic-present", "combined stdout+stderr carries the confinement diagnostic"), check("diagnostic-exact", "confinement diagnostic is exactly the owner-construct rejection")]
+        other: "nope" => ok []
+    match scope is "m27-025"
+        false => ok []
+        true => ok [check("diagnostic-present", "combined stdout+stderr carries the confinement diagnostic"), check("diagnostic-exact", "confinement diagnostic is exactly the owner-construct rejection")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "owner-forge/diagnostic-confinement" => ok [expected_check("diagnostic-present", "true"), expected_check("diagnostic-exact", "owner record ids::user_id can only be constructed in its declaring package")]
+        unknown: "nope" => ok []
+    match case is "owner-forge/diagnostic-confinement"
+        false => ok []
+        true => ok [expected_check("diagnostic-present", "true"), expected_check("diagnostic-exact", "owner record ids::user_id can only be constructed in its declaring package")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("owner-forge/diagnostic-confinement", "default", "", "offline") => ok
+        seed_diagnostic_missing: context("owner-forge/diagnostic-confinement", "seed-diagnostic-missing", "", "offline") => failed{"diagnostic-present"}
+        seed_diagnostic_drift: context("owner-forge/diagnostic-confinement", "seed-diagnostic-drift", "", "offline") => failed{"diagnostic-exact"}
+        seed_output_empty: context("owner-forge/diagnostic-confinement", "seed-output-empty", "", "offline") => failed{"diagnostic-present"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.diagnostic_found, true, c, "diagnostic-present")
+            failed
+            ok evidence present_evidence => match call require_text(got.diagnostic_text, "owner record ids::user_id can only be constructed in its declaring package", c, "diagnostic-exact")
+                failed
+                ok evidence exact_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m27_025: "m27-025" => ok test_case("owner-forge/diagnostic-confinement", ["owner", "m27", "forge"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("diagnostic-present"), check_ref("diagnostic-exact")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m27-025"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("owner-forge/diagnostic-confinement", ["owner", "m27", "forge"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("diagnostic-present"), check_ref("diagnostic-exact")], callable case_body)
