@@ -37,17 +37,60 @@ func (c *fakeClock) advance(d time.Duration) {
 	c.t = c.t.Add(d)
 }
 
+func finiteCapability() Capability {
+	return Capability{MaxHandles: 64, MaxPending: 16, MaxBytes: 1 << 30}
+}
+
 func liveReq() Request {
-	return Request{Demand: Demand{Live: true}, Budget: time.Minute, Body: time.Second, CleanupReserve: time.Second}
+	return Request{Demand: Demand{Live: true}, Capability: finiteCapability(), Budget: time.Minute, Body: time.Second, CleanupReserve: time.Second}
 }
 
 func produceReq() Request {
-	return Request{Demand: Demand{Produce: true}, Budget: time.Minute, Body: time.Second, CleanupReserve: time.Second}
+	return Request{Demand: Demand{Produce: true}, Capability: finiteCapability(), Budget: time.Minute, Body: time.Second, CleanupReserve: time.Second}
+}
+
+// fakeDisk is a thread-safe manual free-disk probe for deterministic
+// floor controls: tests set available bytes (or a probe error) without
+// touching a real filesystem. Every probed path is recorded.
+type fakeDisk struct {
+	mu    sync.Mutex
+	avail uint64
+	err   error
+	paths []string
+}
+
+func newFakeDisk(avail uint64) *fakeDisk {
+	return &fakeDisk{avail: avail}
+}
+
+func (f *fakeDisk) probe(path string) (uint64, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.paths = append(f.paths, path)
+	return f.avail, f.err
+}
+
+func (f *fakeDisk) set(avail uint64) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.avail, f.err = avail, nil
+}
+
+func (f *fakeDisk) setErr(err error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.err = err
+}
+
+func (f *fakeDisk) probedPaths() []string {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return append([]string(nil), f.paths...)
 }
 
 func openHost(t *testing.T, dir string) *Host {
 	t.Helper()
-	h, err := OpenHostWithClock(dir, newFakeClock().now)
+	h, err := OpenHostWithClockAndFreeDisk(dir, newFakeClock().now, newFakeDisk(MinFreeDiskBytes*2).probe)
 	if err != nil {
 		t.Fatalf("OpenHost: %v", err)
 	}
@@ -67,7 +110,7 @@ func TestAdmitReleaseRoundTrip(t *testing.T) {
 	dir := t.TempDir()
 	root := t.TempDir()
 	clk := newFakeClock()
-	h, err := OpenHostWithClock(dir, clk.now)
+	h, err := OpenHostWithClockAndFreeDisk(dir, clk.now, newFakeDisk(MinFreeDiskBytes*2).probe)
 	if err != nil {
 		t.Fatalf("OpenHost: %v", err)
 	}
@@ -191,7 +234,7 @@ func TestHelperLaneHolder(t *testing.T) {
 		os.Exit(2)
 	}
 	g, err := h.Admit(filepath.Join(dir, "root-child"), Request{
-		Demand: demand, Budget: 2 * time.Minute, Body: time.Second, CleanupReserve: time.Second,
+		Demand: demand, Capability: finiteCapability(), Budget: 2 * time.Minute, Body: time.Second, CleanupReserve: time.Second,
 	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "helper: admit: %v\n", err)
@@ -355,7 +398,7 @@ func TestDeadlineAtSuccessIsFailure(t *testing.T) {
 
 	admit := func(clk *fakeClock) *Grant {
 		t.Helper()
-		h, err := OpenHostWithClock(hostDir, clk.now)
+		h, err := OpenHostWithClockAndFreeDisk(hostDir, clk.now, newFakeDisk(MinFreeDiskBytes*2).probe)
 		if err != nil {
 			t.Fatalf("OpenHost: %v", err)
 		}
@@ -422,6 +465,7 @@ func TestBodyPlusCleanupFit(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			req := Request{
 				Demand:         Demand{Live: true},
+				Capability:     finiteCapability(),
 				Budget:         tc.budget,
 				Body:           tc.body,
 				CleanupReserve: tc.cleanup,
@@ -474,6 +518,7 @@ func TestAtomicDeclaredPeakReservation(t *testing.T) {
 
 	peak := Request{
 		Demand:         Demand{Live: true, Produce: true},
+		Capability:     finiteCapability(),
 		Budget:         time.Minute,
 		Body:           time.Second,
 		CleanupReserve: time.Second,
@@ -500,11 +545,12 @@ func TestAtomicDeclaredPeakReservation(t *testing.T) {
 func TestConcurrentContendersMutualExclusion(t *testing.T) {
 	hostDir := t.TempDir()
 	clk := newFakeClock()
-	hostA, err := OpenHostWithClock(hostDir, clk.now)
+	disk := newFakeDisk(MinFreeDiskBytes * 2)
+	hostA, err := OpenHostWithClockAndFreeDisk(hostDir, clk.now, disk.probe)
 	if err != nil {
 		t.Fatalf("OpenHost A: %v", err)
 	}
-	hostB, err := OpenHostWithClock(hostDir, clk.now)
+	hostB, err := OpenHostWithClockAndFreeDisk(hostDir, clk.now, disk.probe)
 	if err != nil {
 		t.Fatalf("OpenHost B: %v", err)
 	}
@@ -587,7 +633,7 @@ func TestProbeLaneWitness(t *testing.T) {
 	}
 	h := openHost(t, dir)
 	g, err := h.Admit(t.TempDir(), Request{
-		Demand: Demand{Verify: true}, Budget: time.Minute, Body: time.Second, CleanupReserve: time.Second,
+		Demand: Demand{Verify: true}, Capability: finiteCapability(), Budget: time.Minute, Body: time.Second, CleanupReserve: time.Second,
 	})
 	if err != nil {
 		t.Fatalf("Admit: %v", err)
@@ -618,11 +664,11 @@ func TestValidation(t *testing.T) {
 	}{
 		{"empty-root", "", liveReq()},
 		{"relative-root", "rel/root", liveReq()},
-		{"empty-demand", root, Request{Budget: time.Minute, Body: time.Second, CleanupReserve: time.Second}},
-		{"zero-budget", root, Request{Demand: Demand{Live: true}, Body: time.Second, CleanupReserve: time.Second}},
-		{"over-max-budget", root, Request{Demand: Demand{Live: true}, Budget: MaxBudget + time.Second, Body: time.Second, CleanupReserve: time.Second}},
-		{"zero-cleanup", root, Request{Demand: Demand{Live: true}, Budget: time.Minute, Body: time.Second}},
-		{"negative-body", root, Request{Demand: Demand{Live: true}, Budget: time.Minute, Body: -time.Second, CleanupReserve: time.Second}},
+		{"empty-demand", root, Request{Capability: finiteCapability(), Budget: time.Minute, Body: time.Second, CleanupReserve: time.Second}},
+		{"zero-budget", root, Request{Demand: Demand{Live: true}, Capability: finiteCapability(), Body: time.Second, CleanupReserve: time.Second}},
+		{"over-max-budget", root, Request{Demand: Demand{Live: true}, Capability: finiteCapability(), Budget: MaxBudget + time.Second, Body: time.Second, CleanupReserve: time.Second}},
+		{"zero-cleanup", root, Request{Demand: Demand{Live: true}, Capability: finiteCapability(), Budget: time.Minute, Body: time.Second}},
+		{"negative-body", root, Request{Demand: Demand{Live: true}, Capability: finiteCapability(), Budget: time.Minute, Body: -time.Second, CleanupReserve: time.Second}},
 	}
 	for _, tc := range bad {
 		t.Run(tc.name, func(t *testing.T) {
@@ -645,6 +691,7 @@ func TestReasonMapping(t *testing.T) {
 		ErrNestedDemand:     ReasonNestedDemand,
 		ErrNoFit:            ReasonNoFit,
 		ErrDeadlineExceeded: ReasonDeadlineExceeded,
+		ErrBelowFloor:       ReasonBelowFloor,
 		ErrInvalid:          ReasonDenied,
 		ErrReleased:         ReasonDenied,
 		errors.New("other"): ReasonDenied,
@@ -662,5 +709,205 @@ func TestDemandString(t *testing.T) {
 	}
 	if got := (Demand{}).String(); got != "" {
 		t.Errorf("empty Demand.String() = %q, want \"\"", got)
+	}
+}
+
+// TestBelowFloorRefusesAdmitBeforeEffect proves the 10 GiB admission
+// floor: below-floor disk refuses Admit with a named reason and holds no
+// lane (every lane probes free, and a later above-floor Admit succeeds on
+// the same Host). Exactly at the floor admits: "below" is strict.
+func TestBelowFloorRefusesAdmitBeforeEffect(t *testing.T) {
+	hostDir := t.TempDir()
+	root := t.TempDir()
+	disk := newFakeDisk(MinFreeDiskBytes - 1)
+	h, err := OpenHostWithClockAndFreeDisk(hostDir, newFakeClock().now, disk.probe)
+	if err != nil {
+		t.Fatalf("OpenHost: %v", err)
+	}
+
+	if _, err := h.Admit(root, liveReq()); !errors.Is(err, ErrBelowFloor) {
+		t.Fatalf("below-floor Admit: got %v, want ErrBelowFloor", err)
+	} else if Reason(err) != ReasonBelowFloor {
+		t.Fatalf("below-floor Reason: got %q, want %q", Reason(err), ReasonBelowFloor)
+	}
+	for _, l := range []Lane{LaneLive, LaneVerify, LaneProduce} {
+		if mustProbe(t, hostDir, l) {
+			t.Fatalf("refused admission left lane %s held", l)
+		}
+	}
+	// The probe targeted the gate filesystem.
+	for _, p := range disk.probedPaths() {
+		if p != h.Dir() {
+			t.Fatalf("probe path = %q, want gate dir %q", p, h.Dir())
+		}
+	}
+
+	// A failed probe refuses the same way: admission fails closed.
+	disk.setErr(errors.New("statfs: I/O error"))
+	if _, err := h.Admit(root, liveReq()); !errors.Is(err, ErrBelowFloor) {
+		t.Fatalf("probe-error Admit: got %v, want ErrBelowFloor", err)
+	}
+	if mustProbe(t, hostDir, LaneLive) {
+		t.Fatalf("probe-error refusal left the lane held")
+	}
+
+	// Exactly at the floor admits.
+	disk.set(MinFreeDiskBytes)
+	g, err := h.Admit(root, liveReq())
+	if err != nil {
+		t.Fatalf("at-floor Admit: %v", err)
+	}
+	g.Release()
+}
+
+// TestFloorRecheckBeforeEachAllocation proves every allocation rechecks
+// the floor: disk that drops after Admit refuses the next allocation,
+// and restored disk admits again. The deadline stays absolute for
+// allocations, and a refused allocation leaves the Grant held for abort
+// handling (the lane is still held; Release frees it).
+func TestFloorRecheckBeforeEachAllocation(t *testing.T) {
+	hostDir := t.TempDir()
+	root := t.TempDir()
+	clk := newFakeClock()
+	disk := newFakeDisk(MinFreeDiskBytes * 2)
+	h, err := OpenHostWithClockAndFreeDisk(hostDir, clk.now, disk.probe)
+	if err != nil {
+		t.Fatalf("OpenHost: %v", err)
+	}
+	g, err := h.Admit(root, liveReq())
+	if err != nil {
+		t.Fatalf("Admit: %v", err)
+	}
+	defer g.Release()
+
+	if err := g.Allocate(); err != nil {
+		t.Fatalf("above-floor Allocate: %v", err)
+	}
+	disk.set(MinFreeDiskBytes - 1)
+	if err := g.Allocate(); !errors.Is(err, ErrBelowFloor) {
+		t.Fatalf("below-floor Allocate: got %v, want ErrBelowFloor", err)
+	} else if Reason(err) != ReasonBelowFloor {
+		t.Fatalf("below-floor Allocate Reason: got %q, want %q", Reason(err), ReasonBelowFloor)
+	}
+	// The refused allocation is not a verdict: the Grant still holds.
+	if !mustProbe(t, hostDir, LaneLive) {
+		t.Fatalf("lane lost after refused allocation")
+	}
+	disk.set(MinFreeDiskBytes * 2)
+	if err := g.Allocate(); err != nil {
+		t.Fatalf("restored-floor Allocate: %v", err)
+	}
+
+	// Allocations obey the absolute deadline too.
+	clk.advance(time.Minute)
+	if err := g.Allocate(); !errors.Is(err, ErrDeadlineExceeded) {
+		t.Fatalf("past-deadline Allocate: got %v, want ErrDeadlineExceeded", err)
+	}
+}
+
+// TestAllocateOnFinishedGrant proves Allocate on a finished Grant reports
+// released instead of probing: completion first, then the checkpoint.
+func TestAllocateOnFinishedGrant(t *testing.T) {
+	h := openHost(t, t.TempDir())
+	g, err := h.Admit(t.TempDir(), liveReq())
+	if err != nil {
+		t.Fatalf("Admit: %v", err)
+	}
+	if err := g.Complete(); err != nil {
+		t.Fatalf("Complete: %v", err)
+	}
+	if err := g.Allocate(); !errors.Is(err, ErrReleased) {
+		t.Fatalf("Allocate after Complete: got %v, want ErrReleased", err)
+	}
+}
+
+// TestCapabilityLimitsMustBeFinite proves omitted and unbounded capability
+// limits refuse before effect: every refusal holds no lane, and only the
+// all-positive declaration admits.
+func TestCapabilityLimitsMustBeFinite(t *testing.T) {
+	hostDir := t.TempDir()
+	root := t.TempDir()
+	h := openHost(t, hostDir)
+
+	cases := []struct {
+		name string
+		caps Capability
+	}{
+		{"omitted", Capability{}},
+		{"zero-handles", Capability{MaxHandles: 0, MaxPending: 16, MaxBytes: 1 << 30}},
+		{"zero-pending", Capability{MaxHandles: 64, MaxPending: 0, MaxBytes: 1 << 30}},
+		{"zero-bytes", Capability{MaxHandles: 64, MaxPending: 16, MaxBytes: 0}},
+		{"unbounded-handles", Capability{MaxHandles: -1, MaxPending: 16, MaxBytes: 1 << 30}},
+		{"unbounded-pending", Capability{MaxHandles: 64, MaxPending: -1, MaxBytes: 1 << 30}},
+		{"unbounded-bytes", Capability{MaxHandles: 64, MaxPending: 16, MaxBytes: -1}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := liveReq()
+			req.Capability = tc.caps
+			if _, err := h.Admit(root, req); !errors.Is(err, ErrInvalid) {
+				t.Fatalf("Admit: got %v, want ErrInvalid", err)
+			}
+			if mustProbe(t, hostDir, LaneLive) {
+				t.Fatalf("refused admission left the lane held")
+			}
+		})
+	}
+
+	g, err := h.Admit(root, liveReq())
+	if err != nil {
+		t.Fatalf("finite-limit Admit: %v", err)
+	}
+	if got := g.Capability(); got != finiteCapability() {
+		t.Errorf("Capability() = %+v, want %+v", got, finiteCapability())
+	}
+	g.Release()
+}
+
+// TestAdmitAllocateCompletePositive is the end-to-end admission control:
+// finite limits plus above-floor disk admit, allocate twice and complete
+// before the deadline, freeing the lane.
+func TestAdmitAllocateCompletePositive(t *testing.T) {
+	hostDir := t.TempDir()
+	root := t.TempDir()
+	clk := newFakeClock()
+	disk := newFakeDisk(MinFreeDiskBytes * 2)
+	h, err := OpenHostWithClockAndFreeDisk(hostDir, clk.now, disk.probe)
+	if err != nil {
+		t.Fatalf("OpenHost: %v", err)
+	}
+	g, err := h.Admit(root, liveReq())
+	if err != nil {
+		t.Fatalf("Admit: %v", err)
+	}
+	if err := g.Allocate(); err != nil {
+		g.Release()
+		t.Fatalf("first Allocate: %v", err)
+	}
+	clk.advance(time.Second)
+	if err := g.Allocate(); err != nil {
+		g.Release()
+		t.Fatalf("second Allocate: %v", err)
+	}
+	if err := g.Complete(); err != nil {
+		t.Fatalf("Complete: %v", err)
+	}
+	if mustProbe(t, hostDir, LaneLive) {
+		t.Fatalf("lane held after Complete")
+	}
+}
+
+// TestProductionFreeDiskProbe exercises the real Statfs probe against an
+// isolated directory. It asserts only that the probe runs without error;
+// the value depends on the machine and carries no admission verdict here.
+func TestProductionFreeDiskProbe(t *testing.T) {
+	dir := t.TempDir()
+	avail, err := statfsFreeDisk(dir)
+	if err != nil {
+		t.Fatalf("statfsFreeDisk(%s): %v", dir, err)
+	}
+	t.Logf("statfsFreeDisk(%s) = %d bytes", dir, avail)
+	if _, err := statfsFreeDisk(filepath.Join(dir, "missing")); err == nil {
+		t.Fatalf("statfsFreeDisk(missing path): got nil error, want a Statfs failure")
 	}
 }

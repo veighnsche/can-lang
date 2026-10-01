@@ -96,5 +96,156 @@
     "qualification_credit_added": false,
     "reason": "The authoritative lifecycle requires a 10 GiB free-disk admission floor and recheck before allocation. The card omitted it, and admission/host source and recorded controls do not implement or demonstrate it. Existing reservation/deadline controls remain useful local evidence.",
     "pending_prerequisites": []
+  },
+  "subdeliveries": {
+    "admission-floor": {
+      "slice_id": "admission-floor",
+      "parent_task_id": "P12",
+      "writer": "worker-a-p12",
+      "executor": "worker-a-p12 slice run; integrator review/commit",
+      "path_reservation": {
+        "writer": "worker_a",
+        "exact_paths": [
+          "tools/native-test-owner/admission/admission.go",
+          "tools/native-test-owner/admission/admission_test.go",
+          "tools/native-test-owner/admission/errors.go",
+          "tools/native-test-owner/admission/doc.go"
+        ],
+        "note": "Slice plan reserves admission.go/admission_test.go; errors.go/doc.go are same-directory, same-writer, same-sequential-edit companions. No other worker touches tools/native-test-owner/admission/; no shared compiler/catalogue/runtime file touched."
+      },
+      "source_slice_status": "ready-for-review",
+      "local_control_slice_status": "ready-for-review",
+      "promotion_status": "planned",
+      "parent_start_after_receipts": [
+        "P07 complete",
+        "P08 complete in c8b33a7e",
+        "P09 complete",
+        "P10 complete in b4eaa2f5",
+        "P11 complete in 3905837d"
+      ],
+      "commits": [],
+      "commit_note": "Integrator fills SHAs on commit.",
+      "changed_paths": [
+        "tools/native-test-owner/admission/admission.go",
+        "tools/native-test-owner/admission/admission_test.go",
+        "tools/native-test-owner/admission/errors.go",
+        "tools/native-test-owner/admission/doc.go"
+      ],
+      "commands_with_deadlines_and_results": [
+        {
+          "command": "go test -count=1 -timeout 120s ./tools/native-test-owner/admission/",
+          "deadline": "150s foreground wait",
+          "result": "BASELINE before slice edits: ok 0.402s, all prior tests pass"
+        },
+        {
+          "command": "gofmt -l tools/native-test-owner/admission/",
+          "deadline": "60s",
+          "result": "clean: no files listed, exit 0"
+        },
+        {
+          "command": "go vet ./tools/native-test-owner/admission/",
+          "deadline": "120s",
+          "result": "clean, exit 0"
+        },
+        {
+          "command": "go test -count=1 -timeout 120s -v ./tools/native-test-owner/admission/",
+          "deadline": "180s foreground wait",
+          "result": "20/20 top-level PASS (38 PASS lines incl. 18 subtests), 0 FAIL, ok 0.287s (wall 0.7s)"
+        },
+        {
+          "command": "go test -count=1 -race -timeout 180s ./tools/native-test-owner/admission/",
+          "deadline": "240s foreground wait",
+          "result": "ok 2.265s (wall 2.7s), no data races"
+        },
+        {
+          "command": "go build ./tools/native-test-owner/host/ ./tools/native-test-owner/acceptance/",
+          "deadline": "120s",
+          "result": "BUILD-OK: downstream packages compile against the extended API (new field/constructor/methods only; no signature changed). Their tests construct admission.Request without Capability and will refuse at runtime until updated; that is integrator/P13-P14 scope, not this slice."
+        }
+      ],
+      "identities": {
+        "reference": "N/A: no R involved",
+        "owner": "N/A as an N artifact; N-ADJACENT admission mechanics only (host-wide gate, reservation, floor, declared caps). This slice does not build, version or accept N.",
+        "candidate": "N/A: no candidate executed",
+        "suite": "bounded local controls only (t.TempDir host dirs, fake clock, fake disk probe, re-exec child helper); no live suite, no network",
+        "artifact": "N/A: no built executable promoted",
+        "host_profile": "darwin arm64 (flock arbitration + Statfs probe; unix-only like the P10/P11 leases)",
+        "observer": "ProbeLane per-lane witness (registry + fresh-open EX probe); fakeDisk probed-path log for probe-target checks"
+      },
+      "controls": {
+        "positive": [
+          "TestAdmitAllocateCompletePositive: finite limits + above-floor disk -> Admit, two Allocates across a clock advance, Complete before deadline, lane free",
+          "TestCapabilityLimitsMustBeFinite (positive leg): all-positive declaration admits; Grant.Capability() round-trips the declared ceilings",
+          "TestBelowFloorRefusesAdmitBeforeEffect (boundary leg): exactly at the 10 GiB floor admits ('below' is strict)",
+          "TestProductionFreeDiskProbe: real Statfs probe runs without error on an isolated dir; missing path returns a Statfs failure",
+          "All 14 pre-existing tests (race/deadline/rejection/contention/probe/validation/reason/demand controls) pass unchanged in behavior with finite-limit fixtures and above-floor fake probes"
+        ],
+        "seeded_defect": [
+          "TestBelowFloorRefusesAdmitBeforeEffect: floor-1 byte refuses Admit with ErrBelowFloor/below-disk-floor; all three lanes probe free; probe failure refuses the same way (fail closed); probe targeted the gate dir",
+          "TestFloorRecheckBeforeEachAllocation: floor drop after Admit refuses the next Allocate; restored floor admits again; refused allocation is not a verdict (lane still held); past-deadline Allocate reports ErrDeadlineExceeded",
+          "TestAllocateOnFinishedGrant: Allocate after Complete reports ErrReleased",
+          "TestCapabilityLimitsMustBeFinite: omitted + each zero field + each negative (unbounded-sentinel) field refuse Admit with ErrInvalid and hold no lane"
+        ],
+        "missing_evidence": [
+          "No strict process/memory/disk enforcement is demonstrated here by design (P13 scope); the floor and declared caps are admission protection, not enforcement evidence"
+        ]
+      },
+      "coverage": {
+        "retained_facets": [
+          "10 GiB available-disk admission floor refuses Admit before effect (no lane held, ProbeLane-verified)",
+          "floor rechecked before each allocation; post-Admit drop refuses the next allocation",
+          "omitted/unbounded capability handle/pending/byte limits refuse before effect; every limit field finite (positive)",
+          "cleanup reserve still charged; existing reservation/deadline/race/rejection behavior intact"
+        ]
+      },
+      "source_closure": [
+        "admission.go: MinFreeDiskBytes (10 GiB), Capability{MaxHandles,MaxPending,MaxBytes} with all-positive valid() mirroring workspace.Budgets, FreeDiskFunc + statfsFreeDisk production probe (Bavail*Bsize, saturated), Host.freeDisk + OpenHostWithClockAndFreeDisk (nil probe selects production: fail-closed), checkFloor before registry/kernel touches in Admit, Grant caps + Capability() accessor, Grant.Allocate() checkpoint (done -> ErrReleased, at/past deadline -> ErrDeadlineExceeded, else floor recheck; never a verdict)",
+        "errors.go: ErrBelowFloor + ReasonBelowFloor (below-disk-floor) with Reason() mapping",
+        "doc.go: floor guard-vs-reservation contract, probe injection, Allocate checkpoint, declared caps, explicit P13 non-claim",
+        "admission_test.go: fakeDisk probe + finiteCapability fixtures; existing tests re-fitted (finite limits, above-floor fakes) with unchanged asserted behavior; 6 new tests listed under controls"
+      ],
+      "resource_and_cleanup_receipts": [
+        "all temp state in t.TempDir (host dirs, roots, probe dirs); auto-reclaimed, no temp dirs retained",
+        "no /tmp scratch created; no repo writes outside tools/native-test-owner/admission/ and this evidence file",
+        "child helper reaped via the pre-existing explicit flag; no strays"
+      ],
+      "correction_state_vs_audit_reason": "Audit revoked P12 because the lifecycle 10 GiB free-disk floor and per-allocation recheck were missing from card, code and controls. This slice implements exactly that gap (floor guard at Admit, recheck at each Allocate, finite capability limits, named refusal + reason, bounded fake-probe/fake-clock controls) while preserving all existing reservation/deadline receipts above. Strict-envelope qualification is unchanged and still deferred to P13.",
+      "remaining_blockers": [
+        "P13 strict host enforcement qualification unresolved (declared caps + floor are not enforcement evidence; unavailable enforcement stays blocked)",
+        "P14 N acceptance unresolved (blocked by P12/P13)",
+        "Downstream runtime handoff: tools/native-test-owner/host/host_test.go and tools/native-test-owner/acceptance/acceptance_test.go build admission.Request without Capability and will refuse at runtime after this lands; read-only for this slice, integrator/P13-P14 scope"
+      ],
+      "limitations": [
+        "unix-only arbitration and probe (syscall.Flock + syscall.Statfs): same platform scope as the P10/P11 leases",
+        "floor probes the gate filesystem (host lock dir); production must place it on the same filesystem as run scratch (documented placement contract)",
+        "cross-process test child uses the production Statfs probe, so that one control needs >= 10 GiB real free disk (53 GiB available on this machine); all other tests use hermetic fakes",
+        "one Host holds at most one live Grant (unchanged)"
+      ],
+      "reviewer_disposition": {
+        "reviewer": "integrator",
+        "verdict": "accept",
+        "independent_reruns": [
+          "gofmt -l tools/native-test-owner/admission/ => clean, exit 0",
+          "go vet ./tools/native-test-owner/admission/ => clean, exit 0",
+          "go test -count=1 -timeout 120s ./tools/native-test-owner/admission/ => ok 0.439s (20 top-level tests incl. 6 new floor/capability controls)",
+          "go test -count=1 -race -timeout 180s ./tools/native-test-owner/admission/ => ok 2.241s, no data races",
+          "lifecycle contract rechecked at native-can-test-lifecycle-2026-09-30.md initial-finite-envelopes: 10 GiB floor + recheck-before-allocation + finite handle/pending/byte ceilings with no-omitted-means-unlimited; all three implemented"
+        ],
+        "review_notes": [
+          "Allocate/Complete race is caller-misuse shape only (verdict ends the Grant, same contract as pre-existing Complete/Release); sequential Allocate-after-Complete reports ErrReleased and is covered by TestAllocateOnFinishedGrant",
+          "Grant-after-verdict use is not a P12 acceptance blocker"
+        ]
+      },
+      "integrator_handoff": {
+        "scope": "Downstream preserved-evidence adaptation for the new required Capability field (no P13/P14 status change; both stay blocked on strict-enforcement/N-acceptance qualification)",
+        "changed_paths": [
+          "tools/native-test-owner/host/host_test.go",
+          "tools/native-test-owner/acceptance/acceptance_test.go"
+        ],
+        "change": "Added finite admission.Capability{64 handles, 16 pending, 1 GiB} to the three Request literals (host_test.go x2, acceptance testRequest x1); no behavior change beyond satisfying the lifecycle no-omitted-limits rule",
+        "verification": "go test -count=1 -timeout 240s ./tools/native-test-owner/host/ ./tools/native-test-owner/acceptance/ => ok (0.642s + 6.163s); gofmt clean",
+        "note": "Committed separately from the slice commit; listed here by SHA in prose only, not in the commits array (it touches no P12-owned path)"
+      }
+    }
   }
 }

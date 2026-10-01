@@ -10,6 +10,7 @@ var (
 	ErrNoFit            = errors.New("admission: body plus cleanup cannot fit deadline")
 	ErrDeadlineExceeded = errors.New("admission: deadline exceeded")
 	ErrReleased         = errors.New("admission: already released")
+	ErrBelowFloor       = errors.New("admission: available disk below floor")
 )
 
 // Named refusal reasons. Every admission refusal and every failed
@@ -20,6 +21,7 @@ const (
 	ReasonNestedDemand     = "nested-demand"
 	ReasonNoFit            = "body-cleanup-no-fit"
 	ReasonDeadlineExceeded = "deadline-exceeded"
+	ReasonBelowFloor       = "below-disk-floor"
 	ReasonDenied           = "denied"
 )
 
@@ -35,6 +37,8 @@ func Reason(err error) string {
 		return ReasonNoFit
 	case errors.Is(err, ErrDeadlineExceeded):
 		return ReasonDeadlineExceeded
+	case errors.Is(err, ErrBelowFloor):
+		return ReasonBelowFloor
 	default:
 		return ReasonDenied
 	}

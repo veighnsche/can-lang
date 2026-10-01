@@ -31,11 +31,33 @@
 // deadline is failure even if the body just succeeded — Complete at or
 // past the deadline reports ErrDeadlineExceeded.
 //
+// A 10 GiB available-disk admission floor guards every admission: Admit
+// refuses with ErrBelowFloor before touching any lane when the gate
+// filesystem holds less, and every Allocate rechecks the floor, so disk
+// that drops after Admit refuses the next allocation. The floor is a
+// guard, not a reservation — it holds no bytes against other programs —
+// and a failed probe refuses the same way: admission fails closed. The
+// production probe reads Statfs on the host lock directory (production
+// places that directory on the same filesystem as run scratch); tests
+// inject a fake probe via OpenHostWithClockAndFreeDisk, beside the fake
+// clock.
+//
+// Every request also declares finite capability ceilings (open handles,
+// pending operations, scratch bytes). Omitted, zero, negative or
+// otherwise unbounded limits are rejected before any effect; there is no
+// unlimited spelling. Admission records the declared ceilings on the
+// Grant. Policing live consumption against them — strict process, memory
+// and disk enforcement with a demonstrated overshoot bound — is P13 host
+// qualification, which this gate does not claim: the floor and the
+// declared caps are necessary admission protection, not evidence of
+// strict owned enforcement.
+//
 // Integration (explicit, no code coupling): Admit before the first live
-// effect (journal Reserve / process Spawn), hold the Grant across the
-// run, then Complete once the cleanup receipt exists (or Release on abort
-// paths). The P11 stop-admission Gate sits above this gate for
-// cooperative drain; this gate is the kernel-enforced capacity floor,
-// and ProbeLane is the independent per-lane witness in the style of
+// effect (journal Reserve / process Spawn), call Allocate before each
+// allocation effect under the Grant, hold the Grant across the run, then
+// Complete once the cleanup receipt exists (or Release on abort paths).
+// The P11 stop-admission Gate sits above this gate for cooperative
+// drain; this gate is the kernel-enforced capacity floor, and ProbeLane
+// is the independent per-lane witness in the style of
 // process.ProbeLease.
 package admission

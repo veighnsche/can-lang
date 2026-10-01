@@ -30,6 +30,13 @@ var laneOrder = []Lane{LaneLive, LaneVerify, LaneProduce}
 // here means unlimited.
 const MaxBudget = 30 * time.Minute
 
+// MinFreeDiskBytes is the lifecycle available-disk admission floor: 10 GiB.
+// Admit refuses when the gate filesystem holds less, and every Allocate
+// rechecks it. The floor is a guard, not a reservation: it never holds
+// bytes against other programs, it only refuses to start (or continue)
+// when the host is already too full.
+const MinFreeDiskBytes = 10 << 30
+
 func validLane(l Lane) bool {
 	return l == LaneLive || l == LaneVerify || l == LaneProduce
 }
@@ -74,10 +81,56 @@ func (d Demand) String() string {
 	return strings.Join(parts, "+")
 }
 
+// Capability declares the run's finite capability ceilings: open handles,
+// in-flight pending operations and scratch bytes. Every field must be
+// positive; there is no unlimited spelling — zero omits a limit and
+// negative claims an unbounded one, and both are rejected. Admission
+// records the declared ceilings on the Grant; policing live consumption
+// against them is strict host enforcement (P13), which this gate does not
+// claim.
+type Capability struct {
+	MaxHandles int
+	MaxPending int
+	MaxBytes   int64
+}
+
+func (c Capability) valid() bool {
+	return c.MaxHandles > 0 && c.MaxPending > 0 && c.MaxBytes > 0
+}
+
+// FreeDiskFunc reports available bytes for unprivileged callers on the
+// filesystem holding path. Production uses statfsFreeDisk; tests inject a
+// fake.
+type FreeDiskFunc func(path string) (uint64, error)
+
+// statfsFreeDisk is the production free-disk probe: Bavail * Bsize via
+// Statfs, saturated at ^uint64(0). A Statfs failure is reported and the
+// caller refuses: admission fails closed.
+func statfsFreeDisk(path string) (uint64, error) {
+	var s syscall.Statfs_t
+	if err := syscall.Statfs(path, &s); err != nil {
+		return 0, err
+	}
+	if s.Bsize <= 0 || s.Bavail <= 0 {
+		return 0, nil
+	}
+	const maxUint64 = ^uint64(0)
+	bs := uint64(s.Bsize)
+	ba := uint64(s.Bavail)
+	if ba > maxUint64/bs {
+		return maxUint64, nil
+	}
+	return ba * bs, nil
+}
+
 // Request is one admission demand with its charged costs.
 type Request struct {
 	// Demand is the declared peak: every lane the run needs at once.
 	Demand Demand
+	// Capability declares the run's finite ceilings. Every field must be
+	// positive: a request with an omitted or unbounded limit never
+	// starts.
+	Capability Capability
 	// Budget is the total absolute budget measured from admission.
 	Budget time.Duration
 	// Body is the declared body cost.
@@ -97,6 +150,9 @@ func (r Request) validate() ([]Lane, error) {
 	lanes := r.Demand.lanes()
 	if len(lanes) == 0 {
 		return nil, fmt.Errorf("%w: demand names no lane", ErrInvalid)
+	}
+	if !r.Capability.valid() {
+		return nil, fmt.Errorf("%w: capability limits must be finite: every field positive", ErrInvalid)
 	}
 	if r.Budget <= 0 || r.Budget > MaxBudget {
 		return nil, fmt.Errorf("%w: budget must be within (0, %v]", ErrInvalid, MaxBudget)
@@ -127,11 +183,12 @@ var (
 )
 
 // Host is one handle on the host-wide gate. The zero Host is unusable;
-// construct with OpenHost or OpenHostWithClock. A Host is safe for
-// concurrent use.
+// construct with OpenHost, OpenHostWithClock or
+// OpenHostWithClockAndFreeDisk. A Host is safe for concurrent use.
 type Host struct {
-	dir string
-	now func() time.Time
+	dir      string
+	now      func() time.Time
+	freeDisk FreeDiskFunc
 
 	mu   sync.Mutex
 	held map[Lane]*os.File
@@ -140,15 +197,25 @@ type Host struct {
 // OpenHost opens the gate on the host lock directory dir, creating it.
 // In production dir is a well-known host path shared by every
 // repository root; tests pass an isolated t.TempDir. The clock is
-// time.Now.
+// time.Now and the free-disk probe is the production Statfs probe.
 func OpenHost(dir string) (*Host, error) {
 	return OpenHostWithClock(dir, time.Now)
 }
 
 // OpenHostWithClock opens the gate with an explicit clock. A nil clock
 // selects time.Now. Tests inject a fake clock for deterministic
-// deadline controls.
+// deadline controls. The free-disk probe is the production Statfs probe;
+// use OpenHostWithClockAndFreeDisk to inject a fake probe.
 func OpenHostWithClock(dir string, now func() time.Time) (*Host, error) {
+	return OpenHostWithClockAndFreeDisk(dir, now, nil)
+}
+
+// OpenHostWithClockAndFreeDisk opens the gate with an explicit clock and
+// an explicit free-disk probe. A nil clock selects time.Now; a nil probe
+// selects the production Statfs probe, so the floor is never silently
+// skipped. Tests inject a fake clock for deterministic deadline controls
+// and a fake probe for deterministic floor controls.
+func OpenHostWithClockAndFreeDisk(dir string, now func() time.Time, freeDisk FreeDiskFunc) (*Host, error) {
 	if dir == "" {
 		return nil, fmt.Errorf("%w: empty host lock directory", ErrInvalid)
 	}
@@ -162,7 +229,10 @@ func OpenHostWithClock(dir string, now func() time.Time) (*Host, error) {
 	if now == nil {
 		now = time.Now
 	}
-	return &Host{dir: abs, now: now, held: make(map[Lane]*os.File)}, nil
+	if freeDisk == nil {
+		freeDisk = statfsFreeDisk
+	}
+	return &Host{dir: abs, now: now, freeDisk: freeDisk, held: make(map[Lane]*os.File)}, nil
 }
 
 // Dir reports the host lock directory.
@@ -170,6 +240,22 @@ func (h *Host) Dir() string { return h.dir }
 
 func (h *Host) lanePath(l Lane) string {
 	return filepath.Join(h.dir, string(l)+".lock")
+}
+
+// checkFloor enforces the admission floor on the gate filesystem: below
+// MinFreeDiskBytes refuses with ErrBelowFloor, and a probe failure
+// refuses the same way — admission fails closed. Callers invoke it with
+// no admission lock held, so the probe (a Statfs syscall in production,
+// a test fake under test control) can never join a lock cycle.
+func (h *Host) checkFloor() error {
+	avail, err := h.freeDisk(h.dir)
+	if err != nil {
+		return fmt.Errorf("%w: probe %s: %v", ErrBelowFloor, h.dir, err)
+	}
+	if avail < MinFreeDiskBytes {
+		return fmt.Errorf("%w: %d available on %s, floor %d", ErrBelowFloor, avail, h.dir, MinFreeDiskBytes)
+	}
+	return nil
 }
 
 // unmark releases registry and host bookkeeping for lanes, keeping only
@@ -196,6 +282,10 @@ func (h *Host) unmark(lanes []Lane) {
 // this Host already holds a reservation fails fast with ErrNestedDemand
 // before touching the kernel. A case whose body plus cleanup cannot fit
 // strictly inside its budget never starts (ErrNoFit) and holds nothing.
+// Before any lane is touched, Admit enforces the admission floor:
+// below-floor disk (or a failed probe) refuses with ErrBelowFloor and
+// holds nothing, and a request with an omitted or unbounded capability
+// limit is rejected as invalid during validation.
 func (h *Host) Admit(root string, req Request) (*Grant, error) {
 	if root == "" || !filepath.IsAbs(root) {
 		return nil, fmt.Errorf("%w: repository root must be an absolute path", ErrInvalid)
@@ -206,6 +296,14 @@ func (h *Host) Admit(root string, req Request) (*Grant, error) {
 	}
 	start := h.now()
 	deadline := start.Add(req.Budget)
+
+	// Admission floor before any effect: no registry mark, no kernel
+	// lock and no held lane exists yet, so a refusal here cannot strand
+	// state. Production places the host lock directory on the same
+	// filesystem as run scratch so the gate sees allocation pressure.
+	if err := h.checkFloor(); err != nil {
+		return nil, err
+	}
 
 	// Registry first, host second, kernel last; nothing here blocks.
 	registryMu.Lock()
@@ -265,6 +363,7 @@ func (h *Host) Admit(root string, req Request) (*Grant, error) {
 		h: h, root: root, demand: req.Demand, lanes: lanes, files: files,
 		start: start, deadline: deadline,
 		budget: req.Budget, body: req.Body, cleanup: req.CleanupReserve,
+		caps: req.Capability,
 	}, nil
 }
 
@@ -283,6 +382,7 @@ type Grant struct {
 	budget   time.Duration
 	body     time.Duration
 	cleanup  time.Duration
+	caps     Capability
 
 	mu   sync.Mutex
 	done bool
@@ -312,10 +412,34 @@ func (g *Grant) Body() time.Duration { return g.body }
 // CleanupReserve reports the charged cleanup reserve.
 func (g *Grant) CleanupReserve() time.Duration { return g.cleanup }
 
+// Capability reports the declared finite capability ceilings.
+func (g *Grant) Capability() Capability { return g.caps }
+
 // Remaining reports deadline minus the Host clock now. It may be
 // negative past the deadline.
 func (g *Grant) Remaining() time.Duration {
 	return g.deadline.Sub(g.h.now())
+}
+
+// Allocate is the per-allocation checkpoint: call it before each allocation
+// effect under the Grant (workspace materialize, process spawn). It rechecks
+// the admission floor, so disk that dropped below the floor after Admit
+// refuses the next allocation with ErrBelowFloor. The deadline stays
+// absolute: an allocation at or past the deadline reports
+// ErrDeadlineExceeded, and an allocation on a finished Grant reports
+// ErrReleased. Allocate is not a verdict: it never releases the Grant,
+// and a refused allocation leaves the Grant held for abort handling.
+func (g *Grant) Allocate() error {
+	g.mu.Lock()
+	done := g.done
+	g.mu.Unlock()
+	if done {
+		return ErrReleased
+	}
+	if now := g.h.now(); !now.Before(g.deadline) {
+		return fmt.Errorf("%w: allocation at %v, deadline %v", ErrDeadlineExceeded, now, g.deadline)
+	}
+	return g.h.checkFloor()
 }
 
 // finish releases the kernel locks and bookkeeping. The caller records
