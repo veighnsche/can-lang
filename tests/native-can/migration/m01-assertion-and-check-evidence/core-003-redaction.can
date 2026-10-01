@@ -1,0 +1,174 @@
+package m01core003redaction
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M01 CORE-003 "failure locations: redaction of private failure detail".
+/// Source: tests/integration/assertions_test.go symbol TestAssertionFailureLocations.
+/// Related fixtures: none (the forbidden strings are the harness temp
+/// paths, the SECRET env value, stack markers and the caught-leg payload).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): failure reports omit private paths (the temp
+/// workspace root, the bundle path), the SECRET value must-not-disclose,
+/// stack detail (can:cli, Error:) and the must-not-write application
+/// payload; the scan covers both the init and the caught legs.
+/// Exact fault-frame spans live in core-003-locations.can; rejected status,
+/// empty stderr, entry counts, reasons and sticky persistence live in
+/// core-003-status-shape.can.
+/// Variants: initialization failure, caught io::stdout_write fixture
+/// violation (the scan runs on both legs). Span, status and
+/// environment-conditional facets belong to the sibling files.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case redaction/scan checks: root-omitted, bundle-omitted,
+/// secret-omitted, cli-stack-omitted, error-stack-omitted, payload-omitted,
+/// both-legs-scanned.
+/// Facet map (assertions_test.go legs): root-omitted/bundle-omitted pin the
+/// temp workspace and bundle path absence (L339: root, bundle);
+/// secret-omitted pins the SECRET env absence (L292/L339:
+/// "must-not-disclose"); cli-stack-omitted/error-stack-omitted pin the
+/// stack-marker absence (L339: "can:cli", "Error:"); payload-omitted pins
+/// the application payload absence (L339: "must-not-write", written by the
+/// caught leg at L363); both-legs-scanned pins the scan running inside
+/// run() so both legs (L345-355, L356-369) are scanned.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool root_omitted
+    bool bundle_omitted
+    bool secret_omitted
+    bool cli_stack_omitted
+    bool error_stack_omitted
+    bool payload_omitted
+    bool both_legs_scanned
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("redaction/scan", "default", "", "offline"), "root-omitted" => ok "case redaction/scan variant default root root-omitted run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("redaction/scan", "default", "", "offline"), "root-omitted" => ok evidence("root-omitted", "true", "true", true, "case redaction/scan variant default root root-omitted run offline")
+        different: false, true, context("redaction/scan", "default", "", "offline"), "root-omitted" => failed{"root-omitted"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, true, true, true, true, true)
+        seed_root_leaked: "seed-root-leaked" => ok observation(false, true, true, true, true, true, true)
+        seed_bundle_leaked: "seed-bundle-leaked" => ok observation(true, false, true, true, true, true, true)
+        seed_secret_leaked: "seed-secret-leaked" => ok observation(true, true, false, true, true, true, true)
+        seed_cli_leaked: "seed-cli-leaked" => ok observation(true, true, true, false, true, true, true)
+        seed_error_leaked: "seed-error-leaked" => ok observation(true, true, true, true, false, true, true)
+        seed_payload_leaked: "seed-payload-leaked" => ok observation(true, true, true, true, true, false, true)
+        seed_single_leg_scanned: "seed-single-leg-scanned" => ok observation(true, true, true, true, true, true, false)
+    match variant_id
+        "seed-root-leaked" => ok observation(false, true, true, true, true, true, true)
+        "seed-bundle-leaked" => ok observation(true, false, true, true, true, true, true)
+        "seed-secret-leaked" => ok observation(true, true, false, true, true, true, true)
+        "seed-cli-leaked" => ok observation(true, true, true, false, true, true, true)
+        "seed-error-leaked" => ok observation(true, true, true, true, false, true, true)
+        "seed-payload-leaked" => ok observation(true, true, true, true, true, false, true)
+        "seed-single-leg-scanned" => ok observation(true, true, true, true, true, true, false)
+        _ => ok observation(true, true, true, true, true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m01_003: "m01-003" => ok [check("root-omitted", "failure output omits the private workspace path"), check("bundle-omitted", "failure output omits the private bundle path"), check("secret-omitted", "failure output omits SECRET must-not-disclose"), check("cli-stack-omitted", "failure output omits can:cli stack detail"), check("error-stack-omitted", "failure output omits Error: stack detail"), check("payload-omitted", "failure output omits the must-not-write application payload"), check("both-legs-scanned", "redaction scan covers the init and caught legs")]
+        other: "nope" => ok []
+    match scope is "m01-003"
+        false => ok []
+        true => ok [check("root-omitted", "failure output omits the private workspace path"), check("bundle-omitted", "failure output omits the private bundle path"), check("secret-omitted", "failure output omits SECRET must-not-disclose"), check("cli-stack-omitted", "failure output omits can:cli stack detail"), check("error-stack-omitted", "failure output omits Error: stack detail"), check("payload-omitted", "failure output omits the must-not-write application payload"), check("both-legs-scanned", "redaction scan covers the init and caught legs")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "redaction/scan" => ok [expected_check("root-omitted", "true"), expected_check("bundle-omitted", "true"), expected_check("secret-omitted", "true"), expected_check("cli-stack-omitted", "true"), expected_check("error-stack-omitted", "true"), expected_check("payload-omitted", "true"), expected_check("both-legs-scanned", "true")]
+        unknown: "nope" => ok []
+    match case is "redaction/scan"
+        false => ok []
+        true => ok [expected_check("root-omitted", "true"), expected_check("bundle-omitted", "true"), expected_check("secret-omitted", "true"), expected_check("cli-stack-omitted", "true"), expected_check("error-stack-omitted", "true"), expected_check("payload-omitted", "true"), expected_check("both-legs-scanned", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("redaction/scan", "default", "", "offline") => ok
+        seed_root_leaked: context("redaction/scan", "seed-root-leaked", "", "offline") => failed{"root-omitted"}
+        seed_bundle_leaked: context("redaction/scan", "seed-bundle-leaked", "", "offline") => failed{"bundle-omitted"}
+        seed_secret_leaked: context("redaction/scan", "seed-secret-leaked", "", "offline") => failed{"secret-omitted"}
+        seed_cli_leaked: context("redaction/scan", "seed-cli-leaked", "", "offline") => failed{"cli-stack-omitted"}
+        seed_error_leaked: context("redaction/scan", "seed-error-leaked", "", "offline") => failed{"error-stack-omitted"}
+        seed_payload_leaked: context("redaction/scan", "seed-payload-leaked", "", "offline") => failed{"payload-omitted"}
+        seed_single_leg_scanned: context("redaction/scan", "seed-single-leg-scanned", "", "offline") => failed{"both-legs-scanned"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.root_omitted, true, c, "root-omitted")
+            failed
+            ok evidence root_evidence => match call require_bool(got.bundle_omitted, true, c, "bundle-omitted")
+                failed
+                ok evidence bundle_evidence => match call require_bool(got.secret_omitted, true, c, "secret-omitted")
+                    failed
+                    ok evidence secret_evidence => match call require_bool(got.cli_stack_omitted, true, c, "cli-stack-omitted")
+                        failed
+                        ok evidence cli_evidence => match call require_bool(got.error_stack_omitted, true, c, "error-stack-omitted")
+                            failed
+                            ok evidence error_evidence => match call require_bool(got.payload_omitted, true, c, "payload-omitted")
+                                failed
+                                ok evidence payload_evidence => match call require_bool(got.both_legs_scanned, true, c, "both-legs-scanned")
+                                    failed
+                                    ok evidence legs_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m01_003: "m01-003" => ok test_case("redaction/scan", ["assertions", "m01"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("root-omitted"), check_ref("bundle-omitted"), check_ref("secret-omitted"), check_ref("cli-stack-omitted"), check_ref("error-stack-omitted"), check_ref("payload-omitted"), check_ref("both-legs-scanned")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m01-003"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("redaction/scan", ["assertions", "m01"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("root-omitted"), check_ref("bundle-omitted"), check_ref("secret-omitted"), check_ref("cli-stack-omitted"), check_ref("error-stack-omitted"), check_ref("payload-omitted"), check_ref("both-legs-scanned")], callable case_body)

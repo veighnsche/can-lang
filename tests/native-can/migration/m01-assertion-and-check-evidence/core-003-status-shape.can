@@ -1,0 +1,239 @@
+package m01core003status
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M01 CORE-003 "failure locations: rejected status, entries and sticky persistence".
+/// Source: tests/integration/assertions_test.go symbol TestAssertionFailureLocations.
+/// Related fixtures: none (both Can sources are inline in the Go test: the
+/// two-root int-broken initializer leg and the single-root guarded
+/// bytes/io caught-violation leg).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): both legs exit 1 with empty stderr, stdout parses
+/// as an assertion report, the init leg reports exactly 2 entries (both
+/// roots) with reason "initialization failed", the caught leg reports at
+/// least one entry with reason "harness violation" plus "missing fixture"
+/// on stdout, and the source-level catch does not clear the sticky
+/// violation.
+/// Exact fault-frame spans live in core-003-locations.can; redaction scans
+/// live in core-003-redaction.can.
+/// Variants: initialization failure, caught io::stdout_write fixture
+/// violation. Span, redaction and environment-conditional facets belong to
+/// the sibling files.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case status-shape/rejected checks: init-exit-rejected,
+/// caught-exit-rejected, init-stderr-empty, caught-stderr-empty,
+/// init-entries-two, init-reason, caught-reason, caught-missing-fixture,
+/// caught-entries-present, init-report-parses, caught-report-parses,
+/// sticky-persists.
+/// Facet map (assertions_test.go legs): init-exit-rejected/
+/// caught-exit-rejected/init-stderr-empty/caught-stderr-empty pin the
+/// status gate (L298-300: exit 1, empty stderr, both legs);
+/// init-report-parses/caught-report-parses pin stdout parsing as a JSON
+/// report (L301-304); init-entries-two pins both roots reporting init
+/// failure (L312-314: exactly 2 entries); caught-entries-present pins the
+/// non-empty entries gate on the caught leg (L305-308); init-reason/
+/// caught-reason pin the per-entry reasons (L309-324: "initialization
+/// failed" vs "harness violation"); caught-missing-fixture pins the
+/// "missing fixture" stdout marker (L315-317); sticky-persists pins the
+/// suite comment (L260-261: mapping survives a source catch of a sticky
+/// harness violation) on the guarded leg (L356-369: the source catches
+/// io::write_failed yet the report stays rejected).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool init_exit_rejected
+    bool caught_exit_rejected
+    bool init_stderr_empty
+    bool caught_stderr_empty
+    int init_entries
+    str init_reason
+    str caught_reason
+    bool caught_missing_fixture
+    bool caught_entries_present
+    bool init_report_parses
+    bool caught_report_parses
+    bool sticky_persists
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("status-shape/rejected", "default", "", "offline"), "init-exit-rejected" => ok "case status-shape/rejected variant default root init-exit-rejected run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("status-shape/rejected", "default", "", "offline"), "init-exit-rejected" => ok evidence("init-exit-rejected", "true", "true", true, "case status-shape/rejected variant default root init-exit-rejected run offline")
+        different: false, true, context("status-shape/rejected", "default", "", "offline"), "init-exit-rejected" => failed{"init-exit-rejected"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("status-shape/rejected", "default", "", "offline"), "init-entries-two" => ok evidence("init-entries-two", "2", "2", true, "case status-shape/rejected variant default root init-entries-two run offline")
+        different: 1, 2, context("status-shape/rejected", "default", "", "offline"), "init-entries-two" => failed{"init-entries-two"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "initialization failed", "initialization failed", context("status-shape/rejected", "default", "", "offline"), "init-reason" => ok evidence("init-reason", "initialization failed", "initialization failed", true, "case status-shape/rejected variant default root init-reason run offline")
+        different: "harness violation", "initialization failed", context("status-shape/rejected", "default", "", "offline"), "init-reason" => failed{"init-reason"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, true, true, 2, "initialization failed", "harness violation", true, true, true, true, true)
+        seed_init_exit_zero: "seed-init-exit-zero" => ok observation(false, true, true, true, 2, "initialization failed", "harness violation", true, true, true, true, true)
+        seed_caught_exit_zero: "seed-caught-exit-zero" => ok observation(true, false, true, true, 2, "initialization failed", "harness violation", true, true, true, true, true)
+        seed_init_diag: "seed-init-diag" => ok observation(true, true, false, true, 2, "initialization failed", "harness violation", true, true, true, true, true)
+        seed_caught_diag: "seed-caught-diag" => ok observation(true, true, true, false, 2, "initialization failed", "harness violation", true, true, true, true, true)
+        seed_init_single_root: "seed-init-single-root" => ok observation(true, true, true, true, 1, "initialization failed", "harness violation", true, true, true, true, true)
+        seed_init_reason_drift: "seed-init-reason-drift" => ok observation(true, true, true, true, 2, "harness violation", "harness violation", true, true, true, true, true)
+        seed_caught_reason_drift: "seed-caught-reason-drift" => ok observation(true, true, true, true, 2, "initialization failed", "initialization failed", true, true, true, true, true)
+        seed_fixture_silent: "seed-fixture-silent" => ok observation(true, true, true, true, 2, "initialization failed", "harness violation", false, true, true, true, true)
+        seed_caught_empty: "seed-caught-empty" => ok observation(true, true, true, true, 2, "initialization failed", "harness violation", true, false, true, true, true)
+        seed_init_garbled: "seed-init-garbled" => ok observation(true, true, true, true, 2, "initialization failed", "harness violation", true, true, false, true, true)
+        seed_caught_garbled: "seed-caught-garbled" => ok observation(true, true, true, true, 2, "initialization failed", "harness violation", true, true, true, false, true)
+        seed_sticky_cleared: "seed-sticky-cleared" => ok observation(true, true, true, true, 2, "initialization failed", "harness violation", true, true, true, true, false)
+    match variant_id
+        "seed-init-exit-zero" => ok observation(false, true, true, true, 2, "initialization failed", "harness violation", true, true, true, true, true)
+        "seed-caught-exit-zero" => ok observation(true, false, true, true, 2, "initialization failed", "harness violation", true, true, true, true, true)
+        "seed-init-diag" => ok observation(true, true, false, true, 2, "initialization failed", "harness violation", true, true, true, true, true)
+        "seed-caught-diag" => ok observation(true, true, true, false, 2, "initialization failed", "harness violation", true, true, true, true, true)
+        "seed-init-single-root" => ok observation(true, true, true, true, 1, "initialization failed", "harness violation", true, true, true, true, true)
+        "seed-init-reason-drift" => ok observation(true, true, true, true, 2, "harness violation", "harness violation", true, true, true, true, true)
+        "seed-caught-reason-drift" => ok observation(true, true, true, true, 2, "initialization failed", "initialization failed", true, true, true, true, true)
+        "seed-fixture-silent" => ok observation(true, true, true, true, 2, "initialization failed", "harness violation", false, true, true, true, true)
+        "seed-caught-empty" => ok observation(true, true, true, true, 2, "initialization failed", "harness violation", true, false, true, true, true)
+        "seed-init-garbled" => ok observation(true, true, true, true, 2, "initialization failed", "harness violation", true, true, false, true, true)
+        "seed-caught-garbled" => ok observation(true, true, true, true, 2, "initialization failed", "harness violation", true, true, true, false, true)
+        "seed-sticky-cleared" => ok observation(true, true, true, true, 2, "initialization failed", "harness violation", true, true, true, true, false)
+        _ => ok observation(true, true, true, true, 2, "initialization failed", "harness violation", true, true, true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m01_003: "m01-003" => ok [check("init-exit-rejected", "initialization leg exits 1"), check("caught-exit-rejected", "caught leg exits 1 despite the source catch"), check("init-stderr-empty", "initialization leg keeps stderr empty"), check("caught-stderr-empty", "caught leg keeps stderr empty"), check("init-entries-two", "initialization failure reports both roots"), check("init-reason", "initialization entries carry initialization failed"), check("caught-reason", "caught entries carry harness violation"), check("caught-missing-fixture", "caught stdout names the missing fixture"), check("caught-entries-present", "caught leg reports at least one entry"), check("init-report-parses", "initialization stdout parses as an assertion report"), check("caught-report-parses", "caught stdout parses as an assertion report"), check("sticky-persists", "source catch does not clear the sticky violation")]
+        other: "nope" => ok []
+    match scope is "m01-003"
+        false => ok []
+        true => ok [check("init-exit-rejected", "initialization leg exits 1"), check("caught-exit-rejected", "caught leg exits 1 despite the source catch"), check("init-stderr-empty", "initialization leg keeps stderr empty"), check("caught-stderr-empty", "caught leg keeps stderr empty"), check("init-entries-two", "initialization failure reports both roots"), check("init-reason", "initialization entries carry initialization failed"), check("caught-reason", "caught entries carry harness violation"), check("caught-missing-fixture", "caught stdout names the missing fixture"), check("caught-entries-present", "caught leg reports at least one entry"), check("init-report-parses", "initialization stdout parses as an assertion report"), check("caught-report-parses", "caught stdout parses as an assertion report"), check("sticky-persists", "source catch does not clear the sticky violation")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "status-shape/rejected" => ok [expected_check("init-exit-rejected", "true"), expected_check("caught-exit-rejected", "true"), expected_check("init-stderr-empty", "true"), expected_check("caught-stderr-empty", "true"), expected_check("init-entries-two", "2"), expected_check("init-reason", "initialization failed"), expected_check("caught-reason", "harness violation"), expected_check("caught-missing-fixture", "true"), expected_check("caught-entries-present", "true"), expected_check("init-report-parses", "true"), expected_check("caught-report-parses", "true"), expected_check("sticky-persists", "true")]
+        unknown: "nope" => ok []
+    match case is "status-shape/rejected"
+        false => ok []
+        true => ok [expected_check("init-exit-rejected", "true"), expected_check("caught-exit-rejected", "true"), expected_check("init-stderr-empty", "true"), expected_check("caught-stderr-empty", "true"), expected_check("init-entries-two", "2"), expected_check("init-reason", "initialization failed"), expected_check("caught-reason", "harness violation"), expected_check("caught-missing-fixture", "true"), expected_check("caught-entries-present", "true"), expected_check("init-report-parses", "true"), expected_check("caught-report-parses", "true"), expected_check("sticky-persists", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("status-shape/rejected", "default", "", "offline") => ok
+        seed_init_exit_zero: context("status-shape/rejected", "seed-init-exit-zero", "", "offline") => failed{"init-exit-rejected"}
+        seed_caught_exit_zero: context("status-shape/rejected", "seed-caught-exit-zero", "", "offline") => failed{"caught-exit-rejected"}
+        seed_init_diag: context("status-shape/rejected", "seed-init-diag", "", "offline") => failed{"init-stderr-empty"}
+        seed_caught_diag: context("status-shape/rejected", "seed-caught-diag", "", "offline") => failed{"caught-stderr-empty"}
+        seed_init_single_root: context("status-shape/rejected", "seed-init-single-root", "", "offline") => failed{"init-entries-two"}
+        seed_init_reason_drift: context("status-shape/rejected", "seed-init-reason-drift", "", "offline") => failed{"init-reason"}
+        seed_caught_reason_drift: context("status-shape/rejected", "seed-caught-reason-drift", "", "offline") => failed{"caught-reason"}
+        seed_fixture_silent: context("status-shape/rejected", "seed-fixture-silent", "", "offline") => failed{"caught-missing-fixture"}
+        seed_caught_empty: context("status-shape/rejected", "seed-caught-empty", "", "offline") => failed{"caught-entries-present"}
+        seed_init_garbled: context("status-shape/rejected", "seed-init-garbled", "", "offline") => failed{"init-report-parses"}
+        seed_caught_garbled: context("status-shape/rejected", "seed-caught-garbled", "", "offline") => failed{"caught-report-parses"}
+        seed_sticky_cleared: context("status-shape/rejected", "seed-sticky-cleared", "", "offline") => failed{"sticky-persists"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.init_exit_rejected, true, c, "init-exit-rejected")
+            failed
+            ok evidence init_exit_evidence => match call require_bool(got.caught_exit_rejected, true, c, "caught-exit-rejected")
+                failed
+                ok evidence caught_exit_evidence => match call require_bool(got.init_stderr_empty, true, c, "init-stderr-empty")
+                    failed
+                    ok evidence init_stderr_evidence => match call require_bool(got.caught_stderr_empty, true, c, "caught-stderr-empty")
+                        failed
+                        ok evidence caught_stderr_evidence => match call require_int(got.init_entries, 2, c, "init-entries-two")
+                            failed
+                            ok evidence entries_evidence => match call require_text(got.init_reason, "initialization failed", c, "init-reason")
+                                failed
+                                ok evidence init_reason_evidence => match call require_text(got.caught_reason, "harness violation", c, "caught-reason")
+                                    failed
+                                    ok evidence caught_reason_evidence => match call require_bool(got.caught_missing_fixture, true, c, "caught-missing-fixture")
+                                        failed
+                                        ok evidence fixture_evidence => match call require_bool(got.caught_entries_present, true, c, "caught-entries-present")
+                                            failed
+                                            ok evidence entries_present_evidence => match call require_bool(got.init_report_parses, true, c, "init-report-parses")
+                                                failed
+                                                ok evidence init_parse_evidence => match call require_bool(got.caught_report_parses, true, c, "caught-report-parses")
+                                                    failed
+                                                    ok evidence caught_parse_evidence => match call require_bool(got.sticky_persists, true, c, "sticky-persists")
+                                                        failed
+                                                        ok evidence sticky_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m01_003: "m01-003" => ok test_case("status-shape/rejected", ["assertions", "m01"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("init-exit-rejected"), check_ref("caught-exit-rejected"), check_ref("init-stderr-empty"), check_ref("caught-stderr-empty"), check_ref("init-entries-two"), check_ref("init-reason"), check_ref("caught-reason"), check_ref("caught-missing-fixture"), check_ref("caught-entries-present"), check_ref("init-report-parses"), check_ref("caught-report-parses"), check_ref("sticky-persists")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m01-003"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("status-shape/rejected", ["assertions", "m01"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("init-exit-rejected"), check_ref("caught-exit-rejected"), check_ref("init-stderr-empty"), check_ref("caught-stderr-empty"), check_ref("init-entries-two"), check_ref("init-reason"), check_ref("caught-reason"), check_ref("caught-missing-fixture"), check_ref("caught-entries-present"), check_ref("init-report-parses"), check_ref("caught-report-parses"), check_ref("sticky-persists")], callable case_body)
