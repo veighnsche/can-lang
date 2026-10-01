@@ -1,0 +1,213 @@
+/// M30 HISTORY-055 run shape: disposition review inputs for baseline.json.
+/// Coverage-map inputs: 1 protected facet, 0 variants, 0 gates.
+/// Review inputs: 2 live callers, 1 mirror script, frozen T01 date.
+/// Decision pin holds retain; rationale, credit and retirement pins hold
+/// the bounded review outcome: history stays, no execution credit,
+/// retirement_eligible 0 while live callers read the record.
+/// checks: record-date, record-task, decision, rationale, protects-count,
+/// variant-count, env-gate-count, live-caller-count, mirror-count,
+/// execution-credit, retirement-eligible.
+package m30history055run
+    provides [context, check, check_ref, expected_check, evidence, observation, failed, test_case, selector, require_bool, require_int, require_text, observe, checks, expected_vector, case_body, descriptor]
+    uses [text]
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str record_date
+    str record_task
+    str decision
+    str rationale
+    int protects_count
+    int variant_count
+    int env_gate_count
+    int live_caller_count
+    int mirror_count
+    int execution_credit
+    int retirement_eligible
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/baseline-record-run", "default", "", "offline"), "record-date" => ok "case history/baseline-record-run variant default root record-date run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/baseline-record-run", "default", "", "offline"), "record-date" => ok evidence("record-date", "true", "true", true, "case history/baseline-record-run variant default root record-date run offline")
+        different: true, false, context("history/baseline-record-run", "default", "", "offline"), "record-date" => failed{"record-date"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("history/baseline-record-run", "default", "", "offline"), "protects-count" => ok evidence("protects-count", "3", "3", true, "case history/baseline-record-run variant default root protects-count run offline")
+        different: 3, 4, context("history/baseline-record-run", "default", "", "offline"), "protects-count" => failed{"protects-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "a", "a", context("history/baseline-record-run", "default", "", "offline"), "record-date" => ok evidence("record-date", "a", "a", true, "case history/baseline-record-run variant default root record-date run offline")
+        different: "a", "b", context("history/baseline-record-run", "default", "", "offline"), "record-date" => failed{"record-date"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str probe
+    asserts
+        default: "default" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, 0, 0)
+        seed_record_date: "seed-record-date-drift" => ok observation("2026-09-24_2", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, 0, 0)
+        seed_record_task: "seed-record-task-drift" => ok observation("2026-09-24", "T01_2", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, 0, 0)
+        seed_decision: "seed-decision-drift" => ok observation("2026-09-24", "T01", "retain_2", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, 0, 0)
+        seed_rationale: "seed-rationale-drift" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit_2", 1, 0, 0, 2, 1, 0, 0)
+        seed_protects_count: "seed-protects-count-drift" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 0, 0, 0, 2, 1, 0, 0)
+        seed_variant_count: "seed-variant-count-drift" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, -1, 0, 2, 1, 0, 0)
+        seed_env_gate_count: "seed-env-gate-count-drift" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, -1, 2, 1, 0, 0)
+        seed_live_caller_count: "seed-live-caller-count-drift" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 1, 1, 0, 0)
+        seed_mirror_count: "seed-mirror-count-drift" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 0, 0, 0)
+        seed_execution_credit: "seed-execution-credit-drift" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, -1, 0)
+        seed_retirement_eligible: "seed-retirement-eligible-drift" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, 0, -1)
+    match probe
+        "seed-record-date-drift" => ok observation("2026-09-24_2", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, 0, 0)
+        "seed-record-task-drift" => ok observation("2026-09-24", "T01_2", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, 0, 0)
+        "seed-decision-drift" => ok observation("2026-09-24", "T01", "retain_2", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, 0, 0)
+        "seed-rationale-drift" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit_2", 1, 0, 0, 2, 1, 0, 0)
+        "seed-protects-count-drift" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 0, 0, 0, 2, 1, 0, 0)
+        "seed-variant-count-drift" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, -1, 0, 2, 1, 0, 0)
+        "seed-env-gate-count-drift" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, -1, 2, 1, 0, 0)
+        "seed-live-caller-count-drift" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 1, 1, 0, 0)
+        "seed-mirror-count-drift" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 0, 0, 0)
+        "seed-execution-credit-drift" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, -1, 0)
+        "seed-retirement-eligible-drift" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, 0, -1)
+        _ => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, 0, 0)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        known: "baseline-record-run" => ok [check("record-date", "record date"), check("record-task", "record task"), check("decision", "disposition decision"), check("rationale", "disposition rationale"), check("protects-count", "protected facet count"), check("variant-count", "variant count"), check("env-gate-count", "environment gate count"), check("live-caller-count", "live caller count"), check("mirror-count", "mirror script count"), check("execution-credit", "execution credit"), check("retirement-eligible", "retirement eligible")]
+        unknown: "other" => ok []
+    match scope is "baseline-record-run"
+        false => ok []
+        true => ok [check("record-date", "record date"), check("record-task", "record task"), check("decision", "disposition decision"), check("rationale", "disposition rationale"), check("protects-count", "protected facet count"), check("variant-count", "variant count"), check("env-gate-count", "environment gate count"), check("live-caller-count", "live caller count"), check("mirror-count", "mirror script count"), check("execution-credit", "execution credit"), check("retirement-eligible", "retirement eligible")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case_id
+    asserts
+        known: "history/baseline-record-run" => ok [expected_check("record-date", "2026-09-24"), expected_check("record-task", "T01"), expected_check("decision", "retain"), expected_check("rationale", "frozen T01 record stays; callers read it; no execution credit"), expected_check("protects-count", "1"), expected_check("variant-count", "0"), expected_check("env-gate-count", "0"), expected_check("live-caller-count", "2"), expected_check("mirror-count", "1"), expected_check("execution-credit", "0"), expected_check("retirement-eligible", "0")]
+        unknown: "nope" => ok []
+    match case_id is "history/baseline-record-run"
+        false => ok []
+        true => ok [expected_check("record-date", "2026-09-24"), expected_check("record-task", "T01"), expected_check("decision", "retain"), expected_check("rationale", "frozen T01 record stays; callers read it; no execution credit"), expected_check("protects-count", "1"), expected_check("variant-count", "0"), expected_check("env-gate-count", "0"), expected_check("live-caller-count", "2"), expected_check("mirror-count", "1"), expected_check("execution-credit", "0"), expected_check("retirement-eligible", "0")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/baseline-record-run", "default", "", "offline") => ok
+        seed_record_date: context("history/baseline-record-run", "default", "", "offline") => failed{"record-date"}
+        seed_record_task: context("history/baseline-record-run", "default", "", "offline") => failed{"record-task"}
+        seed_decision: context("history/baseline-record-run", "default", "", "offline") => failed{"decision"}
+        seed_rationale: context("history/baseline-record-run", "default", "", "offline") => failed{"rationale"}
+        seed_protects_count: context("history/baseline-record-run", "default", "", "offline") => failed{"protects-count"}
+        seed_variant_count: context("history/baseline-record-run", "default", "", "offline") => failed{"variant-count"}
+        seed_env_gate_count: context("history/baseline-record-run", "default", "", "offline") => failed{"env-gate-count"}
+        seed_live_caller_count: context("history/baseline-record-run", "default", "", "offline") => failed{"live-caller-count"}
+        seed_mirror_count: context("history/baseline-record-run", "default", "", "offline") => failed{"mirror-count"}
+        seed_execution_credit: context("history/baseline-record-run", "default", "", "offline") => failed{"execution-credit"}
+        seed_retirement_eligible: context("history/baseline-record-run", "default", "", "offline") => failed{"retirement-eligible"}
+    match call observe("default")
+        when
+            expected: "default" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, 0, 0)
+            seed_record_date: "default" => ok observation("2026-09-24_2", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, 0, 0)
+            seed_record_task: "default" => ok observation("2026-09-24", "T01_2", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, 0, 0)
+            seed_decision: "default" => ok observation("2026-09-24", "T01", "retain_2", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, 0, 0)
+            seed_rationale: "default" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit_2", 1, 0, 0, 2, 1, 0, 0)
+            seed_protects_count: "default" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 0, 0, 0, 2, 1, 0, 0)
+            seed_variant_count: "default" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, -1, 0, 2, 1, 0, 0)
+            seed_env_gate_count: "default" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, -1, 2, 1, 0, 0)
+            seed_live_caller_count: "default" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 1, 1, 0, 0)
+            seed_mirror_count: "default" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 0, 0, 0)
+            seed_execution_credit: "default" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, -1, 0)
+            seed_retirement_eligible: "default" => ok observation("2026-09-24", "T01", "retain", "frozen T01 record stays; callers read it; no execution credit", 1, 0, 0, 2, 1, 0, -1)
+        ok observation got => match call require_text(got.record_date, "2026-09-24", c, "record-date")
+            failed
+            ok evidence record_date_evidence => match call require_text(got.record_task, "T01", c, "record-task")
+                failed
+                ok evidence record_task_evidence => match call require_text(got.decision, "retain", c, "decision")
+                    failed
+                    ok evidence decision_evidence => match call require_text(got.rationale, "frozen T01 record stays; callers read it; no execution credit", c, "rationale")
+                        failed
+                        ok evidence rationale_evidence => match call require_int(got.protects_count, 1, c, "protects-count")
+                            failed
+                            ok evidence protects_count_evidence => match call require_int(got.variant_count, 0, c, "variant-count")
+                                failed
+                                ok evidence variant_count_evidence => match call require_int(got.env_gate_count, 0, c, "env-gate-count")
+                                    failed
+                                    ok evidence env_gate_count_evidence => match call require_int(got.live_caller_count, 2, c, "live-caller-count")
+                                        failed
+                                        ok evidence live_caller_count_evidence => match call require_int(got.mirror_count, 1, c, "mirror-count")
+                                            failed
+                                            ok evidence mirror_count_evidence => match call require_int(got.execution_credit, 0, c, "execution-credit")
+                                                failed
+                                                ok evidence execution_credit_evidence => match call require_int(got.retirement_eligible, 0, c, "retirement-eligible")
+                                                    failed
+                                                    ok evidence retirement_eligible_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str case_id
+    asserts
+        known: "history/baseline-record-run" => ok test_case("history/baseline-record-run", ["history"], [], 15000, [check_ref("record-date"), check_ref("record-task"), check_ref("decision"), check_ref("rationale"), check_ref("protects-count"), check_ref("variant-count"), check_ref("env-gate-count"), check_ref("live-caller-count"), check_ref("mirror-count"), check_ref("execution-credit"), check_ref("retirement-eligible")], callable case_body)
+        unknown: "nope" => ok test_case("nope", [], [], 0, [], callable case_body)
+    match case_id is "history/baseline-record-run"
+        false => ok test_case("nope", [], [], 0, [], callable case_body)
+        true => ok test_case("history/baseline-record-run", ["history"], [], 15000, [check_ref("record-date"), check_ref("record-task"), check_ref("decision"), check_ref("rationale"), check_ref("protects-count"), check_ref("variant-count"), check_ref("env-gate-count"), check_ref("live-caller-count"), check_ref("mirror-count"), check_ref("execution-credit"), check_ref("retirement-eligible")], callable case_body)
