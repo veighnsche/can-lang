@@ -1,0 +1,375 @@
+package m43edge002base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M43 EDGE-002 "installed artifact smoke"
+/// install pact.
+/// Source: distribution/linux/smoke.sh
+/// symbol "installed artifact smoke"
+/// (L12-43): pinned install command and
+/// runtime identity gates.
+/// Disposition: rewire (this row owns the
+/// caller pact as reviewable Can
+/// facts; smoke.sh stays until the
+/// integrator rewires it after each linked
+/// row and gate has accepted proof).
+/// Protects (this file): the install
+/// command and flags and layout and the
+/// runtime kind and keys and pinned values
+/// and tallies that bound setup.
+/// ADAPTATION (with source lines):
+/// flag pins hold CLI spellings; path pins
+/// hold layout bytes; key pins hold report
+/// spellings; count pins hold ints tallied
+/// from L12-43.
+/// distbuild-call pins
+/// go run ./tools/distbuild (L27);
+/// install-verb pins distbuild install
+/// (L27); archive-flag pins --archive
+/// (L27 and L47); sha-flag pins --sha
+/// (L27); root-flag pins --root (L27);
+/// canlc-path pins current/bin/canlc
+/// (L28); install-root pins install-root
+/// (L19); sha-suffix pins .sha256 (L24);
+/// bun-archive pins
+/// bun-1.4.2-linux-amd64-v1.zip (L23);
+/// exec-gate pins test -x (L29);
+/// runtime-kind pins
+/// can.development-runtime-check (L37);
+/// runtime-report pins runtime-check.json
+/// (L33 and L34); runtime-verb pins
+/// runtime-check (L32, L33, L34, L37 and
+/// L42 with two on L33); pinned-bun pins
+/// 1.4.2 (L23, L38 and L55);
+/// pinned-revision pins
+/// 744846f844374847c902b5e7fd59b4342a51ef99
+/// (L39); kind-key pins "kind" (L37);
+/// bun-key pins "bun" (L38 and L42);
+/// revision-key pins "revision" (L39);
+/// platform-key pins "platform" (L40 and
+/// L42); arch-key pins "architecture"
+/// (L41 and L42); platform-value pins
+/// "linux" (L40); arch-value pins "x64"
+/// (L41); install-flag-count pins
+/// int (3) from L27; runtime-assert-count
+/// pins int (5) from L37-41;
+/// env-default-count pins int (5) from
+/// L12-16.
+/// Facet map (install then identity order):
+/// distbuild-call, install-verb,
+/// archive-flag, sha-flag, root-flag,
+/// canlc-path, install-root, sha-suffix,
+/// bun-archive, exec-gate, runtime-kind,
+/// runtime-report, runtime-verb,
+/// pinned-bun, pinned-revision, kind-key,
+/// bun-key, revision-key, platform-key,
+/// arch-key, platform-value, arch-value,
+/// install-flag-count,
+/// runtime-assert-count, env-default-count.
+/// The qualify gates live in
+/// edge-002-roots-green.can; the example
+/// runs and build verdict live in
+/// edge-002-run-shape.can.
+/// Variants: row lists zero variants; this
+/// file pins the one install and identity
+/// span.
+/// Environment: row lists zero gates;
+/// offline only; no live run now.
+/// Logical gates SUITE, ARCHIVE, DB and N1
+/// bind at P23 and QD1; no live run now.
+/// Timeout 120000ms is the offline default
+/// bound (no timeout in this row; binds at
+/// P23 like the M31 no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23 and
+/// QD1 accept gates unmet).
+/// Intended consumed report: M41 LIFE-012
+/// and LIFE-013 parsed slices (no
+/// qualified report yet; P23 and QD1
+/// unmet).
+/// Rewire stays blocked; smoke.sh
+/// intact; no call retired.
+/// Case edge/smoke-install-identity
+/// checks: distbuild-call, install-verb,
+/// archive-flag, sha-flag, root-flag,
+/// canlc-path, install-root, sha-suffix,
+/// bun-archive, exec-gate, runtime-kind,
+/// runtime-report, runtime-verb,
+/// pinned-bun, pinned-revision, kind-key,
+/// bun-key, revision-key, platform-key,
+/// arch-key, platform-value, arch-value,
+/// install-flag-count,
+/// runtime-assert-count, env-default-count.
+/// Shared old files intact; retirement is a
+/// later integrator choice.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str distbuild_call
+    str install_verb
+    str archive_flag
+    str sha_flag
+    str root_flag
+    str canlc_path
+    str install_root
+    str sha_suffix
+    str bun_archive
+    str exec_gate
+    str runtime_kind
+    str runtime_report
+    str runtime_verb
+    str pinned_bun
+    str pinned_revision
+    str kind_key
+    str bun_key
+    str revision_key
+    str platform_key
+    str arch_key
+    str platform_value
+    str arch_value
+    int install_flag_count
+    int runtime_assert_count
+    int env_default_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("edge/smoke-install-identity", "default", "", "offline"), "distbuild-call" => ok "case edge/smoke-install-identity variant default root distbuild-call run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("edge/smoke-install-identity", "default", "", "offline"), "distbuild-call" => ok evidence("distbuild-call", "true", "true", true, "case edge/smoke-install-identity variant default root distbuild-call run offline")
+        different: false, true, context("edge/smoke-install-identity", "default", "", "offline"), "distbuild-call" => failed{"distbuild-call"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("edge/smoke-install-identity", "default", "", "offline"), "install-flag-count" => ok evidence("install-flag-count", "3", "3", true, "case edge/smoke-install-identity variant default root install-flag-count run offline")
+        different: 2, 3, context("edge/smoke-install-identity", "default", "", "offline"), "install-flag-count" => failed{"install-flag-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "go run ./tools/distbuild", "go run ./tools/distbuild", context("edge/smoke-install-identity", "default", "", "offline"), "distbuild-call" => ok evidence("distbuild-call", "go run ./tools/distbuild", "go run ./tools/distbuild", true, "case edge/smoke-install-identity variant default root distbuild-call run offline")
+        different: "go run ./tools/distbuild_2", "go run ./tools/distbuild", context("edge/smoke-install-identity", "default", "", "offline"), "distbuild-call" => failed{"distbuild-call"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_distbuild_call: "seed-distbuild-call-drift" => ok observation("go run ./tools/distbuild_2", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_install_verb: "seed-install-verb-drift" => ok observation("go run ./tools/distbuild", "distbuild install_2", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_archive_flag: "seed-archive-flag-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive_2", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_sha_flag: "seed-sha-flag-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha_2", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_root_flag: "seed-root-flag-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root_2", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_canlc_path: "seed-canlc-path-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc_2", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_install_root: "seed-install-root-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root_2", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_sha_suffix: "seed-sha-suffix-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256_2", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_bun_archive: "seed-bun-archive-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip_2", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_exec_gate: "seed-exec-gate-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x_2", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_runtime_kind: "seed-runtime-kind-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check_2", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_runtime_report: "seed-runtime-report-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json_2", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_runtime_verb: "seed-runtime-verb-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check_2", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_pinned_bun: "seed-pinned-bun-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2_2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_pinned_revision: "seed-pinned-revision-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99_2", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_kind_key: "seed-kind-key-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"_2", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_bun_key: "seed-bun-key-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"_2", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_revision_key: "seed-revision-key-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"_2", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_platform_key: "seed-platform-key-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"_2", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_arch_key: "seed-arch-key-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"_2", "\"linux\"", "\"x64\"", 3, 5, 5)
+        seed_platform_value: "seed-platform-value-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"_2", "\"x64\"", 3, 5, 5)
+        seed_arch_value: "seed-arch-value-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"_2", 3, 5, 5)
+        seed_install_flag_count: "seed-install-flag-count-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 2, 5, 5)
+        seed_runtime_assert_count: "seed-runtime-assert-count-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 4, 5)
+        seed_env_default_count: "seed-env-default-count-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 4)
+    match variant_id
+        "seed-distbuild-call-drift" => ok observation("go run ./tools/distbuild_2", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-install-verb-drift" => ok observation("go run ./tools/distbuild", "distbuild install_2", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-archive-flag-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive_2", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-sha-flag-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha_2", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-root-flag-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root_2", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-canlc-path-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc_2", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-install-root-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root_2", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-sha-suffix-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256_2", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-bun-archive-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip_2", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-exec-gate-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x_2", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-runtime-kind-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check_2", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-runtime-report-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json_2", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-runtime-verb-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check_2", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-pinned-bun-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2_2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-pinned-revision-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99_2", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-kind-key-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"_2", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-bun-key-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"_2", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-revision-key-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"_2", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-platform-key-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"_2", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-arch-key-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"_2", "\"linux\"", "\"x64\"", 3, 5, 5)
+        "seed-platform-value-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"_2", "\"x64\"", 3, 5, 5)
+        "seed-arch-value-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"_2", 3, 5, 5)
+        "seed-install-flag-count-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 2, 5, 5)
+        "seed-runtime-assert-count-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 4, 5)
+        "seed-env-default-count-drift" => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 4)
+        _ => ok observation("go run ./tools/distbuild", "distbuild install", "--archive", "--sha", "--root", "current/bin/canlc", "install-root", ".sha256", "bun-1.4.2-linux-amd64-v1.zip", "test -x", "can.development-runtime-check", "runtime-check.json", "runtime-check", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "\"kind\"", "\"bun\"", "\"revision\"", "\"platform\"", "\"architecture\"", "\"linux\"", "\"x64\"", 3, 5, 5)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m43_e002: "m43-e002" => ok [check("distbuild-call", "distbuild call keeps its spelling"), check("install-verb", "install verb keeps its spelling"), check("archive-flag", "archive flag keeps its spelling"), check("sha-flag", "sha flag keeps its spelling"), check("root-flag", "root flag keeps its spelling"), check("canlc-path", "canlc path keeps its bytes"), check("install-root", "install root keeps its bytes"), check("sha-suffix", "sha suffix keeps its bytes"), check("bun-archive", "bun archive keeps its bytes"), check("exec-gate", "exec gate keeps its spelling"), check("runtime-kind", "runtime kind keeps its bytes"), check("runtime-report", "runtime report keeps its bytes"), check("runtime-verb", "runtime verb keeps its spelling"), check("pinned-bun", "pinned bun keeps its bytes"), check("pinned-revision", "pinned revision keeps its bytes"), check("kind-key", "kind key keeps its spelling"), check("bun-key", "bun key keeps its spelling"), check("revision-key", "revision key keeps its spelling"), check("platform-key", "platform key keeps its spelling"), check("arch-key", "arch key keeps its spelling"), check("platform-value", "platform value keeps its bytes"), check("arch-value", "arch value keeps its bytes"), check("install-flag-count", "three install flags exist"), check("runtime-assert-count", "five runtime asserts exist"), check("env-default-count", "five env defaults exist")]
+        other: "nope" => ok []
+    match scope is "m43-e002"
+        false => ok []
+        true => ok [check("distbuild-call", "distbuild call keeps its spelling"), check("install-verb", "install verb keeps its spelling"), check("archive-flag", "archive flag keeps its spelling"), check("sha-flag", "sha flag keeps its spelling"), check("root-flag", "root flag keeps its spelling"), check("canlc-path", "canlc path keeps its bytes"), check("install-root", "install root keeps its bytes"), check("sha-suffix", "sha suffix keeps its bytes"), check("bun-archive", "bun archive keeps its bytes"), check("exec-gate", "exec gate keeps its spelling"), check("runtime-kind", "runtime kind keeps its bytes"), check("runtime-report", "runtime report keeps its bytes"), check("runtime-verb", "runtime verb keeps its spelling"), check("pinned-bun", "pinned bun keeps its bytes"), check("pinned-revision", "pinned revision keeps its bytes"), check("kind-key", "kind key keeps its spelling"), check("bun-key", "bun key keeps its spelling"), check("revision-key", "revision key keeps its spelling"), check("platform-key", "platform key keeps its spelling"), check("arch-key", "arch key keeps its spelling"), check("platform-value", "platform value keeps its bytes"), check("arch-value", "arch value keeps its bytes"), check("install-flag-count", "three install flags exist"), check("runtime-assert-count", "five runtime asserts exist"), check("env-default-count", "five env defaults exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "edge/smoke-install-identity" => ok [expected_check("distbuild-call", "go run ./tools/distbuild"), expected_check("install-verb", "distbuild install"), expected_check("archive-flag", "--archive"), expected_check("sha-flag", "--sha"), expected_check("root-flag", "--root"), expected_check("canlc-path", "current/bin/canlc"), expected_check("install-root", "install-root"), expected_check("sha-suffix", ".sha256"), expected_check("bun-archive", "bun-1.4.2-linux-amd64-v1.zip"), expected_check("exec-gate", "test -x"), expected_check("runtime-kind", "can.development-runtime-check"), expected_check("runtime-report", "runtime-check.json"), expected_check("runtime-verb", "runtime-check"), expected_check("pinned-bun", "1.4.2"), expected_check("pinned-revision", "744846f844374847c902b5e7fd59b4342a51ef99"), expected_check("kind-key", "\"kind\""), expected_check("bun-key", "\"bun\""), expected_check("revision-key", "\"revision\""), expected_check("platform-key", "\"platform\""), expected_check("arch-key", "\"architecture\""), expected_check("platform-value", "\"linux\""), expected_check("arch-value", "\"x64\""), expected_check("install-flag-count", "3"), expected_check("runtime-assert-count", "5"), expected_check("env-default-count", "5")]
+        unknown: "nope" => ok []
+    match case is "edge/smoke-install-identity"
+        false => ok []
+        true => ok [expected_check("distbuild-call", "go run ./tools/distbuild"), expected_check("install-verb", "distbuild install"), expected_check("archive-flag", "--archive"), expected_check("sha-flag", "--sha"), expected_check("root-flag", "--root"), expected_check("canlc-path", "current/bin/canlc"), expected_check("install-root", "install-root"), expected_check("sha-suffix", ".sha256"), expected_check("bun-archive", "bun-1.4.2-linux-amd64-v1.zip"), expected_check("exec-gate", "test -x"), expected_check("runtime-kind", "can.development-runtime-check"), expected_check("runtime-report", "runtime-check.json"), expected_check("runtime-verb", "runtime-check"), expected_check("pinned-bun", "1.4.2"), expected_check("pinned-revision", "744846f844374847c902b5e7fd59b4342a51ef99"), expected_check("kind-key", "\"kind\""), expected_check("bun-key", "\"bun\""), expected_check("revision-key", "\"revision\""), expected_check("platform-key", "\"platform\""), expected_check("arch-key", "\"architecture\""), expected_check("platform-value", "\"linux\""), expected_check("arch-value", "\"x64\""), expected_check("install-flag-count", "3"), expected_check("runtime-assert-count", "5"), expected_check("env-default-count", "5")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("edge/smoke-install-identity", "default", "", "offline") => ok
+        seed_distbuild_call: context("edge/smoke-install-identity", "seed-distbuild-call-drift", "", "offline") => failed{"distbuild-call"}
+        seed_install_verb: context("edge/smoke-install-identity", "seed-install-verb-drift", "", "offline") => failed{"install-verb"}
+        seed_archive_flag: context("edge/smoke-install-identity", "seed-archive-flag-drift", "", "offline") => failed{"archive-flag"}
+        seed_sha_flag: context("edge/smoke-install-identity", "seed-sha-flag-drift", "", "offline") => failed{"sha-flag"}
+        seed_root_flag: context("edge/smoke-install-identity", "seed-root-flag-drift", "", "offline") => failed{"root-flag"}
+        seed_canlc_path: context("edge/smoke-install-identity", "seed-canlc-path-drift", "", "offline") => failed{"canlc-path"}
+        seed_install_root: context("edge/smoke-install-identity", "seed-install-root-drift", "", "offline") => failed{"install-root"}
+        seed_sha_suffix: context("edge/smoke-install-identity", "seed-sha-suffix-drift", "", "offline") => failed{"sha-suffix"}
+        seed_bun_archive: context("edge/smoke-install-identity", "seed-bun-archive-drift", "", "offline") => failed{"bun-archive"}
+        seed_exec_gate: context("edge/smoke-install-identity", "seed-exec-gate-drift", "", "offline") => failed{"exec-gate"}
+        seed_runtime_kind: context("edge/smoke-install-identity", "seed-runtime-kind-drift", "", "offline") => failed{"runtime-kind"}
+        seed_runtime_report: context("edge/smoke-install-identity", "seed-runtime-report-drift", "", "offline") => failed{"runtime-report"}
+        seed_runtime_verb: context("edge/smoke-install-identity", "seed-runtime-verb-drift", "", "offline") => failed{"runtime-verb"}
+        seed_pinned_bun: context("edge/smoke-install-identity", "seed-pinned-bun-drift", "", "offline") => failed{"pinned-bun"}
+        seed_pinned_revision: context("edge/smoke-install-identity", "seed-pinned-revision-drift", "", "offline") => failed{"pinned-revision"}
+        seed_kind_key: context("edge/smoke-install-identity", "seed-kind-key-drift", "", "offline") => failed{"kind-key"}
+        seed_bun_key: context("edge/smoke-install-identity", "seed-bun-key-drift", "", "offline") => failed{"bun-key"}
+        seed_revision_key: context("edge/smoke-install-identity", "seed-revision-key-drift", "", "offline") => failed{"revision-key"}
+        seed_platform_key: context("edge/smoke-install-identity", "seed-platform-key-drift", "", "offline") => failed{"platform-key"}
+        seed_arch_key: context("edge/smoke-install-identity", "seed-arch-key-drift", "", "offline") => failed{"arch-key"}
+        seed_platform_value: context("edge/smoke-install-identity", "seed-platform-value-drift", "", "offline") => failed{"platform-value"}
+        seed_arch_value: context("edge/smoke-install-identity", "seed-arch-value-drift", "", "offline") => failed{"arch-value"}
+        seed_install_flag_count: context("edge/smoke-install-identity", "seed-install-flag-count-drift", "", "offline") => failed{"install-flag-count"}
+        seed_runtime_assert_count: context("edge/smoke-install-identity", "seed-runtime-assert-count-drift", "", "offline") => failed{"runtime-assert-count"}
+        seed_env_default_count: context("edge/smoke-install-identity", "seed-env-default-count-drift", "", "offline") => failed{"env-default-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.distbuild_call, "go run ./tools/distbuild", c, "distbuild-call")
+            failed
+            ok evidence distbuild_call_evidence => match call require_text(got.install_verb, "distbuild install", c, "install-verb")
+                failed
+                ok evidence install_verb_evidence => match call require_text(got.archive_flag, "--archive", c, "archive-flag")
+                    failed
+                    ok evidence archive_flag_evidence => match call require_text(got.sha_flag, "--sha", c, "sha-flag")
+                        failed
+                        ok evidence sha_flag_evidence => match call require_text(got.root_flag, "--root", c, "root-flag")
+                            failed
+                            ok evidence root_flag_evidence => match call require_text(got.canlc_path, "current/bin/canlc", c, "canlc-path")
+                                failed
+                                ok evidence canlc_path_evidence => match call require_text(got.install_root, "install-root", c, "install-root")
+                                    failed
+                                    ok evidence install_root_evidence => match call require_text(got.sha_suffix, ".sha256", c, "sha-suffix")
+                                        failed
+                                        ok evidence sha_suffix_evidence => match call require_text(got.bun_archive, "bun-1.4.2-linux-amd64-v1.zip", c, "bun-archive")
+                                            failed
+                                            ok evidence bun_archive_evidence => match call require_text(got.exec_gate, "test -x", c, "exec-gate")
+                                                failed
+                                                ok evidence exec_gate_evidence => match call require_text(got.runtime_kind, "can.development-runtime-check", c, "runtime-kind")
+                                                    failed
+                                                    ok evidence runtime_kind_evidence => match call require_text(got.runtime_report, "runtime-check.json", c, "runtime-report")
+                                                        failed
+                                                        ok evidence runtime_report_evidence => match call require_text(got.runtime_verb, "runtime-check", c, "runtime-verb")
+                                                            failed
+                                                            ok evidence runtime_verb_evidence => match call require_text(got.pinned_bun, "1.4.2", c, "pinned-bun")
+                                                                failed
+                                                                ok evidence pinned_bun_evidence => match call require_text(got.pinned_revision, "744846f844374847c902b5e7fd59b4342a51ef99", c, "pinned-revision")
+                                                                    failed
+                                                                    ok evidence pinned_revision_evidence => match call require_text(got.kind_key, "\"kind\"", c, "kind-key")
+                                                                        failed
+                                                                        ok evidence kind_key_evidence => match call require_text(got.bun_key, "\"bun\"", c, "bun-key")
+                                                                            failed
+                                                                            ok evidence bun_key_evidence => match call require_text(got.revision_key, "\"revision\"", c, "revision-key")
+                                                                                failed
+                                                                                ok evidence revision_key_evidence => match call require_text(got.platform_key, "\"platform\"", c, "platform-key")
+                                                                                    failed
+                                                                                    ok evidence platform_key_evidence => match call require_text(got.arch_key, "\"architecture\"", c, "arch-key")
+                                                                                        failed
+                                                                                        ok evidence arch_key_evidence => match call require_text(got.platform_value, "\"linux\"", c, "platform-value")
+                                                                                            failed
+                                                                                            ok evidence platform_value_evidence => match call require_text(got.arch_value, "\"x64\"", c, "arch-value")
+                                                                                                failed
+                                                                                                ok evidence arch_value_evidence => match call require_int(got.install_flag_count, 3, c, "install-flag-count")
+                                                                                                    failed
+                                                                                                    ok evidence install_flag_count_evidence => match call require_int(got.runtime_assert_count, 5, c, "runtime-assert-count")
+                                                                                                        failed
+                                                                                                        ok evidence runtime_assert_count_evidence => match call require_int(got.env_default_count, 5, c, "env-default-count")
+                                                                                                            failed
+                                                                                                            ok evidence env_default_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m43_e002: "m43-e002" => ok test_case("edge/smoke-install-identity", ["edge", "m43"], [], 120000, [check_ref("distbuild-call"), check_ref("install-verb"), check_ref("archive-flag"), check_ref("sha-flag"), check_ref("root-flag"), check_ref("canlc-path"), check_ref("install-root"), check_ref("sha-suffix"), check_ref("bun-archive"), check_ref("exec-gate"), check_ref("runtime-kind"), check_ref("runtime-report"), check_ref("runtime-verb"), check_ref("pinned-bun"), check_ref("pinned-revision"), check_ref("kind-key"), check_ref("bun-key"), check_ref("revision-key"), check_ref("platform-key"), check_ref("arch-key"), check_ref("platform-value"), check_ref("arch-value"), check_ref("install-flag-count"), check_ref("runtime-assert-count"), check_ref("env-default-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m43-e002"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("edge/smoke-install-identity", ["edge", "m43"], [], 120000, [check_ref("distbuild-call"), check_ref("install-verb"), check_ref("archive-flag"), check_ref("sha-flag"), check_ref("root-flag"), check_ref("canlc-path"), check_ref("install-root"), check_ref("sha-suffix"), check_ref("bun-archive"), check_ref("exec-gate"), check_ref("runtime-kind"), check_ref("runtime-report"), check_ref("runtime-verb"), check_ref("pinned-bun"), check_ref("pinned-revision"), check_ref("kind-key"), check_ref("bun-key"), check_ref("revision-key"), check_ref("platform-key"), check_ref("arch-key"), check_ref("platform-value"), check_ref("arch-value"), check_ref("install-flag-count"), check_ref("runtime-assert-count"), check_ref("env-default-count")], callable case_body)

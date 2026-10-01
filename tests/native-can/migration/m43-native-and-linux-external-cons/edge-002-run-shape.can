@@ -1,0 +1,417 @@
+package m43edge002run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M43 EDGE-002 "installed artifact smoke"
+/// run pact.
+/// Source: distribution/linux/smoke.sh
+/// symbol "installed artifact smoke"
+/// (L63-123): pinned example helpers and
+/// runs and build verdict.
+/// Disposition: rewire (same row pact as
+/// the install slice; this file owns the
+/// helper and run and verdict spellings).
+/// Protects (this file): the two helpers
+/// and four staged runs and canlc verbs
+/// and example outputs and sqlite legs and
+/// build bytes and tallies.
+/// ADAPTATION (with source lines):
+/// helper pins hold fn spellings; call pins
+/// hold staged run bytes; verb pins hold
+/// CLI spellings; output pins hold run
+/// bytes; count pins hold ints tallied
+/// from L63-123.
+/// stage-fn pins stage_example (L63, L82,
+/// L89, L98 and L107); assert-fn pins
+/// canlc_assert (L70, L83, L90, L99 and
+/// L108); stage-process pins
+/// stage_example process (L82); stage-files
+/// pins stage_example files (L89);
+/// stage-crypto pins stage_example crypto
+/// (L98); stage-sqlite pins
+/// stage_example sqlite (L107); assert-verb
+/// pins " assert " (L71); run-verb pins
+/// " run " (L84, L93, L100, L102 and
+/// L113); build-verb pins " build " (L118
+/// and L119); assertions-key pins
+/// assertions (L76 and L77 with two on
+/// L77); process-output pins "ok" (L85);
+/// process-tool pins /bin/echo (L86);
+/// files-output pins file a.txt (L94 and
+/// L95); crypto-match pins "match" (L101);
+/// crypto-miss pins "mismatch" (L103);
+/// crypto-input-hit pins "correct horse"
+/// (L100); crypto-input-miss pins "wrong"
+/// (L102); crypto-note pins argon2id
+/// (L104); sqlite-output pins 7: remember
+/// (L114 and L115); sqlite-db pins
+/// notes.sqlite (L109); sqlite-driver pins
+/// tests/integration/testdata/sql/sqlite-driver.ts
+/// (L111); sqlite-seed pins
+/// distribution/linux/smoke/sqlite-seed.ts
+/// (L112); sqlite-seed-input pins
+/// sqlite-seed.sql (L111); sqlite-setup
+/// pins setup (L111); bun-path pins
+/// current/runtime/bun (L111 and L112);
+/// build-key pins buildID (L118 and L119);
+/// smoke-verdict pins smoke ok (L123);
+/// example-count pins int (4) from L82,
+/// L89, L98 and L107; sqlite-setup-count
+/// pins int (2) from L111-112;
+/// build-repeat-count pins int (2) from
+/// L118-119.
+/// Facet map (helper then run order):
+/// stage-fn, assert-fn, stage-process,
+/// stage-files, stage-crypto, stage-sqlite,
+/// assert-verb, run-verb, build-verb,
+/// assertions-key, process-output,
+/// process-tool, files-output, crypto-match,
+/// crypto-miss, crypto-input-hit,
+/// crypto-input-miss, crypto-note,
+/// sqlite-output, sqlite-db, sqlite-driver,
+/// sqlite-seed, sqlite-seed-input,
+/// sqlite-setup, bun-path, build-key,
+/// smoke-verdict, example-count,
+/// sqlite-setup-count, build-repeat-count.
+/// The install and identity span lives in
+/// edge-002-base-semantics.can; the qualify
+/// gates live in edge-002-roots-green.can.
+/// Variants: row lists zero variants; this
+/// file pins the four example runs and the
+/// build verdict.
+/// Environment: row lists zero gates;
+/// offline only; no live run now.
+/// Logical gates SUITE, ARCHIVE, DB and N1
+/// bind at P23 and QD1; no live run now.
+/// Timeout 120000ms is the offline default
+/// bound (no timeout in this row; binds at
+/// P23 like the M31 no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23 and
+/// QD1 accept gates unmet).
+/// Intended consumed report: M41 LIFE-012
+/// and LIFE-013 parsed slices (no
+/// qualified report yet; P23 and QD1
+/// unmet).
+/// Rewire stays blocked; smoke.sh
+/// intact; no call retired.
+/// Related: tests/integration/testdata/sql/sqlite-driver.ts
+/// and distribution/linux/smoke/sqlite-seed.ts
+/// (invoked by the caller; shared with M41).
+/// Case edge/smoke-examples-determinism
+/// checks: stage-fn, assert-fn,
+/// stage-process, stage-files, stage-crypto,
+/// stage-sqlite, assert-verb, run-verb,
+/// build-verb, assertions-key,
+/// process-output, process-tool,
+/// files-output, crypto-match, crypto-miss,
+/// crypto-input-hit, crypto-input-miss,
+/// crypto-note, sqlite-output, sqlite-db,
+/// sqlite-driver, sqlite-seed,
+/// sqlite-seed-input, sqlite-setup,
+/// bun-path, build-key, smoke-verdict,
+/// example-count, sqlite-setup-count,
+/// build-repeat-count.
+/// Shared old files intact; retirement is a
+/// later integrator choice.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str stage_fn
+    str assert_fn
+    str stage_process
+    str stage_files
+    str stage_crypto
+    str stage_sqlite
+    str assert_verb
+    str run_verb
+    str build_verb
+    str assertions_key
+    str process_output
+    str process_tool
+    str files_output
+    str crypto_match
+    str crypto_miss
+    str crypto_input_hit
+    str crypto_input_miss
+    str crypto_note
+    str sqlite_output
+    str sqlite_db
+    str sqlite_driver
+    str sqlite_seed
+    str sqlite_seed_input
+    str sqlite_setup
+    str bun_path
+    str build_key
+    str smoke_verdict
+    int example_count
+    int sqlite_setup_count
+    int build_repeat_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("edge/smoke-examples-determinism", "default", "", "offline"), "stage-fn" => ok "case edge/smoke-examples-determinism variant default root stage-fn run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("edge/smoke-examples-determinism", "default", "", "offline"), "stage-fn" => ok evidence("stage-fn", "true", "true", true, "case edge/smoke-examples-determinism variant default root stage-fn run offline")
+        different: false, true, context("edge/smoke-examples-determinism", "default", "", "offline"), "stage-fn" => failed{"stage-fn"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("edge/smoke-examples-determinism", "default", "", "offline"), "example-count" => ok evidence("example-count", "4", "4", true, "case edge/smoke-examples-determinism variant default root example-count run offline")
+        different: 3, 4, context("edge/smoke-examples-determinism", "default", "", "offline"), "example-count" => failed{"example-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "stage_example", "stage_example", context("edge/smoke-examples-determinism", "default", "", "offline"), "stage-fn" => ok evidence("stage-fn", "stage_example", "stage_example", true, "case edge/smoke-examples-determinism variant default root stage-fn run offline")
+        different: "stage_example_2", "stage_example", context("edge/smoke-examples-determinism", "default", "", "offline"), "stage-fn" => failed{"stage-fn"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_stage_fn: "seed-stage-fn-drift" => ok observation("stage_example_2", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_assert_fn: "seed-assert-fn-drift" => ok observation("stage_example", "canlc_assert_2", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_stage_process: "seed-stage-process-drift" => ok observation("stage_example", "canlc_assert", "stage_example process_2", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_stage_files: "seed-stage-files-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files_2", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_stage_crypto: "seed-stage-crypto-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto_2", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_stage_sqlite: "seed-stage-sqlite-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite_2", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_assert_verb: "seed-assert-verb-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"_2", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_run_verb: "seed-run-verb-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"_2", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_build_verb: "seed-build-verb-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"_2", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_assertions_key: "seed-assertions-key-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions_2", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_process_output: "seed-process-output-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"_2", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_process_tool: "seed-process-tool-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo_2", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_files_output: "seed-files-output-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt_2", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_crypto_match: "seed-crypto-match-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"_2", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_crypto_miss: "seed-crypto-miss-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"_2", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_crypto_input_hit: "seed-crypto-input-hit-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"_2", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_crypto_input_miss: "seed-crypto-input-miss-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"_2", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_crypto_note: "seed-crypto-note-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id_2", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_sqlite_output: "seed-sqlite-output-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember_2", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_sqlite_db: "seed-sqlite-db-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite_2", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_sqlite_driver: "seed-sqlite-driver-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts_2", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_sqlite_seed: "seed-sqlite-seed-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts_2", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_sqlite_seed_input: "seed-sqlite-seed-input-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql_2", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_sqlite_setup: "seed-sqlite-setup-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup_2", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        seed_bun_path: "seed-bun-path-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun_2", "buildID", "smoke ok", 4, 2, 2)
+        seed_build_key: "seed-build-key-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID_2", "smoke ok", 4, 2, 2)
+        seed_smoke_verdict: "seed-smoke-verdict-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok_2", 4, 2, 2)
+        seed_example_count: "seed-example-count-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 3, 2, 2)
+        seed_sqlite_setup_count: "seed-sqlite-setup-count-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 1, 2)
+        seed_build_repeat_count: "seed-build-repeat-count-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 1)
+    match variant_id
+        "seed-stage-fn-drift" => ok observation("stage_example_2", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-assert-fn-drift" => ok observation("stage_example", "canlc_assert_2", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-stage-process-drift" => ok observation("stage_example", "canlc_assert", "stage_example process_2", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-stage-files-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files_2", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-stage-crypto-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto_2", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-stage-sqlite-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite_2", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-assert-verb-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"_2", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-run-verb-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"_2", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-build-verb-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"_2", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-assertions-key-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions_2", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-process-output-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"_2", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-process-tool-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo_2", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-files-output-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt_2", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-crypto-match-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"_2", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-crypto-miss-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"_2", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-crypto-input-hit-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"_2", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-crypto-input-miss-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"_2", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-crypto-note-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id_2", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-sqlite-output-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember_2", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-sqlite-db-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite_2", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-sqlite-driver-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts_2", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-sqlite-seed-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts_2", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-sqlite-seed-input-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql_2", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-sqlite-setup-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup_2", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+        "seed-bun-path-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun_2", "buildID", "smoke ok", 4, 2, 2)
+        "seed-build-key-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID_2", "smoke ok", 4, 2, 2)
+        "seed-smoke-verdict-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok_2", 4, 2, 2)
+        "seed-example-count-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 3, 2, 2)
+        "seed-sqlite-setup-count-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 1, 2)
+        "seed-build-repeat-count-drift" => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 1)
+        _ => ok observation("stage_example", "canlc_assert", "stage_example process", "stage_example files", "stage_example crypto", "stage_example sqlite", "\" assert \"", "\" run \"", "\" build \"", "assertions", "\"ok\"", "/bin/echo", "file a.txt", "\"match\"", "\"mismatch\"", "\"correct horse\"", "\"wrong\"", "argon2id", "7: remember", "notes.sqlite", "tests/integration/testdata/sql/sqlite-driver.ts", "distribution/linux/smoke/sqlite-seed.ts", "sqlite-seed.sql", "setup", "current/runtime/bun", "buildID", "smoke ok", 4, 2, 2)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m43_e002: "m43-e002" => ok [check("stage-fn", "stage fn keeps its spelling"), check("assert-fn", "assert fn keeps its spelling"), check("stage-process", "stage process keeps its bytes"), check("stage-files", "stage files keeps its bytes"), check("stage-crypto", "stage crypto keeps its bytes"), check("stage-sqlite", "stage sqlite keeps its bytes"), check("assert-verb", "assert verb keeps its spelling"), check("run-verb", "run verb keeps its spelling"), check("build-verb", "build verb keeps its spelling"), check("assertions-key", "assertions key keeps its spelling"), check("process-output", "process output keeps its bytes"), check("process-tool", "process tool keeps its bytes"), check("files-output", "files output keeps its bytes"), check("crypto-match", "crypto match keeps its bytes"), check("crypto-miss", "crypto miss keeps its bytes"), check("crypto-input-hit", "crypto input hit keeps its bytes"), check("crypto-input-miss", "crypto input miss keeps its bytes"), check("crypto-note", "crypto note keeps its bytes"), check("sqlite-output", "sqlite output keeps its bytes"), check("sqlite-db", "sqlite db keeps its bytes"), check("sqlite-driver", "sqlite driver keeps its bytes"), check("sqlite-seed", "sqlite seed keeps its bytes"), check("sqlite-seed-input", "sqlite seed input keeps its bytes"), check("sqlite-setup", "sqlite setup keeps its spelling"), check("bun-path", "bun path keeps its bytes"), check("build-key", "build key keeps its spelling"), check("smoke-verdict", "smoke verdict keeps its bytes"), check("example-count", "four examples exist"), check("sqlite-setup-count", "two sqlite setup legs exist"), check("build-repeat-count", "two build repeats exist")]
+        other: "nope" => ok []
+    match scope is "m43-e002"
+        false => ok []
+        true => ok [check("stage-fn", "stage fn keeps its spelling"), check("assert-fn", "assert fn keeps its spelling"), check("stage-process", "stage process keeps its bytes"), check("stage-files", "stage files keeps its bytes"), check("stage-crypto", "stage crypto keeps its bytes"), check("stage-sqlite", "stage sqlite keeps its bytes"), check("assert-verb", "assert verb keeps its spelling"), check("run-verb", "run verb keeps its spelling"), check("build-verb", "build verb keeps its spelling"), check("assertions-key", "assertions key keeps its spelling"), check("process-output", "process output keeps its bytes"), check("process-tool", "process tool keeps its bytes"), check("files-output", "files output keeps its bytes"), check("crypto-match", "crypto match keeps its bytes"), check("crypto-miss", "crypto miss keeps its bytes"), check("crypto-input-hit", "crypto input hit keeps its bytes"), check("crypto-input-miss", "crypto input miss keeps its bytes"), check("crypto-note", "crypto note keeps its bytes"), check("sqlite-output", "sqlite output keeps its bytes"), check("sqlite-db", "sqlite db keeps its bytes"), check("sqlite-driver", "sqlite driver keeps its bytes"), check("sqlite-seed", "sqlite seed keeps its bytes"), check("sqlite-seed-input", "sqlite seed input keeps its bytes"), check("sqlite-setup", "sqlite setup keeps its spelling"), check("bun-path", "bun path keeps its bytes"), check("build-key", "build key keeps its spelling"), check("smoke-verdict", "smoke verdict keeps its bytes"), check("example-count", "four examples exist"), check("sqlite-setup-count", "two sqlite setup legs exist"), check("build-repeat-count", "two build repeats exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "edge/smoke-examples-determinism" => ok [expected_check("stage-fn", "stage_example"), expected_check("assert-fn", "canlc_assert"), expected_check("stage-process", "stage_example process"), expected_check("stage-files", "stage_example files"), expected_check("stage-crypto", "stage_example crypto"), expected_check("stage-sqlite", "stage_example sqlite"), expected_check("assert-verb", "\" assert \""), expected_check("run-verb", "\" run \""), expected_check("build-verb", "\" build \""), expected_check("assertions-key", "assertions"), expected_check("process-output", "\"ok\""), expected_check("process-tool", "/bin/echo"), expected_check("files-output", "file a.txt"), expected_check("crypto-match", "\"match\""), expected_check("crypto-miss", "\"mismatch\""), expected_check("crypto-input-hit", "\"correct horse\""), expected_check("crypto-input-miss", "\"wrong\""), expected_check("crypto-note", "argon2id"), expected_check("sqlite-output", "7: remember"), expected_check("sqlite-db", "notes.sqlite"), expected_check("sqlite-driver", "tests/integration/testdata/sql/sqlite-driver.ts"), expected_check("sqlite-seed", "distribution/linux/smoke/sqlite-seed.ts"), expected_check("sqlite-seed-input", "sqlite-seed.sql"), expected_check("sqlite-setup", "setup"), expected_check("bun-path", "current/runtime/bun"), expected_check("build-key", "buildID"), expected_check("smoke-verdict", "smoke ok"), expected_check("example-count", "4"), expected_check("sqlite-setup-count", "2"), expected_check("build-repeat-count", "2")]
+        unknown: "nope" => ok []
+    match case is "edge/smoke-examples-determinism"
+        false => ok []
+        true => ok [expected_check("stage-fn", "stage_example"), expected_check("assert-fn", "canlc_assert"), expected_check("stage-process", "stage_example process"), expected_check("stage-files", "stage_example files"), expected_check("stage-crypto", "stage_example crypto"), expected_check("stage-sqlite", "stage_example sqlite"), expected_check("assert-verb", "\" assert \""), expected_check("run-verb", "\" run \""), expected_check("build-verb", "\" build \""), expected_check("assertions-key", "assertions"), expected_check("process-output", "\"ok\""), expected_check("process-tool", "/bin/echo"), expected_check("files-output", "file a.txt"), expected_check("crypto-match", "\"match\""), expected_check("crypto-miss", "\"mismatch\""), expected_check("crypto-input-hit", "\"correct horse\""), expected_check("crypto-input-miss", "\"wrong\""), expected_check("crypto-note", "argon2id"), expected_check("sqlite-output", "7: remember"), expected_check("sqlite-db", "notes.sqlite"), expected_check("sqlite-driver", "tests/integration/testdata/sql/sqlite-driver.ts"), expected_check("sqlite-seed", "distribution/linux/smoke/sqlite-seed.ts"), expected_check("sqlite-seed-input", "sqlite-seed.sql"), expected_check("sqlite-setup", "setup"), expected_check("bun-path", "current/runtime/bun"), expected_check("build-key", "buildID"), expected_check("smoke-verdict", "smoke ok"), expected_check("example-count", "4"), expected_check("sqlite-setup-count", "2"), expected_check("build-repeat-count", "2")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("edge/smoke-examples-determinism", "default", "", "offline") => ok
+        seed_stage_fn: context("edge/smoke-examples-determinism", "seed-stage-fn-drift", "", "offline") => failed{"stage-fn"}
+        seed_assert_fn: context("edge/smoke-examples-determinism", "seed-assert-fn-drift", "", "offline") => failed{"assert-fn"}
+        seed_stage_process: context("edge/smoke-examples-determinism", "seed-stage-process-drift", "", "offline") => failed{"stage-process"}
+        seed_stage_files: context("edge/smoke-examples-determinism", "seed-stage-files-drift", "", "offline") => failed{"stage-files"}
+        seed_stage_crypto: context("edge/smoke-examples-determinism", "seed-stage-crypto-drift", "", "offline") => failed{"stage-crypto"}
+        seed_stage_sqlite: context("edge/smoke-examples-determinism", "seed-stage-sqlite-drift", "", "offline") => failed{"stage-sqlite"}
+        seed_assert_verb: context("edge/smoke-examples-determinism", "seed-assert-verb-drift", "", "offline") => failed{"assert-verb"}
+        seed_run_verb: context("edge/smoke-examples-determinism", "seed-run-verb-drift", "", "offline") => failed{"run-verb"}
+        seed_build_verb: context("edge/smoke-examples-determinism", "seed-build-verb-drift", "", "offline") => failed{"build-verb"}
+        seed_assertions_key: context("edge/smoke-examples-determinism", "seed-assertions-key-drift", "", "offline") => failed{"assertions-key"}
+        seed_process_output: context("edge/smoke-examples-determinism", "seed-process-output-drift", "", "offline") => failed{"process-output"}
+        seed_process_tool: context("edge/smoke-examples-determinism", "seed-process-tool-drift", "", "offline") => failed{"process-tool"}
+        seed_files_output: context("edge/smoke-examples-determinism", "seed-files-output-drift", "", "offline") => failed{"files-output"}
+        seed_crypto_match: context("edge/smoke-examples-determinism", "seed-crypto-match-drift", "", "offline") => failed{"crypto-match"}
+        seed_crypto_miss: context("edge/smoke-examples-determinism", "seed-crypto-miss-drift", "", "offline") => failed{"crypto-miss"}
+        seed_crypto_input_hit: context("edge/smoke-examples-determinism", "seed-crypto-input-hit-drift", "", "offline") => failed{"crypto-input-hit"}
+        seed_crypto_input_miss: context("edge/smoke-examples-determinism", "seed-crypto-input-miss-drift", "", "offline") => failed{"crypto-input-miss"}
+        seed_crypto_note: context("edge/smoke-examples-determinism", "seed-crypto-note-drift", "", "offline") => failed{"crypto-note"}
+        seed_sqlite_output: context("edge/smoke-examples-determinism", "seed-sqlite-output-drift", "", "offline") => failed{"sqlite-output"}
+        seed_sqlite_db: context("edge/smoke-examples-determinism", "seed-sqlite-db-drift", "", "offline") => failed{"sqlite-db"}
+        seed_sqlite_driver: context("edge/smoke-examples-determinism", "seed-sqlite-driver-drift", "", "offline") => failed{"sqlite-driver"}
+        seed_sqlite_seed: context("edge/smoke-examples-determinism", "seed-sqlite-seed-drift", "", "offline") => failed{"sqlite-seed"}
+        seed_sqlite_seed_input: context("edge/smoke-examples-determinism", "seed-sqlite-seed-input-drift", "", "offline") => failed{"sqlite-seed-input"}
+        seed_sqlite_setup: context("edge/smoke-examples-determinism", "seed-sqlite-setup-drift", "", "offline") => failed{"sqlite-setup"}
+        seed_bun_path: context("edge/smoke-examples-determinism", "seed-bun-path-drift", "", "offline") => failed{"bun-path"}
+        seed_build_key: context("edge/smoke-examples-determinism", "seed-build-key-drift", "", "offline") => failed{"build-key"}
+        seed_smoke_verdict: context("edge/smoke-examples-determinism", "seed-smoke-verdict-drift", "", "offline") => failed{"smoke-verdict"}
+        seed_example_count: context("edge/smoke-examples-determinism", "seed-example-count-drift", "", "offline") => failed{"example-count"}
+        seed_sqlite_setup_count: context("edge/smoke-examples-determinism", "seed-sqlite-setup-count-drift", "", "offline") => failed{"sqlite-setup-count"}
+        seed_build_repeat_count: context("edge/smoke-examples-determinism", "seed-build-repeat-count-drift", "", "offline") => failed{"build-repeat-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.stage_fn, "stage_example", c, "stage-fn")
+            failed
+            ok evidence stage_fn_evidence => match call require_text(got.assert_fn, "canlc_assert", c, "assert-fn")
+                failed
+                ok evidence assert_fn_evidence => match call require_text(got.stage_process, "stage_example process", c, "stage-process")
+                    failed
+                    ok evidence stage_process_evidence => match call require_text(got.stage_files, "stage_example files", c, "stage-files")
+                        failed
+                        ok evidence stage_files_evidence => match call require_text(got.stage_crypto, "stage_example crypto", c, "stage-crypto")
+                            failed
+                            ok evidence stage_crypto_evidence => match call require_text(got.stage_sqlite, "stage_example sqlite", c, "stage-sqlite")
+                                failed
+                                ok evidence stage_sqlite_evidence => match call require_text(got.assert_verb, "\" assert \"", c, "assert-verb")
+                                    failed
+                                    ok evidence assert_verb_evidence => match call require_text(got.run_verb, "\" run \"", c, "run-verb")
+                                        failed
+                                        ok evidence run_verb_evidence => match call require_text(got.build_verb, "\" build \"", c, "build-verb")
+                                            failed
+                                            ok evidence build_verb_evidence => match call require_text(got.assertions_key, "assertions", c, "assertions-key")
+                                                failed
+                                                ok evidence assertions_key_evidence => match call require_text(got.process_output, "\"ok\"", c, "process-output")
+                                                    failed
+                                                    ok evidence process_output_evidence => match call require_text(got.process_tool, "/bin/echo", c, "process-tool")
+                                                        failed
+                                                        ok evidence process_tool_evidence => match call require_text(got.files_output, "file a.txt", c, "files-output")
+                                                            failed
+                                                            ok evidence files_output_evidence => match call require_text(got.crypto_match, "\"match\"", c, "crypto-match")
+                                                                failed
+                                                                ok evidence crypto_match_evidence => match call require_text(got.crypto_miss, "\"mismatch\"", c, "crypto-miss")
+                                                                    failed
+                                                                    ok evidence crypto_miss_evidence => match call require_text(got.crypto_input_hit, "\"correct horse\"", c, "crypto-input-hit")
+                                                                        failed
+                                                                        ok evidence crypto_input_hit_evidence => match call require_text(got.crypto_input_miss, "\"wrong\"", c, "crypto-input-miss")
+                                                                            failed
+                                                                            ok evidence crypto_input_miss_evidence => match call require_text(got.crypto_note, "argon2id", c, "crypto-note")
+                                                                                failed
+                                                                                ok evidence crypto_note_evidence => match call require_text(got.sqlite_output, "7: remember", c, "sqlite-output")
+                                                                                    failed
+                                                                                    ok evidence sqlite_output_evidence => match call require_text(got.sqlite_db, "notes.sqlite", c, "sqlite-db")
+                                                                                        failed
+                                                                                        ok evidence sqlite_db_evidence => match call require_text(got.sqlite_driver, "tests/integration/testdata/sql/sqlite-driver.ts", c, "sqlite-driver")
+                                                                                            failed
+                                                                                            ok evidence sqlite_driver_evidence => match call require_text(got.sqlite_seed, "distribution/linux/smoke/sqlite-seed.ts", c, "sqlite-seed")
+                                                                                                failed
+                                                                                                ok evidence sqlite_seed_evidence => match call require_text(got.sqlite_seed_input, "sqlite-seed.sql", c, "sqlite-seed-input")
+                                                                                                    failed
+                                                                                                    ok evidence sqlite_seed_input_evidence => match call require_text(got.sqlite_setup, "setup", c, "sqlite-setup")
+                                                                                                        failed
+                                                                                                        ok evidence sqlite_setup_evidence => match call require_text(got.bun_path, "current/runtime/bun", c, "bun-path")
+                                                                                                            failed
+                                                                                                            ok evidence bun_path_evidence => match call require_text(got.build_key, "buildID", c, "build-key")
+                                                                                                                failed
+                                                                                                                ok evidence build_key_evidence => match call require_text(got.smoke_verdict, "smoke ok", c, "smoke-verdict")
+                                                                                                                    failed
+                                                                                                                    ok evidence smoke_verdict_evidence => match call require_int(got.example_count, 4, c, "example-count")
+                                                                                                                        failed
+                                                                                                                        ok evidence example_count_evidence => match call require_int(got.sqlite_setup_count, 2, c, "sqlite-setup-count")
+                                                                                                                            failed
+                                                                                                                            ok evidence sqlite_setup_count_evidence => match call require_int(got.build_repeat_count, 2, c, "build-repeat-count")
+                                                                                                                                failed
+                                                                                                                                ok evidence build_repeat_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m43_e002: "m43-e002" => ok test_case("edge/smoke-examples-determinism", ["edge", "m43"], [], 120000, [check_ref("stage-fn"), check_ref("assert-fn"), check_ref("stage-process"), check_ref("stage-files"), check_ref("stage-crypto"), check_ref("stage-sqlite"), check_ref("assert-verb"), check_ref("run-verb"), check_ref("build-verb"), check_ref("assertions-key"), check_ref("process-output"), check_ref("process-tool"), check_ref("files-output"), check_ref("crypto-match"), check_ref("crypto-miss"), check_ref("crypto-input-hit"), check_ref("crypto-input-miss"), check_ref("crypto-note"), check_ref("sqlite-output"), check_ref("sqlite-db"), check_ref("sqlite-driver"), check_ref("sqlite-seed"), check_ref("sqlite-seed-input"), check_ref("sqlite-setup"), check_ref("bun-path"), check_ref("build-key"), check_ref("smoke-verdict"), check_ref("example-count"), check_ref("sqlite-setup-count"), check_ref("build-repeat-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m43-e002"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("edge/smoke-examples-determinism", ["edge", "m43"], [], 120000, [check_ref("stage-fn"), check_ref("assert-fn"), check_ref("stage-process"), check_ref("stage-files"), check_ref("stage-crypto"), check_ref("stage-sqlite"), check_ref("assert-verb"), check_ref("run-verb"), check_ref("build-verb"), check_ref("assertions-key"), check_ref("process-output"), check_ref("process-tool"), check_ref("files-output"), check_ref("crypto-match"), check_ref("crypto-miss"), check_ref("crypto-input-hit"), check_ref("crypto-input-miss"), check_ref("crypto-note"), check_ref("sqlite-output"), check_ref("sqlite-db"), check_ref("sqlite-driver"), check_ref("sqlite-seed"), check_ref("sqlite-seed-input"), check_ref("sqlite-setup"), check_ref("bun-path"), check_ref("build-key"), check_ref("smoke-verdict"), check_ref("example-count"), check_ref("sqlite-setup-count"), check_ref("build-repeat-count")], callable case_body)
