@@ -1,0 +1,213 @@
+package m01core002selection
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M01 CORE-002 "bundled assertions: scope selection and selector refusal".
+/// Source: tests/integration/assertions_test.go symbol TestCurrentBundledAssertions.
+/// Related fixtures: compiler/testdata/current/assertions/basic.can,
+/// native-slice.can, queues.can (their roots are the selection targets).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): short selector narrowing (exactly 1 row), the exact
+/// full selector text, unselected-native runs the real operation (no
+/// supplied-completion), duplicate-root refusal, ambiguous-short refusal
+/// naming 2 roots, exact full selector triple green, qualified root::fn
+/// middle form accepted, successful selections keep stderr empty.
+/// Report shape, green counts and no-publish legs live in
+/// core-002-report-shape.can; queue/callable/native-arg and I/O/domain/
+/// initializer mechanics live in core-002-mechanics.can.
+/// Variants: full, short and qualified selectors; duplicate root, ambiguous
+/// short selector. Bad-value, bad-type, queues-mutation, caught-I/O, domain
+/// and initializer variants belong to the sibling files.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case bundled/selection checks: short-count, full-selector-text,
+/// unselected-real, duplicate-refused, ambiguous-refused, full-selector-green,
+/// qualified-accepted, selection-stderr-quiet.
+/// Facet map (assertions_test.go legs): short-count pins the short selection
+/// leg (L106-109: run(arithmetic, large) yields exactly 1 assertion, exit 0,
+/// empty stderr); full-selector-text pins the exact qualified middle element
+/// "can.project.root/arithmetic::square" verbatim from the full triple
+/// (L137); unselected-real pins the unselected native leg (L150-153:
+/// run(native_fixture, actual) passes with NO supplied-completion, so the
+/// real operation ran); duplicate-refused pins the duplicate root leg
+/// (L127-131: exit 1, empty stdout, "duplicate" diagnostic); ambiguous-refused
+/// pins the ambiguous short leg (L132-136: exit 1, empty stdout, "2 roots"
+/// diagnostic); full-selector-green pins the exact full triple passing
+/// (L137-140: exit 0, passed); qualified-accepted pins the qualified root::fn
+/// middle form (full triple L137 plus the queues qualified legs L187/L192/
+/// L197); selection-stderr-quiet pins empty stderr on successful selections
+/// (L107/L138).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int short_count
+    str full_selector_text
+    bool unselected_real
+    bool duplicate_refused
+    bool ambiguous_refused
+    bool full_selector_green
+    bool qualified_accepted
+    bool selection_stderr_quiet
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/selection", "default", "", "offline"), "short-count" => ok "case bundled/selection variant default root short-count run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/selection", "default", "", "offline"), "duplicate-refused" => ok evidence("duplicate-refused", "true", "true", true, "case bundled/selection variant default root duplicate-refused run offline")
+        different: false, true, context("bundled/selection", "default", "", "offline"), "duplicate-refused" => failed{"duplicate-refused"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("bundled/selection", "default", "", "offline"), "short-count" => ok evidence("short-count", "1", "1", true, "case bundled/selection variant default root short-count run offline")
+        different: 0, 1, context("bundled/selection", "default", "", "offline"), "short-count" => failed{"short-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "can.project.root/arithmetic::square", "can.project.root/arithmetic::square", context("bundled/selection", "default", "", "offline"), "full-selector-text" => ok evidence("full-selector-text", "can.project.root/arithmetic::square", "can.project.root/arithmetic::square", true, "case bundled/selection variant default root full-selector-text run offline")
+        different: "can.project.root/arithmetic::cube", "can.project.root/arithmetic::square", context("bundled/selection", "default", "", "offline"), "full-selector-text" => failed{"full-selector-text"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(1, "can.project.root/arithmetic::square", true, true, true, true, true, true)
+        seed_short_empty: "seed-short-empty" => ok observation(0, "can.project.root/arithmetic::square", true, true, true, true, true, true)
+        seed_selector_drift: "seed-selector-drift" => ok observation(1, "can.project.root/arithmetic::cube", true, true, true, true, true, true)
+        seed_supplied_leak: "seed-supplied-leak" => ok observation(1, "can.project.root/arithmetic::square", false, true, true, true, true, true)
+        seed_duplicate_passed: "seed-duplicate-passed" => ok observation(1, "can.project.root/arithmetic::square", true, false, true, true, true, true)
+        seed_ambiguous_passed: "seed-ambiguous-passed" => ok observation(1, "can.project.root/arithmetic::square", true, true, false, true, true, true)
+        seed_full_selector_red: "seed-full-selector-red" => ok observation(1, "can.project.root/arithmetic::square", true, true, true, false, true, true)
+        seed_qualified_rejected: "seed-qualified-rejected" => ok observation(1, "can.project.root/arithmetic::square", true, true, true, true, false, true)
+        seed_selection_diag: "seed-selection-diag" => ok observation(1, "can.project.root/arithmetic::square", true, true, true, true, true, false)
+    match variant_id
+        "seed-short-empty" => ok observation(0, "can.project.root/arithmetic::square", true, true, true, true, true, true)
+        "seed-selector-drift" => ok observation(1, "can.project.root/arithmetic::cube", true, true, true, true, true, true)
+        "seed-supplied-leak" => ok observation(1, "can.project.root/arithmetic::square", false, true, true, true, true, true)
+        "seed-duplicate-passed" => ok observation(1, "can.project.root/arithmetic::square", true, false, true, true, true, true)
+        "seed-ambiguous-passed" => ok observation(1, "can.project.root/arithmetic::square", true, true, false, true, true, true)
+        "seed-full-selector-red" => ok observation(1, "can.project.root/arithmetic::square", true, true, true, false, true, true)
+        "seed-qualified-rejected" => ok observation(1, "can.project.root/arithmetic::square", true, true, true, true, false, true)
+        "seed-selection-diag" => ok observation(1, "can.project.root/arithmetic::square", true, true, true, true, true, false)
+        _ => ok observation(1, "can.project.root/arithmetic::square", true, true, true, true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m01_002: "m01-002" => ok [check("short-count", "short selector yields exactly 1 assertion"), check("full-selector-text", "exact full selector pins arithmetic::square"), check("unselected-real", "unselected native fixture runs the real operation"), check("duplicate-refused", "duplicate root refused with duplicate diagnostic"), check("ambiguous-refused", "ambiguous short selector refused naming 2 roots"), check("full-selector-green", "exact full selector triple passes"), check("qualified-accepted", "qualified root::fn middle selector accepted"), check("selection-stderr-quiet", "successful selections keep stderr empty")]
+        other: "nope" => ok []
+    match scope is "m01-002"
+        false => ok []
+        true => ok [check("short-count", "short selector yields exactly 1 assertion"), check("full-selector-text", "exact full selector pins arithmetic::square"), check("unselected-real", "unselected native fixture runs the real operation"), check("duplicate-refused", "duplicate root refused with duplicate diagnostic"), check("ambiguous-refused", "ambiguous short selector refused naming 2 roots"), check("full-selector-green", "exact full selector triple passes"), check("qualified-accepted", "qualified root::fn middle selector accepted"), check("selection-stderr-quiet", "successful selections keep stderr empty")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/selection" => ok [expected_check("short-count", "1"), expected_check("full-selector-text", "can.project.root/arithmetic::square"), expected_check("unselected-real", "true"), expected_check("duplicate-refused", "true"), expected_check("ambiguous-refused", "true"), expected_check("full-selector-green", "true"), expected_check("qualified-accepted", "true"), expected_check("selection-stderr-quiet", "true")]
+        unknown: "nope" => ok []
+    match case is "bundled/selection"
+        false => ok []
+        true => ok [expected_check("short-count", "1"), expected_check("full-selector-text", "can.project.root/arithmetic::square"), expected_check("unselected-real", "true"), expected_check("duplicate-refused", "true"), expected_check("ambiguous-refused", "true"), expected_check("full-selector-green", "true"), expected_check("qualified-accepted", "true"), expected_check("selection-stderr-quiet", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/selection", "default", "", "offline") => ok
+        seed_short_empty: context("bundled/selection", "seed-short-empty", "", "offline") => failed{"short-count"}
+        seed_selector_drift: context("bundled/selection", "seed-selector-drift", "", "offline") => failed{"full-selector-text"}
+        seed_supplied_leak: context("bundled/selection", "seed-supplied-leak", "", "offline") => failed{"unselected-real"}
+        seed_duplicate_passed: context("bundled/selection", "seed-duplicate-passed", "", "offline") => failed{"duplicate-refused"}
+        seed_ambiguous_passed: context("bundled/selection", "seed-ambiguous-passed", "", "offline") => failed{"ambiguous-refused"}
+        seed_full_selector_red: context("bundled/selection", "seed-full-selector-red", "", "offline") => failed{"full-selector-green"}
+        seed_qualified_rejected: context("bundled/selection", "seed-qualified-rejected", "", "offline") => failed{"qualified-accepted"}
+        seed_selection_diag: context("bundled/selection", "seed-selection-diag", "", "offline") => failed{"selection-stderr-quiet"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.short_count, 1, c, "short-count")
+            failed
+            ok evidence short_evidence => match call require_text(got.full_selector_text, "can.project.root/arithmetic::square", c, "full-selector-text")
+                failed
+                ok evidence full_evidence => match call require_bool(got.unselected_real, true, c, "unselected-real")
+                    failed
+                    ok evidence unselected_evidence => match call require_bool(got.duplicate_refused, true, c, "duplicate-refused")
+                        failed
+                        ok evidence duplicate_evidence => match call require_bool(got.ambiguous_refused, true, c, "ambiguous-refused")
+                            failed
+                            ok evidence ambiguous_evidence => match call require_bool(got.full_selector_green, true, c, "full-selector-green")
+                                failed
+                                ok evidence green_evidence => match call require_bool(got.qualified_accepted, true, c, "qualified-accepted")
+                                    failed
+                                    ok evidence qualified_evidence => match call require_bool(got.selection_stderr_quiet, true, c, "selection-stderr-quiet")
+                                        failed
+                                        ok evidence quiet_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m01_002: "m01-002" => ok test_case("bundled/selection", ["assertions", "m01"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("short-count"), check_ref("full-selector-text"), check_ref("unselected-real"), check_ref("duplicate-refused"), check_ref("ambiguous-refused"), check_ref("full-selector-green"), check_ref("qualified-accepted"), check_ref("selection-stderr-quiet")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m01-002"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/selection", ["assertions", "m01"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("short-count"), check_ref("full-selector-text"), check_ref("unselected-real"), check_ref("duplicate-refused"), check_ref("ambiguous-refused"), check_ref("full-selector-green"), check_ref("qualified-accepted"), check_ref("selection-stderr-quiet")], callable case_body)
