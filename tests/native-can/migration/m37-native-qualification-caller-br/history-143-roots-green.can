@@ -1,0 +1,282 @@
+package m37history143roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M37 HISTORY-143 "distribution native
+/// qualification caller" isolation pact.
+/// Source: distribution/qualify.py
+/// symbol "distribution native
+/// qualification caller" (L31-64 plus
+/// L138-150): pinned network denial plus
+/// provision helpers.
+/// Disposition: rewire (same row pact as
+/// the stage slice; this file owns the
+/// deny roots).
+/// Protects (this file): the darwin plus
+/// linux deny spellings (L139-147) plus
+/// helper call bytes plus tallies.
+/// ADAPTATION (noted, plus source lines):
+/// deny pins hold isolation bytes; helper
+/// pins hold call spellings; count pins
+/// hold ints tallied from L40 plus L60
+/// plus L138-150.
+/// darwin-network pins denied by macOS
+/// sandbox (L139); darwin-tool pins
+/// /usr/bin/sandbox-exec (L140);
+/// darwin-policy pins (version 1)(allow
+/// default)(deny network*) (L140);
+/// linux-network pins denied by Linux
+/// network namespace (unshare -n) (L142);
+/// unshare-bin pins unshare (L40 plus L143
+/// plus helpers); unshare-flag pins -n
+/// (L40 plus L143); caller-prefix pins
+/// caller-provided:  (L147, plus one gap);
+/// glibc-cmd pins getconf (L32);
+/// os-release-path pins /etc/os-release
+/// (L24); net-class pins /sys/class/net
+/// (L50); isolation-branch-count pins int
+/// (4) from L138-150; unshare-prefix-count
+/// pins int (3) from L143; down-state-count
+/// pins int (2) from L60.
+/// Facet map (deny then helper order):
+/// darwin-network, darwin-tool,
+/// darwin-policy, linux-network,
+/// unshare-bin, unshare-flag,
+/// caller-prefix, glibc-cmd,
+/// os-release-path, net-class,
+/// isolation-branch-count,
+/// unshare-prefix-count, down-state-count.
+/// The stage layout lives in
+/// history-143-base-semantics.can; the run
+/// shape plus verdict live in
+/// history-143-run-shape.can.
+/// Variants: darwin sandbox (L139-140)
+/// plus linux unshare (L141-143) or caller
+/// isolation (L144-148) (row lists two
+/// variants; both pinned here; no live run
+/// now).
+/// Environment: pinned upstream archive
+/// plus distribution/target.json (row lists
+/// two gates; bind at QN1; no live run now).
+/// Logical gates SUITE/N1/ENV/ARCHIVE bind
+/// at P23/QN1; no live run now.
+/// Timeout 120000ms is the offline default
+/// bound (no bun timeout in this row; binds
+/// at P23 like the M31 no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23/QN1
+/// accept gates unmet).
+/// Intended consumed report: M35
+/// HISTORY-127..131 parsed slices (no
+/// qualified report yet; P23/QN1 unmet).
+/// Rewire stays blocked; qualify.py
+/// intact; no call retired.
+/// Case history/native-caller-isolation
+/// checks: darwin-network, darwin-tool,
+/// darwin-policy, linux-network,
+/// unshare-bin, unshare-flag,
+/// caller-prefix, glibc-cmd,
+/// os-release-path, net-class,
+/// isolation-branch-count,
+/// unshare-prefix-count, down-state-count.
+/// Shared old files intact; retirement is a
+/// later integrator choice.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str darwin_network
+    str darwin_tool
+    str darwin_policy
+    str linux_network
+    str unshare_bin
+    str unshare_flag
+    str caller_prefix
+    str glibc_cmd
+    str os_release_path
+    str net_class
+    int isolation_branch_count
+    int unshare_prefix_count
+    int down_state_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/native-caller-isolation", "default", "", "offline"), "darwin-network" => ok "case history/native-caller-isolation variant default root darwin-network run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/native-caller-isolation", "default", "", "offline"), "darwin-network" => ok evidence("darwin-network", "true", "true", true, "case history/native-caller-isolation variant default root darwin-network run offline")
+        different: false, true, context("history/native-caller-isolation", "default", "", "offline"), "darwin-network" => failed{"darwin-network"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("history/native-caller-isolation", "default", "", "offline"), "isolation-branch-count" => ok evidence("isolation-branch-count", "4", "4", true, "case history/native-caller-isolation variant default root isolation-branch-count run offline")
+        different: 3, 4, context("history/native-caller-isolation", "default", "", "offline"), "isolation-branch-count" => failed{"isolation-branch-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "denied by macOS sandbox", "denied by macOS sandbox", context("history/native-caller-isolation", "default", "", "offline"), "darwin-network" => ok evidence("darwin-network", "denied by macOS sandbox", "denied by macOS sandbox", true, "case history/native-caller-isolation variant default root darwin-network run offline")
+        different: "denied by macOS sandbox_2", "denied by macOS sandbox", context("history/native-caller-isolation", "default", "", "offline"), "darwin-network" => failed{"darwin-network"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+        seed_darwin_network: "seed-darwin-network-drift" => ok observation("denied by macOS sandbox_2", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+        seed_darwin_tool: "seed-darwin-tool-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec_2", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+        seed_darwin_policy: "seed-darwin-policy-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)_2", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+        seed_linux_network: "seed-linux-network-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)_2", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+        seed_unshare_bin: "seed-unshare-bin-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare_2", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+        seed_unshare_flag: "seed-unshare-flag-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n_2", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+        seed_caller_prefix: "seed-caller-prefix-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: _2", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+        seed_glibc_cmd: "seed-glibc-cmd-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf_2", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+        seed_os_release_path: "seed-os-release-path-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release_2", "/sys/class/net", 4, 3, 2)
+        seed_net_class: "seed-net-class-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net_2", 4, 3, 2)
+        seed_isolation_branch_count: "seed-isolation-branch-count-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 3, 3, 2)
+        seed_unshare_prefix_count: "seed-unshare-prefix-count-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 2, 2)
+        seed_down_state_count: "seed-down-state-count-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 1)
+    match variant_id
+        "seed-darwin-network-drift" => ok observation("denied by macOS sandbox_2", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+        "seed-darwin-tool-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec_2", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+        "seed-darwin-policy-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)_2", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+        "seed-linux-network-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)_2", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+        "seed-unshare-bin-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare_2", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+        "seed-unshare-flag-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n_2", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+        "seed-caller-prefix-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: _2", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+        "seed-glibc-cmd-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf_2", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+        "seed-os-release-path-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release_2", "/sys/class/net", 4, 3, 2)
+        "seed-net-class-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net_2", 4, 3, 2)
+        "seed-isolation-branch-count-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 3, 3, 2)
+        "seed-unshare-prefix-count-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 2, 2)
+        "seed-down-state-count-drift" => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 1)
+        _ => ok observation("denied by macOS sandbox", "/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "denied by Linux network namespace (unshare -n)", "unshare", "-n", "caller-provided: ", "getconf", "/etc/os-release", "/sys/class/net", 4, 3, 2)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m37_h143: "m37-h143" => ok [check("darwin-network", "darwin network keeps its bytes"), check("darwin-tool", "darwin tool keeps its bytes"), check("darwin-policy", "darwin policy keeps its bytes"), check("linux-network", "linux network keeps its bytes"), check("unshare-bin", "unshare bin keeps its spelling"), check("unshare-flag", "unshare flag keeps its spelling"), check("caller-prefix", "caller prefix keeps its bytes"), check("glibc-cmd", "glibc cmd keeps its spelling"), check("os-release-path", "os release path keeps its bytes"), check("net-class", "net class keeps its bytes"), check("isolation-branch-count", "four isolation arms exist"), check("unshare-prefix-count", "three unshare prefix parts exist"), check("down-state-count", "two down states exist")]
+        other: "nope" => ok []
+    match scope is "m37-h143"
+        false => ok []
+        true => ok [check("darwin-network", "darwin network keeps its bytes"), check("darwin-tool", "darwin tool keeps its bytes"), check("darwin-policy", "darwin policy keeps its bytes"), check("linux-network", "linux network keeps its bytes"), check("unshare-bin", "unshare bin keeps its spelling"), check("unshare-flag", "unshare flag keeps its spelling"), check("caller-prefix", "caller prefix keeps its bytes"), check("glibc-cmd", "glibc cmd keeps its spelling"), check("os-release-path", "os release path keeps its bytes"), check("net-class", "net class keeps its bytes"), check("isolation-branch-count", "four isolation arms exist"), check("unshare-prefix-count", "three unshare prefix parts exist"), check("down-state-count", "two down states exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/native-caller-isolation" => ok [expected_check("darwin-network", "denied by macOS sandbox"), expected_check("darwin-tool", "/usr/bin/sandbox-exec"), expected_check("darwin-policy", "(version 1)(allow default)(deny network*)"), expected_check("linux-network", "denied by Linux network namespace (unshare -n)"), expected_check("unshare-bin", "unshare"), expected_check("unshare-flag", "-n"), expected_check("caller-prefix", "caller-provided: "), expected_check("glibc-cmd", "getconf"), expected_check("os-release-path", "/etc/os-release"), expected_check("net-class", "/sys/class/net"), expected_check("isolation-branch-count", "4"), expected_check("unshare-prefix-count", "3"), expected_check("down-state-count", "2")]
+        unknown: "nope" => ok []
+    match case is "history/native-caller-isolation"
+        false => ok []
+        true => ok [expected_check("darwin-network", "denied by macOS sandbox"), expected_check("darwin-tool", "/usr/bin/sandbox-exec"), expected_check("darwin-policy", "(version 1)(allow default)(deny network*)"), expected_check("linux-network", "denied by Linux network namespace (unshare -n)"), expected_check("unshare-bin", "unshare"), expected_check("unshare-flag", "-n"), expected_check("caller-prefix", "caller-provided: "), expected_check("glibc-cmd", "getconf"), expected_check("os-release-path", "/etc/os-release"), expected_check("net-class", "/sys/class/net"), expected_check("isolation-branch-count", "4"), expected_check("unshare-prefix-count", "3"), expected_check("down-state-count", "2")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/native-caller-isolation", "default", "", "offline") => ok
+        seed_darwin_network: context("history/native-caller-isolation", "seed-darwin-network-drift", "", "offline") => failed{"darwin-network"}
+        seed_darwin_tool: context("history/native-caller-isolation", "seed-darwin-tool-drift", "", "offline") => failed{"darwin-tool"}
+        seed_darwin_policy: context("history/native-caller-isolation", "seed-darwin-policy-drift", "", "offline") => failed{"darwin-policy"}
+        seed_linux_network: context("history/native-caller-isolation", "seed-linux-network-drift", "", "offline") => failed{"linux-network"}
+        seed_unshare_bin: context("history/native-caller-isolation", "seed-unshare-bin-drift", "", "offline") => failed{"unshare-bin"}
+        seed_unshare_flag: context("history/native-caller-isolation", "seed-unshare-flag-drift", "", "offline") => failed{"unshare-flag"}
+        seed_caller_prefix: context("history/native-caller-isolation", "seed-caller-prefix-drift", "", "offline") => failed{"caller-prefix"}
+        seed_glibc_cmd: context("history/native-caller-isolation", "seed-glibc-cmd-drift", "", "offline") => failed{"glibc-cmd"}
+        seed_os_release_path: context("history/native-caller-isolation", "seed-os-release-path-drift", "", "offline") => failed{"os-release-path"}
+        seed_net_class: context("history/native-caller-isolation", "seed-net-class-drift", "", "offline") => failed{"net-class"}
+        seed_isolation_branch_count: context("history/native-caller-isolation", "seed-isolation-branch-count-drift", "", "offline") => failed{"isolation-branch-count"}
+        seed_unshare_prefix_count: context("history/native-caller-isolation", "seed-unshare-prefix-count-drift", "", "offline") => failed{"unshare-prefix-count"}
+        seed_down_state_count: context("history/native-caller-isolation", "seed-down-state-count-drift", "", "offline") => failed{"down-state-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.darwin_network, "denied by macOS sandbox", c, "darwin-network")
+            failed
+            ok evidence darwin_network_evidence => match call require_text(got.darwin_tool, "/usr/bin/sandbox-exec", c, "darwin-tool")
+                failed
+                ok evidence darwin_tool_evidence => match call require_text(got.darwin_policy, "(version 1)(allow default)(deny network*)", c, "darwin-policy")
+                    failed
+                    ok evidence darwin_policy_evidence => match call require_text(got.linux_network, "denied by Linux network namespace (unshare -n)", c, "linux-network")
+                        failed
+                        ok evidence linux_network_evidence => match call require_text(got.unshare_bin, "unshare", c, "unshare-bin")
+                            failed
+                            ok evidence unshare_bin_evidence => match call require_text(got.unshare_flag, "-n", c, "unshare-flag")
+                                failed
+                                ok evidence unshare_flag_evidence => match call require_text(got.caller_prefix, "caller-provided: ", c, "caller-prefix")
+                                    failed
+                                    ok evidence caller_prefix_evidence => match call require_text(got.glibc_cmd, "getconf", c, "glibc-cmd")
+                                        failed
+                                        ok evidence glibc_cmd_evidence => match call require_text(got.os_release_path, "/etc/os-release", c, "os-release-path")
+                                            failed
+                                            ok evidence os_release_path_evidence => match call require_text(got.net_class, "/sys/class/net", c, "net-class")
+                                                failed
+                                                ok evidence net_class_evidence => match call require_int(got.isolation_branch_count, 4, c, "isolation-branch-count")
+                                                    failed
+                                                    ok evidence isolation_branch_count_evidence => match call require_int(got.unshare_prefix_count, 3, c, "unshare-prefix-count")
+                                                        failed
+                                                        ok evidence unshare_prefix_count_evidence => match call require_int(got.down_state_count, 2, c, "down-state-count")
+                                                            failed
+                                                            ok evidence down_state_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m37_h143: "m37-h143" => ok test_case("history/native-caller-isolation", ["history", "m37"], [], 120000, [check_ref("darwin-network"), check_ref("darwin-tool"), check_ref("darwin-policy"), check_ref("linux-network"), check_ref("unshare-bin"), check_ref("unshare-flag"), check_ref("caller-prefix"), check_ref("glibc-cmd"), check_ref("os-release-path"), check_ref("net-class"), check_ref("isolation-branch-count"), check_ref("unshare-prefix-count"), check_ref("down-state-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m37-h143"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/native-caller-isolation", ["history", "m37"], [], 120000, [check_ref("darwin-network"), check_ref("darwin-tool"), check_ref("darwin-policy"), check_ref("linux-network"), check_ref("unshare-bin"), check_ref("unshare-flag"), check_ref("caller-prefix"), check_ref("glibc-cmd"), check_ref("os-release-path"), check_ref("net-class"), check_ref("isolation-branch-count"), check_ref("unshare-prefix-count"), check_ref("down-state-count")], callable case_body)

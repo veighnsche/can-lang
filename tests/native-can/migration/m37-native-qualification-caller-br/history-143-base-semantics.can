@@ -1,0 +1,335 @@
+package m37history143base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M37 HISTORY-143 "distribution native
+/// qualification caller" stage pact.
+/// Source: distribution/qualify.py
+/// symbol "distribution native
+/// qualification caller" (L67-137): pinned
+/// CLI plus staged layout plus hash
+/// gates.
+/// Disposition: rewire (this row owns the
+/// caller pact as reviewable Can
+/// facts; old python call stays until
+/// integrator rewires it after each linked
+/// row, variant, plus gate has accepted
+/// proof).
+/// Protects (this file): the four CLI flags
+/// (L69-73) plus staged dirs plus suite
+/// members plus deny PATH plus hash keys
+/// plus tallies that bound staging.
+/// ADAPTATION (noted, plus source lines):
+/// flag pins hold CLI spellings; path pins
+/// hold staged bytes; key pins hold dict
+/// spellings; count pins hold ints tallied
+/// from L69-73 plus L119-137.
+/// archive-flag pins --archive (L69);
+/// report-flag pins --report (L70);
+/// target-flag pins --target-file (L71);
+/// isolation-flag pins --network-isolation
+/// (L73 plus L103 plus L150);
+/// target-default pins
+/// distribution/target.json (L71 plus L127);
+/// temp-prefix pins can-qualification-
+/// (L119); temp-fn pins TemporaryDirectory
+/// (L119); staged-dist pins distribution
+/// (L126); staged-suite pins
+/// tests/conformance (L128 plus L131);
+/// staged-home pins home (L132);
+/// staged-cwd pins unrelated-cwd (L134);
+/// suite-member-a pins native.ts (L130 plus
+/// L152); suite-member-b pins native.test.ts
+/// (L130 plus L151); path-deny pins
+/// /nonexistent (L137); sha-key pins sha256
+/// (L15 plus L113 plus L117); member-key
+/// pins member (L116); size-key pins size
+/// (L113 plus L114); cli-flag-count pins
+/// int (4) from L69-73; staged-copy-count
+/// pins int (2) from L130; env-key-count
+/// pins int (3) from L137.
+/// Facet map (CLI then layout order):
+/// archive-flag, report-flag,
+/// target-flag, isolation-flag,
+/// target-default, temp-prefix, temp-fn,
+/// staged-dist, staged-suite, staged-home,
+/// staged-cwd, suite-member-a,
+/// suite-member-b, path-deny, sha-key,
+/// member-key, size-key, cli-flag-count,
+/// staged-copy-count, env-key-count.
+/// The isolation roots live in
+/// history-143-roots-green.can; the run
+/// shape plus verdict live in
+/// history-143-run-shape.can.
+/// Variants: darwin sandbox plus linux
+/// unshare or caller isolation (row lists
+/// two variants; this file pins shared
+/// staging; variant pins live in roots).
+/// Environment: pinned upstream archive
+/// plus distribution/target.json (row lists
+/// two gates; bind at QN1; no live run now).
+/// Logical gates SUITE/N1/ENV/ARCHIVE bind
+/// at P23/QN1; no live run now.
+/// Timeout 120000ms is the offline default
+/// bound (no bun timeout in this row; binds
+/// at P23 like the M31 no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23/QN1
+/// accept gates unmet).
+/// Intended consumed report: M35
+/// HISTORY-127..131 parsed slices (no
+/// qualified report yet; P23/QN1 unmet).
+/// Rewire stays blocked; qualify.py
+/// intact; no call retired.
+/// Case history/native-caller-stage
+/// checks: archive-flag, report-flag,
+/// target-flag, isolation-flag,
+/// target-default, temp-prefix, temp-fn,
+/// staged-dist, staged-suite, staged-home,
+/// staged-cwd, suite-member-a,
+/// suite-member-b, path-deny, sha-key,
+/// member-key, size-key, cli-flag-count,
+/// staged-copy-count, env-key-count.
+/// Shared old files intact; retirement is a
+/// later integrator choice.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str archive_flag
+    str report_flag
+    str target_flag
+    str isolation_flag
+    str target_default
+    str temp_prefix
+    str temp_fn
+    str staged_dist
+    str staged_suite
+    str staged_home
+    str staged_cwd
+    str suite_member_a
+    str suite_member_b
+    str path_deny
+    str sha_key
+    str member_key
+    str size_key
+    int cli_flag_count
+    int staged_copy_count
+    int env_key_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/native-caller-stage", "default", "", "offline"), "archive-flag" => ok "case history/native-caller-stage variant default root archive-flag run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/native-caller-stage", "default", "", "offline"), "archive-flag" => ok evidence("archive-flag", "true", "true", true, "case history/native-caller-stage variant default root archive-flag run offline")
+        different: false, true, context("history/native-caller-stage", "default", "", "offline"), "archive-flag" => failed{"archive-flag"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("history/native-caller-stage", "default", "", "offline"), "cli-flag-count" => ok evidence("cli-flag-count", "4", "4", true, "case history/native-caller-stage variant default root cli-flag-count run offline")
+        different: 3, 4, context("history/native-caller-stage", "default", "", "offline"), "cli-flag-count" => failed{"cli-flag-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "--archive", "--archive", context("history/native-caller-stage", "default", "", "offline"), "archive-flag" => ok evidence("archive-flag", "--archive", "--archive", true, "case history/native-caller-stage variant default root archive-flag run offline")
+        different: "--archive_2", "--archive", context("history/native-caller-stage", "default", "", "offline"), "archive-flag" => failed{"archive-flag"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        seed_archive_flag: "seed-archive-flag-drift" => ok observation("--archive_2", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        seed_report_flag: "seed-report-flag-drift" => ok observation("--archive", "--report_2", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        seed_target_flag: "seed-target-flag-drift" => ok observation("--archive", "--report", "--target-file_2", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        seed_isolation_flag: "seed-isolation-flag-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation_2", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        seed_target_default: "seed-target-default-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json_2", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        seed_temp_prefix: "seed-temp-prefix-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-_2", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        seed_temp_fn: "seed-temp-fn-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory_2", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        seed_staged_dist: "seed-staged-dist-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution_2", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        seed_staged_suite: "seed-staged-suite-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance_2", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        seed_staged_home: "seed-staged-home-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home_2", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        seed_staged_cwd: "seed-staged-cwd-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd_2", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        seed_suite_member_a: "seed-suite-member-a-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts_2", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        seed_suite_member_b: "seed-suite-member-b-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts_2", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        seed_path_deny: "seed-path-deny-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent_2", "sha256", "member", "size", 4, 2, 3)
+        seed_sha_key: "seed-sha-key-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256_2", "member", "size", 4, 2, 3)
+        seed_member_key: "seed-member-key-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member_2", "size", 4, 2, 3)
+        seed_size_key: "seed-size-key-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size_2", 4, 2, 3)
+        seed_cli_flag_count: "seed-cli-flag-count-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 3, 2, 3)
+        seed_staged_copy_count: "seed-staged-copy-count-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 1, 3)
+        seed_env_key_count: "seed-env-key-count-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 2)
+    match variant_id
+        "seed-archive-flag-drift" => ok observation("--archive_2", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        "seed-report-flag-drift" => ok observation("--archive", "--report_2", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        "seed-target-flag-drift" => ok observation("--archive", "--report", "--target-file_2", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        "seed-isolation-flag-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation_2", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        "seed-target-default-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json_2", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        "seed-temp-prefix-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-_2", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        "seed-temp-fn-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory_2", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        "seed-staged-dist-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution_2", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        "seed-staged-suite-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance_2", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        "seed-staged-home-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home_2", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        "seed-staged-cwd-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd_2", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        "seed-suite-member-a-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts_2", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        "seed-suite-member-b-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts_2", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+        "seed-path-deny-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent_2", "sha256", "member", "size", 4, 2, 3)
+        "seed-sha-key-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256_2", "member", "size", 4, 2, 3)
+        "seed-member-key-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member_2", "size", 4, 2, 3)
+        "seed-size-key-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size_2", 4, 2, 3)
+        "seed-cli-flag-count-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 3, 2, 3)
+        "seed-staged-copy-count-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 1, 3)
+        "seed-env-key-count-drift" => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 2)
+        _ => ok observation("--archive", "--report", "--target-file", "--network-isolation", "distribution/target.json", "can-qualification-", "TemporaryDirectory", "distribution", "tests/conformance", "home", "unrelated-cwd", "native.ts", "native.test.ts", "/nonexistent", "sha256", "member", "size", 4, 2, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m37_h143: "m37-h143" => ok [check("archive-flag", "archive flag keeps its spelling"), check("report-flag", "report flag keeps its spelling"), check("target-flag", "target flag keeps its spelling"), check("isolation-flag", "isolation flag keeps its spelling"), check("target-default", "target default keeps its bytes"), check("temp-prefix", "temp prefix keeps its bytes"), check("temp-fn", "temp fn keeps its spelling"), check("staged-dist", "staged dist keeps its spelling"), check("staged-suite", "staged suite keeps its bytes"), check("staged-home", "staged home keeps its spelling"), check("staged-cwd", "staged cwd keeps its spelling"), check("suite-member-a", "suite member a keeps its bytes"), check("suite-member-b", "suite member b keeps its bytes"), check("path-deny", "path deny keeps its bytes"), check("sha-key", "sha key keeps its spelling"), check("member-key", "member key keeps its spelling"), check("size-key", "size key keeps its spelling"), check("cli-flag-count", "four cli flags exist"), check("staged-copy-count", "two staged copies exist"), check("env-key-count", "three env keys exist")]
+        other: "nope" => ok []
+    match scope is "m37-h143"
+        false => ok []
+        true => ok [check("archive-flag", "archive flag keeps its spelling"), check("report-flag", "report flag keeps its spelling"), check("target-flag", "target flag keeps its spelling"), check("isolation-flag", "isolation flag keeps its spelling"), check("target-default", "target default keeps its bytes"), check("temp-prefix", "temp prefix keeps its bytes"), check("temp-fn", "temp fn keeps its spelling"), check("staged-dist", "staged dist keeps its spelling"), check("staged-suite", "staged suite keeps its bytes"), check("staged-home", "staged home keeps its spelling"), check("staged-cwd", "staged cwd keeps its spelling"), check("suite-member-a", "suite member a keeps its bytes"), check("suite-member-b", "suite member b keeps its bytes"), check("path-deny", "path deny keeps its bytes"), check("sha-key", "sha key keeps its spelling"), check("member-key", "member key keeps its spelling"), check("size-key", "size key keeps its spelling"), check("cli-flag-count", "four cli flags exist"), check("staged-copy-count", "two staged copies exist"), check("env-key-count", "three env keys exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/native-caller-stage" => ok [expected_check("archive-flag", "--archive"), expected_check("report-flag", "--report"), expected_check("target-flag", "--target-file"), expected_check("isolation-flag", "--network-isolation"), expected_check("target-default", "distribution/target.json"), expected_check("temp-prefix", "can-qualification-"), expected_check("temp-fn", "TemporaryDirectory"), expected_check("staged-dist", "distribution"), expected_check("staged-suite", "tests/conformance"), expected_check("staged-home", "home"), expected_check("staged-cwd", "unrelated-cwd"), expected_check("suite-member-a", "native.ts"), expected_check("suite-member-b", "native.test.ts"), expected_check("path-deny", "/nonexistent"), expected_check("sha-key", "sha256"), expected_check("member-key", "member"), expected_check("size-key", "size"), expected_check("cli-flag-count", "4"), expected_check("staged-copy-count", "2"), expected_check("env-key-count", "3")]
+        unknown: "nope" => ok []
+    match case is "history/native-caller-stage"
+        false => ok []
+        true => ok [expected_check("archive-flag", "--archive"), expected_check("report-flag", "--report"), expected_check("target-flag", "--target-file"), expected_check("isolation-flag", "--network-isolation"), expected_check("target-default", "distribution/target.json"), expected_check("temp-prefix", "can-qualification-"), expected_check("temp-fn", "TemporaryDirectory"), expected_check("staged-dist", "distribution"), expected_check("staged-suite", "tests/conformance"), expected_check("staged-home", "home"), expected_check("staged-cwd", "unrelated-cwd"), expected_check("suite-member-a", "native.ts"), expected_check("suite-member-b", "native.test.ts"), expected_check("path-deny", "/nonexistent"), expected_check("sha-key", "sha256"), expected_check("member-key", "member"), expected_check("size-key", "size"), expected_check("cli-flag-count", "4"), expected_check("staged-copy-count", "2"), expected_check("env-key-count", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/native-caller-stage", "default", "", "offline") => ok
+        seed_archive_flag: context("history/native-caller-stage", "seed-archive-flag-drift", "", "offline") => failed{"archive-flag"}
+        seed_report_flag: context("history/native-caller-stage", "seed-report-flag-drift", "", "offline") => failed{"report-flag"}
+        seed_target_flag: context("history/native-caller-stage", "seed-target-flag-drift", "", "offline") => failed{"target-flag"}
+        seed_isolation_flag: context("history/native-caller-stage", "seed-isolation-flag-drift", "", "offline") => failed{"isolation-flag"}
+        seed_target_default: context("history/native-caller-stage", "seed-target-default-drift", "", "offline") => failed{"target-default"}
+        seed_temp_prefix: context("history/native-caller-stage", "seed-temp-prefix-drift", "", "offline") => failed{"temp-prefix"}
+        seed_temp_fn: context("history/native-caller-stage", "seed-temp-fn-drift", "", "offline") => failed{"temp-fn"}
+        seed_staged_dist: context("history/native-caller-stage", "seed-staged-dist-drift", "", "offline") => failed{"staged-dist"}
+        seed_staged_suite: context("history/native-caller-stage", "seed-staged-suite-drift", "", "offline") => failed{"staged-suite"}
+        seed_staged_home: context("history/native-caller-stage", "seed-staged-home-drift", "", "offline") => failed{"staged-home"}
+        seed_staged_cwd: context("history/native-caller-stage", "seed-staged-cwd-drift", "", "offline") => failed{"staged-cwd"}
+        seed_suite_member_a: context("history/native-caller-stage", "seed-suite-member-a-drift", "", "offline") => failed{"suite-member-a"}
+        seed_suite_member_b: context("history/native-caller-stage", "seed-suite-member-b-drift", "", "offline") => failed{"suite-member-b"}
+        seed_path_deny: context("history/native-caller-stage", "seed-path-deny-drift", "", "offline") => failed{"path-deny"}
+        seed_sha_key: context("history/native-caller-stage", "seed-sha-key-drift", "", "offline") => failed{"sha-key"}
+        seed_member_key: context("history/native-caller-stage", "seed-member-key-drift", "", "offline") => failed{"member-key"}
+        seed_size_key: context("history/native-caller-stage", "seed-size-key-drift", "", "offline") => failed{"size-key"}
+        seed_cli_flag_count: context("history/native-caller-stage", "seed-cli-flag-count-drift", "", "offline") => failed{"cli-flag-count"}
+        seed_staged_copy_count: context("history/native-caller-stage", "seed-staged-copy-count-drift", "", "offline") => failed{"staged-copy-count"}
+        seed_env_key_count: context("history/native-caller-stage", "seed-env-key-count-drift", "", "offline") => failed{"env-key-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.archive_flag, "--archive", c, "archive-flag")
+            failed
+            ok evidence archive_flag_evidence => match call require_text(got.report_flag, "--report", c, "report-flag")
+                failed
+                ok evidence report_flag_evidence => match call require_text(got.target_flag, "--target-file", c, "target-flag")
+                    failed
+                    ok evidence target_flag_evidence => match call require_text(got.isolation_flag, "--network-isolation", c, "isolation-flag")
+                        failed
+                        ok evidence isolation_flag_evidence => match call require_text(got.target_default, "distribution/target.json", c, "target-default")
+                            failed
+                            ok evidence target_default_evidence => match call require_text(got.temp_prefix, "can-qualification-", c, "temp-prefix")
+                                failed
+                                ok evidence temp_prefix_evidence => match call require_text(got.temp_fn, "TemporaryDirectory", c, "temp-fn")
+                                    failed
+                                    ok evidence temp_fn_evidence => match call require_text(got.staged_dist, "distribution", c, "staged-dist")
+                                        failed
+                                        ok evidence staged_dist_evidence => match call require_text(got.staged_suite, "tests/conformance", c, "staged-suite")
+                                            failed
+                                            ok evidence staged_suite_evidence => match call require_text(got.staged_home, "home", c, "staged-home")
+                                                failed
+                                                ok evidence staged_home_evidence => match call require_text(got.staged_cwd, "unrelated-cwd", c, "staged-cwd")
+                                                    failed
+                                                    ok evidence staged_cwd_evidence => match call require_text(got.suite_member_a, "native.ts", c, "suite-member-a")
+                                                        failed
+                                                        ok evidence suite_member_a_evidence => match call require_text(got.suite_member_b, "native.test.ts", c, "suite-member-b")
+                                                            failed
+                                                            ok evidence suite_member_b_evidence => match call require_text(got.path_deny, "/nonexistent", c, "path-deny")
+                                                                failed
+                                                                ok evidence path_deny_evidence => match call require_text(got.sha_key, "sha256", c, "sha-key")
+                                                                    failed
+                                                                    ok evidence sha_key_evidence => match call require_text(got.member_key, "member", c, "member-key")
+                                                                        failed
+                                                                        ok evidence member_key_evidence => match call require_text(got.size_key, "size", c, "size-key")
+                                                                            failed
+                                                                            ok evidence size_key_evidence => match call require_int(got.cli_flag_count, 4, c, "cli-flag-count")
+                                                                                failed
+                                                                                ok evidence cli_flag_count_evidence => match call require_int(got.staged_copy_count, 2, c, "staged-copy-count")
+                                                                                    failed
+                                                                                    ok evidence staged_copy_count_evidence => match call require_int(got.env_key_count, 3, c, "env-key-count")
+                                                                                        failed
+                                                                                        ok evidence env_key_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m37_h143: "m37-h143" => ok test_case("history/native-caller-stage", ["history", "m37"], [], 120000, [check_ref("archive-flag"), check_ref("report-flag"), check_ref("target-flag"), check_ref("isolation-flag"), check_ref("target-default"), check_ref("temp-prefix"), check_ref("temp-fn"), check_ref("staged-dist"), check_ref("staged-suite"), check_ref("staged-home"), check_ref("staged-cwd"), check_ref("suite-member-a"), check_ref("suite-member-b"), check_ref("path-deny"), check_ref("sha-key"), check_ref("member-key"), check_ref("size-key"), check_ref("cli-flag-count"), check_ref("staged-copy-count"), check_ref("env-key-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m37-h143"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/native-caller-stage", ["history", "m37"], [], 120000, [check_ref("archive-flag"), check_ref("report-flag"), check_ref("target-flag"), check_ref("isolation-flag"), check_ref("target-default"), check_ref("temp-prefix"), check_ref("temp-fn"), check_ref("staged-dist"), check_ref("staged-suite"), check_ref("staged-home"), check_ref("staged-cwd"), check_ref("suite-member-a"), check_ref("suite-member-b"), check_ref("path-deny"), check_ref("sha-key"), check_ref("member-key"), check_ref("size-key"), check_ref("cli-flag-count"), check_ref("staged-copy-count"), check_ref("env-key-count")], callable case_body)
