@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"i13_db_merge_shape":{"type":"choice","choice":"full_adapter_held_service","confidence":0.37,"probabilities":{"full_adapter_held_service":0.58,"external_n_dispatch":0.01,"split_pure_can_stateful_host":0.41}}},"usage":{"input_tokens":1575,"output_tokens":59}}

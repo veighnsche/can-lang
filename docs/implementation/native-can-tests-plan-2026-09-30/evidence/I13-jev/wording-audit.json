@@ -1,0 +1,66 @@
+{
+ "fact_anchors_verified": [
+  "core.ts",
+  "698 lines",
+  "returning.ts",
+  "478 lines",
+  "DbObserverService",
+  "ReturningObserver",
+  "11 + 9 methods (openNamespace/pinConnection/compareRow/recordCompile/recordFinalRows/compareClaimedRow/creditVerdict et al)",
+  "engine/driver/sql",
+  "number/text/bytes/null",
+  "14 codes",
+  "wrong-owner",
+  "closed-handle",
+  "forged-token",
+  "unknown-connection",
+  "test::stale_handle",
+  "db::db_fault",
+  "slices/i13",
+  "capabilities/i13",
+  "NT-I13",
+  "db::",
+  "owner-first",
+  "owner elision",
+  "I01/I02/I03/I04/I11",
+  "K05/K22/K23",
+  "P14",
+  "QD1",
+  "provisional",
+  "ship boundary",
+  "RETURNING_MAX_COMPILES 8",
+  "MAX_STATEMENT_LEN 4096",
+  "MAX_NAME_LEN 128",
+  "makeNumberCell",
+  "layerOfCode",
+  "NamespaceReceipt",
+  "FinalRowsFacts",
+  "PG/SQLite",
+  "lexeme-exact",
+  "code-unit-exact",
+  "byte-exact",
+  "creditC false"
+ ],
+ "pairwise_prose_jaccard": {
+  "R1xR2": 0.519,
+  "R1xR3": 0.509,
+  "R2xR3": 0.484
+ },
+ "pairwise_word_jaccard": {
+  "R1xR2": 0.651,
+  "R1xR3": 0.654,
+  "R2xR3": 0.62
+ },
+ "sha256": {
+  "request-1": "9ba3f0826c3f8edc",
+  "request-2": "72f6c45b40b17ac6",
+  "request-3": "6b9723a94521820d"
+ },
+ "shared_long_sentences": {
+  "R1xR2": 0,
+  "R1xR3": 0,
+  "R2xR3": 0
+ },
+ "structure": "identical: model jev-latest, one choice question each, same 3 option keys (full_adapter_held_service, split_pure_can_stateful_host, external_n_dispatch)",
+ "verdict": "PASS: same facts/constraints/alternatives/identifiers in all three (54 anchors verified); all explanatory prose rewritten (0 shared sentences >6 words). Whole-request Jaccard ~0.62-0.65 is higher than I03's ~0.38 because 20 exact method names plus vocabularies repeat by rule; prose-only Jaccard ~0.48-0.52 with distinct framings (R1 independence-first, R2 lineage/QD1-needs, R3 normative-scope)."
+}
