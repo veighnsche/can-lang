@@ -1,0 +1,166 @@
+package m11core051rewrite
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M11 CORE-051 "staged environment clear: rewrite (snapshots emptied, others identical, malformed refused)".
+/// Source: tests/integration/raw_fixtures_test.go symbol clearStagedFixtureEnvironments (lines 102-131).
+/// Related fixtures: staged can.native-fixture.v1 JSON inputs under src/fixtures.
+/// Callers: tests/integration/{judge,questions,generation}_test.go direct raw-provider probes.
+/// Disposition: REPLACE_SUPPORT. The Can slice ports the clearing RULES, not
+/// the bytes: which snapshots are selected, how the rewrite applies, where it lands.
+/// Protects (this file): staged environments emptied to the empty object,
+/// all other keys preserved byte-identically so exchange body and request
+/// comparisons stay meaningful, the rewrite scoped to the top-level
+/// environment key, malformed staged fixtures refused, and every selected
+/// fixture rewritten unconditionally (no no-op skip).
+/// Snapshot selection lives in core-051-selection.can; write placement and
+/// the inputs-not-scenarios boundary live in core-051-layout.can.
+/// Variants: judge, questions and generation direct raw-provider probes.
+/// Environment: none (no gates). Capabilities FILES/NATIVE/SUITE and the
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case env-clear/rewrite checks: env-emptied, others-identical,
+/// env-scoped, malformed-refused, always-rewrite.
+/// Facet map: env-emptied pins the fixture["environment"] = {} reassignment
+/// (raw_fixtures_test.go:122); the assignment is unconditional, so even a
+/// missing environment key yields the empty object rather than a skip;
+/// others-identical pins the unchanged carry-through of every other key
+/// (line 122 touches only environment), keeping exact request comparison
+/// meaningful; env-scoped pins that only the top-level environment key is
+/// reassigned, leaving exchange bodies, request headers and responses
+/// untouched; malformed-refused pins the t.Fatal refusal of invalid staged
+/// JSON (lines 119-121); always-rewrite pins the absence of any no-op
+/// early continue (contrast stripStagedAuthorization's len(kept) ==
+/// len(staged) skip): already-empty environments are still rewritten.
+/// BOUNDARY (not this row): stageRawFixtures and stripStagedAuthorization
+/// (landed C049/C050, same Go file) are out of scope; the Go helper stays
+/// until its delete_when gates pass (retirement_eligible=false). Shared old
+/// files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool env_emptied
+    bool others_identical
+    bool env_scoped
+    bool malformed_refused
+    bool always_rewrite
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("env-clear/rewrite", "default", "", "offline"), "env-emptied" => ok "case env-clear/rewrite variant default root env-emptied run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("env-clear/rewrite", "default", "", "offline"), "env-emptied" => ok evidence("env-emptied", "true", "true", true, "case env-clear/rewrite variant default root env-emptied run offline")
+        different: false, true, context("env-clear/rewrite", "default", "", "offline"), "env-emptied" => failed{"env-emptied"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, true, true, true)
+        seed_env_left: "seed-env-left" => ok observation(false, true, true, true, true)
+        seed_other_drift: "seed-other-drift" => ok observation(true, false, true, true, true)
+        seed_exchange_touched: "seed-exchange-touched" => ok observation(true, true, false, true, true)
+        seed_malformed_passed: "seed-malformed-passed" => ok observation(true, true, true, false, true)
+        seed_noop_skipped: "seed-noop-skipped" => ok observation(true, true, true, true, false)
+        seed_nothing_cleared: "seed-nothing-cleared" => ok observation(false, true, true, true, true)
+    match variant_id
+        "seed-env-left" => ok observation(false, true, true, true, true)
+        "seed-other-drift" => ok observation(true, false, true, true, true)
+        "seed-exchange-touched" => ok observation(true, true, false, true, true)
+        "seed-malformed-passed" => ok observation(true, true, true, false, true)
+        "seed-noop-skipped" => ok observation(true, true, true, true, false)
+        "seed-nothing-cleared" => ok observation(false, true, true, true, true)
+        _ => ok observation(true, true, true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m11_051: "m11-051" => ok [check("env-emptied", "staged environments hold the empty object"), check("others-identical", "all other keys are preserved byte-identically"), check("env-scoped", "only the top-level environment key changes"), check("malformed-refused", "malformed staged fixtures are refused"), check("always-rewrite", "every selected fixture is rewritten unconditionally")]
+        other: "nope" => ok []
+    match scope is "m11-051"
+        false => ok []
+        true => ok [check("env-emptied", "staged environments hold the empty object"), check("others-identical", "all other keys are preserved byte-identically"), check("env-scoped", "only the top-level environment key changes"), check("malformed-refused", "malformed staged fixtures are refused"), check("always-rewrite", "every selected fixture is rewritten unconditionally")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "env-clear/rewrite" => ok [expected_check("env-emptied", "true"), expected_check("others-identical", "true"), expected_check("env-scoped", "true"), expected_check("malformed-refused", "true"), expected_check("always-rewrite", "true")]
+        unknown: "nope" => ok []
+    match case is "env-clear/rewrite"
+        false => ok []
+        true => ok [expected_check("env-emptied", "true"), expected_check("others-identical", "true"), expected_check("env-scoped", "true"), expected_check("malformed-refused", "true"), expected_check("always-rewrite", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("env-clear/rewrite", "default", "", "offline") => ok
+        seed_env_left: context("env-clear/rewrite", "seed-env-left", "", "offline") => failed{"env-emptied"}
+        seed_other_drift: context("env-clear/rewrite", "seed-other-drift", "", "offline") => failed{"others-identical"}
+        seed_exchange_touched: context("env-clear/rewrite", "seed-exchange-touched", "", "offline") => failed{"env-scoped"}
+        seed_malformed_passed: context("env-clear/rewrite", "seed-malformed-passed", "", "offline") => failed{"malformed-refused"}
+        seed_noop_skipped: context("env-clear/rewrite", "seed-noop-skipped", "", "offline") => failed{"always-rewrite"}
+        seed_nothing_cleared: context("env-clear/rewrite", "seed-nothing-cleared", "", "offline") => failed{"env-emptied"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.env_emptied, true, c, "env-emptied")
+            failed
+            ok evidence env_emptied_evidence => match call require_bool(got.others_identical, true, c, "others-identical")
+                failed
+                ok evidence others_identical_evidence => match call require_bool(got.env_scoped, true, c, "env-scoped")
+                    failed
+                    ok evidence env_scoped_evidence => match call require_bool(got.malformed_refused, true, c, "malformed-refused")
+                        failed
+                        ok evidence malformed_refused_evidence => match call require_bool(got.always_rewrite, true, c, "always-rewrite")
+                            failed
+                            ok evidence always_rewrite_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m11_051: "m11-051" => ok test_case("env-clear/rewrite", ["staging", "m11", "fixtures"], [], 120000, [check_ref("env-emptied"), check_ref("others-identical"), check_ref("env-scoped"), check_ref("malformed-refused"), check_ref("always-rewrite")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m11-051"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("env-clear/rewrite", ["staging", "m11", "fixtures"], [], 120000, [check_ref("env-emptied"), check_ref("others-identical"), check_ref("env-scoped"), check_ref("malformed-refused"), check_ref("always-rewrite")], callable case_body)

@@ -1,0 +1,166 @@
+package m11core051selection
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M11 CORE-051 "staged environment clear: selection (every fixture, env key only, by probe variant)".
+/// Source: tests/integration/raw_fixtures_test.go symbol clearStagedFixtureEnvironments (lines 102-131).
+/// Related fixtures: staged can.native-fixture.v1 JSON inputs under src/fixtures.
+/// Callers: tests/integration/{judge,questions,generation}_test.go direct raw-provider probes.
+/// Disposition: REPLACE_SUPPORT. The Can slice ports the clearing RULES, not
+/// the bytes: which snapshots are selected, how the rewrite applies, where it lands.
+/// Protects (this file): every staged fixture environment selected, exact
+/// top-level environment key match, only .json entries selected, selection
+/// applied on all three direct raw-provider probe variants (judge,
+/// questions, generation).
+/// Snapshot emptying and byte preservation live in core-051-rewrite.can;
+/// write placement and the inputs-not-scenarios boundary live in
+/// core-051-layout.can.
+/// Variants: judge, questions and generation direct raw-provider probes.
+/// Environment: none (no gates). Capabilities FILES/NATIVE/SUITE and the
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case env-clear/selection checks: every-fixture, env-key, json-only,
+/// per-variant.
+/// Facet map: every-fixture pins that every staged .json fixture's
+/// environment is selected with no content gate (raw_fixtures_test.go:109-122);
+/// env-key pins the fixture["environment"] exact key selection (line 122),
+/// so near-miss keys are never selected; json-only pins the dirs and
+/// non-.json skip (lines 110-112), so only staged JSON entries are
+/// selected; per-variant pins that the pass runs on all three direct
+/// probes (judge_test.go:141, questions_test.go:273, generation_test.go:203).
+/// BOUNDARY (not this row): stageRawFixtures and stripStagedAuthorization
+/// (landed C049/C050, same Go file) are out of scope; the Go helper stays
+/// until its delete_when gates pass (retirement_eligible=false). Shared old
+/// files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int variants_cleared
+    bool every_fixture
+    bool env_key
+    bool json_only
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("env-clear/selection", "default", "", "offline"), "every-fixture" => ok "case env-clear/selection variant default root every-fixture run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("env-clear/selection", "default", "", "offline"), "every-fixture" => ok evidence("every-fixture", "true", "true", true, "case env-clear/selection variant default root every-fixture run offline")
+        different: false, true, context("env-clear/selection", "default", "", "offline"), "every-fixture" => failed{"every-fixture"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("env-clear/selection", "default", "", "offline"), "per-variant" => ok evidence("per-variant", "3", "3", true, "case env-clear/selection variant default root per-variant run offline")
+        different: 2, 3, context("env-clear/selection", "default", "", "offline"), "per-variant" => failed{"per-variant"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(3, true, true, true)
+        seed_fixture_skipped: "seed-fixture-skipped" => ok observation(3, false, true, true)
+        seed_near_key_cleared: "seed-near-key-cleared" => ok observation(3, true, false, true)
+        seed_non_json_cleared: "seed-non-json-cleared" => ok observation(3, true, true, false)
+        seed_variant_skipped: "seed-variant-skipped" => ok observation(2, true, true, true)
+    match variant_id
+        "seed-fixture-skipped" => ok observation(3, false, true, true)
+        "seed-near-key-cleared" => ok observation(3, true, false, true)
+        "seed-non-json-cleared" => ok observation(3, true, true, false)
+        "seed-variant-skipped" => ok observation(2, true, true, true)
+        _ => ok observation(3, true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m11_051: "m11-051" => ok [check("every-fixture", "every staged fixture environment is selected for clearing"), check("env-key", "selection matches the exact top-level environment key"), check("json-only", "only staged .json entries are selected"), check("per-variant", "all three direct raw-provider probe variants clear")]
+        other: "nope" => ok []
+    match scope is "m11-051"
+        false => ok []
+        true => ok [check("every-fixture", "every staged fixture environment is selected for clearing"), check("env-key", "selection matches the exact top-level environment key"), check("json-only", "only staged .json entries are selected"), check("per-variant", "all three direct raw-provider probe variants clear")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "env-clear/selection" => ok [expected_check("every-fixture", "true"), expected_check("env-key", "true"), expected_check("json-only", "true"), expected_check("per-variant", "3")]
+        unknown: "nope" => ok []
+    match case is "env-clear/selection"
+        false => ok []
+        true => ok [expected_check("every-fixture", "true"), expected_check("env-key", "true"), expected_check("json-only", "true"), expected_check("per-variant", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("env-clear/selection", "default", "", "offline") => ok
+        seed_fixture_skipped: context("env-clear/selection", "seed-fixture-skipped", "", "offline") => failed{"every-fixture"}
+        seed_near_key_cleared: context("env-clear/selection", "seed-near-key-cleared", "", "offline") => failed{"env-key"}
+        seed_non_json_cleared: context("env-clear/selection", "seed-non-json-cleared", "", "offline") => failed{"json-only"}
+        seed_variant_skipped: context("env-clear/selection", "seed-variant-skipped", "", "offline") => failed{"per-variant"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.every_fixture, true, c, "every-fixture")
+            failed
+            ok evidence every_fixture_evidence => match call require_bool(got.env_key, true, c, "env-key")
+                failed
+                ok evidence env_key_evidence => match call require_bool(got.json_only, true, c, "json-only")
+                    failed
+                    ok evidence json_only_evidence => match call require_int(got.variants_cleared, 3, c, "per-variant")
+                        failed
+                        ok evidence per_variant_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m11_051: "m11-051" => ok test_case("env-clear/selection", ["staging", "m11", "fixtures"], [], 120000, [check_ref("every-fixture"), check_ref("env-key"), check_ref("json-only"), check_ref("per-variant")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m11-051"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("env-clear/selection", ["staging", "m11", "fixtures"], [], 120000, [check_ref("every-fixture"), check_ref("env-key"), check_ref("json-only"), check_ref("per-variant")], callable case_body)
