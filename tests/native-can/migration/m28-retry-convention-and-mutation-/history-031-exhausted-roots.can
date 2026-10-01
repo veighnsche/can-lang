@@ -1,0 +1,199 @@
+package m28history031exhausted
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M28 HISTORY-031 "over-attempt mutant: exactly four exhausted profiles
+/// roots fail missing-fixture".
+/// Source: tests/failure-conventions/retry_test.go symbol
+/// TestRetryOverAttemptFails (lines 91-126: stageProject "retry", replaceOnce
+/// bound 2->3 in src/profiles/profiles.can, every failing root carries one
+/// "missing fixture" violation, four exhausted consumer roots required to
+/// fail, every other root green).
+/// Related fixtures: tests/failure-conventions/retry/ (profiles, billing,
+/// app, shared retry helper).
+/// Disposition: MIGRATE. The over-attempt leg mutates the profiles retry
+/// bound so three attempts run against two queued fixture rows: exactly the
+/// four double-rejection profiles consumer roots fail with missing-fixture
+/// violations while the 31 remaining roots stay green.
+/// Protects (this file): the exhausted four plus the exact failing-count pin
+/// and the missing-fixture violation pin.
+/// Report shape, exit-nonzero and remainder-green live in
+/// history-031-report-provenance.can; the over-attempt mechanics (queue
+/// depth, mutated bound, FIFO consumption) live in
+/// history-031-over-attempt-mechanism.can.
+/// Variants: mutated retry count (bound 3 vs queued 2). The result-data
+/// green leg (H028), the fixed-bound green leg (H029), the no-retry mutant
+/// (H030) and the add-error legs are sibling M28 rows, not this one.
+/// Environment: CONV_BUNDLE or CAN_BUN_ARCHIVE; requires
+/// conv-bundle-or-can-bun-archive. Logical gates SUITE/DIAG/FAULT and C/R/N/S/A
+/// identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case over-attempt/exhausted-roots checks: failing-count, fetch-fail,
+/// reraise-fail, traced-fail, roundtrip-fail, missing-fixture.
+/// Root map (retry_test.go:115-120; 4 double-rejection profiles consumers,
+/// each with two queued error rows in the retry fixtures):
+/// profiles::fetch_profile down, profiles::read_profile locked,
+/// profiles::fetch_traced traced_down, profiles::read_traced
+/// roundtrip_denied.
+/// Checks group by assert-owning function (H027 precedent: the Go test pins
+/// the failing set by root ID via the required-IDs loop); every one of the
+/// 4 roots is named above and failing below, each with exactly one "missing
+/// fixture" violation.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int failing_count
+    bool fetch_fail
+    bool reraise_fail
+    bool traced_fail
+    bool roundtrip_fail
+    str missing_violation
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("over-attempt/exhausted-roots", "default", "", "offline"), "failing-count" => ok "case over-attempt/exhausted-roots variant default root failing-count run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("over-attempt/exhausted-roots", "default", "", "offline"), "fetch-fail" => ok evidence("fetch-fail", "true", "true", true, "case over-attempt/exhausted-roots variant default root fetch-fail run offline")
+        different: false, true, context("over-attempt/exhausted-roots", "default", "", "offline"), "fetch-fail" => failed{"fetch-fail"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("over-attempt/exhausted-roots", "default", "", "offline"), "failing-count" => ok evidence("failing-count", "4", "4", true, "case over-attempt/exhausted-roots variant default root failing-count run offline")
+        different: 3, 4, context("over-attempt/exhausted-roots", "default", "", "offline"), "failing-count" => failed{"failing-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "missing fixture", "missing fixture", context("over-attempt/exhausted-roots", "default", "", "offline"), "missing-fixture" => ok evidence("missing-fixture", "missing fixture", "missing fixture", true, "case over-attempt/exhausted-roots variant default root missing-fixture run offline")
+        different: "unused fixture", "missing fixture", context("over-attempt/exhausted-roots", "default", "", "offline"), "missing-fixture" => failed{"missing-fixture"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(4, true, true, true, true, "missing fixture")
+        seed_three_failing: "seed-three-failing" => ok observation(3, true, true, true, true, "missing fixture")
+        seed_five_failing: "seed-five-failing" => ok observation(5, true, true, true, true, "missing fixture")
+        seed_fetch_pass: "seed-fetch-pass" => ok observation(4, false, true, true, true, "missing fixture")
+        seed_roundtrip_pass: "seed-roundtrip-pass" => ok observation(4, true, true, true, false, "missing fixture")
+        seed_wrong_fixture: "seed-wrong-fixture" => ok observation(4, true, true, true, true, "unused fixture")
+        seed_fixture_missing: "seed-fixture-missing" => ok observation(4, true, true, true, true, "")
+    match variant_id
+        "seed-three-failing" => ok observation(3, true, true, true, true, "missing fixture")
+        "seed-five-failing" => ok observation(5, true, true, true, true, "missing fixture")
+        "seed-fetch-pass" => ok observation(4, false, true, true, true, "missing fixture")
+        "seed-roundtrip-pass" => ok observation(4, true, true, true, false, "missing fixture")
+        "seed-wrong-fixture" => ok observation(4, true, true, true, true, "unused fixture")
+        "seed-fixture-missing" => ok observation(4, true, true, true, true, "")
+        _ => ok observation(4, true, true, true, true, "missing fixture")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m28_031: "m28-031" => ok [check("failing-count", "assert report carries exactly 4 failing roots"), check("fetch-fail", "profiles::fetch_profile down root fails missing-fixture"), check("reraise-fail", "profiles::read_profile locked root fails missing-fixture"), check("traced-fail", "profiles::fetch_traced traced_down root fails missing-fixture"), check("roundtrip-fail", "profiles::read_traced roundtrip_denied root fails missing-fixture"), check("missing-fixture", "each failing root carries exactly one missing fixture violation")]
+        other: "nope" => ok []
+    match scope is "m28-031"
+        false => ok []
+        true => ok [check("failing-count", "assert report carries exactly 4 failing roots"), check("fetch-fail", "profiles::fetch_profile down root fails missing-fixture"), check("reraise-fail", "profiles::read_profile locked root fails missing-fixture"), check("traced-fail", "profiles::fetch_traced traced_down root fails missing-fixture"), check("roundtrip-fail", "profiles::read_traced roundtrip_denied root fails missing-fixture"), check("missing-fixture", "each failing root carries exactly one missing fixture violation")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "over-attempt/exhausted-roots" => ok [expected_check("failing-count", "4"), expected_check("fetch-fail", "true"), expected_check("reraise-fail", "true"), expected_check("traced-fail", "true"), expected_check("roundtrip-fail", "true"), expected_check("missing-fixture", "missing fixture")]
+        unknown: "nope" => ok []
+    match case is "over-attempt/exhausted-roots"
+        false => ok []
+        true => ok [expected_check("failing-count", "4"), expected_check("fetch-fail", "true"), expected_check("reraise-fail", "true"), expected_check("traced-fail", "true"), expected_check("roundtrip-fail", "true"), expected_check("missing-fixture", "missing fixture")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("over-attempt/exhausted-roots", "default", "", "offline") => ok
+        seed_three_failing: context("over-attempt/exhausted-roots", "seed-three-failing", "", "offline") => failed{"failing-count"}
+        seed_five_failing: context("over-attempt/exhausted-roots", "seed-five-failing", "", "offline") => failed{"failing-count"}
+        seed_fetch_pass: context("over-attempt/exhausted-roots", "seed-fetch-pass", "", "offline") => failed{"fetch-fail"}
+        seed_roundtrip_pass: context("over-attempt/exhausted-roots", "seed-roundtrip-pass", "", "offline") => failed{"roundtrip-fail"}
+        seed_wrong_fixture: context("over-attempt/exhausted-roots", "seed-wrong-fixture", "", "offline") => failed{"missing-fixture"}
+        seed_fixture_missing: context("over-attempt/exhausted-roots", "seed-fixture-missing", "", "offline") => failed{"missing-fixture"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.failing_count, 4, c, "failing-count")
+            failed
+            ok evidence count_evidence => match call require_bool(got.fetch_fail, true, c, "fetch-fail")
+                failed
+                ok evidence fetch_fail_evidence => match call require_bool(got.reraise_fail, true, c, "reraise-fail")
+                    failed
+                    ok evidence reraise_fail_evidence => match call require_bool(got.traced_fail, true, c, "traced-fail")
+                        failed
+                        ok evidence traced_fail_evidence => match call require_bool(got.roundtrip_fail, true, c, "roundtrip-fail")
+                            failed
+                            ok evidence roundtrip_fail_evidence => match call require_text(got.missing_violation, "missing fixture", c, "missing-fixture")
+                                failed
+                                ok evidence fixture_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m28_031: "m28-031" => ok test_case("over-attempt/exhausted-roots", ["over-attempt", "m28"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("failing-count"), check_ref("fetch-fail"), check_ref("reraise-fail"), check_ref("traced-fail"), check_ref("roundtrip-fail"), check_ref("missing-fixture")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m28-031"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("over-attempt/exhausted-roots", ["over-attempt", "m28"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("failing-count"), check_ref("fetch-fail"), check_ref("reraise-fail"), check_ref("traced-fail"), check_ref("roundtrip-fail"), check_ref("missing-fixture")], callable case_body)
