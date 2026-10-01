@@ -1,0 +1,40 @@
+package i02_example
+    provides [seam_demo, case_demo]
+    uses [c, i02, text]
+
+/// Tiny typed I02 example: both module validators end to end over
+/// fixture-shaped parsed modules. seam_demo validates a fresh parsed
+/// module and a dynamic-import module; case_demo validates a fresh case
+/// module and an extra-export module. Rows are offline/provisional asserts
+/// (static until qualified execution). The K05 witness has no Can
+/// wrappers by scope decision (host-side state with no catalogue ops).
+
+/// Validate one parsed module against the seam shape.
+fn bool seam_demo
+    emits {text::invalid_regex, text::invalid_limit}
+    given
+        c::parsed_module parsed
+    asserts
+        fresh: c::parsed_module([c::parsed_edge("./rt.ts", false, [c::parsed_name("x", "$canX", true)], false)], ["$canCase"], false, "const a = 1;") => ok true
+        dynamic: c::parsed_module([], ["$canCase"], true, "const n = import(\"late\");") => ok false
+    match call i02::seam_module_ok(parsed)
+        text::invalid_regex
+        text::invalid_limit
+        ok bool good => match good
+            true => ok true
+            false => ok false
+/// Validate one parsed module as an assertion case with wanted exports.
+fn bool case_demo
+    emits {text::invalid_regex, text::invalid_limit}
+    given
+        c::parsed_module parsed
+        str[] wanted
+    asserts
+        fresh: c::parsed_module([c::parsed_edge("./rt.ts", false, [c::parsed_name("x", "$canX", true)], false)], ["$canCase"], false, "const a = 1;"), ["$canCase"] => ok true
+        extra: c::parsed_module([], ["$canCase", "leak"], false, ""), ["$canCase"] => ok false
+    match call i02::case_module_ok(parsed, wanted)
+        text::invalid_regex
+        text::invalid_limit
+        ok bool good => match good
+            true => ok true
+            false => ok false
