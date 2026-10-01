@@ -1,0 +1,233 @@
+package m30history053base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-053 "Scoped pins: eight rows".
+/// Source: tests/baseline/t27_release_audit_test.go
+/// symbol TestT27RecommendationScoped (L355-377) plus
+/// the scope list (L359-368).
+/// Disposition: historical_candidate (this row pins
+/// the TestT27RecommendationScoped offline pact as
+/// reviewable Can facts; the old Go check stays until
+/// the integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the scope legs in Go
+/// order: the exact Go bytes for all eight rows
+/// plus the row tally.
+/// ADAPTATION (recorded, with source lines): each pin
+/// holds its Go literal inner bytes; phrase-count
+/// pins int tallied from the Go list.
+/// phrase-bun pins bun-1.4.2-darwin-arm64-v1 (L360);
+/// phrase-chromium pins chromium 140 (L361);
+/// phrase-webkit pins webkit 26 (L362);
+/// phrase-firefox-excluded pins firefox is not
+/// qualified (L363); phrase-linux pins native
+/// (non-emulated) linux/amd64 (L364);
+/// phrase-no-durability pins no reload durability
+/// (L365); phrase-no-queue pins no automatic queue
+/// (L366); phrase-postgres pins postgresql 17.11
+/// (L367); phrase-count pins int (8) from L359-368.
+/// Facet map (rows in Go order): phrase-bun,
+/// phrase-chromium, phrase-webkit,
+/// phrase-firefox-excluded, phrase-linux,
+/// phrase-no-durability, phrase-no-queue,
+/// phrase-postgres, phrase-count.
+/// The roots-green pin lives in
+/// history-053-roots-green.can; the run shape plus
+/// diagnostics live in history-053-run-shape.can.
+/// Variants: none (row lists zero variants; default
+/// plus seeded drifts only).
+/// Environment: one gate (Bun/Go/Git for T01 smoke or
+/// generator when applicable); binds at P23, requires
+/// [] now (offline only).
+/// Logical gates bind at P23 only if any leg is
+/// retained live; no live run now. Accept gate
+/// reviewed disposition is unmet.
+/// Timeout 120000ms is the offline default bound (no
+/// Go timeout in this row; binds at P23 like the M11
+/// no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after
+/// reviewed disposition unmet).
+/// Case history/t27-rec-base checks: phrase-bun, phrase-chromium,
+/// phrase-webkit, phrase-firefox-excluded, phrase-linux,
+/// phrase-no-durability, phrase-no-queue, phrase-postgres,
+/// phrase-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str phrase_bun
+    str phrase_chromium
+    str phrase_webkit
+    str phrase_firefox_excluded
+    str phrase_linux
+    str phrase_no_durability
+    str phrase_no_queue
+    str phrase_postgres
+    int phrase_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/t27-rec-base", "default", "", "offline"), "phrase-bun" => ok "case history/t27-rec-base variant default root phrase-bun run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/t27-rec-base", "default", "", "offline"), "phrase-bun" => ok evidence("phrase-bun", "true", "true", true, "case history/t27-rec-base variant default root phrase-bun run offline")
+        different: false, true, context("history/t27-rec-base", "default", "", "offline"), "phrase-bun" => failed{"phrase-bun"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 8, 8, context("history/t27-rec-base", "default", "", "offline"), "phrase-count" => ok evidence("phrase-count", "8", "8", true, "case history/t27-rec-base variant default root phrase-count run offline")
+        different: 7, 8, context("history/t27-rec-base", "default", "", "offline"), "phrase-count" => failed{"phrase-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-darwin-arm64-v1", context("history/t27-rec-base", "default", "", "offline"), "phrase-bun" => ok evidence("phrase-bun", "bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-darwin-arm64-v1", true, "case history/t27-rec-base variant default root phrase-bun run offline")
+        different: "bun-1.4.2-darwin-arm64-v1_2", "bun-1.4.2-darwin-arm64-v1", context("history/t27-rec-base", "default", "", "offline"), "phrase-bun" => failed{"phrase-bun"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140", "webkit 26", "firefox is not qualified", "native (non-emulated) linux/amd64", "no reload durability", "no automatic queue", "postgresql 17.11", 8)
+        seed_phrase_bun: "seed-phrase-bun-drift" => ok observation("bun-1.4.2-darwin-arm64-v1_2", "chromium 140", "webkit 26", "firefox is not qualified", "native (non-emulated) linux/amd64", "no reload durability", "no automatic queue", "postgresql 17.11", 8)
+        seed_phrase_chromium: "seed-phrase-chromium-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140_2", "webkit 26", "firefox is not qualified", "native (non-emulated) linux/amd64", "no reload durability", "no automatic queue", "postgresql 17.11", 8)
+        seed_phrase_webkit: "seed-phrase-webkit-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140", "webkit 26_2", "firefox is not qualified", "native (non-emulated) linux/amd64", "no reload durability", "no automatic queue", "postgresql 17.11", 8)
+        seed_phrase_firefox_excluded: "seed-phrase-firefox-excluded-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140", "webkit 26", "firefox is not qualified_2", "native (non-emulated) linux/amd64", "no reload durability", "no automatic queue", "postgresql 17.11", 8)
+        seed_phrase_linux: "seed-phrase-linux-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140", "webkit 26", "firefox is not qualified", "native (non-emulated) linux/amd64_2", "no reload durability", "no automatic queue", "postgresql 17.11", 8)
+        seed_phrase_no_durability: "seed-phrase-no-durability-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140", "webkit 26", "firefox is not qualified", "native (non-emulated) linux/amd64", "no reload durability_2", "no automatic queue", "postgresql 17.11", 8)
+        seed_phrase_no_queue: "seed-phrase-no-queue-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140", "webkit 26", "firefox is not qualified", "native (non-emulated) linux/amd64", "no reload durability", "no automatic queue_2", "postgresql 17.11", 8)
+        seed_phrase_postgres: "seed-phrase-postgres-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140", "webkit 26", "firefox is not qualified", "native (non-emulated) linux/amd64", "no reload durability", "no automatic queue", "postgresql 17.11_2", 8)
+        seed_phrase_count: "seed-phrase-count-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140", "webkit 26", "firefox is not qualified", "native (non-emulated) linux/amd64", "no reload durability", "no automatic queue", "postgresql 17.11", 7)
+    match variant_id
+        "seed-phrase-bun-drift" => ok observation("bun-1.4.2-darwin-arm64-v1_2", "chromium 140", "webkit 26", "firefox is not qualified", "native (non-emulated) linux/amd64", "no reload durability", "no automatic queue", "postgresql 17.11", 8)
+        "seed-phrase-chromium-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140_2", "webkit 26", "firefox is not qualified", "native (non-emulated) linux/amd64", "no reload durability", "no automatic queue", "postgresql 17.11", 8)
+        "seed-phrase-webkit-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140", "webkit 26_2", "firefox is not qualified", "native (non-emulated) linux/amd64", "no reload durability", "no automatic queue", "postgresql 17.11", 8)
+        "seed-phrase-firefox-excluded-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140", "webkit 26", "firefox is not qualified_2", "native (non-emulated) linux/amd64", "no reload durability", "no automatic queue", "postgresql 17.11", 8)
+        "seed-phrase-linux-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140", "webkit 26", "firefox is not qualified", "native (non-emulated) linux/amd64_2", "no reload durability", "no automatic queue", "postgresql 17.11", 8)
+        "seed-phrase-no-durability-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140", "webkit 26", "firefox is not qualified", "native (non-emulated) linux/amd64", "no reload durability_2", "no automatic queue", "postgresql 17.11", 8)
+        "seed-phrase-no-queue-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140", "webkit 26", "firefox is not qualified", "native (non-emulated) linux/amd64", "no reload durability", "no automatic queue_2", "postgresql 17.11", 8)
+        "seed-phrase-postgres-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140", "webkit 26", "firefox is not qualified", "native (non-emulated) linux/amd64", "no reload durability", "no automatic queue", "postgresql 17.11_2", 8)
+        "seed-phrase-count-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140", "webkit 26", "firefox is not qualified", "native (non-emulated) linux/amd64", "no reload durability", "no automatic queue", "postgresql 17.11", 7)
+        _ => ok observation("bun-1.4.2-darwin-arm64-v1", "chromium 140", "webkit 26", "firefox is not qualified", "native (non-emulated) linux/amd64", "no reload durability", "no automatic queue", "postgresql 17.11", 8)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h053: "m30-h053" => ok [check("phrase-bun", "list names the bun pin"), check("phrase-chromium", "list names the chromium pin"), check("phrase-webkit", "list names the webkit pin"), check("phrase-firefox-excluded", "list names the firefox refusal pin"), check("phrase-linux", "list names the linux pin"), check("phrase-no-durability", "list names the no-durability pin"), check("phrase-no-queue", "list names the no-queue pin"), check("phrase-postgres", "list names the postgres pin"), check("phrase-count", "eight rows exist")]
+        other: "nope" => ok []
+    match scope is "m30-h053"
+        false => ok []
+        true => ok [check("phrase-bun", "list names the bun pin"), check("phrase-chromium", "list names the chromium pin"), check("phrase-webkit", "list names the webkit pin"), check("phrase-firefox-excluded", "list names the firefox refusal pin"), check("phrase-linux", "list names the linux pin"), check("phrase-no-durability", "list names the no-durability pin"), check("phrase-no-queue", "list names the no-queue pin"), check("phrase-postgres", "list names the postgres pin"), check("phrase-count", "eight rows exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/t27-rec-base" => ok [expected_check("phrase-bun", "bun-1.4.2-darwin-arm64-v1"), expected_check("phrase-chromium", "chromium 140"), expected_check("phrase-webkit", "webkit 26"), expected_check("phrase-firefox-excluded", "firefox is not qualified"), expected_check("phrase-linux", "native (non-emulated) linux/amd64"), expected_check("phrase-no-durability", "no reload durability"), expected_check("phrase-no-queue", "no automatic queue"), expected_check("phrase-postgres", "postgresql 17.11"), expected_check("phrase-count", "8")]
+        unknown: "nope" => ok []
+    match case is "history/t27-rec-base"
+        false => ok []
+        true => ok [expected_check("phrase-bun", "bun-1.4.2-darwin-arm64-v1"), expected_check("phrase-chromium", "chromium 140"), expected_check("phrase-webkit", "webkit 26"), expected_check("phrase-firefox-excluded", "firefox is not qualified"), expected_check("phrase-linux", "native (non-emulated) linux/amd64"), expected_check("phrase-no-durability", "no reload durability"), expected_check("phrase-no-queue", "no automatic queue"), expected_check("phrase-postgres", "postgresql 17.11"), expected_check("phrase-count", "8")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/t27-rec-base", "default", "", "offline") => ok
+        seed_phrase_bun: context("history/t27-rec-base", "seed-phrase-bun-drift", "", "offline") => failed{"phrase-bun"}
+        seed_phrase_chromium: context("history/t27-rec-base", "seed-phrase-chromium-drift", "", "offline") => failed{"phrase-chromium"}
+        seed_phrase_webkit: context("history/t27-rec-base", "seed-phrase-webkit-drift", "", "offline") => failed{"phrase-webkit"}
+        seed_phrase_firefox_excluded: context("history/t27-rec-base", "seed-phrase-firefox-excluded-drift", "", "offline") => failed{"phrase-firefox-excluded"}
+        seed_phrase_linux: context("history/t27-rec-base", "seed-phrase-linux-drift", "", "offline") => failed{"phrase-linux"}
+        seed_phrase_no_durability: context("history/t27-rec-base", "seed-phrase-no-durability-drift", "", "offline") => failed{"phrase-no-durability"}
+        seed_phrase_no_queue: context("history/t27-rec-base", "seed-phrase-no-queue-drift", "", "offline") => failed{"phrase-no-queue"}
+        seed_phrase_postgres: context("history/t27-rec-base", "seed-phrase-postgres-drift", "", "offline") => failed{"phrase-postgres"}
+        seed_phrase_count: context("history/t27-rec-base", "seed-phrase-count-drift", "", "offline") => failed{"phrase-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.phrase_bun, "bun-1.4.2-darwin-arm64-v1", c, "phrase-bun")
+            failed
+            ok evidence phrase_bun_evidence => match call require_text(got.phrase_chromium, "chromium 140", c, "phrase-chromium")
+                failed
+                ok evidence phrase_chromium_evidence => match call require_text(got.phrase_webkit, "webkit 26", c, "phrase-webkit")
+                    failed
+                    ok evidence phrase_webkit_evidence => match call require_text(got.phrase_firefox_excluded, "firefox is not qualified", c, "phrase-firefox-excluded")
+                        failed
+                        ok evidence phrase_firefox_excluded_evidence => match call require_text(got.phrase_linux, "native (non-emulated) linux/amd64", c, "phrase-linux")
+                            failed
+                            ok evidence phrase_linux_evidence => match call require_text(got.phrase_no_durability, "no reload durability", c, "phrase-no-durability")
+                                failed
+                                ok evidence phrase_no_durability_evidence => match call require_text(got.phrase_no_queue, "no automatic queue", c, "phrase-no-queue")
+                                    failed
+                                    ok evidence phrase_no_queue_evidence => match call require_text(got.phrase_postgres, "postgresql 17.11", c, "phrase-postgres")
+                                        failed
+                                        ok evidence phrase_postgres_evidence => match call require_int(got.phrase_count, 8, c, "phrase-count")
+                                            failed
+                                            ok evidence phrase_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h053: "m30-h053" => ok test_case("history/t27-rec-base", ["history", "m30"], [], 120000, [check_ref("phrase-bun"), check_ref("phrase-chromium"), check_ref("phrase-webkit"), check_ref("phrase-firefox-excluded"), check_ref("phrase-linux"), check_ref("phrase-no-durability"), check_ref("phrase-no-queue"), check_ref("phrase-postgres"), check_ref("phrase-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h053"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/t27-rec-base", ["history", "m30"], [], 120000, [check_ref("phrase-bun"), check_ref("phrase-chromium"), check_ref("phrase-webkit"), check_ref("phrase-firefox-excluded"), check_ref("phrase-linux"), check_ref("phrase-no-durability"), check_ref("phrase-no-queue"), check_ref("phrase-postgres"), check_ref("phrase-count")], callable case_body)

@@ -1,0 +1,284 @@
+package m30history053run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-053 "Scoped pins: run shape".
+/// Source: tests/baseline/t27_release_audit_test.go
+/// symbol TestT27RecommendationScoped (L355-377):
+/// root plus read (L356-357); lower (L358); list
+/// (L359-368); loop search (L369); refusal (L370);
+/// veto pair (L373-374); veto refusal (L375).
+/// Disposition: historical_candidate (this row pins
+/// the TestT27RecommendationScoped offline pact as
+/// reviewable Can facts; the old Go check stays until
+/// the integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the live run shape: the
+/// test name, the audit const name plus file, the
+/// two loader calls, the fold plus loop idents, the
+/// search call, the refusal call, the omits
+/// wording, the two veto needles in Go order, the
+/// veto call plus wording, and the refusal total.
+/// ADAPTATION (recorded, with source lines):
+/// test-name pins TestT27RecommendationScoped (L355);
+/// audit-const pins t27Audit (L20); audit-path pins
+/// the audit file (L20); root-call pins repoRoot
+/// (L356); read-call pins readRepoFile (L357);
+/// lower-call pins strings.ToLower (L358);
+/// phrase-ident pins phrase (L359); contains-call
+/// pins strings.Contains (L369); error-call pins
+/// t.Errorf (L370); error-wording pins the omits
+/// inner bytes (L370); forbidden-a pins the em-dash
+/// needle inner bytes (L373, U+2014 E2 80 94);
+/// forbidden-b pins the plain needle inner bytes
+/// (L374); refusal-call pins t.Error (L375);
+/// refusal-wording pins the veto inner bytes
+/// (L375); refusal-site-count pins int (2) from
+/// L370/L375.
+/// Facet map (launch plus diagnostics): test-name
+/// pins RecommendationScoped (L355); audit-const
+/// pins const (L20); audit-path pins file (L20);
+/// root-call pins root (L356); read-call pins read
+/// (L357); lower-call pins fold (L358);
+/// phrase-ident pins var (L359); contains-call pins
+/// scope search (L369); error-call pins Errorf
+/// (L370); error-wording pins omits (L370);
+/// forbidden-a pins dash veto (L373); forbidden-b
+/// pins plain veto (L374); refusal-call pins Error
+/// (L375); refusal-wording pins veto must-not
+/// (L375); refusal-site-count pins 2.
+/// The base list pin lives in
+/// history-053-base-semantics.can; the roots-green
+/// pin lives in history-053-roots-green.can.
+/// Variants: none (row lists zero variants; default
+/// plus seeded drifts only).
+/// Environment: one gate (Bun/Go/Git for T01 smoke or
+/// generator when applicable); binds at P23, requires
+/// [] now (offline only).
+/// Logical gates bind at P23 only if any leg is
+/// retained live; no live run now. Accept gate
+/// reviewed disposition is unmet.
+/// Timeout 120000ms is the offline default bound (no
+/// Go timeout in this row; binds at P23 like the M11
+/// no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after
+/// reviewed disposition unmet).
+/// Case history/t27-rec-run checks: test-name, audit-const,
+/// audit-path, root-call, read-call, lower-call, phrase-ident,
+/// contains-call, error-call, error-wording, forbidden-a,
+/// forbidden-b, refusal-call, refusal-wording, refusal-site-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str test_name
+    str audit_const
+    str audit_path
+    str root_call
+    str read_call
+    str lower_call
+    str phrase_ident
+    str contains_call
+    str error_call
+    str error_wording
+    str forbidden_a
+    str forbidden_b
+    str refusal_call
+    str refusal_wording
+    int refusal_site_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/t27-rec-run", "default", "", "offline"), "test-name" => ok "case history/t27-rec-run variant default root test-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/t27-rec-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "true", "true", true, "case history/t27-rec-run variant default root test-name run offline")
+        different: false, true, context("history/t27-rec-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("history/t27-rec-run", "default", "", "offline"), "refusal-site-count" => ok evidence("refusal-site-count", "2", "2", true, "case history/t27-rec-run variant default root refusal-site-count run offline")
+        different: 1, 2, context("history/t27-rec-run", "default", "", "offline"), "refusal-site-count" => failed{"refusal-site-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "TestT27RecommendationScoped", "TestT27RecommendationScoped", context("history/t27-rec-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "TestT27RecommendationScoped", "TestT27RecommendationScoped", true, "case history/t27-rec-run variant default root test-name run offline")
+        different: "TestT27RecommendationScoped_2", "TestT27RecommendationScoped", context("history/t27-rec-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        seed_test_name: "seed-test-name-drift" => ok observation("TestT27RecommendationScoped_2", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        seed_audit_const: "seed-audit-const-drift" => ok observation("TestT27RecommendationScoped", "t27Audit_2", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        seed_audit_path: "seed-audit-path-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md_2", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        seed_root_call: "seed-root-call-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot_2", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        seed_read_call: "seed-read-call-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile_2", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        seed_lower_call: "seed-lower-call-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower_2", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        seed_phrase_ident: "seed-phrase-ident-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase_2", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        seed_contains_call: "seed-contains-call-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains_2", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        seed_error_call: "seed-error-call-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf_2", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        seed_error_wording: "seed-error-wording-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q_2", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        seed_forbidden_a: "seed-forbidden-a-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified_2", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        seed_forbidden_b: "seed-forbidden-b-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified_2", "t.Error", "audit must not qualify firefox", 2)
+        seed_refusal_call: "seed-refusal-call-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error_2", "audit must not qualify firefox", 2)
+        seed_refusal_wording: "seed-refusal-wording-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox_2", 2)
+        seed_refusal_site_count: "seed-refusal-site-count-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 1)
+    match variant_id
+        "seed-test-name-drift" => ok observation("TestT27RecommendationScoped_2", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        "seed-audit-const-drift" => ok observation("TestT27RecommendationScoped", "t27Audit_2", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        "seed-audit-path-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md_2", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        "seed-root-call-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot_2", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        "seed-read-call-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile_2", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        "seed-lower-call-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower_2", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        "seed-phrase-ident-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase_2", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        "seed-contains-call-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains_2", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        "seed-error-call-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf_2", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        "seed-error-wording-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q_2", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        "seed-forbidden-a-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified_2", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+        "seed-forbidden-b-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified_2", "t.Error", "audit must not qualify firefox", 2)
+        "seed-refusal-call-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error_2", "audit must not qualify firefox", 2)
+        "seed-refusal-wording-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox_2", 2)
+        "seed-refusal-site-count-drift" => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 1)
+        _ => ok observation("TestT27RecommendationScoped", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "strings.ToLower", "phrase", "strings.Contains", "t.Errorf", "audit recommendation omits required scope phrase %q", "firefox — qualified", "firefox qualified", "t.Error", "audit must not qualify firefox", 2)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h053: "m30-h053" => ok [check("test-name", "row pins the RecommendationScoped name"), check("audit-const", "audit const keeps its name"), check("audit-path", "audit const pins its file"), check("root-call", "root resolves with repoRoot"), check("read-call", "audit loads with readRepoFile"), check("lower-call", "match folds case with ToLower"), check("phrase-ident", "loop var keeps its name"), check("contains-call", "legs search scope with Contains"), check("error-call", "omits refusal uses Errorf"), check("error-wording", "omits wording is pinned"), check("forbidden-a", "em-dash veto needle is pinned"), check("forbidden-b", "plain veto needle is pinned"), check("refusal-call", "veto refusal uses Error"), check("refusal-wording", "veto wording is pinned"), check("refusal-site-count", "two refusal sites exist")]
+        other: "nope" => ok []
+    match scope is "m30-h053"
+        false => ok []
+        true => ok [check("test-name", "row pins the RecommendationScoped name"), check("audit-const", "audit const keeps its name"), check("audit-path", "audit const pins its file"), check("root-call", "root resolves with repoRoot"), check("read-call", "audit loads with readRepoFile"), check("lower-call", "match folds case with ToLower"), check("phrase-ident", "loop var keeps its name"), check("contains-call", "legs search scope with Contains"), check("error-call", "omits refusal uses Errorf"), check("error-wording", "omits wording is pinned"), check("forbidden-a", "em-dash veto needle is pinned"), check("forbidden-b", "plain veto needle is pinned"), check("refusal-call", "veto refusal uses Error"), check("refusal-wording", "veto wording is pinned"), check("refusal-site-count", "two refusal sites exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/t27-rec-run" => ok [expected_check("test-name", "TestT27RecommendationScoped"), expected_check("audit-const", "t27Audit"), expected_check("audit-path", "docs/syntax-taste/t27-release-audit-2026-09-24.md"), expected_check("root-call", "repoRoot"), expected_check("read-call", "readRepoFile"), expected_check("lower-call", "strings.ToLower"), expected_check("phrase-ident", "phrase"), expected_check("contains-call", "strings.Contains"), expected_check("error-call", "t.Errorf"), expected_check("error-wording", "audit recommendation omits required scope phrase %q"), expected_check("forbidden-a", "firefox — qualified"), expected_check("forbidden-b", "firefox qualified"), expected_check("refusal-call", "t.Error"), expected_check("refusal-wording", "audit must not qualify firefox"), expected_check("refusal-site-count", "2")]
+        unknown: "nope" => ok []
+    match case is "history/t27-rec-run"
+        false => ok []
+        true => ok [expected_check("test-name", "TestT27RecommendationScoped"), expected_check("audit-const", "t27Audit"), expected_check("audit-path", "docs/syntax-taste/t27-release-audit-2026-09-24.md"), expected_check("root-call", "repoRoot"), expected_check("read-call", "readRepoFile"), expected_check("lower-call", "strings.ToLower"), expected_check("phrase-ident", "phrase"), expected_check("contains-call", "strings.Contains"), expected_check("error-call", "t.Errorf"), expected_check("error-wording", "audit recommendation omits required scope phrase %q"), expected_check("forbidden-a", "firefox — qualified"), expected_check("forbidden-b", "firefox qualified"), expected_check("refusal-call", "t.Error"), expected_check("refusal-wording", "audit must not qualify firefox"), expected_check("refusal-site-count", "2")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/t27-rec-run", "default", "", "offline") => ok
+        seed_test_name: context("history/t27-rec-run", "seed-test-name-drift", "", "offline") => failed{"test-name"}
+        seed_audit_const: context("history/t27-rec-run", "seed-audit-const-drift", "", "offline") => failed{"audit-const"}
+        seed_audit_path: context("history/t27-rec-run", "seed-audit-path-drift", "", "offline") => failed{"audit-path"}
+        seed_root_call: context("history/t27-rec-run", "seed-root-call-drift", "", "offline") => failed{"root-call"}
+        seed_read_call: context("history/t27-rec-run", "seed-read-call-drift", "", "offline") => failed{"read-call"}
+        seed_lower_call: context("history/t27-rec-run", "seed-lower-call-drift", "", "offline") => failed{"lower-call"}
+        seed_phrase_ident: context("history/t27-rec-run", "seed-phrase-ident-drift", "", "offline") => failed{"phrase-ident"}
+        seed_contains_call: context("history/t27-rec-run", "seed-contains-call-drift", "", "offline") => failed{"contains-call"}
+        seed_error_call: context("history/t27-rec-run", "seed-error-call-drift", "", "offline") => failed{"error-call"}
+        seed_error_wording: context("history/t27-rec-run", "seed-error-wording-drift", "", "offline") => failed{"error-wording"}
+        seed_forbidden_a: context("history/t27-rec-run", "seed-forbidden-a-drift", "", "offline") => failed{"forbidden-a"}
+        seed_forbidden_b: context("history/t27-rec-run", "seed-forbidden-b-drift", "", "offline") => failed{"forbidden-b"}
+        seed_refusal_call: context("history/t27-rec-run", "seed-refusal-call-drift", "", "offline") => failed{"refusal-call"}
+        seed_refusal_wording: context("history/t27-rec-run", "seed-refusal-wording-drift", "", "offline") => failed{"refusal-wording"}
+        seed_refusal_site_count: context("history/t27-rec-run", "seed-refusal-site-count-drift", "", "offline") => failed{"refusal-site-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.test_name, "TestT27RecommendationScoped", c, "test-name")
+            failed
+            ok evidence test_name_evidence => match call require_text(got.audit_const, "t27Audit", c, "audit-const")
+                failed
+                ok evidence audit_const_evidence => match call require_text(got.audit_path, "docs/syntax-taste/t27-release-audit-2026-09-24.md", c, "audit-path")
+                    failed
+                    ok evidence audit_path_evidence => match call require_text(got.root_call, "repoRoot", c, "root-call")
+                        failed
+                        ok evidence root_call_evidence => match call require_text(got.read_call, "readRepoFile", c, "read-call")
+                            failed
+                            ok evidence read_call_evidence => match call require_text(got.lower_call, "strings.ToLower", c, "lower-call")
+                                failed
+                                ok evidence lower_call_evidence => match call require_text(got.phrase_ident, "phrase", c, "phrase-ident")
+                                    failed
+                                    ok evidence phrase_ident_evidence => match call require_text(got.contains_call, "strings.Contains", c, "contains-call")
+                                        failed
+                                        ok evidence contains_call_evidence => match call require_text(got.error_call, "t.Errorf", c, "error-call")
+                                            failed
+                                            ok evidence error_call_evidence => match call require_text(got.error_wording, "audit recommendation omits required scope phrase %q", c, "error-wording")
+                                                failed
+                                                ok evidence error_wording_evidence => match call require_text(got.forbidden_a, "firefox — qualified", c, "forbidden-a")
+                                                    failed
+                                                    ok evidence forbidden_a_evidence => match call require_text(got.forbidden_b, "firefox qualified", c, "forbidden-b")
+                                                        failed
+                                                        ok evidence forbidden_b_evidence => match call require_text(got.refusal_call, "t.Error", c, "refusal-call")
+                                                            failed
+                                                            ok evidence refusal_call_evidence => match call require_text(got.refusal_wording, "audit must not qualify firefox", c, "refusal-wording")
+                                                                failed
+                                                                ok evidence refusal_wording_evidence => match call require_int(got.refusal_site_count, 2, c, "refusal-site-count")
+                                                                    failed
+                                                                    ok evidence refusal_site_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h053: "m30-h053" => ok test_case("history/t27-rec-run", ["history", "m30"], [], 120000, [check_ref("test-name"), check_ref("audit-const"), check_ref("audit-path"), check_ref("root-call"), check_ref("read-call"), check_ref("lower-call"), check_ref("phrase-ident"), check_ref("contains-call"), check_ref("error-call"), check_ref("error-wording"), check_ref("forbidden-a"), check_ref("forbidden-b"), check_ref("refusal-call"), check_ref("refusal-wording"), check_ref("refusal-site-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h053"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/t27-rec-run", ["history", "m30"], [], 120000, [check_ref("test-name"), check_ref("audit-const"), check_ref("audit-path"), check_ref("root-call"), check_ref("read-call"), check_ref("lower-call"), check_ref("phrase-ident"), check_ref("contains-call"), check_ref("error-call"), check_ref("error-wording"), check_ref("forbidden-a"), check_ref("forbidden-b"), check_ref("refusal-call"), check_ref("refusal-wording"), check_ref("refusal-site-count")], callable case_body)

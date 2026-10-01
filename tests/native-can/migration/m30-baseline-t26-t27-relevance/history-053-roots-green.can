@@ -1,0 +1,236 @@
+package m30history053roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-053 "Scoped pins: audit lines".
+/// Source: docs/syntax-taste/t27-release-audit-2026-09-24.md
+/// (section 7 lines 204-252 scope hits) plus the Go
+/// lower plus search legs
+/// (tests/baseline/t27_release_audit_test.go L358/L369).
+/// Disposition: historical_candidate (this row pins
+/// the TestT27RecommendationScoped offline pact as
+/// reviewable Can facts; the old Go check stays until
+/// the integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): one audit line number per
+/// scope pin plus the hit tally; every pin hits
+/// inside section 7 exactly once.
+/// ADAPTATION (recorded, with source lines): each
+/// line pin holds the section 7 audit line number
+/// where the pin hits (grep -n -i -F); found-count
+/// pins int tallied from the eight in-window hits.
+/// Two pins share audit L241; repeats at audit
+/// L17/L173/L174 sit outside section 7 and stay
+/// unpinned.
+/// line-bun pins int (220); line-chromium pins int
+/// (236); line-webkit pins int (237);
+/// line-firefox-excluded pins int (239);
+/// line-linux pins int (228); line-no-durability
+/// pins int (241); line-no-queue pins int (241);
+/// line-postgres pins int (224); found-count pins
+/// int (8).
+/// Facet map (scope hits in Go order): line-bun,
+/// line-chromium, line-webkit,
+/// line-firefox-excluded, line-linux,
+/// line-no-durability, line-no-queue,
+/// line-postgres, found-count.
+/// The base list pin lives in
+/// history-053-base-semantics.can; the run shape
+/// plus diagnostics live in
+/// history-053-run-shape.can.
+/// Variants: none (row lists zero variants; default
+/// plus seeded drifts only).
+/// Environment: one gate (Bun/Go/Git for T01 smoke or
+/// generator when applicable); binds at P23, requires
+/// [] now (offline only).
+/// Logical gates bind at P23 only if any leg is
+/// retained live; no live run now. Accept gate
+/// reviewed disposition is unmet.
+/// Timeout 120000ms is the offline default bound (no
+/// Go timeout in this row; binds at P23 like the M11
+/// no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after
+/// reviewed disposition unmet).
+/// Case history/t27-rec-roots checks: line-bun, line-chromium,
+/// line-webkit, line-firefox-excluded, line-linux,
+/// line-no-durability, line-no-queue, line-postgres,
+/// found-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int line_bun
+    int line_chromium
+    int line_webkit
+    int line_firefox_excluded
+    int line_linux
+    int line_no_durability
+    int line_no_queue
+    int line_postgres
+    int found_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/t27-rec-roots", "default", "", "offline"), "line-bun" => ok "case history/t27-rec-roots variant default root line-bun run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/t27-rec-roots", "default", "", "offline"), "line-bun" => ok evidence("line-bun", "true", "true", true, "case history/t27-rec-roots variant default root line-bun run offline")
+        different: false, true, context("history/t27-rec-roots", "default", "", "offline"), "line-bun" => failed{"line-bun"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 220, 220, context("history/t27-rec-roots", "default", "", "offline"), "line-bun" => ok evidence("line-bun", "220", "220", true, "case history/t27-rec-roots variant default root line-bun run offline")
+        different: 219, 220, context("history/t27-rec-roots", "default", "", "offline"), "line-bun" => failed{"line-bun"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "220", "220", context("history/t27-rec-roots", "default", "", "offline"), "line-bun" => ok evidence("line-bun", "220", "220", true, "case history/t27-rec-roots variant default root line-bun run offline")
+        different: "220_2", "220", context("history/t27-rec-roots", "default", "", "offline"), "line-bun" => failed{"line-bun"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(220, 236, 237, 239, 228, 241, 241, 224, 8)
+        seed_line_bun: "seed-line-bun-drift" => ok observation(219, 236, 237, 239, 228, 241, 241, 224, 8)
+        seed_line_chromium: "seed-line-chromium-drift" => ok observation(220, 235, 237, 239, 228, 241, 241, 224, 8)
+        seed_line_webkit: "seed-line-webkit-drift" => ok observation(220, 236, 236, 239, 228, 241, 241, 224, 8)
+        seed_line_firefox_excluded: "seed-line-firefox-excluded-drift" => ok observation(220, 236, 237, 238, 228, 241, 241, 224, 8)
+        seed_line_linux: "seed-line-linux-drift" => ok observation(220, 236, 237, 239, 227, 241, 241, 224, 8)
+        seed_line_no_durability: "seed-line-no-durability-drift" => ok observation(220, 236, 237, 239, 228, 240, 241, 224, 8)
+        seed_line_no_queue: "seed-line-no-queue-drift" => ok observation(220, 236, 237, 239, 228, 241, 240, 224, 8)
+        seed_line_postgres: "seed-line-postgres-drift" => ok observation(220, 236, 237, 239, 228, 241, 241, 223, 8)
+        seed_found_count: "seed-found-count-drift" => ok observation(220, 236, 237, 239, 228, 241, 241, 224, 7)
+    match variant_id
+        "seed-line-bun-drift" => ok observation(219, 236, 237, 239, 228, 241, 241, 224, 8)
+        "seed-line-chromium-drift" => ok observation(220, 235, 237, 239, 228, 241, 241, 224, 8)
+        "seed-line-webkit-drift" => ok observation(220, 236, 236, 239, 228, 241, 241, 224, 8)
+        "seed-line-firefox-excluded-drift" => ok observation(220, 236, 237, 238, 228, 241, 241, 224, 8)
+        "seed-line-linux-drift" => ok observation(220, 236, 237, 239, 227, 241, 241, 224, 8)
+        "seed-line-no-durability-drift" => ok observation(220, 236, 237, 239, 228, 240, 241, 224, 8)
+        "seed-line-no-queue-drift" => ok observation(220, 236, 237, 239, 228, 241, 240, 224, 8)
+        "seed-line-postgres-drift" => ok observation(220, 236, 237, 239, 228, 241, 241, 223, 8)
+        "seed-found-count-drift" => ok observation(220, 236, 237, 239, 228, 241, 241, 224, 7)
+        _ => ok observation(220, 236, 237, 239, 228, 241, 241, 224, 8)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h053: "m30-h053" => ok [check("line-bun", "audit line for the bun pin is pinned"), check("line-chromium", "audit line for the chromium pin is pinned"), check("line-webkit", "audit line for the webkit pin is pinned"), check("line-firefox-excluded", "audit line for the firefox refusal is pinned"), check("line-linux", "audit line for the linux pin is pinned"), check("line-no-durability", "audit line for the no-durability pin is pinned"), check("line-no-queue", "audit line for the no-queue pin is pinned"), check("line-postgres", "audit line for the postgres pin is pinned"), check("found-count", "eight scope hits exist")]
+        other: "nope" => ok []
+    match scope is "m30-h053"
+        false => ok []
+        true => ok [check("line-bun", "audit line for the bun pin is pinned"), check("line-chromium", "audit line for the chromium pin is pinned"), check("line-webkit", "audit line for the webkit pin is pinned"), check("line-firefox-excluded", "audit line for the firefox refusal is pinned"), check("line-linux", "audit line for the linux pin is pinned"), check("line-no-durability", "audit line for the no-durability pin is pinned"), check("line-no-queue", "audit line for the no-queue pin is pinned"), check("line-postgres", "audit line for the postgres pin is pinned"), check("found-count", "eight scope hits exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/t27-rec-roots" => ok [expected_check("line-bun", "220"), expected_check("line-chromium", "236"), expected_check("line-webkit", "237"), expected_check("line-firefox-excluded", "239"), expected_check("line-linux", "228"), expected_check("line-no-durability", "241"), expected_check("line-no-queue", "241"), expected_check("line-postgres", "224"), expected_check("found-count", "8")]
+        unknown: "nope" => ok []
+    match case is "history/t27-rec-roots"
+        false => ok []
+        true => ok [expected_check("line-bun", "220"), expected_check("line-chromium", "236"), expected_check("line-webkit", "237"), expected_check("line-firefox-excluded", "239"), expected_check("line-linux", "228"), expected_check("line-no-durability", "241"), expected_check("line-no-queue", "241"), expected_check("line-postgres", "224"), expected_check("found-count", "8")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/t27-rec-roots", "default", "", "offline") => ok
+        seed_line_bun: context("history/t27-rec-roots", "seed-line-bun-drift", "", "offline") => failed{"line-bun"}
+        seed_line_chromium: context("history/t27-rec-roots", "seed-line-chromium-drift", "", "offline") => failed{"line-chromium"}
+        seed_line_webkit: context("history/t27-rec-roots", "seed-line-webkit-drift", "", "offline") => failed{"line-webkit"}
+        seed_line_firefox_excluded: context("history/t27-rec-roots", "seed-line-firefox-excluded-drift", "", "offline") => failed{"line-firefox-excluded"}
+        seed_line_linux: context("history/t27-rec-roots", "seed-line-linux-drift", "", "offline") => failed{"line-linux"}
+        seed_line_no_durability: context("history/t27-rec-roots", "seed-line-no-durability-drift", "", "offline") => failed{"line-no-durability"}
+        seed_line_no_queue: context("history/t27-rec-roots", "seed-line-no-queue-drift", "", "offline") => failed{"line-no-queue"}
+        seed_line_postgres: context("history/t27-rec-roots", "seed-line-postgres-drift", "", "offline") => failed{"line-postgres"}
+        seed_found_count: context("history/t27-rec-roots", "seed-found-count-drift", "", "offline") => failed{"found-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.line_bun, 220, c, "line-bun")
+            failed
+            ok evidence line_bun_evidence => match call require_int(got.line_chromium, 236, c, "line-chromium")
+                failed
+                ok evidence line_chromium_evidence => match call require_int(got.line_webkit, 237, c, "line-webkit")
+                    failed
+                    ok evidence line_webkit_evidence => match call require_int(got.line_firefox_excluded, 239, c, "line-firefox-excluded")
+                        failed
+                        ok evidence line_firefox_excluded_evidence => match call require_int(got.line_linux, 228, c, "line-linux")
+                            failed
+                            ok evidence line_linux_evidence => match call require_int(got.line_no_durability, 241, c, "line-no-durability")
+                                failed
+                                ok evidence line_no_durability_evidence => match call require_int(got.line_no_queue, 241, c, "line-no-queue")
+                                    failed
+                                    ok evidence line_no_queue_evidence => match call require_int(got.line_postgres, 224, c, "line-postgres")
+                                        failed
+                                        ok evidence line_postgres_evidence => match call require_int(got.found_count, 8, c, "found-count")
+                                            failed
+                                            ok evidence found_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h053: "m30-h053" => ok test_case("history/t27-rec-roots", ["history", "m30"], [], 120000, [check_ref("line-bun"), check_ref("line-chromium"), check_ref("line-webkit"), check_ref("line-firefox-excluded"), check_ref("line-linux"), check_ref("line-no-durability"), check_ref("line-no-queue"), check_ref("line-postgres"), check_ref("found-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h053"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/t27-rec-roots", ["history", "m30"], [], 120000, [check_ref("line-bun"), check_ref("line-chromium"), check_ref("line-webkit"), check_ref("line-firefox-excluded"), check_ref("line-linux"), check_ref("line-no-durability"), check_ref("line-no-queue"), check_ref("line-postgres"), check_ref("found-count")], callable case_body)
