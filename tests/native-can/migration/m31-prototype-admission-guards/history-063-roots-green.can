@@ -1,0 +1,287 @@
+package m31history063roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M31 HISTORY-063 "Review manifest: sweep roots".
+/// Source: tests/host-discrimination/admission_test.go
+/// symbol TestReviewManifestCoversPrototypes (L126-175)
+/// tree list (L152) plus suffix gates (L162) plus the
+/// manifest record shape (L115-121).
+/// Disposition: migrate (this row owns the
+/// TestReviewManifestCoversPrototypes offline pact
+/// as reviewable Can facts; the old Go check stays
+/// until the integrator retires it after every linked
+/// row, variant, environment plus control has accepted
+/// evidence).
+/// Protects (this file): the sweep roots: the two
+/// tree names, the two suffixes, the record name
+/// plus fields plus tags, plus five tallies.
+/// ADAPTATION (recorded, with source lines): tree pins
+/// hold L152 bytes; suffix pins hold L162 bytes;
+/// struct pins hold L115-121 bytes; tag pins hold
+/// L116-120 bytes; counts pin ints tallied from the
+/// Go sites plus live walk.
+/// tree-adapters pins adapters (L152);
+/// tree-companions pins companions (L152);
+/// suffix-ts pins .ts (L162);
+/// suffix-test pins .test.ts (L162);
+/// manifest-struct pins reviewManifest (L115);
+/// manifest-status-field pins Status (L116);
+/// prototypes-field pins Prototypes (L117);
+/// path-field pins Path (L118);
+/// prototypes-tag pins prototypes (L120);
+/// path-tag pins path (L118);
+/// status-tag pins status (L116 plus L119);
+/// tree-count pins int (2) from L152;
+/// manifest-field-count pins int (2) from L116-117;
+/// entry-field-count pins int (2) from L118-119;
+/// prototype-per-tree pins int (3) live tally;
+/// test-per-tree pins int (3) live tally.
+/// Facet map (sweep in Go order): tree-adapters,
+/// tree-companions, suffix-ts, suffix-test,
+/// manifest-struct, manifest-status-field,
+/// prototypes-field, path-field, prototypes-tag,
+/// path-tag, status-tag, tree-count,
+/// manifest-field-count, entry-field-count,
+/// prototype-per-tree, test-per-tree.
+/// The anchor legs live in
+/// history-063-base-semantics.can; the run shape plus
+/// diagnostics live in history-063-run-shape.can.
+/// Variants: none (row lists zero variants; default
+/// plus seeded drifts only).
+/// Environment: no gates (row lists zero environment
+/// gates; offline only).
+/// Logical gates SUITE/DOC/FILES/BUILD bind at P23;
+/// no live run now.
+/// Timeout 120000ms is the offline default bound (no
+/// Go timeout in this row; binds at P23 like the M11
+/// no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23 accept gate
+/// unmet).
+/// Case history/review-manifest-roots checks:
+/// tree-adapters, tree-companions, suffix-ts,
+/// suffix-test, manifest-struct, manifest-status-field,
+/// prototypes-field, path-field, prototypes-tag,
+/// path-tag, status-tag, tree-count,
+/// manifest-field-count, entry-field-count,
+/// prototype-per-tree, test-per-tree.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str tree_adapters
+    str tree_companions
+    str suffix_ts
+    str suffix_test
+    str manifest_struct
+    str manifest_status_field
+    str prototypes_field
+    str path_field
+    str prototypes_tag
+    str path_tag
+    str status_tag
+    int tree_count
+    int manifest_field_count
+    int entry_field_count
+    int prototype_per_tree
+    int test_per_tree
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/review-manifest-roots", "default", "", "offline"), "tree-adapters" => ok "case history/review-manifest-roots variant default root tree-adapters run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/review-manifest-roots", "default", "", "offline"), "tree-adapters" => ok evidence("tree-adapters", "true", "true", true, "case history/review-manifest-roots variant default root tree-adapters run offline")
+        different: false, true, context("history/review-manifest-roots", "default", "", "offline"), "tree-adapters" => failed{"tree-adapters"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("history/review-manifest-roots", "default", "", "offline"), "tree-count" => ok evidence("tree-count", "2", "2", true, "case history/review-manifest-roots variant default root tree-count run offline")
+        different: 1, 2, context("history/review-manifest-roots", "default", "", "offline"), "tree-count" => failed{"tree-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "adapters", "adapters", context("history/review-manifest-roots", "default", "", "offline"), "tree-adapters" => ok evidence("tree-adapters", "adapters", "adapters", true, "case history/review-manifest-roots variant default root tree-adapters run offline")
+        different: "adapters_2", "adapters", context("history/review-manifest-roots", "default", "", "offline"), "tree-adapters" => failed{"tree-adapters"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+        seed_tree_adapters: "seed-tree-adapters-drift" => ok observation("adapters_2", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+        seed_tree_companions: "seed-tree-companions-drift" => ok observation("adapters", "companions_2", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+        seed_suffix_ts: "seed-suffix-ts-drift" => ok observation("adapters", "companions", ".ts_2", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+        seed_suffix_test: "seed-suffix-test-drift" => ok observation("adapters", "companions", ".ts", ".test.ts_2", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+        seed_manifest_struct: "seed-manifest-struct-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest_2", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+        seed_manifest_status_field: "seed-manifest-status-field-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status_2", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+        seed_prototypes_field: "seed-prototypes-field-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes_2", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+        seed_path_field: "seed-path-field-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path_2", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+        seed_prototypes_tag: "seed-prototypes-tag-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes_2", "path", "status", 2, 2, 2, 3, 3)
+        seed_path_tag: "seed-path-tag-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path_2", "status", 2, 2, 2, 3, 3)
+        seed_status_tag: "seed-status-tag-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status_2", 2, 2, 2, 3, 3)
+        seed_tree_count: "seed-tree-count-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 1, 2, 2, 3, 3)
+        seed_manifest_field_count: "seed-manifest-field-count-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 1, 2, 3, 3)
+        seed_entry_field_count: "seed-entry-field-count-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 1, 3, 3)
+        seed_prototype_per_tree: "seed-prototype-per-tree-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 2, 3)
+        seed_test_per_tree: "seed-test-per-tree-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 2)
+    match variant_id
+        "seed-tree-adapters-drift" => ok observation("adapters_2", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+        "seed-tree-companions-drift" => ok observation("adapters", "companions_2", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+        "seed-suffix-ts-drift" => ok observation("adapters", "companions", ".ts_2", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+        "seed-suffix-test-drift" => ok observation("adapters", "companions", ".ts", ".test.ts_2", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+        "seed-manifest-struct-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest_2", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+        "seed-manifest-status-field-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status_2", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+        "seed-prototypes-field-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes_2", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+        "seed-path-field-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path_2", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+        "seed-prototypes-tag-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes_2", "path", "status", 2, 2, 2, 3, 3)
+        "seed-path-tag-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path_2", "status", 2, 2, 2, 3, 3)
+        "seed-status-tag-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status_2", 2, 2, 2, 3, 3)
+        "seed-tree-count-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 1, 2, 2, 3, 3)
+        "seed-manifest-field-count-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 1, 2, 3, 3)
+        "seed-entry-field-count-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 1, 3, 3)
+        "seed-prototype-per-tree-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 2, 3)
+        "seed-test-per-tree-drift" => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 2)
+        _ => ok observation("adapters", "companions", ".ts", ".test.ts", "reviewManifest", "Status", "Prototypes", "Path", "prototypes", "path", "status", 2, 2, 2, 3, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m31_h063: "m31-h063" => ok [check("tree-adapters", "adapters tree keeps its name"), check("tree-companions", "companions tree keeps its name"), check("suffix-ts", "source suffix keeps its bytes"), check("suffix-test", "skip suffix keeps its bytes"), check("manifest-struct", "manifest record keeps its name"), check("manifest-status-field", "status field keeps its spelling"), check("prototypes-field", "prototypes field keeps its spelling"), check("path-field", "path field keeps its spelling"), check("prototypes-tag", "prototypes tag keeps its bytes"), check("path-tag", "path tag keeps its bytes"), check("status-tag", "status tag keeps its bytes"), check("tree-count", "two trees exist"), check("manifest-field-count", "two manifest fields exist"), check("entry-field-count", "two entry fields exist"), check("prototype-per-tree", "three prototypes per tree exist"), check("test-per-tree", "three skipped files per tree exist")]
+        other: "nope" => ok []
+    match scope is "m31-h063"
+        false => ok []
+        true => ok [check("tree-adapters", "adapters tree keeps its name"), check("tree-companions", "companions tree keeps its name"), check("suffix-ts", "source suffix keeps its bytes"), check("suffix-test", "skip suffix keeps its bytes"), check("manifest-struct", "manifest record keeps its name"), check("manifest-status-field", "status field keeps its spelling"), check("prototypes-field", "prototypes field keeps its spelling"), check("path-field", "path field keeps its spelling"), check("prototypes-tag", "prototypes tag keeps its bytes"), check("path-tag", "path tag keeps its bytes"), check("status-tag", "status tag keeps its bytes"), check("tree-count", "two trees exist"), check("manifest-field-count", "two manifest fields exist"), check("entry-field-count", "two entry fields exist"), check("prototype-per-tree", "three prototypes per tree exist"), check("test-per-tree", "three skipped files per tree exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/review-manifest-roots" => ok [expected_check("tree-adapters", "adapters"), expected_check("tree-companions", "companions"), expected_check("suffix-ts", ".ts"), expected_check("suffix-test", ".test.ts"), expected_check("manifest-struct", "reviewManifest"), expected_check("manifest-status-field", "Status"), expected_check("prototypes-field", "Prototypes"), expected_check("path-field", "Path"), expected_check("prototypes-tag", "prototypes"), expected_check("path-tag", "path"), expected_check("status-tag", "status"), expected_check("tree-count", "2"), expected_check("manifest-field-count", "2"), expected_check("entry-field-count", "2"), expected_check("prototype-per-tree", "3"), expected_check("test-per-tree", "3")]
+        unknown: "nope" => ok []
+    match case is "history/review-manifest-roots"
+        false => ok []
+        true => ok [expected_check("tree-adapters", "adapters"), expected_check("tree-companions", "companions"), expected_check("suffix-ts", ".ts"), expected_check("suffix-test", ".test.ts"), expected_check("manifest-struct", "reviewManifest"), expected_check("manifest-status-field", "Status"), expected_check("prototypes-field", "Prototypes"), expected_check("path-field", "Path"), expected_check("prototypes-tag", "prototypes"), expected_check("path-tag", "path"), expected_check("status-tag", "status"), expected_check("tree-count", "2"), expected_check("manifest-field-count", "2"), expected_check("entry-field-count", "2"), expected_check("prototype-per-tree", "3"), expected_check("test-per-tree", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/review-manifest-roots", "default", "", "offline") => ok
+        seed_tree_adapters: context("history/review-manifest-roots", "seed-tree-adapters-drift", "", "offline") => failed{"tree-adapters"}
+        seed_tree_companions: context("history/review-manifest-roots", "seed-tree-companions-drift", "", "offline") => failed{"tree-companions"}
+        seed_suffix_ts: context("history/review-manifest-roots", "seed-suffix-ts-drift", "", "offline") => failed{"suffix-ts"}
+        seed_suffix_test: context("history/review-manifest-roots", "seed-suffix-test-drift", "", "offline") => failed{"suffix-test"}
+        seed_manifest_struct: context("history/review-manifest-roots", "seed-manifest-struct-drift", "", "offline") => failed{"manifest-struct"}
+        seed_manifest_status_field: context("history/review-manifest-roots", "seed-manifest-status-field-drift", "", "offline") => failed{"manifest-status-field"}
+        seed_prototypes_field: context("history/review-manifest-roots", "seed-prototypes-field-drift", "", "offline") => failed{"prototypes-field"}
+        seed_path_field: context("history/review-manifest-roots", "seed-path-field-drift", "", "offline") => failed{"path-field"}
+        seed_prototypes_tag: context("history/review-manifest-roots", "seed-prototypes-tag-drift", "", "offline") => failed{"prototypes-tag"}
+        seed_path_tag: context("history/review-manifest-roots", "seed-path-tag-drift", "", "offline") => failed{"path-tag"}
+        seed_status_tag: context("history/review-manifest-roots", "seed-status-tag-drift", "", "offline") => failed{"status-tag"}
+        seed_tree_count: context("history/review-manifest-roots", "seed-tree-count-drift", "", "offline") => failed{"tree-count"}
+        seed_manifest_field_count: context("history/review-manifest-roots", "seed-manifest-field-count-drift", "", "offline") => failed{"manifest-field-count"}
+        seed_entry_field_count: context("history/review-manifest-roots", "seed-entry-field-count-drift", "", "offline") => failed{"entry-field-count"}
+        seed_prototype_per_tree: context("history/review-manifest-roots", "seed-prototype-per-tree-drift", "", "offline") => failed{"prototype-per-tree"}
+        seed_test_per_tree: context("history/review-manifest-roots", "seed-test-per-tree-drift", "", "offline") => failed{"test-per-tree"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.tree_adapters, "adapters", c, "tree-adapters")
+            failed
+            ok evidence tree_adapters_evidence => match call require_text(got.tree_companions, "companions", c, "tree-companions")
+                failed
+                ok evidence tree_companions_evidence => match call require_text(got.suffix_ts, ".ts", c, "suffix-ts")
+                    failed
+                    ok evidence suffix_ts_evidence => match call require_text(got.suffix_test, ".test.ts", c, "suffix-test")
+                        failed
+                        ok evidence suffix_test_evidence => match call require_text(got.manifest_struct, "reviewManifest", c, "manifest-struct")
+                            failed
+                            ok evidence manifest_struct_evidence => match call require_text(got.manifest_status_field, "Status", c, "manifest-status-field")
+                                failed
+                                ok evidence manifest_status_field_evidence => match call require_text(got.prototypes_field, "Prototypes", c, "prototypes-field")
+                                    failed
+                                    ok evidence prototypes_field_evidence => match call require_text(got.path_field, "Path", c, "path-field")
+                                        failed
+                                        ok evidence path_field_evidence => match call require_text(got.prototypes_tag, "prototypes", c, "prototypes-tag")
+                                            failed
+                                            ok evidence prototypes_tag_evidence => match call require_text(got.path_tag, "path", c, "path-tag")
+                                                failed
+                                                ok evidence path_tag_evidence => match call require_text(got.status_tag, "status", c, "status-tag")
+                                                    failed
+                                                    ok evidence status_tag_evidence => match call require_int(got.tree_count, 2, c, "tree-count")
+                                                        failed
+                                                        ok evidence tree_count_evidence => match call require_int(got.manifest_field_count, 2, c, "manifest-field-count")
+                                                            failed
+                                                            ok evidence manifest_field_count_evidence => match call require_int(got.entry_field_count, 2, c, "entry-field-count")
+                                                                failed
+                                                                ok evidence entry_field_count_evidence => match call require_int(got.prototype_per_tree, 3, c, "prototype-per-tree")
+                                                                    failed
+                                                                    ok evidence prototype_per_tree_evidence => match call require_int(got.test_per_tree, 3, c, "test-per-tree")
+                                                                        failed
+                                                                        ok evidence test_per_tree_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m31_h063: "m31-h063" => ok test_case("history/review-manifest-roots", ["history", "m31"], [], 120000, [check_ref("tree-adapters"), check_ref("tree-companions"), check_ref("suffix-ts"), check_ref("suffix-test"), check_ref("manifest-struct"), check_ref("manifest-status-field"), check_ref("prototypes-field"), check_ref("path-field"), check_ref("prototypes-tag"), check_ref("path-tag"), check_ref("status-tag"), check_ref("tree-count"), check_ref("manifest-field-count"), check_ref("entry-field-count"), check_ref("prototype-per-tree"), check_ref("test-per-tree")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m31-h063"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/review-manifest-roots", ["history", "m31"], [], 120000, [check_ref("tree-adapters"), check_ref("tree-companions"), check_ref("suffix-ts"), check_ref("suffix-test"), check_ref("manifest-struct"), check_ref("manifest-status-field"), check_ref("prototypes-field"), check_ref("path-field"), check_ref("prototypes-tag"), check_ref("path-tag"), check_ref("status-tag"), check_ref("tree-count"), check_ref("manifest-field-count"), check_ref("entry-field-count"), check_ref("prototype-per-tree"), check_ref("test-per-tree")], callable case_body)
