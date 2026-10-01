@@ -1,0 +1,396 @@
+package m39life006roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M39 LIFE-006 TestGate3ReplayExpiry
+/// live plus expired legs.
+/// Source: tests/integration/
+/// gate3_matrix_test.go symbol
+/// TestGate3ReplayExpiry (L1481-1638):
+/// an unrevoked replay returns
+/// byte-identical 200 bytes with
+/// its retention stamp held; a
+/// live row a minute inside the
+/// cutoff replays the same way;
+/// a row a minute past the
+/// cutoff conflicts with 409 and
+/// is gone, while the same op id
+/// with a fresh base commits a
+/// new revision.
+/// Disposition: migrate (this row
+/// owns the live plus expired
+/// pact as reviewable Can facts;
+/// the old go check stays until
+/// the integrator retires it after
+/// every linked row, variant,
+/// environment and control has
+/// accepted evidence).
+/// Protects (this file): facet two
+/// (L1549-1579): unrevoked and
+/// live replays hold bytes and
+/// stamp; plus facet three
+/// (L1581-1611): expired replay
+/// conflicts and removes its row,
+/// and a fresh base commits
+/// revision four.
+/// ADAPTATION (recorded, with
+/// source lines): stamp pins
+/// hold replay stamps; note pins
+/// hold guard lines; op pins hold
+/// op ids; login pins hold the
+/// stamp-move login; leaf pins
+/// hold outcome leaves; count
+/// pins hold ints tallied from
+/// revisions and guards.
+/// Pin lines: restore-stamp L1551,
+/// replay-note-unrevoked L1554,
+/// retention-slide-unrevoked L1558,
+/// no-entry-unrevoked L1560,
+/// setup-note-expiry L1567,
+/// live-operation L1565,
+/// touch-actor L1570,
+/// replay-note-live L1574,
+/// no-entry-live L1576,
+/// retention-slide-live L1578,
+/// replay-note-expired L1588,
+/// expired-note L1590,
+/// conflict-leaf L1590, moved-note L1592,
+/// kept-note L1596, fresh-note L1604,
+/// fresh-base-note L1606,
+/// saved-leaf L1606,
+/// fresh-rev-note L1609, ok-status L1513,
+/// conflict-status L1587,
+/// base-revision-e1 L1565,
+/// live-revision L1577,
+/// fresh-base-revision L1602,
+/// fresh-revision L1608.
+/// Facet map (leg order): restore-stamp,
+/// replay-note-unrevoked,
+/// retention-slide-unrevoked,
+/// no-entry-unrevoked, setup-note-expiry,
+/// live-operation, touch-actor,
+/// replay-note-live, no-entry-live,
+/// retention-slide-live,
+/// replay-note-expired, expired-note,
+/// conflict-leaf, moved-note, kept-note,
+/// fresh-note, fresh-base-note,
+/// saved-leaf, fresh-rev-note, ok-status,
+/// conflict-status, base-revision-e1,
+/// live-revision, fresh-base-revision,
+/// fresh-revision.
+/// The revoked legs live in
+/// life-006-base-semantics.can; the
+/// harness plus cleanup shape lives
+/// in life-006-run-shape.can.
+/// Variants: inside versus outside
+/// the retention cutoff, plus
+/// fresh base after expiry
+/// (default plus seeded drifts
+/// only here).
+/// Environment: CAN_BUN_ARCHIVE
+/// plus a staged bundle plus
+/// cut-off homes (row lists three
+/// gates; bind at P23; no live
+/// run now).
+/// Logical gates HTTP plus DB
+/// plus D1 plus D2 bind at P23
+/// plus QHTTP plus QD1 plus QD2;
+/// no live run now.
+/// Timeout 120000ms is the offline
+/// default bound (the live fourteen
+/// minute hold is pinned in the
+/// run slice; binds at P23 like
+/// the M38 no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed
+/// (P23 plus QHTTP plus QD1 plus
+/// QD2 accept gates unmet).
+/// Case life/replay-expiry-roots
+/// checks: restore-stamp,
+/// replay-note-unrevoked,
+/// retention-slide-unrevoked,
+/// no-entry-unrevoked, setup-note-expiry,
+/// live-operation, touch-actor,
+/// replay-note-live, no-entry-live,
+/// retention-slide-live,
+/// replay-note-expired, expired-note,
+/// conflict-leaf, moved-note, kept-note,
+/// fresh-note, fresh-base-note,
+/// saved-leaf, fresh-rev-note, ok-status,
+/// conflict-status, base-revision-e1,
+/// live-revision, fresh-base-revision,
+/// fresh-revision.
+/// Shared old files untouched;
+/// retirement is a later integrator
+/// decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str restore_stamp
+    str replay_note_unrevoked
+    str retention_slide_unrevoked
+    str no_entry_unrevoked
+    str setup_note_expiry
+    str live_operation
+    str touch_actor
+    str replay_note_live
+    str no_entry_live
+    str retention_slide_live
+    str replay_note_expired
+    str expired_note
+    str conflict_leaf
+    str moved_note
+    str kept_note
+    str fresh_note
+    str fresh_base_note
+    str saved_leaf
+    str fresh_rev_note
+    int ok_status
+    int conflict_status
+    int base_revision_e1
+    int live_revision
+    int fresh_base_revision
+    int fresh_revision
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/replay-expiry-roots", "default", "", "offline"), "restore-stamp" => ok "case life/replay-expiry-roots variant default root restore-stamp run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/replay-expiry-roots", "default", "", "offline"), "restore-stamp" => ok evidence("restore-stamp", "true", "true", true, "case life/replay-expiry-roots variant default root restore-stamp run offline")
+        different: false, true, context("life/replay-expiry-roots", "default", "", "offline"), "restore-stamp" => failed{"restore-stamp"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 200, 200, context("life/replay-expiry-roots", "default", "", "offline"), "ok-status" => ok evidence("ok-status", "200", "200", true, "case life/replay-expiry-roots variant default root ok-status run offline")
+        different: 199, 200, context("life/replay-expiry-roots", "default", "", "offline"), "ok-status" => failed{"ok-status"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "0", "0", context("life/replay-expiry-roots", "default", "", "offline"), "restore-stamp" => ok evidence("restore-stamp", "0", "0", true, "case life/replay-expiry-roots variant default root restore-stamp run offline")
+        different: "0_2", "0", context("life/replay-expiry-roots", "default", "", "offline"), "restore-stamp" => failed{"restore-stamp"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_restore_stamp: "seed-restore-stamp-drift" => ok observation("0_2", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_replay_note_unrevoked: "seed-replay-note-unrevoked-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes_2", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_retention_slide_unrevoked: "seed-retention-slide-unrevoked-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s_2", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_no_entry_unrevoked: "seed-no-entry-unrevoked-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay_2", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_setup_note_expiry: "seed-setup-note-expiry-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s_2", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_live_operation: "seed-live-operation-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1_2", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_touch_actor: "seed-touch-actor-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice_2", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_replay_note_live: "seed-replay-note-live-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes_2", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_no_entry_live: "seed-no-entry-live-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay_2", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_retention_slide_live: "seed-retention-slide-live-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s_2", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_replay_note_expired: "seed-replay-note-expired-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409_2", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_expired_note: "seed-expired-note-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay_2", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_conflict_leaf: "seed-conflict-leaf-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict_2", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_moved_note: "seed-moved-note-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s_2", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_kept_note: "seed-kept-note-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v_2", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_fresh_note: "seed-fresh-note-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200_2", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_fresh_base_note: "seed-fresh-base-note-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base_2", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_saved_leaf: "seed-saved-leaf-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved_2", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        seed_fresh_rev_note: "seed-fresh-rev-note-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4_2", 200, 409, 2, 3, 3, 4)
+        seed_ok_status: "seed-ok-status-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 199, 409, 2, 3, 3, 4)
+        seed_conflict_status: "seed-conflict-status-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 408, 2, 3, 3, 4)
+        seed_base_revision_e1: "seed-base-revision-e1-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 1, 3, 3, 4)
+        seed_live_revision: "seed-live-revision-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 2, 3, 4)
+        seed_fresh_base_revision: "seed-fresh-base-revision-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 2, 4)
+        seed_fresh_revision: "seed-fresh-revision-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 3)
+    match variant_id
+        "seed-restore-stamp-drift" => ok observation("0_2", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-replay-note-unrevoked-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes_2", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-retention-slide-unrevoked-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s_2", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-no-entry-unrevoked-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay_2", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-setup-note-expiry-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s_2", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-live-operation-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1_2", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-touch-actor-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice_2", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-replay-note-live-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes_2", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-no-entry-live-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay_2", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-retention-slide-live-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s_2", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-replay-note-expired-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409_2", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-expired-note-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay_2", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-conflict-leaf-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict_2", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-moved-note-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s_2", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-kept-note-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v_2", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-fresh-note-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200_2", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-fresh-base-note-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base_2", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-saved-leaf-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved_2", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+        "seed-fresh-rev-note-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4_2", 200, 409, 2, 3, 3, 4)
+        "seed-ok-status-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 199, 409, 2, 3, 3, 4)
+        "seed-conflict-status-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 408, 2, 3, 3, 4)
+        "seed-base-revision-e1-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 1, 3, 3, 4)
+        "seed-live-revision-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 2, 3, 4)
+        "seed-fresh-base-revision-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 2, 4)
+        "seed-fresh-revision-drift" => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 3)
+        _ => ok observation("0", "unrevoked replay: %d, want identical 200 bytes", "unrevoked replay slid retention %s to %s", "unrevoked replay", "expiry setup save: %d %s", "op-e1", "alice", "live replay: %d, want identical 200 bytes", "live replay", "live replay slid retention %s to %s", "expired replay: %d %s, want 409", "expired replay", "invoice_contract::grid_conflict", "expired replay moved revision to %s", "expired replay kept %+v", "expired id fresh base: %d %s, want 200", "expired id fresh base", "invoice_contract::grid_saved", "expired id fresh base value %+v, want new revision 4", 200, 409, 2, 3, 3, 4)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m39_l006: "m39-l006" => ok [check("restore-stamp", "restore keeps the zero stamp"), check("replay-note-unrevoked", "unrevoked guard wants identical bytes"), check("retention-slide-unrevoked", "unrevoked guard names retention hold"), check("no-entry-unrevoked", "entry guard names the unrevoked leg"), check("setup-note-expiry", "expiry setup names its save"), check("live-operation", "expiry legs keep their op id"), check("touch-actor", "stamp moves name the login"), check("replay-note-live", "live guard wants identical bytes"), check("no-entry-live", "entry guard names the live leg"), check("retention-slide-live", "live guard names retention hold"), check("replay-note-expired", "expired guard wants the 409 line"), check("expired-note", "expired leg keeps its note"), check("conflict-leaf", "expiry names the conflict leaf"), check("moved-note", "revision guard names its hold"), check("kept-note", "removal guard names the gone row"), check("fresh-note", "fresh base guard wants the 200 line"), check("fresh-base-note", "fresh base leg keeps its note"), check("saved-leaf", "fresh base names the saved leaf"), check("fresh-rev-note", "fresh base wants revision four"), check("ok-status", "replays answer 200"), check("conflict-status", "expired replays answer 409"), check("base-revision-e1", "expiry legs start at revision two"), check("live-revision", "live row holds revision three"), check("fresh-base-revision", "fresh base offers revision three"), check("fresh-revision", "fresh base commits revision four")]
+        other: "nope" => ok []
+    match scope is "m39-l006"
+        false => ok []
+        true => ok [check("restore-stamp", "restore keeps the zero stamp"), check("replay-note-unrevoked", "unrevoked guard wants identical bytes"), check("retention-slide-unrevoked", "unrevoked guard names retention hold"), check("no-entry-unrevoked", "entry guard names the unrevoked leg"), check("setup-note-expiry", "expiry setup names its save"), check("live-operation", "expiry legs keep their op id"), check("touch-actor", "stamp moves name the login"), check("replay-note-live", "live guard wants identical bytes"), check("no-entry-live", "entry guard names the live leg"), check("retention-slide-live", "live guard names retention hold"), check("replay-note-expired", "expired guard wants the 409 line"), check("expired-note", "expired leg keeps its note"), check("conflict-leaf", "expiry names the conflict leaf"), check("moved-note", "revision guard names its hold"), check("kept-note", "removal guard names the gone row"), check("fresh-note", "fresh base guard wants the 200 line"), check("fresh-base-note", "fresh base leg keeps its note"), check("saved-leaf", "fresh base names the saved leaf"), check("fresh-rev-note", "fresh base wants revision four"), check("ok-status", "replays answer 200"), check("conflict-status", "expired replays answer 409"), check("base-revision-e1", "expiry legs start at revision two"), check("live-revision", "live row holds revision three"), check("fresh-base-revision", "fresh base offers revision three"), check("fresh-revision", "fresh base commits revision four")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/replay-expiry-roots" => ok [expected_check("restore-stamp", "0"), expected_check("replay-note-unrevoked", "unrevoked replay: %d, want identical 200 bytes"), expected_check("retention-slide-unrevoked", "unrevoked replay slid retention %s to %s"), expected_check("no-entry-unrevoked", "unrevoked replay"), expected_check("setup-note-expiry", "expiry setup save: %d %s"), expected_check("live-operation", "op-e1"), expected_check("touch-actor", "alice"), expected_check("replay-note-live", "live replay: %d, want identical 200 bytes"), expected_check("no-entry-live", "live replay"), expected_check("retention-slide-live", "live replay slid retention %s to %s"), expected_check("replay-note-expired", "expired replay: %d %s, want 409"), expected_check("expired-note", "expired replay"), expected_check("conflict-leaf", "invoice_contract::grid_conflict"), expected_check("moved-note", "expired replay moved revision to %s"), expected_check("kept-note", "expired replay kept %+v"), expected_check("fresh-note", "expired id fresh base: %d %s, want 200"), expected_check("fresh-base-note", "expired id fresh base"), expected_check("saved-leaf", "invoice_contract::grid_saved"), expected_check("fresh-rev-note", "expired id fresh base value %+v, want new revision 4"), expected_check("ok-status", "200"), expected_check("conflict-status", "409"), expected_check("base-revision-e1", "2"), expected_check("live-revision", "3"), expected_check("fresh-base-revision", "3"), expected_check("fresh-revision", "4")]
+        unknown: "nope" => ok []
+    match case is "life/replay-expiry-roots"
+        false => ok []
+        true => ok [expected_check("restore-stamp", "0"), expected_check("replay-note-unrevoked", "unrevoked replay: %d, want identical 200 bytes"), expected_check("retention-slide-unrevoked", "unrevoked replay slid retention %s to %s"), expected_check("no-entry-unrevoked", "unrevoked replay"), expected_check("setup-note-expiry", "expiry setup save: %d %s"), expected_check("live-operation", "op-e1"), expected_check("touch-actor", "alice"), expected_check("replay-note-live", "live replay: %d, want identical 200 bytes"), expected_check("no-entry-live", "live replay"), expected_check("retention-slide-live", "live replay slid retention %s to %s"), expected_check("replay-note-expired", "expired replay: %d %s, want 409"), expected_check("expired-note", "expired replay"), expected_check("conflict-leaf", "invoice_contract::grid_conflict"), expected_check("moved-note", "expired replay moved revision to %s"), expected_check("kept-note", "expired replay kept %+v"), expected_check("fresh-note", "expired id fresh base: %d %s, want 200"), expected_check("fresh-base-note", "expired id fresh base"), expected_check("saved-leaf", "invoice_contract::grid_saved"), expected_check("fresh-rev-note", "expired id fresh base value %+v, want new revision 4"), expected_check("ok-status", "200"), expected_check("conflict-status", "409"), expected_check("base-revision-e1", "2"), expected_check("live-revision", "3"), expected_check("fresh-base-revision", "3"), expected_check("fresh-revision", "4")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/replay-expiry-roots", "default", "", "offline") => ok
+        seed_restore_stamp: context("life/replay-expiry-roots", "seed-restore-stamp-drift", "", "offline") => failed{"restore-stamp"}
+        seed_replay_note_unrevoked: context("life/replay-expiry-roots", "seed-replay-note-unrevoked-drift", "", "offline") => failed{"replay-note-unrevoked"}
+        seed_retention_slide_unrevoked: context("life/replay-expiry-roots", "seed-retention-slide-unrevoked-drift", "", "offline") => failed{"retention-slide-unrevoked"}
+        seed_no_entry_unrevoked: context("life/replay-expiry-roots", "seed-no-entry-unrevoked-drift", "", "offline") => failed{"no-entry-unrevoked"}
+        seed_setup_note_expiry: context("life/replay-expiry-roots", "seed-setup-note-expiry-drift", "", "offline") => failed{"setup-note-expiry"}
+        seed_live_operation: context("life/replay-expiry-roots", "seed-live-operation-drift", "", "offline") => failed{"live-operation"}
+        seed_touch_actor: context("life/replay-expiry-roots", "seed-touch-actor-drift", "", "offline") => failed{"touch-actor"}
+        seed_replay_note_live: context("life/replay-expiry-roots", "seed-replay-note-live-drift", "", "offline") => failed{"replay-note-live"}
+        seed_no_entry_live: context("life/replay-expiry-roots", "seed-no-entry-live-drift", "", "offline") => failed{"no-entry-live"}
+        seed_retention_slide_live: context("life/replay-expiry-roots", "seed-retention-slide-live-drift", "", "offline") => failed{"retention-slide-live"}
+        seed_replay_note_expired: context("life/replay-expiry-roots", "seed-replay-note-expired-drift", "", "offline") => failed{"replay-note-expired"}
+        seed_expired_note: context("life/replay-expiry-roots", "seed-expired-note-drift", "", "offline") => failed{"expired-note"}
+        seed_conflict_leaf: context("life/replay-expiry-roots", "seed-conflict-leaf-drift", "", "offline") => failed{"conflict-leaf"}
+        seed_moved_note: context("life/replay-expiry-roots", "seed-moved-note-drift", "", "offline") => failed{"moved-note"}
+        seed_kept_note: context("life/replay-expiry-roots", "seed-kept-note-drift", "", "offline") => failed{"kept-note"}
+        seed_fresh_note: context("life/replay-expiry-roots", "seed-fresh-note-drift", "", "offline") => failed{"fresh-note"}
+        seed_fresh_base_note: context("life/replay-expiry-roots", "seed-fresh-base-note-drift", "", "offline") => failed{"fresh-base-note"}
+        seed_saved_leaf: context("life/replay-expiry-roots", "seed-saved-leaf-drift", "", "offline") => failed{"saved-leaf"}
+        seed_fresh_rev_note: context("life/replay-expiry-roots", "seed-fresh-rev-note-drift", "", "offline") => failed{"fresh-rev-note"}
+        seed_ok_status: context("life/replay-expiry-roots", "seed-ok-status-drift", "", "offline") => failed{"ok-status"}
+        seed_conflict_status: context("life/replay-expiry-roots", "seed-conflict-status-drift", "", "offline") => failed{"conflict-status"}
+        seed_base_revision_e1: context("life/replay-expiry-roots", "seed-base-revision-e1-drift", "", "offline") => failed{"base-revision-e1"}
+        seed_live_revision: context("life/replay-expiry-roots", "seed-live-revision-drift", "", "offline") => failed{"live-revision"}
+        seed_fresh_base_revision: context("life/replay-expiry-roots", "seed-fresh-base-revision-drift", "", "offline") => failed{"fresh-base-revision"}
+        seed_fresh_revision: context("life/replay-expiry-roots", "seed-fresh-revision-drift", "", "offline") => failed{"fresh-revision"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.restore_stamp, "0", c, "restore-stamp")
+            failed
+            ok evidence restore_stamp_evidence => match call require_text(got.replay_note_unrevoked, "unrevoked replay: %d, want identical 200 bytes", c, "replay-note-unrevoked")
+                failed
+                ok evidence replay_note_unrevoked_evidence => match call require_text(got.retention_slide_unrevoked, "unrevoked replay slid retention %s to %s", c, "retention-slide-unrevoked")
+                    failed
+                    ok evidence retention_slide_unrevoked_evidence => match call require_text(got.no_entry_unrevoked, "unrevoked replay", c, "no-entry-unrevoked")
+                        failed
+                        ok evidence no_entry_unrevoked_evidence => match call require_text(got.setup_note_expiry, "expiry setup save: %d %s", c, "setup-note-expiry")
+                            failed
+                            ok evidence setup_note_expiry_evidence => match call require_text(got.live_operation, "op-e1", c, "live-operation")
+                                failed
+                                ok evidence live_operation_evidence => match call require_text(got.touch_actor, "alice", c, "touch-actor")
+                                    failed
+                                    ok evidence touch_actor_evidence => match call require_text(got.replay_note_live, "live replay: %d, want identical 200 bytes", c, "replay-note-live")
+                                        failed
+                                        ok evidence replay_note_live_evidence => match call require_text(got.no_entry_live, "live replay", c, "no-entry-live")
+                                            failed
+                                            ok evidence no_entry_live_evidence => match call require_text(got.retention_slide_live, "live replay slid retention %s to %s", c, "retention-slide-live")
+                                                failed
+                                                ok evidence retention_slide_live_evidence => match call require_text(got.replay_note_expired, "expired replay: %d %s, want 409", c, "replay-note-expired")
+                                                    failed
+                                                    ok evidence replay_note_expired_evidence => match call require_text(got.expired_note, "expired replay", c, "expired-note")
+                                                        failed
+                                                        ok evidence expired_note_evidence => match call require_text(got.conflict_leaf, "invoice_contract::grid_conflict", c, "conflict-leaf")
+                                                            failed
+                                                            ok evidence conflict_leaf_evidence => match call require_text(got.moved_note, "expired replay moved revision to %s", c, "moved-note")
+                                                                failed
+                                                                ok evidence moved_note_evidence => match call require_text(got.kept_note, "expired replay kept %+v", c, "kept-note")
+                                                                    failed
+                                                                    ok evidence kept_note_evidence => match call require_text(got.fresh_note, "expired id fresh base: %d %s, want 200", c, "fresh-note")
+                                                                        failed
+                                                                        ok evidence fresh_note_evidence => match call require_text(got.fresh_base_note, "expired id fresh base", c, "fresh-base-note")
+                                                                            failed
+                                                                            ok evidence fresh_base_note_evidence => match call require_text(got.saved_leaf, "invoice_contract::grid_saved", c, "saved-leaf")
+                                                                                failed
+                                                                                ok evidence saved_leaf_evidence => match call require_text(got.fresh_rev_note, "expired id fresh base value %+v, want new revision 4", c, "fresh-rev-note")
+                                                                                    failed
+                                                                                    ok evidence fresh_rev_note_evidence => match call require_int(got.ok_status, 200, c, "ok-status")
+                                                                                        failed
+                                                                                        ok evidence ok_status_evidence => match call require_int(got.conflict_status, 409, c, "conflict-status")
+                                                                                            failed
+                                                                                            ok evidence conflict_status_evidence => match call require_int(got.base_revision_e1, 2, c, "base-revision-e1")
+                                                                                                failed
+                                                                                                ok evidence base_revision_e1_evidence => match call require_int(got.live_revision, 3, c, "live-revision")
+                                                                                                    failed
+                                                                                                    ok evidence live_revision_evidence => match call require_int(got.fresh_base_revision, 3, c, "fresh-base-revision")
+                                                                                                        failed
+                                                                                                        ok evidence fresh_base_revision_evidence => match call require_int(got.fresh_revision, 4, c, "fresh-revision")
+                                                                                                            failed
+                                                                                                            ok evidence fresh_revision_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m39_l006: "m39-l006" => ok test_case("life/replay-expiry-roots", ["life", "m39"], [], 120000, [check_ref("restore-stamp"), check_ref("replay-note-unrevoked"), check_ref("retention-slide-unrevoked"), check_ref("no-entry-unrevoked"), check_ref("setup-note-expiry"), check_ref("live-operation"), check_ref("touch-actor"), check_ref("replay-note-live"), check_ref("no-entry-live"), check_ref("retention-slide-live"), check_ref("replay-note-expired"), check_ref("expired-note"), check_ref("conflict-leaf"), check_ref("moved-note"), check_ref("kept-note"), check_ref("fresh-note"), check_ref("fresh-base-note"), check_ref("saved-leaf"), check_ref("fresh-rev-note"), check_ref("ok-status"), check_ref("conflict-status"), check_ref("base-revision-e1"), check_ref("live-revision"), check_ref("fresh-base-revision"), check_ref("fresh-revision")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m39-l006"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/replay-expiry-roots", ["life", "m39"], [], 120000, [check_ref("restore-stamp"), check_ref("replay-note-unrevoked"), check_ref("retention-slide-unrevoked"), check_ref("no-entry-unrevoked"), check_ref("setup-note-expiry"), check_ref("live-operation"), check_ref("touch-actor"), check_ref("replay-note-live"), check_ref("no-entry-live"), check_ref("retention-slide-live"), check_ref("replay-note-expired"), check_ref("expired-note"), check_ref("conflict-leaf"), check_ref("moved-note"), check_ref("kept-note"), check_ref("fresh-note"), check_ref("fresh-base-note"), check_ref("saved-leaf"), check_ref("fresh-rev-note"), check_ref("ok-status"), check_ref("conflict-status"), check_ref("base-revision-e1"), check_ref("live-revision"), check_ref("fresh-base-revision"), check_ref("fresh-revision")], callable case_body)
