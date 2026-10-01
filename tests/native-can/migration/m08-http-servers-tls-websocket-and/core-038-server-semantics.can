@@ -1,0 +1,260 @@
+package m08core038server
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M08 CORE-038 "http server: compiled lifecycle, generated identity".
+/// Source: tests/integration/server_test.go symbol
+/// TestCurrentBundledServer (L17-177).
+/// Related fixture: compiler/testdata/current/http/server.can (read at
+/// L46, staged as src/main.can at L50); the live pins ground the boot
+/// arm (fixture L37-53: make_server_config + table + server_start), the
+/// serve arm (fixture L54-78: start then stop then wait), the /health
+/// route (fixture L16: route_get "/health") and the healthy body
+/// (fixture L10: response_text "healthy").
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): the compiled server lifecycle (boot the fixed
+/// loopback port, GET /health 200 healthy, owned stop/wait, serve(0)
+/// with clean owner cleanup), the generated boot/serve function identity
+/// and the single-runtime build identity.
+/// The roots-green pin lives in core-038-roots-green.can; the production
+/// process shape lives in core-038-run-shape.can.
+/// Variants: boot fixed loopback port (Go L146); GET /health (Go L149);
+/// stop/wait (Go L151-152); serve(0) (Go L153-154). All four live in this
+/// file as the harness legs they pin.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. CAN_TSC gates the optional strict
+/// tsc leg (pinned conditional in the run-shape file). Logical gates
+/// SUITE/WORK/PROC and C/R/N/S/A identities bind at P23/QHTTP; no live
+/// run now. Descriptor timeout 120000ms mirrors the Go 2-minute ctx (L24).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QHTTP unmet).
+/// Case http/server-lifecycle checks: boot-port, boot-ok, health-url,
+/// health-status, health-body, stop-ok, wait-ok, serve-zero-ok,
+/// completion-ok, cleanup-clean, lifecycle-log, boot-marker,
+/// serve-marker, runtime-single.
+/// Facet map (server_test.go legs): boot-port pins the fixed loopback
+/// port (L146: boot(18371n)); boot-ok pins the boot result (L147:
+/// started.kind is "ok"); health-url pins the fetch target verbatim
+/// (L149: "http://127.0.0.1:18371/health"); health-status pins the
+/// status (L150: res.status is 200); health-body pins the body verbatim
+/// (L150: text is "healthy"; fixture L10); stop-ok pins the owned stop
+/// (L151: $canServer.stop kind is "ok"); wait-ok pins the owned wait
+/// (L152: $canServer.wait kind is "ok"); serve-zero-ok pins serve(0n)
+/// (L153-154: lived.kind is "ok"); completion-ok pins the owned
+/// completion (L157: owned.completion.kind is "ok"); cleanup-clean pins
+/// the clean owner cleanup (L157: cleanupFailed is false);
+/// lifecycle-log pins the harness marker verbatim (L158: console.log
+/// "compiled server lifecycle passed"); boot-marker pins the generated
+/// boot export scan (L120: chunk carries "can.project.root/app::boot");
+/// serve-marker pins the generated serve export scan (L124: chunk
+/// carries "can.project.root/app::serve"); runtime-single pins the
+/// runtime count (L134-137: exactly 1 runtime/r-* glob hit or "missing
+/// runtime" fatals).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int boot_port
+    bool boot_ok
+    str health_url
+    int health_status
+    str health_body
+    bool stop_ok
+    bool wait_ok
+    bool serve_zero_ok
+    bool completion_ok
+    bool cleanup_clean
+    str lifecycle_log
+    str boot_marker
+    str serve_marker
+    int runtime_single
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("http/server-lifecycle", "default", "", "offline"), "boot-port" => ok "case http/server-lifecycle variant default root boot-port run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("http/server-lifecycle", "default", "", "offline"), "boot-ok" => ok evidence("boot-ok", "true", "true", true, "case http/server-lifecycle variant default root boot-ok run offline")
+        different: false, true, context("http/server-lifecycle", "default", "", "offline"), "boot-ok" => failed{"boot-ok"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 18371, 18371, context("http/server-lifecycle", "default", "", "offline"), "boot-port" => ok evidence("boot-port", "18371", "18371", true, "case http/server-lifecycle variant default root boot-port run offline")
+        different: 18372, 18371, context("http/server-lifecycle", "default", "", "offline"), "boot-port" => failed{"boot-port"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "healthy", "healthy", context("http/server-lifecycle", "default", "", "offline"), "health-body" => ok evidence("health-body", "healthy", "healthy", true, "case http/server-lifecycle variant default root health-body run offline")
+        different: "unhealthy", "healthy", context("http/server-lifecycle", "default", "", "offline"), "health-body" => failed{"health-body"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        seed_boot_port_drift: "seed-boot-port-drift" => ok observation(18372, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        seed_boot_fail: "seed-boot-fail" => ok observation(18371, false, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        seed_url_drift: "seed-url-drift" => ok observation(18371, true, "http://127.0.0.1:18371/ready", 200, "healthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        seed_status_drift: "seed-status-drift" => ok observation(18371, true, "http://127.0.0.1:18371/health", 500, "healthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        seed_body_drift: "seed-body-drift" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "unhealthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        seed_stop_fail: "seed-stop-fail" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", false, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        seed_wait_fail: "seed-wait-fail" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, false, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        seed_serve_fail: "seed-serve-fail" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, false, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        seed_completion_fail: "seed-completion-fail" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, false, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        seed_cleanup_dirty: "seed-cleanup-dirty" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, true, false, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        seed_log_drift: "seed-log-drift" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, true, true, "compiled server lifecycle failed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        seed_boot_marker_drift: "seed-boot-marker-drift" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::start", "can.project.root/app::serve", 1)
+        seed_serve_marker_drift: "seed-serve-marker-drift" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::run", 1)
+        seed_runtime_split: "seed-runtime-split" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 2)
+    match variant_id
+        "seed-boot-port-drift" => ok observation(18372, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        "seed-boot-fail" => ok observation(18371, false, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        "seed-url-drift" => ok observation(18371, true, "http://127.0.0.1:18371/ready", 200, "healthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        "seed-status-drift" => ok observation(18371, true, "http://127.0.0.1:18371/health", 500, "healthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        "seed-body-drift" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "unhealthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        "seed-stop-fail" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", false, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        "seed-wait-fail" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, false, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        "seed-serve-fail" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, false, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        "seed-completion-fail" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, false, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        "seed-cleanup-dirty" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, true, false, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        "seed-log-drift" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, true, true, "compiled server lifecycle failed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+        "seed-boot-marker-drift" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::start", "can.project.root/app::serve", 1)
+        "seed-serve-marker-drift" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::run", 1)
+        "seed-runtime-split" => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 2)
+        _ => ok observation(18371, true, "http://127.0.0.1:18371/health", 200, "healthy", true, true, true, true, true, "compiled server lifecycle passed", "can.project.root/app::boot", "can.project.root/app::serve", 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m08_038: "m08-038" => ok [check("boot-port", "boot binds the fixed loopback port 18371"), check("boot-ok", "boot returns kind ok"), check("health-url", "lifecycle fetches the /health URL verbatim"), check("health-status", "GET /health returns status 200"), check("health-body", "GET /health returns body healthy"), check("stop-ok", "owned stop returns kind ok"), check("wait-ok", "owned wait returns kind ok"), check("serve-zero-ok", "serve(0n) returns kind ok"), check("completion-ok", "owned completion kind is ok"), check("cleanup-clean", "owner cleanup reports no failure"), check("lifecycle-log", "harness logs the lifecycle marker verbatim"), check("boot-marker", "generated boot export carries the boot marker"), check("serve-marker", "generated serve export carries the serve marker"), check("runtime-single", "build carries exactly one runtime")]
+        other: "nope" => ok []
+    match scope is "m08-038"
+        false => ok []
+        true => ok [check("boot-port", "boot binds the fixed loopback port 18371"), check("boot-ok", "boot returns kind ok"), check("health-url", "lifecycle fetches the /health URL verbatim"), check("health-status", "GET /health returns status 200"), check("health-body", "GET /health returns body healthy"), check("stop-ok", "owned stop returns kind ok"), check("wait-ok", "owned wait returns kind ok"), check("serve-zero-ok", "serve(0n) returns kind ok"), check("completion-ok", "owned completion kind is ok"), check("cleanup-clean", "owner cleanup reports no failure"), check("lifecycle-log", "harness logs the lifecycle marker verbatim"), check("boot-marker", "generated boot export carries the boot marker"), check("serve-marker", "generated serve export carries the serve marker"), check("runtime-single", "build carries exactly one runtime")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "http/server-lifecycle" => ok [expected_check("boot-port", "18371"), expected_check("boot-ok", "true"), expected_check("health-url", "http://127.0.0.1:18371/health"), expected_check("health-status", "200"), expected_check("health-body", "healthy"), expected_check("stop-ok", "true"), expected_check("wait-ok", "true"), expected_check("serve-zero-ok", "true"), expected_check("completion-ok", "true"), expected_check("cleanup-clean", "true"), expected_check("lifecycle-log", "compiled server lifecycle passed"), expected_check("boot-marker", "can.project.root/app::boot"), expected_check("serve-marker", "can.project.root/app::serve"), expected_check("runtime-single", "1")]
+        unknown: "nope" => ok []
+    match case is "http/server-lifecycle"
+        false => ok []
+        true => ok [expected_check("boot-port", "18371"), expected_check("boot-ok", "true"), expected_check("health-url", "http://127.0.0.1:18371/health"), expected_check("health-status", "200"), expected_check("health-body", "healthy"), expected_check("stop-ok", "true"), expected_check("wait-ok", "true"), expected_check("serve-zero-ok", "true"), expected_check("completion-ok", "true"), expected_check("cleanup-clean", "true"), expected_check("lifecycle-log", "compiled server lifecycle passed"), expected_check("boot-marker", "can.project.root/app::boot"), expected_check("serve-marker", "can.project.root/app::serve"), expected_check("runtime-single", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("http/server-lifecycle", "default", "", "offline") => ok
+        seed_boot_port_drift: context("http/server-lifecycle", "seed-boot-port-drift", "", "offline") => failed{"boot-port"}
+        seed_boot_fail: context("http/server-lifecycle", "seed-boot-fail", "", "offline") => failed{"boot-ok"}
+        seed_url_drift: context("http/server-lifecycle", "seed-url-drift", "", "offline") => failed{"health-url"}
+        seed_status_drift: context("http/server-lifecycle", "seed-status-drift", "", "offline") => failed{"health-status"}
+        seed_body_drift: context("http/server-lifecycle", "seed-body-drift", "", "offline") => failed{"health-body"}
+        seed_stop_fail: context("http/server-lifecycle", "seed-stop-fail", "", "offline") => failed{"stop-ok"}
+        seed_wait_fail: context("http/server-lifecycle", "seed-wait-fail", "", "offline") => failed{"wait-ok"}
+        seed_serve_fail: context("http/server-lifecycle", "seed-serve-fail", "", "offline") => failed{"serve-zero-ok"}
+        seed_completion_fail: context("http/server-lifecycle", "seed-completion-fail", "", "offline") => failed{"completion-ok"}
+        seed_cleanup_dirty: context("http/server-lifecycle", "seed-cleanup-dirty", "", "offline") => failed{"cleanup-clean"}
+        seed_log_drift: context("http/server-lifecycle", "seed-log-drift", "", "offline") => failed{"lifecycle-log"}
+        seed_boot_marker_drift: context("http/server-lifecycle", "seed-boot-marker-drift", "", "offline") => failed{"boot-marker"}
+        seed_serve_marker_drift: context("http/server-lifecycle", "seed-serve-marker-drift", "", "offline") => failed{"serve-marker"}
+        seed_runtime_split: context("http/server-lifecycle", "seed-runtime-split", "", "offline") => failed{"runtime-single"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.boot_port, 18371, c, "boot-port")
+            failed
+            ok evidence port_evidence => match call require_bool(got.boot_ok, true, c, "boot-ok")
+                failed
+                ok evidence boot_evidence => match call require_text(got.health_url, "http://127.0.0.1:18371/health", c, "health-url")
+                    failed
+                    ok evidence url_evidence => match call require_int(got.health_status, 200, c, "health-status")
+                        failed
+                        ok evidence status_evidence => match call require_text(got.health_body, "healthy", c, "health-body")
+                            failed
+                            ok evidence body_evidence => match call require_bool(got.stop_ok, true, c, "stop-ok")
+                                failed
+                                ok evidence stop_evidence => match call require_bool(got.wait_ok, true, c, "wait-ok")
+                                    failed
+                                    ok evidence wait_evidence => match call require_bool(got.serve_zero_ok, true, c, "serve-zero-ok")
+                                        failed
+                                        ok evidence serve_evidence => match call require_bool(got.completion_ok, true, c, "completion-ok")
+                                            failed
+                                            ok evidence completion_evidence => match call require_bool(got.cleanup_clean, true, c, "cleanup-clean")
+                                                failed
+                                                ok evidence cleanup_evidence => match call require_text(got.lifecycle_log, "compiled server lifecycle passed", c, "lifecycle-log")
+                                                    failed
+                                                    ok evidence log_evidence => match call require_text(got.boot_marker, "can.project.root/app::boot", c, "boot-marker")
+                                                        failed
+                                                        ok evidence boot_marker_evidence => match call require_text(got.serve_marker, "can.project.root/app::serve", c, "serve-marker")
+                                                            failed
+                                                            ok evidence serve_marker_evidence => match call require_int(got.runtime_single, 1, c, "runtime-single")
+                                                                failed
+                                                                ok evidence runtime_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m08_038: "m08-038" => ok test_case("http/server-lifecycle", ["http", "m08"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("boot-port"), check_ref("boot-ok"), check_ref("health-url"), check_ref("health-status"), check_ref("health-body"), check_ref("stop-ok"), check_ref("wait-ok"), check_ref("serve-zero-ok"), check_ref("completion-ok"), check_ref("cleanup-clean"), check_ref("lifecycle-log"), check_ref("boot-marker"), check_ref("serve-marker"), check_ref("runtime-single")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m08-038"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("http/server-lifecycle", ["http", "m08"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("boot-port"), check_ref("boot-ok"), check_ref("health-url"), check_ref("health-status"), check_ref("health-body"), check_ref("stop-ok"), check_ref("wait-ok"), check_ref("serve-zero-ok"), check_ref("completion-ok"), check_ref("cleanup-clean"), check_ref("lifecycle-log"), check_ref("serve-marker"), check_ref("runtime-single")], callable case_body)
