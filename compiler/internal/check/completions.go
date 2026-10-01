@@ -713,6 +713,11 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 				return err
 			}
 		}
+		if dbStaticOperation(binding.Identity) {
+			if err := c.checkDbCall(binding.Identity, args, span); err != nil {
+				return err
+			}
+		}
 		effective := binding
 		var fetchSite *ir.JSONFetchSite
 		if operation := fetchSiteOperation(binding.Identity); operation != "" {
