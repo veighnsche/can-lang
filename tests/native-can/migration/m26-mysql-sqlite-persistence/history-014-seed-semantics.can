@@ -1,0 +1,278 @@
+package m26history014seed
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M26 HISTORY-014 "mysql-driver.ts: two-statement seed pipeline".
+/// Source: tests/integration/testdata/sql/mysql-driver.ts symbol
+/// mysql-driver.ts (L23-35 seed pipeline, L31-34 guards); seed
+/// bytes from tests/integration/testdata/sql/mysql-seed.sql;
+/// executed by tests/integration/mysql_test.go.
+/// Disposition: migrate (this row ports mysql-driver.ts to
+/// ordinary Can functions; the old TS script stays until the
+/// integrator retires it after every linked row, variant,
+/// environment and control has accepted evidence).
+/// Protects (this file): the line/comment/statement split
+/// pipeline, the two kind-ordered seed statements in apply
+/// order, the count and shape guards, and the pipeline
+/// operator needles.
+/// ADAPTATION (recorded, with source lines): line-split pins the
+/// newline needle (driver source `"\n"` at L25/L27); stmt-split
+/// pins the semicolon (L28); reset/create statements pin the
+/// post-split trimmed forms (semicolons stripped by L28-30),
+/// verified by replaying the split on mysql-seed.sql; kind pins
+/// mirror the startsWith needles (L33); count-prefix pins the
+/// template prefix before the interpolation (L31); empty-tail
+/// pins the L30 `!== ""` filter; operator pins mirror the
+/// method names (trimStart/startsWith/split/join/length).
+/// Facet map (mysql-driver.ts legs): line-split pins newline
+/// (L25, L27); comment-needle pins -- (L26); stmt-split pins ;
+/// (L28); stmt-count pins 2 (L31); reset-stmt pins the DROP
+/// statement (seed L01); create-stmt pins the CREATE statement
+/// (seed L02); reset-kind pins DROP TABLE (L33); create-kind
+/// pins CREATE TABLE (L33); shape-refusal pins the L34 message;
+/// count-prefix pins the L31 template prefix; seed-table pins
+/// notes; empty-tail pins the empty filter (L30); comment-trim
+/// pins trimStart (L26); starts-with pins startsWith (L26/L33);
+/// split-op pins split (L25/L28); join-op pins join (L27);
+/// length-guard pins length (L31).
+/// The roots-green pin lives in history-014-roots-green.can; the
+/// invocation/run shape lives in history-014-run-shape.can.
+/// Variants: none (single setup scenario; row lists none).
+/// Environment: disposable database named by CAN_TEST_MYSQL_URL
+/// (required); requires can-test-mysql-url and bun.
+/// Logical gates SUITE/CAN/DB/WORK and C/R/N/S/A identities bind at
+/// P23; no live run now. Accept gates P23/QD1/QD2 are unmet.
+/// Descriptor timeout 360000ms mirrors the Go 6-minute ctx
+/// (mysql_test.go L53).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QD1/QD2 unmet).
+/// Case history/mysql-seed checks: line-split, comment-needle,
+/// stmt-split, stmt-count, reset-stmt, create-stmt, reset-kind,
+/// create-kind, shape-refusal, count-prefix, seed-table,
+/// empty-tail, comment-trim, starts-with, split-op, join-op,
+/// length-guard.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str line_split
+    str comment_needle
+    str stmt_split
+    int stmt_count
+    str reset_stmt
+    str create_stmt
+    str reset_kind
+    str create_kind
+    str shape_refusal
+    str count_prefix
+    str seed_table
+    str empty_tail
+    str comment_trim
+    str starts_with
+    str split_op
+    str join_op
+    str length_guard
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/mysql-seed", "default", "", "offline"), "line-split" => ok "case history/mysql-seed variant default root line-split run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/mysql-seed", "default", "", "offline"), "line-split" => ok evidence("line-split", "true", "true", true, "case history/mysql-seed variant default root line-split run offline")
+        different: false, true, context("history/mysql-seed", "default", "", "offline"), "line-split" => failed{"line-split"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("history/mysql-seed", "default", "", "offline"), "stmt-count" => ok evidence("stmt-count", "2", "2", true, "case history/mysql-seed variant default root stmt-count run offline")
+        different: 3, 2, context("history/mysql-seed", "default", "", "offline"), "stmt-count" => failed{"stmt-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "\n", "\n", context("history/mysql-seed", "default", "", "offline"), "line-split" => ok evidence("line-split", "\n", "\n", true, "case history/mysql-seed variant default root line-split run offline")
+        different: "\n\n", "\n", context("history/mysql-seed", "default", "", "offline"), "line-split" => failed{"line-split"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        seed_line_split: "seed-line-split-drift" => ok observation("\n\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        seed_comment_needle: "seed-comment-needle-drift" => ok observation("\n", "---", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        seed_stmt_split: "seed-stmt-split-drift" => ok observation("\n", "--", ";;", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        seed_stmt_count: "seed-stmt-count-drift" => ok observation("\n", "--", ";", 3, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        seed_reset_stmt: "seed-reset-stmt-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notess", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        seed_create_stmt: "seed-create-stmt-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)s", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        seed_reset_kind: "seed-reset-kind-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLES", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        seed_create_kind: "seed-create-kind-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLES", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        seed_shape_refusal: "seed-shape-refusal-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setups", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        seed_count_prefix: "seed-count-prefix-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw s", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        seed_seed_table: "seed-seed-table-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notess", "", "trimStart", "startsWith", "split", "join", "length")
+        seed_empty_tail: "seed-empty-tail-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "app", "trimStart", "startsWith", "split", "join", "length")
+        seed_comment_trim: "seed-comment-trim-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStarts", "startsWith", "split", "join", "length")
+        seed_starts_with: "seed-starts-with-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWiths", "split", "join", "length")
+        seed_split_op: "seed-split-op-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "splits", "join", "length")
+        seed_join_op: "seed-join-op-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "joins", "length")
+        seed_length_guard: "seed-length-guard-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "lengths")
+    match variant_id
+        "seed-line-split-drift" => ok observation("\n\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        "seed-comment-needle-drift" => ok observation("\n", "---", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        "seed-stmt-split-drift" => ok observation("\n", "--", ";;", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        "seed-stmt-count-drift" => ok observation("\n", "--", ";", 3, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        "seed-reset-stmt-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notess", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        "seed-create-stmt-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)s", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        "seed-reset-kind-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLES", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        "seed-create-kind-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLES", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        "seed-shape-refusal-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setups", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        "seed-count-prefix-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw s", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+        "seed-seed-table-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notess", "", "trimStart", "startsWith", "split", "join", "length")
+        "seed-empty-tail-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "app", "trimStart", "startsWith", "split", "join", "length")
+        "seed-comment-trim-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStarts", "startsWith", "split", "join", "length")
+        "seed-starts-with-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWiths", "split", "join", "length")
+        "seed-split-op-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "splits", "join", "length")
+        "seed-join-op-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "joins", "length")
+        "seed-length-guard-drift" => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "lengths")
+        _ => ok observation("\n", "--", ";", 2, "DROP TABLE IF EXISTS notes", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", "DROP TABLE", "CREATE TABLE", "seed file shape changed; refusing to run setup", "seed file must hold 2 statements, saw ", "notes", "", "trimStart", "startsWith", "split", "join", "length")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m26_h014: "m26-h014" => ok [check("line-split", "seed splits lines on newline"), check("comment-needle", "seed drops dash-dash comment lines"), check("stmt-split", "seed splits statements on semicolon"), check("stmt-count", "seed holds 2 statements"), check("reset-stmt", "reset statement drops notes"), check("create-stmt", "create statement builds notes"), check("reset-kind", "reset starts with DROP TABLE"), check("create-kind", "create starts with CREATE TABLE"), check("shape-refusal", "shape drift refuses setup"), check("count-prefix", "count drift names the saw count"), check("seed-table", "seed targets the notes table"), check("empty-tail", "empty tail parts are dropped"), check("comment-trim", "comment test trims line starts"), check("starts-with", "shape test uses startsWith"), check("split-op", "pipeline splits twice"), check("join-op", "pipeline rejoins lines"), check("length-guard", "count guard reads length")]
+        other: "nope" => ok []
+    match scope is "m26-h014"
+        false => ok []
+        true => ok [check("line-split", "seed splits lines on newline"), check("comment-needle", "seed drops dash-dash comment lines"), check("stmt-split", "seed splits statements on semicolon"), check("stmt-count", "seed holds 2 statements"), check("reset-stmt", "reset statement drops notes"), check("create-stmt", "create statement builds notes"), check("reset-kind", "reset starts with DROP TABLE"), check("create-kind", "create starts with CREATE TABLE"), check("shape-refusal", "shape drift refuses setup"), check("count-prefix", "count drift names the saw count"), check("seed-table", "seed targets the notes table"), check("empty-tail", "empty tail parts are dropped"), check("comment-trim", "comment test trims line starts"), check("starts-with", "shape test uses startsWith"), check("split-op", "pipeline splits twice"), check("join-op", "pipeline rejoins lines"), check("length-guard", "count guard reads length")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/mysql-seed" => ok [expected_check("line-split", "\n"), expected_check("comment-needle", "--"), expected_check("stmt-split", ";"), expected_check("stmt-count", "2"), expected_check("reset-stmt", "DROP TABLE IF EXISTS notes"), expected_check("create-stmt", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)"), expected_check("reset-kind", "DROP TABLE"), expected_check("create-kind", "CREATE TABLE"), expected_check("shape-refusal", "seed file shape changed; refusing to run setup"), expected_check("count-prefix", "seed file must hold 2 statements, saw "), expected_check("seed-table", "notes"), expected_check("empty-tail", ""), expected_check("comment-trim", "trimStart"), expected_check("starts-with", "startsWith"), expected_check("split-op", "split"), expected_check("join-op", "join"), expected_check("length-guard", "length")]
+        unknown: "nope" => ok []
+    match case is "history/mysql-seed"
+        false => ok []
+        true => ok [expected_check("line-split", "\n"), expected_check("comment-needle", "--"), expected_check("stmt-split", ";"), expected_check("stmt-count", "2"), expected_check("reset-stmt", "DROP TABLE IF EXISTS notes"), expected_check("create-stmt", "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)"), expected_check("reset-kind", "DROP TABLE"), expected_check("create-kind", "CREATE TABLE"), expected_check("shape-refusal", "seed file shape changed; refusing to run setup"), expected_check("count-prefix", "seed file must hold 2 statements, saw "), expected_check("seed-table", "notes"), expected_check("empty-tail", ""), expected_check("comment-trim", "trimStart"), expected_check("starts-with", "startsWith"), expected_check("split-op", "split"), expected_check("join-op", "join"), expected_check("length-guard", "length")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/mysql-seed", "default", "", "offline") => ok
+        seed_line_split: context("history/mysql-seed", "seed-line-split-drift", "", "offline") => failed{"line-split"}
+        seed_comment_needle: context("history/mysql-seed", "seed-comment-needle-drift", "", "offline") => failed{"comment-needle"}
+        seed_stmt_split: context("history/mysql-seed", "seed-stmt-split-drift", "", "offline") => failed{"stmt-split"}
+        seed_stmt_count: context("history/mysql-seed", "seed-stmt-count-drift", "", "offline") => failed{"stmt-count"}
+        seed_reset_stmt: context("history/mysql-seed", "seed-reset-stmt-drift", "", "offline") => failed{"reset-stmt"}
+        seed_create_stmt: context("history/mysql-seed", "seed-create-stmt-drift", "", "offline") => failed{"create-stmt"}
+        seed_reset_kind: context("history/mysql-seed", "seed-reset-kind-drift", "", "offline") => failed{"reset-kind"}
+        seed_create_kind: context("history/mysql-seed", "seed-create-kind-drift", "", "offline") => failed{"create-kind"}
+        seed_shape_refusal: context("history/mysql-seed", "seed-shape-refusal-drift", "", "offline") => failed{"shape-refusal"}
+        seed_count_prefix: context("history/mysql-seed", "seed-count-prefix-drift", "", "offline") => failed{"count-prefix"}
+        seed_seed_table: context("history/mysql-seed", "seed-seed-table-drift", "", "offline") => failed{"seed-table"}
+        seed_empty_tail: context("history/mysql-seed", "seed-empty-tail-drift", "", "offline") => failed{"empty-tail"}
+        seed_comment_trim: context("history/mysql-seed", "seed-comment-trim-drift", "", "offline") => failed{"comment-trim"}
+        seed_starts_with: context("history/mysql-seed", "seed-starts-with-drift", "", "offline") => failed{"starts-with"}
+        seed_split_op: context("history/mysql-seed", "seed-split-op-drift", "", "offline") => failed{"split-op"}
+        seed_join_op: context("history/mysql-seed", "seed-join-op-drift", "", "offline") => failed{"join-op"}
+        seed_length_guard: context("history/mysql-seed", "seed-length-guard-drift", "", "offline") => failed{"length-guard"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.line_split, "\n", c, "line-split")
+            failed
+            ok evidence line_split_evidence => match call require_text(got.comment_needle, "--", c, "comment-needle")
+                failed
+                ok evidence comment_needle_evidence => match call require_text(got.stmt_split, ";", c, "stmt-split")
+                    failed
+                    ok evidence stmt_split_evidence => match call require_int(got.stmt_count, 2, c, "stmt-count")
+                        failed
+                        ok evidence stmt_count_evidence => match call require_text(got.reset_stmt, "DROP TABLE IF EXISTS notes", c, "reset-stmt")
+                            failed
+                            ok evidence reset_stmt_evidence => match call require_text(got.create_stmt, "CREATE TABLE notes (id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE)", c, "create-stmt")
+                                failed
+                                ok evidence create_stmt_evidence => match call require_text(got.reset_kind, "DROP TABLE", c, "reset-kind")
+                                    failed
+                                    ok evidence reset_kind_evidence => match call require_text(got.create_kind, "CREATE TABLE", c, "create-kind")
+                                        failed
+                                        ok evidence create_kind_evidence => match call require_text(got.shape_refusal, "seed file shape changed; refusing to run setup", c, "shape-refusal")
+                                            failed
+                                            ok evidence shape_refusal_evidence => match call require_text(got.count_prefix, "seed file must hold 2 statements, saw ", c, "count-prefix")
+                                                failed
+                                                ok evidence count_prefix_evidence => match call require_text(got.seed_table, "notes", c, "seed-table")
+                                                    failed
+                                                    ok evidence seed_table_evidence => match call require_text(got.empty_tail, "", c, "empty-tail")
+                                                        failed
+                                                        ok evidence empty_tail_evidence => match call require_text(got.comment_trim, "trimStart", c, "comment-trim")
+                                                            failed
+                                                            ok evidence comment_trim_evidence => match call require_text(got.starts_with, "startsWith", c, "starts-with")
+                                                                failed
+                                                                ok evidence starts_with_evidence => match call require_text(got.split_op, "split", c, "split-op")
+                                                                    failed
+                                                                    ok evidence split_op_evidence => match call require_text(got.join_op, "join", c, "join-op")
+                                                                        failed
+                                                                        ok evidence join_op_evidence => match call require_text(got.length_guard, "length", c, "length-guard")
+                                                                            failed
+                                                                            ok evidence length_guard_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m26_h014: "m26-h014" => ok test_case("history/mysql-seed", ["history", "m26"], ["can-test-mysql-url", "bun"], 360000, [check_ref("line-split"), check_ref("comment-needle"), check_ref("stmt-split"), check_ref("stmt-count"), check_ref("reset-stmt"), check_ref("create-stmt"), check_ref("reset-kind"), check_ref("create-kind"), check_ref("shape-refusal"), check_ref("count-prefix"), check_ref("seed-table"), check_ref("empty-tail"), check_ref("comment-trim"), check_ref("starts-with"), check_ref("split-op"), check_ref("join-op"), check_ref("length-guard")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m26-h014"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/mysql-seed", ["history", "m26"], ["can-test-mysql-url", "bun"], 360000, [check_ref("line-split"), check_ref("comment-needle"), check_ref("stmt-split"), check_ref("stmt-count"), check_ref("reset-stmt"), check_ref("create-stmt"), check_ref("reset-kind"), check_ref("create-kind"), check_ref("shape-refusal"), check_ref("count-prefix"), check_ref("seed-table"), check_ref("empty-tail"), check_ref("comment-trim"), check_ref("starts-with"), check_ref("split-op"), check_ref("join-op"), check_ref("length-guard")], callable case_body)
