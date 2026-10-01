@@ -1,0 +1,294 @@
+package m26history010sqlite
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M26 HISTORY-010 "SQLite persistence: answer semantics".
+/// Source: tests/integration/sqlite_test.go symbol
+/// TestCurrentSQLitePersistence (L43-162); fixture
+/// compiler/testdata/current/sql/sqlite.can; seed
+/// tests/integration/testdata/sql/sqlite-seed.sql; driver
+/// tests/integration/testdata/sql/sqlite-driver.ts.
+/// Disposition: migrate (this row ports
+/// TestCurrentSQLitePersistence to ordinary Can functions; the old
+/// Go harness stays until the integrator retires it after every
+/// linked row, variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the ten live answers in Go order: the
+/// in-memory ok, the add/get file roundtrip, the absent-id and
+/// duplicate-body classifications, the commit/abort visibility
+/// pair, and the invalid-id refusal; plus the empty-seed setup
+/// verdict, the ten/six/four leg counts, both exit codes, and
+/// both empty-stream verdicts.
+/// ADAPTATION (recorded, with source lines): affected counts
+/// pin int (1) from the Go want spellings (L152/L156/L158);
+/// leg counts pin int from the ok/fault call sites (6 ok at
+/// L151-153/L156-158, 4 fault at L154-155/L159-160, 10 total);
+/// exit codes pin int from the status guards (L136/L144);
+/// empty-stream verdicts pin bools from the diag/out guards
+/// (L136/L144); setup notes pins the 0 spelling from the Go
+/// guard (L99); row JSON pins the exact Go backquote spellings
+/// (L153/L157). The CLI wants double as offline fixture pins:
+/// memory-ok (fixture L19/L28), add 1 (fixture L37), remember
+/// row (fixture L61), commit 1 (fixture L121), abort 1 (fixture
+/// L145).
+/// Facet map (Go verdict legs): mem-out pins memory-ok (L151;
+/// fixture L19/L28); add-affected pins 1 (L152; fixture L37);
+/// get-row pins the remember JSON (L153; fixture L61);
+/// missing-name pins sql::row_missing (L154); duplicate-name pins
+/// sql::constraint_failed (L155); commit-affected pins 1 (L156;
+/// fixture L121); commit-row pins the kept JSON (L157);
+/// abort-affected pins 1 (L158; fixture L145); abort-missing-name
+/// pins sql::row_missing (L159); invalid-name pins
+/// codec::invalid_data (L160); setup-notes pins 0 (L99-101);
+/// total-checks pins 10 (L131-160; log L161); ok-legs pins 6
+/// (L151-153/L156-158); fault-legs pins 4 (L154-155/L159-160);
+/// ok-status pins 0 (L136); fault-status pins 1 (L144);
+/// ok-diag-empty pins true (L136); fault-out-empty pins true
+/// (L144).
+/// The roots-green pin lives in history-010-roots-green.can;
+/// the run shape plus diagnostics live in
+/// history-010-run-shape.can.
+/// Variants: memory, add/read, missing/duplicate, commit/abort,
+/// invalid codec (all in Go order).
+/// Environment: CAN_BUN_ARCHIVE gates; requires can-bun-archive.
+/// Logical gates SUITE/CAN/PROC/CHILD/DB/WORK and C/R/N/S/A
+/// identities bind at P23; no live run now. Accept gates
+/// P23/QD1 (plus QF1) are unmet. Timeout 360000ms mirrors the
+/// Go 6-minute ctx (sqlite_test.go L50).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QD1 unmet).
+/// Case history/sqlite-semantics checks: mem-out, add-affected,
+/// get-row, missing-name, duplicate-name, commit-affected,
+/// commit-row, abort-affected, abort-missing-name, invalid-name,
+/// setup-notes, total-checks, ok-legs, fault-legs, ok-status,
+/// fault-status, ok-diag-empty, fault-out-empty.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str mem_out
+    int add_affected
+    str get_row
+    str missing_name
+    str duplicate_name
+    int commit_affected
+    str commit_row
+    int abort_affected
+    str abort_missing_name
+    str invalid_name
+    str setup_notes
+    int total_checks
+    int ok_legs
+    int fault_legs
+    int ok_status
+    int fault_status
+    bool ok_diag_empty
+    bool fault_out_empty
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/sqlite-semantics", "default", "", "offline"), "mem-out" => ok "case history/sqlite-semantics variant default root mem-out run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/sqlite-semantics", "default", "", "offline"), "ok-diag-empty" => ok evidence("ok-diag-empty", "true", "true", true, "case history/sqlite-semantics variant default root ok-diag-empty run offline")
+        different: false, true, context("history/sqlite-semantics", "default", "", "offline"), "ok-diag-empty" => failed{"ok-diag-empty"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("history/sqlite-semantics", "default", "", "offline"), "add-affected" => ok evidence("add-affected", "1", "1", true, "case history/sqlite-semantics variant default root add-affected run offline")
+        different: 2, 1, context("history/sqlite-semantics", "default", "", "offline"), "add-affected" => failed{"add-affected"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "memory-ok", "memory-ok", context("history/sqlite-semantics", "default", "", "offline"), "mem-out" => ok evidence("mem-out", "memory-ok", "memory-ok", true, "case history/sqlite-semantics variant default root mem-out run offline")
+        different: "memory-ok_2", "memory-ok", context("history/sqlite-semantics", "default", "", "offline"), "mem-out" => failed{"mem-out"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        seed_mem_out: "seed-mem-out-drift" => ok observation("memory-ok_2", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        seed_add_affected: "seed-add-affected-drift" => ok observation("memory-ok", 2, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        seed_get_row: "seed-get-row-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}_2", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        seed_missing_name: "seed-missing-name-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_count", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        seed_duplicate_name: "seed-duplicate-name-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::query_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        seed_commit_affected: "seed-commit-affected-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 2, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        seed_commit_row: "seed-commit-row-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}_2", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        seed_abort_affected: "seed-abort-affected-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 0, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        seed_abort_missing_name: "seed-abort-missing-name-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::constraint_failed", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        seed_invalid_name: "seed-invalid-name-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "sql::query_failed", "0", 10, 6, 4, 0, 1, true, true)
+        seed_setup_notes: "seed-setup-notes-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "1", 10, 6, 4, 0, 1, true, true)
+        seed_total_checks: "seed-total-checks-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 9, 6, 4, 0, 1, true, true)
+        seed_ok_legs: "seed-ok-legs-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 5, 4, 0, 1, true, true)
+        seed_fault_legs: "seed-fault-legs-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 5, 0, 1, true, true)
+        seed_ok_status: "seed-ok-status-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 1, 1, true, true)
+        seed_fault_status: "seed-fault-status-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 0, true, true)
+        seed_ok_diag_empty: "seed-ok-diag-empty-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, false, true)
+        seed_fault_out_empty: "seed-fault-out-empty-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, false)
+    match variant_id
+        "seed-mem-out-drift" => ok observation("memory-ok_2", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        "seed-add-affected-drift" => ok observation("memory-ok", 2, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        "seed-get-row-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}_2", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        "seed-missing-name-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_count", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        "seed-duplicate-name-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::query_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        "seed-commit-affected-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 2, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        "seed-commit-row-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}_2", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        "seed-abort-affected-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 0, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        "seed-abort-missing-name-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::constraint_failed", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+        "seed-invalid-name-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "sql::query_failed", "0", 10, 6, 4, 0, 1, true, true)
+        "seed-setup-notes-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "1", 10, 6, 4, 0, 1, true, true)
+        "seed-total-checks-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 9, 6, 4, 0, 1, true, true)
+        "seed-ok-legs-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 5, 4, 0, 1, true, true)
+        "seed-fault-legs-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 5, 0, 1, true, true)
+        "seed-ok-status-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 1, 1, true, true)
+        "seed-fault-status-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 0, true, true)
+        "seed-ok-diag-empty-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, false, true)
+        "seed-fault-out-empty-drift" => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, false)
+        _ => ok observation("memory-ok", 1, "{\"id\":7,\"body\":\"remember\"}", "sql::row_missing", "sql::constraint_failed", 1, "{\"id\":8,\"body\":\"kept\"}", 1, "sql::row_missing", "codec::invalid_data", "0", 10, 6, 4, 0, 1, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m26_h010: "m26-h010" => ok [check("mem-out", "memory leg answers memory-ok"), check("add-affected", "add leg reports one affected row"), check("get-row", "get leg returns the remember row"), check("missing-name", "absent id classifies row missing"), check("duplicate-name", "duplicate body classifies constraint failed"), check("commit-affected", "commit leg reports one affected row"), check("commit-row", "committed row reads back kept"), check("abort-affected", "abort leg reports one affected row"), check("abort-missing-name", "aborted row stays missing"), check("invalid-name", "bad id classifies invalid data"), check("setup-notes", "seed starts with zero notes"), check("total-checks", "ten legs run in order"), check("ok-legs", "six legs expect ok answers"), check("fault-legs", "four legs expect fault answers"), check("ok-status", "ok legs exit zero"), check("fault-status", "fault legs exit one"), check("ok-diag-empty", "ok legs leave stderr empty"), check("fault-out-empty", "fault legs leave stdout empty")]
+        other: "nope" => ok []
+    match scope is "m26-h010"
+        false => ok []
+        true => ok [check("mem-out", "memory leg answers memory-ok"), check("add-affected", "add leg reports one affected row"), check("get-row", "get leg returns the remember row"), check("missing-name", "absent id classifies row missing"), check("duplicate-name", "duplicate body classifies constraint failed"), check("commit-affected", "commit leg reports one affected row"), check("commit-row", "committed row reads back kept"), check("abort-affected", "abort leg reports one affected row"), check("abort-missing-name", "aborted row stays missing"), check("invalid-name", "bad id classifies invalid data"), check("setup-notes", "seed starts with zero notes"), check("total-checks", "ten legs run in order"), check("ok-legs", "six legs expect ok answers"), check("fault-legs", "four legs expect fault answers"), check("ok-status", "ok legs exit zero"), check("fault-status", "fault legs exit one"), check("ok-diag-empty", "ok legs leave stderr empty"), check("fault-out-empty", "fault legs leave stdout empty")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/sqlite-semantics" => ok [expected_check("mem-out", "memory-ok"), expected_check("add-affected", "1"), expected_check("get-row", "{\"id\":7,\"body\":\"remember\"}"), expected_check("missing-name", "sql::row_missing"), expected_check("duplicate-name", "sql::constraint_failed"), expected_check("commit-affected", "1"), expected_check("commit-row", "{\"id\":8,\"body\":\"kept\"}"), expected_check("abort-affected", "1"), expected_check("abort-missing-name", "sql::row_missing"), expected_check("invalid-name", "codec::invalid_data"), expected_check("setup-notes", "0"), expected_check("total-checks", "10"), expected_check("ok-legs", "6"), expected_check("fault-legs", "4"), expected_check("ok-status", "0"), expected_check("fault-status", "1"), expected_check("ok-diag-empty", "true"), expected_check("fault-out-empty", "true")]
+        unknown: "nope" => ok []
+    match case is "history/sqlite-semantics"
+        false => ok []
+        true => ok [expected_check("mem-out", "memory-ok"), expected_check("add-affected", "1"), expected_check("get-row", "{\"id\":7,\"body\":\"remember\"}"), expected_check("missing-name", "sql::row_missing"), expected_check("duplicate-name", "sql::constraint_failed"), expected_check("commit-affected", "1"), expected_check("commit-row", "{\"id\":8,\"body\":\"kept\"}"), expected_check("abort-affected", "1"), expected_check("abort-missing-name", "sql::row_missing"), expected_check("invalid-name", "codec::invalid_data"), expected_check("setup-notes", "0"), expected_check("total-checks", "10"), expected_check("ok-legs", "6"), expected_check("fault-legs", "4"), expected_check("ok-status", "0"), expected_check("fault-status", "1"), expected_check("ok-diag-empty", "true"), expected_check("fault-out-empty", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/sqlite-semantics", "default", "", "offline") => ok
+        seed_mem_out: context("history/sqlite-semantics", "seed-mem-out-drift", "", "offline") => failed{"mem-out"}
+        seed_add_affected: context("history/sqlite-semantics", "seed-add-affected-drift", "", "offline") => failed{"add-affected"}
+        seed_get_row: context("history/sqlite-semantics", "seed-get-row-drift", "", "offline") => failed{"get-row"}
+        seed_missing_name: context("history/sqlite-semantics", "seed-missing-name-drift", "", "offline") => failed{"missing-name"}
+        seed_duplicate_name: context("history/sqlite-semantics", "seed-duplicate-name-drift", "", "offline") => failed{"duplicate-name"}
+        seed_commit_affected: context("history/sqlite-semantics", "seed-commit-affected-drift", "", "offline") => failed{"commit-affected"}
+        seed_commit_row: context("history/sqlite-semantics", "seed-commit-row-drift", "", "offline") => failed{"commit-row"}
+        seed_abort_affected: context("history/sqlite-semantics", "seed-abort-affected-drift", "", "offline") => failed{"abort-affected"}
+        seed_abort_missing_name: context("history/sqlite-semantics", "seed-abort-missing-name-drift", "", "offline") => failed{"abort-missing-name"}
+        seed_invalid_name: context("history/sqlite-semantics", "seed-invalid-name-drift", "", "offline") => failed{"invalid-name"}
+        seed_setup_notes: context("history/sqlite-semantics", "seed-setup-notes-drift", "", "offline") => failed{"setup-notes"}
+        seed_total_checks: context("history/sqlite-semantics", "seed-total-checks-drift", "", "offline") => failed{"total-checks"}
+        seed_ok_legs: context("history/sqlite-semantics", "seed-ok-legs-drift", "", "offline") => failed{"ok-legs"}
+        seed_fault_legs: context("history/sqlite-semantics", "seed-fault-legs-drift", "", "offline") => failed{"fault-legs"}
+        seed_ok_status: context("history/sqlite-semantics", "seed-ok-status-drift", "", "offline") => failed{"ok-status"}
+        seed_fault_status: context("history/sqlite-semantics", "seed-fault-status-drift", "", "offline") => failed{"fault-status"}
+        seed_ok_diag_empty: context("history/sqlite-semantics", "seed-ok-diag-empty-drift", "", "offline") => failed{"ok-diag-empty"}
+        seed_fault_out_empty: context("history/sqlite-semantics", "seed-fault-out-empty-drift", "", "offline") => failed{"fault-out-empty"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.mem_out, "memory-ok", c, "mem-out")
+            failed
+            ok evidence mem_out_evidence => match call require_int(got.add_affected, 1, c, "add-affected")
+                failed
+                ok evidence add_affected_evidence => match call require_text(got.get_row, "{\"id\":7,\"body\":\"remember\"}", c, "get-row")
+                    failed
+                    ok evidence get_row_evidence => match call require_text(got.missing_name, "sql::row_missing", c, "missing-name")
+                        failed
+                        ok evidence missing_name_evidence => match call require_text(got.duplicate_name, "sql::constraint_failed", c, "duplicate-name")
+                            failed
+                            ok evidence duplicate_name_evidence => match call require_int(got.commit_affected, 1, c, "commit-affected")
+                                failed
+                                ok evidence commit_affected_evidence => match call require_text(got.commit_row, "{\"id\":8,\"body\":\"kept\"}", c, "commit-row")
+                                    failed
+                                    ok evidence commit_row_evidence => match call require_int(got.abort_affected, 1, c, "abort-affected")
+                                        failed
+                                        ok evidence abort_affected_evidence => match call require_text(got.abort_missing_name, "sql::row_missing", c, "abort-missing-name")
+                                            failed
+                                            ok evidence abort_missing_name_evidence => match call require_text(got.invalid_name, "codec::invalid_data", c, "invalid-name")
+                                                failed
+                                                ok evidence invalid_name_evidence => match call require_text(got.setup_notes, "0", c, "setup-notes")
+                                                    failed
+                                                    ok evidence setup_notes_evidence => match call require_int(got.total_checks, 10, c, "total-checks")
+                                                        failed
+                                                        ok evidence total_checks_evidence => match call require_int(got.ok_legs, 6, c, "ok-legs")
+                                                            failed
+                                                            ok evidence ok_legs_evidence => match call require_int(got.fault_legs, 4, c, "fault-legs")
+                                                                failed
+                                                                ok evidence fault_legs_evidence => match call require_int(got.ok_status, 0, c, "ok-status")
+                                                                    failed
+                                                                    ok evidence ok_status_evidence => match call require_int(got.fault_status, 1, c, "fault-status")
+                                                                        failed
+                                                                        ok evidence fault_status_evidence => match call require_bool(got.ok_diag_empty, true, c, "ok-diag-empty")
+                                                                            failed
+                                                                            ok evidence ok_diag_empty_evidence => match call require_bool(got.fault_out_empty, true, c, "fault-out-empty")
+                                                                                failed
+                                                                                ok evidence fault_out_empty_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m26_h010: "m26-h010" => ok test_case("history/sqlite-semantics", ["history", "m26"], ["can-bun-archive"], 360000, [check_ref("mem-out"), check_ref("add-affected"), check_ref("get-row"), check_ref("missing-name"), check_ref("duplicate-name"), check_ref("commit-affected"), check_ref("commit-row"), check_ref("abort-affected"), check_ref("abort-missing-name"), check_ref("invalid-name"), check_ref("setup-notes"), check_ref("total-checks"), check_ref("ok-legs"), check_ref("fault-legs"), check_ref("ok-status"), check_ref("fault-status"), check_ref("ok-diag-empty"), check_ref("fault-out-empty")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m26-h010"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/sqlite-semantics", ["history", "m26"], ["can-bun-archive"], 360000, [check_ref("mem-out"), check_ref("add-affected"), check_ref("get-row"), check_ref("missing-name"), check_ref("duplicate-name"), check_ref("commit-affected"), check_ref("commit-row"), check_ref("abort-affected"), check_ref("abort-missing-name"), check_ref("invalid-name"), check_ref("setup-notes"), check_ref("total-checks"), check_ref("ok-legs"), check_ref("fault-legs"), check_ref("ok-status"), check_ref("fault-status"), check_ref("ok-diag-empty"), check_ref("fault-out-empty")], callable case_body)
