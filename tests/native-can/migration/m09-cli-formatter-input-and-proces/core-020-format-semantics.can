@@ -1,0 +1,230 @@
+package m09core020format
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M09 CORE-020 "format: rewrite, retention, idempotence, invalid input".
+/// Source: tests/integration/format_test.go symbol
+/// TestFormatPreservesExecution (L35-150).
+/// Related fixture: none (related_sources empty); the messy input is the
+/// inline formatMessy const (Go L15-31), staged as src/main.can at L63;
+/// the invalid input appends "fn int broken(\n" at L143.
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): the formatter rewrites messy valid source while
+/// retaining comments and assertion root identities, a second pass is
+/// byte-idempotent, and syntactically invalid source exits 1 with the
+/// file untouched.
+/// The roots-green pin lives in core-020-roots-green.can; the production
+/// process shape lives in core-020-run-shape.can.
+/// Variants: messy valid source (rewrite-changed, fn-line,
+/// comment-retained, seed-comment-retained, roots-retained,
+/// root-identities); second pass (idempotent-second-pass); syntactically
+/// invalid source (invalid-exit, invalid-untouched, invalid-suffix).
+/// Environment: CAN_BUN_ARCHIVE only; the Go test stages no sandbox
+/// profile and pins no sandbox shape, so requires carries just
+/// can-bun-archive. Logical gates SUITE/WORK/PROC/N1 and C/R/N/S/A
+/// identities bind at P23; no live run now. Descriptor timeout
+/// 120000ms mirrors the Go 2-minute ctx (L41).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case format/format-semantics checks: rewrite-changed, fn-line,
+/// comment-retained, seed-comment-retained, roots-retained,
+/// root-identities, idempotent-second-pass, invalid-exit,
+/// invalid-untouched, invalid-suffix.
+/// Facet map (format_test.go legs): rewrite-changed pins that format
+/// output differs from the messy input (L124-126); fn-line pins the
+/// normalized "fn int tally\n" line (L127); comment-retained pins
+/// "// total with tip\n" (L127; source L22); seed-comment-retained
+/// pins "int seed  // per cover\n" with two spaces (L127; source
+/// L26); roots-retained pins afterRoots equal to beforeRoots (L134-136);
+/// root-identities pins the joined identities
+/// "app/tally#sample,app/tally#pair" (L107 Package/Declaration#Name
+/// shape, L134 comma join; package app L18, tally L23, sample L28,
+/// pair L29); idempotent-second-pass pins the second write
+/// byte-identical to the first (L140-142); invalid-exit pins exit 1
+/// (L144-146); invalid-untouched pins the file still carrying the
+/// broken suffix (L147-149); invalid-suffix pins the verbatim needle
+/// "fn int broken(\n" (L143 staged, L147 asserted).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool rewrite_changed
+    str fn_line
+    str comment_retained
+    str seed_comment_retained
+    bool roots_retained
+    str root_identities
+    bool idempotent_second_pass
+    int invalid_exit
+    bool invalid_untouched
+    str invalid_suffix
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("format/format-semantics", "default", "", "offline"), "fn-line" => ok "case format/format-semantics variant default root fn-line run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("format/format-semantics", "default", "", "offline"), "rewrite-changed" => ok evidence("rewrite-changed", "true", "true", true, "case format/format-semantics variant default root rewrite-changed run offline")
+        different: false, true, context("format/format-semantics", "default", "", "offline"), "rewrite-changed" => failed{"rewrite-changed"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("format/format-semantics", "default", "", "offline"), "invalid-exit" => ok evidence("invalid-exit", "1", "1", true, "case format/format-semantics variant default root invalid-exit run offline")
+        different: 0, 1, context("format/format-semantics", "default", "", "offline"), "invalid-exit" => failed{"invalid-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "fn int tally\n", "fn int tally\n", context("format/format-semantics", "default", "", "offline"), "fn-line" => ok evidence("fn-line", "fn int tally\n", "fn int tally\n", true, "case format/format-semantics variant default root fn-line run offline")
+        different: "fn   int   tally\n", "fn int tally\n", context("format/format-semantics", "default", "", "offline"), "fn-line" => failed{"fn-line"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, "fn int tally\n", "// total with tip\n", "int seed  // per cover\n", true, "app/tally#sample,app/tally#pair", true, 1, true, "fn int broken(\n")
+        seed_rewrite_changed_drift: "seed-rewrite-changed-drift" => ok observation(false, "fn int tally\n", "// total with tip\n", "int seed  // per cover\n", true, "app/tally#sample,app/tally#pair", true, 1, true, "fn int broken(\n")
+        seed_fn_line_drift: "seed-fn-line-drift" => ok observation(true, "fn   int   tally\n", "// total with tip\n", "int seed  // per cover\n", true, "app/tally#sample,app/tally#pair", true, 1, true, "fn int broken(\n")
+        seed_comment_retained_drift: "seed-comment-retained-drift" => ok observation(true, "fn int tally\n", "// total with tip", "int seed  // per cover\n", true, "app/tally#sample,app/tally#pair", true, 1, true, "fn int broken(\n")
+        seed_seed_comment_retained_drift: "seed-seed-comment-retained-drift" => ok observation(true, "fn int tally\n", "// total with tip\n", "int seed // per cover\n", true, "app/tally#sample,app/tally#pair", true, 1, true, "fn int broken(\n")
+        seed_roots_retained_drift: "seed-roots-retained-drift" => ok observation(true, "fn int tally\n", "// total with tip\n", "int seed  // per cover\n", false, "app/tally#sample,app/tally#pair", true, 1, true, "fn int broken(\n")
+        seed_root_identities_drift: "seed-root-identities-drift" => ok observation(true, "fn int tally\n", "// total with tip\n", "int seed  // per cover\n", true, "app/tally#sample", true, 1, true, "fn int broken(\n")
+        seed_idempotent_second_pass_drift: "seed-idempotent-second-pass-drift" => ok observation(true, "fn int tally\n", "// total with tip\n", "int seed  // per cover\n", true, "app/tally#sample,app/tally#pair", false, 1, true, "fn int broken(\n")
+        seed_invalid_exit_drift: "seed-invalid-exit-drift" => ok observation(true, "fn int tally\n", "// total with tip\n", "int seed  // per cover\n", true, "app/tally#sample,app/tally#pair", true, 0, true, "fn int broken(\n")
+        seed_invalid_untouched_drift: "seed-invalid-untouched-drift" => ok observation(true, "fn int tally\n", "// total with tip\n", "int seed  // per cover\n", true, "app/tally#sample,app/tally#pair", true, 1, false, "fn int broken(\n")
+        seed_invalid_suffix_drift: "seed-invalid-suffix-drift" => ok observation(true, "fn int tally\n", "// total with tip\n", "int seed  // per cover\n", true, "app/tally#sample,app/tally#pair", true, 1, true, "fn int broken\n")
+    match variant_id
+        "seed-rewrite-changed-drift" => ok observation(false, "fn int tally\n", "// total with tip\n", "int seed  // per cover\n", true, "app/tally#sample,app/tally#pair", true, 1, true, "fn int broken(\n")
+        "seed-fn-line-drift" => ok observation(true, "fn   int   tally\n", "// total with tip\n", "int seed  // per cover\n", true, "app/tally#sample,app/tally#pair", true, 1, true, "fn int broken(\n")
+        "seed-comment-retained-drift" => ok observation(true, "fn int tally\n", "// total with tip", "int seed  // per cover\n", true, "app/tally#sample,app/tally#pair", true, 1, true, "fn int broken(\n")
+        "seed-seed-comment-retained-drift" => ok observation(true, "fn int tally\n", "// total with tip\n", "int seed // per cover\n", true, "app/tally#sample,app/tally#pair", true, 1, true, "fn int broken(\n")
+        "seed-roots-retained-drift" => ok observation(true, "fn int tally\n", "// total with tip\n", "int seed  // per cover\n", false, "app/tally#sample,app/tally#pair", true, 1, true, "fn int broken(\n")
+        "seed-root-identities-drift" => ok observation(true, "fn int tally\n", "// total with tip\n", "int seed  // per cover\n", true, "app/tally#sample", true, 1, true, "fn int broken(\n")
+        "seed-idempotent-second-pass-drift" => ok observation(true, "fn int tally\n", "// total with tip\n", "int seed  // per cover\n", true, "app/tally#sample,app/tally#pair", false, 1, true, "fn int broken(\n")
+        "seed-invalid-exit-drift" => ok observation(true, "fn int tally\n", "// total with tip\n", "int seed  // per cover\n", true, "app/tally#sample,app/tally#pair", true, 0, true, "fn int broken(\n")
+        "seed-invalid-untouched-drift" => ok observation(true, "fn int tally\n", "// total with tip\n", "int seed  // per cover\n", true, "app/tally#sample,app/tally#pair", true, 1, false, "fn int broken(\n")
+        "seed-invalid-suffix-drift" => ok observation(true, "fn int tally\n", "// total with tip\n", "int seed  // per cover\n", true, "app/tally#sample,app/tally#pair", true, 1, true, "fn int broken\n")
+        _ => ok observation(true, "fn int tally\n", "// total with tip\n", "int seed  // per cover\n", true, "app/tally#sample,app/tally#pair", true, 1, true, "fn int broken(\n")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m09_020: "m09-020" => ok [check("rewrite-changed", "format rewrites the messy source instead of leaving it byte-identical"), check("fn-line", "formatted output carries the normalized fn int tally line"), check("comment-retained", "formatted output retains the total-with-tip comment"), check("seed-comment-retained", "formatted output retains the per-cover trailing comment"), check("roots-retained", "assert root identities match before and after formatting"), check("root-identities", "joined root identities pin app/tally sample and pair"), check("idempotent-second-pass", "a second format pass is byte-identical"), check("invalid-exit", "formatting syntactically invalid source exits 1"), check("invalid-untouched", "invalid source is left untouched on disk"), check("invalid-suffix", "untouched file keeps the broken-declaration suffix")]
+        other: "nope" => ok []
+    match scope is "m09-020"
+        false => ok []
+        true => ok [check("rewrite-changed", "format rewrites the messy source instead of leaving it byte-identical"), check("fn-line", "formatted output carries the normalized fn int tally line"), check("comment-retained", "formatted output retains the total-with-tip comment"), check("seed-comment-retained", "formatted output retains the per-cover trailing comment"), check("roots-retained", "assert root identities match before and after formatting"), check("root-identities", "joined root identities pin app/tally sample and pair"), check("idempotent-second-pass", "a second format pass is byte-identical"), check("invalid-exit", "formatting syntactically invalid source exits 1"), check("invalid-untouched", "invalid source is left untouched on disk"), check("invalid-suffix", "untouched file keeps the broken-declaration suffix")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "format/format-semantics" => ok [expected_check("rewrite-changed", "true"), expected_check("fn-line", "fn int tally\n"), expected_check("comment-retained", "// total with tip\n"), expected_check("seed-comment-retained", "int seed  // per cover\n"), expected_check("roots-retained", "true"), expected_check("root-identities", "app/tally#sample,app/tally#pair"), expected_check("idempotent-second-pass", "true"), expected_check("invalid-exit", "1"), expected_check("invalid-untouched", "true"), expected_check("invalid-suffix", "fn int broken(\n")]
+        unknown: "nope" => ok []
+    match case is "format/format-semantics"
+        false => ok []
+        true => ok [expected_check("rewrite-changed", "true"), expected_check("fn-line", "fn int tally\n"), expected_check("comment-retained", "// total with tip\n"), expected_check("seed-comment-retained", "int seed  // per cover\n"), expected_check("roots-retained", "true"), expected_check("root-identities", "app/tally#sample,app/tally#pair"), expected_check("idempotent-second-pass", "true"), expected_check("invalid-exit", "1"), expected_check("invalid-untouched", "true"), expected_check("invalid-suffix", "fn int broken(\n")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("format/format-semantics", "default", "", "offline") => ok
+        seed_rewrite_changed_drift: context("format/format-semantics", "seed-rewrite-changed-drift", "", "offline") => failed{"rewrite-changed"}
+        seed_fn_line_drift: context("format/format-semantics", "seed-fn-line-drift", "", "offline") => failed{"fn-line"}
+        seed_comment_retained_drift: context("format/format-semantics", "seed-comment-retained-drift", "", "offline") => failed{"comment-retained"}
+        seed_seed_comment_retained_drift: context("format/format-semantics", "seed-seed-comment-retained-drift", "", "offline") => failed{"seed-comment-retained"}
+        seed_roots_retained_drift: context("format/format-semantics", "seed-roots-retained-drift", "", "offline") => failed{"roots-retained"}
+        seed_root_identities_drift: context("format/format-semantics", "seed-root-identities-drift", "", "offline") => failed{"root-identities"}
+        seed_idempotent_second_pass_drift: context("format/format-semantics", "seed-idempotent-second-pass-drift", "", "offline") => failed{"idempotent-second-pass"}
+        seed_invalid_exit_drift: context("format/format-semantics", "seed-invalid-exit-drift", "", "offline") => failed{"invalid-exit"}
+        seed_invalid_untouched_drift: context("format/format-semantics", "seed-invalid-untouched-drift", "", "offline") => failed{"invalid-untouched"}
+        seed_invalid_suffix_drift: context("format/format-semantics", "seed-invalid-suffix-drift", "", "offline") => failed{"invalid-suffix"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.rewrite_changed, true, c, "rewrite-changed")
+            failed
+            ok evidence rewrite_evidence => match call require_text(got.fn_line, "fn int tally\n", c, "fn-line")
+                failed
+                ok evidence fn_evidence => match call require_text(got.comment_retained, "// total with tip\n", c, "comment-retained")
+                    failed
+                    ok evidence comment_evidence => match call require_text(got.seed_comment_retained, "int seed  // per cover\n", c, "seed-comment-retained")
+                        failed
+                        ok evidence seed_evidence => match call require_bool(got.roots_retained, true, c, "roots-retained")
+                            failed
+                            ok evidence retained_evidence => match call require_text(got.root_identities, "app/tally#sample,app/tally#pair", c, "root-identities")
+                                failed
+                                ok evidence identities_evidence => match call require_bool(got.idempotent_second_pass, true, c, "idempotent-second-pass")
+                                    failed
+                                    ok evidence idempotent_evidence => match call require_int(got.invalid_exit, 1, c, "invalid-exit")
+                                        failed
+                                        ok evidence invexit_evidence => match call require_bool(got.invalid_untouched, true, c, "invalid-untouched")
+                                            failed
+                                            ok evidence untouched_evidence => match call require_text(got.invalid_suffix, "fn int broken(\n", c, "invalid-suffix")
+                                                failed
+                                                ok evidence suffix_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m09_020: "m09-020" => ok test_case("format/format-semantics", ["format", "m09"], ["can-bun-archive"], 120000, [check_ref("rewrite-changed"), check_ref("fn-line"), check_ref("comment-retained"), check_ref("seed-comment-retained"), check_ref("roots-retained"), check_ref("root-identities"), check_ref("idempotent-second-pass"), check_ref("invalid-exit"), check_ref("invalid-untouched"), check_ref("invalid-suffix")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m09-020"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("format/format-semantics", ["format", "m09"], ["can-bun-archive"], 120000, [check_ref("rewrite-changed"), check_ref("fn-line"), check_ref("comment-retained"), check_ref("seed-comment-retained"), check_ref("roots-retained"), check_ref("root-identities"), check_ref("idempotent-second-pass"), check_ref("invalid-exit"), check_ref("invalid-untouched"), check_ref("invalid-suffix")], callable case_body)
