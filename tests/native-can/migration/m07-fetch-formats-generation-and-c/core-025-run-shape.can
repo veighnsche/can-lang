@@ -1,0 +1,242 @@
+package m07core025run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M07 CORE-025 "bundled HTML: build plus harness run shape".
+/// Source: tests/integration/html_test.go symbol TestCurrentBundledHTML.
+/// Related fixture: compiler/testdata/current/html/main.can render plus
+/// fragment entries (L4-43); the build leg emits the directory JSON
+/// (Go L71-80) and the bun harness leg runs the compiled functions
+/// (L150-166).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): the production process shape. The build exits 0
+/// with a directory carrying both generated functions and exactly one
+/// runtime; the harness run exits 0 and logs the compiled pass marker;
+/// the sandbox profiles, the run-only network allowance and the empty
+/// fd snapshot pin the invocation contract, and the strict-tsc leg stays
+/// conditional. Unlike silent-entry rows, the harness stdout is pinned
+/// verbatim (adaptation below, CORE-014 precedent).
+/// The 3-root green pin lives in core-025-roots-green.can; live HTML
+/// semantics live in core-025-html-semantics.can.
+/// Variants: none live in this file beyond the build plus harness path
+/// itself; the hostile page/fragment variants belong to the
+/// html-semantics file, and the optional CAN_TSC strict
+/// generated-TypeScript leg (L81-86) is env-gated and recorded
+/// blocked, never waived.
+/// Adaptation: the Go test pins the harness run only by exit status
+/// (L164-166: CombinedOutput error or "compiled native HTML" fatals).
+/// The harness itself logs "compiled request-derived HTML passed" as
+/// its pass marker (L148), pinned verbatim here as harness-marker per
+/// the accepted CORE-014/019/040 non-silent-output precedent.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT
+/// and C/R/N/S/A identities bind at P23/QHTTP; no live run now.
+/// Descriptor timeout 120000ms mirrors the Go 2-minute ctx (L25).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QHTTP unmet).
+/// Case bundled/html-run checks: build-exit, build-directory,
+/// generated-functions, runtime-single, harness-exit, harness-marker,
+/// snapshot-empty, sandbox-profile, network-allowance, tsc-conditional.
+/// Facet map (html_test.go legs): build-exit pins exit 0 on the build
+/// (L71-74: status 0 or "build" fatals); build-directory pins the JSON
+/// directory (L75-80: stdout unmarshals to a directory);
+/// generated-functions pins the discovery needles verbatim (L109/L113:
+/// can.project.root/app::render plus can.project.root/app::fragment or
+/// "missing generated HTML functions" fatals at L119-121);
+/// runtime-single pins the runtime count (L122-125: exactly 1
+/// runtime/r-* glob hit or "missing runtime" fatals); harness-exit pins
+/// exit 0 on the harness run (L164-166: CombinedOutput error or
+/// "compiled native HTML" fatals); harness-marker pins the pass marker
+/// verbatim (L148: "compiled request-derived HTML passed");
+/// snapshot-empty pins the fd snapshot (L155: environment.json holds
+/// "{}"; L160: passed as the extra file); sandbox-profile pins the
+/// deny-network base profile (L54: "(version 1)(allow default)(deny
+/// network*)" verbatim); network-allowance pins the harness-only
+/// localhost allowance (L161: "(allow network-outbound (remote ip
+/// "localhost:*"))" verbatim); tsc-conditional pins the optional leg
+/// (L81-86: strict tsc over the emitted entry.ts runs if and only if
+/// CAN_TSC is set).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int build_exit
+    bool build_directory
+    str generated_functions
+    int runtime_single
+    int harness_exit
+    str harness_marker
+    str snapshot_empty
+    str sandbox_profile
+    str network_allowance
+    bool tsc_conditional
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/html-run", "default", "", "offline"), "build-exit" => ok "case bundled/html-run variant default root build-exit run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/html-run", "default", "", "offline"), "build-directory" => ok evidence("build-directory", "true", "true", true, "case bundled/html-run variant default root build-directory run offline")
+        different: false, true, context("bundled/html-run", "default", "", "offline"), "build-directory" => failed{"build-directory"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("bundled/html-run", "default", "", "offline"), "build-exit" => ok evidence("build-exit", "0", "0", true, "case bundled/html-run variant default root build-exit run offline")
+        different: 1, 0, context("bundled/html-run", "default", "", "offline"), "build-exit" => failed{"build-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "compiled request-derived HTML passed", "compiled request-derived HTML passed", context("bundled/html-run", "default", "", "offline"), "harness-marker" => ok evidence("harness-marker", "compiled request-derived HTML passed", "compiled request-derived HTML passed", true, "case bundled/html-run variant default root harness-marker run offline")
+        different: "compiled HTML passed", "compiled request-derived HTML passed", context("bundled/html-run", "default", "", "offline"), "harness-marker" => failed{"harness-marker"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(0, true, "can.project.root/app::render|can.project.root/app::fragment", 1, 0, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+        seed_build_red: "seed-build-red" => ok observation(1, true, "can.project.root/app::render|can.project.root/app::fragment", 1, 0, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+        seed_directory_missing: "seed-directory-missing" => ok observation(0, false, "can.project.root/app::render|can.project.root/app::fragment", 1, 0, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+        seed_functions_drift: "seed-functions-drift" => ok observation(0, true, "can.project.root/app::render", 1, 0, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+        seed_runtime_zero: "seed-runtime-zero" => ok observation(0, true, "can.project.root/app::render|can.project.root/app::fragment", 0, 0, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+        seed_harness_red: "seed-harness-red" => ok observation(0, true, "can.project.root/app::render|can.project.root/app::fragment", 1, 1, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+        seed_marker_drift: "seed-marker-drift" => ok observation(0, true, "can.project.root/app::render|can.project.root/app::fragment", 1, 0, "compiled HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+        seed_snapshot_drift: "seed-snapshot-drift" => ok observation(0, true, "can.project.root/app::render|can.project.root/app::fragment", 1, 0, "compiled request-derived HTML passed", "[]", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+        seed_profile_drift: "seed-profile-drift" => ok observation(0, true, "can.project.root/app::render|can.project.root/app::fragment", 1, 0, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+        seed_allowance_drift: "seed-allowance-drift" => ok observation(0, true, "can.project.root/app::render|can.project.root/app::fragment", 1, 0, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound)", true)
+        seed_tsc_unconditional: "seed-tsc-unconditional" => ok observation(0, true, "can.project.root/app::render|can.project.root/app::fragment", 1, 0, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", false)
+    match variant_id
+        "seed-build-red" => ok observation(1, true, "can.project.root/app::render|can.project.root/app::fragment", 1, 0, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+        "seed-directory-missing" => ok observation(0, false, "can.project.root/app::render|can.project.root/app::fragment", 1, 0, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+        "seed-functions-drift" => ok observation(0, true, "can.project.root/app::render", 1, 0, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+        "seed-runtime-zero" => ok observation(0, true, "can.project.root/app::render|can.project.root/app::fragment", 0, 0, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+        "seed-harness-red" => ok observation(0, true, "can.project.root/app::render|can.project.root/app::fragment", 1, 1, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+        "seed-marker-drift" => ok observation(0, true, "can.project.root/app::render|can.project.root/app::fragment", 1, 0, "compiled HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+        "seed-snapshot-drift" => ok observation(0, true, "can.project.root/app::render|can.project.root/app::fragment", 1, 0, "compiled request-derived HTML passed", "[]", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+        "seed-profile-drift" => ok observation(0, true, "can.project.root/app::render|can.project.root/app::fragment", 1, 0, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+        "seed-allowance-drift" => ok observation(0, true, "can.project.root/app::render|can.project.root/app::fragment", 1, 0, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound)", true)
+        "seed-tsc-unconditional" => ok observation(0, true, "can.project.root/app::render|can.project.root/app::fragment", 1, 0, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", false)
+        _ => ok observation(0, true, "can.project.root/app::render|can.project.root/app::fragment", 1, 0, "compiled request-derived HTML passed", "{}", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m07_025: "m07-025" => ok [check("build-exit", "green build exits 0"), check("build-directory", "build stdout carries the emitted directory"), check("generated-functions", "build output carries the render plus fragment functions"), check("runtime-single", "build output carries exactly 1 runtime"), check("harness-exit", "compiled harness run exits 0"), check("harness-marker", "harness stdout logs the compiled pass marker"), check("snapshot-empty", "harness consumes the empty snapshot file"), check("sandbox-profile", "invocation pins the deny-network sandbox profile"), check("network-allowance", "harness pins the localhost-only network allowance"), check("tsc-conditional", "strict tsc leg runs only when CAN_TSC is set")]
+        other: "nope" => ok []
+    match scope is "m07-025"
+        false => ok []
+        true => ok [check("build-exit", "green build exits 0"), check("build-directory", "build stdout carries the emitted directory"), check("generated-functions", "build output carries the render plus fragment functions"), check("runtime-single", "build output carries exactly 1 runtime"), check("harness-exit", "compiled harness run exits 0"), check("harness-marker", "harness stdout logs the compiled pass marker"), check("snapshot-empty", "harness consumes the empty snapshot file"), check("sandbox-profile", "invocation pins the deny-network sandbox profile"), check("network-allowance", "harness pins the localhost-only network allowance"), check("tsc-conditional", "strict tsc leg runs only when CAN_TSC is set")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/html-run" => ok [expected_check("build-exit", "0"), expected_check("build-directory", "true"), expected_check("generated-functions", "can.project.root/app::render|can.project.root/app::fragment"), expected_check("runtime-single", "1"), expected_check("harness-exit", "0"), expected_check("harness-marker", "compiled request-derived HTML passed"), expected_check("snapshot-empty", "{}"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("network-allowance", "(allow network-outbound (remote ip \"localhost:*\"))"), expected_check("tsc-conditional", "true")]
+        unknown: "nope" => ok []
+    match case is "bundled/html-run"
+        false => ok []
+        true => ok [expected_check("build-exit", "0"), expected_check("build-directory", "true"), expected_check("generated-functions", "can.project.root/app::render|can.project.root/app::fragment"), expected_check("runtime-single", "1"), expected_check("harness-exit", "0"), expected_check("harness-marker", "compiled request-derived HTML passed"), expected_check("snapshot-empty", "{}"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("network-allowance", "(allow network-outbound (remote ip \"localhost:*\"))"), expected_check("tsc-conditional", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/html-run", "default", "", "offline") => ok
+        seed_build_red: context("bundled/html-run", "seed-build-red", "", "offline") => failed{"build-exit"}
+        seed_directory_missing: context("bundled/html-run", "seed-directory-missing", "", "offline") => failed{"build-directory"}
+        seed_functions_drift: context("bundled/html-run", "seed-functions-drift", "", "offline") => failed{"generated-functions"}
+        seed_runtime_zero: context("bundled/html-run", "seed-runtime-zero", "", "offline") => failed{"runtime-single"}
+        seed_harness_red: context("bundled/html-run", "seed-harness-red", "", "offline") => failed{"harness-exit"}
+        seed_marker_drift: context("bundled/html-run", "seed-marker-drift", "", "offline") => failed{"harness-marker"}
+        seed_snapshot_drift: context("bundled/html-run", "seed-snapshot-drift", "", "offline") => failed{"snapshot-empty"}
+        seed_profile_drift: context("bundled/html-run", "seed-profile-drift", "", "offline") => failed{"sandbox-profile"}
+        seed_allowance_drift: context("bundled/html-run", "seed-allowance-drift", "", "offline") => failed{"network-allowance"}
+        seed_tsc_unconditional: context("bundled/html-run", "seed-tsc-unconditional", "", "offline") => failed{"tsc-conditional"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.build_exit, 0, c, "build-exit")
+            failed
+            ok evidence build_evidence => match call require_bool(got.build_directory, true, c, "build-directory")
+                failed
+                ok evidence directory_evidence => match call require_text(got.generated_functions, "can.project.root/app::render|can.project.root/app::fragment", c, "generated-functions")
+                    failed
+                    ok evidence functions_evidence => match call require_int(got.runtime_single, 1, c, "runtime-single")
+                        failed
+                        ok evidence runtime_evidence => match call require_int(got.harness_exit, 0, c, "harness-exit")
+                            failed
+                            ok evidence harness_evidence => match call require_text(got.harness_marker, "compiled request-derived HTML passed", c, "harness-marker")
+                                failed
+                                ok evidence marker_evidence => match call require_text(got.snapshot_empty, "{}", c, "snapshot-empty")
+                                    failed
+                                    ok evidence snapshot_evidence => match call require_text(got.sandbox_profile, "(version 1)(allow default)(deny network*)", c, "sandbox-profile")
+                                        failed
+                                        ok evidence profile_evidence => match call require_text(got.network_allowance, "(allow network-outbound (remote ip \"localhost:*\"))", c, "network-allowance")
+                                            failed
+                                            ok evidence allowance_evidence => match call require_bool(got.tsc_conditional, true, c, "tsc-conditional")
+                                                failed
+                                                ok evidence tsc_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m07_025: "m07-025" => ok test_case("bundled/html-run", ["html", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("build-exit"), check_ref("build-directory"), check_ref("generated-functions"), check_ref("runtime-single"), check_ref("harness-exit"), check_ref("harness-marker"), check_ref("snapshot-empty"), check_ref("sandbox-profile"), check_ref("network-allowance"), check_ref("tsc-conditional")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m07-025"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/html-run", ["html", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("build-exit"), check_ref("build-directory"), check_ref("generated-functions"), check_ref("runtime-single"), check_ref("harness-exit"), check_ref("harness-marker"), check_ref("snapshot-empty"), check_ref("sandbox-profile"), check_ref("network-allowance"), check_ref("tsc-conditional")], callable case_body)
