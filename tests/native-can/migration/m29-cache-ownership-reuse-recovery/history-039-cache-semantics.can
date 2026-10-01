@@ -1,0 +1,305 @@
+package m29history039cache
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 HISTORY-039 "Bundle cache: verdict semantics".
+/// Source: tests/failure-conventions/harness_test.go symbol
+/// TestMain plus resolveBundle (L75-92), cachedBundle
+/// (L99-131), suiteCache (L133-138), TestMain/runSuite
+/// (L142-154), bundleCacheRoot (L156-165) and the
+/// bundleKey input set (L169-216).
+/// Disposition: migrate (this row ports the TestMain
+/// suite-owned bundle cache contract to ordinary Can
+/// functions; the old Go harness stays until the
+/// integrator retires it after every linked row, variant,
+/// environment and control has accepted evidence).
+/// Protects (this file): the allocate-once legs, the
+/// reuse-by-key verdicts with key input counts, the
+/// abandoned-work recovery legs, the close-after-m.Run
+/// ordering, and the CONV_BUNDLE bypass legs, all in Go
+/// order.
+/// ADAPTATION (recorded, with source lines): bypass legs
+/// pin the CONV_BUNDLE spelling (L77) plus the verify
+/// bool (L78); archive legs pin the CAN_BUN_ARCHIVE
+/// spelling (L83) plus the skip bool (L84-86);
+/// build-once-per-key pins bool from the cachedBundle doc
+/// (L96); root-once pins bool from once.Do (L158);
+/// parent-env pins CAN_TEST_CACHE (L159); key counts pin
+/// ints from the dir slice (L172), the module file slice
+/// (L189) and the three pinned tags (L200-202);
+/// entry-prefix pins bundle- (L106); complete-marker pins
+/// cache-complete (L235); verify-before-reuse pins bool
+/// from the reuse guard (L110); lock-suffix pins .lock
+/// (L113); wait-before-reap pins bool from the wait then
+/// reap order (L123-126); stale-reaped pins bool from the
+/// stale removal (L271-272); close-after-run pins bool
+/// from the deferred Close around m.Run (L147-153);
+/// close-exit-code pins int (1) from the failure code
+/// (L150).
+/// Facet map (Go verdict legs): bypass-env pins
+/// CONV_BUNDLE (L77); bypass-verifies pins true (L78);
+/// archive-env pins CAN_BUN_ARCHIVE (L83); skip-when-unset
+/// pins true (L84-86); build-once-per-key pins true (L96);
+/// root-once pins true (L158); parent-env pins
+/// CAN_TEST_CACHE (L159); key-dir-count pins 4 (L172);
+/// key-file-count pins 2 (L189); key-tag-count pins 3
+/// (L200-202); entry-prefix pins bundle- (L106);
+/// complete-marker pins cache-complete (L235);
+/// verify-before-reuse pins true (L110); lock-suffix pins
+/// .lock (L113); wait-before-reap pins true (L123-126);
+/// stale-reaped pins true (L271-272); close-after-run pins
+/// true (L147-153); close-exit-code pins 1 (L150).
+/// The roots-green pin lives in history-039-roots-green.can;
+/// the run shape plus diagnostics live in
+/// history-039-run-shape.can.
+/// Variants: none (row lists zero variants; one default
+/// case per file).
+/// Environment: requires conv-bundle, can-bun-archive,
+/// can-test-cache (row gates CONV_BUNDLE, CAN_BUN_ARCHIVE,
+/// CAN_TEST_CACHE; lowercase-hyphen requires form per the
+/// M25 precedent; binds at P23).
+/// Logical gates SUITE/BUILD/WORK/ENV bind at P23; no live
+/// run now. Accept gate P23 is unmet. Timeout 120000ms is
+/// the offline default bound (the Go 30-minute fill wait
+/// plus 500ms poll are runtime waits pinned as checks, not
+/// test timeouts; binds at P23 like the M11 rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/bundle-cache-semantics checks: bypass-env,
+/// bypass-verifies, archive-env, skip-when-unset,
+/// build-once-per-key, root-once, parent-env, key-dir-count,
+/// key-file-count, key-tag-count, entry-prefix,
+/// complete-marker, verify-before-reuse, lock-suffix,
+/// wait-before-reap, stale-reaped, close-after-run,
+/// close-exit-code.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str bypass_env
+    bool bypass_verifies
+    str archive_env
+    bool skip_when_unset
+    bool build_once_per_key
+    bool root_once
+    str parent_env
+    int key_dir_count
+    int key_file_count
+    int key_tag_count
+    str entry_prefix
+    str complete_marker
+    bool verify_before_reuse
+    str lock_suffix
+    bool wait_before_reap
+    bool stale_reaped
+    bool close_after_run
+    int close_exit_code
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/bundle-cache-semantics", "default", "", "offline"), "bypass-env" => ok "case history/bundle-cache-semantics variant default root bypass-env run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/bundle-cache-semantics", "default", "", "offline"), "bypass-verifies" => ok evidence("bypass-verifies", "true", "true", true, "case history/bundle-cache-semantics variant default root bypass-verifies run offline")
+        different: false, true, context("history/bundle-cache-semantics", "default", "", "offline"), "bypass-verifies" => failed{"bypass-verifies"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("history/bundle-cache-semantics", "default", "", "offline"), "key-dir-count" => ok evidence("key-dir-count", "4", "4", true, "case history/bundle-cache-semantics variant default root key-dir-count run offline")
+        different: 5, 4, context("history/bundle-cache-semantics", "default", "", "offline"), "key-dir-count" => failed{"key-dir-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "CONV_BUNDLE", "CONV_BUNDLE", context("history/bundle-cache-semantics", "default", "", "offline"), "bypass-env" => ok evidence("bypass-env", "CONV_BUNDLE", "CONV_BUNDLE", true, "case history/bundle-cache-semantics variant default root bypass-env run offline")
+        different: "CONV_BUNDLE_2", "CONV_BUNDLE", context("history/bundle-cache-semantics", "default", "", "offline"), "bypass-env" => failed{"bypass-env"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        seed_bypass_env: "seed-bypass-env-drift" => ok observation("CONV_BUNDLE_2", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        seed_bypass_verifies: "seed-bypass-verifies-drift" => ok observation("CONV_BUNDLE", false, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        seed_archive_env: "seed-archive-env-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE_2", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        seed_skip_when_unset: "seed-skip-when-unset-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", false, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        seed_build_once_per_key: "seed-build-once-per-key-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, false, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        seed_root_once: "seed-root-once-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, false, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        seed_parent_env: "seed-parent-env-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE_2", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        seed_key_dir_count: "seed-key-dir-count-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 5, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        seed_key_file_count: "seed-key-file-count-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 3, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        seed_key_tag_count: "seed-key-tag-count-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 4, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        seed_entry_prefix: "seed-entry-prefix-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-_2", "cache-complete", true, ".lock", true, true, true, 1)
+        seed_complete_marker: "seed-complete-marker-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete_2", true, ".lock", true, true, true, 1)
+        seed_verify_before_reuse: "seed-verify-before-reuse-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", false, ".lock", true, true, true, 1)
+        seed_lock_suffix: "seed-lock-suffix-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock_2", true, true, true, 1)
+        seed_wait_before_reap: "seed-wait-before-reap-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", false, true, true, 1)
+        seed_stale_reaped: "seed-stale-reaped-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, false, true, 1)
+        seed_close_after_run: "seed-close-after-run-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, false, 1)
+        seed_close_exit_code: "seed-close-exit-code-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 2)
+    match variant_id
+        "seed-bypass-env-drift" => ok observation("CONV_BUNDLE_2", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        "seed-bypass-verifies-drift" => ok observation("CONV_BUNDLE", false, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        "seed-archive-env-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE_2", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        "seed-skip-when-unset-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", false, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        "seed-build-once-per-key-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, false, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        "seed-root-once-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, false, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        "seed-parent-env-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE_2", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        "seed-key-dir-count-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 5, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        "seed-key-file-count-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 3, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        "seed-key-tag-count-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 4, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+        "seed-entry-prefix-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-_2", "cache-complete", true, ".lock", true, true, true, 1)
+        "seed-complete-marker-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete_2", true, ".lock", true, true, true, 1)
+        "seed-verify-before-reuse-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", false, ".lock", true, true, true, 1)
+        "seed-lock-suffix-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock_2", true, true, true, 1)
+        "seed-wait-before-reap-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", false, true, true, 1)
+        "seed-stale-reaped-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, false, true, 1)
+        "seed-close-after-run-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, false, 1)
+        "seed-close-exit-code-drift" => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 2)
+        _ => ok observation("CONV_BUNDLE", true, "CAN_BUN_ARCHIVE", true, true, true, "CAN_TEST_CACHE", 4, 2, 3, "bundle-", "cache-complete", true, ".lock", true, true, true, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h039: "m29-h039" => ok [check("bypass-env", "bypass env keeps its Go spelling"), check("bypass-verifies", "bypass path re-verifies the bundle"), check("archive-env", "archive env keeps its Go spelling"), check("skip-when-unset", "legs skip when both inputs are unset"), check("build-once-per-key", "each key builds at most once"), check("root-once", "root creation runs under once Do"), check("parent-env", "parent env keeps its Go spelling"), check("key-dir-count", "four source dirs feed the key"), check("key-file-count", "two module files feed the key"), check("key-tag-count", "three pinned tags feed the key"), check("entry-prefix", "entry dir keeps the bundle prefix"), check("complete-marker", "marker name keeps its spelling"), check("verify-before-reuse", "reuse wants complete plus verified"), check("lock-suffix", "fill lock keeps the lock suffix"), check("wait-before-reap", "waiters wait before reaping"), check("stale-reaped", "stale locks are removed"), check("close-after-run", "close is deferred around m Run"), check("close-exit-code", "close failure exits nonzero")]
+        other: "nope" => ok []
+    match scope is "m29-h039"
+        false => ok []
+        true => ok [check("bypass-env", "bypass env keeps its Go spelling"), check("bypass-verifies", "bypass path re-verifies the bundle"), check("archive-env", "archive env keeps its Go spelling"), check("skip-when-unset", "legs skip when both inputs are unset"), check("build-once-per-key", "each key builds at most once"), check("root-once", "root creation runs under once Do"), check("parent-env", "parent env keeps its Go spelling"), check("key-dir-count", "four source dirs feed the key"), check("key-file-count", "two module files feed the key"), check("key-tag-count", "three pinned tags feed the key"), check("entry-prefix", "entry dir keeps the bundle prefix"), check("complete-marker", "marker name keeps its spelling"), check("verify-before-reuse", "reuse wants complete plus verified"), check("lock-suffix", "fill lock keeps the lock suffix"), check("wait-before-reap", "waiters wait before reaping"), check("stale-reaped", "stale locks are removed"), check("close-after-run", "close is deferred around m Run"), check("close-exit-code", "close failure exits nonzero")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/bundle-cache-semantics" => ok [expected_check("bypass-env", "CONV_BUNDLE"), expected_check("bypass-verifies", "true"), expected_check("archive-env", "CAN_BUN_ARCHIVE"), expected_check("skip-when-unset", "true"), expected_check("build-once-per-key", "true"), expected_check("root-once", "true"), expected_check("parent-env", "CAN_TEST_CACHE"), expected_check("key-dir-count", "4"), expected_check("key-file-count", "2"), expected_check("key-tag-count", "3"), expected_check("entry-prefix", "bundle-"), expected_check("complete-marker", "cache-complete"), expected_check("verify-before-reuse", "true"), expected_check("lock-suffix", ".lock"), expected_check("wait-before-reap", "true"), expected_check("stale-reaped", "true"), expected_check("close-after-run", "true"), expected_check("close-exit-code", "1")]
+        unknown: "nope" => ok []
+    match case is "history/bundle-cache-semantics"
+        false => ok []
+        true => ok [expected_check("bypass-env", "CONV_BUNDLE"), expected_check("bypass-verifies", "true"), expected_check("archive-env", "CAN_BUN_ARCHIVE"), expected_check("skip-when-unset", "true"), expected_check("build-once-per-key", "true"), expected_check("root-once", "true"), expected_check("parent-env", "CAN_TEST_CACHE"), expected_check("key-dir-count", "4"), expected_check("key-file-count", "2"), expected_check("key-tag-count", "3"), expected_check("entry-prefix", "bundle-"), expected_check("complete-marker", "cache-complete"), expected_check("verify-before-reuse", "true"), expected_check("lock-suffix", ".lock"), expected_check("wait-before-reap", "true"), expected_check("stale-reaped", "true"), expected_check("close-after-run", "true"), expected_check("close-exit-code", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/bundle-cache-semantics", "default", "", "offline") => ok
+        seed_bypass_env: context("history/bundle-cache-semantics", "seed-bypass-env-drift", "", "offline") => failed{"bypass-env"}
+        seed_bypass_verifies: context("history/bundle-cache-semantics", "seed-bypass-verifies-drift", "", "offline") => failed{"bypass-verifies"}
+        seed_archive_env: context("history/bundle-cache-semantics", "seed-archive-env-drift", "", "offline") => failed{"archive-env"}
+        seed_skip_when_unset: context("history/bundle-cache-semantics", "seed-skip-when-unset-drift", "", "offline") => failed{"skip-when-unset"}
+        seed_build_once_per_key: context("history/bundle-cache-semantics", "seed-build-once-per-key-drift", "", "offline") => failed{"build-once-per-key"}
+        seed_root_once: context("history/bundle-cache-semantics", "seed-root-once-drift", "", "offline") => failed{"root-once"}
+        seed_parent_env: context("history/bundle-cache-semantics", "seed-parent-env-drift", "", "offline") => failed{"parent-env"}
+        seed_key_dir_count: context("history/bundle-cache-semantics", "seed-key-dir-count-drift", "", "offline") => failed{"key-dir-count"}
+        seed_key_file_count: context("history/bundle-cache-semantics", "seed-key-file-count-drift", "", "offline") => failed{"key-file-count"}
+        seed_key_tag_count: context("history/bundle-cache-semantics", "seed-key-tag-count-drift", "", "offline") => failed{"key-tag-count"}
+        seed_entry_prefix: context("history/bundle-cache-semantics", "seed-entry-prefix-drift", "", "offline") => failed{"entry-prefix"}
+        seed_complete_marker: context("history/bundle-cache-semantics", "seed-complete-marker-drift", "", "offline") => failed{"complete-marker"}
+        seed_verify_before_reuse: context("history/bundle-cache-semantics", "seed-verify-before-reuse-drift", "", "offline") => failed{"verify-before-reuse"}
+        seed_lock_suffix: context("history/bundle-cache-semantics", "seed-lock-suffix-drift", "", "offline") => failed{"lock-suffix"}
+        seed_wait_before_reap: context("history/bundle-cache-semantics", "seed-wait-before-reap-drift", "", "offline") => failed{"wait-before-reap"}
+        seed_stale_reaped: context("history/bundle-cache-semantics", "seed-stale-reaped-drift", "", "offline") => failed{"stale-reaped"}
+        seed_close_after_run: context("history/bundle-cache-semantics", "seed-close-after-run-drift", "", "offline") => failed{"close-after-run"}
+        seed_close_exit_code: context("history/bundle-cache-semantics", "seed-close-exit-code-drift", "", "offline") => failed{"close-exit-code"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.bypass_env, "CONV_BUNDLE", c, "bypass-env")
+            failed
+            ok evidence bypass_env_evidence => match call require_bool(got.bypass_verifies, true, c, "bypass-verifies")
+                failed
+                ok evidence bypass_verifies_evidence => match call require_text(got.archive_env, "CAN_BUN_ARCHIVE", c, "archive-env")
+                    failed
+                    ok evidence archive_env_evidence => match call require_bool(got.skip_when_unset, true, c, "skip-when-unset")
+                        failed
+                        ok evidence skip_when_unset_evidence => match call require_bool(got.build_once_per_key, true, c, "build-once-per-key")
+                            failed
+                            ok evidence build_once_per_key_evidence => match call require_bool(got.root_once, true, c, "root-once")
+                                failed
+                                ok evidence root_once_evidence => match call require_text(got.parent_env, "CAN_TEST_CACHE", c, "parent-env")
+                                    failed
+                                    ok evidence parent_env_evidence => match call require_int(got.key_dir_count, 4, c, "key-dir-count")
+                                        failed
+                                        ok evidence key_dir_count_evidence => match call require_int(got.key_file_count, 2, c, "key-file-count")
+                                            failed
+                                            ok evidence key_file_count_evidence => match call require_int(got.key_tag_count, 3, c, "key-tag-count")
+                                                failed
+                                                ok evidence key_tag_count_evidence => match call require_text(got.entry_prefix, "bundle-", c, "entry-prefix")
+                                                    failed
+                                                    ok evidence entry_prefix_evidence => match call require_text(got.complete_marker, "cache-complete", c, "complete-marker")
+                                                        failed
+                                                        ok evidence complete_marker_evidence => match call require_bool(got.verify_before_reuse, true, c, "verify-before-reuse")
+                                                            failed
+                                                            ok evidence verify_before_reuse_evidence => match call require_text(got.lock_suffix, ".lock", c, "lock-suffix")
+                                                                failed
+                                                                ok evidence lock_suffix_evidence => match call require_bool(got.wait_before_reap, true, c, "wait-before-reap")
+                                                                    failed
+                                                                    ok evidence wait_before_reap_evidence => match call require_bool(got.stale_reaped, true, c, "stale-reaped")
+                                                                        failed
+                                                                        ok evidence stale_reaped_evidence => match call require_bool(got.close_after_run, true, c, "close-after-run")
+                                                                            failed
+                                                                            ok evidence close_after_run_evidence => match call require_int(got.close_exit_code, 1, c, "close-exit-code")
+                                                                                failed
+                                                                                ok evidence close_exit_code_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h039: "m29-h039" => ok test_case("history/bundle-cache-semantics", ["history", "m29"], ["conv-bundle", "can-bun-archive", "can-test-cache"], 120000, [check_ref("bypass-env"), check_ref("bypass-verifies"), check_ref("archive-env"), check_ref("skip-when-unset"), check_ref("build-once-per-key"), check_ref("root-once"), check_ref("parent-env"), check_ref("key-dir-count"), check_ref("key-file-count"), check_ref("key-tag-count"), check_ref("entry-prefix"), check_ref("complete-marker"), check_ref("verify-before-reuse"), check_ref("lock-suffix"), check_ref("wait-before-reap"), check_ref("stale-reaped"), check_ref("close-after-run"), check_ref("close-exit-code")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-h039"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/bundle-cache-semantics", ["history", "m29"], ["conv-bundle", "can-bun-archive", "can-test-cache"], 120000, [check_ref("bypass-env"), check_ref("bypass-verifies"), check_ref("archive-env"), check_ref("skip-when-unset"), check_ref("build-once-per-key"), check_ref("root-once"), check_ref("parent-env"), check_ref("key-dir-count"), check_ref("key-file-count"), check_ref("key-tag-count"), check_ref("entry-prefix"), check_ref("complete-marker"), check_ref("verify-before-reuse"), check_ref("lock-suffix"), check_ref("wait-before-reap"), check_ref("stale-reaped"), check_ref("close-after-run"), check_ref("close-exit-code")], callable case_body)
