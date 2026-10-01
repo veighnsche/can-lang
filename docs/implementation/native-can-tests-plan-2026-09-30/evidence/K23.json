@@ -1,1 +1,86 @@
-{"acceptance":{"bigint_narrowing":"exact 9007199254740993 matches; 992/994/exponent/1.10->1.1/-0->0 mismatch with index; independently probed DETECTED","checks":"9/9 bun returning-check.ts, independently re-run","non_credit":"creditVerdict always {creditC:false} (typed); agreeing payload/final pair still false; boundary names QD1 + requirements list","row_observations":"compile pin (fixture+digest+schema); payload/final exact rows in order, digest-stable; missing read-out is no-conversation, never empty-pass","runtime_gates":"check:runtime repo-wide green (lint+format:check+tsc)","wrong_schema":"ragged -> row-arity/sql; tag swap -> wrong-cell-type/sql both paths; null vs empty mismatch"},"controls":{"live_hosts":"none; local/bounded in-memory controls only"},"integrator_notes":{"cellDigest_duplication":"cellsEqual/cellDigest duplicated from core.ts (not exported there); verified byte-identical output on mixed cells (row + read digests agree exactly), so QD1 cross-module comparison is safe","code_reuse":"unknown compile -> unknown-connection/driver, missing read-out -> no-conversation/driver: closed-vocab reuse, deterministic + pinned; layer mildly arguable (engine-lifecycle) but consistent. Accepted, flagged for QD1."},"review":{"aliasing":"record stores copies, facts copy again; payload-bytes-are-copies pinned in checks; no K22-class hole (code-read + worker pin)","read":"returning.ts 478 lines fully; check density 65 asserts + 26 expectObserverError"},"status":"blocked","task_id":"K23","commits":["e2bc443248de02e12cad76b1a154dd93044475e7"],"planning_audit":{"date":"2026-10-01","method":"Read-only history, task contract and targeted source inspection; recorded checks were not rerun.","recorded_commits_before_audit":null,"commit_provenance":"Each primary SHA is reachable from audit HEAD and touches declared owned paths; supporting P14 process fix is a P10 integration handoff.","historical_status":"complete","current_status":"blocked","qualification_credit_added":false,"reason":"Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.","pending_prerequisites":["K22"],"record_limit":"Historical prose controls retained verbatim; exact commands/deadlines not reconstructable and not invented."}}
+{
+ "acceptance": {
+  "bigint_narrowing": "exact 9007199254740993 matches; 992/994/exponent/1.10->1.1/-0->0 mismatch with index; independently probed DETECTED",
+  "checks": "9/9 bun returning-check.ts, independently re-run",
+  "non_credit": "creditVerdict always {creditC:false} (typed); agreeing payload/final pair still false; boundary names QD1 + requirements list",
+  "row_observations": "compile pin (fixture+digest+schema); payload/final exact rows in order, digest-stable; missing read-out is no-conversation, never empty-pass",
+  "runtime_gates": "check:runtime repo-wide green (lint+format:check+tsc)",
+  "wrong_schema": "ragged -> row-arity/sql; tag swap -> wrong-cell-type/sql both paths; null vs empty mismatch"
+ },
+ "controls": {
+  "live_hosts": "none; local/bounded in-memory controls only"
+ },
+ "integrator_notes": {
+  "cellDigest_duplication": "cellsEqual/cellDigest duplicated from core.ts (not exported there); verified byte-identical output on mixed cells (row + read digests agree exactly), so QD1 cross-module comparison is safe",
+  "code_reuse": "unknown compile -> unknown-connection/driver, missing read-out -> no-conversation/driver: closed-vocab reuse, deterministic + pinned; layer mildly arguable (engine-lifecycle) but consistent. Accepted, flagged for QD1."
+ },
+ "review": {
+  "aliasing": "record stores copies, facts copy again; payload-bytes-are-copies pinned in checks; no K22-class hole (code-read + worker pin)",
+  "read": "returning.ts 478 lines fully; check density 65 asserts + 26 expectObserverError"
+ },
+ "status": "complete",
+ "task_id": "K23",
+ "commits": [
+  "e2bc443248de02e12cad76b1a154dd93044475e7"
+ ],
+ "planning_audit": {
+  "date": "2026-10-01",
+  "method": "Read-only history, task contract and targeted source inspection; recorded checks were not rerun.",
+  "recorded_commits_before_audit": null,
+  "commit_provenance": "Each primary SHA is reachable from audit HEAD and touches declared owned paths; supporting P14 process fix is a P10 integration handoff.",
+  "historical_status": "complete",
+  "current_status": "blocked",
+  "qualification_credit_added": false,
+  "reason": "Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.",
+  "pending_prerequisites": [
+   "K22"
+  ],
+  "record_limit": "Historical prose controls retained verbatim; exact commands/deadlines not reconstructable and not invented."
+ },
+ "revalidation_2026_10_01": {
+  "executor": "worker-k23-24 survey (EMFILE hand-back, no files changed) + integrator gate adoption; no active writer conflict",
+  "mechanism_changed": false,
+  "provenance": "mechanism + driver unchanged since e2bc4432 (touches both owned paths; reachable); revalidation is gate re-execution + K22 receipt reconciliation only",
+  "k22_reconciliation": "K22 revalidated complete 2026-10-01 (12/12 + race clean, no source change). K23 consumes the K22 core contract (compile pin digest stability, payload/final row readout, cell digest comparison); no K22 API change exists to conflict. cellsEqual/cellDigest duplication from core.ts stands by preservation: neither file changed since the byte-identical-output verification.",
+  "commands_with_deadlines_and_results": [
+   {
+    "command": "timeout 150 bun tools/runtime/test-services/db-observer/returning-check.ts",
+    "deadline": "160s",
+    "result": "9/9 pass: compile-record-pins-schema, returning-payload-exact-rows, final-row-readout, raw-returning-alone-never-credits-c, bigint-narrowing-detectable, wrong-row-schema-detectable, payload-final-divergence-detectable, payload-bytes-are-copies, every-failure-names-its-layer"
+   },
+   {
+    "command": "timeout 120 bun tools/runtime/test-services/db-observer/core-check.ts",
+    "deadline": "130s",
+    "result": "12/12 pass (K22 receipt reconciliation, read-only)"
+   },
+   {
+    "command": "grep -nE 'Bun.serve|fetch(|setTimeout|setInterval|spawn(|postgres|mysql|sqlite|Database(' returning.ts returning-check.ts",
+    "deadline": "60s",
+    "result": "clean: no sockets, timers, fetches, spawns, or live-DB references outside comments"
+   },
+   {
+    "command": "bunx oxlint <2 owned files> --deny-warnings",
+    "deadline": "130s",
+    "result": "0 warnings, 0 errors"
+   },
+   {
+    "command": "bunx oxfmt --check <2 owned files>",
+    "deadline": "130s",
+    "result": "all matched files correctly formatted"
+   },
+   {
+    "command": "timeout 240 bun run typecheck:runtime",
+    "deadline": "250s",
+    "result": "clean repo-wide (tsc exit 0)"
+   }
+  ],
+  "controls_delta": "all historical controls re-pass unchanged: compile pin, exact payload/final rows, non-credit verdict, bigint-narrowing/wrong-schema/divergence detection, bytes-copy pin, layered errors. Pending prerequisite K22 now complete; audit hold lifted.",
+  "limitations": [
+   "local/bootstrap controls only; no live databases/hosts; no integrated credit (awaits QD tasks + qualified profile)"
+  ],
+  "resource_and_cleanup_receipts": [
+   "no temp state: no files created, no sockets, no services; nothing to clean"
+  ],
+  "integrator_acceptance": "integrator accepted 2026-10-01: sources byte-identical (git diff empty on both owned paths); all gates re-ran green from scratch. QD holds integrated credit."
+ }
+}
