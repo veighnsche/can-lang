@@ -81,5 +81,11 @@
     "reason": "cleanup-complete",
     "removed": false,
     "complete": true
+  },
+  "planning_audit": {
+    "date": "2026-10-01",
+    "usable_for_current_acceptance": false,
+    "reason": "P13 host qualification is invalid. The recorded N executable is an ACK acceptance-test helper, not the separately built owner service required by this task; real N journal/enforcement/recovery/receipt acceptance remains missing.",
+    "raw_receipt_preserved": true
   }
 }

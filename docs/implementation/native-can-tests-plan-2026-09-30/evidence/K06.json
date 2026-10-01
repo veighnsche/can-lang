@@ -1,5 +1,5 @@
 {
-  "status": "complete",
+  "status": "blocked",
   "executor": "Muse (muse-spark-1.3-contributor) via worker-t-k06; integrator review/commit",
   "writing_owner": "native-values",
   "task_id": "K06",
@@ -12,7 +12,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "ec3003cd late native events"
+    "ec3003cd591ace516d3bbabb44c6dd68e20704d8"
   ],
   "changed_paths": [
     "tools/runtime/test-services/native-values/late.ts",
@@ -79,5 +79,20 @@
     "bounded local mechanics only: no I/O, timers, transports, services, or live runtimes",
     "pre-gate sequence skips also land in the dropped list (superset reporting; gaps anywhere are reconciliation facts, not only post-gate late events)",
     "post-terminal lease grants are allowed and bind immediately (coherent: the terminal event witnessed before the lease existed); only occurrence admission closes at terminal"
-  ]
+  ],
+  "planning_audit": {
+    "date": "2026-10-01",
+    "method": "Read-only history, task contract and targeted source inspection; recorded checks were not rerun.",
+    "recorded_commits_before_audit": [
+      "ec3003cd late native events"
+    ],
+    "commit_provenance": "Each primary SHA is reachable from audit HEAD and touches declared owned paths; supporting P14 process fix is a P10 integration handoff.",
+    "historical_status": "complete",
+    "current_status": "blocked",
+    "qualification_credit_added": false,
+    "reason": "K05 acceptance is invalidated, and the required bounded raw and C-subject controls are absent from the in-memory late-event model. Preserve local occurrence/lease controls and add actual subject evidence before completion.",
+    "pending_prerequisites": [
+      "K05"
+    ]
+  }
 }

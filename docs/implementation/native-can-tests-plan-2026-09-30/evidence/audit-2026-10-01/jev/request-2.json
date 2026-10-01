@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "This planning-only review concerns 143 nodes in the native Can test migration. There are zero external customers; compatibility is not a requirement. Permitted writes are task/lane records, and permitted execution is limited to the two ledger checks. In the current contract, start_after means a predecessor must be accepted to begin writing source, whereas accept_after also constrains the final accepted result. A migration row may proceed under its own listed gates, augmented whenever its actual facets need more capabilities. Authority identities R/N/S/A/C cannot collapse, and C has no power to accept or refresh its judge. Capacity is three implementation slots plus one integration/review slot. Shared compiler and catalogue edits, repository formatting, all commits, caller changes and harness retirement belong to that integrator. Heavy activity is phased and serialized: one admitted run, case, verifier and build producer. Past single-task reviews covered 1600\u20132700 lines. Some receipts prove only simulated state machines where real independent adapters were promised. In particular P13 reports qualification while allowing undeclared memory growth without a kernel cap and scratch overshoot as large as remaining disk. These receipts cannot establish the required guarantees. The DAG contains redundant direct prerequisites that are already implied through other nodes, so deleting them produces no schedule gain. Unavailable host enforcement and still-deferred metric obligations prevent a defensible finish-time promise. Select a scheduling policy without altering the definition of acceptance.",
+  "questions": {
+    "lane_policy": {
+      "type": "choice",
+      "instructions": "What dispatch and review structure should this ledger adopt to improve throughput under the stated acceptance rules?",
+      "criteria": {
+        "scoped_slices": "Retain prerequisite lists and row obligations, then schedule small exclusive-path pieces only after their parent may start. Track piece-specific controls and review without increasing the master total; parent acceptance still joins every required piece and gate. Idle slots steal ready nonoverlapping work; one integrator batches compatible builds but issues independent promotions and receipts.",
+        "early_parent_credit": "Treat successful local doubles as finished parents, transferring outstanding real mechanisms and qualification documents into future nodes despite their original ownership. Dependents can then begin sooner.",
+        "whole_task_batches": "Leave acceptance intact and continue assigning entire tasks to static queues. Do not move ready work across lanes when the assigned next item is blocked."
+      }
+    }
+  }
+}

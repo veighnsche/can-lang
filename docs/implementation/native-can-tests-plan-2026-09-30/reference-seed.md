@@ -1,8 +1,14 @@
 # Proposed reference seed (R-seed)
 
-Status: **proposed, not accepted**. Acceptance is P04/P05 work through
-independent controls. This record selects inputs and a build recipe only;
-it builds nothing and qualifies nothing.
+Current audit status (2026-10-01): [P04 materialization](evidence/P04.json) and
+[P05 bounded R-seed controls](evidence/P05.json) are recorded complete. This is
+only the bootstrap/literal-subset seed scope; R-core (P26), actual N with a
+qualified host (P14), and suite acceptance (P23) remain unfinished. No current
+artifact execution or requalification was performed by this planning audit.
+
+The inventory, missing-artifact statements and proposed recipe below are the
+original P03 selection-time snapshot, retained for provenance; they are not
+current availability or execution instructions.
 
 ## Inventory at selection time
 

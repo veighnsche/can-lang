@@ -1,5 +1,5 @@
 {
-  "status": "complete",
+  "status": "blocked",
   "executor": "Muse (muse-spark-1.3-contributor) via worker-s-p13; integrator review/commit",
   "writing_owner": "native-owner",
   "task_id": "P13",
@@ -10,7 +10,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "f481e36e strict host enforcement"
+    "f481e36e414dbf80b54d37ca8e5c1c2221ebef28"
   ],
   "changed_paths": [
     "tools/native-test-owner/host/"
@@ -92,5 +92,20 @@
     "NPROC fit uses the soft limit at probe time; mid-run lowering detected only at the next admission (Admit always re-probes)",
     "kernel-demo skip-pass on hosts too quiet to demonstrate (this host demonstrates live); skips are recorded as skipped, never as demonstrated",
     "darwin-only; another host requires its own profile receipt"
-  ]
+  ],
+  "planning_audit": {
+    "date": "2026-10-01",
+    "method": "Read-only history, task contract and targeted source inspection; recorded checks were not rerun.",
+    "recorded_commits_before_audit": [
+      "f481e36e strict host enforcement"
+    ],
+    "commit_provenance": "Each primary SHA is reachable from audit HEAD and touches declared owned paths; supporting P14 process fix is a P10 integration handoff.",
+    "historical_status": "complete",
+    "current_status": "blocked",
+    "qualification_credit_added": false,
+    "reason": "Recorded evidence admits memory is declared-peak accounting without a kernel RSS backstop and temporary bypass is bounded by free disk, not the required envelope. Neither strict profile qualifies; unavailable enforcement must remain blocked.",
+    "pending_prerequisites": [
+      "P12"
+    ]
+  }
 }

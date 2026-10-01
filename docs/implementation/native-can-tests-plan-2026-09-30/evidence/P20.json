@@ -9,7 +9,8 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "<P20-SHA recorded after commit>"
+    "feefe4c25424c91fe8a1746c487cfd7a1c7add94",
+    "b2851b47bad61bef7f29c2e5e2dc7e700d09a86f"
   ],
   "changed_paths": [
     "compiler/internal/driver/check_json.go",
@@ -89,5 +90,16 @@
     "byte offsets omitted (contract-optional)",
     "resolve/check always run under recovery when a root exists; stopping diagnostics apply to infra stops only",
     "CLI dispatch and exit-code user surface arrive in P21"
-  ]
+  ],
+  "planning_audit": {
+    "date": "2026-10-01",
+    "method": "Read-only history, task contract and targeted source inspection; recorded checks were not rerun.",
+    "recorded_commits_before_audit": [
+      "<P20-SHA recorded after commit>"
+    ],
+    "commit_provenance": "Each primary SHA is reachable from audit HEAD and touches declared owned paths; supporting P14 process fix is a P10 integration handoff.",
+    "historical_status": "complete",
+    "current_status": "complete",
+    "qualification_credit_added": false
+  }
 }

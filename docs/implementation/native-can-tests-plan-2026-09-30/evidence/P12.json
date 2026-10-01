@@ -1,5 +1,5 @@
 {
-  "status": "complete",
+  "status": "active",
   "executor": "Muse (muse-spark-1.3-contributor) via worker-p-p12; integrator review/commit",
   "writing_owner": "native-owner",
   "task_id": "P12",
@@ -13,7 +13,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "f219a318 admission"
+    "f219a318632169e3d3693c5e1996ba16a12b4365"
   ],
   "changed_paths": [
     "tools/native-test-owner/admission/"
@@ -83,5 +83,18 @@
     "registry keys are absolute-but-symlink-unresolved paths: same-dir-different-spelling same-process contenders miss the registry fast path but still arbitrate correctly via the kernel backstop",
     "Complete reads the clock after releasing: strictly conservative (a completion straddling the deadline reports exceeded)",
     "a wedged child holder costs the test's 15s bound, not a hang; holder crash self-heals (OS closes fds, registry dies with the process)"
-  ]
+  ],
+  "planning_audit": {
+    "date": "2026-10-01",
+    "method": "Read-only history, task contract and targeted source inspection; recorded checks were not rerun.",
+    "recorded_commits_before_audit": [
+      "f219a318 admission"
+    ],
+    "commit_provenance": "Each primary SHA is reachable from audit HEAD and touches declared owned paths; supporting P14 process fix is a P10 integration handoff.",
+    "historical_status": "complete",
+    "current_status": "active",
+    "qualification_credit_added": false,
+    "reason": "The authoritative lifecycle requires a 10 GiB free-disk admission floor and recheck before allocation. The card omitted it, and admission/host source and recorded controls do not implement or demonstrate it. Existing reservation/deadline controls remain useful local evidence.",
+    "pending_prerequisites": []
+  }
 }

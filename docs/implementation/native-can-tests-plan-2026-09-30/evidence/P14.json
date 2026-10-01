@@ -1,5 +1,5 @@
 {
-  "status": "complete",
+  "status": "blocked",
   "executor": "Muse (muse-spark-1.3-contributor) via worker-v-p14; integrator review/commit",
   "writing_owner": "native-owner",
   "task_id": "P14",
@@ -14,8 +14,8 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "e2945168 N acceptance",
-    "6bc0915b P10 status-pipe fix (shared owner code)"
+    "e29451688be964106b145d8cfb00d662acd883cd",
+    "6bc0915be2676330ecc72691e14dfd3177eadb87"
   ],
   "changed_paths": [
     "tools/native-test-owner/acceptance/",
@@ -103,5 +103,22 @@
     "manifest embeds T's run-scoped spawn-start token (single-use, run over; harmless post-hoc)",
     "the scan gate in Accept is defense-in-depth: in-process it can only refuse on anomalous journal state (real scan teeth tested in P11)",
     "darwin-only; another host requires explicit selection and its own receipt where it runs"
-  ]
+  ],
+  "planning_audit": {
+    "date": "2026-10-01",
+    "method": "Read-only history, task contract and targeted source inspection; recorded checks were not rerun.",
+    "recorded_commits_before_audit": [
+      "e2945168 N acceptance",
+      "6bc0915b P10 status-pipe fix (shared owner code)"
+    ],
+    "commit_provenance": "Each primary SHA is reachable from audit HEAD and touches declared owned paths; supporting P14 process fix is a P10 integration handoff.",
+    "historical_status": "complete",
+    "current_status": "blocked",
+    "qualification_credit_added": false,
+    "reason": "P13 host qualification is invalid. The recorded N executable is an ACK acceptance-test helper, not the separately built owner service required by this task; real N journal/enforcement/recovery/receipt acceptance remains missing.",
+    "pending_prerequisites": [
+      "P12",
+      "P13"
+    ]
+  }
 }

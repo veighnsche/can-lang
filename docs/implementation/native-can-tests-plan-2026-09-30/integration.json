@@ -1,5 +1,5 @@
 {
-  "status": "planned",
+  "status": "in_progress; audited 2026-10-01, no execution in audit round",
   "tasks": [
     {
       "id": "I01",
@@ -525,8 +525,8 @@
         "tests/native-can/src/coverage/migration/",
         "docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/"
       ],
-      "changes": "Extend the Can registry/reducer with per-row facet, variant, environment and delegated-declaration mappings. Include source hashes, dispositions, expected case/check IDs, required receipts and correction chains. Validate each ready row incrementally; a group label or pass count is not coverage.",
-      "acceptance": "Dropped facet, missing engine, undeclared duplicate credit, unaccepted reference and later invalidation each prevent complete coverage. Validate the 292-row ledger and 30 delegate inventory against current sources.",
+      "changes": "Extend the Can registry/reducer with per-row facet, variant, environment and delegated-declaration mappings. Include source hashes, dispositions, expected case/check IDs, required receipts and correction chains. Validate each ready row incrementally; a group label or pass count is not coverage. Own the reviewed campaign manifest/ID and append-only index of jobs/attempts registered before execution; reconcile failed, blocked, interrupted and superseded entries as well as corrective-run selection.",
+      "acceptance": "Dropped facet, missing engine, undeclared duplicate credit, unaccepted reference and later invalidation each prevent complete coverage. Validate the 292-row ledger and 30 delegate inventory against current sources. Reject cherry-picked passing reports, unregistered jobs, incompatible identities and unions of partial attempts that fabricate a completed case; retain every declared campaign entry and required matrix cell.",
       "evidence": "evidence/Z01.json plus per-row/file control and commit links",
       "commit": "feat(testing): reconcile migration coverage evidence",
       "status": "planned",
@@ -697,8 +697,8 @@
       "files": [
         "docs/implementation/native-can-tests-plan-2026-09-30/evidence/completion/"
       ],
-      "changes": "Reconcile fresh inventory and all retained environments, dynamic variants, 30 delegated suites, 14 hard gates and caller receipts. Run the selected complete matrix serially under accepted profiles; reuse builds within the run. Reconcile deferred metrics explicitly: keep completion blocked until authorized retained measurement legs run, or a reviewed current-contract retirement decision removes an obsolete obligation.",
-      "acceptance": "All retained coverage has Can-owned scenarios/oracles, independent facts and valid cleanup/correction-aware receipts. Historical/static dispositions are reviewed. No retained obligation disappears because of missing service, Linux/engine profile or deferred load. Broad performance work remains subject to existing user deferral.",
+      "changes": "Reconcile fresh inventory and all retained environments, dynamic variants, 30 delegated suites, 14 hard gates and caller receipts. Run the selected complete matrix serially under accepted profiles; reuse builds within the run. Reconcile deferred metrics explicitly: keep completion blocked until authorized retained measurement legs run, or a reviewed current-contract retirement decision removes an obsolete obligation. Register every authorized job before execution in the reviewed campaign index and reconcile every entry, including failed, blocked, interrupted and superseded attempts, with matching identities and correction/cleanup receipts.",
+      "acceptance": "All retained coverage has Can-owned scenarios/oracles, independent facts and valid cleanup/correction-aware receipts. Historical/static dispositions are reviewed. No retained obligation disappears because of missing service, Linux/engine profile or deferred load. Broad performance work remains subject to existing user deferral. No collection of passing files or stitched partial attempts can satisfy a missing complete case. The complete campaign index and explicit corrective-run selection must remain auditable.",
       "evidence": "evidence/Z05.json plus per-row/file control and commit links",
       "commit": "test(testing): record complete migration qualification",
       "status": "planned",
@@ -722,5 +722,6 @@
       "status": "planned",
       "scope": "incremental retirement and final acceptance"
     }
-  ]
+  ],
+  "dispatch_plan": "lane-plan.json; lane fields remain ownership domains, queues assign the three worker slots and integrator"
 }

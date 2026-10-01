@@ -1,12 +1,12 @@
 # Native mechanisms and integrated qualification
 
-Status: **planned, not started**. [Main plan](../native-can-tests-plan-2026-09-30.md) defines execution, commits, resource bounds and shared retirement gates.
+Status: **audited 2026-10-01; see current task states below**. The [lane plan](lane-plan.md) defines dispatch and path reservations; the [master ledger](tasks.json) counts each of 143 task IDs exactly once. Historical source work exists; this planning audit runs no implementation or qualification.
 
-Each checkbox is a task acceptance, not merely source completion. Draft after `start_after`; complete only after both dependency lists and the task checks pass. Record evidence using the [progress template](progress-template.json). Proposed paths do not imply existing implementation. Cards follow dependency order; independent lanes may run concurrently within the main plan’s limits.
+Each checkbox is a task acceptance, not merely source completion. Draft after `start_after`; complete only after both dependency lists and the task checks pass. Record evidence using the [progress template](progress-template.json). Owned paths may contain historical source; completion still requires current acceptance evidence. Cards follow dependency order; independent lanes may run concurrently within the main plan’s limits.
 
 ## K01 — Freeze native-value typed operation schema
 
-- [x] **K01 accepted** — owner lane: `native-values`. Evidence: [evidence/K01.json](evidence/K01.json).
+- [x] **K01: complete** — owner lane: `native-values`. Evidence: [evidence/K01.json](evidence/K01.json).
 
 **Start after:** P01. **Additional acceptance prerequisites:** none.
 
@@ -22,7 +22,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K02 — Build inert same-realm native sessions
 
-- [ ] **K02 accepted** — owner lane: `native-values`.
+- [x] **K02: complete** — owner lane: `native-values`. Evidence: [evidence/K02.json](evidence/K02.json).
 
 **Start after:** K01, P02, P08. **Additional acceptance prerequisites:** none.
 
@@ -38,7 +38,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K03 — Add exact native observations and seals
 
-- [ ] **K03 accepted** — owner lane: `native-values`.
+- [x] **K03: complete** — owner lane: `native-values`. Evidence: [evidence/K03.json](evidence/K03.json).
 
 **Start after:** K02. **Additional acceptance prerequisites:** none.
 
@@ -54,7 +54,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K04 — Review generated C ingress seam
 
-- [x] **K04 accepted** — owner lane: `native-values`. Evidence: [evidence/K04.json](evidence/K04.json).
+- [x] **K04: complete** — owner lane: `native-values`. Evidence: [evidence/K04.json](evidence/K04.json).
 
 **Start after:** K01, P03, P04. **Additional acceptance prerequisites:** none.
 
@@ -70,7 +70,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K05 — Implement independent C adapter witness
 
-- [ ] **K05 accepted** — owner lane: `native-values`.
+- [ ] **K05: active** — owner lane: `native-values`. Evidence: [evidence/K05.json](evidence/K05.json).
+
+**Audit correction:** The witness must observe actual adapter invocation through the generated C path. Current code only mints in-memory artifact tokens and accepts public begin/complete calls, with no generated artifact digest/hook or invoked adapter. Its positive controls directly call that model. QN2 defers live qualification, not this required witness implementation.
 
 **Start after:** K02, K03, K04. **Additional acceptance prerequisites:** none.
 
@@ -86,7 +88,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K06 — Expose late native occurrence and lease facts
 
-- [ ] **K06 accepted** — owner lane: `native-values`.
+- [ ] **K06: blocked** — owner lane: `native-values`. Evidence: [evidence/K06.json](evidence/K06.json).
+
+**Audit correction:** K05 acceptance is invalidated, and the required bounded raw and C-subject controls are absent from the in-memory late-event model. Preserve local occurrence/lease controls and add actual subject evidence before completion.
 
 **Start after:** K03, K05, P09, P11. **Additional acceptance prerequisites:** none.
 
@@ -102,7 +106,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K07 — Implement independent browser host-effect observation
 
-- [ ] **K07 accepted** — owner lane: `browser`.
+- [ ] **K07: blocked** — owner lane: `browser`. Evidence: [evidence/K07.json](evidence/K07.json).
+
+**Audit correction:** The required actual independent host-effect observer and durable publication are absent. observer.go uses scripted in-memory facts with no host observation channel; local mirror controls do not finish this mechanism.
 
 **Start after:** P01, P12. **Additional acceptance prerequisites:** none.
 
@@ -118,7 +124,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K08 — Own pinned-driver browser launches
 
-- [ ] **K08 accepted** — owner lane: `browser`.
+- [ ] **K08: blocked** — owner lane: `browser`. Evidence: [evidence/K08.json](evidence/K08.json).
+
+**Audit correction:** The outside-service discovery/containment/reclaim implementation remains a model: ObserveChildren accepts supplied identities, Discover reads a map, Contain flags state and Reclaim mints a witness without native kill/reap. Simulated controls are retained as a local slice.
 
 **Start after:** K07, P29. **Additional acceptance prerequisites:** none.
 
@@ -134,7 +142,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K09 — Add browser event capture and terminal seal
 
-- [ ] **K09 accepted** — owner lane: `browser`.
+- [ ] **K09: blocked** — owner lane: `browser`. Evidence: [evidence/K09.json](evidence/K09.json).
+
+**Audit correction:** Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.
 
 **Start after:** K08. **Additional acceptance prerequisites:** none.
 
@@ -150,7 +160,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K10 — Separate pending input from settlement
 
-- [ ] **K10 accepted** — owner lane: `browser`.
+- [ ] **K10: blocked** — owner lane: `browser`. Evidence: [evidence/K10.json](evidence/K10.json).
+
+**Audit correction:** Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.
 
 **Start after:** K09. **Additional acceptance prerequisites:** none.
 
@@ -166,7 +178,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K20 — Implement controlled peer and HTTP operations
 
-- [ ] **K20 accepted** — owner lane: `peer`.
+- [ ] **K20: blocked** — owner lane: `peer`. Evidence: [evidence/K20.json](evidence/K20.json).
+
+**Audit correction:** Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.
 
 **Start after:** P29. **Additional acceptance prerequisites:** none.
 
@@ -182,7 +196,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K11 — Implement one-contact route tokens
 
-- [ ] **K11 accepted** — owner lane: `browser`.
+- [ ] **K11: blocked** — owner lane: `browser`. Evidence: [evidence/K11.json](evidence/K11.json).
+
+**Audit correction:** Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.
 
 **Start after:** K09, K10, K20. **Additional acceptance prerequisites:** none.
 
@@ -198,7 +214,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K13 — Add immediate DOM and event provenance
 
-- [ ] **K13 accepted** — owner lane: `browser`.
+- [ ] **K13: blocked** — owner lane: `browser`. Evidence: [evidence/K13.json](evidence/K13.json).
+
+**Audit correction:** Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.
 
 **Start after:** K09, K10. **Additional acceptance prerequisites:** none.
 
@@ -214,7 +232,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K14 — Invoke page-origin Fetch
 
-- [ ] **K14 accepted** — owner lane: `browser`.
+- [ ] **K14: blocked** — owner lane: `browser`. Evidence: [evidence/K14.json](evidence/K14.json).
+
+**Audit correction:** Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.
 
 **Start after:** K09, K20. **Additional acceptance prerequisites:** none.
 
@@ -230,7 +250,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K15 — Load Can browser artifacts and export facts
 
-- [ ] **K15 accepted** — owner lane: `browser`.
+- [ ] **K15: blocked** — owner lane: `browser`. Evidence: [evidence/K15.json](evidence/K15.json).
+
+**Audit correction:** Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.
 
 **Start after:** K03, K09. **Additional acceptance prerequisites:** none.
 
@@ -246,7 +268,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K16 — Clean remote browser contexts after worker death
 
-- [ ] **K16 accepted** — owner lane: `browser`.
+- [ ] **K16: blocked** — owner lane: `browser`. Evidence: [evidence/K16.json](evidence/K16.json).
+
+**Audit correction:** RequestClose/ConfirmClose exchange in-memory tokens without an independent remote close channel or observed confirmation. Required outside-service authority remains to be implemented.
 
 **Start after:** K08, K09, P29. **Additional acceptance prerequisites:** none.
 
@@ -262,7 +286,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K17 — Specify descriptor and environment contract
 
-- [x] **K17 accepted** — owner lane: `descriptor`. Evidence: [evidence/K17.json](evidence/K17.json).
+- [x] **K17: complete** — owner lane: `descriptor`. Evidence: [evidence/K17.json](evidence/K17.json).
 
 **Start after:** P01. **Additional acceptance prerequisites:** none.
 
@@ -278,7 +302,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K18 — Add F1 descriptor fixtures
 
-- [ ] **K18 accepted** — owner lane: `descriptor`.
+- [x] **K18: complete** — owner lane: `descriptor`. Evidence: [evidence/K18.json](evidence/K18.json).
 
 **Start after:** K17, P10. **Additional acceptance prerequisites:** none.
 
@@ -294,7 +318,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K19 — Add inherited fd 4 lease fixture
 
-- [ ] **K19 accepted** — owner lane: `descriptor`.
+- [ ] **K19: planned** — owner lane: `descriptor`.
 
 **Start after:** K18, P10, P27. **Additional acceptance prerequisites:** none.
 
@@ -310,7 +334,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K21 — Implement external WebSocket client observations
 
-- [ ] **K21 accepted** — owner lane: `peer`.
+- [ ] **K21: blocked** — owner lane: `peer`. Evidence: [evidence/K21.json](evidence/K21.json).
+
+**Audit correction:** Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.
 
 **Start after:** K20. **Additional acceptance prerequisites:** none.
 
@@ -326,7 +352,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K22 — Implement independent raw DB observer
 
-- [ ] **K22 accepted** — owner lane: `database`.
+- [ ] **K22: blocked** — owner lane: `database`. Evidence: [evidence/K22.json](evidence/K22.json).
+
+**Audit correction:** Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.
 
 **Start after:** P29. **Additional acceptance prerequisites:** none.
 
@@ -342,7 +370,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K23 — Observe compiled RETURNING and final rows
 
-- [ ] **K23 accepted** — owner lane: `database`.
+- [ ] **K23: blocked** — owner lane: `database`. Evidence: [evidence/K23.json](evidence/K23.json).
+
+**Audit correction:** Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.
 
 **Start after:** K22. **Additional acceptance prerequisites:** none.
 
@@ -358,7 +388,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K24 — Expose fresh-pool transaction identity
 
-- [ ] **K24 accepted** — owner lane: `database`.
+- [ ] **K24: blocked** — owner lane: `database`. Evidence: [evidence/K24.json](evidence/K24.json).
+
+**Audit correction:** Engine settlement and release observations are supplied strings in an in-memory model; the explicitly required engine-specific observation adapter remains missing.
 
 **Start after:** K22, K23, P12. **Additional acceptance prerequisites:** none.
 
@@ -374,7 +406,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K25 — Add poisoned transaction sentinel observations
 
-- [ ] **K25 accepted** — owner lane: `database`.
+- [ ] **K25: blocked** — owner lane: `database`. Evidence: [evidence/K25.json](evidence/K25.json).
+
+**Audit correction:** Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.
 
 **Start after:** K22, K23, P29. **Additional acceptance prerequisites:** none.
 
@@ -390,7 +424,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K26 — Separate SQL deadline from server settlement
 
-- [ ] **K26 accepted** — owner lane: `database`.
+- [ ] **K26: blocked** — owner lane: `database`. Evidence: [evidence/K26.json](evidence/K26.json).
+
+**Audit correction:** The required engine-specific server quiescence/fence adapter is an in-memory boolean model. A postgres capability label supplies no native cancel channel or server acknowledgment.
 
 **Start after:** K22, K24, P29. **Additional acceptance prerequisites:** none.
 
@@ -406,7 +442,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K27 — Implement owned object-store observations
 
-- [ ] **K27 accepted** — owner lane: `object-store`.
+- [ ] **K27: blocked** — owner lane: `object-store`. Evidence: [evidence/K27.json](evidence/K27.json).
+
+**Audit correction:** Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.
 
 **Start after:** P29. **Additional acceptance prerequisites:** none.
 
@@ -422,7 +460,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## QN1 — Qualify integrated N1 Can case
 
-- [ ] **QN1 accepted** — owner lane: `acceptance-native`.
+- [ ] **QN1: planned** — owner lane: `acceptance-native`.
 
 **Start after:** P23, I01. **Additional acceptance prerequisites:** none.
 
@@ -430,15 +468,17 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Concrete change:** Can owns N1 descriptors, sequencing and exact expectations.
 
-**Acceptance checks:** Full N1 matrix plus assimilation/normalization/rounding/alias controls, final seal and N receipt. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.
+**Acceptance checks:** Full N1 matrix plus assimilation/normalization/rounding/alias controls, final seal and N receipt. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete N1 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.
 
 **Completion evidence:** Can case/check IDs, R/C/observer IDs, seeded controls and cleanup receipt. Record evidence/QN1.json with qualified scope and all unrun engine legs.
+
+**Full normative gate:** [N1 — Inert, exact native-value transport](../../../docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md:100). Require the complete shared execution contract and gate, including all fixture, Accept, Controls and Bounds details.
 
 **Early commit:** `test: qualify exact native value transport`.
 
 ## QN2 — Qualify integrated N2 C adapter ingress
 
-- [ ] **QN2 accepted** — owner lane: `acceptance-native`.
+- [ ] **QN2: planned** — owner lane: `acceptance-native`.
 
 **Start after:** QN1, I02. **Additional acceptance prerequisites:** none.
 
@@ -446,15 +486,17 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Concrete change:** Can invokes ordinary C-compiled subject and checks independent boundary witness.
 
-**Acceptance checks:** Bypass, wrong export, eager getter and forged completion controls fail. Require independent version-bound invocation and local-completion authentication plus instrumented/uninstrumented parity; a C-supplied invoked flag is insufficient. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.
+**Acceptance checks:** Bypass, wrong export, eager getter and forged completion controls fail. Require independent version-bound invocation and local-completion authentication plus instrumented/uninstrumented parity; a C-supplied invoked flag is insufficient. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete N2 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.
 
 **Completion evidence:** Generated artifact/import IDs, witness facts, Can report and N receipt. Record evidence/QN2.json with qualified scope and all unrun engine legs.
+
+**Full normative gate:** [N2 — Hostile value reaches the actual C adapter](../../../docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md:114). Require the complete shared execution contract and gate, including all fixture, Accept, Controls and Bounds details.
 
 **Early commit:** `test: qualify generated C native ingress`.
 
 ## QN3 — Qualify integrated N3 late identity
 
-- [ ] **QN3 accepted** — owner lane: `acceptance-native`.
+- [ ] **QN3: planned** — owner lane: `acceptance-native`.
 
 **Start after:** QN2, I03. **Additional acceptance prerequisites:** none.
 
@@ -462,15 +504,17 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Concrete change:** Can controls gates, selected occurrence and lease release.
 
-**Acceptance checks:** Late event/identity/early release controls fail; sealed complete interval and cleanup. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.
+**Acceptance checks:** Late event/identity/early release controls fail; sealed complete interval and cleanup. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete N3 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.
 
 **Completion evidence:** Separate raw/C leg reports and receipts. Record evidence/QN3.json with qualified scope and all unrun engine legs.
+
+**Full normative gate:** [N3 — Late result, occurrence identity and lease release](../../../docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md:128). Require the complete shared execution contract and gate, including all fixture, Accept, Controls and Bounds details.
 
 **Early commit:** `test: qualify late native occurrence identity`.
 
 ## QB0 — Qualify browser host admission and launch ownership
 
-- [ ] **QB0 accepted** — owner lane: `acceptance-browser`.
+- [ ] **QB0: planned** — owner lane: `acceptance-browser`.
 
 **Start after:** P14, P23, I06. **Additional acceptance prerequisites:** none.
 
@@ -480,13 +524,13 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Acceptance checks:** Observer-loss and planted host-effect controls invalidate admission; prompt/unknown interval or unconfirmed disposal cannot produce success. Noninteractive credential behavior and strict host resource profile are proven independently of browser flags. PM-B1 remains recorded failed; do not re-credit its route-only result. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Demonstrate observer continuity across driver/service death and conservative invalidation on observer loss.
 
-**Completion evidence:** evidence/QB0.json: accepted host/observer/browser profile, bounded controls, disposal receipts and correction registry.
+**Completion evidence:** evidence/QB0.json: accepted host/observer/browser profile, bounded controls, disposal receipts and correction registry
 
 **Early commit:** `test(testing): qualify browser host isolation`.
 
 ## QHTTP — Qualify Can-controlled peer and HTTP observations
 
-- [ ] **QHTTP accepted** — owner lane: `acceptance-peer`.
+- [ ] **QHTTP: planned** — owner lane: `acceptance-peer`.
 
 **Start after:** P23, I04. **Additional acceptance prerequisites:** none.
 
@@ -496,13 +540,13 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Acceptance checks:** Wrong bytes, missing EOF, truncated body, hidden retry/redirect and incomplete cleanup controls fail. Exact header provenance and stream completeness are explicit. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.
 
-**Completion evidence:** evidence/QHTTP.json: Can cases, controls, peer seals and N cleanup receipt.
+**Completion evidence:** evidence/QHTTP.json: Can cases, controls, peer seals and N cleanup receipt
 
 **Early commit:** `test(testing): qualify controlled HTTP observations`.
 
 ## QB1base — Qualify pending browser input and routes without DB replay
 
-- [ ] **QB1base accepted** — owner lane: `acceptance-browser`.
+- [ ] **QB1base: planned** — owner lane: `acceptance-browser`.
 
 **Start after:** QB0, QHTTP, I06, P23. **Additional acceptance prerequisites:** none.
 
@@ -512,13 +556,13 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Acceptance checks:** Actual input settlement observed independently; route abort need not reject click. A plausible response, missing seal, dropped event or host-effect gap fails; Can supplies all sequencing and expected outcomes. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.
 
-**Completion evidence:** evidence/QB1base.json: per-engine cases/controls, route journal, host interval and N receipt; explicitly not full B1.
+**Completion evidence:** evidence/QB1base.json: per-engine cases/controls, route journal, host interval and N receipt; explicitly not full B1
 
 **Early commit:** `test(testing): qualify pending input and route mechanics`.
 
 ## QD1 — Qualify integrated D1 RETURNING
 
-- [ ] **QD1 accepted** — owner lane: `acceptance-database`.
+- [ ] **QD1: planned** — owner lane: `acceptance-database`.
 
 **Start after:** P23, I13. **Additional acceptance prerequisites:** none.
 
@@ -526,15 +570,17 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Concrete change:** Can exercises C RETURNING and checks independent final rows.
 
-**Acceptance checks:** PG/SQLite selected legs and narrowing/wrong-row controls; absent service blocked. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.
+**Acceptance checks:** PG/SQLite selected legs and narrowing/wrong-row controls; absent service blocked. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete D1 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.
 
 **Completion evidence:** C path, raw rows, Can checks and namespace receipt. Record evidence/QD1.json with qualified scope and all unrun engine legs.
+
+**Full normative gate:** [D1 — Compiled Can RETURNING and raw row fidelity](../../../docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md:174). Require the complete shared execution contract and gate, including all fixture, Accept, Controls and Bounds details.
 
 **Early commit:** `test: qualify returning rows in Can`.
 
 ## QB1 — Qualify integrated B1 pending route
 
-- [ ] **QB1 accepted** — owner lane: `acceptance-browser`.
+- [ ] **QB1: planned** — owner lane: `acceptance-browser`.
 
 **Start after:** QB1base, QD1. **Additional acceptance prerequisites:** none.
 
@@ -542,15 +588,17 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Concrete change:** Can owns pending-click, route abort and durable corruption/replay choreography. Reuse only the application payload operation_id on replay; new native action/request/route IDs are mandatory. Never redispatch an uncertain native operation.
 
-**Acceptance checks:** Input, upstream contact, browser delivery, application witness, native/app IDs, seal and host effects separately pass controls. Full B1 is still unrun until durable corruption/replay controls pass; QB1base alone does not close B1. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.
+**Acceptance checks:** Input, upstream contact, browser delivery, application witness, native/app IDs, seal and host effects separately pass controls. Full B1 is still unrun until durable corruption/replay controls pass; QB1base alone does not close B1. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete B1 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.
 
 **Completion evidence:** Per-engine Can checks, route/DB facts, host observer and cleanup receipts. Record evidence/QB1.json with qualified scope and all unrun engine legs.
+
+**Full normative gate:** [B1 — Can resolve a route while input is pending](../../../docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md:28). Require the complete shared execution contract and gate, including all fixture, Accept, Controls and Bounds details.
 
 **Early commit:** `test: qualify browser route delivery and settlement`.
 
 ## QB2 — Qualify integrated B2 DOM semantics
 
-- [ ] **QB2 accepted** — owner lane: `acceptance-browser`.
+- [ ] **QB2: planned** — owner lane: `acceptance-browser`.
 
 **Start after:** QB1base, I07. **Additional acceptance prerequisites:** none.
 
@@ -558,15 +606,17 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Concrete change:** Can owns same-task clicks, clone/missing target, physical/synthetic events and cancellation checks.
 
-**Acceptance checks:** Yield, cancellation, clone and missing-occurrence controls fail; pre-submit and in-flight absence distinct. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.
+**Acceptance checks:** Yield, cancellation, clone and missing-occurrence controls fail; pre-submit and in-flight absence distinct. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete B2 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.
 
 **Completion evidence:** Per-engine Can checks, event seal and host receipt. Record evidence/QB2.json with qualified scope and all unrun engine legs.
+
+**Full normative gate:** [B2 — Preserve immediate DOM action and event semantics](../../../docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md:42). Require the complete shared execution contract and gate, including all fixture, Accept, Controls and Bounds details.
 
 **Early commit:** `test: qualify browser DOM event semantics`.
 
 ## QB3 — Qualify integrated B3 page Fetch
 
-- [ ] **QB3 accepted** — owner lane: `acceptance-browser`.
+- [ ] **QB3: planned** — owner lane: `acceptance-browser`.
 
 **Start after:** QB0, QHTTP, I08, P23. **Additional acceptance prerequisites:** none.
 
@@ -574,15 +624,17 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Concrete change:** Can chooses same-origin cookie/generation/CSP requests.
 
-**Acceptance checks:** CSP forbidden origin has sealed independent no-contact; external HTTP substitution fails. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.
+**Acceptance checks:** CSP forbidden origin has sealed independent no-contact; external HTTP substitution fails. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete B3 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.
 
 **Completion evidence:** Page/server Can checks, listener seal and host receipt. Record evidence/QB3.json with qualified scope and all unrun engine legs.
+
+**Full normative gate:** [B3 — Page-origin Fetch](../../../docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md:56). Require the complete shared execution contract and gate, including all fixture, Accept, Controls and Bounds details.
 
 **Early commit:** `test: qualify page-origin fetch policy`.
 
 ## QB4 — Qualify integrated B4 Can browser codec
 
-- [ ] **QB4 accepted** — owner lane: `acceptance-browser`.
+- [ ] **QB4: planned** — owner lane: `acceptance-browser`.
 
 **Start after:** QB0, QN1, I09, P23. **Additional acceptance prerequisites:** none.
 
@@ -590,15 +642,17 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Concrete change:** Ordinary Can browser fixture exports exact codec facts for R Can oracle.
 
-**Acceptance checks:** Unsafe int64/-0, variant/nested and decode rejection; malformed/missing ready/export controls fail. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.
+**Acceptance checks:** Unsafe int64/-0, variant/nested and decode rejection; malformed/missing ready/export controls fail. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete B4 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.
 
 **Completion evidence:** C artifact identities, browser/Bun facts, Can checks and receipts. Record evidence/QB4.json with qualified scope and all unrun engine legs.
+
+**Full normative gate:** [B4 — Ordinary Can browser codec facts](../../../docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md:70). Require the complete shared execution contract and gate, including all fixture, Accept, Controls and Bounds details.
 
 **Early commit:** `test: qualify browser codec facts in Can`.
 
 ## QB5 — Qualify integrated B5 remote Firefox cleanup
 
-- [ ] **QB5 accepted** — owner lane: `acceptance-browser`.
+- [ ] **QB5: planned** — owner lane: `acceptance-browser`.
 
 **Start after:** QB0, I10, P23. **Additional acceptance prerequisites:** none.
 
@@ -606,15 +660,17 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Concrete change:** Can checks worker death, first context close and second context on same server.
 
-**Acceptance checks:** Shared server survives and case close-server rejects before effect; unknown close blocks. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.
+**Acceptance checks:** Shared server survives and case close-server rejects before effect; unknown close blocks. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete B5 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.
 
 **Completion evidence:** Pinned server instance, Can check and N cleanup receipt. Record evidence/QB5.json with qualified scope and all unrun engine legs.
+
+**Full normative gate:** [B5 — Shared remote Firefox survives case death](../../../docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md:84). Require the complete shared execution contract and gate, including all fixture, Accept, Controls and Bounds details.
 
 **Early commit:** `test: qualify remote browser context recovery`.
 
 ## QF1 — Qualify integrated F1 descriptors
 
-- [ ] **QF1 accepted** — owner lane: `acceptance-descriptor`.
+- [ ] **QF1: planned** — owner lane: `acceptance-descriptor`.
 
 **Start after:** P23, I11. **Additional acceptance prerequisites:** none.
 
@@ -622,15 +678,17 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Concrete change:** Can owns binary/Unicode/malformed/unused snapshot and startup policy cases.
 
-**Acceptance checks:** Independent fd 3 EOF, blocked writer cleanup and wrong-fd/withheld-EOF/sanitization controls. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.
+**Acceptance checks:** Independent fd 3 EOF, blocked writer cleanup and wrong-fd/withheld-EOF/sanitization controls. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete F1 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.
 
 **Completion evidence:** Can checks and writer/child/descriptor receipts. Record evidence/QF1.json with qualified scope and all unrun engine legs.
+
+**Full normative gate:** [F1 — Credentials, EOF and launch isolation](../../../docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md:144). Require the complete shared execution contract and gate, including all fixture, Accept, Controls and Bounds details.
 
 **Early commit:** `test: qualify descriptor delivery in Can`.
 
 ## QF2 — Qualify integrated F2 inherited lease
 
-- [ ] **QF2 accepted** — owner lane: `acceptance-descriptor`.
+- [ ] **QF2: planned** — owner lane: `acceptance-descriptor`.
 
 **Start after:** QF1, I12. **Additional acceptance prerequisites:** none.
 
@@ -638,15 +696,17 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Concrete change:** Can checks child-held fd 4 across launcher exit and prune.
 
-**Acceptance checks:** Generation lives only until confirmed lease release; missing/early lease controls fail. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.
+**Acceptance checks:** Generation lives only until confirmed lease release; missing/early lease controls fail. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete F2 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.
 
 **Completion evidence:** Can check and N generation/child receipts. Record evidence/QF2.json with qualified scope and all unrun engine legs.
+
+**Full normative gate:** [F2 — Generation lease outlives its launcher](../../../docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md:158). Require the complete shared execution contract and gate, including all fixture, Accept, Controls and Bounds details.
 
 **Early commit:** `test: qualify inherited generation leases`.
 
 ## QWS — Qualify Can HTTP/peer/WebSocket cases
 
-- [ ] **QWS accepted** — owner lane: `acceptance-peer`.
+- [ ] **QWS: planned** — owner lane: `acceptance-peer`.
 
 **Start after:** QHTTP, I05. **Additional acceptance prerequisites:** none.
 
@@ -662,7 +722,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## QD2 — Qualify integrated D2 fresh pool
 
-- [ ] **QD2 accepted** — owner lane: `acceptance-database`.
+- [ ] **QD2: planned** — owner lane: `acceptance-database`.
 
 **Start after:** QD1, I14. **Additional acceptance prerequisites:** none.
 
@@ -670,15 +730,17 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Concrete change:** Can runs one eight-actor burst and rollback with independent final reads.
 
-**Acceptance checks:** No warmup, exact actor/connection identity and wrong-handle controls; MySQL separate. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.
+**Acceptance checks:** No warmup, exact actor/connection identity and wrong-handle controls; MySQL separate. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete D2 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.
 
 **Completion evidence:** Can checks, native settlement IDs and namespace receipt. Record evidence/QD2.json with qualified scope and all unrun engine legs.
+
+**Full normative gate:** [D2 — Fresh-pool callback and connection ownership](../../../docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md:188). Require the complete shared execution contract and gate, including all fixture, Accept, Controls and Bounds details.
 
 **Early commit:** `test: qualify fresh-pool transaction scope`.
 
 ## QD3 — Qualify integrated D3 rollback sentinel
 
-- [ ] **QD3 accepted** — owner lane: `acceptance-database`.
+- [ ] **QD3: planned** — owner lane: `acceptance-database`.
 
 **Start after:** QD1, I15. **Additional acceptance prerequisites:** none.
 
@@ -686,15 +748,17 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Concrete change:** Can inserts sentinel, poisons PG transaction and checks replay via raw observer.
 
-**Acceptance checks:** 23505/25P02, settled rollback, absent sentinel and omit-poison control. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.
+**Acceptance checks:** 23505/25P02, settled rollback, absent sentinel and omit-poison control. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete D3 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.
 
 **Completion evidence:** Can checks, server/driver settlement and namespace receipt. Record evidence/QD3.json with qualified scope and all unrun engine legs.
+
+**Full normative gate:** [D3 — Poisoned transaction has an independent rollback witness](../../../docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md:202). Require the complete shared execution contract and gate, including all fixture, Accept, Controls and Bounds details.
 
 **Early commit:** `test: qualify poisoned transaction rollback`.
 
 ## QD4 — Qualify integrated D4 SQL deadline
 
-- [ ] **QD4 accepted** — owner lane: `acceptance-database`.
+- [ ] **QD4: planned** — owner lane: `acceptance-database`.
 
 **Start after:** QD1, I16. **Additional acceptance prerequisites:** none.
 
@@ -702,15 +766,17 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Concrete change:** Can separates visible deadline from driver/server settlement and later raw reads.
 
-**Acceptance checks:** Stable commit_unknown, at-most-once dispatch, retained lease, prestart no-dispatch; unresolved blocks cleanup. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.
+**Acceptance checks:** Stable commit_unknown, at-most-once dispatch, retained lease, prestart no-dispatch; unresolved blocks cleanup. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete D4 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.
 
 **Completion evidence:** Can checks, fence/quiescence facts and namespace receipt. Record evidence/QD4.json with qualified scope and all unrun engine legs.
+
+**Full normative gate:** [D4 — Visible SQL deadline versus native settlement](../../../docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md:216). Require the complete shared execution contract and gate, including all fixture, Accept, Controls and Bounds details.
 
 **Early commit:** `test: qualify SQL deadline settlement`.
 
 ## QStore — Qualify Can object-store cases
 
-- [ ] **QStore accepted** — owner lane: `acceptance-object-store`.
+- [ ] **QStore: planned** — owner lane: `acceptance-object-store`.
 
 **Start after:** P23, I17. **Additional acceptance prerequisites:** none.
 

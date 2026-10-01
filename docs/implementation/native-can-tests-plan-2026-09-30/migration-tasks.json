@@ -1,5 +1,5 @@
 {
-  "status": "planned",
+  "status": "in_progress; audited 2026-10-01, no execution in audit round",
   "scope": "45 migration groups; row-at-a-time implementation and acceptance",
   "tasks": [
     {
@@ -4805,7 +4805,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. For chart, clipboard and storage adapter declarations, decide retain/migrate/obsolete per current contract; preserve no-host-contact, mapping and opacity facts if retained. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.",
       "commit": "test(native-can): add prototype-local-adapters cases",
-      "status": "complete",
+      "status": "active",
       "deletion_policy": "Conditional rows require per-row current-contract relevance and reviewer disposition; preserve historical records/static fixtures where still useful. The integrator alone may retire shared old files after all linked rows and callers are resolved.",
       "delegated_oracles_owned": [],
       "delegated_oracles_shared": [],
@@ -5215,6 +5215,17 @@
             "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
           ]
         }
+      },
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Fifteen retained ports have source/dispositions but the evidence defers execution, identities and qualification until P23. Aggregate completion requires those conditional row gates.",
+        "pending_prerequisites": [],
+        "local_evidence_preserved": true,
+        "pending_retained_row_gates": [
+          "P23"
+        ],
+        "actual_facet_gates_still_required": true
       }
     },
     {
@@ -5266,7 +5277,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Review companion chart/clipboard/storage protocol and bundle-size assertions individually; migrate retained semantics without freezing old sizes or prototype ABI. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.",
       "commit": "test(native-can): add prototype-companion-surfaces-a cases",
-      "status": "complete",
+      "status": "active",
       "deletion_policy": "Conditional rows require per-row current-contract relevance and reviewer disposition; preserve historical records/static fixtures where still useful. The integrator alone may retire shared old files after all linked rows and callers are resolved.",
       "delegated_oracles_owned": [],
       "delegated_oracles_shared": [],
@@ -5676,6 +5687,17 @@
             "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
           ]
         }
+      },
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Eight retained ports remain provisional; recorded parse/relevance checks do not establish required controls, R/N/S/A/C identities or environment receipts.",
+        "pending_prerequisites": [],
+        "local_evidence_preserved": true,
+        "pending_retained_row_gates": [
+          "P23"
+        ],
+        "actual_facet_gates_still_required": true
       }
     },
     {
@@ -7251,5 +7273,6 @@
         }
       }
     }
-  ]
+  ],
+  "dispatch_plan": "lane-plan.json; lane fields remain ownership domains, queues assign the three worker slots and integrator"
 }

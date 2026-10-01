@@ -1,5 +1,5 @@
 {
-  "status": "planned",
+  "status": "audited 2026-10-01; source obligations unchanged; no live replacement coverage accepted",
   "ledger_row_count": 292,
   "row_assignments": [
     {
@@ -12616,7 +12616,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -12674,7 +12674,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -12732,7 +12732,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -12790,7 +12790,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -12848,7 +12848,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -12906,7 +12906,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -12964,7 +12964,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -13022,7 +13022,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -13080,7 +13080,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -13138,7 +13138,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -13196,7 +13196,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -13254,7 +13254,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -13312,7 +13312,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -13370,7 +13370,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -13428,7 +13428,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -13486,7 +13486,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -13544,7 +13544,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -13602,7 +13602,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -13660,7 +13660,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -13718,7 +13718,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -13776,7 +13776,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -13834,7 +13834,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -13892,7 +13892,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -13950,7 +13950,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14008,7 +14008,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14066,7 +14066,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14124,7 +14124,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M32.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14182,7 +14182,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14240,7 +14240,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14298,7 +14298,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14356,7 +14356,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14414,7 +14414,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14472,7 +14472,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14530,7 +14530,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14588,7 +14588,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14646,7 +14646,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14704,7 +14704,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14762,7 +14762,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14820,7 +14820,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14878,7 +14878,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14936,7 +14936,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -14994,7 +14994,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -15052,7 +15052,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -15110,7 +15110,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -15168,7 +15168,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -15226,7 +15226,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -15284,7 +15284,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -15342,7 +15342,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -15400,7 +15400,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -15458,7 +15458,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -15516,7 +15516,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -15574,7 +15574,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -15639,7 +15639,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -15704,7 +15704,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "source/relevance work recorded in evidence/M33.json; retained ports await conditional gates; no execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -15748,7 +15748,7 @@
         "Review each assertion or record against the current contract and active callers.",
         "Record retain/migrate/obsolete decision with rationale; preserved history is not execution evidence."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M34.json; no live execution or retirement credit",
       "if_retained_accept_after": [],
       "suite_snapshot_acceptance": "Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "gate_policy": "Listed task gates are minimum prerequisites. Facet mapping adds every gate required by the actual mechanism/variant/environment; record unsupported or missing gates as blocked, never implicitly waive them."
@@ -15790,7 +15790,7 @@
         "Review each assertion or record against the current contract and active callers.",
         "Record retain/migrate/obsolete decision with rationale; preserved history is not execution evidence."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M34.json; no live execution or retirement credit",
       "if_retained_accept_after": [],
       "suite_snapshot_acceptance": "Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "gate_policy": "Listed task gates are minimum prerequisites. Facet mapping adds every gate required by the actual mechanism/variant/environment; record unsupported or missing gates as blocked, never implicitly waive them."
@@ -15832,7 +15832,7 @@
         "Review each assertion or record against the current contract and active callers.",
         "Record retain/migrate/obsolete decision with rationale; preserved history is not execution evidence."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M34.json; no live execution or retirement credit",
       "if_retained_accept_after": [],
       "suite_snapshot_acceptance": "Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "gate_policy": "Listed task gates are minimum prerequisites. Facet mapping adds every gate required by the actual mechanism/variant/environment; record unsupported or missing gates as blocked, never implicitly waive them."
@@ -15877,7 +15877,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M34.json; no live execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -15924,7 +15924,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M34.json; no live execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -15971,7 +15971,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M34.json; no live execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -16018,7 +16018,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M34.json; no live execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -16065,7 +16065,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M34.json; no live execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -16112,7 +16112,7 @@
         "For any retained behavior, author a separate Can case and require its qualified gates before retirement.",
         "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M34.json; no live execution or retirement credit",
       "if_retained_accept_after": [
         "P23"
       ],
@@ -16522,7 +16522,7 @@
         "Review each assertion or record against the current contract and active callers.",
         "Record retain/migrate/obsolete decision with rationale; preserved history is not execution evidence."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M36.json; no live execution or retirement credit",
       "if_retained_accept_after": [],
       "suite_snapshot_acceptance": "Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "gate_policy": "Listed task gates are minimum prerequisites. Facet mapping adds every gate required by the actual mechanism/variant/environment; record unsupported or missing gates as blocked, never implicitly waive them."
@@ -16564,7 +16564,7 @@
         "Review each assertion or record against the current contract and active callers.",
         "Record retain/migrate/obsolete decision with rationale; preserved history is not execution evidence."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M36.json; no live execution or retirement credit",
       "if_retained_accept_after": [],
       "suite_snapshot_acceptance": "Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "gate_policy": "Listed task gates are minimum prerequisites. Facet mapping adds every gate required by the actual mechanism/variant/environment; record unsupported or missing gates as blocked, never implicitly waive them."
@@ -16606,7 +16606,7 @@
         "Review each assertion or record against the current contract and active callers.",
         "Record retain/migrate/obsolete decision with rationale; preserved history is not execution evidence."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M36.json; no live execution or retirement credit",
       "if_retained_accept_after": [],
       "suite_snapshot_acceptance": "Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "gate_policy": "Listed task gates are minimum prerequisites. Facet mapping adds every gate required by the actual mechanism/variant/environment; record unsupported or missing gates as blocked, never implicitly waive them."
@@ -16648,7 +16648,7 @@
         "Review each assertion or record against the current contract and active callers.",
         "Record retain/migrate/obsolete decision with rationale; preserved history is not execution evidence."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M36.json; no live execution or retirement credit",
       "if_retained_accept_after": [],
       "suite_snapshot_acceptance": "Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "gate_policy": "Listed task gates are minimum prerequisites. Facet mapping adds every gate required by the actual mechanism/variant/environment; record unsupported or missing gates as blocked, never implicitly waive them."
@@ -16697,7 +16697,7 @@
         "Confirm exact static fixture bytes, named consumer and starting-state assumptions.",
         "Keep or move the fixture as data; do not count it as a Can-authored scenario or delete it with a driver."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M36.json; no live execution or retirement credit",
       "if_retained_accept_after": [],
       "suite_snapshot_acceptance": "Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "gate_policy": "Listed task gates are minimum prerequisites. Facet mapping adds every gate required by the actual mechanism/variant/environment; record unsupported or missing gates as blocked, never implicitly waive them."
@@ -16746,7 +16746,7 @@
         "Confirm exact static fixture bytes, named consumer and starting-state assumptions.",
         "Keep or move the fixture as data; do not count it as a Can-authored scenario or delete it with a driver."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M36.json; no live execution or retirement credit",
       "if_retained_accept_after": [],
       "suite_snapshot_acceptance": "Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "gate_policy": "Listed task gates are minimum prerequisites. Facet mapping adds every gate required by the actual mechanism/variant/environment; record unsupported or missing gates as blocked, never implicitly waive them."
@@ -16795,7 +16795,7 @@
         "Confirm exact static fixture bytes, named consumer and starting-state assumptions.",
         "Keep or move the fixture as data; do not count it as a Can-authored scenario or delete it with a driver."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M36.json; no live execution or retirement credit",
       "if_retained_accept_after": [],
       "suite_snapshot_acceptance": "Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "gate_policy": "Listed task gates are minimum prerequisites. Facet mapping adds every gate required by the actual mechanism/variant/environment; record unsupported or missing gates as blocked, never implicitly waive them."
@@ -16844,7 +16844,7 @@
         "Confirm exact static fixture bytes, named consumer and starting-state assumptions.",
         "Keep or move the fixture as data; do not count it as a Can-authored scenario or delete it with a driver."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M36.json; no live execution or retirement credit",
       "if_retained_accept_after": [],
       "suite_snapshot_acceptance": "Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "gate_policy": "Listed task gates are minimum prerequisites. Facet mapping adds every gate required by the actual mechanism/variant/environment; record unsupported or missing gates as blocked, never implicitly waive them."
@@ -16893,7 +16893,7 @@
         "Confirm exact static fixture bytes, named consumer and starting-state assumptions.",
         "Keep or move the fixture as data; do not count it as a Can-authored scenario or delete it with a driver."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M36.json; no live execution or retirement credit",
       "if_retained_accept_after": [],
       "suite_snapshot_acceptance": "Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "gate_policy": "Listed task gates are minimum prerequisites. Facet mapping adds every gate required by the actual mechanism/variant/environment; record unsupported or missing gates as blocked, never implicitly waive them."
@@ -16942,7 +16942,7 @@
         "Confirm exact static fixture bytes, named consumer and starting-state assumptions.",
         "Keep or move the fixture as data; do not count it as a Can-authored scenario or delete it with a driver."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M36.json; no live execution or retirement credit",
       "if_retained_accept_after": [],
       "suite_snapshot_acceptance": "Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "gate_policy": "Listed task gates are minimum prerequisites. Facet mapping adds every gate required by the actual mechanism/variant/environment; record unsupported or missing gates as blocked, never implicitly waive them."
@@ -16984,7 +16984,7 @@
         "Review each assertion or record against the current contract and active callers.",
         "Record retain/migrate/obsolete decision with rationale; preserved history is not execution evidence."
       ],
-      "evidence_status": "planned; no execution credit",
+      "evidence_status": "historical/static disposition recorded in evidence/M36.json; no live execution or retirement credit",
       "if_retained_accept_after": [],
       "suite_snapshot_acceptance": "Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "gate_policy": "Listed task gates are minimum prerequisites. Facet mapping adds every gate required by the actual mechanism/variant/environment; record unsupported or missing gates as blocked, never implicitly waive them."

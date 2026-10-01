@@ -1,10 +1,11 @@
 {
-  "status": "planned",
+  "status": "in_progress; audited 2026-10-01",
   "semantics": {
     "start_after": "accepted dependencies before drafting/local checks",
     "accept_after": "additional accepted dependencies before completion",
     "row_scope": "migration groups are queues; per-row gates permit incremental acceptance",
-    "serial_resources": "shared path writer/formatter/commit and one admitted live run; not encoded as false graph dependencies"
+    "serial_resources": "shared path writer/formatter/commit and one admitted live run; not encoded as false graph dependencies",
+    "counting": "143 unique IDs in tasks.json; four category files partition the master. Slices, rows and receipts are not additional master tasks."
   },
   "integrated_gate_tasks": {
     "N1": "QN1",
@@ -401,11 +402,11 @@
       "files": [
         "tools/native-test-owner/admission/"
       ],
-      "changes": "Implement one host-wide live-run admission gate and atomic declared-peak reservation (one live case, one offline verification worker, one build producer) in `tools/native-test-owner/admission/`; charge cleanup reserve and enforce absolute monotonic deadlines.",
-      "acceptance": "Two repository roots cannot bypass the gate; nested producer demand does not deadlock; deadline-at-success is failure; no case starts if body plus cleanup cannot fit.",
+      "changes": "Implement one host-wide live-run admission gate and atomic declared-peak reservation (one live case, one offline verification worker, one build producer) in `tools/native-test-owner/admission/`; charge cleanup reserve and enforce absolute monotonic deadlines. Implement the lifecycle 10 GiB available-disk admission floor and recheck before allocation, with finite capability handle/pending/byte limits; the floor is an admission guard, not a reservation against other programs.",
+      "acceptance": "Two repository roots cannot bypass the gate; nested producer demand does not deadlock; deadline-at-success is failure; no case starts if body plus cleanup cannot fit. Below-floor disk and omitted finite capability limits refuse before effect; recheck the 10 GiB floor before each allocation. Preserve all strict-envelope qualification requirements in P13.",
       "evidence": "Save bounded race controls; commit admission.",
       "commit": "feat(testing): reserve host capacity and deadlines",
-      "status": "complete",
+      "status": "active",
       "start_after": [
         "P07",
         "P08",
@@ -414,7 +415,14 @@
         "P11"
       ],
       "accept_after": [],
-      "scope": "code and local controls; integrated gates explicit"
+      "scope": "code and local controls; integrated gates explicit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "The authoritative lifecycle requires a 10 GiB free-disk admission floor and recheck before allocation. The card omitted it, and admission/host source and recorded controls do not implement or demonstrate it. Existing reservation/deadline controls remain useful local evidence.",
+        "pending_prerequisites": [],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "P13",
@@ -424,16 +432,25 @@
         "tools/native-test-owner/host/"
       ],
       "changes": "Implement the selected host enforcement adapter, then qualify the host's strict process/memory/temporary-data mechanism, charged scope and finite overshoot bound, including detached children and writes outside workspace helpers. Owner: `tools/native-test-owner/host/` plus host-profile acceptance record.",
-      "acceptance": "Quick envelope (64 processes, 4 GiB, 512 MiB) and bounded-job envelope (64, 6 GiB, 2 GiB) are admitted only where enforcing mechanisms and disposal reserve are demonstrated. Poll-and-kill or sample peaks cannot qualify them; unavailable host remains blocked.",
+      "acceptance": "Quick envelope (64 processes, 4 GiB, 512 MiB) and bounded-job envelope (64, 6 GiB, 2 GiB) are admitted only where enforcing mechanisms and disposal reserve are demonstrated. Poll-and-kill or sample peaks cannot qualify them; unavailable host remains blocked. The 10 GiB free-disk floor/recheck is necessary admission protection, not evidence of strict owned disk, memory or process enforcement.",
       "evidence": "Save host-specific negative controls; commit profile acceptance separately.",
       "commit": "test(testing): qualify strict host enforcement",
-      "status": "complete",
+      "status": "blocked",
       "start_after": [
         "P12",
         "P25"
       ],
       "accept_after": [],
-      "scope": "qualification or promotion"
+      "scope": "qualification or promotion",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Recorded evidence admits memory is declared-peak accounting without a kernel RSS backstop and temporary bypass is bounded by free disk, not the required envelope. Neither strict profile qualifies; unavailable enforcement must remain blocked.",
+        "pending_prerequisites": [
+          "P12"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "P14",
@@ -447,7 +464,7 @@
       "acceptance": "N death, forged/absent receipt, lingering descendant/descriptor and cleanup failure cannot appear as complete success. T's own loss leaves no green receipt. Scope acceptance to the exact qualified host profile. Another host requires explicit selection and its own receipt; do not silently move execution or treat unsupported local enforcement as a pass.",
       "evidence": "Save N/T identities and independent release facts; commit N acceptance.",
       "commit": "test(testing): independently accept n",
-      "status": "complete",
+      "status": "blocked",
       "start_after": [
         "P10",
         "P11",
@@ -457,7 +474,17 @@
         "P25"
       ],
       "accept_after": [],
-      "scope": "qualification or promotion"
+      "scope": "qualification or promotion",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "P13 host qualification is invalid. The recorded N executable is an ACK acceptance-test helper, not the separately built owner service required by this task; real N journal/enforcement/recovery/receipt acceptance remains missing.",
+        "pending_prerequisites": [
+          "P12",
+          "P13"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "P15",
@@ -706,7 +733,7 @@
       "acceptance": "Catalogue/checker/emitter agree on normal effects and opaque handle admission. Reject forged/stale owner, arbitrary dispatch/eval, raw thenable transport and wrong target; generated files are reproducible. Treat this as provisional R-core input until P26.",
       "evidence": "evidence/P28.json with exact identities, checks, controls, cleanup and independent review",
       "commit": "feat(testing): integrate typed owner bindings",
-      "status": "active",
+      "status": "planned",
       "start_after": [
         "P02",
         "P10",
@@ -714,7 +741,16 @@
         "P15"
       ],
       "accept_after": [],
-      "scope": "code and local controls; integrated gates explicit"
+      "scope": "code and local controls; integrated gates explicit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "active",
+        "reason": "Old active assignment has no task evidence or authored binding/transport/emitter artifacts; reset to planned. Existing catalogue files predate the assignment. Historical Muse checkpoint is not current ownership.",
+        "pending_prerequisites": [
+          "P12"
+        ],
+        "local_evidence_preserved": false
+      }
     },
     {
       "id": "P27",
@@ -782,8 +818,17 @@
       "acceptance": "Local controls reject foreign namespace/context/server/prefix, forged release, duplicate uncertain dispatch and crash-before-journal. Recovery touches only evidenced owned resources; missing release stays unresolved. Accepted N-core remains unchanged until each I slice independently accepts this delta.",
       "evidence": "evidence/P29.json with local positive/negative ownership controls and explicit unqualified service legs",
       "commit": "feat(testing): journal external service ownership",
-      "status": "complete",
-      "scope": "code and local controls; integrated gates explicit"
+      "status": "blocked",
+      "scope": "code and local controls; integrated gates explicit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.",
+        "pending_prerequisites": [
+          "P12"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K01",
@@ -878,8 +923,15 @@
         "K04"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "active",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "The witness must observe actual adapter invocation through the generated C path. Current code only mints in-memory artifact tokens and accepts public begin/complete calls, with no generated artifact digest/hook or invoked adapter. Its positive controls directly call that model. QN2 defers live qualification, not this required witness implementation.",
+        "pending_prerequisites": [],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K06",
@@ -899,8 +951,17 @@
         "P11"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "K05 acceptance is invalidated, and the required bounded raw and C-subject controls are absent from the in-memory late-event model. Preserve local occurrence/lease controls and add actual subject evidence before completion.",
+        "pending_prerequisites": [
+          "K05"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K07",
@@ -919,8 +980,17 @@
         "P12"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "The required actual independent host-effect observer and durable publication are absent. observer.go uses scripted in-memory facts with no host observation channel; local mirror controls do not finish this mechanism.",
+        "pending_prerequisites": [
+          "P12"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K08",
@@ -939,8 +1009,18 @@
         "P29"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "The outside-service discovery/containment/reclaim implementation remains a model: ObserveChildren accepts supplied identities, Discover reads a map, Contain flags state and Reclaim mints a witness without native kill/reap. Simulated controls are retained as a local slice.",
+        "pending_prerequisites": [
+          "K07",
+          "P29"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K09",
@@ -957,8 +1037,17 @@
         "K08"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.",
+        "pending_prerequisites": [
+          "K08"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K10",
@@ -975,8 +1064,17 @@
         "K09"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.",
+        "pending_prerequisites": [
+          "K09"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K11",
@@ -995,8 +1093,19 @@
         "K20"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.",
+        "pending_prerequisites": [
+          "K09",
+          "K10",
+          "K20"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K13",
@@ -1014,8 +1123,18 @@
         "K10"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.",
+        "pending_prerequisites": [
+          "K09",
+          "K10"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K14",
@@ -1033,8 +1152,18 @@
         "K20"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.",
+        "pending_prerequisites": [
+          "K09",
+          "K20"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K15",
@@ -1052,8 +1181,17 @@
         "K09"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.",
+        "pending_prerequisites": [
+          "K09"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K16",
@@ -1073,8 +1211,19 @@
         "P29"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "RequestClose/ConfirmClose exchange in-memory tokens without an independent remote close channel or observed confirmation. Required outside-service authority remains to be implemented.",
+        "pending_prerequisites": [
+          "K08",
+          "K09",
+          "P29"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K17",
@@ -1149,8 +1298,17 @@
         "P29"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.",
+        "pending_prerequisites": [
+          "P29"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K21",
@@ -1167,8 +1325,17 @@
         "K20"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.",
+        "pending_prerequisites": [
+          "K20"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K22",
@@ -1186,8 +1353,17 @@
         "P29"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.",
+        "pending_prerequisites": [
+          "P29"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K23",
@@ -1204,8 +1380,17 @@
         "K22"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.",
+        "pending_prerequisites": [
+          "K22"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K24",
@@ -1225,8 +1410,19 @@
         "P12"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Engine settlement and release observations are supplied strings in an in-memory model; the explicitly required engine-specific observation adapter remains missing.",
+        "pending_prerequisites": [
+          "K22",
+          "K23",
+          "P12"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K25",
@@ -1245,8 +1441,19 @@
         "P29"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.",
+        "pending_prerequisites": [
+          "K22",
+          "K23",
+          "P29"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K26",
@@ -1266,8 +1473,19 @@
         "P29"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "The required engine-specific server quiescence/fence adapter is an in-memory boolean model. A postgres capability label supplies no native cancel channel or server acknowledgment.",
+        "pending_prerequisites": [
+          "K22",
+          "K24",
+          "P29"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "K27",
@@ -1285,8 +1503,17 @@
         "P29"
       ],
       "accept_after": [],
-      "status": "complete",
-      "scope": "mechanism code and local controls; no integrated credit"
+      "status": "blocked",
+      "scope": "mechanism code and local controls; no integrated credit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.",
+        "pending_prerequisites": [
+          "P29"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "QN1",
@@ -1296,7 +1523,7 @@
         "tests/native-can/qualification/qn1/**"
       ],
       "changes": "Can owns N1 descriptors, sequencing and exact expectations.",
-      "acceptance": "Full N1 matrix plus assimilation/normalization/rounding/alias controls, final seal and N receipt. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "acceptance": "Full N1 matrix plus assimilation/normalization/rounding/alias controls, final seal and N receipt. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete N1 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.",
       "evidence": "Can case/check IDs, R/C/observer IDs, seeded controls and cleanup receipt. Record evidence/QN1.json with qualified scope and all unrun engine legs.",
       "commit": "test: qualify exact native value transport",
       "start_after": [
@@ -1305,7 +1532,13 @@
       ],
       "accept_after": [],
       "status": "planned",
-      "scope": "integrated Can qualification"
+      "scope": "integrated Can qualification",
+      "normative_gate_source": {
+        "path": "docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md",
+        "section": "N1 \u2014 Inert, exact native-value transport",
+        "line": 100,
+        "scope": "Full shared execution contract plus this gate: fixture scope, Accept, Controls and Bounds. The task summary never substitutes for the complete gate."
+      }
     },
     {
       "id": "QN2",
@@ -1315,7 +1548,7 @@
         "tests/native-can/qualification/qn2/**"
       ],
       "changes": "Can invokes ordinary C-compiled subject and checks independent boundary witness.",
-      "acceptance": "Bypass, wrong export, eager getter and forged completion controls fail. Require independent version-bound invocation and local-completion authentication plus instrumented/uninstrumented parity; a C-supplied invoked flag is insufficient. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "acceptance": "Bypass, wrong export, eager getter and forged completion controls fail. Require independent version-bound invocation and local-completion authentication plus instrumented/uninstrumented parity; a C-supplied invoked flag is insufficient. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete N2 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.",
       "evidence": "Generated artifact/import IDs, witness facts, Can report and N receipt. Record evidence/QN2.json with qualified scope and all unrun engine legs.",
       "commit": "test: qualify generated C native ingress",
       "start_after": [
@@ -1324,7 +1557,13 @@
       ],
       "accept_after": [],
       "status": "planned",
-      "scope": "integrated Can qualification"
+      "scope": "integrated Can qualification",
+      "normative_gate_source": {
+        "path": "docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md",
+        "section": "N2 \u2014 Hostile value reaches the actual C adapter",
+        "line": 114,
+        "scope": "Full shared execution contract plus this gate: fixture scope, Accept, Controls and Bounds. The task summary never substitutes for the complete gate."
+      }
     },
     {
       "id": "QN3",
@@ -1334,7 +1573,7 @@
         "tests/native-can/qualification/qn3/**"
       ],
       "changes": "Can controls gates, selected occurrence and lease release.",
-      "acceptance": "Late event/identity/early release controls fail; sealed complete interval and cleanup. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "acceptance": "Late event/identity/early release controls fail; sealed complete interval and cleanup. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete N3 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.",
       "evidence": "Separate raw/C leg reports and receipts. Record evidence/QN3.json with qualified scope and all unrun engine legs.",
       "commit": "test: qualify late native occurrence identity",
       "start_after": [
@@ -1343,7 +1582,13 @@
       ],
       "accept_after": [],
       "status": "planned",
-      "scope": "integrated Can qualification"
+      "scope": "integrated Can qualification",
+      "normative_gate_source": {
+        "path": "docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md",
+        "section": "N3 \u2014 Late result, occurrence identity and lease release",
+        "line": 128,
+        "scope": "Full shared execution contract plus this gate: fixture scope, Accept, Controls and Bounds. The task summary never substitutes for the complete gate."
+      }
     },
     {
       "id": "QB1",
@@ -1353,7 +1598,7 @@
         "tests/native-can/qualification/qb1/**"
       ],
       "changes": "Can owns pending-click, route abort and durable corruption/replay choreography. Reuse only the application payload operation_id on replay; new native action/request/route IDs are mandatory. Never redispatch an uncertain native operation.",
-      "acceptance": "Input, upstream contact, browser delivery, application witness, native/app IDs, seal and host effects separately pass controls. Full B1 is still unrun until durable corruption/replay controls pass; QB1base alone does not close B1. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "acceptance": "Input, upstream contact, browser delivery, application witness, native/app IDs, seal and host effects separately pass controls. Full B1 is still unrun until durable corruption/replay controls pass; QB1base alone does not close B1. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete B1 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.",
       "evidence": "Per-engine Can checks, route/DB facts, host observer and cleanup receipts. Record evidence/QB1.json with qualified scope and all unrun engine legs.",
       "commit": "test: qualify browser route delivery and settlement",
       "start_after": [
@@ -1362,7 +1607,13 @@
       ],
       "accept_after": [],
       "status": "planned",
-      "scope": "integrated Can qualification"
+      "scope": "integrated Can qualification",
+      "normative_gate_source": {
+        "path": "docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md",
+        "section": "B1 \u2014 Can resolve a route while input is pending",
+        "line": 28,
+        "scope": "Full shared execution contract plus this gate: fixture scope, Accept, Controls and Bounds. The task summary never substitutes for the complete gate."
+      }
     },
     {
       "id": "QB2",
@@ -1372,7 +1623,7 @@
         "tests/native-can/qualification/qb2/**"
       ],
       "changes": "Can owns same-task clicks, clone/missing target, physical/synthetic events and cancellation checks.",
-      "acceptance": "Yield, cancellation, clone and missing-occurrence controls fail; pre-submit and in-flight absence distinct. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "acceptance": "Yield, cancellation, clone and missing-occurrence controls fail; pre-submit and in-flight absence distinct. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete B2 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.",
       "evidence": "Per-engine Can checks, event seal and host receipt. Record evidence/QB2.json with qualified scope and all unrun engine legs.",
       "commit": "test: qualify browser DOM event semantics",
       "start_after": [
@@ -1381,7 +1632,13 @@
       ],
       "accept_after": [],
       "status": "planned",
-      "scope": "integrated Can qualification"
+      "scope": "integrated Can qualification",
+      "normative_gate_source": {
+        "path": "docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md",
+        "section": "B2 \u2014 Preserve immediate DOM action and event semantics",
+        "line": 42,
+        "scope": "Full shared execution contract plus this gate: fixture scope, Accept, Controls and Bounds. The task summary never substitutes for the complete gate."
+      }
     },
     {
       "id": "QB3",
@@ -1391,7 +1648,7 @@
         "tests/native-can/qualification/qb3/**"
       ],
       "changes": "Can chooses same-origin cookie/generation/CSP requests.",
-      "acceptance": "CSP forbidden origin has sealed independent no-contact; external HTTP substitution fails. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "acceptance": "CSP forbidden origin has sealed independent no-contact; external HTTP substitution fails. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete B3 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.",
       "evidence": "Page/server Can checks, listener seal and host receipt. Record evidence/QB3.json with qualified scope and all unrun engine legs.",
       "commit": "test: qualify page-origin fetch policy",
       "start_after": [
@@ -1402,7 +1659,13 @@
       ],
       "accept_after": [],
       "status": "planned",
-      "scope": "integrated Can qualification"
+      "scope": "integrated Can qualification",
+      "normative_gate_source": {
+        "path": "docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md",
+        "section": "B3 \u2014 Page-origin Fetch",
+        "line": 56,
+        "scope": "Full shared execution contract plus this gate: fixture scope, Accept, Controls and Bounds. The task summary never substitutes for the complete gate."
+      }
     },
     {
       "id": "QB4",
@@ -1412,7 +1675,7 @@
         "tests/native-can/qualification/qb4/**"
       ],
       "changes": "Ordinary Can browser fixture exports exact codec facts for R Can oracle.",
-      "acceptance": "Unsafe int64/-0, variant/nested and decode rejection; malformed/missing ready/export controls fail. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "acceptance": "Unsafe int64/-0, variant/nested and decode rejection; malformed/missing ready/export controls fail. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete B4 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.",
       "evidence": "C artifact identities, browser/Bun facts, Can checks and receipts. Record evidence/QB4.json with qualified scope and all unrun engine legs.",
       "commit": "test: qualify browser codec facts in Can",
       "start_after": [
@@ -1423,7 +1686,13 @@
       ],
       "accept_after": [],
       "status": "planned",
-      "scope": "integrated Can qualification"
+      "scope": "integrated Can qualification",
+      "normative_gate_source": {
+        "path": "docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md",
+        "section": "B4 \u2014 Ordinary Can browser codec facts",
+        "line": 70,
+        "scope": "Full shared execution contract plus this gate: fixture scope, Accept, Controls and Bounds. The task summary never substitutes for the complete gate."
+      }
     },
     {
       "id": "QB5",
@@ -1433,7 +1702,7 @@
         "tests/native-can/qualification/qb5/**"
       ],
       "changes": "Can checks worker death, first context close and second context on same server.",
-      "acceptance": "Shared server survives and case close-server rejects before effect; unknown close blocks. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "acceptance": "Shared server survives and case close-server rejects before effect; unknown close blocks. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete B5 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.",
       "evidence": "Pinned server instance, Can check and N cleanup receipt. Record evidence/QB5.json with qualified scope and all unrun engine legs.",
       "commit": "test: qualify remote browser context recovery",
       "start_after": [
@@ -1443,7 +1712,13 @@
       ],
       "accept_after": [],
       "status": "planned",
-      "scope": "integrated Can qualification"
+      "scope": "integrated Can qualification",
+      "normative_gate_source": {
+        "path": "docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md",
+        "section": "B5 \u2014 Shared remote Firefox survives case death",
+        "line": 84,
+        "scope": "Full shared execution contract plus this gate: fixture scope, Accept, Controls and Bounds. The task summary never substitutes for the complete gate."
+      }
     },
     {
       "id": "QF1",
@@ -1453,7 +1728,7 @@
         "tests/native-can/qualification/qf1/**"
       ],
       "changes": "Can owns binary/Unicode/malformed/unused snapshot and startup policy cases.",
-      "acceptance": "Independent fd 3 EOF, blocked writer cleanup and wrong-fd/withheld-EOF/sanitization controls. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "acceptance": "Independent fd 3 EOF, blocked writer cleanup and wrong-fd/withheld-EOF/sanitization controls. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete F1 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.",
       "evidence": "Can checks and writer/child/descriptor receipts. Record evidence/QF1.json with qualified scope and all unrun engine legs.",
       "commit": "test: qualify descriptor delivery in Can",
       "start_after": [
@@ -1462,7 +1737,13 @@
       ],
       "accept_after": [],
       "status": "planned",
-      "scope": "integrated Can qualification"
+      "scope": "integrated Can qualification",
+      "normative_gate_source": {
+        "path": "docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md",
+        "section": "F1 \u2014 Credentials, EOF and launch isolation",
+        "line": 144,
+        "scope": "Full shared execution contract plus this gate: fixture scope, Accept, Controls and Bounds. The task summary never substitutes for the complete gate."
+      }
     },
     {
       "id": "QF2",
@@ -1472,7 +1753,7 @@
         "tests/native-can/qualification/qf2/**"
       ],
       "changes": "Can checks child-held fd 4 across launcher exit and prune.",
-      "acceptance": "Generation lives only until confirmed lease release; missing/early lease controls fail. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "acceptance": "Generation lives only until confirmed lease release; missing/early lease controls fail. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete F2 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.",
       "evidence": "Can check and N generation/child receipts. Record evidence/QF2.json with qualified scope and all unrun engine legs.",
       "commit": "test: qualify inherited generation leases",
       "start_after": [
@@ -1481,7 +1762,13 @@
       ],
       "accept_after": [],
       "status": "planned",
-      "scope": "integrated Can qualification"
+      "scope": "integrated Can qualification",
+      "normative_gate_source": {
+        "path": "docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md",
+        "section": "F2 \u2014 Generation lease outlives its launcher",
+        "line": 158,
+        "scope": "Full shared execution contract plus this gate: fixture scope, Accept, Controls and Bounds. The task summary never substitutes for the complete gate."
+      }
     },
     {
       "id": "QWS",
@@ -1510,7 +1797,7 @@
         "tests/native-can/qualification/qd1/**"
       ],
       "changes": "Can exercises C RETURNING and checks independent final rows.",
-      "acceptance": "PG/SQLite selected legs and narrowing/wrong-row controls; absent service blocked. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "acceptance": "PG/SQLite selected legs and narrowing/wrong-row controls; absent service blocked. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete D1 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.",
       "evidence": "C path, raw rows, Can checks and namespace receipt. Record evidence/QD1.json with qualified scope and all unrun engine legs.",
       "commit": "test: qualify returning rows in Can",
       "start_after": [
@@ -1519,7 +1806,13 @@
       ],
       "accept_after": [],
       "status": "planned",
-      "scope": "integrated Can qualification"
+      "scope": "integrated Can qualification",
+      "normative_gate_source": {
+        "path": "docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md",
+        "section": "D1 \u2014 Compiled Can RETURNING and raw row fidelity",
+        "line": 174,
+        "scope": "Full shared execution contract plus this gate: fixture scope, Accept, Controls and Bounds. The task summary never substitutes for the complete gate."
+      }
     },
     {
       "id": "QD2",
@@ -1529,7 +1822,7 @@
         "tests/native-can/qualification/qd2/**"
       ],
       "changes": "Can runs one eight-actor burst and rollback with independent final reads.",
-      "acceptance": "No warmup, exact actor/connection identity and wrong-handle controls; MySQL separate. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "acceptance": "No warmup, exact actor/connection identity and wrong-handle controls; MySQL separate. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete D2 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.",
       "evidence": "Can checks, native settlement IDs and namespace receipt. Record evidence/QD2.json with qualified scope and all unrun engine legs.",
       "commit": "test: qualify fresh-pool transaction scope",
       "start_after": [
@@ -1538,7 +1831,13 @@
       ],
       "accept_after": [],
       "status": "planned",
-      "scope": "integrated Can qualification"
+      "scope": "integrated Can qualification",
+      "normative_gate_source": {
+        "path": "docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md",
+        "section": "D2 \u2014 Fresh-pool callback and connection ownership",
+        "line": 188,
+        "scope": "Full shared execution contract plus this gate: fixture scope, Accept, Controls and Bounds. The task summary never substitutes for the complete gate."
+      }
     },
     {
       "id": "QD3",
@@ -1548,7 +1847,7 @@
         "tests/native-can/qualification/qd3/**"
       ],
       "changes": "Can inserts sentinel, poisons PG transaction and checks replay via raw observer.",
-      "acceptance": "23505/25P02, settled rollback, absent sentinel and omit-poison control. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "acceptance": "23505/25P02, settled rollback, absent sentinel and omit-poison control. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete D3 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.",
       "evidence": "Can checks, server/driver settlement and namespace receipt. Record evidence/QD3.json with qualified scope and all unrun engine legs.",
       "commit": "test: qualify poisoned transaction rollback",
       "start_after": [
@@ -1557,7 +1856,13 @@
       ],
       "accept_after": [],
       "status": "planned",
-      "scope": "integrated Can qualification"
+      "scope": "integrated Can qualification",
+      "normative_gate_source": {
+        "path": "docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md",
+        "section": "D3 \u2014 Poisoned transaction has an independent rollback witness",
+        "line": 202,
+        "scope": "Full shared execution contract plus this gate: fixture scope, Accept, Controls and Bounds. The task summary never substitutes for the complete gate."
+      }
     },
     {
       "id": "QD4",
@@ -1567,7 +1872,7 @@
         "tests/native-can/qualification/qd4/**"
       ],
       "changes": "Can separates visible deadline from driver/server settlement and later raw reads.",
-      "acceptance": "Stable commit_unknown, at-most-once dispatch, retained lease, prestart no-dispatch; unresolved blocks cleanup. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code.",
+      "acceptance": "Stable commit_unknown, at-most-once dispatch, retained lease, prestart no-dispatch; unresolved blocks cleanup. Before crediting results, independently review this case/check/expected-vector snapshot and bind the R-built suite S/A identities; an older accepted suite snapshot cannot authorize newly added test code. Require the complete D4 gate (fixture scope, Accept, Controls and Bounds) and shared execution contract in normative_gate_source; the condensed card grants no omission.",
       "evidence": "Can checks, fence/quiescence facts and namespace receipt. Record evidence/QD4.json with qualified scope and all unrun engine legs.",
       "commit": "test: qualify SQL deadline settlement",
       "start_after": [
@@ -1576,7 +1881,13 @@
       ],
       "accept_after": [],
       "status": "planned",
-      "scope": "integrated Can qualification"
+      "scope": "integrated Can qualification",
+      "normative_gate_source": {
+        "path": "docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md",
+        "section": "D4 \u2014 Visible SQL deadline versus native settlement",
+        "line": 216,
+        "scope": "Full shared execution contract plus this gate: fixture scope, Accept, Controls and Bounds. The task summary never substitutes for the complete gate."
+      }
     },
     {
       "id": "QStore",
@@ -2181,8 +2492,8 @@
         "tests/native-can/src/coverage/migration/",
         "docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/"
       ],
-      "changes": "Extend the Can registry/reducer with per-row facet, variant, environment and delegated-declaration mappings. Include source hashes, dispositions, expected case/check IDs, required receipts and correction chains. Validate each ready row incrementally; a group label or pass count is not coverage.",
-      "acceptance": "Dropped facet, missing engine, undeclared duplicate credit, unaccepted reference and later invalidation each prevent complete coverage. Validate the 292-row ledger and 30 delegate inventory against current sources.",
+      "changes": "Extend the Can registry/reducer with per-row facet, variant, environment and delegated-declaration mappings. Include source hashes, dispositions, expected case/check IDs, required receipts and correction chains. Validate each ready row incrementally; a group label or pass count is not coverage. Own the reviewed campaign manifest/ID and append-only index of jobs/attempts registered before execution; reconcile failed, blocked, interrupted and superseded entries as well as corrective-run selection.",
+      "acceptance": "Dropped facet, missing engine, undeclared duplicate credit, unaccepted reference and later invalidation each prevent complete coverage. Validate the 292-row ledger and 30 delegate inventory against current sources. Reject cherry-picked passing reports, unregistered jobs, incompatible identities and unions of partial attempts that fabricate a completed case; retain every declared campaign entry and required matrix cell.",
       "evidence": "evidence/Z01.json plus per-row/file control and commit links",
       "commit": "feat(testing): reconcile migration coverage evidence",
       "status": "planned",
@@ -2353,8 +2664,8 @@
       "files": [
         "docs/implementation/native-can-tests-plan-2026-09-30/evidence/completion/"
       ],
-      "changes": "Reconcile fresh inventory and all retained environments, dynamic variants, 30 delegated suites, 14 hard gates and caller receipts. Run the selected complete matrix serially under accepted profiles; reuse builds within the run. Reconcile deferred metrics explicitly: keep completion blocked until authorized retained measurement legs run, or a reviewed current-contract retirement decision removes an obsolete obligation.",
-      "acceptance": "All retained coverage has Can-owned scenarios/oracles, independent facts and valid cleanup/correction-aware receipts. Historical/static dispositions are reviewed. No retained obligation disappears because of missing service, Linux/engine profile or deferred load. Broad performance work remains subject to existing user deferral.",
+      "changes": "Reconcile fresh inventory and all retained environments, dynamic variants, 30 delegated suites, 14 hard gates and caller receipts. Run the selected complete matrix serially under accepted profiles; reuse builds within the run. Reconcile deferred metrics explicitly: keep completion blocked until authorized retained measurement legs run, or a reviewed current-contract retirement decision removes an obsolete obligation. Register every authorized job before execution in the reviewed campaign index and reconcile every entry, including failed, blocked, interrupted and superseded attempts, with matching identities and correction/cleanup receipts.",
+      "acceptance": "All retained coverage has Can-owned scenarios/oracles, independent facts and valid cleanup/correction-aware receipts. Historical/static dispositions are reviewed. No retained obligation disappears because of missing service, Linux/engine profile or deferred load. Broad performance work remains subject to existing user deferral. No collection of passing files or stitched partial attempts can satisfy a missing complete case. The complete campaign index and explicit corrective-run selection must remain auditable.",
       "evidence": "evidence/Z05.json plus per-row/file control and commit links",
       "commit": "test(testing): record complete migration qualification",
       "status": "planned",
@@ -7181,7 +7492,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. For chart, clipboard and storage adapter declarations, decide retain/migrate/obsolete per current contract; preserve no-host-contact, mapping and opacity facts if retained. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.",
       "commit": "test(native-can): add prototype-local-adapters cases",
-      "status": "complete",
+      "status": "active",
       "deletion_policy": "Conditional rows require per-row current-contract relevance and reviewer disposition; preserve historical records/static fixtures where still useful. The integrator alone may retire shared old files after all linked rows and callers are resolved.",
       "delegated_oracles_owned": [],
       "delegated_oracles_shared": [],
@@ -7591,6 +7902,17 @@
             "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
           ]
         }
+      },
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Fifteen retained ports have source/dispositions but the evidence defers execution, identities and qualification until P23. Aggregate completion requires those conditional row gates.",
+        "pending_prerequisites": [],
+        "local_evidence_preserved": true,
+        "pending_retained_row_gates": [
+          "P23"
+        ],
+        "actual_facet_gates_still_required": true
       }
     },
     {
@@ -7642,7 +7964,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Review companion chart/clipboard/storage protocol and bundle-size assertions individually; migrate retained semantics without freezing old sizes or prototype ABI. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.",
       "commit": "test(native-can): add prototype-companion-surfaces-a cases",
-      "status": "complete",
+      "status": "active",
       "deletion_policy": "Conditional rows require per-row current-contract relevance and reviewer disposition; preserve historical records/static fixtures where still useful. The integrator alone may retire shared old files after all linked rows and callers are resolved.",
       "delegated_oracles_owned": [],
       "delegated_oracles_shared": [],
@@ -8052,6 +8374,17 @@
             "If retained as live behavior, use if_retained_accept_after for the new Can port; the relevance decision itself needs no live qualification."
           ]
         }
+      },
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Eight retained ports remain provisional; recorded parse/relevance checks do not establish required controls, R/N/S/A/C identities or environment receipts.",
+        "pending_prerequisites": [],
+        "local_evidence_preserved": true,
+        "pending_retained_row_gates": [
+          "P23"
+        ],
+        "actual_facet_gates_still_required": true
       }
     },
     {
@@ -9627,5 +9960,12 @@
         }
       }
     }
-  ]
+  ],
+  "status_counts": {
+    "complete": 25,
+    "active": 4,
+    "blocked": 21,
+    "planned": 93
+  },
+  "dispatch_plan": "lane-plan.json"
 }

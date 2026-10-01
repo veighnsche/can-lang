@@ -1,5 +1,5 @@
 {
-  "status": "complete",
+  "status": "active",
   "executor": "Muse (muse-spark-1.3-contributor) via worker-u-m33; integrator review/commit",
   "writing_owner": "migration-history",
   "task_id": "M33",
@@ -9,7 +9,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "fc367efb prototype-companion-surfaces cases"
+    "fc367efbb0b1013fea8dcccb5e43d711f1bfdc0a"
   ],
   "changed_paths": [
     "tests/native-can/migration/m33-prototype-companion-surfaces-a/"
@@ -86,5 +86,18 @@
     "parse-gated only: Can bodies are unaudited by execution; P23 qualification binds PEER/WIRE/N1 + C/R/N/S/A before any execution credit",
     "case files avoid uses [spec] (outside src/ source root); at P23 the local test_case/check/evidence shapes map onto spec:: equivalents",
     "obsolete verdicts for packaging depend on D02 conformance continuing to own reproducibility and sizes"
-  ]
+  ],
+  "planning_audit": {
+    "date": "2026-10-01",
+    "method": "Read-only history, task contract and targeted source inspection; recorded checks were not rerun.",
+    "recorded_commits_before_audit": [
+      "fc367efb prototype-companion-surfaces cases"
+    ],
+    "commit_provenance": "Each primary SHA is reachable from audit HEAD and touches declared owned paths; supporting P14 process fix is a P10 integration handoff.",
+    "historical_status": "complete",
+    "current_status": "active",
+    "qualification_credit_added": false,
+    "reason": "Eight retained ports remain provisional; recorded parse/relevance checks do not establish required controls, R/N/S/A/C identities or environment receipts.",
+    "pending_prerequisites": []
+  }
 }

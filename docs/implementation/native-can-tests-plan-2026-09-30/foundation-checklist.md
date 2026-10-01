@@ -1,12 +1,12 @@
 # Foundation, reference and external owner
 
-Status: **planned, not started**. [Main plan](../native-can-tests-plan-2026-09-30.md) defines execution, commits, resource bounds and shared retirement gates.
+Status: **audited 2026-10-01; see current task states below**. The [lane plan](lane-plan.md) defines dispatch and path reservations; the [master ledger](tasks.json) counts each of 143 task IDs exactly once. Historical source work exists; this planning audit runs no implementation or qualification.
 
-Each checkbox is a task acceptance, not merely source completion. Draft after `start_after`; complete only after both dependency lists and the task checks pass. Record evidence using the [progress template](progress-template.json). Proposed paths do not imply existing implementation. Cards follow dependency order; independent lanes may run concurrently within the main plan’s limits.
+Each checkbox is a task acceptance, not merely source completion. Draft after `start_after`; complete only after both dependency lists and the task checks pass. Record evidence using the [progress template](progress-template.json). Owned paths may contain historical source; completion still requires current acceptance evidence. Cards follow dependency order; independent lanes may run concurrently within the main plan’s limits.
 
 ## P00 — Record the implementation baseline and ownership assignments
 
-- [x] **P00 accepted** — owner lane: `integration`. Evidence: [evidence/P00.json](evidence/P00.json).
+- [x] **P00: complete** — owner lane: `integration`. Evidence: [evidence/P00.json](evidence/P00.json).
 
 **Start after:** none. **Additional acceptance prerequisites:** none.
 
@@ -16,13 +16,13 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Acceptance checks:** No silent scope loss; current row inventory matches or has reviewed changes; write ownership and temporary cleanup registered before any executable work.
 
-**Completion evidence:** evidence/P00.json with exact identities, checks, controls, cleanup and independent review.
+**Completion evidence:** evidence/P00.json with exact identities, checks, controls, cleanup and independent review
 
 **Early commit:** `docs(testing): record implementation baseline and lane ownership`.
 
 ## P01 — Version shared trust and evidence schemas
 
-- [x] **P01 accepted** — owner lane: `shared-reference`. Evidence: [evidence/P01.json](evidence/P01.json).
+- [x] **P01: complete** — owner lane: `shared-reference`. Evidence: [evidence/P01.json](evidence/P01.json).
 
 **Start after:** P00. **Additional acceptance prerequisites:** none.
 
@@ -38,7 +38,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P02 — Implement typed bounded protocol adapters
 
-- [x] **P02 accepted** — owner lane: `shared-reference`. Evidence: [evidence/P02.json](evidence/P02.json).
+- [x] **P02: complete** — owner lane: `shared-reference`. Evidence: [evidence/P02.json](evidence/P02.json).
 
 **Start after:** P01. **Additional acceptance prerequisites:** none.
 
@@ -54,7 +54,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P03 — Select reference seed inputs
 
-- [x] **P03 accepted** — owner lane: `shared-reference`. Evidence: [evidence/P03.json](evidence/P03.json).
+- [x] **P03: complete** — owner lane: `shared-reference`. Evidence: [evidence/P03.json](evidence/P03.json).
 
 **Start after:** P01. **Additional acceptance prerequisites:** none.
 
@@ -70,7 +70,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P25 — Build transitional bootstrap witness T
 
-- [x] **P25 accepted** — owner lane: `native-owner`. Evidence: [evidence/P25.json](evidence/P25.json).
+- [x] **P25: complete** — owner lane: `native-owner`. Evidence: [evidence/P25.json](evidence/P25.json).
 
 **Start after:** P01. **Additional acceptance prerequisites:** none.
 
@@ -86,7 +86,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P04 — Materialize reference seed
 
-- [x] **P04 accepted** — owner lane: `shared-reference`. Evidence: [evidence/P04.json](evidence/P04.json).
+- [x] **P04: complete** — owner lane: `shared-reference`. Evidence: [evidence/P04.json](evidence/P04.json).
 
 **Start after:** P03, P25. **Additional acceptance prerequisites:** none.
 
@@ -102,7 +102,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P05 — Independently accept reference seed
 
-- [x] **P05 accepted** — owner lane: `shared-reference`. Evidence: [evidence/P05.json](evidence/P05.json).
+- [x] **P05: complete** — owner lane: `shared-reference`. Evidence: [evidence/P05.json](evidence/P05.json).
 
 **Start after:** P04, P25. **Additional acceptance prerequisites:** none.
 
@@ -118,7 +118,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P06 — Define separate reference capability refresh
 
-- [ ] **P06 accepted** — owner lane: `shared-reference`.
+- [x] **P06: complete** — owner lane: `shared-reference`. Evidence: [evidence/P06.json](evidence/P06.json).
 
 **Start after:** P05. **Additional acceptance prerequisites:** none.
 
@@ -134,7 +134,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P07 — Journal ownership before effects
 
-- [x] **P07 accepted** — owner lane: `native-owner`. Evidence: [evidence/P07.json](evidence/P07.json).
+- [x] **P07: complete** — owner lane: `native-owner`. Evidence: [evidence/P07.json](evidence/P07.json).
 
 **Start after:** P01. **Additional acceptance prerequisites:** none.
 
@@ -150,7 +150,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P08 — Implement grants and idempotent dispatch
 
-- [x] **P08 accepted** — owner lane: `native-owner`. Evidence: [evidence/P08.json](evidence/P08.json).
+- [x] **P08: complete** — owner lane: `native-owner`. Evidence: [evidence/P08.json](evidence/P08.json).
 
 **Start after:** P07, P02. **Additional acceptance prerequisites:** none.
 
@@ -166,7 +166,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P09 — Own bounded workspaces
 
-- [x] **P09 accepted** — owner lane: `native-owner`. Evidence: [evidence/P09.json](evidence/P09.json).
+- [x] **P09: complete** — owner lane: `native-owner`. Evidence: [evidence/P09.json](evidence/P09.json).
 
 **Start after:** P07. **Additional acceptance prerequisites:** none.
 
@@ -182,7 +182,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P10 — Own processes and descriptors
 
-- [ ] **P10 accepted** — owner lane: `native-owner`.
+- [x] **P10: complete** — owner lane: `native-owner`. Evidence: [evidence/P10.json](evidence/P10.json).
 
 **Start after:** P08. **Additional acceptance prerequisites:** none.
 
@@ -198,7 +198,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P11 — Drain, recover and receipt owned resources
 
-- [ ] **P11 accepted** — owner lane: `native-owner`.
+- [x] **P11: complete** — owner lane: `native-owner`. Evidence: [evidence/P11.json](evidence/P11.json).
 
 **Start after:** P07, P08, P09, P10. **Additional acceptance prerequisites:** none.
 
@@ -214,15 +214,17 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P12 — Reserve host capacity and deadlines
 
-- [ ] **P12 accepted** — owner lane: `native-owner`.
+- [ ] **P12: active** — owner lane: `native-owner`. Evidence: [evidence/P12.json](evidence/P12.json).
+
+**Audit correction:** The authoritative lifecycle requires a 10 GiB free-disk admission floor and recheck before allocation. The card omitted it, and admission/host source and recorded controls do not implement or demonstrate it. Existing reservation/deadline controls remain useful local evidence.
 
 **Start after:** P07, P08, P09, P10, P11. **Additional acceptance prerequisites:** none.
 
 **Files:** `tools/native-test-owner/admission/`.
 
-**Concrete change:** Implement one host-wide live-run admission gate and atomic declared-peak reservation (one live case, one offline verification worker, one build producer) in `tools/native-test-owner/admission/`; charge cleanup reserve and enforce absolute monotonic deadlines.
+**Concrete change:** Implement one host-wide live-run admission gate and atomic declared-peak reservation (one live case, one offline verification worker, one build producer) in `tools/native-test-owner/admission/`; charge cleanup reserve and enforce absolute monotonic deadlines. Implement the lifecycle 10 GiB available-disk admission floor and recheck before allocation, with finite capability handle/pending/byte limits; the floor is an admission guard, not a reservation against other programs.
 
-**Acceptance checks:** Two repository roots cannot bypass the gate; nested producer demand does not deadlock; deadline-at-success is failure; no case starts if body plus cleanup cannot fit.
+**Acceptance checks:** Two repository roots cannot bypass the gate; nested producer demand does not deadlock; deadline-at-success is failure; no case starts if body plus cleanup cannot fit. Below-floor disk and omitted finite capability limits refuse before effect; recheck the 10 GiB floor before each allocation. Preserve all strict-envelope qualification requirements in P13.
 
 **Completion evidence:** Save bounded race controls; commit admission.
 
@@ -230,7 +232,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P13 — Implement and qualify strict host enforcement
 
-- [ ] **P13 accepted** — owner lane: `native-owner`.
+- [ ] **P13: blocked** — owner lane: `native-owner`. Evidence: [evidence/P13.json](evidence/P13.json).
+
+**Audit correction:** Recorded evidence admits memory is declared-peak accounting without a kernel RSS backstop and temporary bypass is bounded by free disk, not the required envelope. Neither strict profile qualifies; unavailable enforcement must remain blocked.
 
 **Start after:** P12, P25. **Additional acceptance prerequisites:** none.
 
@@ -238,7 +242,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Concrete change:** Implement the selected host enforcement adapter, then qualify the host's strict process/memory/temporary-data mechanism, charged scope and finite overshoot bound, including detached children and writes outside workspace helpers. Owner: `tools/native-test-owner/host/` plus host-profile acceptance record.
 
-**Acceptance checks:** Quick envelope (64 processes, 4 GiB, 512 MiB) and bounded-job envelope (64, 6 GiB, 2 GiB) are admitted only where enforcing mechanisms and disposal reserve are demonstrated. Poll-and-kill or sample peaks cannot qualify them; unavailable host remains blocked.
+**Acceptance checks:** Quick envelope (64 processes, 4 GiB, 512 MiB) and bounded-job envelope (64, 6 GiB, 2 GiB) are admitted only where enforcing mechanisms and disposal reserve are demonstrated. Poll-and-kill or sample peaks cannot qualify them; unavailable host remains blocked. The 10 GiB free-disk floor/recheck is necessary admission protection, not evidence of strict owned disk, memory or process enforcement.
 
 **Completion evidence:** Save host-specific negative controls; commit profile acceptance separately.
 
@@ -246,7 +250,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P14 — Independently accept N
 
-- [ ] **P14 accepted** — owner lane: `native-owner`.
+- [ ] **P14: blocked** — owner lane: `native-owner`. Evidence: [evidence/P14.json](evidence/P14.json).
+
+**Audit correction:** P13 host qualification is invalid. The recorded N executable is an ACK acceptance-test helper, not the separately built owner service required by this task; real N journal/enforcement/recovery/receipt acceptance remains missing.
 
 **Start after:** P10, P11, P12, P13, P02, P25. **Additional acceptance prerequisites:** none.
 
@@ -262,7 +268,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P15 — Create ordinary Can suite skeleton
 
-- [x] **P15 accepted** — owner lane: `can-suite-cli`. Evidence: [evidence/P15.json](evidence/P15.json).
+- [x] **P15: complete** — owner lane: `can-suite-cli`. Evidence: [evidence/P15.json](evidence/P15.json).
 
 **Start after:** P01. **Additional acceptance prerequisites:** none.
 
@@ -278,7 +284,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P16 — Plan cases and validate coverage
 
-- [x] **P16 accepted** — owner lane: `can-suite-cli`. Evidence: [evidence/P16.json](evidence/P16.json).
+- [x] **P16: complete** — owner lane: `can-suite-cli`. Evidence: [evidence/P16.json](evidence/P16.json).
 
 **Start after:** P15. **Additional acceptance prerequisites:** none.
 
@@ -294,7 +300,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P17 — Reduce Can evidence and outcomes
 
-- [x] **P17 accepted** — owner lane: `can-suite-cli`. Evidence: [evidence/P17.json](evidence/P17.json).
+- [x] **P17: complete** — owner lane: `can-suite-cli`. Evidence: [evidence/P17.json](evidence/P17.json).
 
 **Start after:** P15, P16. **Additional acceptance prerequisites:** none.
 
@@ -310,7 +316,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P27 — Implement run-scoped immutable build reuse and lease accounting
 
-- [ ] **P27 accepted** — owner lane: `can-suite-cli`.
+- [ ] **P27: planned** — owner lane: `can-suite-cli`.
 
 **Start after:** P09, P12, P15. **Additional acceptance prerequisites:** none.
 
@@ -320,13 +326,13 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Acceptance checks:** Detect input drift, partial fills, corrupt bundles, waiter cancellation, key omissions, leased eviction and reused determinism/corruption subjects. Failed fills do not publish; no persistent full bundle cache or hidden producer overlap; actual reuse qualification is included in P23.
 
-**Completion evidence:** evidence/P27.json with exact identities, checks, controls, cleanup and independent review.
+**Completion evidence:** evidence/P27.json with exact identities, checks, controls, cleanup and independent review
 
 **Early commit:** `feat(testing): reuse immutable builds within one run`.
 
 ## P18 — Stage nonpublishing suite generation
 
-- [ ] **P18 accepted** — owner lane: `can-suite-cli`.
+- [ ] **P18: planned** — owner lane: `can-suite-cli`.
 
 **Start after:** P05, P15, P27. **Additional acceptance prerequisites:** none.
 
@@ -342,7 +348,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P19 — Launch Can controller and fresh workers
 
-- [ ] **P19 accepted** — owner lane: `can-suite-cli`.
+- [ ] **P19: planned** — owner lane: `can-suite-cli`.
 
 **Start after:** P18, P12, P02, P16, P17. **Additional acceptance prerequisites:** none.
 
@@ -358,7 +364,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P20 — Expose structured product diagnostics
 
-- [x] **P20 accepted** — owner lane: `can-suite-cli`. Evidence: [evidence/P20.json](evidence/P20.json).
+- [x] **P20: complete** — owner lane: `can-suite-cli`. Evidence: [evidence/P20.json](evidence/P20.json).
 
 **Start after:** P01. **Additional acceptance prerequisites:** none.
 
@@ -374,7 +380,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P21 — Integrate test and check CLI dispatch
 
-- [ ] **P21 accepted** — owner lane: `can-suite-cli`.
+- [ ] **P21: planned** — owner lane: `can-suite-cli`.
 
 **Start after:** P18, P19, P20. **Additional acceptance prerequisites:** none.
 
@@ -390,7 +396,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P22 — Resolve reports, receipts and corrections
 
-- [ ] **P22 accepted** — owner lane: `can-suite-cli`.
+- [ ] **P22: planned** — owner lane: `can-suite-cli`.
 
 **Start after:** P11, P17, P19. **Additional acceptance prerequisites:** none.
 
@@ -406,7 +412,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P28 — Integrate base typed owner bindings and generated catalogue
 
-- [ ] **P28 accepted** — owner lane: `integration`.
+- [ ] **P28: planned** — owner lane: `integration`.
+
+**Audit correction:** Old active assignment has no task evidence or authored binding/transport/emitter artifacts; reset to planned. Existing catalogue files predate the assignment. Historical Muse checkpoint is not current ownership.
 
 **Start after:** P02, P10, P12, P15. **Additional acceptance prerequisites:** none.
 
@@ -416,13 +424,13 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Acceptance checks:** Catalogue/checker/emitter agree on normal effects and opaque handle admission. Reject forged/stale owner, arbitrary dispatch/eval, raw thenable transport and wrong target; generated files are reproducible. Treat this as provisional R-core input until P26.
 
-**Completion evidence:** evidence/P28.json with exact identities, checks, controls, cleanup and independent review.
+**Completion evidence:** evidence/P28.json with exact identities, checks, controls, cleanup and independent review
 
 **Early commit:** `feat(testing): integrate typed owner bindings`.
 
 ## P26 — Accept the core reference generation and its capability delta
 
-- [ ] **P26 accepted** — owner lane: `shared-reference`.
+- [ ] **P26: planned** — owner lane: `shared-reference`.
 
 **Start after:** P05, P06, P18, P19, P20, P21, P22, P27, P28, P25. **Additional acceptance prerequisites:** none.
 
@@ -432,13 +440,13 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Acceptance checks:** Predecessor-compatible checks plus independently reviewed fixed/native controls catch wrong transport, wrong target/emission, changed runtime and bypassed assertion behavior. R-seed stays authoritative where expressible; record explicit bootstrap bridge assumptions for new capabilities. No candidate self-promotion.
 
-**Completion evidence:** evidence/P26.json with exact identities, checks, controls, cleanup and independent review.
+**Completion evidence:** evidence/P26.json with exact identities, checks, controls, cleanup and independent review
 
 **Early commit:** `test(testing): accept the core reference generation`.
 
 ## P23 — Qualify first complete runner and suite
 
-- [ ] **P23 accepted** — owner lane: `can-suite-cli`.
+- [ ] **P23: planned** — owner lane: `can-suite-cli`.
 
 **Start after:** P14, P26, P16, P17, P18, P19, P20, P21, P22, P27. **Additional acceptance prerequisites:** none.
 
@@ -454,7 +462,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P24 — Qualify focused root planner
 
-- [ ] **P24 accepted** — owner lane: `can-suite-cli`.
+- [ ] **P24: planned** — owner lane: `can-suite-cli`.
 
 **Start after:** P18, P19, P20, P21, P22, P23. **Additional acceptance prerequisites:** none.
 
@@ -470,7 +478,9 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P29 — Own external service resources and recovery grants
 
-- [ ] **P29 accepted** — owner lane: `native-owner`.
+- [ ] **P29: blocked** — owner lane: `native-owner`. Evidence: [evidence/P29.json](evidence/P29.json).
+
+**Audit correction:** Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.
 
 **Start after:** P08, P11, P12. **Additional acceptance prerequisites:** none.
 
@@ -480,7 +490,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 **Acceptance checks:** Local controls reject foreign namespace/context/server/prefix, forged release, duplicate uncertain dispatch and crash-before-journal. Recovery touches only evidenced owned resources; missing release stays unresolved. Accepted N-core remains unchanged until each I slice independently accepts this delta.
 
-**Completion evidence:** evidence/P29.json with local positive/negative ownership controls and explicit unqualified service legs.
+**Completion evidence:** evidence/P29.json with local positive/negative ownership controls and explicit unqualified service legs
 
 **Early commit:** `feat(testing): journal external service ownership`.
 

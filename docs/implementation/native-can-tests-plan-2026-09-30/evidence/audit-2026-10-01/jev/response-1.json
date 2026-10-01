@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"lane_policy":{"type":"choice","choice":"scoped_slices","confidence":1.0,"probabilities":{"scoped_slices":1.0,"early_parent_credit":0.0,"whole_task_batches":0.0}}},"usage":{"input_tokens":777,"output_tokens":49}}

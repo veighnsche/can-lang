@@ -1,6 +1,6 @@
 # Native Can migration checklist
 
-Status: **planned; no migrated row or old-file deletion is credited**. [Migration tasks](migration-tasks.json) name 45 owned prefixes; [coverage map](coverage-map.json) assigns all 292 rows with individual gates; [retirement map](retirement-map.json) keeps 224 tracked test files and 16 external callers under integrator control. Proposed paths are not asserted to exist.
+Status: **audited 2026-10-01; see current task states below**. The [lane plan](lane-plan.md) defines dispatch and path reservations; the [master ledger](tasks.json) counts each of 143 task IDs exactly once. Historical source work exists; this planning audit runs no implementation or qualification.
 
 Each row may be mapped, authored and reviewed after its own start gates. Listed gates are minimum prerequisites; facet mapping adds any further gate required by the actual mechanism, variant or environment. Its own accept gates, rather than the group union, control its completion. Historical/static relevance decisions can finish before live runner qualification; a retained live behavior must then satisfy its conditional gates. Full-suite qualification is a later campaign/release gate. No deferred performance work is authorized.
 
@@ -12,11 +12,13 @@ M43–M45 complete with qualified Can policy and reviewed staged caller patches.
 
 ## M01 — Assertion and check evidence
 
+- [ ] **M01: planned** — owner lane: `migration-core`.
+
 Proposed owner: `tests/native-can/migration/m01-assertion-and-check-evidence/**`. Group start after: P15, P20, P27, P28, K01, K02, K03. Group accept after: P23, QN1. Logical gates: SUITE, DIAG, FAULT.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Port structured assertion selection, source spans, sticky violations, true/false reasons and malformed/missing evidence controls into Can-owned cases.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Port structured assertion selection, source spans, sticky violations, true/false reasons and malformed/missing evidence controls into Can-owned cases.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Port structured assertion selection, source spans, sticky violations, true/false reasons and malformed/missing evidence controls into Can-owned cases. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-007; shared delegate references: none.
 
@@ -68,11 +70,13 @@ Disposition: migrate. Start after: P15, P20, P28. Accept after: P23.
 
 ## M02 — Callables, generics and template checking
 
+- [ ] **M02: planned** — owner lane: `migration-core`.
+
 Proposed owner: `tests/native-can/migration/m02-callables-generics-and-templat/**`. Group start after: P15, P20, P27, P28. Group accept after: P23. Logical gates: SUITE, DIAG, BUILD.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Exercise captures, generic dependency chains, located invalid edits and template fixtures through candidate builds and Can comparisons.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Exercise captures, generic dependency chains, located invalid edits and template fixtures through candidate builds and Can comparisons.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Exercise captures, generic dependency chains, located invalid edits and template fixtures through candidate builds and Can comparisons. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -123,11 +127,13 @@ Disposition: migrate. Start after: P15, P20, P27, P28. Accept after: P23.
 
 ## M03 — Arrays, bytes, codecs and collections
 
+- [ ] **M03: planned** — owner lane: `migration-core`.
+
 Proposed owner: `tests/native-can/migration/m03-arrays-bytes-codecs-and-collec/**`. Group start after: P15, P27, P28, K01, K02, K03, K04, K05. Group accept after: P23, QN1, QN2. Logical gates: SUITE, BUILD, N1, N2.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Map each delegated array/collection declaration and dynamic variant; test immutable copies, order and codec bytes with C adapter ingress where required.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Map each delegated array/collection declaration and dynamic variant; test immutable copies, order and codec bytes with C adapter ingress where required.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Map each delegated array/collection declaration and dynamic variant; test immutable copies, order and codec bytes with C adapter ingress where required. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-006, DELEGATE-008; shared delegate references: none.
 
@@ -180,11 +186,13 @@ Disposition: migrate. Start after: P15, P27, P28, K04, K05. Accept after: P23, Q
 
 ## M04 — Coordination, occurrence identity and ownership
 
+- [ ] **M04: planned** — owner lane: `migration-core`.
+
 Proposed owner: `tests/native-can/migration/m04-coordination-occurrence-identi/**`. Group start after: P15, P27, P28, K01, K02, K03, K04, K05, K06. Group accept after: P23, QN1, QN2, QN3. Logical gates: SUITE, N1, N2, N3, CHILD.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Preserve all/allSettled/any/race selection, losing diagnostics, same occurrence identity and lease lifetime with terminal event seals.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Preserve all/allSettled/any/race selection, losing diagnostics, same occurrence identity and lease lifetime with terminal event seals.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Preserve all/allSettled/any/race selection, losing diagnostics, same occurrence identity and lease lifetime with terminal event seals. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-009, DELEGATE-014, DELEGATE-015, DELEGATE-016; shared delegate references: none.
 
@@ -228,11 +236,13 @@ Disposition: migrate. Start after: P15, P28, K04, K05, K06. Accept after: P23, Q
 
 ## M05 — Exact amounts, numbers, text and URL time
 
+- [ ] **M05: planned** — owner lane: `migration-core`.
+
 Proposed owner: `tests/native-can/migration/m05-exact-amounts-numbers-text-and/**`. Group start after: P15, P27, P28, P20. Group accept after: P23. Logical gates: SUITE, N1, N2.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Compare exact numeric bits/lexemes, rounding, Unicode/regex and URL/date cases; map delegated declarations instead of old pass counts.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Compare exact numeric bits/lexemes, rounding, Unicode/regex and URL/date cases; map delegated declarations instead of old pass counts.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Compare exact numeric bits/lexemes, rounding, Unicode/regex and URL/date cases; map delegated declarations instead of old pass counts. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-010, DELEGATE-011, DELEGATE-013, DELEGATE-022, DELEGATE-030; shared delegate references: none.
 
@@ -287,11 +297,13 @@ Disposition: migrate. Start after: P15, P20, P27, P28. Accept after: P23.
 
 ## M06 — Crypto, files and streams
 
+- [ ] **M06: planned** — owner lane: `migration-core`.
+
 Proposed owner: `tests/native-can/migration/m06-crypto-files-and-streams/**`. Group start after: P15, P20, P27, P28, K01, K02, K03. Group accept after: P23, QN1. Logical gates: SUITE, WORK, PROC, N1.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Run native commands and hostile file/stream cases with independent bytes, EOF/error, symlink and bounded cleanup facts.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Run native commands and hostile file/stream cases with independent bytes, EOF/error, symlink and bounded cleanup facts.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Run native commands and hostile file/stream cases with independent bytes, EOF/error, symlink and bounded cleanup facts. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-012, DELEGATE-021; shared delegate references: none.
 
@@ -335,11 +347,13 @@ Disposition: migrate. Start after: P15, P20, P27, P28. Accept after: P23.
 
 ## M07 — Fetch, formats, generation and consumer wrappers
 
+- [ ] **M07: planned** — owner lane: `migration-core`.
+
 Proposed owner: `tests/native-can/migration/m07-fetch-formats-generation-and-c/**`. Group start after: P15, P20, P27, P28, K20, K01, K02, K03. Group accept after: P23, QHTTP, QN1. Logical gates: SUITE, HTTP, PEER, WIRE, BUILD.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Use owned peers/provider fixtures to test raw requests, document formats, HTML, generation and layered recovery with Can-selected expected bytes.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Use owned peers/provider fixtures to test raw requests, document formats, HTML, generation and layered recovery with Can-selected expected bytes.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Use owned peers/provider fixtures to test raw requests, document formats, HTML, generation and layered recovery with Can-selected expected bytes. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -417,11 +431,13 @@ Disposition: migrate. Start after: P15, P20, P27, P28, K20, K01, K02, K03. Accep
 
 ## M08 — HTTP servers, TLS, WebSocket and transport
 
+- [ ] **M08: planned** — owner lane: `migration-core`.
+
 Proposed owner: `tests/native-can/migration/m08-http-servers-tls-websocket-and/**`. Group start after: P15, P27, P28, K20, K21. Group accept after: P23, QHTTP, QWS. Logical gates: SUITE, CHILD, HTTP, PEER, WIRE, CLOCK.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Preserve server/cookie/CSRF/TLS/WS effects, malformed transport, readiness and graceful versus forced shutdown with complete native receipts.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Preserve server/cookie/CSRF/TLS/WS effects, malformed transport, readiness and graceful versus forced shutdown with complete native receipts.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Preserve server/cookie/CSRF/TLS/WS effects, malformed transport, readiness and graceful versus forced shutdown with complete native receipts. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-023, DELEGATE-024, DELEGATE-025, DELEGATE-026, DELEGATE-027, DELEGATE-028, DELEGATE-029; shared delegate references: none.
 
@@ -491,11 +507,13 @@ Disposition: migrate. Start after: P15, P27, P28, K20, K21. Accept after: P23, Q
 
 ## M09 — CLI, formatter, input and process fixtures
 
+- [ ] **M09: planned** — owner lane: `migration-core`.
+
 Proposed owner: `tests/native-can/migration/m09-cli-formatter-input-and-proces/**`. Group start after: P15, P20, P27, P28, K17, K18, K01, K02, K03, K07, K08, K09. Group accept after: P23, QF1, QN1, QB0. Logical gates: SUITE, PROC, ENV, F1, F2, DIAG.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Exercise argv/env/fd maps, formatter identity, input capture, native declarations, process descendants and maintained project discovery.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Exercise argv/env/fd maps, formatter identity, input capture, native declarations, process descendants and maintained project discovery.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Exercise argv/env/fd maps, formatter identity, input capture, native declarations, process descendants and maintained project discovery. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-017; shared delegate references: none.
 
@@ -583,11 +601,13 @@ Disposition: migrate. Start after: P15, P27, P28, K07, K08, K09. Accept after: P
 
 ## M10 — Distribution, verified builds and release
 
+- [ ] **M10: planned** — owner lane: `migration-core`.
+
 Proposed owner: `tests/native-can/migration/m10-distribution-verified-builds-a/**`. Group start after: P15, P20, P27, P28, K17, K19, K20. Group accept after: P23, QF2, QHTTP. Logical gates: SUITE, BUILD, ARCHIVE, ENV, DIAG.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Check packaged Bun/runtime identity, deterministic verified build, install/update refusal, artifact manifests and strict emitted TypeScript where required.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Check packaged Bun/runtime identity, deterministic verified build, install/update refusal, artifact manifests and strict emitted TypeScript where required.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Check packaged Bun/runtime identity, deterministic verified build, install/update refusal, artifact manifests and strict emitted TypeScript where required. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-001, DELEGATE-002, DELEGATE-003, DELEGATE-004, DELEGATE-005; shared delegate references: none.
 
@@ -648,11 +668,13 @@ Disposition: migrate. Start after: P15, P20, P27, P28, K20. Accept after: P23, Q
 
 ## M11 — Raw fixture staging mechanics
 
+- [ ] **M11: planned** — owner lane: `migration-core`.
+
 Proposed owner: `tests/native-can/migration/m11-raw-fixture-staging-mechanics/**`. Group start after: P15, P28. Group accept after: P23. Logical gates: FILES, WORK, N1.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Replace authorization/environment fixture transformations with typed Can-selected byte operations; preserve exact fixture bytes and malformed-fixture refusal.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Replace authorization/environment fixture transformations with typed Can-selected byte operations; preserve exact fixture bytes and malformed-fixture refusal.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Replace authorization/environment fixture transformations with typed Can-selected byte operations; preserve exact fixture bytes and malformed-fixture refusal. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -694,11 +716,13 @@ Disposition: replace_support. Start after: P15, P28. Accept after: P23.
 
 ## M12 — Application server and browser cases
 
+- [ ] **M12: planned** — owner lane: `migration-browser`.
+
 Proposed owner: `tests/native-can/migration/m12-application-server-and-browser/**`. Group start after: P15, P27, P28, K20, K22, K07, K08, K09, K10, K11, K17, K16. Group accept after: P23, QHTTP, QD1, QB0, QB1base, QB5. Logical gates: B1, B5, DB, HTTP, CHILD.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Stage four apps, run required service and browser variants, and qualify local/remote Firefox context ownership without treating absent services as passes.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Stage four apps, run required service and browser variants, and qualify local/remote Firefox context ownership without treating absent services as passes.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Stage four apps, run required service and browser variants, and qualify local/remote Firefox context ownership without treating absent services as passes. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -767,11 +791,13 @@ Disposition: replace_support. Start after: P15, P28, K17, K07, K08, K09, K16. Ac
 
 ## M13 — Assets and browser target builds
 
+- [ ] **M13: planned** — owner lane: `migration-browser`.
+
 Proposed owner: `tests/native-can/migration/m13-assets-and-browser-target-buil/**`. Group start after: P15, P20, P27, P28, K20, K07, K08, K09. Group accept after: P23, QHTTP, QB0. Logical gates: BUILD, BROWSER, FILES.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Check asset pairing, CSP/local bytes and target isolation; review old bundler and SHA shim relevance before any conditional retirement.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Check asset pairing, CSP/local bytes and target isolation; review old bundler and SHA shim relevance before any conditional retirement.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Check asset pairing, CSP/local bytes and target isolation; review old bundler and SHA shim relevance before any conditional retirement. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -842,11 +868,13 @@ Disposition: historical_candidate. Start after: P15. Accept after: reviewed disp
 
 ## M14 — Browser wire codec parity
 
+- [ ] **M14: planned** — owner lane: `migration-browser`.
+
 Proposed owner: `tests/native-can/migration/m14-browser-wire-codec-parity/**`. Group start after: P15, P27, P28, K07, K08, K09, K15. Group accept after: P23, QB0, QB4. Logical gates: B4, N1, BUILD.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Replace bundled TypeScript vector oracle with Can-owned vectors; compare Bun/browser facts and reject unexpected node builtins.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Replace bundled TypeScript vector oracle with Can-owned vectors; compare Bun/browser facts and reject unexpected node builtins.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Replace bundled TypeScript vector oracle with Can-owned vectors; compare Bun/browser facts and reject unexpected node builtins. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -897,11 +925,13 @@ Disposition: replace_support. Start after: P15, P28, K07, K08, K09, K15. Accept 
 
 ## M15 — Native DOM and emitted controls
 
+- [ ] **M15: planned** — owner lane: `migration-browser`.
+
 Proposed owner: `tests/native-can/migration/m15-native-dom-and-emitted-control/**`. Group start after: P15, P28, K20, K07, K08, K09, K13, P27, K22, K01, K02, K03. Group accept after: P23, QHTTP, QB0, QB2, QD1, QN1. Logical gates: B2, B3, BROWSER, NATIVE.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Compare independent IDL/event/caret/file facts to emitted Can echoes, preserving physical versus synthetic input and same-task ordering controls.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Compare independent IDL/event/caret/file facts to emitted Can echoes, preserving physical versus synthetic input and same-task ordering controls.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Compare independent IDL/event/caret/file facts to emitted Can echoes, preserving physical versus synthetic input and same-task ordering controls. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -952,11 +982,13 @@ Disposition: migrate. Start after: P15, P28, K20, K07, K08, K09, K01, K02, K03, 
 
 ## M16 — Grid and compare contract build matrix
 
+- [ ] **M16: planned** — owner lane: `migration-browser`.
+
 Proposed owner: `tests/native-can/migration/m16-grid-and-compare-contract-buil/**`. Group start after: P15, P27, P28, P20, K07, K08, K09, K22, K10, K11, K20. Group accept after: P23, QB0, QD1, QB1base, QHTTP. Logical gates: BUILD, DIAG, B1, DB.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Keep real Can roots, contract edit diagnostics, paired identities and required-engine preflight distinct; reject stale imports and wrong target entry.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Keep real Can roots, contract edit diagnostics, paired identities and required-engine preflight distinct; reject stale imports and wrong target entry.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Keep real Can roots, contract edit diagnostics, paired identities and required-engine preflight distinct; reject stale imports and wrong target entry. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -1025,11 +1057,13 @@ Disposition: migrate. Start after: P15, P20, P28. Accept after: P23.
 
 ## M17 — Invoice contract mutation matrix
 
+- [ ] **M17: planned** — owner lane: `migration-browser`.
+
 Proposed owner: `tests/native-can/migration/m17-invoice-contract-mutation-matr/**`. Group start after: P15, P27, P28, K20, K07, K08, K09, K22, P20. Group accept after: P23, QHTTP, QB0, QD1. Logical gates: BUILD, DIAG, HTTP, DB, B1.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Exercise route/capture/field/leaf/status/body-mode edits and stale manifest pairings with exact HTTP/DB outcomes and noncommit controls.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Exercise route/capture/field/leaf/status/body-mode edits and stale manifest pairings with exact HTTP/DB outcomes and noncommit controls.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Exercise route/capture/field/leaf/status/body-mode edits and stale manifest pairings with exact HTTP/DB outcomes and noncommit controls. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -1125,11 +1159,13 @@ Disposition: migrate. Start after: P15, P27, P28, K20, K22. Accept after: P23, Q
 
 ## M18 — Invoice live server, guard and DB fixtures
 
+- [ ] **M18: planned** — owner lane: `migration-browser`.
+
 Proposed owner: `tests/native-can/migration/m18-invoice-live-server-guard-and-/**`. Group start after: P15, P27, P28, K20, K22, K17, K18, K07, K08, K09, K10, K11, K26, K13. Group accept after: P23, QHTTP, QD1, QF1, QB0, QB1base, QB1, QD4, QB2. Logical gates: BUILD, B1, B2, DB, F1.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Use owned SQLite/PG seeds and direct reads; verify startup refusal, escaped fragments, guard occurrence matrix and full browser reports.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Use owned SQLite/PG seeds and direct reads; verify startup refusal, escaped fragments, guard occurrence matrix and full browser reports.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Use owned SQLite/PG seeds and direct reads; verify startup refusal, escaped fragments, guard occurrence matrix and full browser reports. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -1225,11 +1261,13 @@ Disposition: replace_support. Start after: P15, P28, K17, K22. Accept after: P23
 
 ## M19 — Accounts, assets, dashboard and forms UI
 
+- [ ] **M19: planned** — owner lane: `migration-browser`.
+
 Proposed owner: `tests/native-can/migration/m19-accounts-assets-dashboard-and-/**`. Group start after: P15, P28, K20, K07, K08, K09, K22, K10, K11. Group accept after: P23, QHTTP, QB0, QD1, QB1base. Logical gates: B1, B2, BROWSER, HTTP.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Reauthor HTMX, CSP, quiet/swap, escaping and polling sequences in Can with independent DOM/network facts and terminal seals.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Reauthor HTMX, CSP, quiet/swap, escaping and polling sequences in Can with independent DOM/network facts and terminal seals.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Reauthor HTMX, CSP, quiet/swap, escaping and polling sequences in Can with independent DOM/network facts and terminal seals. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -1280,11 +1318,13 @@ Disposition: migrate. Start after: P15, P28, K20, K07, K08, K09, K10, K11. Accep
 
 ## M20 — Grid, compare, drift and conformance UI
 
+- [ ] **M20: planned** — owner lane: `migration-browser`.
+
 Proposed owner: `tests/native-can/migration/m20-grid-compare-drift-and-conform/**`. Group start after: P15, P28, K20, K07, K08, K09, K10, K11, P27, K22, K13, K14. Group accept after: P23, QHTTP, QB0, QB1base, QD1, QB2, QB3, QB1. Logical gates: B1, B2, B3, B4, DB.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Reauthor actions for grid/compare/drift/conformance/empty clients; check generated identity, replay/conflict, real keys and full engine variants.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Reauthor actions for grid/compare/drift/conformance/empty clients; check generated identity, replay/conflict, real keys and full engine variants.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Reauthor actions for grid/compare/drift/conformance/empty clients; check generated identity, replay/conflict, real keys and full engine variants. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -1353,11 +1393,13 @@ Disposition: migrate. Start after: P15, P28, K20, K07, K08, K09, K10, K11. Accep
 
 ## M21 — Invoice contract and form UI
 
+- [ ] **M21: planned** — owner lane: `migration-browser`.
+
 Proposed owner: `tests/native-can/migration/m21-invoice-contract-and-form-ui/**`. Group start after: P15, P28, K20, K07, K08, K09, K22, K13, K14, K10, K11, K26. Group accept after: P23, QHTTP, QB0, QD1, QB2, QB3, QB1base, QB1, QD4. Logical gates: B1, B2, B3, DB.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Reauthor invoice browser choreography, delayed/corrupt delivery, swaps, draft/focus retention and independent settled DB effects.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Reauthor invoice browser choreography, delayed/corrupt delivery, swaps, draft/focus retention and independent settled DB effects.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Reauthor invoice browser choreography, delayed/corrupt delivery, swaps, draft/focus retention and independent settled DB effects. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -1390,11 +1432,13 @@ Disposition: migrate. Start after: P15, P28, K20, K07, K08, K09, K22, K13, K14, 
 
 ## M22 — PostgreSQL query semantics
 
+- [ ] **M22: planned** — owner lane: `migration-history`.
+
 Proposed owner: `tests/native-can/migration/m22-postgresql-query-semantics/**`. Group start after: P15, P20, P27, P28, K17, K22, K18. Group accept after: P23, QD1, QF1. Logical gates: D1, DB, SUITE.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Move SQL setup and query answers into Can; verify optional/one/many/execute, null/bytes/limits, hostile binds and native rows.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Move SQL setup and query answers into Can; verify optional/one/many/execute, null/bytes/limits, hostile binds and native rows.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Move SQL setup and query answers into Can; verify optional/one/many/execute, null/bytes/limits, hostile binds and native rows. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -1444,11 +1488,13 @@ Disposition: retain_fixture. Start after: P15. Accept after: reviewed dispositio
 
 ## M23 — Transactions and persistence
 
+- [ ] **M23: planned** — owner lane: `migration-history`.
+
 Proposed owner: `tests/native-can/migration/m23-transactions-and-persistence/**`. Group start after: P15, P20, P27, P28, K22, K17, K18. Group accept after: P23, QD1, QF1. Logical gates: D1, D2, DB, SUITE.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Prove commit/rollback across compiled calls, pinned transaction identity and independent final rows using owned PostgreSQL namespace.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Prove commit/rollback across compiled calls, pinned transaction identity and independent final rows using owned PostgreSQL namespace.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Prove commit/rollback across compiled calls, pinned transaction identity and independent final rows using owned PostgreSQL namespace. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -1498,11 +1544,13 @@ Disposition: retain_fixture. Start after: P15. Accept after: reviewed dispositio
 
 ## M24 — Descriptor SQL wiring
 
+- [ ] **M24: planned** — owner lane: `migration-history`.
+
 Proposed owner: `tests/native-can/migration/m24-descriptor-sql-wiring/**`. Group start after: P15, P20, P27, P28, K22, K17, K18. Group accept after: P23, QD1, QF1. Logical gates: D1, DB, BUILD.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Invoke emitted descriptors with repeat placeholders and hostile text; compare exact operations to direct-driver facts, preserving static SQL fixture content.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Invoke emitted descriptors with repeat placeholders and hostile text; compare exact operations to direct-driver facts, preserving static SQL fixture content.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Invoke emitted descriptors with repeat placeholders and hostile text; compare exact operations to direct-driver facts, preserving static SQL fixture content. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -1552,11 +1600,13 @@ Disposition: retain_fixture. Start after: P15. Accept after: reviewed dispositio
 
 ## M25 — F02 locking and F03 relational slice
 
+- [ ] **M25: planned** — owner lane: `migration-history`.
+
 Proposed owner: `tests/native-can/migration/m25-f02-locking-and-f03-relational/**`. Group start after: P15, P28, K22, K24, K01, K02, K03, K25, K26. Group accept after: P23, QD1, QD2, QN1, QD3, QD4. Logical gates: D1, D2, D3, D4, DB.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Retain lock/RETURNING/error facets; add sentinel rollback and confirmed settlement controls while labeling them stronger than old evidence.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Retain lock/RETURNING/error facets; add sentinel rollback and confirmed settlement controls while labeling them stronger than old evidence.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Retain lock/RETURNING/error facets; add sentinel rollback and confirmed settlement controls while labeling them stronger than old evidence. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -1609,11 +1659,13 @@ Disposition: migrate. Start after: P15, P28, K22, K24, K25, K26. Accept after: P
 
 ## M26 — MySQL and SQLite persistence
 
+- [ ] **M26: planned** — owner lane: `migration-history`.
+
 Proposed owner: `tests/native-can/migration/m26-mysql-and-sqlite-persistence/**`. Group start after: P15, P28, K22, K17, K18. Group accept after: P23, QD1, QF1. Logical gates: D1, D2, DB, F1.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Run dialect-specific Can assertions and owned seed/cleanup; keep same-connection MySQL identity and exact SQLite rows explicit.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Run dialect-specific Can assertions and owned seed/cleanup; keep same-connection MySQL identity and exact SQLite rows explicit.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Run dialect-specific Can assertions and owned seed/cleanup; keep same-connection MySQL identity and exact SQLite rows explicit. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -1680,11 +1732,13 @@ Disposition: retain_fixture. Start after: P15. Accept after: reviewed dispositio
 
 ## M27 — Owner factory and isolation conventions
 
+- [ ] **M27: planned** — owner lane: `migration-history`.
+
 Proposed owner: `tests/native-can/migration/m27-owner-factory-and-isolation-co/**`. Group start after: P15, P20, P28. Group accept after: P23. Logical gates: SUITE, DIAG, FAULT.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Recreate green/tainted roots, private factory boundary, forged-record rejection and guided repair diagnostics as Can cases.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Recreate green/tainted roots, private factory boundary, forged-record rejection and guided repair diagnostics as Can cases.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Recreate green/tainted roots, private factory boundary, forged-record rejection and guided repair diagnostics as Can cases. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -1744,11 +1798,13 @@ Disposition: migrate. Start after: P15, P20, P28. Accept after: P23.
 
 ## M28 — Retry convention and mutation controls
 
+- [ ] **M28: planned** — owner lane: `migration-history`.
+
 Proposed owner: `tests/native-can/migration/m28-retry-convention-and-mutation-/**`. Group start after: P15, P20, P28. Group accept after: P23. Logical gates: SUITE, FAULT.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Preserve FIFO fixture consumption, fixed/result-data alternatives, no-retry and over-attempt mutants, and unrelated-file unchanged evidence.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Preserve FIFO fixture consumption, fixed/result-data alternatives, no-retry and over-attempt mutants, and unrelated-file unchanged evidence.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Preserve FIFO fixture consumption, fixed/result-data alternatives, no-retry and over-attempt mutants, and unrelated-file unchanged evidence. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -1817,11 +1873,13 @@ Disposition: migrate. Start after: P15, P20, P28. Accept after: P23.
 
 ## M29 — Cache ownership, reuse and recovery
 
+- [ ] **M29: planned** — owner lane: `migration-history`.
+
 Proposed owner: `tests/native-can/migration/m29-cache-ownership-reuse-and-reco/**`. Group start after: P15, P28, P27, K17, P20. Group accept after: P23. Logical gates: WORK, BUILD, CHILD, CLOCK.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Combine related cache mechanics only after mapping each row: key sensitivity, corruption refusal, one producer, bounded slots and conservative foreign/active recovery.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Combine related cache mechanics only after mapping each row: key sensitivity, corruption refusal, one producer, bounded slots and conservative foreign/active recovery.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Combine related cache mechanics only after mapping each row: key sensitivity, corruption refusal, one producer, bounded slots and conservative foreign/active recovery. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -1989,11 +2047,13 @@ Disposition: replace_support. Start after: P15, P27, P28. Accept after: P23.
 
 ## M30 — Baseline, T26 and T27 historical relevance
 
+- [ ] **M30: planned** — owner lane: `migration-history`.
+
 Proposed owner: `tests/native-can/migration/m30-baseline-t26-and-t27-historica/**`. Group start after: P15, P27, P28, K17. Group accept after: P23. Logical gates: SUITE, BUILD, DOC, FMT.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Review each dated/frozen assertion for current-contract relevance; retain historical records, migrate current catalogue/smoke checks, and keep broad meta-runner out of Can-owned credit.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Review each dated/frozen assertion for current-contract relevance; retain historical records, migrate current catalogue/smoke checks, and keep broad meta-runner out of Can-owned credit.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Review each dated/frozen assertion for current-contract relevance; retain historical records, migrate current catalogue/smoke checks, and keep broad meta-runner out of Can-owned credit. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -2182,11 +2242,13 @@ Disposition: preserve_record. Start after: P15. Accept after: reviewed dispositi
 
 ## M31 — Prototype admission guards
 
+- [ ] **M31: planned** — owner lane: `migration-history`.
+
 Proposed owner: `tests/native-can/migration/m31-prototype-admission-guards/**`. Group start after: P15, P27, P28. Group accept after: P23. Logical gates: SUITE, BUILD, DOC.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Keep current non-admission census and closed review manifest checks; conditional prototype behavior is not automatically production coverage.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Keep current non-admission census and closed review manifest checks; conditional prototype behavior is not automatically production coverage.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Keep current non-admission census and closed review manifest checks; conditional prototype behavior is not automatically production coverage. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -2228,11 +2290,15 @@ Disposition: migrate. Start after: P15, P27, P28. Accept after: P23.
 
 ## M32 — Prototype local adapters
 
+- [ ] **M32: active** — owner lane: `migration-history`. Evidence: [evidence/M32.json](evidence/M32.json).
+
+**Audit correction:** Fifteen retained ports have source/dispositions but the evidence defers execution, identities and qualification until P23. Aggregate completion requires those conditional row gates.
+
 Proposed owner: `tests/native-can/migration/m32-prototype-local-adapters/**`. Group start after: P15. Group accept after: row decisions only. Logical gates: N1, N2, BROWSER.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. For chart, clipboard and storage adapter declarations, decide retain/migrate/obsolete per current contract; preserve no-host-contact, mapping and opacity facts if retained.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. For chart, clipboard and storage adapter declarations, decide retain/migrate/obsolete per current contract; preserve no-host-contact, mapping and opacity facts if retained.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. For chart, clipboard and storage adapter declarations, decide retain/migrate/obsolete per current contract; preserve no-host-contact, mapping and opacity facts if retained. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -2517,11 +2583,15 @@ Disposition: historical_candidate. Start after: P15. Accept after: reviewed disp
 
 ## M33 — Prototype companion surfaces and packaging
 
+- [ ] **M33: active** — owner lane: `migration-history`. Evidence: [evidence/M33.json](evidence/M33.json).
+
+**Audit correction:** Eight retained ports remain provisional; recorded parse/relevance checks do not establish required controls, R/N/S/A/C identities or environment receipts.
+
 Proposed owner: `tests/native-can/migration/m33-prototype-companion-surfaces-a/**`. Group start after: P15. Group accept after: row decisions only. Logical gates: PEER, WIRE, N1.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Review companion chart/clipboard/storage protocol and bundle-size assertions individually; migrate retained semantics without freezing old sizes or prototype ABI.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Review companion chart/clipboard/storage protocol and bundle-size assertions individually; migrate retained semantics without freezing old sizes or prototype ABI.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Review companion chart/clipboard/storage protocol and bundle-size assertions individually; migrate retained semantics without freezing old sizes or prototype ABI. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -2806,11 +2876,13 @@ Disposition: historical_candidate. Start after: P15. Accept after: reviewed disp
 
 ## M34 — Prototype source and review records
 
+- [x] **M34: complete** — owner lane: `migration-history`. Evidence: [evidence/M34.json](evidence/M34.json).
+
 Proposed owner: `tests/native-can/migration/m34-prototype-source-and-review-re/**`. Group start after: P15. Group accept after: row decisions only. Logical gates: DOC, BUILD.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Preserve review artifacts and decide conditional retirement of six unadmitted prototype sources; no test credit from their historical presence.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Preserve review artifacts and decide conditional retirement of six unadmitted prototype sources; no test credit from their historical presence.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Preserve review artifacts and decide conditional retirement of six unadmitted prototype sources; no test credit from their historical presence. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -2909,11 +2981,13 @@ Disposition: historical_candidate. Start after: P15. Accept after: reviewed disp
 
 ## M35 — Native runtime qualification
 
+- [ ] **M35: planned** — owner lane: `migration-history`.
+
 Proposed owner: `tests/native-can/migration/m35-native-runtime-qualification/**`. Group start after: P15, P27, P28, K17, K01, K02, K03, K04, K05. Group accept after: P23, QN1, QN2. Logical gates: N1, N2, N3, ENV, ARCHIVE.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Reauthor every native behavior/identity probe in Can with independent raw facts, absent-API and changed-identity controls; coordinate linked EDGE-001 caller.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Reauthor every native behavior/identity probe in Can with independent raw facts, absent-API and changed-identity controls; coordinate linked EDGE-001 caller.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Reauthor every native behavior/identity probe in Can with independent raw facts, absent-API and changed-identity controls; coordinate linked EDGE-001 caller. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -2973,11 +3047,13 @@ Disposition: migrate. Start after: P15, P28, K17, K01, K02, K03, K04, K05. Accep
 
 ## M36 — Authoring policy comparison records
 
+- [x] **M36: complete** — owner lane: `migration-history`. Evidence: [evidence/M36.json](evidence/M36.json).
+
 Proposed owner: `tests/native-can/migration/m36-authoring-policy-comparison-re/**`. Group start after: P15. Group accept after: row decisions only. Logical gates: DOC, SUITE.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Preserve dated unrun agent-trial records and six Can comparison fixtures; require a current relevance decision before active checks are retired.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Preserve dated unrun agent-trial records and six Can comparison fixtures; require a current relevance decision before active checks are retired.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Preserve dated unrun agent-trial records and six Can comparison fixtures; require a current relevance decision before active checks are retired. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -3080,11 +3156,13 @@ Disposition: preserve_record. Start after: P15. Accept after: reviewed dispositi
 
 ## M37 — Native qualification caller bridge
 
+- [ ] **M37: planned** — owner lane: `migration-history`.
+
 Proposed owner: `tests/native-can/migration/m37-native-qualification-caller-br/**`. Group start after: P15, P28, K17, K01, K02, K03. Group accept after: P23, QN1. Logical gates: SUITE, N1, ENV, ARCHIVE.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Replace native.ts policy with Can-owned cases and typed facts; coordinate EDGE-001 Python isolation/provenance/aggregation without duplicate credit.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Replace native.ts policy with Can-owned cases and typed facts; coordinate EDGE-001 Python isolation/provenance/aggregation without duplicate credit.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Replace native.ts policy with Can-owned cases and typed facts; coordinate EDGE-001 Python isolation/provenance/aggregation without duplicate credit. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -3108,11 +3186,13 @@ Disposition: rewire. Start after: P15, P28, K17, K01, K02, K03. Accept after: P2
 
 ## M38 — Gate3 route and server matrix
 
+- [ ] **M38: planned** — owner lane: `migration-life`.
+
 Proposed owner: `tests/native-can/migration/m38-gate3-route-and-server-matrix/**`. Group start after: P15, P20, P27, P28, K20, K22. Group accept after: P23, QHTTP, QD1. Logical gates: BUILD, DIAG, DB, HTTP.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Rebuild changed contracts and exercise exact load/save, adapter routing, malformed captures and unchanged handler-entry evidence.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Rebuild changed contracts and exercise exact load/save, adapter routing, malformed captures and unchanged handler-entry evidence.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Rebuild changed contracts and exercise exact load/save, adapter routing, malformed captures and unchanged handler-entry evidence. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -3163,11 +3243,13 @@ Disposition: migrate. Start after: P15, P27, P28, K20, K22. Accept after: P23, Q
 
 ## M39 — Gate3 concurrency, replay and fault lifecycle
 
+- [ ] **M39: planned** — owner lane: `migration-life`.
+
 Proposed owner: `tests/native-can/migration/m39-gate3-concurrency-replay-and-f/**`. Group start after: P15, P27, P28, K20, K22, K24, K26. Group accept after: P23, QHTTP, QD1, QD2, QD4. Logical gates: DB, D1, D4, CHILD, CLOCK.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Test one-winner/seven-conflict, replay expiry/revocation, postcommit renderer fault and startup/shutdown using settled independent effects.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Test one-winner/seven-conflict, replay expiry/revocation, postcommit renderer fault and startup/shutdown using settled independent effects.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Test one-winner/seven-conflict, replay expiry/revocation, postcommit renderer fault and startup/shutdown using settled independent effects. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-018; shared delegate references: none.
 
@@ -3219,11 +3301,13 @@ Disposition: migrate. Start after: P15, P27, P28, K20, K22, K26. Accept after: P
 
 ## M40 — Gate4 installed artifact, webhook and companion
 
+- [ ] **M40: planned** — owner lane: `migration-life`.
+
 Proposed owner: `tests/native-can/migration/m40-gate4-installed-artifact-webho/**`. Group start after: P15, P27, P28, K17, K20, K22, K01, K02, K03, K06, K19, K24, K26. Group accept after: P23, QHTTP, QD1, QN1, QN3, QF2, QD2, QD4. Logical gates: ARCHIVE, PEER, DB, CHILD, METRIC.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Preserve installed/development identity, exact HMAC webhook bytes and two-process companion report/receipt semantics; defer authorized measurement legs.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Preserve installed/development identity, exact HMAC webhook bytes and two-process companion report/receipt semantics; defer authorized measurement legs.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Preserve installed/development identity, exact HMAC webhook bytes and two-process companion report/receipt semantics; defer authorized measurement legs. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-019, DELEGATE-020; shared delegate references: DELEGATE-009, DELEGATE-016, DELEGATE-026, DELEGATE-028.
 
@@ -3267,11 +3351,13 @@ Disposition: migrate. Start after: P15, P27, P28, K20, K22, K24, K26. Accept aft
 
 ## M41 — Linux, S3 and UP23 verdict
 
+- [ ] **M41: planned** — owner lane: `migration-life`.
+
 Proposed owner: `tests/native-can/migration/m41-linux-s3-and-up23-verdict/**`. Group start after: P15, P27, P28, K17, K22, K01, K02, K03, K20, K27, K18, K07, K08, K09, K10, K11. Group accept after: P23, QD1, QN1, QHTTP, QStore, QF1, QB0, QB1base, QB1. Logical gates: ARCHIVE, DB, STORE, B1.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Use installed Linux artifacts, independent PG/SQLite facts, preowned S3 prefix and full two-engine UP23 guard evidence with cleanup.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Use installed Linux artifacts, independent PG/SQLite facts, preowned S3 prefix and full two-engine UP23 guard evidence with cleanup.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Use installed Linux artifacts, independent PG/SQLite facts, preowned S3 prefix and full two-engine UP23 guard evidence with cleanup. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -3322,11 +3408,13 @@ Disposition: migrate. Start after: P15, P27, P28, K20, K07, K08, K09, K22, K10, 
 
 ## M42 — Webhook and S3 independent setup
 
+- [ ] **M42: planned** — owner lane: `migration-life`.
+
 Proposed owner: `tests/native-can/migration/m42-webhook-and-s3-independent-set/**`. Group start after: P15, P28, K22, K27. Group accept after: P23, QD1, QStore. Logical gates: DB, STORE, WORK.
 
 Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Replace driver policy with Can-selected seeds and raw readback; register namespaces/prefixes before effects and report cleanup failure.
 
-Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Replace driver policy with Can-selected seeds and raw readback; register namespaces/prefixes before effects and report cleanup failure.
+Acceptance: Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Replace driver policy with Can-selected seeds and raw readback; register namespaces/prefixes before effects and report cleanup failure. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.
 
 Evidence: Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -3359,11 +3447,13 @@ Disposition: replace_support. Start after: P15, P28, K27. Accept after: P23, QSt
 
 ## M43 — Native and Linux external consumers
 
+- [ ] **M43: planned** — owner lane: `migration-edge`.
+
 Proposed owner: `tests/native-can/migration/m43-native-and-linux-external-cons/**`. Group start after: P15, P28, K17, K01, K02, K03, K22. Group accept after: P23, QN1, QD1. Logical gates: SUITE, ARCHIVE, DB, N1.
 
 Prepare the Can-side policy, row mapping and a reviewed patch for the existing external callers under integrator ownership. Exercise the new report/receipt contract in a staged or read-only check where feasible; Z03 applies and activates the shared caller patch after dependencies pass. Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Rewire Python/Linux qualification and PG/SQLite drivers after Can-owned native and installed-artifact evidence; preserve provisioning mechanics.
 
-Acceptance: This task can finish with a reviewed, exact caller patch and evidence contract before Z03 activates it; do not require Z03 completion or edit shared caller files in this slice. Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Rewire Python/Linux qualification and PG/SQLite drivers after Can-owned native and installed-artifact evidence; preserve provisioning mechanics.
+Acceptance: This task can finish with a reviewed, exact caller patch and evidence contract before Z03 activates it; do not require Z03 completion or edit shared caller files in this slice. Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Rewire Python/Linux qualification and PG/SQLite drivers after Can-owned native and installed-artifact evidence; preserve provisioning mechanics. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests. Task completion accepts the qualified Can policy and reviewed staged caller patch. Actual shared-caller activation belongs to Z03; no circular prerequisite requires it already applied here.
 
 Evidence: Proposed patch, caller inventory and staged contract evidence; integrator activation and old invocation retirement are Z03 work. Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -3423,11 +3513,13 @@ Disposition: migrate. Start after: P15, P28, K22. Accept after: P23, QD1.
 
 ## M44 — CI and host conformance consumers
 
+- [ ] **M44: planned** — owner lane: `migration-edge`.
+
 Proposed owner: `tests/native-can/migration/m44-ci-and-host-conformance-consum/**`. Group start after: P15, P27, P28, K17, K07, K08, K09. Group accept after: P23, QB0. Logical gates: SUITE, BUILD, B1, ENV, WORK.
 
 Prepare the Can-side policy, row mapping and a reviewed patch for the existing external callers under integrator ownership. Exercise the new report/receipt contract in a staged or read-only check where feasible; Z03 applies and activates the shared caller patch after dependencies pass. Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Replace in-scope CI invocations and host harness dependencies with qualified Can report plus N receipt; keep independent whole-repository gates separate.
 
-Acceptance: This task can finish with a reviewed, exact caller patch and evidence contract before Z03 activates it; do not require Z03 completion or edit shared caller files in this slice. Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Replace in-scope CI invocations and host harness dependencies with qualified Can report plus N receipt; keep independent whole-repository gates separate.
+Acceptance: This task can finish with a reviewed, exact caller patch and evidence contract before Z03 activates it; do not require Z03 completion or edit shared caller files in this slice. Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Replace in-scope CI invocations and host harness dependencies with qualified Can report plus N receipt; keep independent whole-repository gates separate. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests. Task completion accepts the qualified Can policy and reviewed staged caller patch. Actual shared-caller activation belongs to Z03; no circular prerequisite requires it already applied here.
 
 Evidence: Proposed patch, caller inventory and staged contract evidence; integrator activation and old invocation retirement are Z03 work. Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 
@@ -3514,11 +3606,13 @@ Disposition: rewire. Start after: P15, P28, K17. Accept after: P23.
 
 ## M45 — Operator documentation callers
 
+- [ ] **M45: planned** — owner lane: `migration-edge`.
+
 Proposed owner: `tests/native-can/migration/m45-operator-documentation-callers/**`. Group start after: P15, P28, K17, K07, K08, K09. Group accept after: P23, QB0. Logical gates: DOC, SUITE.
 
 Prepare the Can-side policy, row mapping and a reviewed patch for the existing external callers under integrator ownership. Exercise the new report/receipt contract in a staged or read-only check where feasible; Z03 applies and activates the shared caller patch after dependencies pass. Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Update native/Linux/browser operator commands only after the new qualified entrypoint and dependency provisioning are real.
 
-Acceptance: This task can finish with a reviewed, exact caller patch and evidence contract before Z03 activates it; do not require Z03 completion or edit shared caller files in this slice. Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Update native/Linux/browser operator commands only after the new qualified entrypoint and dependency provisioning are real.
+Acceptance: This task can finish with a reviewed, exact caller patch and evidence contract before Z03 activates it; do not require Z03 completion or edit shared caller files in this slice. Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Update native/Linux/browser operator commands only after the new qualified entrypoint and dependency provisioning are real. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests. Task completion accepts the qualified Can policy and reviewed staged caller patch. Actual shared-caller activation belongs to Z03; no circular prerequisite requires it already applied here.
 
 Evidence: Proposed patch, caller inventory and staged contract evidence; integrator activation and old invocation retirement are Z03 work. Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.
 

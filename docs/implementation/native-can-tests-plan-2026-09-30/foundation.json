@@ -1,5 +1,5 @@
 {
-  "status": "planned",
+  "status": "in_progress; audited 2026-10-01, no execution in audit round",
   "tasks": [
     {
       "id": "P01",
@@ -234,11 +234,11 @@
       "files": [
         "tools/native-test-owner/admission/"
       ],
-      "changes": "Implement one host-wide live-run admission gate and atomic declared-peak reservation (one live case, one offline verification worker, one build producer) in `tools/native-test-owner/admission/`; charge cleanup reserve and enforce absolute monotonic deadlines.",
-      "acceptance": "Two repository roots cannot bypass the gate; nested producer demand does not deadlock; deadline-at-success is failure; no case starts if body plus cleanup cannot fit.",
+      "changes": "Implement one host-wide live-run admission gate and atomic declared-peak reservation (one live case, one offline verification worker, one build producer) in `tools/native-test-owner/admission/`; charge cleanup reserve and enforce absolute monotonic deadlines. Implement the lifecycle 10 GiB available-disk admission floor and recheck before allocation, with finite capability handle/pending/byte limits; the floor is an admission guard, not a reservation against other programs.",
+      "acceptance": "Two repository roots cannot bypass the gate; nested producer demand does not deadlock; deadline-at-success is failure; no case starts if body plus cleanup cannot fit. Below-floor disk and omitted finite capability limits refuse before effect; recheck the 10 GiB floor before each allocation. Preserve all strict-envelope qualification requirements in P13.",
       "evidence": "Save bounded race controls; commit admission.",
       "commit": "feat(testing): reserve host capacity and deadlines",
-      "status": "complete",
+      "status": "active",
       "start_after": [
         "P07",
         "P08",
@@ -247,7 +247,14 @@
         "P11"
       ],
       "accept_after": [],
-      "scope": "code and local controls; integrated gates explicit"
+      "scope": "code and local controls; integrated gates explicit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "The authoritative lifecycle requires a 10 GiB free-disk admission floor and recheck before allocation. The card omitted it, and admission/host source and recorded controls do not implement or demonstrate it. Existing reservation/deadline controls remain useful local evidence.",
+        "pending_prerequisites": [],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "P13",
@@ -257,16 +264,25 @@
         "tools/native-test-owner/host/"
       ],
       "changes": "Implement the selected host enforcement adapter, then qualify the host's strict process/memory/temporary-data mechanism, charged scope and finite overshoot bound, including detached children and writes outside workspace helpers. Owner: `tools/native-test-owner/host/` plus host-profile acceptance record.",
-      "acceptance": "Quick envelope (64 processes, 4 GiB, 512 MiB) and bounded-job envelope (64, 6 GiB, 2 GiB) are admitted only where enforcing mechanisms and disposal reserve are demonstrated. Poll-and-kill or sample peaks cannot qualify them; unavailable host remains blocked.",
+      "acceptance": "Quick envelope (64 processes, 4 GiB, 512 MiB) and bounded-job envelope (64, 6 GiB, 2 GiB) are admitted only where enforcing mechanisms and disposal reserve are demonstrated. Poll-and-kill or sample peaks cannot qualify them; unavailable host remains blocked. The 10 GiB free-disk floor/recheck is necessary admission protection, not evidence of strict owned disk, memory or process enforcement.",
       "evidence": "Save host-specific negative controls; commit profile acceptance separately.",
       "commit": "test(testing): qualify strict host enforcement",
-      "status": "complete",
+      "status": "blocked",
       "start_after": [
         "P12",
         "P25"
       ],
       "accept_after": [],
-      "scope": "qualification or promotion"
+      "scope": "qualification or promotion",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Recorded evidence admits memory is declared-peak accounting without a kernel RSS backstop and temporary bypass is bounded by free disk, not the required envelope. Neither strict profile qualifies; unavailable enforcement must remain blocked.",
+        "pending_prerequisites": [
+          "P12"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "P14",
@@ -280,7 +296,7 @@
       "acceptance": "N death, forged/absent receipt, lingering descendant/descriptor and cleanup failure cannot appear as complete success. T's own loss leaves no green receipt. Scope acceptance to the exact qualified host profile. Another host requires explicit selection and its own receipt; do not silently move execution or treat unsupported local enforcement as a pass.",
       "evidence": "Save N/T identities and independent release facts; commit N acceptance.",
       "commit": "test(testing): independently accept n",
-      "status": "complete",
+      "status": "blocked",
       "start_after": [
         "P10",
         "P11",
@@ -290,7 +306,17 @@
         "P25"
       ],
       "accept_after": [],
-      "scope": "qualification or promotion"
+      "scope": "qualification or promotion",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "P13 host qualification is invalid. The recorded N executable is an ACK acceptance-test helper, not the separately built owner service required by this task; real N journal/enforcement/recovery/receipt acceptance remains missing.",
+        "pending_prerequisites": [
+          "P12",
+          "P13"
+        ],
+        "local_evidence_preserved": true
+      }
     },
     {
       "id": "P15",
@@ -539,7 +565,7 @@
       "acceptance": "Catalogue/checker/emitter agree on normal effects and opaque handle admission. Reject forged/stale owner, arbitrary dispatch/eval, raw thenable transport and wrong target; generated files are reproducible. Treat this as provisional R-core input until P26.",
       "evidence": "evidence/P28.json with exact identities, checks, controls, cleanup and independent review",
       "commit": "feat(testing): integrate typed owner bindings",
-      "status": "active",
+      "status": "planned",
       "start_after": [
         "P02",
         "P10",
@@ -547,7 +573,16 @@
         "P15"
       ],
       "accept_after": [],
-      "scope": "code and local controls; integrated gates explicit"
+      "scope": "code and local controls; integrated gates explicit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "active",
+        "reason": "Old active assignment has no task evidence or authored binding/transport/emitter artifacts; reset to planned. Existing catalogue files predate the assignment. Historical Muse checkpoint is not current ownership.",
+        "pending_prerequisites": [
+          "P12"
+        ],
+        "local_evidence_preserved": false
+      }
     },
     {
       "id": "P27",
@@ -615,8 +650,18 @@
       "acceptance": "Local controls reject foreign namespace/context/server/prefix, forged release, duplicate uncertain dispatch and crash-before-journal. Recovery touches only evidenced owned resources; missing release stays unresolved. Accepted N-core remains unchanged until each I slice independently accepts this delta.",
       "evidence": "evidence/P29.json with local positive/negative ownership controls and explicit unqualified service legs",
       "commit": "feat(testing): journal external service ownership",
-      "status": "complete",
-      "scope": "code and local controls; integrated gates explicit"
+      "status": "blocked",
+      "scope": "code and local controls; integrated gates explicit",
+      "status_audit": {
+        "date": "2026-10-01",
+        "previous_status": "complete",
+        "reason": "Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.",
+        "pending_prerequisites": [
+          "P12"
+        ],
+        "local_evidence_preserved": true
+      }
     }
-  ]
+  ],
+  "dispatch_plan": "lane-plan.json; lane fields remain ownership domains, queues assign the three worker slots and integrator"
 }

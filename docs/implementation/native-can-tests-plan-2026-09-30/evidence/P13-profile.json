@@ -294,5 +294,11 @@
     "tmp bypass bytes between decision-point reconciles are bounded physically by probed free disk, not by the envelope; no admission or disposal verdict is issued on unreconciled state, and overflow past the max latches fail-closed until disposal",
     "NPROC fit uses the soft limit at probe time; Admit re-probes fresh facts and refuses on drift, but a limit lowered mid-run is detected only at the next admission",
     "darwin-only: off darwin the adapter probes unavailable and every envelope stays blocked"
-  ]
+  ],
+  "planning_audit": {
+    "date": "2026-10-01",
+    "usable_for_current_acceptance": false,
+    "reason": "Recorded evidence admits memory is declared-peak accounting without a kernel RSS backstop and temporary bypass is bounded by free disk, not the required envelope. Neither strict profile qualifies; unavailable enforcement must remain blocked.",
+    "raw_receipt_preserved": true
+  }
 }

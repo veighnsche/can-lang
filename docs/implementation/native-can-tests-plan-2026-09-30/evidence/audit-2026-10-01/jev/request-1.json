@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "We are auditing the Can native-testing migration plan, with 143 task identities and no external users. Only planning documents can change in this round; no implementation or tests are authorized except two ledger validators. The plan requires accepted start_after predecessors before source drafting and accept_after before completion. Migration groups additionally allow individual rows to advance using their own gates; those gates are minima for the actual facets. R, N, S, A and C stay distinct, and the candidate cannot judge or promote itself. At most three source workers and one integrator may run; the integrator exclusively changes shared compiler/catalogue paths, formats globally, commits, activates callers and deletes old harnesses. Only one admitted live run/case/verification worker/build producer may execute with ordered phases. Evidence of 1600\u20132700-line reviews suggests review throughput is a bottleneck. Existing local controls sometimes stand in for required real observer/service adapters; P13 claims strict host acceptance although its evidence admits memory beyond declarations has no kernel backstop and temporary bypass is bounded by free disk rather than the envelope. Such work must not be credited as qualified. Many graph edges are transitively implied; removing these direct edges cannot change reachability or shorten the critical path. Missing host guarantees and deferred retained metric runs mean no finite final-completion ETA. The question is how to reorganize source and review work while preserving all acceptance obligations.",
+  "questions": {
+    "lane_policy": {
+      "type": "choice",
+      "instructions": "Which organization best reduces avoidable review waiting while honoring these readiness, trust and resource constraints?",
+      "criteria": {
+        "scoped_slices": "Keep all parent and row gates; divide ready parents into explicitly disjoint source, local-control and evidence sub-deliveries. Give small acceptance/review receipts to slices without adding task completion credit; join all required slices and dependencies at the parent. Use eligible-work stealing, serialized promotion, and compatible single builds with separate capability receipts.",
+        "early_parent_credit": "Call a parent complete once its simulated/local slice passes, and move missing adapters, integrated controls and authority evidence to later tasks even where the original parent required them. This makes more dependents ready quickly.",
+        "whole_task_batches": "Preserve every gate but retain whole-task submissions and fixed lane queues, allowing a worker to wait for its next assigned parent even when another lane has eligible disjoint work."
+      }
+    }
+  }
+}

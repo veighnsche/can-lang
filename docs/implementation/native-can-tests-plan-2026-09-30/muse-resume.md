@@ -1,3 +1,7 @@
+# Current planning checkpoint — 2026-10-01
+
+The historical Muse pause/resume log below is superseded for dispatch by [lane-plan.md](lane-plan.md) and the audited [master ledger](tasks.json). This audit authorizes no Muse execution. P28 is planned, not an active assignment. Use current prerequisites and reservations; do not resume the old worker IDs or replay obsolete status updates.
+
 # Muse resume checkpoint (EMFILE pause)
 
 Saved: 2026-09-30 ~18:25 CEST, after tool-layer `Too many open files (os error 24)`.

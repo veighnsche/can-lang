@@ -1,5 +1,5 @@
 {
-  "status": "proposed; not accepted",
+  "status": "historical selection snapshot; bounded R-seed accepted by P04/P05 receipts; R-core and N unqualified",
   "selected_utc": "2026-09-30T16:20:00+00:00",
   "head": "626bf03743dbfa660d4b4651c2b0b3cceaeae0a5",
   "planning_baseline": "4cf8f91d97f45cf937c3464de54bc6275e70d49f",
@@ -16,7 +16,12 @@
       "sha256": "bdc7874222d8eccc7dc651bc949d98871e9b4e87e313b44cf1ca0c51c2957659"
     },
     "runtime_tree": {
-      "roots": ["runtime/", "tools/runtime/", "distribution/assets/", "distribution/notices/"],
+      "roots": [
+        "runtime/",
+        "tools/runtime/",
+        "distribution/assets/",
+        "distribution/notices/"
+      ],
       "files": 336,
       "bytes": 4092369,
       "note": "includes three ignored .DS_Store files copied by distribution.Build"
@@ -36,12 +41,27 @@
     "go_toolchain": "go1.27.1 darwin/arm64",
     "host": "Darwin 27.0.0 arm64"
   },
-  "missing": ["R bundle (dist/development empty, no canlc on PATH)", "N executable"],
+  "missing": [
+    "R bundle (dist/development empty, no canlc on PATH)",
+    "N executable"
+  ],
   "recipe": [
     "verify every input hash; changed/missing artifact fails identity",
     "cataloguegen --check passes with byte-identical mirrors",
     "go build the compiler from inventoried source under run/acceptance ownership",
     "stage bundle with catalogue, runtime, pinned Bun and trusted bindings; never candidate canlc run"
   ],
-  "acceptance": "pending P04 materialization and P05 independent controls"
+  "acceptance": "pending P04 materialization and P05 independent controls",
+  "current_acceptance": {
+    "audited": "2026-10-01",
+    "materialization_receipt": "evidence/P04.json",
+    "bounded_seed_controls": "evidence/P05.json",
+    "scope": "Only P05 literal-subset/bootstrap controls; no R-core, N, live-suite or current artifact revalidation inferred.",
+    "pending": [
+      "P26 R-core",
+      "P14 actual N plus qualified host",
+      "P23 suite acceptance"
+    ],
+    "inventory_policy": "The selection-time inputs, missing list and pending recipe below are preserved historical facts, not current availability claims."
+  }
 }

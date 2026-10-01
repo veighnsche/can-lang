@@ -1,0 +1,20 @@
+{
+  "before_send": true,
+  "reviewed_facts": [
+    "143 unchanged identities",
+    "planning-only round",
+    "strict start/accept semantics plus per-row gates",
+    "R/N/S/A/C separation",
+    "3 workers + integrator",
+    "shared paths and promotion ownership",
+    "single phased heavy slot",
+    "1600\u20132700-line reviews",
+    "simulated adapter and P13 limitations",
+    "transitive edge removal no speedup",
+    "unknown host/metric waits"
+  ],
+  "all_explanatory_state_instruction_and_option_prose_rewritten": true,
+  "semantic_equivalence_review": "All three requests preserve the same facts, constraints, three alternatives and their consequences. Exact technical identifiers remain. Agreement is advice, not proof or assurance against framing bias.",
+  "api_reference": "https://docs.typesafe.ai/api",
+  "primitive_reference": "https://docs.typesafe.ai/primitives/choice"
+}

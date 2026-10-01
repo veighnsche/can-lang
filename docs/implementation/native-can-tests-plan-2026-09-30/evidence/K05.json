@@ -1,5 +1,5 @@
 {
-  "status": "complete",
+  "status": "active",
   "executor": "Muse (muse-spark-1.3-contributor) via worker-q-k05; integrator review/commit",
   "writing_owner": "native-values",
   "task_id": "K05",
@@ -11,7 +11,7 @@
   ],
   "acceptance_prerequisite_receipts": [],
   "commits": [
-    "b0f071d6 C adapter witness"
+    "b0f071d6e2f27278cda39889ebcf1fb34c9897de"
   ],
   "changed_paths": [
     "tools/runtime/test-services/native-values/c-witness.ts",
@@ -75,5 +75,18 @@
     "bounded local mechanics only: the token-bound invocation logic is proven, but actual generated-C-path integration is live-host work for QN2",
     "tokens are per-instance (random nonce): no cross-instance or persisted bindings by design",
     "fact key is adapter_export because export is a K01 forbidden key"
-  ]
+  ],
+  "planning_audit": {
+    "date": "2026-10-01",
+    "method": "Read-only history, task contract and targeted source inspection; recorded checks were not rerun.",
+    "recorded_commits_before_audit": [
+      "b0f071d6 C adapter witness"
+    ],
+    "commit_provenance": "Each primary SHA is reachable from audit HEAD and touches declared owned paths; supporting P14 process fix is a P10 integration handoff.",
+    "historical_status": "complete",
+    "current_status": "active",
+    "qualification_credit_added": false,
+    "reason": "The witness must observe actual adapter invocation through the generated C path. Current code only mints in-memory artifact tokens and accepts public begin/complete calls, with no generated artifact digest/hook or invoked adapter. Its positive controls directly call that model. QN2 defers live qualification, not this required witness implementation.",
+    "pending_prerequisites": []
+  }
 }
