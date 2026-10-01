@@ -1,0 +1,485 @@
+package authority
+    provides [final_receipt, cleanup_state, host_effect, chain_link, standing_qualified, standing_blocked, standing_incomplete, standing_rejected, standing, hold_clear, hold_stuck, hold_outcome, resolve, chain_hold, chain_head, worker_hold]
+    uses [controller, option, reducer, spec, text, worker]
+
+/// Report authority: join one reduced Can report to N's matching final
+/// receipt and the append-only correction chain (P22). Ordinary Can owns
+/// every verdict: the aggregate must be valid, the reduced verdict clean,
+/// the final receipt present, well-formed, bound to this operation and
+/// run, final, and agreeing with the verdict; no late host effect may be
+/// observed, cleanup must be resolved, and the correction chain must link
+/// genesis to head with no failure in its history. Any report-only pass,
+/// stale, missing or conflicting receipt, late credible host effect,
+/// unresolved cleanup, or chain breakage prevents qualification, and a
+/// fresh pass never erases an old failure: corrections add records, and
+/// the worst recorded standing sticks. N stays owner-only: the Go
+/// corrections package owns registry mechanics (append, digest, file),
+/// while linkage checks and resolution policy live here over the same
+/// words ("genesis" head, "pass"/"failed"/"incomplete" outcomes). Static
+/// checks here are provisional until P26/P23, like P15/P16.
+
+/// N's final completion receipt as the judge sees it: schema layout,
+/// operation and run binding, preserved outcome, named reason, removal
+/// flag, and finality. A receipt that is not complete is not final
+/// evidence; removed is advisory (a path-empty cleanup completes without
+/// deleting anything) and never gates qualification.
+record final_receipt
+    str schema_version
+    str operation_id
+    str run_id
+    str outcome
+    str reason
+    bool removed
+    bool complete
+/// Cleanup resolution as the judge sees it: "resolved", "pending" or
+/// "failed", with a human detail naming the cause.
+record cleanup_state
+    str state
+    str detail
+/// A late host effect observed after the report finalized: whether one
+/// was seen, whether the observation is credible (verified provenance),
+/// and what was observed.
+record host_effect
+    bool observed
+    bool credible
+    str detail
+/// One correction-chain link as the judge sees it: position, digest,
+/// previous digest ("genesis" for seq 0), recorded outcome, and note.
+/// Digests arrive from N; Can checks linkage structurally, never by
+/// rehashing.
+record chain_link
+    int seq
+    str digest
+    str prev_digest
+    str outcome
+    str note
+/// Qualified standing: the verdict matched cleanly and every receipt,
+/// effect, cleanup and chain gate passed. Carries the matched count and
+/// the chain head the standing resolved at.
+record standing_qualified
+    int matched
+    str head
+/// Blocked standing: a hard refusal — broken aggregate, failed report,
+/// stale or conflicting receipt, late credible host effect, failed
+/// cleanup, broken worker turn, or an old failure in the chain. Never
+/// qualified.
+record standing_blocked
+    str reason
+    str detail
+/// Incomplete standing: missing evidence — missing aggregate, incomplete
+/// verdict, missing or non-final receipt, unverified late effect,
+/// pending cleanup, or an old incomplete in the chain. Never qualified.
+record standing_incomplete
+    str detail
+/// Rejected standing: malformed or forged inputs — bad receipt or chain
+/// words, broken linkage, or a rejected report passed through. Never
+/// qualified.
+record standing_rejected
+    spec::diagnostic[] problems
+/// Qualification standing: exactly one of qualified, blocked,
+/// incomplete or rejected. Only qualified may qualify.
+variant standing
+    standing_qualified
+    standing_blocked
+    standing_incomplete
+    standing_rejected
+/// One clean verdict step: the matched count to carry into qualification.
+record authority_clean
+    int matched
+/// One held verdict step: the standing that stops the join.
+record authority_held
+    standing hold
+/// Single-verdict authority outcome: carry the count, or stop with the
+/// standing.
+variant authority_step
+    authority_clean
+    authority_held
+/// One clear hold check: the gate passed, the join continues.
+record hold_clear
+/// One stuck hold check: the standing that stops the join.
+record hold_stuck
+    standing hold
+/// Single-gate hold outcome: clear to continue, or stuck with the
+/// standing. Holds carry full standings (blocked, incomplete or
+/// rejected), never bare details, so the join returns them untouched.
+variant hold_outcome
+    hold_clear
+    hold_stuck
+/// Build one authority diagnostic: fixed resolve source plus the exact
+/// resolve selector of the run under authority.
+fn spec::diagnostic authority_problem
+    emits {}
+    given
+        spec::context ctx
+        str kind
+        str detail
+    asserts
+        sample: spec::context("a", "v", "", "r"), "bad-seq", "0:7" => ok spec::diagnostic("authority::resolve", "case a variant v root resolve run r", "bad-seq", "0:7")
+        drift: spec::context("a", "v", "", "r"), "stale", "run:r:s" => ok spec::diagnostic("authority::resolve", "case a variant v root resolve run r", "stale", "run:r:s")
+    ok spec::diagnostic("authority::resolve", call spec::reproduction_selector(ctx, "resolve"), kind, detail)
+/// Closed receipt/chain outcome vocabulary: exactly "pass", "failed" and
+/// "incomplete", shared with the Go corrections registry. Anything else
+/// is malformed, never a quieter standing.
+fn bool outcome_known
+    emits {}
+    given
+        str outcome
+    asserts
+        pass: "pass" => ok true
+        failed: "failed" => ok true
+        incomplete: "incomplete" => ok true
+        bogus: "bogus" => ok false
+        empty: "" => ok false
+    match outcome
+        "pass" => ok true
+        "failed" => ok true
+        "incomplete" => ok true
+        _ => ok false
+/// Closed cleanup vocabulary: exactly "resolved", "pending" and "failed".
+/// Anything else is malformed, never silently resolved.
+fn bool cleanup_word_known
+    emits {}
+    given
+        str state
+    asserts
+        resolved: "resolved" => ok true
+        pending: "pending" => ok true
+        failed: "failed" => ok true
+        bogus: "bogus" => ok false
+        empty: "" => ok false
+    match state
+        "resolved" => ok true
+        "pending" => ok true
+        "failed" => ok true
+        _ => ok false
+/// First set failure dimension of a failed verdict: behavior, then
+/// execution, then cleanup. An all-empty failed verdict still blocks as
+/// unknown rather than qualifying.
+fn str failed_detail
+    emits {}
+    given
+        str behavior_check
+        str execution
+        str cleanup_detail
+    asserts
+        behavior: "b", "", "" => ok "behavior:b"
+        execution: "", "broken", "" => ok "execution:broken"
+        cleanup: "", "", "rm: busy" => ok "cleanup:rm: busy"
+        precedence: "b", "broken", "rm: busy" => ok "behavior:b"
+        unknown: "", "", "" => ok "unknown"
+    match behavior_check is ""
+        false => ok call text::join(["behavior", behavior_check], ":")
+        true => match execution is ""
+            false => ok call text::join(["execution", execution], ":")
+            true => match cleanup_detail is ""
+                false => ok call text::join(["cleanup", cleanup_detail], ":")
+                true => ok "unknown"
+/// Map one reduced verdict to an authority step: a clean verdict carries
+/// its matched count, a failed verdict blocks with its first dimension,
+/// an incomplete verdict stays incomplete, and a rejected report passes
+/// its problems through untouched.
+fn authority_step verdict_step
+    emits {}
+    given
+        reducer::reduced verdict
+    asserts
+        clean: reducer::reduced_ok(2) => ok authority_clean(2)
+        failed: reducer::reduced_failed("b", "", "", []) => ok authority_held(standing_blocked("report-failed", "behavior:b"))
+        incomplete: reducer::reduced_incomplete("missing-check:a") => ok authority_held(standing_incomplete("missing-check:a"))
+        rejected: reducer::reduced_rejected([spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "early-ok", "a")]) => ok authority_held(standing_rejected([spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "early-ok", "a")]))
+    match verdict
+        reducer::reduced_ok => ok authority_clean(verdict.matched)
+        reducer::reduced_failed => ok authority_held(standing_blocked("report-failed", call failed_detail(verdict.behavior_check, verdict.execution, verdict.cleanup_detail)))
+        reducer::reduced_incomplete => ok authority_held(standing_incomplete(verdict.detail))
+        reducer::reduced_rejected => ok authority_held(standing_rejected(verdict.problems))
+/// Receipt shape checks: the schema must be current and the outcome word
+/// known. Reports the first malformed field; one is already enough to
+/// reject.
+fn spec::diagnostic[] receipt_problems
+    emits {}
+    given
+        final_receipt receipt
+        spec::context ctx
+    asserts
+        clean: final_receipt("1", "op-1", "r", "pass", "cleanup-complete", true, true), spec::context("a", "v", "", "r") => ok []
+        bad_schema: final_receipt("2", "op-1", "r", "pass", "cleanup-complete", true, true), spec::context("a", "v", "", "r") => ok [spec::diagnostic("authority::resolve", "case a variant v root resolve run r", "bad-receipt-schema", "2")]
+        bad_outcome: final_receipt("1", "op-1", "r", "bogus", "cleanup-complete", true, true), spec::context("a", "v", "", "r") => ok [spec::diagnostic("authority::resolve", "case a variant v root resolve run r", "unknown-receipt-outcome", "bogus")]
+        schema_first: final_receipt("2", "op-1", "r", "bogus", "cleanup-complete", true, true), spec::context("a", "v", "", "r") => ok [spec::diagnostic("authority::resolve", "case a variant v root resolve run r", "bad-receipt-schema", "2")]
+    match receipt.schema_version is "1"
+        false => ok [call authority_problem(ctx, "bad-receipt-schema", receipt.schema_version)]
+        true => match call outcome_known(receipt.outcome)
+            ok bool known => match known
+                false => ok [call authority_problem(ctx, "unknown-receipt-outcome", receipt.outcome)]
+                true => ok []
+/// Receipt binding drift: the receipt must name this operation and run,
+/// or it is stale evidence from another run. Returns "" when bound, the
+/// first drifted field otherwise; operation drift reports before run
+/// drift.
+fn str receipt_drift
+    emits {}
+    given
+        final_receipt receipt
+        str exp_op
+        str exp_run
+    asserts
+        bound: final_receipt("1", "op-1", "r", "pass", "cleanup-complete", true, true), "op-1", "r" => ok ""
+        op_drift: final_receipt("1", "op-9", "r", "pass", "cleanup-complete", true, true), "op-1", "r" => ok "operation:op-1:op-9"
+        run_drift: final_receipt("1", "op-1", "s", "pass", "cleanup-complete", true, true), "op-1", "r" => ok "run:r:s"
+        op_first: final_receipt("1", "op-9", "s", "pass", "cleanup-complete", true, true), "op-1", "r" => ok "operation:op-1:op-9"
+    match receipt.operation_id is exp_op
+        false => ok call text::join(["operation", exp_op, receipt.operation_id], ":")
+        true => match receipt.run_id is exp_run
+            false => ok call text::join(["run", exp_run, receipt.run_id], ":")
+            true => ok ""
+/// Late host-effect hold: an unobserved effect holds nothing, a credible
+/// late effect blocks, and an observed-but-unverified claim stays
+/// incomplete. Both observed cases prevent qualification.
+fn hold_outcome effect_hold
+    emits {}
+    given
+        host_effect effect
+    asserts
+        quiet: host_effect(false, false, "") => ok hold_clear()
+        credible: host_effect(true, true, "stray-write") => ok hold_stuck(standing_blocked("late-host-effect", "stray-write"))
+        rumor: host_effect(true, false, "stray-write") => ok hold_stuck(standing_incomplete("unverified-late-effect:stray-write"))
+        rumor_empty: host_effect(true, false, "") => ok hold_stuck(standing_incomplete("unverified-late-effect:"))
+    match effect.observed
+        false => ok hold_clear()
+        true => match effect.credible
+            true => ok hold_stuck(standing_blocked("late-host-effect", effect.detail))
+            false => ok hold_stuck(standing_incomplete(call text::join(["unverified-late-effect", effect.detail], ":")))
+/// Cleanup hold: resolved cleanup holds nothing, pending cleanup stays
+/// incomplete, failed cleanup blocks, and an unknown cleanup word
+/// rejects as malformed.
+fn hold_outcome cleanup_hold
+    emits {}
+    given
+        cleanup_state cleanup
+        spec::context ctx
+    asserts
+        resolved: cleanup_state("resolved", ""), spec::context("a", "v", "", "r") => ok hold_clear()
+        pending: cleanup_state("pending", "rm: busy"), spec::context("a", "v", "", "r") => ok hold_stuck(standing_incomplete("cleanup-pending:rm: busy"))
+        failed: cleanup_state("failed", "rm: busy"), spec::context("a", "v", "", "r") => ok hold_stuck(standing_blocked("cleanup-failed", "rm: busy"))
+        unknown: cleanup_state("later", ""), spec::context("a", "v", "", "r") => ok hold_stuck(standing_rejected([spec::diagnostic("authority::resolve", "case a variant v root resolve run r", "unknown-cleanup-state", "later")]))
+    match cleanup.state
+        "resolved" => ok hold_clear()
+        "pending" => ok hold_stuck(standing_incomplete(call text::join(["cleanup-pending", cleanup.detail], ":")))
+        "failed" => ok hold_stuck(standing_blocked("cleanup-failed", cleanup.detail))
+        _ => ok hold_stuck(standing_rejected([call authority_problem(ctx, "unknown-cleanup-state", cleanup.state)]))
+/// Chain linkage checks from an index, threading the expected prev
+/// ("genesis" for seq 0, then each link's digest): seq numbers must run
+/// with the index, digests must be present, each prev must link, and each
+/// outcome must be known. Reports the first problem per link and
+/// accumulates across links, so one broken chain rejects exactly once
+/// per broken link.
+fn spec::diagnostic[] link_problems
+    emits {}
+    given
+        chain_link[] links
+        spec::context ctx
+        int index
+        str want_prev
+        spec::diagnostic[] problems
+    asserts
+        clean: [chain_link(0, "d0", "genesis", "pass", "n0"), chain_link(1, "d1", "d0", "pass", "n1")], spec::context("a", "v", "", "r"), 0, "genesis", [] => ok []
+        bad_seq: [chain_link(0, "d0", "genesis", "pass", "n0"), chain_link(7, "d1", "d0", "pass", "n1")], spec::context("a", "v", "", "r"), 0, "genesis", [] => ok [spec::diagnostic("authority::resolve", "case a variant v root resolve run r", "bad-seq", "1:7")]
+        empty_digest: [chain_link(0, "d0", "genesis", "pass", "n0"), chain_link(1, "", "d0", "pass", "n1")], spec::context("a", "v", "", "r"), 0, "genesis", [] => ok [spec::diagnostic("authority::resolve", "case a variant v root resolve run r", "empty-digest", "1")]
+        broken_prev: [chain_link(0, "d0", "genesis", "pass", "n0"), chain_link(1, "d1", "dX", "pass", "n1")], spec::context("a", "v", "", "r"), 0, "genesis", [] => ok [spec::diagnostic("authority::resolve", "case a variant v root resolve run r", "broken-link", "1:dX")]
+        genesis_wrong: [chain_link(0, "d0", "dX", "pass", "n0")], spec::context("a", "v", "", "r"), 0, "genesis", [] => ok [spec::diagnostic("authority::resolve", "case a variant v root resolve run r", "broken-link", "0:dX")]
+        unknown_outcome: [chain_link(0, "d0", "genesis", "pass", "n0"), chain_link(1, "d1", "d0", "bogus", "n1")], spec::context("a", "v", "", "r"), 0, "genesis", [] => ok [spec::diagnostic("authority::resolve", "case a variant v root resolve run r", "unknown-outcome", "bogus")]
+        empty: [], spec::context("a", "v", "", "r"), 0, "genesis", [] => ok []
+        done: [chain_link(0, "d0", "genesis", "pass", "n0"), chain_link(1, "d1", "d0", "pass", "n1")], spec::context("a", "v", "", "r"), 2, "d1", [] => ok []
+        threaded: [chain_link(0, "d0", "genesis", "pass", "n0")], spec::context("a", "v", "", "r"), 1, "d0", [spec::diagnostic("authority::resolve", "case a variant v root resolve run r", "bad-seq", "0:7")] => ok [spec::diagnostic("authority::resolve", "case a variant v root resolve run r", "bad-seq", "0:7")]
+    match index >= links.length
+        true => ok problems
+        false => match links[index].seq is index
+            false => relay call link_problems(links, ctx, index + 1, links[index].digest, call append(problems, call authority_problem(ctx, "bad-seq", call text::join([call text::from_int(index), call text::from_int(links[index].seq)], ":"))))
+            true => match links[index].digest is ""
+                true => relay call link_problems(links, ctx, index + 1, links[index].digest, call append(problems, call authority_problem(ctx, "empty-digest", call text::from_int(index))))
+                false => match links[index].prev_digest is want_prev
+                    false => relay call link_problems(links, ctx, index + 1, links[index].digest, call append(problems, call authority_problem(ctx, "broken-link", call text::join([call text::from_int(index), links[index].prev_digest], ":"))))
+                    true => match call outcome_known(links[index].outcome)
+                        ok bool known => match known
+                            false => relay call link_problems(links, ctx, index + 1, links[index].digest, call append(problems, call authority_problem(ctx, "unknown-outcome", links[index].outcome)))
+                            true => relay call link_problems(links, ctx, index + 1, links[index].digest, problems)
+/// Current head from an index, threading the latest digest seen: the last
+/// link's digest, or "genesis" when no correction is recorded yet.
+fn str head_at
+    emits {}
+    given
+        chain_link[] links
+        int index
+        str head
+    asserts
+        empty: [], 0, "genesis" => ok "genesis"
+        single: [chain_link(0, "d0", "genesis", "pass", "n0")], 0, "genesis" => ok "d0"
+        pair: [chain_link(0, "d0", "genesis", "pass", "n0"), chain_link(1, "d1", "d0", "pass", "n1")], 0, "genesis" => ok "d1"
+        tail: [chain_link(0, "d0", "genesis", "pass", "n0"), chain_link(1, "d1", "d0", "pass", "n1")], 1, "d0" => ok "d1"
+        done: [chain_link(0, "d0", "genesis", "pass", "n0"), chain_link(1, "d1", "d0", "pass", "n1")], 2, "d1" => ok "d1"
+    match index >= links.length
+        true => ok head
+        false => relay call head_at(links, index + 1, links[index].digest)
+/// The current chain head: the last recorded digest, or "genesis" for a
+/// chain with no corrections yet.
+fn str chain_head
+    emits {}
+    given
+        chain_link[] links
+    asserts
+        empty: [] => ok "genesis"
+        single: [chain_link(0, "d0", "genesis", "pass", "n0")] => ok "d0"
+        pair: [chain_link(0, "d0", "genesis", "pass", "n0"), chain_link(1, "d1", "d0", "pass", "n1")] => ok "d1"
+    relay call head_at(links, 0, "genesis")
+/// First failed outcome from an index: the sticky old failure a fresh
+/// pass must never erase, or none when no failure is recorded.
+fn option::value<str> history_failed
+    emits {}
+    given
+        chain_link[] links
+        int index
+    asserts
+        clean: [chain_link(0, "d0", "genesis", "pass", "n0"), chain_link(1, "d1", "d0", "pass", "n1")], 0 => ok option::none()
+        first: [chain_link(0, "d0", "genesis", "failed", "exit drift"), chain_link(1, "d1", "d0", "pass", "n1")], 0 => ok option::some("failure:0:exit drift")
+        later: [chain_link(0, "d0", "genesis", "pass", "n0"), chain_link(1, "d1", "d0", "failed", "late")], 0 => ok option::some("failure:1:late")
+        empty: [], 0 => ok option::none()
+        offset: [chain_link(0, "d0", "genesis", "failed", "exit drift")], 1 => ok option::none()
+    match index >= links.length
+        true => ok option::none()
+        false => match links[index].outcome is "failed"
+            false => relay call history_failed(links, index + 1)
+            true => ok option::some(call text::join(["failure", call text::from_int(links[index].seq), links[index].note], ":"))
+/// First incomplete outcome from an index: the sticky old incomplete a
+/// fresh pass must never erase, or none when every scanned link passed.
+fn option::value<str> history_incomplete
+    emits {}
+    given
+        chain_link[] links
+        int index
+    asserts
+        clean: [chain_link(0, "d0", "genesis", "pass", "n0"), chain_link(1, "d1", "d0", "pass", "n1")], 0 => ok option::none()
+        first: [chain_link(0, "d0", "genesis", "incomplete", "short"), chain_link(1, "d1", "d0", "pass", "n1")], 0 => ok option::some("incomplete:0:short")
+        later: [chain_link(0, "d0", "genesis", "pass", "n0"), chain_link(1, "d1", "d0", "incomplete", "short")], 0 => ok option::some("incomplete:1:short")
+        empty: [], 0 => ok option::none()
+        offset: [chain_link(0, "d0", "genesis", "incomplete", "short")], 1 => ok option::none()
+    match index >= links.length
+        true => ok option::none()
+        false => match links[index].outcome is "incomplete"
+            false => relay call history_incomplete(links, index + 1)
+            true => ok option::some(call text::join(["incomplete", call text::from_int(links[index].seq), links[index].note], ":"))
+/// Conservative current-chain resolution for consumers: a broken chain
+/// rejects with its linkage problems, any old failure in history blocks
+/// (a fresh pass never erases it), an old incomplete with no failure
+/// stays incomplete, and only a linked all-pass (or empty) chain holds
+/// nothing. Failure beats incomplete wherever each sits.
+fn hold_outcome chain_hold
+    emits {}
+    given
+        chain_link[] links
+        spec::context ctx
+    asserts
+        empty: [], spec::context("a", "v", "", "r") => ok hold_clear()
+        clean_pair: [chain_link(0, "d0", "genesis", "pass", "n0"), chain_link(1, "d1", "d0", "pass", "n1")], spec::context("a", "v", "", "r") => ok hold_clear()
+        broken: [chain_link(0, "d0", "dX", "pass", "n0")], spec::context("a", "v", "", "r") => ok hold_stuck(standing_rejected([spec::diagnostic("authority::resolve", "case a variant v root resolve run r", "broken-link", "0:dX")]))
+        old_failure: [chain_link(0, "d0", "genesis", "failed", "exit drift"), chain_link(1, "d1", "d0", "pass", "n1")], spec::context("a", "v", "", "r") => ok hold_stuck(standing_blocked("old-failure", "failure:0:exit drift"))
+        failure_beats_incomplete: [chain_link(0, "d0", "genesis", "incomplete", "short"), chain_link(1, "d1", "d0", "failed", "late")], spec::context("a", "v", "", "r") => ok hold_stuck(standing_blocked("old-failure", "failure:1:late"))
+        old_incomplete: [chain_link(0, "d0", "genesis", "incomplete", "short"), chain_link(1, "d1", "d0", "pass", "n1")], spec::context("a", "v", "", "r") => ok hold_stuck(standing_incomplete("incomplete:0:short"))
+    match call link_problems(links, ctx, 0, "genesis", [])
+        ok spec::diagnostic[] problems => match problems.length is 0
+            false => ok hold_stuck(standing_rejected(problems))
+            true => match call history_failed(links, 0)
+                ok option::value<str> failed => match failed
+                    option::some => ok hold_stuck(standing_blocked("old-failure", failed.value))
+                    option::none => match call history_incomplete(links, 0)
+                        ok option::value<str> open => match open
+                            option::some => ok hold_stuck(standing_incomplete(open.value))
+                            option::none => ok hold_clear()
+/// Worker-turn hold for late or extra worker outcomes that arrive after
+/// the aggregate formed: a done turn holds nothing (it still needs the
+/// full join), while a crash, timeout or rejection blocks with its
+/// cause. The aggregate join itself stays in the controller.
+fn hold_outcome worker_hold
+    emits {}
+    given
+        worker::worker_outcome outcome
+    asserts
+        done: worker::worker_done(worker::launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [])) => ok hold_clear()
+        crashed: worker::worker_crashed(worker::launch("a", "v", 0, "r", "g", 1000), "exit:1") => ok hold_stuck(standing_blocked("worker-crash", "exit:1"))
+        timed_out: worker::worker_timed_out(worker::launch("a", "v", 0, "r", "g", 1000), 1000) => ok hold_stuck(standing_blocked("worker-timeout", "1000"))
+        rejected: worker::worker_rejected(worker::launch("a", "v", 0, "r", "g", 1000), spec::diagnostic("worker::outcome_of", "case a variant v root collect run r", "missing-report", "0")) => ok hold_stuck(standing_blocked("worker-rejected", "missing-report:0"))
+    match outcome
+        worker::worker_done => ok hold_clear()
+        worker::worker_crashed => ok hold_stuck(standing_blocked("worker-crash", outcome.cause))
+        worker::worker_timed_out => ok hold_stuck(standing_blocked("worker-timeout", call text::from_int(outcome.deadline_ms)))
+        worker::worker_rejected => ok hold_stuck(standing_blocked("worker-rejected", call text::join([outcome.problem.kind, outcome.problem.detail], ":")))
+/// Resolve one aggregate against N's matching final receipt, the cleanup
+/// state, the late host-effect observation, and the correction chain, in
+/// that precedence: a broken aggregate blocks and a missing aggregate
+/// stays incomplete before any verdict is read; then the reduced verdict
+/// must be clean; then the receipt must be present (a report-only pass
+/// never qualifies), well-formed, bound to this operation and run (drift
+/// is stale), final, and agreeing with the verdict (any other outcome
+/// conflicts); then no late effect may hold, cleanup must hold nothing,
+/// and the chain must hold nothing. Only a fully clean join qualifies,
+/// carrying the matched count and the resolved chain head.
+fn standing resolve
+    emits {}
+    given
+        controller::aggregate aggregate
+        option::value<final_receipt> receipt
+        cleanup_state cleanup
+        host_effect effect
+        chain_link[] links
+        str exp_case
+        str exp_variant
+        str exp_run
+        str exp_op
+    asserts
+        qualified_empty: controller::aggregate_valid(reducer::reduced_ok(2), 1), option::some(final_receipt("1", "op-1", "r", "pass", "cleanup-complete", true, true)), cleanup_state("resolved", ""), host_effect(false, false, ""), [], "a", "v", "r", "op-1" => ok standing_qualified(2, "genesis")
+        qualified_chain: controller::aggregate_valid(reducer::reduced_ok(2), 1), option::some(final_receipt("1", "op-1", "r", "pass", "cleanup-complete", true, true)), cleanup_state("resolved", ""), host_effect(false, false, ""), [chain_link(0, "d0", "genesis", "pass", "n0"), chain_link(1, "d1", "d0", "pass", "n1")], "a", "v", "r", "op-1" => ok standing_qualified(2, "d1")
+        report_only: controller::aggregate_valid(reducer::reduced_ok(2), 1), option::none(), cleanup_state("resolved", ""), host_effect(false, false, ""), [], "a", "v", "r", "op-1" => ok standing_incomplete("missing-receipt")
+        stale_op: controller::aggregate_valid(reducer::reduced_ok(2), 1), option::some(final_receipt("1", "op-9", "r", "pass", "cleanup-complete", true, true)), cleanup_state("resolved", ""), host_effect(false, false, ""), [], "a", "v", "r", "op-1" => ok standing_blocked("stale-receipt", "operation:op-1:op-9")
+        stale_run: controller::aggregate_valid(reducer::reduced_ok(2), 1), option::some(final_receipt("1", "op-1", "s", "pass", "cleanup-complete", true, true)), cleanup_state("resolved", ""), host_effect(false, false, ""), [], "a", "v", "r", "op-1" => ok standing_blocked("stale-receipt", "run:r:s")
+        conflicting: controller::aggregate_valid(reducer::reduced_ok(2), 1), option::some(final_receipt("1", "op-1", "r", "failed", "cleanup-complete", true, true)), cleanup_state("resolved", ""), host_effect(false, false, ""), [], "a", "v", "r", "op-1" => ok standing_blocked("conflicting-receipt", "receipt-outcome:failed")
+        not_final: controller::aggregate_valid(reducer::reduced_ok(2), 1), option::some(final_receipt("1", "op-1", "r", "pass", "cleanup-complete", true, false)), cleanup_state("resolved", ""), host_effect(false, false, ""), [], "a", "v", "r", "op-1" => ok standing_incomplete("receipt-not-final")
+        bad_schema: controller::aggregate_valid(reducer::reduced_ok(2), 1), option::some(final_receipt("2", "op-1", "r", "pass", "cleanup-complete", true, true)), cleanup_state("resolved", ""), host_effect(false, false, ""), [], "a", "v", "r", "op-1" => ok standing_rejected([spec::diagnostic("authority::resolve", "case a variant v root resolve run r", "bad-receipt-schema", "2")])
+        late_credible: controller::aggregate_valid(reducer::reduced_ok(2), 1), option::some(final_receipt("1", "op-1", "r", "pass", "cleanup-complete", true, true)), cleanup_state("resolved", ""), host_effect(true, true, "stray-write"), [], "a", "v", "r", "op-1" => ok standing_blocked("late-host-effect", "stray-write")
+        late_rumor: controller::aggregate_valid(reducer::reduced_ok(2), 1), option::some(final_receipt("1", "op-1", "r", "pass", "cleanup-complete", true, true)), cleanup_state("resolved", ""), host_effect(true, false, "stray-write"), [], "a", "v", "r", "op-1" => ok standing_incomplete("unverified-late-effect:stray-write")
+        cleanup_pending: controller::aggregate_valid(reducer::reduced_ok(2), 1), option::some(final_receipt("1", "op-1", "r", "pass", "cleanup-complete", true, true)), cleanup_state("pending", "rm: busy"), host_effect(false, false, ""), [], "a", "v", "r", "op-1" => ok standing_incomplete("cleanup-pending:rm: busy")
+        cleanup_failed: controller::aggregate_valid(reducer::reduced_ok(2), 1), option::some(final_receipt("1", "op-1", "r", "pass", "cleanup-complete", true, true)), cleanup_state("failed", "rm: busy"), host_effect(false, false, ""), [], "a", "v", "r", "op-1" => ok standing_blocked("cleanup-failed", "rm: busy")
+        chain_broken: controller::aggregate_valid(reducer::reduced_ok(2), 1), option::some(final_receipt("1", "op-1", "r", "pass", "cleanup-complete", true, true)), cleanup_state("resolved", ""), host_effect(false, false, ""), [chain_link(0, "d0", "dX", "pass", "n0")], "a", "v", "r", "op-1" => ok standing_rejected([spec::diagnostic("authority::resolve", "case a variant v root resolve run r", "broken-link", "0:dX")])
+        old_failure: controller::aggregate_valid(reducer::reduced_ok(2), 1), option::some(final_receipt("1", "op-1", "r", "pass", "cleanup-complete", true, true)), cleanup_state("resolved", ""), host_effect(false, false, ""), [chain_link(0, "d0", "genesis", "failed", "exit drift"), chain_link(1, "d1", "d0", "pass", "n1")], "a", "v", "r", "op-1" => ok standing_blocked("old-failure", "failure:0:exit drift")
+        old_incomplete: controller::aggregate_valid(reducer::reduced_ok(2), 1), option::some(final_receipt("1", "op-1", "r", "pass", "cleanup-complete", true, true)), cleanup_state("resolved", ""), host_effect(false, false, ""), [chain_link(0, "d0", "genesis", "incomplete", "short"), chain_link(1, "d1", "d0", "pass", "n1")], "a", "v", "r", "op-1" => ok standing_incomplete("incomplete:0:short")
+        broken_aggregate: controller::aggregate_invalid("worker-crash:attempt:0:exit:1"), option::some(final_receipt("1", "op-1", "r", "pass", "cleanup-complete", true, true)), cleanup_state("resolved", ""), host_effect(false, false, ""), [], "a", "v", "r", "op-1" => ok standing_blocked("broken-aggregate", "worker-crash:attempt:0:exit:1")
+        missing_aggregate: controller::aggregate_missing("controller-dead:no-plan"), option::some(final_receipt("1", "op-1", "r", "pass", "cleanup-complete", true, true)), cleanup_state("resolved", ""), host_effect(false, false, ""), [], "a", "v", "r", "op-1" => ok standing_incomplete("controller-dead:no-plan")
+        verdict_failed: controller::aggregate_valid(reducer::reduced_failed("b", "", "", []), 1), option::some(final_receipt("1", "op-1", "r", "pass", "cleanup-complete", true, true)), cleanup_state("resolved", ""), host_effect(false, false, ""), [], "a", "v", "r", "op-1" => ok standing_blocked("report-failed", "behavior:b")
+        verdict_incomplete: controller::aggregate_valid(reducer::reduced_incomplete("missing-check:a"), 1), option::some(final_receipt("1", "op-1", "r", "pass", "cleanup-complete", true, true)), cleanup_state("resolved", ""), host_effect(false, false, ""), [], "a", "v", "r", "op-1" => ok standing_incomplete("missing-check:a")
+        verdict_rejected: controller::aggregate_valid(reducer::reduced_rejected([spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "early-ok", "a")]), 1), option::some(final_receipt("1", "op-1", "r", "pass", "cleanup-complete", true, true)), cleanup_state("resolved", ""), host_effect(false, false, ""), [], "a", "v", "r", "op-1" => ok standing_rejected([spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "early-ok", "a")])
+    match call spec::context_for(exp_case, exp_variant, "", exp_run)
+        ok spec::context ctx => match aggregate
+            controller::aggregate_invalid => ok standing_blocked("broken-aggregate", aggregate.detail)
+            controller::aggregate_missing => ok standing_incomplete(aggregate.detail)
+            controller::aggregate_valid => match call verdict_step(aggregate.verdict)
+                ok authority_step stepped => match stepped
+                    authority_held => ok stepped.hold
+                    authority_clean => match receipt
+                        option::none => ok standing_incomplete("missing-receipt")
+                        option::some => match call receipt_problems(receipt.value, ctx)
+                            ok spec::diagnostic[] problems => match problems.length is 0
+                                false => ok standing_rejected(problems)
+                                true => match call receipt_drift(receipt.value, exp_op, exp_run)
+                                    ok str drift => match drift is ""
+                                        false => ok standing_blocked("stale-receipt", drift)
+                                        true => match receipt.value.complete
+                                            false => ok standing_incomplete("receipt-not-final")
+                                            true => match receipt.value.outcome is "pass"
+                                                false => ok standing_blocked("conflicting-receipt", call text::join(["receipt-outcome", receipt.value.outcome], ":"))
+                                                true => match call effect_hold(effect)
+                                                    ok hold_outcome held_effect => match held_effect
+                                                        hold_stuck => ok held_effect.hold
+                                                        hold_clear => match call cleanup_hold(cleanup, ctx)
+                                                            ok hold_outcome held_cleanup => match held_cleanup
+                                                                hold_stuck => ok held_cleanup.hold
+                                                                hold_clear => match call chain_hold(links, ctx)
+                                                                    ok hold_outcome held_chain => match held_chain
+                                                                        hold_stuck => ok held_chain.hold
+                                                                        hold_clear => ok standing_qualified(stepped.matched, call chain_head(links))
