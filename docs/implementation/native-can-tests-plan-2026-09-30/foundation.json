@@ -565,7 +565,7 @@
       "acceptance": "Catalogue/checker/emitter agree on normal effects and opaque handle admission. Reject forged/stale owner, arbitrary dispatch/eval, raw thenable transport and wrong target; generated files are reproducible. Treat this as provisional R-core input until P26.",
       "evidence": "evidence/P28.json with exact identities, checks, controls, cleanup and independent review",
       "commit": "feat(testing): integrate typed owner bindings",
-      "status": "active",
+      "status": "complete",
       "start_after": [
         "P02",
         "P10",
