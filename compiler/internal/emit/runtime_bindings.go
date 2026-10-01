@@ -147,6 +147,7 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 		nativeValuesOperationBindings(),
 		descriptorOperationBindings(),
 		cOperationBindings(),
+		lateOperationBindings(),
 		streamOperationBindings(),
 		assembly.streamSpecializationBindings(),
 		websocketOperationBindings(),

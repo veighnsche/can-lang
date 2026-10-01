@@ -1,0 +1,35 @@
+package test_late_occurrence
+    provides []
+    uses [late, option, test]
+fn int late_roundtrip
+    emits {test::invalid_grant, test::stale_handle, late::late_fault}
+    given
+        str grant
+    asserts
+        probe: "ng1-0123456789abcdef0123456789abcdef" => ok 0
+    match chain
+        call test::grant_admit(grant) as test::owner owner
+        call late::select(owner, "late.alpha") as late::select_facts selected
+        call late::enroll(owner, "worker") as late::enroll_facts joined
+        call late::arm_gate(owner, "worker") as late::gate_facts gated
+        call late::emit(owner, "worker", "fault", 1) as late::event_facts admitted
+        call late::observe(owner, "worker", "worker", 1) as late::observation_facts seen
+        call late::witness_terminal(owner, "worker", "completed") as late::terminal_facts sealed
+        call late::grant_lease(owner, "worker") as late::lease_facts granted
+        call late::observe_lease(owner, "worker", "llease1") as late::lease_facts held
+        call late::release_lease(owner, "worker", "llease1") as late::release_facts freed
+        call late::reconcile(owner, "worker") as late::reconcile_facts tallied
+        call late::read_outcome(owner) as late::outcome_facts ended
+        call late::read_counters(owner) as late::counters counted
+        call late::kill_worker(owner) as late::outcome_facts killed
+        test::invalid_grant
+        test::stale_handle
+        late::late_fault
+        ok => ok 0
+fn void main
+    emits {}
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok
