@@ -1,0 +1,606 @@
+package migration
+    provides [row_map, job_entry, claim, campaign, m33_chart_slice, slice_obligations, validate_slice_coverage, claim_identity_problems, claim_credit_problems, validate_claim, reduce_attempt, campaign_manifest, campaign_problems, declared_problems]
+    uses [coverage, reducer, registry, spec, text]
+
+/// Z01 migration-coverage reconciliation, slice m33-chart-a (HISTORY-091..095).
+/// Per-row facet, variant, environment and delegated-declaration mappings for
+/// the five retained M33 chart-companion rows, with source hashes,
+/// dispositions, expected case/check IDs, required receipts and correction
+/// chains. Slice obligations project onto coverage::retained_row so the P16
+/// forward/reverse reconciliation detects dropped or unretained checks by
+/// construction; the append-only job/attempt index carries registered-before-
+/// execution, failure reconciliation and corrective-run selection; verdict
+/// words bind to reducer::reduce_unit through reduce_attempt. Provisional
+/// until P23: no execution credit is claimed, suite/artifact acceptance
+/// arrives only through explicit claim flags, and static checks here are
+/// provisional like the P15/P16 skeleton.
+
+/// One ledger row mapping: disposition against the current contract, the
+/// ported source and its reviewed hash binding, the expected Can case and
+/// check IDs, protected facets, required matrix variants, required engines,
+/// delegated oracle declarations, required receipt kinds and the correction
+/// chain head ("" when no correction is recorded).
+record row_map
+    str row_id
+    str disposition
+    str source
+    str source_hash
+    str case_id
+    str[] checks
+    str[] facets
+    str[] variants
+    str[] environments
+    str[] delegates
+    str[] receipts
+    str correction_head
+/// One append-only campaign index entry: job identity, position, kind
+/// ("register", "attempt" or "supersede"), outcome state, attempt scope
+/// ("full" or "partial"), matched/required check counts, cited suite and
+/// artifact identities ("" when uncited) and the corrected seq for a
+/// supersede entry (-1 otherwise).
+record job_entry
+    str job_id
+    str row_id
+    str case_id
+    str variant_id
+    str run_id
+    int seq
+    str kind
+    str state
+    str scope
+    int matched
+    int required_total
+    str suite
+    str artifact
+    int supersedes
+/// One complete-coverage claim: the job/cell identity, the offered engines
+/// and accepted delegates, and whether the cited suite and artifact
+/// identities are accepted (false until P23 binds them).
+record claim
+    str job_id
+    str row_id
+    str case_id
+    str variant_id
+    str run_id
+    str[] engines
+    str[] delegates
+    bool suite_accepted
+    bool artifact_accepted
+/// Reviewed campaign manifest shape: manifest and campaign IDs plus every
+/// declared row. Rows stay declared until the campaign reconciles them.
+record campaign
+    str manifest_id
+    str campaign_id
+    str[] rows
+/// M33 chart-companion slice: HISTORY-091..095, all retained with Can ports
+/// under tests/native-can/migration/m33-prototype-companion-surfaces-a/.
+/// Source hashes are the reviewed sha256 bindings of the port files; a port
+/// edit invalidates its binding until re-reviewed. Seeded defect variants
+/// live in each port's observe declaration; "default" is the matrix leg.
+fn row_map[] m33_chart_slice
+    emits {}
+    given
+        str scope
+    asserts
+        m33: "m33" => ok [row_map("HISTORY-091", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-091-chart-roundtrip.can", "9632f2f8d7fe6c9e56e5858300d2f4368bce5c271b8117d37121e53a42a3af3b", "chart-companion/render-select-release-roundtrip", ["render-ok", "select-label", "release-ok", "server-drained", "output-frozen"], ["lifecycle-roundtrip", "frozen-output"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("HISTORY-092", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-092-chart-invalid-spec.can", "7df49ca6260e259abcbca9584679fbb59bf07dd68d6b56b8c159bd49e9bdfb67", "chart-companion/invalid-specs-reject", ["reject-code", "all-four-reject", "no-wire-send"], ["invalid-spec-rejects", "no-wire-send"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("HISTORY-093", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-093-chart-release-expiry.can", "bf2a88cdef40f4abbd432a0915e9c99fc032231c23db21c72ed392cb00ab7b9c", "chart-companion/release-expiry", ["double-release-ok", "stale-select-expired", "unknown-select-expired"], ["release-expiry", "idempotent-release"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("HISTORY-094", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-094-chart-out-of-range.can", "c40fa1b1f94f07bf2f7b2587f1375878fd1245e37dfca9fcce09956d5fcd35e1", "chart-companion/out-of-range-rejects", ["live-render-ok", "reject-code"], ["out-of-range-rejects"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("HISTORY-095", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-095-chart-fail-closed.can", "30825e186bee66f2ea23e12e906b1fdba339ccc9ef5318f4cece2acd6827cca1", "chart-companion/fail-closed", ["denied-code", "denied-no-send", "unauthorized-code", "transport-code", "no-transport-text"], ["fail-closed", "no-secret-leak"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], "")]
+        other: "nope" => ok []
+    match scope is "m33"
+        false => ok []
+        true => ok [row_map("HISTORY-091", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-091-chart-roundtrip.can", "9632f2f8d7fe6c9e56e5858300d2f4368bce5c271b8117d37121e53a42a3af3b", "chart-companion/render-select-release-roundtrip", ["render-ok", "select-label", "release-ok", "server-drained", "output-frozen"], ["lifecycle-roundtrip", "frozen-output"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("HISTORY-092", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-092-chart-invalid-spec.can", "7df49ca6260e259abcbca9584679fbb59bf07dd68d6b56b8c159bd49e9bdfb67", "chart-companion/invalid-specs-reject", ["reject-code", "all-four-reject", "no-wire-send"], ["invalid-spec-rejects", "no-wire-send"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("HISTORY-093", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-093-chart-release-expiry.can", "bf2a88cdef40f4abbd432a0915e9c99fc032231c23db21c72ed392cb00ab7b9c", "chart-companion/release-expiry", ["double-release-ok", "stale-select-expired", "unknown-select-expired"], ["release-expiry", "idempotent-release"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("HISTORY-094", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-094-chart-out-of-range.can", "c40fa1b1f94f07bf2f7b2587f1375878fd1245e37dfca9fcce09956d5fcd35e1", "chart-companion/out-of-range-rejects", ["live-render-ok", "reject-code"], ["out-of-range-rejects"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("HISTORY-095", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-095-chart-fail-closed.can", "30825e186bee66f2ea23e12e906b1fdba339ccc9ef5318f4cece2acd6827cca1", "chart-companion/fail-closed", ["denied-code", "denied-no-send", "unauthorized-code", "transport-code", "no-transport-text"], ["fail-closed", "no-secret-leak"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], "")]
+/// Position of a row id at or after an index, or -1 when absent.
+fn int row_index
+    emits {}
+    given
+        row_map[] rows
+        str row_id
+        int from
+    asserts
+        hit: [row_map("HISTORY-091", "retained", "s", "h", "c", ["x"], ["f"], ["v"], ["e"], [], ["qr"], "")], "HISTORY-091", 0 => ok 0
+        miss: [row_map("HISTORY-091", "retained", "s", "h", "c", ["x"], ["f"], ["v"], ["e"], [], ["qr"], "")], "HISTORY-099", 0 => ok -1
+        offset: [row_map("HISTORY-091", "retained", "s", "h", "c", ["x"], ["f"], ["v"], ["e"], [], ["qr"], "")], "HISTORY-091", 1 => ok -1
+    match from >= rows.length
+        true => ok -1
+        false => match rows[from].row_id is row_id
+            false => relay call row_index(rows, row_id, from + 1)
+            true => ok from
+/// Whether every needed word is offered from an index: engine and delegate
+/// coverage share this subset check.
+fn bool str_subset
+    emits {}
+    given
+        str[] need
+        str[] have
+        int index
+    asserts
+        covered: ["bun-prototype-env"], ["bun-prototype-env"], 0 => ok true
+        gap: ["bun-prototype-env"], [], 0 => ok false
+        empty: [], ["x"], 0 => ok true
+        done: ["a"], ["a"], 1 => ok true
+    match index >= need.length
+        false => match call registry::str_member(have, need[index], 0)
+            ok bool hit => match hit
+                false => ok false
+                true => relay call str_subset(need, have, index + 1)
+        true => ok true
+/// Expand retained slice rows into coverage obligations, threading one
+/// accumulator. Only retained rows obligate: obsolete rows never produce
+/// retained_row entries, so retirement cannot silently widen coverage.
+fn coverage::retained_row[] slice_obligations
+    emits {}
+    given
+        row_map[] rows
+        int rindex
+        int cindex
+        coverage::retained_row[] acc
+    asserts
+        head: [row_map("L-1", "retained", "s", "h", "c1", ["x", "y"], ["f"], ["v"], ["e"], [], ["qr"], "")], 0, 0, [] => ok [coverage::retained_row("c1", "x", "L-1", true), coverage::retained_row("c1", "y", "L-1", true)]
+        tail: [row_map("L-1", "retained", "s", "h", "c1", ["x", "y"], ["f"], ["v"], ["e"], [], ["qr"], "")], 0, 1, [coverage::retained_row("c1", "x", "L-1", true)] => ok [coverage::retained_row("c1", "x", "L-1", true), coverage::retained_row("c1", "y", "L-1", true)]
+        skip_obsolete: [row_map("L-9", "obsolete", "s", "h", "c9", ["x"], ["f"], ["v"], ["e"], [], ["qr"], "")], 0, 0, [] => ok []
+        done: [row_map("L-1", "retained", "s", "h", "c1", ["x"], ["f"], ["v"], ["e"], [], ["qr"], "")], 1, 0, [coverage::retained_row("c1", "x", "L-1", true)] => ok [coverage::retained_row("c1", "x", "L-1", true)]
+    match rindex >= rows.length
+        false => match rows[rindex].disposition is "retained"
+            false => relay call slice_obligations(rows, rindex + 1, 0, acc)
+            true => match cindex >= rows[rindex].checks.length
+                false => relay call slice_obligations(rows, rindex, cindex + 1, call append(acc, coverage::retained_row(rows[rindex].case_id, rows[rindex].checks[cindex], rows[rindex].row_id, true)))
+                true => relay call slice_obligations(rows, rindex + 1, 0, acc)
+        true => ok acc
+/// Reconcile plan and local inventory against the slice obligations: a
+/// dropped facet surfaces as missing-obligation and a planned check no
+/// retained row owns surfaces as unretained-check, both by construction
+/// through coverage::validate_coverage.
+fn coverage::coverage_outcome validate_slice_coverage
+    emits {}
+    given
+        row_map[] rows
+        registry::planned_unit[] units
+        spec::check[] local
+    asserts
+        clean: [row_map("L-1", "retained", "s", "h", "c1", ["x"], ["f"], ["v"], ["e"], [], ["qr"], "")], [registry::planned_unit("c1", "default", [spec::check_ref("x")])], [spec::check("x", "X")] => ok coverage::coverage_ok(1, 1, 1)
+        dropped_facet: [row_map("L-1", "retained", "s", "h", "c1", ["x"], ["f"], ["v"], ["e"], [], ["qr"], "")], [registry::planned_unit("c1", "default", [])], [spec::check("x", "X")] => ok coverage::coverage_conflict([spec::diagnostic("coverage::validate_coverage", "case c1 variant - root coverage run static", "missing-obligation", "c1:x")])
+        unretained: [row_map("L-1", "retained", "s", "h", "c1", ["x"], ["f"], ["v"], ["e"], [], ["qr"], "")], [registry::planned_unit("c1", "default", [spec::check_ref("x"), spec::check_ref("z")])], [spec::check("x", "X"), spec::check("z", "Z")] => ok coverage::coverage_conflict([spec::diagnostic("coverage::validate_coverage", "case c1 variant - root coverage run static", "unretained-check", "c1:z")])
+    relay call coverage::validate_coverage(call slice_obligations(rows, 0, 0, []), units, local)
+/// Whether a job has a registration entry from an index: attempts without
+/// a prior registration are unregistered jobs, never silent scope.
+fn bool job_registered
+    emits {}
+    given
+        job_entry[] entries
+        str job_id
+        int index
+    asserts
+        hit: [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1)], "j1", 0 => ok true
+        attempt_only: [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "attempt", "passed", "full", 1, 1, "", "", -1)], "j1", 0 => ok false
+        empty: [], "j1", 0 => ok false
+    match index >= entries.length
+        true => ok false
+        false => match entries[index].job_id is job_id
+            false => relay call job_registered(entries, job_id, index + 1)
+            true => match entries[index].kind is "register"
+                false => relay call job_registered(entries, job_id, index + 1)
+                true => ok true
+/// Whether every entry of a job names the claim identity from an index:
+/// a drifted row, case, variant or run is incompatible, never merged.
+fn bool identity_compatible
+    emits {}
+    given
+        job_entry[] entries
+        claim c
+        int index
+    asserts
+        clean: [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1)], claim("j1", "HISTORY-091", "c", "v", "r", [], [], false, false), 0 => ok true
+        drift: [job_entry("j1", "HISTORY-091", "other", "v", "r", 1, "attempt", "passed", "full", 1, 1, "", "", -1)], claim("j1", "HISTORY-091", "c", "v", "r", [], [], false, false), 0 => ok false
+        other_job: [job_entry("j9", "HISTORY-099", "z", "w", "s", 0, "attempt", "passed", "full", 1, 1, "", "", -1)], claim("j1", "HISTORY-091", "c", "v", "r", [], [], false, false), 0 => ok true
+    match index >= entries.length
+        true => ok true
+        false => match entries[index].job_id is c.job_id
+            false => relay call identity_compatible(entries, c, index + 1)
+            true => match entries[index].row_id is c.row_id and entries[index].case_id is c.case_id and entries[index].variant_id is c.variant_id and entries[index].run_id is c.run_id
+                false => ok false
+                true => relay call identity_compatible(entries, c, index + 1)
+/// Whether every cited suite/artifact identity on a job is accepted: a
+/// cited but unaccepted reference blocks complete coverage until P23.
+fn bool references_accepted
+    emits {}
+    given
+        job_entry[] entries
+        claim c
+        int index
+    asserts
+        none_cited: [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1)], claim("j1", "HISTORY-091", "c", "v", "r", [], [], false, false), 0 => ok true
+        accepted: [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "s1", "a1", -1)], claim("j1", "HISTORY-091", "c", "v", "r", [], [], true, true), 0 => ok true
+        unaccepted_suite: [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "s1", "", -1)], claim("j1", "HISTORY-091", "c", "v", "r", [], [], false, false), 0 => ok false
+        unaccepted_artifact: [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "a1", -1)], claim("j1", "HISTORY-091", "c", "v", "r", [], [], true, false), 0 => ok false
+    match index >= entries.length
+        true => ok true
+        false => match entries[index].job_id is c.job_id
+            false => relay call references_accepted(entries, c, index + 1)
+            true => match entries[index].suite is ""
+                false => match c.suite_accepted
+                    false => ok false
+                    true => match entries[index].artifact is ""
+                        false => match c.artifact_accepted
+                            false => ok false
+                            true => relay call references_accepted(entries, c, index + 1)
+                        true => relay call references_accepted(entries, c, index + 1)
+                true => match entries[index].artifact is ""
+                    false => match c.artifact_accepted
+                        false => ok false
+                        true => relay call references_accepted(entries, c, index + 1)
+                    true => relay call references_accepted(entries, c, index + 1)
+/// Whether one entry is a single complete attempt: a passed attempt in
+/// full scope with every required check matched. Partials never compose.
+fn bool is_full_pass
+    emits {}
+    given
+        job_entry e
+    asserts
+        full: job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "passed", "full", 5, 5, "", "", -1) => ok true
+        partial_scope: job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "passed", "partial", 5, 5, "", "", -1) => ok false
+        failed_state: job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "failed", "full", 0, 5, "", "", -1) => ok false
+        short_counts: job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "passed", "full", 3, 5, "", "", -1) => ok false
+    match e.kind is "attempt"
+        false => ok false
+        true => match e.state is "passed"
+            false => ok false
+            true => match e.scope is "full"
+                false => ok false
+                true => match e.matched is e.required_total
+                    false => ok false
+                    true => match e.required_total >= 1
+                        false => ok false
+                        true => ok true
+/// Whether an attempt state still needs reconciliation: failed, blocked
+/// and interrupted attempts all need a supersede plus a later full pass.
+fn bool attempt_open
+    emits {}
+    given
+        str state
+    asserts
+        failed: "failed" => ok true
+        blocked: "blocked" => ok true
+        interrupted: "interrupted" => ok true
+        passed: "passed" => ok false
+        registered: "registered" => ok false
+    match state
+        "failed" => ok true
+        "blocked" => ok true
+        "interrupted" => ok true
+        _ => ok false
+/// Whether a supersede entry corrects a seq from an index: the correction
+/// chain link a reconciled failure must carry.
+fn bool has_supersede
+    emits {}
+    given
+        job_entry[] entries
+        str job_id
+        int seq
+        int index
+    asserts
+        hit: [job_entry("j1", "HISTORY-091", "c", "v", "r", 2, "supersede", "recorded", "full", 0, 0, "", "", 1)], "j1", 1, 0 => ok true
+        miss: [job_entry("j1", "HISTORY-091", "c", "v", "r", 2, "supersede", "recorded", "full", 0, 0, "", "", 1)], "j1", 0, 0 => ok false
+        empty: [], "j1", 1, 0 => ok false
+    match index >= entries.length
+        true => ok false
+        false => match entries[index].job_id is job_id
+            false => relay call has_supersede(entries, job_id, seq, index + 1)
+            true => match entries[index].kind is "supersede"
+                false => relay call has_supersede(entries, job_id, seq, index + 1)
+                true => match entries[index].supersedes is seq
+                    false => relay call has_supersede(entries, job_id, seq, index + 1)
+                    true => ok true
+/// Whether a full pass lands strictly after a seq from an index: the
+/// corrective-run selection behind a reconciled failure.
+fn bool later_full_pass
+    emits {}
+    given
+        job_entry[] entries
+        str job_id
+        int after
+        int index
+    asserts
+        later: [job_entry("j1", "HISTORY-091", "c", "v", "r", 3, "attempt", "passed", "full", 1, 1, "", "", -1)], "j1", 1, 0 => ok true
+        same_seq: [job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "passed", "full", 1, 1, "", "", -1)], "j1", 1, 0 => ok false
+        empty: [], "j1", 1, 0 => ok false
+    match index >= entries.length
+        true => ok false
+        false => match entries[index].job_id is job_id
+            false => relay call later_full_pass(entries, job_id, after, index + 1)
+            true => match call is_full_pass(entries[index])
+                ok bool full => match full
+                    false => relay call later_full_pass(entries, job_id, after, index + 1)
+                    true => match entries[index].seq >= after
+                        false => relay call later_full_pass(entries, job_id, after, index + 1)
+                        true => match entries[index].seq is after
+                            true => relay call later_full_pass(entries, job_id, after, index + 1)
+                            false => ok true
+/// Whether every open attempt on a job is reconciled from an index: each
+/// failed, blocked or interrupted attempt needs a supersede correction
+/// plus a later full pass, or the claim cherry-picks its reports.
+fn bool failures_reconciled
+    emits {}
+    given
+        job_entry[] entries
+        str job_id
+        int index
+    asserts
+        clean: [job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "passed", "full", 1, 1, "", "", -1)], "j1", 0 => ok true
+        reconciled: [job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "failed", "full", 0, 1, "", "", -1), job_entry("j1", "HISTORY-091", "c", "v", "r", 2, "supersede", "recorded", "full", 0, 0, "", "", 1), job_entry("j1", "HISTORY-091", "c", "v", "r", 3, "attempt", "passed", "full", 1, 1, "", "", -1)], "j1", 0 => ok true
+        cherry: [job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "failed", "full", 0, 1, "", "", -1), job_entry("j1", "HISTORY-091", "c", "v", "r", 3, "attempt", "passed", "full", 1, 1, "", "", -1)], "j1", 0 => ok false
+    match index >= entries.length
+        true => ok true
+        false => match entries[index].job_id is job_id
+            false => relay call failures_reconciled(entries, job_id, index + 1)
+            true => match call attempt_open(entries[index].state)
+                ok bool open => match open
+                    false => relay call failures_reconciled(entries, job_id, index + 1)
+                    true => match call has_supersede(entries, job_id, entries[index].seq, 0)
+                        ok bool fixed => match fixed
+                            false => ok false
+                            true => match call later_full_pass(entries, job_id, entries[index].seq, 0)
+                                ok bool rerun => match rerun
+                                    false => ok false
+                                    true => relay call failures_reconciled(entries, job_id, index + 1)
+/// Whether a job holds a single complete attempt from an index.
+fn bool single_complete
+    emits {}
+    given
+        job_entry[] entries
+        str job_id
+        int index
+    asserts
+        hit: [job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "passed", "full", 1, 1, "", "", -1)], "j1", 0 => ok true
+        partial_only: [job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "passed", "partial", 1, 1, "", "", -1)], "j1", 0 => ok false
+        empty: [], "j1", 0 => ok false
+    match index >= entries.length
+        true => ok false
+        false => match entries[index].job_id is job_id
+            false => relay call single_complete(entries, job_id, index + 1)
+            true => match call is_full_pass(entries[index])
+                ok bool full => match full
+                    false => relay call single_complete(entries, job_id, index + 1)
+                    true => ok true
+/// Whether a job holds any passed attempt from an index: distinguishes a
+/// stitched partial union from genuinely missing evidence.
+fn bool any_pass
+    emits {}
+    given
+        job_entry[] entries
+        str job_id
+        int index
+    asserts
+        hit: [job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "passed", "partial", 1, 2, "", "", -1)], "j1", 0 => ok true
+        failed_only: [job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "failed", "full", 0, 1, "", "", -1)], "j1", 0 => ok false
+        empty: [], "j1", 0 => ok false
+    match index >= entries.length
+        true => ok false
+        false => match entries[index].job_id is job_id
+            false => relay call any_pass(entries, job_id, index + 1)
+            true => match entries[index].kind is "attempt"
+                false => relay call any_pass(entries, job_id, index + 1)
+                true => match entries[index].state is "passed"
+                    false => relay call any_pass(entries, job_id, index + 1)
+                    true => ok true
+/// Whether a job takes undeclared duplicate credit from an index: a
+/// second full pass needs a supersede correction between the passes, or
+/// the same cell is credited twice. Threads seen full passes since the
+/// last supersede.
+fn bool duplicate_credit_at
+    emits {}
+    given
+        job_entry[] entries
+        str job_id
+        int index
+        int seen
+    asserts
+        single: [job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "passed", "full", 1, 1, "", "", -1)], "j1", 0, 0 => ok false
+        double: [job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "passed", "full", 1, 1, "", "", -1), job_entry("j1", "HISTORY-091", "c", "v", "r", 2, "attempt", "passed", "full", 1, 1, "", "", -1)], "j1", 0, 0 => ok true
+        declared: [job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "passed", "full", 1, 1, "", "", -1), job_entry("j1", "HISTORY-091", "c", "v", "r", 2, "supersede", "recorded", "full", 0, 0, "", "", 1), job_entry("j1", "HISTORY-091", "c", "v", "r", 3, "attempt", "passed", "full", 1, 1, "", "", -1)], "j1", 0, 0 => ok false
+    match index >= entries.length
+        true => ok false
+        false => match entries[index].job_id is job_id
+            false => relay call duplicate_credit_at(entries, job_id, index + 1, seen)
+            true => match entries[index].kind is "supersede"
+                true => relay call duplicate_credit_at(entries, job_id, index + 1, 0)
+                false => match call is_full_pass(entries[index])
+                    ok bool full => match full
+                        false => relay call duplicate_credit_at(entries, job_id, index + 1, seen)
+                        true => match seen >= 1
+                            true => ok true
+                            false => relay call duplicate_credit_at(entries, job_id, index + 1, seen + 1)
+/// Identity side of a complete-coverage claim against the slice manifest:
+/// unknown row, unregistered job, manifest or entry identity drift,
+/// missing engine, undeclared delegate and unaccepted reference each fail
+/// first-only, since one already blocks the claim.
+fn spec::diagnostic[] claim_identity_problems
+    emits {}
+    given
+        job_entry[] entries
+        claim c
+    asserts
+        clean: [job_entry("j1", "HISTORY-091", "chart-companion/render-select-release-roundtrip", "default", "r1", 0, "register", "registered", "full", 0, 0, "", "", -1)], claim("j1", "HISTORY-091", "chart-companion/render-select-release-roundtrip", "default", "r1", ["bun-prototype-env"], [], false, false) => ok []
+        unknown_row: [], claim("j1", "HISTORY-999", "c", "v", "r", [], [], false, false) => ok [spec::diagnostic("migration::claim_identity_problems", "case c variant v root coverage run r", "unknown-row", "HISTORY-999")]
+        unregistered: [], claim("j1", "HISTORY-091", "chart-companion/render-select-release-roundtrip", "default", "r1", ["bun-prototype-env"], [], false, false) => ok [spec::diagnostic("migration::claim_identity_problems", "case chart-companion/render-select-release-roundtrip variant default root coverage run r1", "unregistered-job", "j1")]
+        manifest_case: [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1)], claim("j1", "HISTORY-091", "c", "v", "r", ["bun-prototype-env"], [], false, false) => ok [spec::diagnostic("migration::claim_identity_problems", "case c variant v root coverage run r", "incompatible-identity", "c")]
+        entry_drift: [job_entry("j1", "HISTORY-091", "chart-companion/render-select-release-roundtrip", "default", "r1", 0, "register", "registered", "full", 0, 0, "", "", -1), job_entry("j1", "HISTORY-091", "other", "default", "r1", 1, "attempt", "passed", "full", 5, 5, "", "", -1)], claim("j1", "HISTORY-091", "chart-companion/render-select-release-roundtrip", "default", "r1", ["bun-prototype-env"], [], false, false) => ok [spec::diagnostic("migration::claim_identity_problems", "case chart-companion/render-select-release-roundtrip variant default root coverage run r1", "incompatible-identity", "j1")]
+        missing_engine: [job_entry("j1", "HISTORY-091", "chart-companion/render-select-release-roundtrip", "default", "r1", 0, "register", "registered", "full", 0, 0, "", "", -1)], claim("j1", "HISTORY-091", "chart-companion/render-select-release-roundtrip", "default", "r1", [], [], false, false) => ok [spec::diagnostic("migration::claim_identity_problems", "case chart-companion/render-select-release-roundtrip variant default root coverage run r1", "missing-engine", "HISTORY-091")]
+        unaccepted: [job_entry("j1", "HISTORY-091", "chart-companion/render-select-release-roundtrip", "default", "r1", 0, "register", "registered", "full", 0, 0, "s1", "", -1)], claim("j1", "HISTORY-091", "chart-companion/render-select-release-roundtrip", "default", "r1", ["bun-prototype-env"], [], false, false) => ok [spec::diagnostic("migration::claim_identity_problems", "case chart-companion/render-select-release-roundtrip variant default root coverage run r1", "unaccepted-reference", "j1")]
+    match call m33_chart_slice("m33")
+        ok row_map[] rows => match call row_index(rows, c.row_id, 0)
+            ok int at => match at is -1
+                true => ok [spec::diagnostic("migration::claim_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unknown-row", c.row_id)]
+                false => match call job_registered(entries, c.job_id, 0)
+                    ok bool reg => match reg
+                        false => ok [spec::diagnostic("migration::claim_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unregistered-job", c.job_id)]
+                        true => match rows[at].case_id is c.case_id
+                            false => ok [spec::diagnostic("migration::claim_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "incompatible-identity", c.case_id)]
+                            true => match call identity_compatible(entries, c, 0)
+                                ok bool same => match same
+                                    false => ok [spec::diagnostic("migration::claim_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "incompatible-identity", c.job_id)]
+                                    true => match call str_subset(rows[at].environments, c.engines, 0)
+                                        ok bool engined => match engined
+                                            false => ok [spec::diagnostic("migration::claim_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "missing-engine", c.row_id)]
+                                            true => match call str_subset(rows[at].delegates, c.delegates, 0)
+                                                ok bool delegated => match delegated
+                                                    false => ok [spec::diagnostic("migration::claim_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "undeclared-delegate", c.row_id)]
+                                                    true => match call references_accepted(entries, c, 0)
+                                                        ok bool cited => match cited
+                                                            false => ok [spec::diagnostic("migration::claim_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unaccepted-reference", c.job_id)]
+                                                            true => ok []
+/// Credit side of a complete-coverage claim: unreconciled failures are
+/// cherry-picked reports, a pass without a single complete attempt is
+/// either stitched partials or missing evidence, and a second full pass
+/// without a supersede is undeclared duplicate credit.
+fn spec::diagnostic[] claim_credit_problems
+    emits {}
+    given
+        job_entry[] entries
+        claim c
+        spec::diagnostic[] problems
+    asserts
+        clean: [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1), job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "passed", "full", 5, 5, "", "", -1)], claim("j1", "HISTORY-091", "c", "v", "r", ["bun-prototype-env"], [], false, false), [] => ok []
+        cherry: [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1), job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "failed", "full", 0, 5, "", "", -1), job_entry("j1", "HISTORY-091", "c", "v", "r", 3, "attempt", "passed", "full", 5, 5, "", "", -1)], claim("j1", "HISTORY-091", "c", "v", "r", ["bun-prototype-env"], [], false, false), [] => ok [spec::diagnostic("migration::claim_credit_problems", "case c variant v root coverage run r", "cherry-picked-report", "j1")]
+        reconciled_ok: [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1), job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "failed", "full", 0, 5, "", "", -1), job_entry("j1", "HISTORY-091", "c", "v", "r", 2, "supersede", "recorded", "full", 0, 0, "", "", 1), job_entry("j1", "HISTORY-091", "c", "v", "r", 3, "attempt", "passed", "full", 5, 5, "", "", -1)], claim("j1", "HISTORY-091", "c", "v", "r", ["bun-prototype-env"], [], false, false), [] => ok []
+        stitched: [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1), job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "passed", "partial", 3, 5, "", "", -1), job_entry("j1", "HISTORY-091", "c", "v", "r", 2, "attempt", "passed", "partial", 2, 5, "", "", -1)], claim("j1", "HISTORY-091", "c", "v", "r", ["bun-prototype-env"], [], false, false), [] => ok [spec::diagnostic("migration::claim_credit_problems", "case c variant v root coverage run r", "stitched-attempt", "j1")]
+        missing: [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1)], claim("j1", "HISTORY-091", "c", "v", "r", ["bun-prototype-env"], [], false, false), [] => ok [spec::diagnostic("migration::claim_credit_problems", "case c variant v root coverage run r", "no-passing-attempt", "j1")]
+        duplicate: [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1), job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "passed", "full", 5, 5, "", "", -1), job_entry("j1", "HISTORY-091", "c", "v", "r", 2, "attempt", "passed", "full", 5, 5, "", "", -1)], claim("j1", "HISTORY-091", "c", "v", "r", ["bun-prototype-env"], [], false, false), [] => ok [spec::diagnostic("migration::claim_credit_problems", "case c variant v root coverage run r", "duplicate-credit", "j1")]
+        threaded: [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1), job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "passed", "full", 5, 5, "", "", -1)], claim("j1", "HISTORY-091", "c", "v", "r", ["bun-prototype-env"], [], false, false), [spec::diagnostic("migration::claim_credit_problems", "case c variant v root coverage run r", "seed-kind", "seed")] => ok [spec::diagnostic("migration::claim_credit_problems", "case c variant v root coverage run r", "seed-kind", "seed")]
+    match call failures_reconciled(entries, c.job_id, 0)
+        ok bool rec => match rec
+            false => ok call append(problems, spec::diagnostic("migration::claim_credit_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "cherry-picked-report", c.job_id))
+            true => match call single_complete(entries, c.job_id, 0)
+                ok bool done => match done
+                    false => match call any_pass(entries, c.job_id, 0)
+                        ok bool part => match part
+                            false => ok call append(problems, spec::diagnostic("migration::claim_credit_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "no-passing-attempt", c.job_id))
+                            true => ok call append(problems, spec::diagnostic("migration::claim_credit_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "stitched-attempt", c.job_id))
+                    true => match call duplicate_credit_at(entries, c.job_id, 0, 0)
+                        ok bool dup => match dup
+                            false => ok problems
+                            true => ok call append(problems, spec::diagnostic("migration::claim_credit_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "duplicate-credit", c.job_id))
+/// Validate one complete-coverage claim: identity first, then credit.
+/// An identity problem short-circuits, since credit over a misidentified
+/// cell cannot reconcile.
+fn spec::diagnostic[] validate_claim
+    emits {}
+    given
+        job_entry[] entries
+        claim c
+    asserts
+        clean: [job_entry("j1", "HISTORY-091", "chart-companion/render-select-release-roundtrip", "default", "r1", 0, "register", "registered", "full", 0, 0, "", "", -1), job_entry("j1", "HISTORY-091", "chart-companion/render-select-release-roundtrip", "default", "r1", 1, "attempt", "passed", "full", 5, 5, "", "", -1)], claim("j1", "HISTORY-091", "chart-companion/render-select-release-roundtrip", "default", "r1", ["bun-prototype-env"], [], false, false) => ok []
+        unknown_row: [], claim("j1", "HISTORY-999", "c", "v", "r", [], [], false, false) => ok [spec::diagnostic("migration::claim_identity_problems", "case c variant v root coverage run r", "unknown-row", "HISTORY-999")]
+        cherry_full: [job_entry("j1", "HISTORY-091", "chart-companion/render-select-release-roundtrip", "default", "r1", 0, "register", "registered", "full", 0, 0, "", "", -1), job_entry("j1", "HISTORY-091", "chart-companion/render-select-release-roundtrip", "default", "r1", 1, "attempt", "failed", "full", 0, 5, "", "", -1), job_entry("j1", "HISTORY-091", "chart-companion/render-select-release-roundtrip", "default", "r1", 3, "attempt", "passed", "full", 5, 5, "", "", -1)], claim("j1", "HISTORY-091", "chart-companion/render-select-release-roundtrip", "default", "r1", ["bun-prototype-env"], [], false, false) => ok [spec::diagnostic("migration::claim_credit_problems", "case chart-companion/render-select-release-roundtrip variant default root coverage run r1", "cherry-picked-report", "j1")]
+    match call claim_identity_problems(entries, c)
+        ok spec::diagnostic[] shaped => match shaped.length is 0
+            false => ok shaped
+            true => relay call claim_credit_problems(entries, c, shaped)
+/// Reduce one slice attempt report in full scope: verdict words on index
+/// entries must equal this outcome once P23 executes; a matched claim
+/// over missing rows already rejects here as early-ok.
+fn reducer::reduced reduce_attempt
+    emits {}
+    given
+        reducer::unit_report unit
+        spec::check_ref[] required
+        str exp_case
+        str exp_variant
+        str exp_run
+    asserts
+        pass: reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [reducer::check_row(0, "a", "1", "1", true)]), [spec::check_ref("a")], "a", "v", "r" => ok reducer::reduced_ok(1)
+        cherry_picked: reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", false, []), [spec::check_ref("a")], "a", "v", "r" => ok reducer::reduced_rejected([spec::diagnostic("reducer::reduce_unit", "case a variant v root reduce run r", "early-ok", "a")])
+    relay call reducer::reduce_unit(unit, required, reducer::scope("full", "full-roots"), exp_case, exp_variant, exp_run)
+/// Reviewed campaign manifest for the slice: fixed IDs plus every
+/// declared row. ID shapes are exact reviewed strings, not patterns.
+fn campaign campaign_manifest
+    emits {}
+    given
+        str scope
+    asserts
+        m33: "m33" => ok campaign("z01-manifest/m33-chart-a/2026-10-01", "z01-campaign/m33-chart-a/attempt-1", ["HISTORY-091", "HISTORY-092", "HISTORY-093", "HISTORY-094", "HISTORY-095"])
+        other: "nope" => ok campaign("", "", [])
+    match scope is "m33"
+        false => ok campaign("", "", [])
+        true => ok campaign("z01-manifest/m33-chart-a/2026-10-01", "z01-campaign/m33-chart-a/attempt-1", ["HISTORY-091", "HISTORY-092", "HISTORY-093", "HISTORY-094", "HISTORY-095"])
+/// Whether a row id is declared by any index entry from an index.
+fn bool row_declared
+    emits {}
+    given
+        job_entry[] entries
+        str row_id
+        int index
+    asserts
+        hit: [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1)], "HISTORY-091", 0 => ok true
+        miss: [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1)], "HISTORY-092", 0 => ok false
+        empty: [], "HISTORY-091", 0 => ok false
+    match index >= entries.length
+        true => ok false
+        false => match entries[index].row_id is row_id
+            false => relay call row_declared(entries, row_id, index + 1)
+            true => ok true
+/// Position of the entry carrying a seq at or after an index, or -1.
+fn int seq_position
+    emits {}
+    given
+        job_entry[] entries
+        int seq
+        int from
+    asserts
+        hit: [job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "failed", "full", 0, 5, "", "", -1)], 1, 0 => ok 0
+        miss: [job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "attempt", "failed", "full", 0, 5, "", "", -1)], 7, 0 => ok -1
+        empty: [], 1, 0 => ok -1
+    match from >= entries.length
+        true => ok -1
+        false => match entries[from].seq is seq
+            false => relay call seq_position(entries, seq, from + 1)
+            true => ok from
+/// Validate the campaign index in append order: seqs must strictly
+/// increase, every supersede must correct an earlier known seq, and
+/// every declared manifest row must stay declared. Callers pass index 0
+/// and prev -1.
+fn spec::diagnostic[] campaign_problems
+    emits {}
+    given
+        campaign manifest
+        job_entry[] entries
+        int index
+        int prev
+        spec::diagnostic[] problems
+    asserts
+        clean: campaign("m", "c", ["HISTORY-091"]), [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1)], 0, -1, [] => ok []
+        bad_append: campaign("m", "c", ["HISTORY-091"]), [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1), job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "attempt", "passed", "full", 5, 5, "", "", -1)], 0, -1, [] => ok [spec::diagnostic("migration::campaign_problems", "case c variant v root coverage run r", "bad-append", "j1:0")]
+        bad_correction: campaign("m", "c", ["HISTORY-091"]), [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1), job_entry("j1", "HISTORY-091", "c", "v", "r", 1, "supersede", "recorded", "full", 0, 0, "", "", 7)], 0, -1, [] => ok [spec::diagnostic("migration::campaign_problems", "case c variant v root coverage run r", "bad-correction", "j1:1")]
+        dropped: campaign("m", "c", ["HISTORY-091", "HISTORY-092"]), [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1)], 0, -1, [] => ok [spec::diagnostic("migration::declared_problems", "case - variant - root coverage run static", "dropped-declaration", "HISTORY-092")]
+    match index >= entries.length
+        false => match entries[index].seq >= prev
+            false => relay call campaign_problems(manifest, entries, index + 1, prev, call append(problems, spec::diagnostic("migration::campaign_problems", call spec::reproduction_selector(call spec::context_for(entries[index].case_id, entries[index].variant_id, "", entries[index].run_id), "coverage"), "bad-append", call text::join([entries[index].job_id, call text::from_int(entries[index].seq)], ":"))))
+            true => match entries[index].seq is prev
+                true => relay call campaign_problems(manifest, entries, index + 1, prev, call append(problems, spec::diagnostic("migration::campaign_problems", call spec::reproduction_selector(call spec::context_for(entries[index].case_id, entries[index].variant_id, "", entries[index].run_id), "coverage"), "bad-append", call text::join([entries[index].job_id, call text::from_int(entries[index].seq)], ":"))))
+                false => match entries[index].kind is "supersede"
+                    false => relay call campaign_problems(manifest, entries, index + 1, entries[index].seq, problems)
+                    true => match entries[index].supersedes >= 0
+                        false => relay call campaign_problems(manifest, entries, index + 1, entries[index].seq, call append(problems, spec::diagnostic("migration::campaign_problems", call spec::reproduction_selector(call spec::context_for(entries[index].case_id, entries[index].variant_id, "", entries[index].run_id), "coverage"), "bad-correction", call text::join([entries[index].job_id, call text::from_int(entries[index].seq)], ":"))))
+                        true => match call seq_position(entries, entries[index].supersedes, 0)
+                            ok int at => match at is -1
+                                true => relay call campaign_problems(manifest, entries, index + 1, entries[index].seq, call append(problems, spec::diagnostic("migration::campaign_problems", call spec::reproduction_selector(call spec::context_for(entries[index].case_id, entries[index].variant_id, "", entries[index].run_id), "coverage"), "bad-correction", call text::join([entries[index].job_id, call text::from_int(entries[index].seq)], ":"))))
+                                false => match at >= index
+                                    false => relay call campaign_problems(manifest, entries, index + 1, entries[index].seq, problems)
+                                    true => relay call campaign_problems(manifest, entries, index + 1, entries[index].seq, call append(problems, spec::diagnostic("migration::campaign_problems", call spec::reproduction_selector(call spec::context_for(entries[index].case_id, entries[index].variant_id, "", entries[index].run_id), "coverage"), "bad-correction", call text::join([entries[index].job_id, call text::from_int(entries[index].seq)], ":"))))
+        true => relay call declared_problems(manifest, entries, 0, problems)
+/// Every declared manifest row must stay declared by the index: a
+/// declared row with no entry is dropped, never silently forgotten.
+fn spec::diagnostic[] declared_problems
+    emits {}
+    given
+        campaign manifest
+        job_entry[] entries
+        int rindex
+        spec::diagnostic[] problems
+    asserts
+        all_declared: campaign("m", "c", ["HISTORY-091"]), [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1)], 0, [] => ok []
+        dropped: campaign("m", "c", ["HISTORY-091", "HISTORY-092"]), [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1)], 0, [] => ok [spec::diagnostic("migration::declared_problems", "case - variant - root coverage run static", "dropped-declaration", "HISTORY-092")]
+        done: campaign("m", "c", ["HISTORY-091"]), [job_entry("j1", "HISTORY-091", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1)], 1, [spec::diagnostic("migration::declared_problems", "case - variant - root coverage run static", "dropped-declaration", "HISTORY-092")] => ok [spec::diagnostic("migration::declared_problems", "case - variant - root coverage run static", "dropped-declaration", "HISTORY-092")]
+    match rindex >= manifest.rows.length
+        false => match call row_declared(entries, manifest.rows[rindex], 0)
+            ok bool kept => match kept
+                false => relay call declared_problems(manifest, entries, rindex + 1, call append(problems, spec::diagnostic("migration::declared_problems", call spec::reproduction_selector(call spec::context_for("-", "-", "", "static"), "coverage"), "dropped-declaration", manifest.rows[rindex])))
+                true => relay call declared_problems(manifest, entries, rindex + 1, problems)
+        true => ok problems
