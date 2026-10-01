@@ -1,0 +1,42 @@
+package test_db_observer
+    provides []
+    uses [db, test]
+fn int db_roundtrip
+    emits {test::invalid_grant, test::stale_handle, db::db_fault}
+    given
+        str grant
+    asserts
+        probe: "ng1-0123456789abcdef0123456789abcdef" => ok 0
+    match chain
+        call test::grant_admit(grant) as test::owner owner
+        call db::open_namespace(owner, "tenant-alpha") as db::namespace_receipt opened
+        call db::receipt(owner, "tenant-alpha") as db::namespace_receipt receipted
+        call db::pin_connection(owner, "tenant-alpha", "raw-1") as db::connection_facts pinned
+        call db::connection_token_for_test(owner, "tenant-alpha", "raw-1") as str token
+        call db::seed(owner, "tenant-alpha", "items", [db::seed_row([db::number_cell("1.10"), db::null_cell()])]) as db::seed_facts seeded
+        call db::begin_read(owner, "tenant-alpha", "raw-1", token, "items") as db::conversation_facts begun
+        call db::fetch(owner, "tenant-alpha", "raw-1", token, "items") as db::read_facts read
+        call db::compare_row(owner, [db::number_cell("1.10")], [db::number_cell("1.10")]) as db::row_comparison compared
+        call db::end_read(owner, "tenant-alpha", "raw-1", token)
+        call db::record_compile(owner, "d1", "INSERT ... RETURNING id", ["number"]) as db::compile_facts compiled
+        call db::compile_record(owner, "compile-0") as db::compile_facts reread
+        call db::record_returning(owner, "compile-0", [db::seed_row([db::number_cell("7")])]) as db::returning_payload_facts payload
+        call db::payload_facts(owner, "compile-0") as db::returning_payload_facts payload_again
+        call db::record_final_rows(owner, "compile-0", [db::seed_row([db::number_cell("7")])]) as db::final_rows_facts final
+        call db::final_facts(owner, "compile-0") as db::final_rows_facts final_again
+        call db::compare_payload_to_final(owner, payload, final) as db::returning_comparison agreed
+        call db::compare_claimed_row(owner, [db::number_cell("7")], [db::number_cell("7")]) as db::returning_comparison claimed
+        call db::credit_verdict(owner) as db::returning_credit_verdict verdict
+        call db::unpin_connection(owner, "tenant-alpha", "raw-1", token)
+        call db::close_namespace(owner, "tenant-alpha")
+        test::invalid_grant
+        test::stale_handle
+        db::db_fault
+        ok => ok 0
+fn void main
+    emits {}
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok
