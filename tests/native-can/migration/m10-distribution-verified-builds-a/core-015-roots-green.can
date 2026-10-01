@@ -1,0 +1,267 @@
+package m10core015roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M10 CORE-015 "development sidecar: roots green, staged inventory".
+/// Source: tests/integration/distribution_test.go symbol
+/// TestDevelopmentSidecar (L19-357); offline parser fixture
+/// compiler/testdata/current/parser/offline.can; offline project fixture
+/// compiler/testdata/current/project.
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): static green-baseline inventory of the staged
+/// fixtures the offline legs traverse: the offline parser fixture path
+/// with its package/provides/uses; the offline project fixture path with
+/// the 4-package resolution kind and the declaration-types kind; and the
+/// delegated declaration counts (7/5/9/6/4) with the all-bound pin.
+/// ADAPTATION (recorded, with source lines): the Go legs pin staged pass
+/// needles (2/4/11/5 pass at L236/L246/L256/L266) without restating
+/// declaration counts, so the delegate-* pins record the statically
+/// counted test roots for P23 qualification (completion L45-237: 7;
+/// data L4-112: 5; domain L69-380: 9; failure L19-171: 6; primitive
+/// L13-65: 4); the pass needles themselves live in run-shape, and the
+/// count/needle deltas stay flagged for current-contract relevance
+/// review per each delegate delete_when, never waived. No execution is
+/// claimed here (accept_after P23/QF2 unmet).
+/// Sidecar build/launcher/mutation semantics live in
+/// core-015-sidecar-semantics.can; parser/project/declaration run pins,
+/// native invocation and per-declaration contracts live in
+/// core-015-run-shape.can.
+/// Variants: none in this file (default only); mutations live in
+/// sidecar-semantics and run variants live in run-shape.
+/// Environment: CAN_BUN_ARCHIVE + macOS arm64 + sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/BUILD/
+/// ARCHIVE/ENV/DIAG and C/R/N/S/A identities bind at P23; no live run
+/// now. Descriptor timeout 120000ms mirrors the Go 2-minute ctx (L33).
+/// Delegated oracles: DELEGATE-001 (runtime/completion.test.ts, 7),
+/// DELEGATE-002 (runtime/data.test.ts, 5), DELEGATE-003
+/// (runtime/domain.test.ts, 9), DELEGATE-004 (runtime/failure.test.ts, 6),
+/// DELEGATE-005 (runtime/primitive.test.ts, 4); recorded read-only with
+/// sha256 in evidence, not executed; old pass-count spellings need
+/// current-contract relevance review per each delegate delete_when.
+/// Execution credit: NOT claimed (accept_after P23/QF2 unmet).
+/// Case dist/roots checks: fixture-offline, offline-package, 
+/// offline-provides, offline-uses, fixture-project, project-packages, 
+/// resolution-kind, types-kind, delegate-completion, delegate-data, 
+/// delegate-domain, delegate-failure, delegate-primitive, 
+/// delegate-all-bound.
+/// Facet map (distribution_test.go legs plus fixtures): fixture-offline
+/// pins the parser fixture path (L103); offline-package,
+/// offline-provides and offline-uses pin offline/main/http (offline.can
+/// L1/L2/L3); fixture-project pins the project fixture path (L124);
+/// project-packages pins 4 and resolution-kind pins can.package-resolution
+/// (L173); types-kind pins can.declaration-types (L216);
+/// delegate-completion pins 7 (completion.test.ts L45-237);
+/// delegate-data pins 5 (data.test.ts L4-112); delegate-domain pins 9
+/// (domain.test.ts L69-380); delegate-failure pins 6 (failure.test.ts
+/// L19-171); delegate-primitive pins 4 (primitive.test.ts L13-65);
+/// delegate-all-bound pins the five-way CORE-015 binding (coverage-map
+/// row CORE-015 delegated_oracles).
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str fixture_offline
+    str offline_package
+    str offline_provides
+    str offline_uses
+    str fixture_project
+    int project_packages
+    str resolution_kind
+    str types_kind
+    int delegate_completion
+    int delegate_data
+    int delegate_domain
+    int delegate_failure
+    int delegate_primitive
+    bool delegate_all_bound
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("dist/roots", "default", "", "offline"), "fixture-offline" => ok "case dist/roots variant default root fixture-offline run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("dist/roots", "default", "", "offline"), "delegate-all-bound" => ok evidence("delegate-all-bound", "true", "true", true, "case dist/roots variant default root delegate-all-bound run offline")
+        different: false, true, context("dist/roots", "default", "", "offline"), "delegate-all-bound" => failed{"delegate-all-bound"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("dist/roots", "default", "", "offline"), "project-packages" => ok evidence("project-packages", "4", "4", true, "case dist/roots variant default root project-packages run offline")
+        different: 3, 4, context("dist/roots", "default", "", "offline"), "project-packages" => failed{"project-packages"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "compiler/testdata/current/parser/offline.can", "compiler/testdata/current/parser/offline.can", context("dist/roots", "default", "", "offline"), "fixture-offline" => ok evidence("fixture-offline", "compiler/testdata/current/parser/offline.can", "compiler/testdata/current/parser/offline.can", true, "case dist/roots variant default root fixture-offline run offline")
+        different: "compiler/testdata/current/parser/online.can", "compiler/testdata/current/parser/offline.can", context("dist/roots", "default", "", "offline"), "fixture-offline" => failed{"fixture-offline"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 4, true)
+        seed_fixture_offline: "seed-fixture-offline-drift" => ok observation("compiler/testdata/current/parser/online.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 4, true)
+        seed_offline_package: "seed-offline-package-drift" => ok observation("compiler/testdata/current/parser/offline.can", "online", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 4, true)
+        seed_offline_provides: "seed-offline-provides-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "other", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 4, true)
+        seed_offline_uses: "seed-offline-uses-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "https", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 4, true)
+        seed_fixture_project: "seed-fixture-project-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project2", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 4, true)
+        seed_project_packages: "seed-project-packages-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 3, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 4, true)
+        seed_resolution_kind: "seed-resolution-kind-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolve", "can.declaration-types", 7, 5, 9, 6, 4, true)
+        seed_types_kind: "seed-types-kind-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-type", 7, 5, 9, 6, 4, true)
+        seed_delegate_completion: "seed-delegate-completion-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 6, 5, 9, 6, 4, true)
+        seed_delegate_data: "seed-delegate-data-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 4, 9, 6, 4, true)
+        seed_delegate_domain: "seed-delegate-domain-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 8, 6, 4, true)
+        seed_delegate_failure: "seed-delegate-failure-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 5, 4, true)
+        seed_delegate_primitive: "seed-delegate-primitive-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 3, true)
+        seed_delegate_all_bound: "seed-delegate-all-bound-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 4, false)
+    match variant_id
+        "seed-fixture-offline-drift" => ok observation("compiler/testdata/current/parser/online.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 4, true)
+        "seed-offline-package-drift" => ok observation("compiler/testdata/current/parser/offline.can", "online", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 4, true)
+        "seed-offline-provides-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "other", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 4, true)
+        "seed-offline-uses-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "https", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 4, true)
+        "seed-fixture-project-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project2", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 4, true)
+        "seed-project-packages-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 3, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 4, true)
+        "seed-resolution-kind-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolve", "can.declaration-types", 7, 5, 9, 6, 4, true)
+        "seed-types-kind-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-type", 7, 5, 9, 6, 4, true)
+        "seed-delegate-completion-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 6, 5, 9, 6, 4, true)
+        "seed-delegate-data-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 4, 9, 6, 4, true)
+        "seed-delegate-domain-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 8, 6, 4, true)
+        "seed-delegate-failure-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 5, 4, true)
+        "seed-delegate-primitive-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 3, true)
+        "seed-delegate-all-bound-drift" => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 4, false)
+        _ => ok observation("compiler/testdata/current/parser/offline.can", "offline", "main", "http", "compiler/testdata/current/project", 4, "can.package-resolution", "can.declaration-types", 7, 5, 9, 6, 4, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m10_015: "m10-015" => ok [check("fixture-offline", "offline parser fixture path"), check("offline-package", "offline fixture package is offline"), check("offline-provides", "offline fixture provides main"), check("offline-uses", "offline fixture uses http"), check("fixture-project", "offline project fixture path"), check("project-packages", "resolution report carries 4 packages"), check("resolution-kind", "resolution report kind is can.package-resolution"), check("types-kind", "type report kind is can.declaration-types"), check("delegate-completion", "completion suite holds 7 declarations"), check("delegate-data", "data suite holds 5 declarations"), check("delegate-domain", "domain suite holds 9 declarations"), check("delegate-failure", "failure suite holds 6 declarations"), check("delegate-primitive", "primitive suite holds 4 declarations"), check("delegate-all-bound", "all five delegates bind to CORE-015")]
+        other: "nope" => ok []
+    match scope is "m10-015"
+        false => ok []
+        true => ok [check("fixture-offline", "offline parser fixture path"), check("offline-package", "offline fixture package is offline"), check("offline-provides", "offline fixture provides main"), check("offline-uses", "offline fixture uses http"), check("fixture-project", "offline project fixture path"), check("project-packages", "resolution report carries 4 packages"), check("resolution-kind", "resolution report kind is can.package-resolution"), check("types-kind", "type report kind is can.declaration-types"), check("delegate-completion", "completion suite holds 7 declarations"), check("delegate-data", "data suite holds 5 declarations"), check("delegate-domain", "domain suite holds 9 declarations"), check("delegate-failure", "failure suite holds 6 declarations"), check("delegate-primitive", "primitive suite holds 4 declarations"), check("delegate-all-bound", "all five delegates bind to CORE-015")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "dist/roots" => ok [expected_check("fixture-offline", "compiler/testdata/current/parser/offline.can"), expected_check("offline-package", "offline"), expected_check("offline-provides", "main"), expected_check("offline-uses", "http"), expected_check("fixture-project", "compiler/testdata/current/project"), expected_check("project-packages", "4"), expected_check("resolution-kind", "can.package-resolution"), expected_check("types-kind", "can.declaration-types"), expected_check("delegate-completion", "7"), expected_check("delegate-data", "5"), expected_check("delegate-domain", "9"), expected_check("delegate-failure", "6"), expected_check("delegate-primitive", "4"), expected_check("delegate-all-bound", "true")]
+        unknown: "nope" => ok []
+    match case is "dist/roots"
+        false => ok []
+        true => ok [expected_check("fixture-offline", "compiler/testdata/current/parser/offline.can"), expected_check("offline-package", "offline"), expected_check("offline-provides", "main"), expected_check("offline-uses", "http"), expected_check("fixture-project", "compiler/testdata/current/project"), expected_check("project-packages", "4"), expected_check("resolution-kind", "can.package-resolution"), expected_check("types-kind", "can.declaration-types"), expected_check("delegate-completion", "7"), expected_check("delegate-data", "5"), expected_check("delegate-domain", "9"), expected_check("delegate-failure", "6"), expected_check("delegate-primitive", "4"), expected_check("delegate-all-bound", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("dist/roots", "default", "", "offline") => ok
+        seed_fixture_offline: context("dist/roots", "seed-fixture-offline-drift", "", "offline") => failed{"fixture-offline"}
+        seed_offline_package: context("dist/roots", "seed-offline-package-drift", "", "offline") => failed{"offline-package"}
+        seed_offline_provides: context("dist/roots", "seed-offline-provides-drift", "", "offline") => failed{"offline-provides"}
+        seed_offline_uses: context("dist/roots", "seed-offline-uses-drift", "", "offline") => failed{"offline-uses"}
+        seed_fixture_project: context("dist/roots", "seed-fixture-project-drift", "", "offline") => failed{"fixture-project"}
+        seed_project_packages: context("dist/roots", "seed-project-packages-drift", "", "offline") => failed{"project-packages"}
+        seed_resolution_kind: context("dist/roots", "seed-resolution-kind-drift", "", "offline") => failed{"resolution-kind"}
+        seed_types_kind: context("dist/roots", "seed-types-kind-drift", "", "offline") => failed{"types-kind"}
+        seed_delegate_completion: context("dist/roots", "seed-delegate-completion-drift", "", "offline") => failed{"delegate-completion"}
+        seed_delegate_data: context("dist/roots", "seed-delegate-data-drift", "", "offline") => failed{"delegate-data"}
+        seed_delegate_domain: context("dist/roots", "seed-delegate-domain-drift", "", "offline") => failed{"delegate-domain"}
+        seed_delegate_failure: context("dist/roots", "seed-delegate-failure-drift", "", "offline") => failed{"delegate-failure"}
+        seed_delegate_primitive: context("dist/roots", "seed-delegate-primitive-drift", "", "offline") => failed{"delegate-primitive"}
+        seed_delegate_all_bound: context("dist/roots", "seed-delegate-all-bound-drift", "", "offline") => failed{"delegate-all-bound"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.fixture_offline, "compiler/testdata/current/parser/offline.can", c, "fixture-offline")
+            failed
+            ok evidence fixture_offline_evidence => match call require_text(got.offline_package, "offline", c, "offline-package")
+                failed
+                ok evidence offline_package_evidence => match call require_text(got.offline_provides, "main", c, "offline-provides")
+                    failed
+                    ok evidence offline_provides_evidence => match call require_text(got.offline_uses, "http", c, "offline-uses")
+                        failed
+                        ok evidence offline_uses_evidence => match call require_text(got.fixture_project, "compiler/testdata/current/project", c, "fixture-project")
+                            failed
+                            ok evidence fixture_project_evidence => match call require_int(got.project_packages, 4, c, "project-packages")
+                                failed
+                                ok evidence project_packages_evidence => match call require_text(got.resolution_kind, "can.package-resolution", c, "resolution-kind")
+                                    failed
+                                    ok evidence resolution_kind_evidence => match call require_text(got.types_kind, "can.declaration-types", c, "types-kind")
+                                        failed
+                                        ok evidence types_kind_evidence => match call require_int(got.delegate_completion, 7, c, "delegate-completion")
+                                            failed
+                                            ok evidence delegate_completion_evidence => match call require_int(got.delegate_data, 5, c, "delegate-data")
+                                                failed
+                                                ok evidence delegate_data_evidence => match call require_int(got.delegate_domain, 9, c, "delegate-domain")
+                                                    failed
+                                                    ok evidence delegate_domain_evidence => match call require_int(got.delegate_failure, 6, c, "delegate-failure")
+                                                        failed
+                                                        ok evidence delegate_failure_evidence => match call require_int(got.delegate_primitive, 4, c, "delegate-primitive")
+                                                            failed
+                                                            ok evidence delegate_primitive_evidence => match call require_bool(got.delegate_all_bound, true, c, "delegate-all-bound")
+                                                                failed
+                                                                ok evidence delegate_all_bound_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m10_015: "m10-015" => ok test_case("dist/roots", ["dist", "m10"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("fixture-offline"), check_ref("offline-package"), check_ref("offline-provides"), check_ref("offline-uses"), check_ref("fixture-project"), check_ref("project-packages"), check_ref("resolution-kind"), check_ref("types-kind"), check_ref("delegate-completion"), check_ref("delegate-data"), check_ref("delegate-domain"), check_ref("delegate-failure"), check_ref("delegate-primitive"), check_ref("delegate-all-bound")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m10-015"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("dist/roots", ["dist", "m10"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("fixture-offline"), check_ref("offline-package"), check_ref("offline-provides"), check_ref("offline-uses"), check_ref("fixture-project"), check_ref("project-packages"), check_ref("resolution-kind"), check_ref("types-kind"), check_ref("delegate-completion"), check_ref("delegate-data"), check_ref("delegate-domain"), check_ref("delegate-failure"), check_ref("delegate-primitive"), check_ref("delegate-all-bound")], callable case_body)
