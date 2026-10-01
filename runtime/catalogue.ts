@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "5b4d08f9a5274f60488d51d4649ec34e759997ebbb338a43fa48f9dbb5a47241";
+export const catalogueSHA256 = "cf60a44ad7dfb420612b4ebadcaae789914acd6a4601d87ee11dcc2d9d861e43";
 export const catalogue = freeze({
  "schemaVersion": 1,
  "revision": 1,
@@ -19486,6 +19486,498 @@ export const catalogue = freeze({
    "assertion": "supplied",
    "refs": [
     "NT-I02"
+   ]
+  },
+  {
+   "name": "late::select",
+   "identity": "can.std.late@1::select",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "identity",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "late::select_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "late::late_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.includes"
+    ],
+    "adapter": "Select the one late identity (K06 select); reselecting joins, switching rejects changed-input.",
+    "task": "NT-I03"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I03"
+   ]
+  },
+  {
+   "name": "late::enroll",
+   "identity": "can.std.late@1::enroll",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "participant",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "late::enroll_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "late::late_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.includes"
+    ],
+    "adapter": "Enroll one gated participant behind the selected identity (K06 enroll); dead worker rejects.",
+    "task": "NT-I03"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I03"
+   ]
+  },
+  {
+   "name": "late::arm_gate",
+   "identity": "can.std.late@1::arm_gate",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "participant",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "late::gate_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "late::late_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.includes"
+    ],
+    "adapter": "Arm one participant gate at its next sequence; repeats join the first gate (K06 gate).",
+    "task": "NT-I03"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I03"
+   ]
+  },
+  {
+   "name": "late::emit",
+   "identity": "can.std.late@1::emit",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "participant",
+     "type": "str"
+    },
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "seq",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "late::event_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "late::late_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.includes",
+     "Number.isSafeInteger",
+     "Array.prototype.push"
+    ],
+    "adapter": "Admit one occurrence at exactly next or ahead-with-dropped seq (K06 emit); replays and post-terminal admissions reject.",
+    "task": "NT-I03"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I03"
+   ]
+  },
+  {
+   "name": "late::witness_terminal",
+   "identity": "can.std.late@1::witness_terminal",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "participant",
+     "type": "str"
+    },
+    {
+     "name": "terminal",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "late::terminal_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "late::late_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.includes",
+     "Object.keys",
+     "JSON.stringify"
+    ],
+    "adapter": "Witness one participant terminal with a sha256 identity/participant/terminal/counts binding (K06 terminal); second terminals reject as replays.",
+    "task": "NT-I03"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I03"
+   ]
+  },
+  {
+   "name": "late::observe",
+   "identity": "can.std.late@1::observe",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "claimant",
+     "type": "str"
+    },
+    {
+     "name": "participant",
+     "type": "str"
+    },
+    {
+     "name": "seq",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "late::observation_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "late::late_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.includes",
+     "Array.prototype.find"
+    ],
+    "adapter": "Observe one admitted occurrence; claimant must equal the emitting participant or the swap rejects wrong-owner (K06 observe).",
+    "task": "NT-I03"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I03"
+   ]
+  },
+  {
+   "name": "late::grant_lease",
+   "identity": "can.std.late@1::grant_lease",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "participant",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "late::lease_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "late::late_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.includes",
+     "Map"
+    ],
+    "adapter": "Grant one holder-bound lleaseN lease to an enrolled live participant (K06 grantLease).",
+    "task": "NT-I03"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I03"
+   ]
+  },
+  {
+   "name": "late::observe_lease",
+   "identity": "can.std.late@1::observe_lease",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "claimant",
+     "type": "str"
+    },
+    {
+     "name": "lease",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "late::lease_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "late::late_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.includes",
+     "Map",
+     "RegExp.prototype.test"
+    ],
+    "adapter": "Read one lease; holder terminal must be witnessed first or the read rejects unbound (K06 observeLease).",
+    "task": "NT-I03"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I03"
+   ]
+  },
+  {
+   "name": "late::release_lease",
+   "identity": "can.std.late@1::release_lease",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "claimant",
+     "type": "str"
+    },
+    {
+     "name": "lease",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "late::release_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "late::late_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.includes",
+     "Map",
+     "RegExp.prototype.test"
+    ],
+    "adapter": "Release one lease exactly once; pre-terminal releases reject unbound, repeats join (K06 releaseLease).",
+    "task": "NT-I03"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I03"
+   ]
+  },
+  {
+   "name": "late::reconcile",
+   "identity": "can.std.late@1::reconcile",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "participant",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "late::reconcile_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "late::late_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.includes",
+     "Array.prototype.filter"
+    ],
+    "adapter": "Reconcile admitted/late/dropped/next-seq for one participant; dropped lists persist (K06 reconcile).",
+    "task": "NT-I03"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I03"
+   ]
+  },
+  {
+   "name": "late::kill_worker",
+   "identity": "can.std.late@1::kill_worker",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    }
+   ],
+   "staticInputs": [],
+   "result": "late::outcome_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Object.freeze"
+    ],
+    "adapter": "Mark the worker dead; worker admissions/terminals/leases close and the outcome stays incomplete (K06 killWorker).",
+    "task": "NT-I03"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I03"
+   ]
+  },
+  {
+   "name": "late::read_outcome",
+   "identity": "can.std.late@1::read_outcome",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    }
+   ],
+   "staticInputs": [],
+   "result": "late::outcome_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Object.freeze"
+    ],
+    "adapter": "Report complete only when both terminals are witnessed, else incomplete with a named reason (K06 outcome).",
+    "task": "NT-I03"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I03"
+   ]
+  },
+  {
+   "name": "late::read_counters",
+   "identity": "can.std.late@1::read_counters",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    }
+   ],
+   "staticInputs": [],
+   "result": "late::counters",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Object.freeze"
+    ],
+    "adapter": "Report the nine service counters (K06 counters).",
+    "task": "NT-I03"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I03"
    ]
   }
  ],

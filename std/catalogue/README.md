@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 5b4d08f9a5274f60488d51d4649ec34e759997ebbb338a43fa48f9dbb5a47241.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: cf60a44ad7dfb420612b4ebadcaae789914acd6a4601d87ee11dcc2d9d861e43.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -773,6 +773,19 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | descriptor::expected_ack | test::owner owner, descriptor::launch launch → int[] | {test::stale_handle} |  | JSON.stringify, JSON.parse | Return the exact encoded status frame the owner expects for this launch (opID + env digest binding). | supplied | NT-I11 / NT-I11 |
 | c::parse_module | test::owner owner, str source → c::parsed_module | {test::stale_handle} |  | String.prototype.split, String.prototype.trim, RegExp.prototype.exec, RegExp.prototype.test, Array.prototype.join | Parse import/export/dynamic-import/body shapes line by line (K04 parseModule); report verbatim source slices. | supplied | NT-I02 / NT-I02 |
 | c::check_module | test::owner owner, c::manifest manifest, str kind, str module_path, str source → str[] | {test::stale_handle} |  | String.prototype.split, String.prototype.startsWith, String.prototype.slice, String.prototype.indexOf, Array.prototype.includes, Map, Set, RegExp | Classify edges against the manifest, enforce one shared runtime root and per-kind fixed-edge/body/export shapes (K04 checkModule); return problem strings, empty when seam-clean. | supplied | NT-I02 / NT-I02 |
+| late::select | test::owner owner, str identity → late::select_facts | {test::stale_handle, late::late_fault} |  | Array.prototype.includes | Select the one late identity (K06 select); reselecting joins, switching rejects changed-input. | supplied | NT-I03 / NT-I03 |
+| late::enroll | test::owner owner, str participant → late::enroll_facts | {test::stale_handle, late::late_fault} |  | Array.prototype.includes | Enroll one gated participant behind the selected identity (K06 enroll); dead worker rejects. | supplied | NT-I03 / NT-I03 |
+| late::arm_gate | test::owner owner, str participant → late::gate_facts | {test::stale_handle, late::late_fault} |  | Array.prototype.includes | Arm one participant gate at its next sequence; repeats join the first gate (K06 gate). | supplied | NT-I03 / NT-I03 |
+| late::emit | test::owner owner, str participant, str kind, int seq → late::event_facts | {test::stale_handle, late::late_fault} |  | Array.prototype.includes, Number.isSafeInteger, Array.prototype.push | Admit one occurrence at exactly next or ahead-with-dropped seq (K06 emit); replays and post-terminal admissions reject. | supplied | NT-I03 / NT-I03 |
+| late::witness_terminal | test::owner owner, str participant, str terminal → late::terminal_facts | {test::stale_handle, late::late_fault} |  | Array.prototype.includes, Object.keys, JSON.stringify | Witness one participant terminal with a sha256 identity/participant/terminal/counts binding (K06 terminal); second terminals reject as replays. | supplied | NT-I03 / NT-I03 |
+| late::observe | test::owner owner, str claimant, str participant, int seq → late::observation_facts | {test::stale_handle, late::late_fault} |  | Array.prototype.includes, Array.prototype.find | Observe one admitted occurrence; claimant must equal the emitting participant or the swap rejects wrong-owner (K06 observe). | supplied | NT-I03 / NT-I03 |
+| late::grant_lease | test::owner owner, str participant → late::lease_facts | {test::stale_handle, late::late_fault} |  | Array.prototype.includes, Map | Grant one holder-bound lleaseN lease to an enrolled live participant (K06 grantLease). | supplied | NT-I03 / NT-I03 |
+| late::observe_lease | test::owner owner, str claimant, str lease → late::lease_facts | {test::stale_handle, late::late_fault} |  | Array.prototype.includes, Map, RegExp.prototype.test | Read one lease; holder terminal must be witnessed first or the read rejects unbound (K06 observeLease). | supplied | NT-I03 / NT-I03 |
+| late::release_lease | test::owner owner, str claimant, str lease → late::release_facts | {test::stale_handle, late::late_fault} |  | Array.prototype.includes, Map, RegExp.prototype.test | Release one lease exactly once; pre-terminal releases reject unbound, repeats join (K06 releaseLease). | supplied | NT-I03 / NT-I03 |
+| late::reconcile | test::owner owner, str participant → late::reconcile_facts | {test::stale_handle, late::late_fault} |  | Array.prototype.includes, Array.prototype.filter | Reconcile admitted/late/dropped/next-seq for one participant; dropped lists persist (K06 reconcile). | supplied | NT-I03 / NT-I03 |
+| late::kill_worker | test::owner owner → late::outcome_facts | {test::stale_handle} |  | Object.freeze | Mark the worker dead; worker admissions/terminals/leases close and the outcome stays incomplete (K06 killWorker). | supplied | NT-I03 / NT-I03 |
+| late::read_outcome | test::owner owner → late::outcome_facts | {test::stale_handle} |  | Object.freeze | Report complete only when both terminals are witnessed, else incomplete with a named reason (K06 outcome). | supplied | NT-I03 / NT-I03 |
+| late::read_counters | test::owner owner → late::counters | {test::stale_handle} |  | Object.freeze | Report the nine service counters (K06 counters). | supplied | NT-I03 / NT-I03 |
 
 ## Native declaration profiles
 

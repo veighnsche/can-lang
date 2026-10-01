@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "5b4d08f9a5274f60488d51d4649ec34e759997ebbb338a43fa48f9dbb5a47241"
+const GeneratedSourceSHA256 = "cf60a44ad7dfb420612b4ebadcaae789914acd6a4601d87ee11dcc2d9d861e43"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -826,3 +826,16 @@ const OpDescriptorReadFacts = "descriptor::read_facts"
 const OpDescriptorExpectedAck = "descriptor::expected_ack"
 const OpCParseModule = "c::parse_module"
 const OpCCheckModule = "c::check_module"
+const OpLateSelect = "late::select"
+const OpLateEnroll = "late::enroll"
+const OpLateArmGate = "late::arm_gate"
+const OpLateEmit = "late::emit"
+const OpLateWitnessTerminal = "late::witness_terminal"
+const OpLateObserve = "late::observe"
+const OpLateGrantLease = "late::grant_lease"
+const OpLateObserveLease = "late::observe_lease"
+const OpLateReleaseLease = "late::release_lease"
+const OpLateReconcile = "late::reconcile"
+const OpLateKillWorker = "late::kill_worker"
+const OpLateReadOutcome = "late::read_outcome"
+const OpLateReadCounters = "late::read_counters"
