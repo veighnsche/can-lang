@@ -1,0 +1,316 @@
+package m41life013run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M41 LIFE-013 TestLinuxPostgresRoundtrip
+/// run shape legs.
+/// Source: tests/integration/
+/// linux_distribution_test.go symbol
+/// TestLinuxPostgresRoundtrip (L265-304):
+/// platform gate plus setup gate plus
+/// sidecar run shape must pin every
+/// skip plus label plus path plus bound
+/// (L265-292).
+/// Disposition: migrate (this row owns
+/// the run shape pins as reviewable
+/// Can facts; the old go check stays
+/// until the integrator retires it after
+/// every linked row, variant,
+/// environment and control has accepted
+/// evidence).
+/// Protects (this file): the run shape
+/// behind both facets: gate skips plus
+/// setup labels plus sidecar invocation
+/// plus the five minute bound.
+/// ADAPTATION (recorded, with source
+/// lines): symbol pins hold the go
+/// symbol; skip pins hold skip lines;
+/// label pins hold setup label
+/// spellings; gate pins hold platform
+/// values; path pins hold sidecar plus
+/// driver paths; env pins hold run
+/// entries; bound pins hold the hold
+/// call; count pins hold ints tallied
+/// from the run list.
+/// test-symbol pins
+/// TestLinuxPostgresRoundtrip (L265;
+/// named in the L261 run note);
+/// platform-skip-note pins the
+/// off-target skip (L267);
+/// env-skip-note pins the absent
+/// setup skip (L272);
+/// install-root-label pins
+/// CAN_LINUX_INSTALL_ROOT (L269 plus
+/// L272); database-label pins
+/// DATABASE_URL (L270 plus L272 plus
+/// L287); platform-goos pins linux
+/// (L266); platform-goarch pins amd64
+/// (L266); sidecar-segments pins
+/// current plus runtime plus bun
+/// (L278); driver-rel pins the driver
+/// path (L285); path-deny-value pins
+/// PATH=/nonexistent (L287);
+/// home-bind-prefix pins HOME= (L287);
+/// timeout-call pins 5*time.Minute
+/// (L282); skip-count pins int
+/// (2) from L267-272; timeout-minutes
+/// pins int (5) from L282;
+/// env-entry-count pins int (3) from
+/// L287.
+/// Facet map (leg order):
+/// test-symbol, platform-skip-note,
+/// env-skip-note, install-root-label,
+/// database-label, platform-goos,
+/// platform-goarch, sidecar-segments,
+/// driver-rel, path-deny-value,
+/// home-bind-prefix, timeout-call,
+/// skip-count, timeout-minutes,
+/// env-entry-count.
+/// The guard pins live in
+/// life-013-base-semantics.can; the
+/// native SQL legs live in
+/// life-013-roots-green.can.
+/// Variants: PostgreSQL 17
+/// installed-sidecar profile only here.
+/// Environment: linux/amd64 plus
+/// CAN_LINUX_INSTALL_ROOT plus
+/// DATABASE_URL labels (row lists one
+/// gate; absent setup skips; bind at
+/// P23 with QD1 plus QN1; no live run
+/// now).
+/// Logical gates DB plus PROC plus
+/// WORK plus ENV plus NATIVE bind at
+/// P23; no live run now.
+/// Timeout 120000ms is the offline
+/// default bound (binds at P23 like
+/// the M38 no-run rows).
+/// Delegated oracles: none.
+/// Database label values stay
+/// unpinned: only the label spelling
+/// plus its line refs ship here.
+/// Execution credit: NOT claimed (P23
+/// plus QD1 plus QN1 accept gates
+/// unmet).
+/// Case life/postgres-roundtrip-run
+/// checks: test-symbol,
+/// platform-skip-note, env-skip-note,
+/// install-root-label, database-label,
+/// platform-goos, platform-goarch,
+/// sidecar-segments, driver-rel,
+/// path-deny-value, home-bind-prefix,
+/// timeout-call, skip-count,
+/// timeout-minutes, env-entry-count.
+/// Shared old files untouched;
+/// retirement is a later integrator
+/// decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str test_symbol
+    str platform_skip_note
+    str env_skip_note
+    str install_root_label
+    str database_label
+    str platform_goos
+    str platform_goarch
+    str sidecar_segments
+    str driver_rel
+    str path_deny_value
+    str home_bind_prefix
+    str timeout_call
+    int skip_count
+    int timeout_minutes
+    int env_entry_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/postgres-roundtrip-run", "default", "", "offline"), "test-symbol" => ok "case life/postgres-roundtrip-run variant default root test-symbol run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/postgres-roundtrip-run", "default", "", "offline"), "test-symbol" => ok evidence("test-symbol", "true", "true", true, "case life/postgres-roundtrip-run variant default root test-symbol run offline")
+        different: false, true, context("life/postgres-roundtrip-run", "default", "", "offline"), "test-symbol" => failed{"test-symbol"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("life/postgres-roundtrip-run", "default", "", "offline"), "skip-count" => ok evidence("skip-count", "2", "2", true, "case life/postgres-roundtrip-run variant default root skip-count run offline")
+        different: 1, 2, context("life/postgres-roundtrip-run", "default", "", "offline"), "skip-count" => failed{"skip-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "TestLinuxPostgresRoundtrip", "TestLinuxPostgresRoundtrip", context("life/postgres-roundtrip-run", "default", "", "offline"), "test-symbol" => ok evidence("test-symbol", "TestLinuxPostgresRoundtrip", "TestLinuxPostgresRoundtrip", true, "case life/postgres-roundtrip-run variant default root test-symbol run offline")
+        different: "TestLinuxPostgresRoundtrip_2", "TestLinuxPostgresRoundtrip", context("life/postgres-roundtrip-run", "default", "", "offline"), "test-symbol" => failed{"test-symbol"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        seed_test_symbol: "seed-test-symbol-drift" => ok observation("TestLinuxPostgresRoundtrip_2", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        seed_platform_skip_note: "seed-platform-skip-note-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only_2", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        seed_env_skip_note: "seed-env-skip-note-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip_2", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        seed_install_root_label: "seed-install-root-label-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT_2", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        seed_database_label: "seed-database-label-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL_2", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        seed_platform_goos: "seed-platform-goos-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"_2", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        seed_platform_goarch: "seed-platform-goarch-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"_2", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        seed_sidecar_segments: "seed-sidecar-segments-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"_2", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        seed_driver_rel: "seed-driver-rel-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts_2", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        seed_path_deny_value: "seed-path-deny-value-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent_2", "HOME=", "5*time.Minute", 2, 5, 3)
+        seed_home_bind_prefix: "seed-home-bind-prefix-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=_2", "5*time.Minute", 2, 5, 3)
+        seed_timeout_call: "seed-timeout-call-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute_2", 2, 5, 3)
+        seed_skip_count: "seed-skip-count-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 1, 5, 3)
+        seed_timeout_minutes: "seed-timeout-minutes-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 4, 3)
+        seed_env_entry_count: "seed-env-entry-count-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 2)
+    match variant_id
+        "seed-test-symbol-drift" => ok observation("TestLinuxPostgresRoundtrip_2", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        "seed-platform-skip-note-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only_2", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        "seed-env-skip-note-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip_2", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        "seed-install-root-label-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT_2", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        "seed-database-label-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL_2", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        "seed-platform-goos-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"_2", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        "seed-platform-goarch-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"_2", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        "seed-sidecar-segments-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"_2", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        "seed-driver-rel-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts_2", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+        "seed-path-deny-value-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent_2", "HOME=", "5*time.Minute", 2, 5, 3)
+        "seed-home-bind-prefix-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=_2", "5*time.Minute", 2, 5, 3)
+        "seed-timeout-call-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute_2", 2, 5, 3)
+        "seed-skip-count-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 1, 5, 3)
+        "seed-timeout-minutes-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 4, 3)
+        "seed-env-entry-count-drift" => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 2)
+        _ => ok observation("TestLinuxPostgresRoundtrip", "linux amd64 postgres roundtrip only", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", "CAN_LINUX_INSTALL_ROOT", "DATABASE_URL", "\"linux\"", "\"amd64\"", "\"current\", \"runtime\", \"bun\"", "distribution/linux/smoke/pg-driver.ts", "PATH=/nonexistent", "HOME=", "5*time.Minute", 2, 5, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m41_l013_run: "m41-l013-run" => ok [check("test-symbol", "row owns its go symbol name"), check("platform-skip-note", "off-target run skips by name"), check("env-skip-note", "absent setup skips by name"), check("install-root-label", "setup names the install root label"), check("database-label", "setup names the database label"), check("platform-goos", "gate names the linux target"), check("platform-goarch", "gate names the amd64 target"), check("sidecar-segments", "sidecar path keeps its three legs"), check("driver-rel", "run names the driver path"), check("path-deny-value", "run pins PATH to denied"), check("home-bind-prefix", "run binds HOME to its own dir"), check("timeout-call", "run holds a five minute bound"), check("skip-count", "two skips exist"), check("timeout-minutes", "five minute hold exists"), check("env-entry-count", "three env entries exist")]
+        other: "nope" => ok []
+    match scope is "m41-l013-run"
+        false => ok []
+        true => ok [check("test-symbol", "row owns its go symbol name"), check("platform-skip-note", "off-target run skips by name"), check("env-skip-note", "absent setup skips by name"), check("install-root-label", "setup names the install root label"), check("database-label", "setup names the database label"), check("platform-goos", "gate names the linux target"), check("platform-goarch", "gate names the amd64 target"), check("sidecar-segments", "sidecar path keeps its three legs"), check("driver-rel", "run names the driver path"), check("path-deny-value", "run pins PATH to denied"), check("home-bind-prefix", "run binds HOME to its own dir"), check("timeout-call", "run holds a five minute bound"), check("skip-count", "two skips exist"), check("timeout-minutes", "five minute hold exists"), check("env-entry-count", "three env entries exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/postgres-roundtrip-run" => ok [expected_check("test-symbol", "TestLinuxPostgresRoundtrip"), expected_check("platform-skip-note", "linux amd64 postgres roundtrip only"), expected_check("env-skip-note", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip"), expected_check("install-root-label", "CAN_LINUX_INSTALL_ROOT"), expected_check("database-label", "DATABASE_URL"), expected_check("platform-goos", "\"linux\""), expected_check("platform-goarch", "\"amd64\""), expected_check("sidecar-segments", "\"current\", \"runtime\", \"bun\""), expected_check("driver-rel", "distribution/linux/smoke/pg-driver.ts"), expected_check("path-deny-value", "PATH=/nonexistent"), expected_check("home-bind-prefix", "HOME="), expected_check("timeout-call", "5*time.Minute"), expected_check("skip-count", "2"), expected_check("timeout-minutes", "5"), expected_check("env-entry-count", "3")]
+        unknown: "nope" => ok []
+    match case is "life/postgres-roundtrip-run"
+        false => ok []
+        true => ok [expected_check("test-symbol", "TestLinuxPostgresRoundtrip"), expected_check("platform-skip-note", "linux amd64 postgres roundtrip only"), expected_check("env-skip-note", "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip"), expected_check("install-root-label", "CAN_LINUX_INSTALL_ROOT"), expected_check("database-label", "DATABASE_URL"), expected_check("platform-goos", "\"linux\""), expected_check("platform-goarch", "\"amd64\""), expected_check("sidecar-segments", "\"current\", \"runtime\", \"bun\""), expected_check("driver-rel", "distribution/linux/smoke/pg-driver.ts"), expected_check("path-deny-value", "PATH=/nonexistent"), expected_check("home-bind-prefix", "HOME="), expected_check("timeout-call", "5*time.Minute"), expected_check("skip-count", "2"), expected_check("timeout-minutes", "5"), expected_check("env-entry-count", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/postgres-roundtrip-run", "default", "", "offline") => ok
+        seed_test_symbol: context("life/postgres-roundtrip-run", "seed-test-symbol-drift", "", "offline") => failed{"test-symbol"}
+        seed_platform_skip_note: context("life/postgres-roundtrip-run", "seed-platform-skip-note-drift", "", "offline") => failed{"platform-skip-note"}
+        seed_env_skip_note: context("life/postgres-roundtrip-run", "seed-env-skip-note-drift", "", "offline") => failed{"env-skip-note"}
+        seed_install_root_label: context("life/postgres-roundtrip-run", "seed-install-root-label-drift", "", "offline") => failed{"install-root-label"}
+        seed_database_label: context("life/postgres-roundtrip-run", "seed-database-label-drift", "", "offline") => failed{"database-label"}
+        seed_platform_goos: context("life/postgres-roundtrip-run", "seed-platform-goos-drift", "", "offline") => failed{"platform-goos"}
+        seed_platform_goarch: context("life/postgres-roundtrip-run", "seed-platform-goarch-drift", "", "offline") => failed{"platform-goarch"}
+        seed_sidecar_segments: context("life/postgres-roundtrip-run", "seed-sidecar-segments-drift", "", "offline") => failed{"sidecar-segments"}
+        seed_driver_rel: context("life/postgres-roundtrip-run", "seed-driver-rel-drift", "", "offline") => failed{"driver-rel"}
+        seed_path_deny_value: context("life/postgres-roundtrip-run", "seed-path-deny-value-drift", "", "offline") => failed{"path-deny-value"}
+        seed_home_bind_prefix: context("life/postgres-roundtrip-run", "seed-home-bind-prefix-drift", "", "offline") => failed{"home-bind-prefix"}
+        seed_timeout_call: context("life/postgres-roundtrip-run", "seed-timeout-call-drift", "", "offline") => failed{"timeout-call"}
+        seed_skip_count: context("life/postgres-roundtrip-run", "seed-skip-count-drift", "", "offline") => failed{"skip-count"}
+        seed_timeout_minutes: context("life/postgres-roundtrip-run", "seed-timeout-minutes-drift", "", "offline") => failed{"timeout-minutes"}
+        seed_env_entry_count: context("life/postgres-roundtrip-run", "seed-env-entry-count-drift", "", "offline") => failed{"env-entry-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.test_symbol, "TestLinuxPostgresRoundtrip", c, "test-symbol")
+            failed
+            ok evidence test_symbol_evidence => match call require_text(got.platform_skip_note, "linux amd64 postgres roundtrip only", c, "platform-skip-note")
+                failed
+                ok evidence platform_skip_note_evidence => match call require_text(got.env_skip_note, "set CAN_LINUX_INSTALL_ROOT and DATABASE_URL for the postgres roundtrip", c, "env-skip-note")
+                    failed
+                    ok evidence env_skip_note_evidence => match call require_text(got.install_root_label, "CAN_LINUX_INSTALL_ROOT", c, "install-root-label")
+                        failed
+                        ok evidence install_root_label_evidence => match call require_text(got.database_label, "DATABASE_URL", c, "database-label")
+                            failed
+                            ok evidence database_label_evidence => match call require_text(got.platform_goos, "\"linux\"", c, "platform-goos")
+                                failed
+                                ok evidence platform_goos_evidence => match call require_text(got.platform_goarch, "\"amd64\"", c, "platform-goarch")
+                                    failed
+                                    ok evidence platform_goarch_evidence => match call require_text(got.sidecar_segments, "\"current\", \"runtime\", \"bun\"", c, "sidecar-segments")
+                                        failed
+                                        ok evidence sidecar_segments_evidence => match call require_text(got.driver_rel, "distribution/linux/smoke/pg-driver.ts", c, "driver-rel")
+                                            failed
+                                            ok evidence driver_rel_evidence => match call require_text(got.path_deny_value, "PATH=/nonexistent", c, "path-deny-value")
+                                                failed
+                                                ok evidence path_deny_value_evidence => match call require_text(got.home_bind_prefix, "HOME=", c, "home-bind-prefix")
+                                                    failed
+                                                    ok evidence home_bind_prefix_evidence => match call require_text(got.timeout_call, "5*time.Minute", c, "timeout-call")
+                                                        failed
+                                                        ok evidence timeout_call_evidence => match call require_int(got.skip_count, 2, c, "skip-count")
+                                                            failed
+                                                            ok evidence skip_count_evidence => match call require_int(got.timeout_minutes, 5, c, "timeout-minutes")
+                                                                failed
+                                                                ok evidence timeout_minutes_evidence => match call require_int(got.env_entry_count, 3, c, "env-entry-count")
+                                                                    failed
+                                                                    ok evidence env_entry_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m41_l013_run: "m41-l013-run" => ok test_case("life/postgres-roundtrip-run", ["life", "m41"], [], 120000, [check_ref("test-symbol"), check_ref("platform-skip-note"), check_ref("env-skip-note"), check_ref("install-root-label"), check_ref("database-label"), check_ref("platform-goos"), check_ref("platform-goarch"), check_ref("sidecar-segments"), check_ref("driver-rel"), check_ref("path-deny-value"), check_ref("home-bind-prefix"), check_ref("timeout-call"), check_ref("skip-count"), check_ref("timeout-minutes"), check_ref("env-entry-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m41-l013-run"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/postgres-roundtrip-run", ["life", "m41"], [], 120000, [check_ref("test-symbol"), check_ref("platform-skip-note"), check_ref("env-skip-note"), check_ref("install-root-label"), check_ref("database-label"), check_ref("platform-goos"), check_ref("platform-goarch"), check_ref("sidecar-segments"), check_ref("driver-rel"), check_ref("path-deny-value"), check_ref("home-bind-prefix"), check_ref("timeout-call"), check_ref("skip-count"), check_ref("timeout-minutes"), check_ref("env-entry-count")], callable case_body)

@@ -1,0 +1,296 @@
+package m41life013roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M41 LIFE-013 TestLinuxPostgresRoundtrip
+/// facet two legs.
+/// Source: distribution/linux/smoke/
+/// pg-driver.ts (L1-34) applied by the
+/// go check (L284-285): native SQL
+/// legs must build plus store plus read
+/// plus drop one row while the server
+/// line plus row shape stay pinned
+/// apart from the guard.
+/// Disposition: migrate (this row owns
+/// the native SQL pins as reviewable
+/// Can facts; the old go check stays
+/// until the integrator retires it after
+/// every linked row, variant,
+/// environment and control has accepted
+/// evidence).
+/// Protects (this file): facet two
+/// (native create/insert/select/drop
+/// and server identity seen apart):
+/// every SQL leg spelling plus guard
+/// notes plus the driver print shape
+/// (L15-27).
+/// ADAPTATION (recorded, with source
+/// lines): sql pins hold exact leg
+/// spellings; name pins hold the table
+/// spelling; note pins hold guard
+/// lines; shape pins hold the driver
+/// print line; count pins hold ints
+/// tallied from the leg list.
+/// sql-show-version pins SHOW
+/// server_version (L18);
+/// sql-drop-if-exists pins the clear
+/// leg (L21); sql-create-table pins
+/// the build leg (L22);
+/// sql-insert-row pins the store leg
+/// (L23); sql-select-row pins the read
+/// leg (L24); sql-drop-table pins the
+/// drop leg (L26); smoke-table-name
+/// pins t19_smoke (L21-26);
+/// version-guard-note pins the old
+/// server note (L20);
+/// row-missing-note pins the absent
+/// row note (L25);
+/// database-required-note pins the
+/// absent label note (L15);
+/// driver-output-shape pins the print
+/// line (L27); driver-sql-count pins
+/// int (6) from L18-26;
+/// smoke-table-mention-count pins int
+/// (5) from L21-26.
+/// Facet map (leg order):
+/// sql-show-version,
+/// sql-drop-if-exists, sql-create-table,
+/// sql-insert-row, sql-select-row,
+/// sql-drop-table, smoke-table-name,
+/// version-guard-note, row-missing-note,
+/// database-required-note,
+/// driver-output-shape, driver-sql-count,
+/// smoke-table-mention-count.
+/// The guard pins live in
+/// life-013-base-semantics.can; the
+/// gate plus run shape lives in
+/// life-013-run-shape.can.
+/// Variants: PostgreSQL 17
+/// installed-sidecar profile only here.
+/// Environment: linux/amd64 plus
+/// install root plus database labels;
+/// driver legs bind at P23 with QD1;
+/// no live run now.
+/// Logical gates DB plus NATIVE bind at
+/// P23; no live run now.
+/// Timeout 120000ms is the offline
+/// default bound (binds at P23 like
+/// the M38 no-run rows).
+/// Delegated oracles: none.
+/// Database label values stay
+/// unpinned: only the label spelling
+/// plus its line refs ship here.
+/// Execution credit: NOT claimed (P23
+/// plus QD1 plus QN1 accept gates
+/// unmet).
+/// Case life/postgres-roundtrip-roots
+/// checks: sql-show-version,
+/// sql-drop-if-exists, sql-create-table,
+/// sql-insert-row, sql-select-row,
+/// sql-drop-table, smoke-table-name,
+/// version-guard-note, row-missing-note,
+/// database-required-note,
+/// driver-output-shape, driver-sql-count,
+/// smoke-table-mention-count.
+/// Shared old files untouched;
+/// retirement is a later integrator
+/// decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str sql_show_version
+    str sql_drop_if_exists
+    str sql_create_table
+    str sql_insert_row
+    str sql_select_row
+    str sql_drop_table
+    str smoke_table_name
+    str version_guard_note
+    str row_missing_note
+    str database_required_note
+    str driver_output_shape
+    int driver_sql_count
+    int smoke_table_mention_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/postgres-roundtrip-roots", "default", "", "offline"), "sql-show-version" => ok "case life/postgres-roundtrip-roots variant default root sql-show-version run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/postgres-roundtrip-roots", "default", "", "offline"), "sql-show-version" => ok evidence("sql-show-version", "true", "true", true, "case life/postgres-roundtrip-roots variant default root sql-show-version run offline")
+        different: false, true, context("life/postgres-roundtrip-roots", "default", "", "offline"), "sql-show-version" => failed{"sql-show-version"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 6, 6, context("life/postgres-roundtrip-roots", "default", "", "offline"), "driver-sql-count" => ok evidence("driver-sql-count", "6", "6", true, "case life/postgres-roundtrip-roots variant default root driver-sql-count run offline")
+        different: 5, 6, context("life/postgres-roundtrip-roots", "default", "", "offline"), "driver-sql-count" => failed{"driver-sql-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "SHOW server_version", "SHOW server_version", context("life/postgres-roundtrip-roots", "default", "", "offline"), "sql-show-version" => ok evidence("sql-show-version", "SHOW server_version", "SHOW server_version", true, "case life/postgres-roundtrip-roots variant default root sql-show-version run offline")
+        different: "SHOW server_version_2", "SHOW server_version", context("life/postgres-roundtrip-roots", "default", "", "offline"), "sql-show-version" => failed{"sql-show-version"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        seed_sql_show_version: "seed-sql-show-version-drift" => ok observation("SHOW server_version_2", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        seed_sql_drop_if_exists: "seed-sql-drop-if-exists-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke_2", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        seed_sql_create_table: "seed-sql-create-table-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)_2", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        seed_sql_insert_row: "seed-sql-insert-row-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')_2", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        seed_sql_select_row: "seed-sql-select-row-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7_2", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        seed_sql_drop_table: "seed-sql-drop-table-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke_2", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        seed_smoke_table_name: "seed-smoke-table-name-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke_2", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        seed_version_guard_note: "seed-version-guard-note-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw_2", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        seed_row_missing_note: "seed-row-missing-note-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing_2", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        seed_database_required_note: "seed-database-required-note-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required_2", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        seed_driver_output_shape: "seed-driver-output-shape-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }_2", 6, 5)
+        seed_driver_sql_count: "seed-driver-sql-count-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 5, 5)
+        seed_smoke_table_mention_count: "seed-smoke-table-mention-count-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 4)
+    match variant_id
+        "seed-sql-show-version-drift" => ok observation("SHOW server_version_2", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        "seed-sql-drop-if-exists-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke_2", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        "seed-sql-create-table-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)_2", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        "seed-sql-insert-row-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')_2", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        "seed-sql-select-row-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7_2", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        "seed-sql-drop-table-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke_2", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        "seed-smoke-table-name-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke_2", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        "seed-version-guard-note-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw_2", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        "seed-row-missing-note-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing_2", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        "seed-database-required-note-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required_2", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+        "seed-driver-output-shape-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }_2", 6, 5)
+        "seed-driver-sql-count-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 5, 5)
+        "seed-smoke-table-mention-count-drift" => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 4)
+        _ => ok observation("SHOW server_version", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "DROP TABLE t19_smoke", "t19_smoke", "requires PostgreSQL 17, saw", "roundtrip row missing", "DATABASE_URL is required", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", 6, 5)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m41_l013_roots: "m41-l013-roots" => ok [check("sql-show-version", "driver asks the server line first"), check("sql-drop-if-exists", "driver clears any prior smoke table"), check("sql-create-table", "driver builds the smoke table shape"), check("sql-insert-row", "driver stores the wanted row"), check("sql-select-row", "driver reads the row back by id"), check("sql-drop-table", "driver drops the smoke table last"), check("smoke-table-name", "every leg names the same table"), check("version-guard-note", "old server line refuses with its note"), check("row-missing-note", "absent row refuses with its note"), check("database-required-note", "absent database label refuses"), check("driver-output-shape", "driver prints all three keys at once"), check("driver-sql-count", "six driver SQL legs exist"), check("smoke-table-mention-count", "five table mentions exist")]
+        other: "nope" => ok []
+    match scope is "m41-l013-roots"
+        false => ok []
+        true => ok [check("sql-show-version", "driver asks the server line first"), check("sql-drop-if-exists", "driver clears any prior smoke table"), check("sql-create-table", "driver builds the smoke table shape"), check("sql-insert-row", "driver stores the wanted row"), check("sql-select-row", "driver reads the row back by id"), check("sql-drop-table", "driver drops the smoke table last"), check("smoke-table-name", "every leg names the same table"), check("version-guard-note", "old server line refuses with its note"), check("row-missing-note", "absent row refuses with its note"), check("database-required-note", "absent database label refuses"), check("driver-output-shape", "driver prints all three keys at once"), check("driver-sql-count", "six driver SQL legs exist"), check("smoke-table-mention-count", "five table mentions exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/postgres-roundtrip-roots" => ok [expected_check("sql-show-version", "SHOW server_version"), expected_check("sql-drop-if-exists", "DROP TABLE IF EXISTS t19_smoke"), expected_check("sql-create-table", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)"), expected_check("sql-insert-row", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')"), expected_check("sql-select-row", "SELECT id, body FROM t19_smoke WHERE id = 7"), expected_check("sql-drop-table", "DROP TABLE t19_smoke"), expected_check("smoke-table-name", "t19_smoke"), expected_check("version-guard-note", "requires PostgreSQL 17, saw"), expected_check("row-missing-note", "roundtrip row missing"), expected_check("database-required-note", "DATABASE_URL is required"), expected_check("driver-output-shape", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }"), expected_check("driver-sql-count", "6"), expected_check("smoke-table-mention-count", "5")]
+        unknown: "nope" => ok []
+    match case is "life/postgres-roundtrip-roots"
+        false => ok []
+        true => ok [expected_check("sql-show-version", "SHOW server_version"), expected_check("sql-drop-if-exists", "DROP TABLE IF EXISTS t19_smoke"), expected_check("sql-create-table", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)"), expected_check("sql-insert-row", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')"), expected_check("sql-select-row", "SELECT id, body FROM t19_smoke WHERE id = 7"), expected_check("sql-drop-table", "DROP TABLE t19_smoke"), expected_check("smoke-table-name", "t19_smoke"), expected_check("version-guard-note", "requires PostgreSQL 17, saw"), expected_check("row-missing-note", "roundtrip row missing"), expected_check("database-required-note", "DATABASE_URL is required"), expected_check("driver-output-shape", "{ serverVersion, id: String(rows[0].id), body: rows[0].body }"), expected_check("driver-sql-count", "6"), expected_check("smoke-table-mention-count", "5")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/postgres-roundtrip-roots", "default", "", "offline") => ok
+        seed_sql_show_version: context("life/postgres-roundtrip-roots", "seed-sql-show-version-drift", "", "offline") => failed{"sql-show-version"}
+        seed_sql_drop_if_exists: context("life/postgres-roundtrip-roots", "seed-sql-drop-if-exists-drift", "", "offline") => failed{"sql-drop-if-exists"}
+        seed_sql_create_table: context("life/postgres-roundtrip-roots", "seed-sql-create-table-drift", "", "offline") => failed{"sql-create-table"}
+        seed_sql_insert_row: context("life/postgres-roundtrip-roots", "seed-sql-insert-row-drift", "", "offline") => failed{"sql-insert-row"}
+        seed_sql_select_row: context("life/postgres-roundtrip-roots", "seed-sql-select-row-drift", "", "offline") => failed{"sql-select-row"}
+        seed_sql_drop_table: context("life/postgres-roundtrip-roots", "seed-sql-drop-table-drift", "", "offline") => failed{"sql-drop-table"}
+        seed_smoke_table_name: context("life/postgres-roundtrip-roots", "seed-smoke-table-name-drift", "", "offline") => failed{"smoke-table-name"}
+        seed_version_guard_note: context("life/postgres-roundtrip-roots", "seed-version-guard-note-drift", "", "offline") => failed{"version-guard-note"}
+        seed_row_missing_note: context("life/postgres-roundtrip-roots", "seed-row-missing-note-drift", "", "offline") => failed{"row-missing-note"}
+        seed_database_required_note: context("life/postgres-roundtrip-roots", "seed-database-required-note-drift", "", "offline") => failed{"database-required-note"}
+        seed_driver_output_shape: context("life/postgres-roundtrip-roots", "seed-driver-output-shape-drift", "", "offline") => failed{"driver-output-shape"}
+        seed_driver_sql_count: context("life/postgres-roundtrip-roots", "seed-driver-sql-count-drift", "", "offline") => failed{"driver-sql-count"}
+        seed_smoke_table_mention_count: context("life/postgres-roundtrip-roots", "seed-smoke-table-mention-count-drift", "", "offline") => failed{"smoke-table-mention-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.sql_show_version, "SHOW server_version", c, "sql-show-version")
+            failed
+            ok evidence sql_show_version_evidence => match call require_text(got.sql_drop_if_exists, "DROP TABLE IF EXISTS t19_smoke", c, "sql-drop-if-exists")
+                failed
+                ok evidence sql_drop_if_exists_evidence => match call require_text(got.sql_create_table, "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body TEXT NOT NULL)", c, "sql-create-table")
+                    failed
+                    ok evidence sql_create_table_evidence => match call require_text(got.sql_insert_row, "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", c, "sql-insert-row")
+                        failed
+                        ok evidence sql_insert_row_evidence => match call require_text(got.sql_select_row, "SELECT id, body FROM t19_smoke WHERE id = 7", c, "sql-select-row")
+                            failed
+                            ok evidence sql_select_row_evidence => match call require_text(got.sql_drop_table, "DROP TABLE t19_smoke", c, "sql-drop-table")
+                                failed
+                                ok evidence sql_drop_table_evidence => match call require_text(got.smoke_table_name, "t19_smoke", c, "smoke-table-name")
+                                    failed
+                                    ok evidence smoke_table_name_evidence => match call require_text(got.version_guard_note, "requires PostgreSQL 17, saw", c, "version-guard-note")
+                                        failed
+                                        ok evidence version_guard_note_evidence => match call require_text(got.row_missing_note, "roundtrip row missing", c, "row-missing-note")
+                                            failed
+                                            ok evidence row_missing_note_evidence => match call require_text(got.database_required_note, "DATABASE_URL is required", c, "database-required-note")
+                                                failed
+                                                ok evidence database_required_note_evidence => match call require_text(got.driver_output_shape, "{ serverVersion, id: String(rows[0].id), body: rows[0].body }", c, "driver-output-shape")
+                                                    failed
+                                                    ok evidence driver_output_shape_evidence => match call require_int(got.driver_sql_count, 6, c, "driver-sql-count")
+                                                        failed
+                                                        ok evidence driver_sql_count_evidence => match call require_int(got.smoke_table_mention_count, 5, c, "smoke-table-mention-count")
+                                                            failed
+                                                            ok evidence smoke_table_mention_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m41_l013_roots: "m41-l013-roots" => ok test_case("life/postgres-roundtrip-roots", ["life", "m41"], [], 120000, [check_ref("sql-show-version"), check_ref("sql-drop-if-exists"), check_ref("sql-create-table"), check_ref("sql-insert-row"), check_ref("sql-select-row"), check_ref("sql-drop-table"), check_ref("smoke-table-name"), check_ref("version-guard-note"), check_ref("row-missing-note"), check_ref("database-required-note"), check_ref("driver-output-shape"), check_ref("driver-sql-count"), check_ref("smoke-table-mention-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m41-l013-roots"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/postgres-roundtrip-roots", ["life", "m41"], [], 120000, [check_ref("sql-show-version"), check_ref("sql-drop-if-exists"), check_ref("sql-create-table"), check_ref("sql-insert-row"), check_ref("sql-select-row"), check_ref("sql-drop-table"), check_ref("smoke-table-name"), check_ref("version-guard-note"), check_ref("row-missing-note"), check_ref("database-required-note"), check_ref("driver-output-shape"), check_ref("driver-sql-count"), check_ref("smoke-table-mention-count")], callable case_body)
