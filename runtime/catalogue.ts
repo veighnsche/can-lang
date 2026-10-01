@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "70a4a60392bcb5f745782f0b37c75754e1af7fb819a1e56510805adabd4fc1eb";
+export const catalogueSHA256 = "83cd99947f364d4b59729aca0987b21bfeb654d24a584fb7be122e397b141948";
 export const catalogue = freeze({
  "schemaVersion": 1,
  "revision": 1,
@@ -5004,7 +5004,220 @@ export const catalogue = freeze({
    "leaves": [],
    "projections": [],
    "constructible": true
+  },
+  {
+   "name": "db::callback_entry_facts",
+   "identity": "can.std.db@1::callback_entry_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "actor",
+     "type": "str"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    },
+    {
+     "name": "entry_seq",
+     "type": "int"
+    },
+    {
+     "name": "handle_digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::callback_entry",
+   "identity": "can.std.db@1::callback_entry",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "facts",
+     "type": "db::callback_entry_facts"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::actor_identity_facts",
+   "identity": "can.std.db@1::actor_identity_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "actor",
+     "type": "str"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    },
+    {
+     "name": "handle_digest",
+     "type": "str"
+    },
+    {
+     "name": "entry_seq",
+     "type": "int"
+    },
+    {
+     "name": "settled",
+     "type": "bool"
+    },
+    {
+     "name": "released",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::last_insert_id_record",
+   "identity": "can.std.db@1::last_insert_id_record",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "actor",
+     "type": "str"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    },
+    {
+     "name": "handle_digest",
+     "type": "str"
+    },
+    {
+     "name": "id",
+     "type": "db::cell"
+    },
+    {
+     "name": "digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::last_insert_id_claim",
+   "identity": "can.std.db@1::last_insert_id_claim",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "actor",
+     "type": "str"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    },
+    {
+     "name": "id",
+     "type": "db::cell"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::identity_comparison",
+   "identity": "can.std.db@1::identity_comparison",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "match",
+     "type": "bool"
+    },
+    {
+     "name": "mismatches",
+     "type": "int[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::settlement_record",
+   "identity": "can.std.db@1::settlement_record",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "actor",
+     "type": "str"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    },
+    {
+     "name": "outcome",
+     "type": "str"
+    },
+    {
+     "name": "engine",
+     "type": "str"
+    },
+    {
+     "name": "digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::release_record",
+   "identity": "can.std.db@1::release_record",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "actor",
+     "type": "str"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    },
+    {
+     "name": "released",
+     "type": "bool"
+    },
+    {
+     "name": "ack_digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
   }
+
  ],
  "errors": [
   {
@@ -21210,7 +21423,362 @@ export const catalogue = freeze({
    "refs": [
     "NT-I13"
    ]
+  },
+  {
+   "name": "db::enter_callback",
+   "identity": "can.std.db@1::enter_callback",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "actor",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::callback_entry",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.set",
+     "crypto.randomBytes"
+    ],
+    "adapter": "Enter one fresh-pool actor callback (K24 enterCallback); re-entry rejects connection-busy.",
+    "task": "NT-I14"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I14"
+   ]
+  },
+  {
+   "name": "db::actor_facts",
+   "identity": "can.std.db@1::actor_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "actor",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::actor_identity_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read actor identity facts (K24 actorFacts).",
+    "task": "NT-I14"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I14"
+   ]
+  },
+  {
+   "name": "db::record_last_insert_id",
+   "identity": "can.std.db@1::record_last_insert_id",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "actor",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    },
+    {
+     "name": "id",
+     "type": "db::cell"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::last_insert_id_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Record the LAST_INSERT_ID bound to the actor handle (K24 recordLastInsertId).",
+    "task": "NT-I14"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I14"
+   ]
+  },
+  {
+   "name": "db::last_insert_id_facts",
+   "identity": "can.std.db@1::last_insert_id_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "actor",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::last_insert_id_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read bound LAST_INSERT_ID facts (K24 lastInsertIdFacts).",
+    "task": "NT-I14"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I14"
+   ]
+  },
+  {
+   "name": "db::compare_last_insert_id",
+   "identity": "can.std.db@1::compare_last_insert_id",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "stored",
+     "type": "db::last_insert_id_record"
+    },
+    {
+     "name": "claimed",
+     "type": "db::last_insert_id_claim"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::identity_comparison",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.push"
+    ],
+    "adapter": "Compare a claimed LAST_INSERT_ID against bound facts, identity before value (K24 compareLastInsertId); never throws.",
+    "task": "NT-I14"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I14"
+   ]
+  },
+  {
+   "name": "db::record_settlement",
+   "identity": "can.std.db@1::record_settlement",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "actor",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    },
+    {
+     "name": "outcome",
+     "type": "str"
+    },
+    {
+     "name": "engine",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::settlement_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "crypto.createHash"
+    ],
+    "adapter": "Record the engine-observed settlement outcome as facts only (K24 recordSettlement).",
+    "task": "NT-I14"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I14"
+   ]
+  },
+  {
+   "name": "db::settlement_facts",
+   "identity": "can.std.db@1::settlement_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "actor",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::settlement_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read settlement facts; unsettled actors throw (K24 settlementFacts).",
+    "task": "NT-I14"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I14"
+   ]
+  },
+  {
+   "name": "db::release",
+   "identity": "can.std.db@1::release",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "actor",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::release_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "crypto.createHash"
+    ],
+    "adapter": "Release the actor handle after settlement; early release refuses (K24 release).",
+    "task": "NT-I14"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I14"
+   ]
+  },
+  {
+   "name": "db::release_ack",
+   "identity": "can.std.db@1::release_ack",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "actor",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::release_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read the release acknowledgment (K24 releaseAck).",
+    "task": "NT-I14"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I14"
+   ]
   }
+
  ],
  "nativeDeclarations": [
   {
@@ -28134,6 +28702,300 @@ export const catalogueTypeShapes = freeze([
       },
       {
         "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::callback_entry_facts",
+    "identity": "can.std.db@1::callback_entry_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "actor",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "connection",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "entry_seq",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "handle_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::callback_entry",
+    "identity": "can.std.db@1::callback_entry",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "facts",
+        "type": {
+          "name": "db::callback_entry_facts",
+          "arguments": null
+        }
+      },
+      {
+        "name": "token",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::actor_identity_facts",
+    "identity": "can.std.db@1::actor_identity_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "actor",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "connection",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "handle_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "entry_seq",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "settled",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "released",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::last_insert_id_record",
+    "identity": "can.std.db@1::last_insert_id_record",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "actor",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "connection",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "handle_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "id",
+        "type": {
+          "name": "db::cell",
+          "arguments": null
+        }
+      },
+      {
+        "name": "digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::last_insert_id_claim",
+    "identity": "can.std.db@1::last_insert_id_claim",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "actor",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "connection",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "id",
+        "type": {
+          "name": "db::cell",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::identity_comparison",
+    "identity": "can.std.db@1::identity_comparison",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "match",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "mismatches",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::settlement_record",
+    "identity": "can.std.db@1::settlement_record",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "actor",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "connection",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "outcome",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "engine",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::release_record",
+    "identity": "can.std.db@1::release_record",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "actor",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "connection",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "released",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "ack_digest",
         "type": {
           "name": "str",
           "arguments": null

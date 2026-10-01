@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 70a4a60392bcb5f745782f0b37c75754e1af7fb819a1e56510805adabd4fc1eb.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 83cd99947f364d4b59729aca0987b21bfeb654d24a584fb7be122e397b141948.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -286,6 +286,14 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | db::final_rows_facts | record |  | str compile, int row_count, db::returning_row_facts[] rows, str digest | true |
 | db::returning_comparison | record |  | bool match, int[] mismatches | true |
 | db::returning_credit_verdict | record |  | bool credit_c, str reason | true |
+| db::callback_entry_facts | record |  | str actor, str connection, int entry_seq, str handle_digest | true |
+| db::callback_entry | record |  | db::callback_entry_facts facts, str token | true |
+| db::actor_identity_facts | record |  | str actor, str connection, str handle_digest, int entry_seq, bool settled, bool released | true |
+| db::last_insert_id_record | record |  | str actor, str connection, str handle_digest, db::cell id, str digest | true |
+| db::last_insert_id_claim | record |  | str actor, str connection, db::cell id | true |
+| db::identity_comparison | record |  | bool match, int[] mismatches | true |
+| db::settlement_record | record |  | str actor, str connection, str outcome, str engine, str digest | true |
+| db::release_record | record |  | str actor, str connection, bool released, str ack_digest | true |
 
 ## Domain errors
 
@@ -827,6 +835,15 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | db::compare_payload_to_final | test::owner owner, db::returning_payload_facts payload, db::final_rows_facts final → db::returning_comparison | {test::stale_handle, db::db_fault} |  | Array.prototype.every | Compare payload rows against final rows of one compile (K23 comparePayloadToFinal). | supplied | NT-I13 / NT-I13 |
 | db::compare_claimed_row | test::owner owner, db::cell[] stored, db::cell[] claimed → db::returning_comparison | {test::stale_handle} |  | Array.prototype.every | Compare claimed cells against stored payload or final cells (K23 compareClaimedRow); never throws. | supplied | NT-I13 / NT-I13 |
 | db::credit_verdict | test::owner owner → db::returning_credit_verdict | {test::stale_handle} |  | Object.freeze | Report the constant never-credit-C verdict (K23 creditVerdict). | supplied | NT-I13 / NT-I13 |
+| db::enter_callback | test::owner owner, str actor → db::callback_entry | {test::stale_handle, db::db_fault} |  | Map.prototype.set, crypto.randomBytes | Enter one fresh-pool actor callback (K24 enterCallback); re-entry rejects connection-busy. | supplied | NT-I14 / NT-I14 |
+| db::actor_facts | test::owner owner, str actor → db::actor_identity_facts | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read actor identity facts (K24 actorFacts). | supplied | NT-I14 / NT-I14 |
+| db::record_last_insert_id | test::owner owner, str actor, str token, db::cell id → db::last_insert_id_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Record the LAST_INSERT_ID bound to the actor handle (K24 recordLastInsertId). | supplied | NT-I14 / NT-I14 |
+| db::last_insert_id_facts | test::owner owner, str actor → db::last_insert_id_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read bound LAST_INSERT_ID facts (K24 lastInsertIdFacts). | supplied | NT-I14 / NT-I14 |
+| db::compare_last_insert_id | test::owner owner, db::last_insert_id_record stored, db::last_insert_id_claim claimed → db::identity_comparison | {test::stale_handle} |  | Array.prototype.push | Compare a claimed LAST_INSERT_ID against bound facts, identity before value (K24 compareLastInsertId); never throws. | supplied | NT-I14 / NT-I14 |
+| db::record_settlement | test::owner owner, str actor, str token, str outcome, str engine → db::settlement_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get, crypto.createHash | Record the engine-observed settlement outcome as facts only (K24 recordSettlement). | supplied | NT-I14 / NT-I14 |
+| db::settlement_facts | test::owner owner, str actor → db::settlement_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read settlement facts; unsettled actors throw (K24 settlementFacts). | supplied | NT-I14 / NT-I14 |
+| db::release | test::owner owner, str actor, str token → db::release_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get, crypto.createHash | Release the actor handle after settlement; early release refuses (K24 release). | supplied | NT-I14 / NT-I14 |
+| db::release_ack | test::owner owner, str actor → db::release_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read the release acknowledgment (K24 releaseAck). | supplied | NT-I14 / NT-I14 |
 
 ## Native declaration profiles
 
