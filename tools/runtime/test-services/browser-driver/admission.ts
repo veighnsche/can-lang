@@ -276,7 +276,8 @@ export type IntervalFacts = Readonly<{
   driverDeathNoted: boolean;
   disposed: boolean;
   // True when any tick carries unknown (interruption, loss, or published
-  // unknown). An unknown interval can never prove no-UI.
+  // unknown) or the observer was lost after full observation. An unknown
+  // interval can never prove no-UI.
   unknown: boolean;
   digest: string;
 }>;
@@ -336,6 +337,11 @@ type LaunchRecord = {
   driverDeathNoted: boolean;
   disposed: boolean;
   disposal: DisposalReceipt | null;
+  // Lost records observer loss for a live interval. Once set, the
+  // interval is unknown even when every tick was fully observed: the
+  // observer died before the seal, so late host effects between the last
+  // observation and disposal are unobserved. Mirrors Go launchRecord.lost.
+  lost: boolean;
 };
 
 type ScopeState = "open" | "interrupted" | "lost" | "closed";
@@ -560,6 +566,16 @@ export class BrowserObserverService {
     if (record.state === "interrupted") {
       fail("observer-interrupted", `scope already interrupted: ${owner}/${scope}`);
     }
+    // Refusal precedes effect: every live launch needs room for its
+    // post-resume tick before anything is marked (Go parity).
+    for (const launch of record.launches.values()) {
+      if (launch.disposed) continue;
+      const open = launch.ticks[launch.ticks.length - 1];
+      if (open === undefined || open.closed) continue;
+      if (launch.ticks.length >= this.limits.maxTicksPerLaunch) {
+        fail("capacity-exhausted", "tick table full: dispose the launch");
+      }
+    }
     record.state = "interrupted";
     for (const launch of record.launches.values()) {
       if (launch.disposed) continue;
@@ -573,9 +589,6 @@ export class BrowserObserverService {
       open.closed = true;
       // Post-resume observation needs an open tick; the interrupted tick
       // stays closed and unknown forever.
-      if (launch.ticks.length >= this.limits.maxTicksPerLaunch) {
-        fail("capacity-exhausted", "tick table full: dispose the launch");
-      }
       launch.ticks.push({ tick: open.tick + 1, entries: new Map(), closed: false });
     }
   }
@@ -603,12 +616,14 @@ export class BrowserObserverService {
 
   // Lose the observer permanently: every live interval becomes unknown and
   // stays unknown; only an honest unknown-seal remains. Lost observers
-  // never resume and never admit new launches.
+  // never resume and never admit new launches. The lost flag seals unknown
+  // even for fully observed ticks (Go parity).
   loseObserver(owner: string, scope: string): void {
     const record = this.requireScope(owner, scope);
     record.state = "lost";
     for (const launch of record.launches.values()) {
       if (launch.disposed) continue;
+      launch.lost = true;
       for (const tick of launch.ticks) {
         for (const channel of record.channels) {
           const entry = tick.entries.get(channel);
@@ -628,8 +643,13 @@ export class BrowserObserverService {
   // minted here and verified by table lookup on every later call, so an
   // invented token is never authority.
   attestLaunch(owner: string, scope: string, launchId: string): LaunchAttestation {
-    const record = this.requireLiveBinding(owner, scope);
+    // Name validation precedes the binding check (Go AttestLaunch order):
+    // a malformed launch name rejects as unknown-launch even with no live
+    // binding. requireLiveBinding re-validates owner and scope idempotently.
+    checkOwner(owner);
+    checkScopeName(scope);
     checkLaunchName(launchId);
+    const record = this.requireLiveBinding(owner, scope);
     let total = 0;
     for (const scopeRecord of this.scopes.values()) {
       total += scopeRecord.launches.size;
@@ -655,6 +675,7 @@ export class BrowserObserverService {
       driverDeathNoted: false,
       disposed: false,
       disposal: null,
+      lost: false,
     };
     record.launches.set(launchId, launch);
     return this.attestationOf(record, launch);
@@ -917,6 +938,9 @@ export class BrowserObserverService {
   }
 
   private intervalUnknown(launch: LaunchRecord): boolean {
+    if (launch.lost) {
+      return true;
+    }
     for (const tick of launch.ticks) {
       for (const entry of tick.entries.values()) {
         if (entry.state === "unknown") return true;

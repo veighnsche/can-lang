@@ -16,6 +16,7 @@ import {
   BrowserObserverError,
   BrowserObserverService,
   checkLimits,
+  digestInterval,
   EFFECT_CHANNELS,
   FORBIDDEN_PROOF_KINDS,
   layerOfCode,
@@ -706,6 +707,310 @@ check("independence-scope-stated", () => {
   assert.ok(BROWSER_OBSERVER_INDEPENDENCE_SCOPE.startsWith("independent:"));
   assert.ok(BROWSER_OBSERVER_INDEPENDENCE_SCOPE.includes("no driver code"));
   assert.ok(BROWSER_OBSERVER_INDEPENDENCE_SCOPE.includes("seeded doubles"));
+});
+
+// --- Lost-flag parity with the sealed Go contract ----------------------------
+
+check("lost-flag-seals-unknown-after-full-observation", () => {
+  // Mirror of Go TestLossWithFullyObservedTicksSealsUnknown: every tick
+  // fully observed, but the observer dies before the seal, so late host
+  // effects between the last observation and disposal are unobserved and
+  // the interval is unknown.
+  const { service, token } = openLaunch();
+  observeFull(service, token);
+  service.endTick("owner-n", "host-ui", "launch-1", token);
+  observeFull(service, token);
+  service.loseObserver("owner-n", "host-ui");
+  const during = service.intervalFacts("owner-n", "host-ui", "launch-1");
+  assert.equal(during.unknown, true);
+  const receipt = service.sealDisposal("owner-n", "host-ui", "launch-1", token);
+  assert.equal(receipt.unknown, true);
+  const verdict = assertNoUiProof({ kind: "observer-attestation", interval: during });
+  assert.equal(verdict.unknown, true);
+  assert.equal(verdict.uiSeen, false);
+});
+
+check("lost-continuity-rejects", () => {
+  const { service, token } = openLaunch();
+  service.observe("owner-n", "host-ui", "launch-1", token, "window", "absent");
+  service.endTick("owner-n", "host-ui", "launch-1", token);
+  const fix = service.publishCorrection(
+    "owner-n",
+    "host-ui",
+    "launch-1",
+    token,
+    0,
+    "icon",
+    "absent",
+  );
+  assert.equal(fix.correctionId, "c1");
+  observeFull(service, token);
+  service.loseObserver("owner-n", "host-ui");
+  // No continued observation, correction, or bookkeeping after loss.
+  expectObserverError(
+    () => service.observe("owner-n", "host-ui", "launch-1", token, "window", "absent"),
+    "observer-lost",
+    "observer",
+  );
+  expectObserverError(
+    () => service.endTick("owner-n", "host-ui", "launch-1", token),
+    "observer-lost",
+    "observer",
+  );
+  expectObserverError(
+    () => service.noteDriverDeath("owner-n", "host-ui", "launch-1", token),
+    "observer-lost",
+    "observer",
+  );
+  expectObserverError(
+    () => service.publishCorrection("owner-n", "host-ui", "launch-1", token, 0, "icon", "seen"),
+    "observer-lost",
+    "observer",
+  );
+  expectObserverError(
+    () => service.markUnknown("owner-n", "host-ui", "launch-1", token, 0, "icon"),
+    "observer-lost",
+    "observer",
+  );
+  expectObserverError(
+    () => service.attestation("owner-n", "host-ui", "launch-1"),
+    "observer-lost",
+    "observer",
+  );
+  expectObserverError(
+    () => service.launchTokenForTest("owner-n", "host-ui", "launch-1"),
+    "observer-lost",
+    "observer",
+  );
+  expectObserverError(
+    () => admitLaunch(service, "owner-n", "host-ui", "launch-2"),
+    "no-observer",
+    "admission",
+  );
+  // The pre-loss correction journal survives; facts stay readable and seal
+  // unknown through the lost flag, not through rewritten entries.
+  const log = service.correctionLog("owner-n", "host-ui", "launch-1");
+  assert.equal(log.length, 1);
+  assert.equal(log[0]?.correctionId, "c1");
+  const facts = service.intervalFacts("owner-n", "host-ui", "launch-1");
+  assert.equal(facts.unknown, true);
+  const tick0 = facts.ticks[0]?.channels.find((entry) => entry.channel === "icon");
+  assert.equal(tick0?.state, "absent");
+  assert.equal(tick0?.origin, "correction");
+  const receipt = service.sealDisposal("owner-n", "host-ui", "launch-1", token);
+  assert.equal(receipt.unknown, true);
+  assert.equal(receipt.corrections, 1);
+  assert.deepEqual(service.disposalReceipt("owner-n", "host-ui", "launch-1"), receipt);
+});
+
+// --- Wrong/missing identity rejects on every entry point ---------------------
+
+check("wrong-identity-rejects-everywhere", () => {
+  const { service, token } = openLaunch();
+  observeFull(service, token);
+  // A foreign owner fails every scope/launch/token/fact entry point.
+  expectObserverError(
+    () => service.sealDisposal("owner-x", "host-ui", "launch-1", token),
+    "wrong-owner",
+    "observer",
+  );
+  expectObserverError(
+    () => service.attestation("owner-x", "host-ui", "launch-1"),
+    "wrong-owner",
+    "observer",
+  );
+  expectObserverError(
+    () => service.launchTokenForTest("owner-x", "host-ui", "launch-1"),
+    "wrong-owner",
+    "observer",
+  );
+  expectObserverError(
+    () => service.tickFacts("owner-x", "host-ui", "launch-1", 0),
+    "wrong-owner",
+    "observer",
+  );
+  expectObserverError(
+    () => service.correctionLog("owner-x", "host-ui", "launch-1"),
+    "wrong-owner",
+    "observer",
+  );
+  expectObserverError(
+    () => service.disposalReceipt("owner-x", "host-ui", "launch-1"),
+    "wrong-owner",
+    "observer",
+  );
+  expectObserverError(() => service.closeScope("owner-x", "host-ui"), "wrong-owner", "observer");
+  expectObserverError(
+    () => service.interruptScope("owner-x", "host-ui"),
+    "wrong-owner",
+    "observer",
+  );
+  expectObserverError(() => service.resumeScope("owner-x", "host-ui"), "wrong-owner", "observer");
+  expectObserverError(() => service.loseObserver("owner-x", "host-ui"), "wrong-owner", "observer");
+  expectObserverError(
+    () => admitLaunch(service, "owner-x", "host-ui", "launch-9"),
+    "no-observer",
+    "admission",
+  );
+  // A missing observer/profile fails the same entry points without effect.
+  expectObserverError(
+    () => service.sealDisposal("owner-n", "elsewhere", "launch-1", token),
+    "unknown-scope",
+    "observer",
+  );
+  expectObserverError(
+    () => service.attestation("owner-n", "elsewhere", "launch-1"),
+    "unknown-scope",
+    "observer",
+  );
+  expectObserverError(
+    () => service.launchTokenForTest("owner-n", "elsewhere", "launch-1"),
+    "unknown-scope",
+    "observer",
+  );
+  expectObserverError(
+    () => service.tickFacts("owner-n", "elsewhere", "launch-1", 0),
+    "unknown-scope",
+    "observer",
+  );
+  expectObserverError(
+    () => service.correctionLog("owner-n", "elsewhere", "launch-1"),
+    "unknown-scope",
+    "observer",
+  );
+  expectObserverError(
+    () => service.disposalReceipt("owner-n", "elsewhere", "launch-1"),
+    "unknown-scope",
+    "observer",
+  );
+  expectObserverError(
+    () => service.closeScope("owner-n", "elsewhere"),
+    "unknown-scope",
+    "observer",
+  );
+  expectObserverError(
+    () => service.interruptScope("owner-n", "elsewhere"),
+    "unknown-scope",
+    "observer",
+  );
+  expectObserverError(
+    () => service.resumeScope("owner-n", "elsewhere"),
+    "unknown-scope",
+    "observer",
+  );
+  expectObserverError(
+    () => service.loseObserver("owner-n", "elsewhere"),
+    "unknown-scope",
+    "observer",
+  );
+  // Nothing above mutated the owned interval: it still seals clean.
+  const receipt = service.sealDisposal("owner-n", "host-ui", "launch-1", token);
+  assert.equal(receipt.unknown, false);
+});
+
+// --- False completeness never verifies ---------------------------------------
+
+check("false-completeness-rejects", () => {
+  const { service, token } = openLaunch();
+  service.observe("owner-n", "host-ui", "launch-1", token, "window", "absent");
+  service.endTick("owner-n", "host-ui", "launch-1", token);
+  service.markUnknown("owner-n", "host-ui", "launch-1", token, 0, "icon");
+  observeFull(service, token);
+  service.sealDisposal("owner-n", "host-ui", "launch-1", token);
+  const honest = service.intervalFacts("owner-n", "host-ui", "launch-1");
+  assert.equal(honest.unknown, true);
+  // Flipping any carried flag breaks the digest: never a clean verdict.
+  for (const tampered of [
+    { ...honest, unknown: false },
+    { ...honest, disposed: false },
+    { ...honest, driverDeathNoted: true },
+  ]) {
+    expectObserverError(
+      () => assertNoUiProof({ kind: "observer-attestation", interval: tampered }),
+      "forbidden-proof",
+      "admission",
+    );
+  }
+  // Scrubbing an unknown entry to absent without a journaled correction
+  // breaks the digest the same way.
+  const scrubbedTicks = honest.ticks.map((tick) => ({
+    ...tick,
+    channels: tick.channels.map((entry) =>
+      entry.state === "unknown" ? { ...entry, state: "absent" as const } : { ...entry },
+    ),
+  }));
+  const scrubbed = { ...honest, unknown: false, ticks: scrubbedTicks };
+  expectObserverError(
+    () => assertNoUiProof({ kind: "observer-attestation", interval: scrubbed }),
+    "forbidden-proof",
+    "admission",
+  );
+  // A gap entry refuses even under a valid digest: rebuild the attested
+  // digest over a gap-bearing body and the judge still refuses.
+  const clean = openLaunch();
+  observeFull(clean.service, clean.token);
+  clean.service.sealDisposal("owner-n", "host-ui", "launch-1", clean.token);
+  const sealed = clean.service.intervalFacts("owner-n", "host-ui", "launch-1");
+  assert.equal(sealed.unknown, false);
+  const gapTicks = sealed.ticks.map((tick) => ({
+    ...tick,
+    channels: tick.channels.map((entry) => ({ ...entry })),
+  }));
+  const first = gapTicks[0]?.channels[0];
+  assert.ok(first !== undefined);
+  first.state = "gap";
+  const flags = [
+    `driver-death:${sealed.driverDeathNoted ? 1 : 0}`,
+    `disposed:${sealed.disposed ? 1 : 0}`,
+    `unknown:${sealed.unknown ? 1 : 0}`,
+  ].join("|");
+  const gapInterval = {
+    ...sealed,
+    ticks: gapTicks,
+    digest: digestInterval(sealed.launchId, gapTicks, sealed.corrections, flags),
+  };
+  expectObserverError(
+    () => assertNoUiProof({ kind: "observer-attestation", interval: gapInterval }),
+    "forbidden-proof",
+    "admission",
+  );
+});
+
+// --- Refusal precedes effect, in binding order --------------------------------
+
+check("refusal-precedes-effect", () => {
+  // Interrupt at tick capacity refuses without mutating: the scope stays
+  // open, the tick stays open, and launches still admit (Go parity:
+  // InterruptScope pre-checks every live launch before marking).
+  const tight = new BrowserObserverService(
+    [{ owner: "owner-n", scope: "host-ui", channels: ["window"] }],
+    checkLimits({ maxScopes: 1, maxLaunches: 2, maxTicksPerLaunch: 1, maxCorrectionsPerLaunch: 1 }),
+  );
+  tight.openScope("owner-n", "host-ui");
+  admitLaunch(tight, "owner-n", "host-ui", "launch-1");
+  const tok = tight.launchTokenForTest("owner-n", "host-ui", "launch-1");
+  expectObserverError(
+    () => tight.interruptScope("owner-n", "host-ui"),
+    "capacity-exhausted",
+    "observer",
+  );
+  admitLaunch(tight, "owner-n", "host-ui", "launch-2");
+  tight.observe("owner-n", "host-ui", "launch-1", tok, "window", "absent");
+  const facts = tight.tickFacts("owner-n", "host-ui", "launch-1", 0);
+  assert.equal(facts.closed, false);
+  // Malformed launch names reject before the binding check (Go AttestLaunch
+  // order): even with no live binding the code is unknown-launch.
+  const bare = new BrowserObserverService(
+    [{ owner: "owner-n", scope: "host-ui", channels: ["window"] }],
+    roomyLimits(),
+  );
+  for (const bad of ["", "bad/launch", "launch 1"]) {
+    expectObserverError(
+      () => admitLaunch(bare, "owner-n", "host-ui", bad),
+      "unknown-launch",
+      "admission",
+    );
+  }
 });
 
 console.log(
