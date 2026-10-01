@@ -1,0 +1,334 @@
+package m24history005run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M24 HISTORY-005 "SQL descriptors: build/emitted/negative run shape".
+/// Source: tests/integration/sql_descriptors_test.go symbol
+/// TestCurrentSQLDescriptors (L45-171); build helper buildAt (L92-106);
+/// identity legs (L107-119); emitted state needles (L120-128); optional
+/// strict TypeScript leg (L129-134); negative manifests (L135-170).
+/// Disposition: migrate (this row ports TestCurrentSQLDescriptors to
+/// ordinary Can functions; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): the build/emit/negative shape: the build
+/// command with buildID/directory keys, repeated and relocated build
+/// identity, the program/state.ts path plus its five emitted
+/// descriptor wiring needles, the optional CAN_TSC strict leg, and
+/// the twelve negative manifests with their rejection needles.
+/// ADAPTATION (recorded, with source lines): rebuild-same and
+/// relocated-same pin the L109/L117 equality predicates as bool
+/// expectations; emit needles pin the exact L124 source spellings;
+/// tsc pins record the optional leg (CAN_TSC unset skips) without
+/// claiming a live run (accept_after P23 unmet); negative needles pin
+/// the L147-158 want strings.
+/// Facet map (sql_descriptors_test.go legs): build-cmd pins build
+/// (L94); build-id-key and build-dir-key pin buildID/directory
+/// (L99-100); rebuild-same pins the rebuild predicate (L109);
+/// relocated-same pins the relocated predicate (L117); state-path pins
+/// program/state.ts (L120); emit-sql, emit-search, emit-param,
+/// emit-limit and emit-version pin the state needles (L124); tsc-gate
+/// pins CAN_TSC (L129); tsc-strict pins --strict (L130); neg-count
+/// pins twelve negatives (L142); neg-unbounded, neg-returning,
+/// neg-multi, neg-gap, neg-extra, neg-shared, neg-literal, neg-order,
+/// neg-nonscalar, neg-unknown, neg-exec-limit and neg-syntax pin the
+/// rejection needles (L147-158).
+/// Report/descriptor semantics live in
+/// history-005-desc-semantics.can; the roots-green pin lives in
+/// history-005-roots-green.can.
+/// Variants: the twelve negative descriptor cases (the L142 table, in
+/// order); each carries its rejection needle.
+/// Environment: CAN_BUN_ARCHIVE gate; requires can-bun-archive;
+/// CAN_TSC optional.
+/// Logical gates SUITE/CAN/BUILD/DIAG/WORK and C/R/N/S/A identities
+/// bind at P23; no live run now. The offline legs additionally use
+/// /usr/bin/sandbox-exec plus the bundled runtime/bun (recorded
+/// mechanism, not waived). Descriptor timeout 240000ms mirrors the Go
+/// 4-minute ctx (L50).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/desc-run checks: build-cmd, build-id-key,
+/// build-dir-key, rebuild-same, relocated-same, state-path, emit-sql,
+/// emit-search, emit-param, emit-limit, emit-version, tsc-gate,
+/// tsc-strict, neg-count, neg-unbounded, neg-returning, neg-multi,
+/// neg-gap, neg-extra, neg-shared, neg-literal, neg-order,
+/// neg-nonscalar, neg-unknown, neg-exec-limit, neg-syntax.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str build_cmd
+    str build_id_key
+    str build_dir_key
+    bool rebuild_same
+    bool relocated_same
+    str state_path
+    str emit_sql
+    str emit_search
+    str emit_param
+    str emit_limit
+    str emit_version
+    str tsc_gate
+    str tsc_strict
+    int neg_count
+    str neg_unbounded
+    str neg_returning
+    str neg_multi
+    str neg_gap
+    str neg_extra
+    str neg_shared
+    str neg_literal
+    str neg_order
+    str neg_nonscalar
+    str neg_unknown
+    str neg_exec_limit
+    str neg_syntax
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/desc-run", "default", "", "offline"), "build-cmd" => ok "case history/desc-run variant default root build-cmd run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/desc-run", "default", "", "offline"), "rebuild-same" => ok evidence("rebuild-same", "true", "true", true, "case history/desc-run variant default root rebuild-same run offline")
+        different: false, true, context("history/desc-run", "default", "", "offline"), "rebuild-same" => failed{"rebuild-same"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 12, 12, context("history/desc-run", "default", "", "offline"), "neg-count" => ok evidence("neg-count", "12", "12", true, "case history/desc-run variant default root neg-count run offline")
+        different: 11, 12, context("history/desc-run", "default", "", "offline"), "neg-count" => failed{"neg-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "build", "build", context("history/desc-run", "default", "", "offline"), "build-cmd" => ok evidence("build-cmd", "build", "build", true, "case history/desc-run variant default root build-cmd run offline")
+        different: "compile", "build", context("history/desc-run", "default", "", "offline"), "build-cmd" => failed{"build-cmd"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_build_cmd: "seed-build-cmd-drift" => ok observation("compile", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_build_id_key: "seed-build-id-key-drift" => ok observation("build", "buildId", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_build_dir_key: "seed-build-dir-key-drift" => ok observation("build", "buildID", "dir", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_rebuild_same: "seed-rebuild-same-drift" => ok observation("build", "buildID", "directory", false, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_relocated_same: "seed-relocated-same-drift" => ok observation("build", "buildID", "directory", true, false, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_state_path: "seed-state-path-drift" => ok observation("build", "buildID", "directory", true, true, "program/other.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_emit_sql: "seed-emit-sql-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors2(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_emit_search: "seed-emit-search-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"one\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_emit_param: "seed-emit-param-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":2}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_emit_limit: "seed-emit-limit-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":3", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_emit_version: "seed-emit-version-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170008", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_tsc_gate: "seed-tsc-gate-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC_2", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_tsc_strict: "seed-tsc-strict-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--lax", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_neg_count: "seed-neg-count-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 11, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_neg_unbounded: "seed-neg-unbounded-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "bounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_neg_returning: "seed-neg-returning-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURN", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_neg_multi: "seed-neg-multi-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "1 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_neg_gap: "seed-neg-gap-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_neg_extra: "seed-neg-extra-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "a declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_neg_shared: "seed-neg-shared-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 3 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_neg_literal: "seed-neg-literal-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $2", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_neg_order: "seed-neg-order-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest omits", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        seed_neg_nonscalar: "seed-neg-nonscalar-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "SQL type", "not declared", "cannot declare", "syntax error")
+        seed_neg_unknown: "seed-neg-unknown-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "is declared", "cannot declare", "syntax error")
+        seed_neg_exec_limit: "seed-neg-exec-limit-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "can declare", "syntax error")
+        seed_neg_syntax: "seed-neg-syntax-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax ok")
+    match variant_id
+        "seed-build-cmd-drift" => ok observation("compile", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-build-id-key-drift" => ok observation("build", "buildId", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-build-dir-key-drift" => ok observation("build", "buildID", "dir", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-rebuild-same-drift" => ok observation("build", "buildID", "directory", false, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-relocated-same-drift" => ok observation("build", "buildID", "directory", true, false, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-state-path-drift" => ok observation("build", "buildID", "directory", true, true, "program/other.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-emit-sql-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors2(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-emit-search-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"one\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-emit-param-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":2}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-emit-limit-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":3", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-emit-version-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170008", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-tsc-gate-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC_2", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-tsc-strict-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--lax", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-neg-count-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 11, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-neg-unbounded-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "bounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-neg-returning-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURN", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-neg-multi-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "1 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-neg-gap-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-neg-extra-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "a declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-neg-shared-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 3 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-neg-literal-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $2", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-neg-order-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest omits", "non-SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-neg-nonscalar-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "SQL type", "not declared", "cannot declare", "syntax error")
+        "seed-neg-unknown-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "is declared", "cannot declare", "syntax error")
+        "seed-neg-exec-limit-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "can declare", "syntax error")
+        "seed-neg-syntax-drift" => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax ok")
+        _ => ok observation("build", "buildID", "directory", true, true, "program/state.ts", "$canSQL=$canCreateSQLDescriptors(", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", "{\"param\":1}", "\"limit\":2", "\"version\":170007", "CAN_TSC", "--strict", 12, "unbounded SELECT", "RETURNING", "2 statements", "is not used", "no declared parameter", "appears 2 times", "must be $1", "manifest lists", "non-SQL type", "not declared", "cannot declare", "syntax error")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m24_h005: "m24-h005" => ok [check("build-cmd", "build leg invokes canlc build"), check("build-id-key", "build report carries the buildID key"), check("build-dir-key", "build report carries the directory key"), check("rebuild-same", "rebuild keeps the same build identity"), check("relocated-same", "relocated build keeps the same build identity"), check("state-path", "emitted state lands at program/state.ts"), check("emit-sql", "emitted state creates the SQL descriptors"), check("emit-search", "emitted state pins the search_accounts descriptor"), check("emit-param", "emitted state pins param 1"), check("emit-limit", "emitted state pins limit 2"), check("emit-version", "emitted state pins version 170007"), check("tsc-gate", "strict TypeScript gate reads CAN_TSC"), check("tsc-strict", "strict TypeScript leg passes --strict"), check("neg-count", "twelve invalid descriptor variants are rejected"), check("neg-unbounded", "unbounded select is rejected"), check("neg-returning", "RETURNING is rejected"), check("neg-multi", "multiple statements are rejected"), check("neg-gap", "parameter gap is rejected"), check("neg-extra", "extra parameter is rejected"), check("neg-shared", "reused limit is rejected"), check("neg-literal", "literal limit is rejected"), check("neg-order", "field order is rejected"), check("neg-nonscalar", "non-scalar type is rejected"), check("neg-unknown", "unknown type is rejected"), check("neg-exec-limit", "execute limit is rejected"), check("neg-syntax", "syntax error is rejected")]
+        other: "nope" => ok []
+    match scope is "m24-h005"
+        false => ok []
+        true => ok [check("build-cmd", "build leg invokes canlc build"), check("build-id-key", "build report carries the buildID key"), check("build-dir-key", "build report carries the directory key"), check("rebuild-same", "rebuild keeps the same build identity"), check("relocated-same", "relocated build keeps the same build identity"), check("state-path", "emitted state lands at program/state.ts"), check("emit-sql", "emitted state creates the SQL descriptors"), check("emit-search", "emitted state pins the search_accounts descriptor"), check("emit-param", "emitted state pins param 1"), check("emit-limit", "emitted state pins limit 2"), check("emit-version", "emitted state pins version 170007"), check("tsc-gate", "strict TypeScript gate reads CAN_TSC"), check("tsc-strict", "strict TypeScript leg passes --strict"), check("neg-count", "twelve invalid descriptor variants are rejected"), check("neg-unbounded", "unbounded select is rejected"), check("neg-returning", "RETURNING is rejected"), check("neg-multi", "multiple statements are rejected"), check("neg-gap", "parameter gap is rejected"), check("neg-extra", "extra parameter is rejected"), check("neg-shared", "reused limit is rejected"), check("neg-literal", "literal limit is rejected"), check("neg-order", "field order is rejected"), check("neg-nonscalar", "non-scalar type is rejected"), check("neg-unknown", "unknown type is rejected"), check("neg-exec-limit", "execute limit is rejected"), check("neg-syntax", "syntax error is rejected")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/desc-run" => ok [expected_check("build-cmd", "build"), expected_check("build-id-key", "buildID"), expected_check("build-dir-key", "directory"), expected_check("rebuild-same", "true"), expected_check("relocated-same", "true"), expected_check("state-path", "program/state.ts"), expected_check("emit-sql", "$canSQL=$canCreateSQLDescriptors("), expected_check("emit-search", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\""), expected_check("emit-param", "{\"param\":1}"), expected_check("emit-limit", "\"limit\":2"), expected_check("emit-version", "\"version\":170007"), expected_check("tsc-gate", "CAN_TSC"), expected_check("tsc-strict", "--strict"), expected_check("neg-count", "12"), expected_check("neg-unbounded", "unbounded SELECT"), expected_check("neg-returning", "RETURNING"), expected_check("neg-multi", "2 statements"), expected_check("neg-gap", "is not used"), expected_check("neg-extra", "no declared parameter"), expected_check("neg-shared", "appears 2 times"), expected_check("neg-literal", "must be $1"), expected_check("neg-order", "manifest lists"), expected_check("neg-nonscalar", "non-SQL type"), expected_check("neg-unknown", "not declared"), expected_check("neg-exec-limit", "cannot declare"), expected_check("neg-syntax", "syntax error")]
+        unknown: "nope" => ok []
+    match case is "history/desc-run"
+        false => ok []
+        true => ok [expected_check("build-cmd", "build"), expected_check("build-id-key", "buildID"), expected_check("build-dir-key", "directory"), expected_check("rebuild-same", "true"), expected_check("relocated-same", "true"), expected_check("state-path", "program/state.ts"), expected_check("emit-sql", "$canSQL=$canCreateSQLDescriptors("), expected_check("emit-search", "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\""), expected_check("emit-param", "{\"param\":1}"), expected_check("emit-limit", "\"limit\":2"), expected_check("emit-version", "\"version\":170007"), expected_check("tsc-gate", "CAN_TSC"), expected_check("tsc-strict", "--strict"), expected_check("neg-count", "12"), expected_check("neg-unbounded", "unbounded SELECT"), expected_check("neg-returning", "RETURNING"), expected_check("neg-multi", "2 statements"), expected_check("neg-gap", "is not used"), expected_check("neg-extra", "no declared parameter"), expected_check("neg-shared", "appears 2 times"), expected_check("neg-literal", "must be $1"), expected_check("neg-order", "manifest lists"), expected_check("neg-nonscalar", "non-SQL type"), expected_check("neg-unknown", "not declared"), expected_check("neg-exec-limit", "cannot declare"), expected_check("neg-syntax", "syntax error")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/desc-run", "default", "", "offline") => ok
+        seed_build_cmd: context("history/desc-run", "seed-build-cmd-drift", "", "offline") => failed{"build-cmd"}
+        seed_build_id_key: context("history/desc-run", "seed-build-id-key-drift", "", "offline") => failed{"build-id-key"}
+        seed_build_dir_key: context("history/desc-run", "seed-build-dir-key-drift", "", "offline") => failed{"build-dir-key"}
+        seed_rebuild_same: context("history/desc-run", "seed-rebuild-same-drift", "", "offline") => failed{"rebuild-same"}
+        seed_relocated_same: context("history/desc-run", "seed-relocated-same-drift", "", "offline") => failed{"relocated-same"}
+        seed_state_path: context("history/desc-run", "seed-state-path-drift", "", "offline") => failed{"state-path"}
+        seed_emit_sql: context("history/desc-run", "seed-emit-sql-drift", "", "offline") => failed{"emit-sql"}
+        seed_emit_search: context("history/desc-run", "seed-emit-search-drift", "", "offline") => failed{"emit-search"}
+        seed_emit_param: context("history/desc-run", "seed-emit-param-drift", "", "offline") => failed{"emit-param"}
+        seed_emit_limit: context("history/desc-run", "seed-emit-limit-drift", "", "offline") => failed{"emit-limit"}
+        seed_emit_version: context("history/desc-run", "seed-emit-version-drift", "", "offline") => failed{"emit-version"}
+        seed_tsc_gate: context("history/desc-run", "seed-tsc-gate-drift", "", "offline") => failed{"tsc-gate"}
+        seed_tsc_strict: context("history/desc-run", "seed-tsc-strict-drift", "", "offline") => failed{"tsc-strict"}
+        seed_neg_count: context("history/desc-run", "seed-neg-count-drift", "", "offline") => failed{"neg-count"}
+        seed_neg_unbounded: context("history/desc-run", "seed-neg-unbounded-drift", "", "offline") => failed{"neg-unbounded"}
+        seed_neg_returning: context("history/desc-run", "seed-neg-returning-drift", "", "offline") => failed{"neg-returning"}
+        seed_neg_multi: context("history/desc-run", "seed-neg-multi-drift", "", "offline") => failed{"neg-multi"}
+        seed_neg_gap: context("history/desc-run", "seed-neg-gap-drift", "", "offline") => failed{"neg-gap"}
+        seed_neg_extra: context("history/desc-run", "seed-neg-extra-drift", "", "offline") => failed{"neg-extra"}
+        seed_neg_shared: context("history/desc-run", "seed-neg-shared-drift", "", "offline") => failed{"neg-shared"}
+        seed_neg_literal: context("history/desc-run", "seed-neg-literal-drift", "", "offline") => failed{"neg-literal"}
+        seed_neg_order: context("history/desc-run", "seed-neg-order-drift", "", "offline") => failed{"neg-order"}
+        seed_neg_nonscalar: context("history/desc-run", "seed-neg-nonscalar-drift", "", "offline") => failed{"neg-nonscalar"}
+        seed_neg_unknown: context("history/desc-run", "seed-neg-unknown-drift", "", "offline") => failed{"neg-unknown"}
+        seed_neg_exec_limit: context("history/desc-run", "seed-neg-exec-limit-drift", "", "offline") => failed{"neg-exec-limit"}
+        seed_neg_syntax: context("history/desc-run", "seed-neg-syntax-drift", "", "offline") => failed{"neg-syntax"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.build_cmd, "build", c, "build-cmd")
+            failed
+            ok evidence build_cmd_evidence => match call require_text(got.build_id_key, "buildID", c, "build-id-key")
+                failed
+                ok evidence build_id_key_evidence => match call require_text(got.build_dir_key, "directory", c, "build-dir-key")
+                    failed
+                    ok evidence build_dir_key_evidence => match call require_bool(got.rebuild_same, true, c, "rebuild-same")
+                        failed
+                        ok evidence rebuild_same_evidence => match call require_bool(got.relocated_same, true, c, "relocated-same")
+                            failed
+                            ok evidence relocated_same_evidence => match call require_text(got.state_path, "program/state.ts", c, "state-path")
+                                failed
+                                ok evidence state_path_evidence => match call require_text(got.emit_sql, "$canSQL=$canCreateSQLDescriptors(", c, "emit-sql")
+                                    failed
+                                    ok evidence emit_sql_evidence => match call require_text(got.emit_search, "\"search_accounts\":{\"dialect\":\"postgresql\",\"cardinality\":\"many\"", c, "emit-search")
+                                        failed
+                                        ok evidence emit_search_evidence => match call require_text(got.emit_param, "{\"param\":1}", c, "emit-param")
+                                            failed
+                                            ok evidence emit_param_evidence => match call require_text(got.emit_limit, "\"limit\":2", c, "emit-limit")
+                                                failed
+                                                ok evidence emit_limit_evidence => match call require_text(got.emit_version, "\"version\":170007", c, "emit-version")
+                                                    failed
+                                                    ok evidence emit_version_evidence => match call require_text(got.tsc_gate, "CAN_TSC", c, "tsc-gate")
+                                                        failed
+                                                        ok evidence tsc_gate_evidence => match call require_text(got.tsc_strict, "--strict", c, "tsc-strict")
+                                                            failed
+                                                            ok evidence tsc_strict_evidence => match call require_int(got.neg_count, 12, c, "neg-count")
+                                                                failed
+                                                                ok evidence neg_count_evidence => match call require_text(got.neg_unbounded, "unbounded SELECT", c, "neg-unbounded")
+                                                                    failed
+                                                                    ok evidence neg_unbounded_evidence => match call require_text(got.neg_returning, "RETURNING", c, "neg-returning")
+                                                                        failed
+                                                                        ok evidence neg_returning_evidence => match call require_text(got.neg_multi, "2 statements", c, "neg-multi")
+                                                                            failed
+                                                                            ok evidence neg_multi_evidence => match call require_text(got.neg_gap, "is not used", c, "neg-gap")
+                                                                                failed
+                                                                                ok evidence neg_gap_evidence => match call require_text(got.neg_extra, "no declared parameter", c, "neg-extra")
+                                                                                    failed
+                                                                                    ok evidence neg_extra_evidence => match call require_text(got.neg_shared, "appears 2 times", c, "neg-shared")
+                                                                                        failed
+                                                                                        ok evidence neg_shared_evidence => match call require_text(got.neg_literal, "must be $1", c, "neg-literal")
+                                                                                            failed
+                                                                                            ok evidence neg_literal_evidence => match call require_text(got.neg_order, "manifest lists", c, "neg-order")
+                                                                                                failed
+                                                                                                ok evidence neg_order_evidence => match call require_text(got.neg_nonscalar, "non-SQL type", c, "neg-nonscalar")
+                                                                                                    failed
+                                                                                                    ok evidence neg_nonscalar_evidence => match call require_text(got.neg_unknown, "not declared", c, "neg-unknown")
+                                                                                                        failed
+                                                                                                        ok evidence neg_unknown_evidence => match call require_text(got.neg_exec_limit, "cannot declare", c, "neg-exec-limit")
+                                                                                                            failed
+                                                                                                            ok evidence neg_exec_limit_evidence => match call require_text(got.neg_syntax, "syntax error", c, "neg-syntax")
+                                                                                                                failed
+                                                                                                                ok evidence neg_syntax_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m24_h005: "m24-h005" => ok test_case("history/desc-run", ["history", "m24"], ["can-bun-archive"], 240000, [check_ref("build-cmd"), check_ref("build-id-key"), check_ref("build-dir-key"), check_ref("rebuild-same"), check_ref("relocated-same"), check_ref("state-path"), check_ref("emit-sql"), check_ref("emit-search"), check_ref("emit-param"), check_ref("emit-limit"), check_ref("emit-version"), check_ref("tsc-gate"), check_ref("tsc-strict"), check_ref("neg-count"), check_ref("neg-unbounded"), check_ref("neg-returning"), check_ref("neg-multi"), check_ref("neg-gap"), check_ref("neg-extra"), check_ref("neg-shared"), check_ref("neg-literal"), check_ref("neg-order"), check_ref("neg-nonscalar"), check_ref("neg-unknown"), check_ref("neg-exec-limit"), check_ref("neg-syntax")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m24-h005"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/desc-run", ["history", "m24"], ["can-bun-archive"], 240000, [check_ref("build-cmd"), check_ref("build-id-key"), check_ref("build-dir-key"), check_ref("rebuild-same"), check_ref("relocated-same"), check_ref("state-path"), check_ref("emit-sql"), check_ref("emit-search"), check_ref("emit-param"), check_ref("emit-limit"), check_ref("emit-version"), check_ref("tsc-gate"), check_ref("tsc-strict"), check_ref("neg-count"), check_ref("neg-unbounded"), check_ref("neg-returning"), check_ref("neg-multi"), check_ref("neg-gap"), check_ref("neg-extra"), check_ref("neg-shared"), check_ref("neg-literal"), check_ref("neg-order"), check_ref("neg-nonscalar"), check_ref("neg-unknown"), check_ref("neg-exec-limit"), check_ref("neg-syntax")], callable case_body)

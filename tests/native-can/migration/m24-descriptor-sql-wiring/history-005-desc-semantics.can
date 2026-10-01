@@ -1,0 +1,340 @@
+package m24history005desc
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M24 HISTORY-005 "SQL descriptors: assert report and descriptor semantics".
+/// Source: tests/integration/sql_descriptors_test.go symbol TestCurrentSQLDescriptors
+/// (L45-171); manifest sqlDescriptorsManifest (L16-21); staging helper
+/// writeSQLDescriptorsProject (L23-43); assert leg (L80-87); run leg
+/// (L88-91); fixture compiler/testdata/current/sql/descriptors.can (one
+/// assert root).
+/// Disposition: migrate (this row ports TestCurrentSQLDescriptors to
+/// ordinary Can functions; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): the gated assert/run contract, the five
+/// descriptor bindings, and the supplied assertion root: the
+/// CAN_BUN_ARCHIVE gate plus its skip message, the 4-minute context,
+/// the offline sandbox invocation shape, the assert command with exit
+/// 0, the run command with exit 0, the report keys plus the one-root
+/// count, the five descriptor names in manifest order, the three bound
+/// cardinalities (many/one/execute), the postgresql dialect, the
+/// row_limit_parameter pin, and the root fn::assert name with its
+/// expected verdict.
+/// ADAPTATION (recorded, with source lines): the context timeout pins
+/// int minutes (4) from 4*time.Minute (L50); per-descriptor pins
+/// mirror the L16-21 manifest rows as static expectations, one
+/// load-bearing pin per behavior; the root pin joins the fixture fn
+/// name, assert name and verdict line as "fn::assert => verdict".
+/// Facet map (sql_descriptors_test.go legs): env-gate pins CAN_BUN_ARCHIVE (L46);
+/// skip-needle pins the skip message (L48); ctx-timeout-min pins 4
+/// (L50); sandbox-profile pins the deny-network profile (L63);
+/// offline-path pins PATH=/nonexistent (L67); canlc-bin pins
+/// bin/canlc (L63); assert-cmd pins assert (L80); assert-exit pins
+/// exit 0 (L81); run-cmd pins run (L88); run-exit pins exit 0 (L89);
+/// report-passed, report-passed-key,
+/// report-assertions-key and report-root-count pin the report
+/// predicate (L85); desc-count plus desc-search/desc-repeat/desc-by-id/
+/// desc-add/desc-commented pin the five manifest names in order
+/// (L17-21); card-many/card-one/card-execute pin the bound
+/// cardinalities (L17-21); dialect pins postgresql (L17); row-limit-param
+/// pins 2 (L17); root-main-empty pins the fixture assert root with
+/// its expected verdict.
+/// The roots-green pin lives in history-005-roots-green.can; the
+/// build/emitted/negative shape lives in history-005-run-shape.can.
+/// Variants: none in this file (default only); the twelve negative
+/// manifests live in run-shape.
+/// Environment: CAN_BUN_ARCHIVE gate; requires can-bun-archive.
+/// Logical gates SUITE/CAN/BUILD/DIAG/WORK and C/R/N/S/A identities
+/// bind at P23; no live run now. The offline legs additionally use
+/// /usr/bin/sandbox-exec plus the bundled runtime/bun (recorded
+/// mechanism, not waived). Descriptor timeout 240000ms mirrors the Go
+/// 4-minute ctx (L50).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/desc checks: env-gate, skip-needle,
+/// ctx-timeout-min, sandbox-profile, offline-path, canlc-bin,
+/// assert-cmd, assert-exit, run-cmd, run-exit, report-passed,
+/// report-passed-key, report-assertions-key, report-root-count,
+/// desc-count, desc-search, desc-repeat, desc-by-id, desc-add,
+/// desc-commented, card-many, card-one, card-execute, dialect,
+/// row-limit-param, root-main-empty.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str env_gate
+    str skip_needle
+    int ctx_timeout_min
+    str sandbox_profile
+    str offline_path
+    str canlc_bin
+    str assert_cmd
+    int assert_exit
+    str run_cmd
+    int run_exit
+    bool report_passed
+    str report_passed_key
+    str report_assertions_key
+    int report_root_count
+    int desc_count
+    str desc_search
+    str desc_repeat
+    str desc_by_id
+    str desc_add
+    str desc_commented
+    str card_many
+    str card_one
+    str card_execute
+    str dialect
+    int row_limit_param
+    str root_main_empty
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/desc", "default", "", "offline"), "env-gate" => ok "case history/desc variant default root env-gate run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/desc", "default", "", "offline"), "report-passed" => ok evidence("report-passed", "true", "true", true, "case history/desc variant default root report-passed run offline")
+        different: false, true, context("history/desc", "default", "", "offline"), "report-passed" => failed{"report-passed"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("history/desc", "default", "", "offline"), "ctx-timeout-min" => ok evidence("ctx-timeout-min", "4", "4", true, "case history/desc variant default root ctx-timeout-min run offline")
+        different: 3, 4, context("history/desc", "default", "", "offline"), "ctx-timeout-min" => failed{"ctx-timeout-min"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "CAN_BUN_ARCHIVE", "CAN_BUN_ARCHIVE", context("history/desc", "default", "", "offline"), "env-gate" => ok evidence("env-gate", "CAN_BUN_ARCHIVE", "CAN_BUN_ARCHIVE", true, "case history/desc variant default root env-gate run offline")
+        different: "CAN_BUN_ARCHIVE_2", "CAN_BUN_ARCHIVE", context("history/desc", "default", "", "offline"), "env-gate" => failed{"env-gate"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_env_gate: "seed-env-gate-drift" => ok observation("CAN_BUN_ARCHIVE_2", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_skip_needle: "seed-skip-needle-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor checks", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_ctx_timeout_min: "seed-ctx-timeout-min-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 3, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_sandbox_profile: "seed-sandbox-profile-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_offline_path: "seed-offline-path-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/usr/bin", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_canlc_bin: "seed-canlc-bin-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/other", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_assert_cmd: "seed-assert-cmd-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "check", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_assert_exit: "seed-assert-exit-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 1, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_run_cmd: "seed-run-cmd-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "exec", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_run_exit: "seed-run-exit-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 1, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_report_passed: "seed-report-passed-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, false, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_report_passed_key: "seed-report-passed-key-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "pass", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_report_assertions_key: "seed-report-assertions-key-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertion", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_report_root_count: "seed-report-root-count-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 2, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_desc_count: "seed-desc-count-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 4, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_desc_search: "seed-desc-search-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts_2", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_desc_repeat: "seed-desc-repeat-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search_2", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_desc_by_id: "seed-desc-by-id-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id_2", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_desc_add: "seed-desc-add-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account_2", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_desc_commented: "seed-desc-commented-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search_2", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_card_many: "seed-card-many-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "one", "one", "execute", "postgresql", 2, "main::empty => ok")
+        seed_card_one: "seed-card-one-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "many", "execute", "postgresql", 2, "main::empty => ok")
+        seed_card_execute: "seed-card-execute-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "many", "postgresql", 2, "main::empty => ok")
+        seed_dialect: "seed-dialect-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "sqlite", 2, "main::empty => ok")
+        seed_row_limit_param: "seed-row-limit-param-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 3, "main::empty => ok")
+        seed_root_main_empty: "seed-root-main-empty-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => failed{}")
+    match variant_id
+        "seed-env-gate-drift" => ok observation("CAN_BUN_ARCHIVE_2", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-skip-needle-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor checks", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-ctx-timeout-min-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 3, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-sandbox-profile-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-offline-path-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/usr/bin", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-canlc-bin-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/other", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-assert-cmd-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "check", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-assert-exit-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 1, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-run-cmd-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "exec", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-run-exit-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 1, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-report-passed-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, false, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-report-passed-key-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "pass", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-report-assertions-key-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertion", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-report-root-count-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 2, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-desc-count-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 4, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-desc-search-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts_2", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-desc-repeat-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search_2", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-desc-by-id-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id_2", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-desc-add-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account_2", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-desc-commented-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search_2", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-card-many-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "one", "one", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-card-one-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "many", "execute", "postgresql", 2, "main::empty => ok")
+        "seed-card-execute-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "many", "postgresql", 2, "main::empty => ok")
+        "seed-dialect-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "sqlite", 2, "main::empty => ok")
+        "seed-row-limit-param-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 3, "main::empty => ok")
+        "seed-root-main-empty-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => failed{}")
+        _ => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", 4, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "bin/canlc", "assert", 0, "run", 0, true, "passed", "assertions", 1, 5, "search_accounts", "repeat_search", "account_by_id", "add_account", "commented_search", "many", "one", "execute", "postgresql", 2, "main::empty => ok")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m24_h005: "m24-h005" => ok [check("env-gate", "gate reads CAN_BUN_ARCHIVE"), check("skip-needle", "skip names staged SQL descriptor execution"), check("ctx-timeout-min", "context spans 4 minutes"), check("sandbox-profile", "sandbox denies network"), check("offline-path", "offline PATH is /nonexistent"), check("canlc-bin", "driver invokes bin/canlc"), check("assert-cmd", "assert leg runs canlc assert"), check("assert-exit", "assert leg exits 0"), check("run-cmd", "run leg runs canlc run"), check("run-exit", "run leg exits 0"), check("report-passed", "report passes"), check("report-passed-key", "report carries the passed key"), check("report-assertions-key", "report carries the assertions key"), check("report-root-count", "report holds one assertion root"), check("desc-count", "manifest holds five descriptors"), check("desc-search", "first descriptor is search_accounts"), check("desc-repeat", "second descriptor is repeat_search"), check("desc-by-id", "third descriptor is account_by_id"), check("desc-add", "fourth descriptor is add_account"), check("desc-commented", "fifth descriptor is commented_search"), check("card-many", "search binds cardinality many"), check("card-one", "by-id binds cardinality one"), check("card-execute", "add binds cardinality execute"), check("dialect", "descriptors use postgresql"), check("row-limit-param", "reads limit rows at parameter 2"), check("root-main-empty", "main empty yields ok")]
+        other: "nope" => ok []
+    match scope is "m24-h005"
+        false => ok []
+        true => ok [check("env-gate", "gate reads CAN_BUN_ARCHIVE"), check("skip-needle", "skip names staged SQL descriptor execution"), check("ctx-timeout-min", "context spans 4 minutes"), check("sandbox-profile", "sandbox denies network"), check("offline-path", "offline PATH is /nonexistent"), check("canlc-bin", "driver invokes bin/canlc"), check("assert-cmd", "assert leg runs canlc assert"), check("assert-exit", "assert leg exits 0"), check("run-cmd", "run leg runs canlc run"), check("run-exit", "run leg exits 0"), check("report-passed", "report passes"), check("report-passed-key", "report carries the passed key"), check("report-assertions-key", "report carries the assertions key"), check("report-root-count", "report holds one assertion root"), check("desc-count", "manifest holds five descriptors"), check("desc-search", "first descriptor is search_accounts"), check("desc-repeat", "second descriptor is repeat_search"), check("desc-by-id", "third descriptor is account_by_id"), check("desc-add", "fourth descriptor is add_account"), check("desc-commented", "fifth descriptor is commented_search"), check("card-many", "search binds cardinality many"), check("card-one", "by-id binds cardinality one"), check("card-execute", "add binds cardinality execute"), check("dialect", "descriptors use postgresql"), check("row-limit-param", "reads limit rows at parameter 2"), check("root-main-empty", "main empty yields ok")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/desc" => ok [expected_check("env-gate", "CAN_BUN_ARCHIVE"), expected_check("skip-needle", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution"), expected_check("ctx-timeout-min", "4"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("offline-path", "PATH=/nonexistent"), expected_check("canlc-bin", "bin/canlc"), expected_check("assert-cmd", "assert"), expected_check("assert-exit", "0"), expected_check("run-cmd", "run"), expected_check("run-exit", "0"), expected_check("report-passed", "true"), expected_check("report-passed-key", "passed"), expected_check("report-assertions-key", "assertions"), expected_check("report-root-count", "1"), expected_check("desc-count", "5"), expected_check("desc-search", "search_accounts"), expected_check("desc-repeat", "repeat_search"), expected_check("desc-by-id", "account_by_id"), expected_check("desc-add", "add_account"), expected_check("desc-commented", "commented_search"), expected_check("card-many", "many"), expected_check("card-one", "one"), expected_check("card-execute", "execute"), expected_check("dialect", "postgresql"), expected_check("row-limit-param", "2"), expected_check("root-main-empty", "main::empty => ok")]
+        unknown: "nope" => ok []
+    match case is "history/desc"
+        false => ok []
+        true => ok [expected_check("env-gate", "CAN_BUN_ARCHIVE"), expected_check("skip-needle", "set CAN_BUN_ARCHIVE for staged SQL descriptor execution"), expected_check("ctx-timeout-min", "4"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("offline-path", "PATH=/nonexistent"), expected_check("canlc-bin", "bin/canlc"), expected_check("assert-cmd", "assert"), expected_check("assert-exit", "0"), expected_check("run-cmd", "run"), expected_check("run-exit", "0"), expected_check("report-passed", "true"), expected_check("report-passed-key", "passed"), expected_check("report-assertions-key", "assertions"), expected_check("report-root-count", "1"), expected_check("desc-count", "5"), expected_check("desc-search", "search_accounts"), expected_check("desc-repeat", "repeat_search"), expected_check("desc-by-id", "account_by_id"), expected_check("desc-add", "add_account"), expected_check("desc-commented", "commented_search"), expected_check("card-many", "many"), expected_check("card-one", "one"), expected_check("card-execute", "execute"), expected_check("dialect", "postgresql"), expected_check("row-limit-param", "2"), expected_check("root-main-empty", "main::empty => ok")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/desc", "default", "", "offline") => ok
+        seed_env_gate: context("history/desc", "seed-env-gate-drift", "", "offline") => failed{"env-gate"}
+        seed_skip_needle: context("history/desc", "seed-skip-needle-drift", "", "offline") => failed{"skip-needle"}
+        seed_ctx_timeout_min: context("history/desc", "seed-ctx-timeout-min-drift", "", "offline") => failed{"ctx-timeout-min"}
+        seed_sandbox_profile: context("history/desc", "seed-sandbox-profile-drift", "", "offline") => failed{"sandbox-profile"}
+        seed_offline_path: context("history/desc", "seed-offline-path-drift", "", "offline") => failed{"offline-path"}
+        seed_canlc_bin: context("history/desc", "seed-canlc-bin-drift", "", "offline") => failed{"canlc-bin"}
+        seed_assert_cmd: context("history/desc", "seed-assert-cmd-drift", "", "offline") => failed{"assert-cmd"}
+        seed_assert_exit: context("history/desc", "seed-assert-exit-drift", "", "offline") => failed{"assert-exit"}
+        seed_run_cmd: context("history/desc", "seed-run-cmd-drift", "", "offline") => failed{"run-cmd"}
+        seed_run_exit: context("history/desc", "seed-run-exit-drift", "", "offline") => failed{"run-exit"}
+        seed_report_passed: context("history/desc", "seed-report-passed-drift", "", "offline") => failed{"report-passed"}
+        seed_report_passed_key: context("history/desc", "seed-report-passed-key-drift", "", "offline") => failed{"report-passed-key"}
+        seed_report_assertions_key: context("history/desc", "seed-report-assertions-key-drift", "", "offline") => failed{"report-assertions-key"}
+        seed_report_root_count: context("history/desc", "seed-report-root-count-drift", "", "offline") => failed{"report-root-count"}
+        seed_desc_count: context("history/desc", "seed-desc-count-drift", "", "offline") => failed{"desc-count"}
+        seed_desc_search: context("history/desc", "seed-desc-search-drift", "", "offline") => failed{"desc-search"}
+        seed_desc_repeat: context("history/desc", "seed-desc-repeat-drift", "", "offline") => failed{"desc-repeat"}
+        seed_desc_by_id: context("history/desc", "seed-desc-by-id-drift", "", "offline") => failed{"desc-by-id"}
+        seed_desc_add: context("history/desc", "seed-desc-add-drift", "", "offline") => failed{"desc-add"}
+        seed_desc_commented: context("history/desc", "seed-desc-commented-drift", "", "offline") => failed{"desc-commented"}
+        seed_card_many: context("history/desc", "seed-card-many-drift", "", "offline") => failed{"card-many"}
+        seed_card_one: context("history/desc", "seed-card-one-drift", "", "offline") => failed{"card-one"}
+        seed_card_execute: context("history/desc", "seed-card-execute-drift", "", "offline") => failed{"card-execute"}
+        seed_dialect: context("history/desc", "seed-dialect-drift", "", "offline") => failed{"dialect"}
+        seed_row_limit_param: context("history/desc", "seed-row-limit-param-drift", "", "offline") => failed{"row-limit-param"}
+        seed_root_main_empty: context("history/desc", "seed-root-main-empty-drift", "", "offline") => failed{"root-main-empty"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.env_gate, "CAN_BUN_ARCHIVE", c, "env-gate")
+            failed
+            ok evidence env_gate_evidence => match call require_text(got.skip_needle, "set CAN_BUN_ARCHIVE for staged SQL descriptor execution", c, "skip-needle")
+                failed
+                ok evidence skip_needle_evidence => match call require_int(got.ctx_timeout_min, 4, c, "ctx-timeout-min")
+                    failed
+                    ok evidence ctx_timeout_min_evidence => match call require_text(got.sandbox_profile, "(version 1)(allow default)(deny network*)", c, "sandbox-profile")
+                        failed
+                        ok evidence sandbox_profile_evidence => match call require_text(got.offline_path, "PATH=/nonexistent", c, "offline-path")
+                            failed
+                            ok evidence offline_path_evidence => match call require_text(got.canlc_bin, "bin/canlc", c, "canlc-bin")
+                                failed
+                                ok evidence canlc_bin_evidence => match call require_text(got.assert_cmd, "assert", c, "assert-cmd")
+                                    failed
+                                    ok evidence assert_cmd_evidence => match call require_int(got.assert_exit, 0, c, "assert-exit")
+                                        failed
+                                        ok evidence assert_exit_evidence => match call require_text(got.run_cmd, "run", c, "run-cmd")
+                                            failed
+                                            ok evidence run_cmd_evidence => match call require_int(got.run_exit, 0, c, "run-exit")
+                                                failed
+                                                ok evidence run_exit_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                                                    failed
+                                                    ok evidence report_passed_evidence => match call require_text(got.report_passed_key, "passed", c, "report-passed-key")
+                                                        failed
+                                                        ok evidence report_passed_key_evidence => match call require_text(got.report_assertions_key, "assertions", c, "report-assertions-key")
+                                                            failed
+                                                            ok evidence report_assertions_key_evidence => match call require_int(got.report_root_count, 1, c, "report-root-count")
+                                                                failed
+                                                                ok evidence report_root_count_evidence => match call require_int(got.desc_count, 5, c, "desc-count")
+                                                                    failed
+                                                                    ok evidence desc_count_evidence => match call require_text(got.desc_search, "search_accounts", c, "desc-search")
+                                                                        failed
+                                                                        ok evidence desc_search_evidence => match call require_text(got.desc_repeat, "repeat_search", c, "desc-repeat")
+                                                                            failed
+                                                                            ok evidence desc_repeat_evidence => match call require_text(got.desc_by_id, "account_by_id", c, "desc-by-id")
+                                                                                failed
+                                                                                ok evidence desc_by_id_evidence => match call require_text(got.desc_add, "add_account", c, "desc-add")
+                                                                                    failed
+                                                                                    ok evidence desc_add_evidence => match call require_text(got.desc_commented, "commented_search", c, "desc-commented")
+                                                                                        failed
+                                                                                        ok evidence desc_commented_evidence => match call require_text(got.card_many, "many", c, "card-many")
+                                                                                            failed
+                                                                                            ok evidence card_many_evidence => match call require_text(got.card_one, "one", c, "card-one")
+                                                                                                failed
+                                                                                                ok evidence card_one_evidence => match call require_text(got.card_execute, "execute", c, "card-execute")
+                                                                                                    failed
+                                                                                                    ok evidence card_execute_evidence => match call require_text(got.dialect, "postgresql", c, "dialect")
+                                                                                                        failed
+                                                                                                        ok evidence dialect_evidence => match call require_int(got.row_limit_param, 2, c, "row-limit-param")
+                                                                                                            failed
+                                                                                                            ok evidence row_limit_param_evidence => match call require_text(got.root_main_empty, "main::empty => ok", c, "root-main-empty")
+                                                                                                                failed
+                                                                                                                ok evidence root_main_empty_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m24_h005: "m24-h005" => ok test_case("history/desc", ["history", "m24"], ["can-bun-archive"], 240000, [check_ref("env-gate"), check_ref("skip-needle"), check_ref("ctx-timeout-min"), check_ref("sandbox-profile"), check_ref("offline-path"), check_ref("canlc-bin"), check_ref("assert-cmd"), check_ref("assert-exit"), check_ref("run-cmd"), check_ref("run-exit"), check_ref("report-passed"), check_ref("report-passed-key"), check_ref("report-assertions-key"), check_ref("report-root-count"), check_ref("desc-count"), check_ref("desc-search"), check_ref("desc-repeat"), check_ref("desc-by-id"), check_ref("desc-add"), check_ref("desc-commented"), check_ref("card-many"), check_ref("card-one"), check_ref("card-execute"), check_ref("dialect"), check_ref("row-limit-param"), check_ref("root-main-empty")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m24-h005"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/desc", ["history", "m24"], ["can-bun-archive"], 240000, [check_ref("env-gate"), check_ref("skip-needle"), check_ref("ctx-timeout-min"), check_ref("sandbox-profile"), check_ref("offline-path"), check_ref("canlc-bin"), check_ref("assert-cmd"), check_ref("assert-exit"), check_ref("run-cmd"), check_ref("run-exit"), check_ref("report-passed"), check_ref("report-passed-key"), check_ref("report-assertions-key"), check_ref("report-root-count"), check_ref("desc-count"), check_ref("desc-search"), check_ref("desc-repeat"), check_ref("desc-by-id"), check_ref("desc-add"), check_ref("desc-commented"), check_ref("card-many"), check_ref("card-one"), check_ref("card-execute"), check_ref("dialect"), check_ref("row-limit-param"), check_ref("root-main-empty")], callable case_body)
