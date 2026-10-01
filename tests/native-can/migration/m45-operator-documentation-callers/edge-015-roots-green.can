@@ -1,0 +1,304 @@
+package m45edge015roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M45 EDGE-015 "Linux operator
+/// commands" smoke matrix pact.
+/// Source: distribution/linux/README.md
+/// symbol "Linux operator commands"
+/// (L35-50): pinned smoke.sh call
+/// plus Go suite mirror plus deny
+/// roots.
+/// Disposition: rewire (same row pact
+/// as the run slice; this file owns
+/// the smoke plus suite roots).
+/// Protects (this file): the smoke.sh
+/// docker call (L35-38) plus Go suite
+/// spellings (L46-49) plus deny pins
+/// plus tallies.
+/// ADAPTATION (noted, plus source
+/// lines): call pins hold docker
+/// spellings; suite pins hold go
+/// command bytes; name pins hold Go
+/// symbol spellings; deny pins hold
+/// deny bytes; count pins hold ints
+/// tallied from L35 plus L46 plus
+/// file census.
+/// smoke-run pins docker run plus
+/// deny arm (L35 plus L46);
+/// smoke-entry pins smoke.sh path
+/// (L38); staged-archive pins
+/// BUN_ARCHIVE plus staged zip
+/// (L33 plus L37 plus L48);
+/// archive-mount pins zip mount
+/// (L32 plus L36 plus L47);
+/// go-archive pins CAN_BUN_ARCHIVE
+/// plus zip (L48); shell-verb pins
+/// sh -c (L49 plus L61); src-dir
+/// pins cd /src (L49 plus L61);
+/// dist-suite pins go plus timeout
+/// 20m plus suite (L49);
+/// artifact-suite pins go plus
+/// timeout 50m plus smoke name
+/// (L49); artifact-name pins smoke
+/// Go name (L49); suite-dir pins
+/// ./tests/integration/ (L49 plus
+/// L61); no-sandbox pins
+/// sandbox-exec (L41); deny-count
+/// pins int (2) from L35 plus L46;
+/// gotest-count pins int (3)
+/// file-wide; rm-count pins int (4)
+/// file-wide.
+/// Facet map (call then suite order):
+/// smoke-run, smoke-entry,
+/// staged-archive, archive-mount,
+/// go-archive, shell-verb, src-dir,
+/// dist-suite, artifact-suite,
+/// artifact-name, suite-dir,
+/// no-sandbox, deny-count,
+/// gotest-count, rm-count.
+/// The run entry lives in
+/// edge-015-base-semantics.can; the
+/// postgres leg plus verdict live in
+/// edge-015-run-shape.can.
+/// Variants: none (row lists zero
+/// variants).
+/// Environment: none (row lists zero
+/// gates; no live run now).
+/// Logical gates DOC/SUITE bind at P23;
+/// no live run now.
+/// Timeout 120000ms is the offline
+/// default bound (no run timeout in this
+/// row; binds at P23 like the M31
+/// no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// accept gate unmet).
+/// Intended consumed report: M41
+/// LIFE-012 plus LIFE-013 linux rows
+/// plus M43 EDGE-002 plus EDGE-003
+/// smoke caller rows (no qualified
+/// report yet; P23 unmet).
+/// Rewire stays blocked; README
+/// intact; no call retired.
+/// Case edge/linux-smoke-matrix
+/// checks: smoke-run, smoke-entry,
+/// staged-archive, archive-mount,
+/// go-archive, shell-verb, src-dir,
+/// dist-suite, artifact-suite,
+/// artifact-name, suite-dir,
+/// no-sandbox, deny-count,
+/// gotest-count, rm-count.
+/// Shared old files intact; retirement
+/// is a later integrator choice.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str smoke_run
+    str smoke_entry
+    str staged_archive
+    str archive_mount
+    str go_archive
+    str shell_verb
+    str src_dir
+    str dist_suite
+    str artifact_suite
+    str artifact_name
+    str suite_dir
+    str no_sandbox
+    int deny_count
+    int gotest_count
+    int rm_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("edge/linux-smoke-matrix", "default", "", "offline"), "smoke-run" => ok "case edge/linux-smoke-matrix variant default root smoke-run run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("edge/linux-smoke-matrix", "default", "", "offline"), "smoke-run" => ok evidence("smoke-run", "true", "true", true, "case edge/linux-smoke-matrix variant default root smoke-run run offline")
+        different: false, true, context("edge/linux-smoke-matrix", "default", "", "offline"), "smoke-run" => failed{"smoke-run"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("edge/linux-smoke-matrix", "default", "", "offline"), "deny-count" => ok evidence("deny-count", "2", "2", true, "case edge/linux-smoke-matrix variant default root deny-count run offline")
+        different: 1, 2, context("edge/linux-smoke-matrix", "default", "", "offline"), "deny-count" => failed{"deny-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "docker run --rm --platform linux/amd64 --network none", "docker run --rm --platform linux/amd64 --network none", context("edge/linux-smoke-matrix", "default", "", "offline"), "smoke-run" => ok evidence("smoke-run", "docker run --rm --platform linux/amd64 --network none", "docker run --rm --platform linux/amd64 --network none", true, "case edge/linux-smoke-matrix variant default root smoke-run run offline")
+        different: "docker run --rm --platform linux/amd64 --network none_2", "docker run --rm --platform linux/amd64 --network none", context("edge/linux-smoke-matrix", "default", "", "offline"), "smoke-run" => failed{"smoke-run"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        seed_smoke_run: "seed-smoke-run-drift" => ok observation("docker run --rm --platform linux/amd64 --network none_2", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        seed_smoke_entry: "seed-smoke-entry-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh_2", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        seed_staged_archive: "seed-staged-archive-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip_2", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        seed_archive_mount: "seed-archive-mount-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro_2", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        seed_go_archive: "seed-go-archive-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip_2", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        seed_shell_verb: "seed-shell-verb-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c_2", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        seed_src_dir: "seed-src-dir-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src_2", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        seed_dist_suite: "seed-dist-suite-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/_2", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        seed_artifact_suite: "seed-artifact-suite-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/_2", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        seed_artifact_name: "seed-artifact-name-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke_2", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        seed_suite_dir: "seed-suite-dir-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/_2", "sandbox-exec", 2, 3, 4)
+        seed_no_sandbox: "seed-no-sandbox-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec_2", 2, 3, 4)
+        seed_deny_count: "seed-deny-count-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 1, 3, 4)
+        seed_gotest_count: "seed-gotest-count-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 2, 4)
+        seed_rm_count: "seed-rm-count-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 3)
+    match variant_id
+        "seed-smoke-run-drift" => ok observation("docker run --rm --platform linux/amd64 --network none_2", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        "seed-smoke-entry-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh_2", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        "seed-staged-archive-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip_2", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        "seed-archive-mount-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro_2", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        "seed-go-archive-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip_2", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        "seed-shell-verb-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c_2", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        "seed-src-dir-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src_2", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        "seed-dist-suite-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/_2", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        "seed-artifact-suite-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/_2", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        "seed-artifact-name-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke_2", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+        "seed-suite-dir-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/_2", "sandbox-exec", 2, 3, 4)
+        "seed-no-sandbox-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec_2", 2, 3, 4)
+        "seed-deny-count-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 1, 3, 4)
+        "seed-gotest-count-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 2, 4)
+        "seed-rm-count-drift" => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 3)
+        _ => ok observation("docker run --rm --platform linux/amd64 --network none", "/src/distribution/linux/smoke.sh", "BUN_ARCHIVE=/archive/bun.zip", "/archive/bun.zip:ro", "CAN_BUN_ARCHIVE=/archive/bun.zip", "sh -c", "cd /src", "go test -count=1 -timeout 20m ./distribution/", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", "TestLinuxInstalledArtifactSmoke", "./tests/integration/", "sandbox-exec", 2, 3, 4)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m45_e015: "m45-e015" => ok [check("smoke-run", "smoke run keeps its bytes"), check("smoke-entry", "smoke entry keeps its bytes"), check("staged-archive", "staged archive keeps its bytes"), check("archive-mount", "archive mount keeps its bytes"), check("go-archive", "go archive keeps its bytes"), check("shell-verb", "shell verb keeps its spelling"), check("src-dir", "src dir keeps its spelling"), check("dist-suite", "dist suite keeps its bytes"), check("artifact-suite", "artifact suite keeps its bytes"), check("artifact-name", "artifact name keeps its spelling"), check("suite-dir", "suite dir keeps its bytes"), check("no-sandbox", "no sandbox keeps its spelling"), check("deny-count", "two denies exist"), check("gotest-count", "three go tests exist"), check("rm-count", "four rm flags exist")]
+        other: "nope" => ok []
+    match scope is "m45-e015"
+        false => ok []
+        true => ok [check("smoke-run", "smoke run keeps its bytes"), check("smoke-entry", "smoke entry keeps its bytes"), check("staged-archive", "staged archive keeps its bytes"), check("archive-mount", "archive mount keeps its bytes"), check("go-archive", "go archive keeps its bytes"), check("shell-verb", "shell verb keeps its spelling"), check("src-dir", "src dir keeps its spelling"), check("dist-suite", "dist suite keeps its bytes"), check("artifact-suite", "artifact suite keeps its bytes"), check("artifact-name", "artifact name keeps its spelling"), check("suite-dir", "suite dir keeps its bytes"), check("no-sandbox", "no sandbox keeps its spelling"), check("deny-count", "two denies exist"), check("gotest-count", "three go tests exist"), check("rm-count", "four rm flags exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "edge/linux-smoke-matrix" => ok [expected_check("smoke-run", "docker run --rm --platform linux/amd64 --network none"), expected_check("smoke-entry", "/src/distribution/linux/smoke.sh"), expected_check("staged-archive", "BUN_ARCHIVE=/archive/bun.zip"), expected_check("archive-mount", "/archive/bun.zip:ro"), expected_check("go-archive", "CAN_BUN_ARCHIVE=/archive/bun.zip"), expected_check("shell-verb", "sh -c"), expected_check("src-dir", "cd /src"), expected_check("dist-suite", "go test -count=1 -timeout 20m ./distribution/"), expected_check("artifact-suite", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/"), expected_check("artifact-name", "TestLinuxInstalledArtifactSmoke"), expected_check("suite-dir", "./tests/integration/"), expected_check("no-sandbox", "sandbox-exec"), expected_check("deny-count", "2"), expected_check("gotest-count", "3"), expected_check("rm-count", "4")]
+        unknown: "nope" => ok []
+    match case is "edge/linux-smoke-matrix"
+        false => ok []
+        true => ok [expected_check("smoke-run", "docker run --rm --platform linux/amd64 --network none"), expected_check("smoke-entry", "/src/distribution/linux/smoke.sh"), expected_check("staged-archive", "BUN_ARCHIVE=/archive/bun.zip"), expected_check("archive-mount", "/archive/bun.zip:ro"), expected_check("go-archive", "CAN_BUN_ARCHIVE=/archive/bun.zip"), expected_check("shell-verb", "sh -c"), expected_check("src-dir", "cd /src"), expected_check("dist-suite", "go test -count=1 -timeout 20m ./distribution/"), expected_check("artifact-suite", "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/"), expected_check("artifact-name", "TestLinuxInstalledArtifactSmoke"), expected_check("suite-dir", "./tests/integration/"), expected_check("no-sandbox", "sandbox-exec"), expected_check("deny-count", "2"), expected_check("gotest-count", "3"), expected_check("rm-count", "4")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("edge/linux-smoke-matrix", "default", "", "offline") => ok
+        seed_smoke_run: context("edge/linux-smoke-matrix", "seed-smoke-run-drift", "", "offline") => failed{"smoke-run"}
+        seed_smoke_entry: context("edge/linux-smoke-matrix", "seed-smoke-entry-drift", "", "offline") => failed{"smoke-entry"}
+        seed_staged_archive: context("edge/linux-smoke-matrix", "seed-staged-archive-drift", "", "offline") => failed{"staged-archive"}
+        seed_archive_mount: context("edge/linux-smoke-matrix", "seed-archive-mount-drift", "", "offline") => failed{"archive-mount"}
+        seed_go_archive: context("edge/linux-smoke-matrix", "seed-go-archive-drift", "", "offline") => failed{"go-archive"}
+        seed_shell_verb: context("edge/linux-smoke-matrix", "seed-shell-verb-drift", "", "offline") => failed{"shell-verb"}
+        seed_src_dir: context("edge/linux-smoke-matrix", "seed-src-dir-drift", "", "offline") => failed{"src-dir"}
+        seed_dist_suite: context("edge/linux-smoke-matrix", "seed-dist-suite-drift", "", "offline") => failed{"dist-suite"}
+        seed_artifact_suite: context("edge/linux-smoke-matrix", "seed-artifact-suite-drift", "", "offline") => failed{"artifact-suite"}
+        seed_artifact_name: context("edge/linux-smoke-matrix", "seed-artifact-name-drift", "", "offline") => failed{"artifact-name"}
+        seed_suite_dir: context("edge/linux-smoke-matrix", "seed-suite-dir-drift", "", "offline") => failed{"suite-dir"}
+        seed_no_sandbox: context("edge/linux-smoke-matrix", "seed-no-sandbox-drift", "", "offline") => failed{"no-sandbox"}
+        seed_deny_count: context("edge/linux-smoke-matrix", "seed-deny-count-drift", "", "offline") => failed{"deny-count"}
+        seed_gotest_count: context("edge/linux-smoke-matrix", "seed-gotest-count-drift", "", "offline") => failed{"gotest-count"}
+        seed_rm_count: context("edge/linux-smoke-matrix", "seed-rm-count-drift", "", "offline") => failed{"rm-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.smoke_run, "docker run --rm --platform linux/amd64 --network none", c, "smoke-run")
+            failed
+            ok evidence smoke_run_evidence => match call require_text(got.smoke_entry, "/src/distribution/linux/smoke.sh", c, "smoke-entry")
+                failed
+                ok evidence smoke_entry_evidence => match call require_text(got.staged_archive, "BUN_ARCHIVE=/archive/bun.zip", c, "staged-archive")
+                    failed
+                    ok evidence staged_archive_evidence => match call require_text(got.archive_mount, "/archive/bun.zip:ro", c, "archive-mount")
+                        failed
+                        ok evidence archive_mount_evidence => match call require_text(got.go_archive, "CAN_BUN_ARCHIVE=/archive/bun.zip", c, "go-archive")
+                            failed
+                            ok evidence go_archive_evidence => match call require_text(got.shell_verb, "sh -c", c, "shell-verb")
+                                failed
+                                ok evidence shell_verb_evidence => match call require_text(got.src_dir, "cd /src", c, "src-dir")
+                                    failed
+                                    ok evidence src_dir_evidence => match call require_text(got.dist_suite, "go test -count=1 -timeout 20m ./distribution/", c, "dist-suite")
+                                        failed
+                                        ok evidence dist_suite_evidence => match call require_text(got.artifact_suite, "go test -count=1 -timeout 50m -run TestLinuxInstalledArtifactSmoke -v ./tests/integration/", c, "artifact-suite")
+                                            failed
+                                            ok evidence artifact_suite_evidence => match call require_text(got.artifact_name, "TestLinuxInstalledArtifactSmoke", c, "artifact-name")
+                                                failed
+                                                ok evidence artifact_name_evidence => match call require_text(got.suite_dir, "./tests/integration/", c, "suite-dir")
+                                                    failed
+                                                    ok evidence suite_dir_evidence => match call require_text(got.no_sandbox, "sandbox-exec", c, "no-sandbox")
+                                                        failed
+                                                        ok evidence no_sandbox_evidence => match call require_int(got.deny_count, 2, c, "deny-count")
+                                                            failed
+                                                            ok evidence deny_count_evidence => match call require_int(got.gotest_count, 3, c, "gotest-count")
+                                                                failed
+                                                                ok evidence gotest_count_evidence => match call require_int(got.rm_count, 4, c, "rm-count")
+                                                                    failed
+                                                                    ok evidence rm_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m45_e015: "m45-e015" => ok test_case("edge/linux-smoke-matrix", ["edge", "m45"], [], 120000, [check_ref("smoke-run"), check_ref("smoke-entry"), check_ref("staged-archive"), check_ref("archive-mount"), check_ref("go-archive"), check_ref("shell-verb"), check_ref("src-dir"), check_ref("dist-suite"), check_ref("artifact-suite"), check_ref("artifact-name"), check_ref("suite-dir"), check_ref("no-sandbox"), check_ref("deny-count"), check_ref("gotest-count"), check_ref("rm-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m45-e015"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("edge/linux-smoke-matrix", ["edge", "m45"], [], 120000, [check_ref("smoke-run"), check_ref("smoke-entry"), check_ref("staged-archive"), check_ref("archive-mount"), check_ref("go-archive"), check_ref("shell-verb"), check_ref("src-dir"), check_ref("dist-suite"), check_ref("artifact-suite"), check_ref("artifact-name"), check_ref("suite-dir"), check_ref("no-sandbox"), check_ref("deny-count"), check_ref("gotest-count"), check_ref("rm-count")], callable case_body)

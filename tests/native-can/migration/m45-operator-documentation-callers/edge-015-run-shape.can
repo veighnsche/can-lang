@@ -1,0 +1,339 @@
+package m45edge015run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M45 EDGE-015 "Linux operator
+/// commands" postgres leg pact.
+/// Source: distribution/linux/README.md
+/// symbol "Linux operator commands"
+/// (L52-62 plus L64-79): pinned
+/// postgres call plus verdict plus
+/// receipt bytes.
+/// Disposition: rewire (same row pact
+/// as the run slice; this file owns
+/// the postgres plus verdict shape).
+/// Protects (this file): the postgres
+/// docker call (L57-61) plus verdict
+/// bytes (L64-79) plus tallies.
+/// ADAPTATION (noted, plus source
+/// lines): call pins hold docker
+/// spellings; env pins hold assign
+/// bytes; suite pins hold go command
+/// bytes; verdict pins hold proves
+/// prose; count pins hold ints
+/// tallied from L57 plus L60 plus
+/// file census.
+/// pg-run pins docker run plus pg
+/// net (L57); pg-net pins network
+/// flag plus net (L57); work-mount
+/// pins work mount (L36 plus L58);
+/// install-env pins install root
+/// assign (L59); db-url pins
+/// DATABASE_URL plus pg host bytes
+/// (L60); pg-suite pins go plus pg
+/// Go name plus suite (L61);
+/// pg-name pins pg Go name (L61);
+/// pg-image pins postgres:17 (L21);
+/// pg-seventeen pins PostgreSQL 17
+/// (L54); sql-note pins Bun.SQL
+/// (L52 plus L78); deny-note pins
+/// networking denied (L20 plus L43);
+/// runtime-note pins runtime-check
+/// (L68); qualify-note pins
+/// qualify.py (L70); canlc-assert
+/// pins canlc assert (L74);
+/// canlc-run pins canlc run (L74);
+/// build-note pins stable build ID
+/// (L77); version-note pins
+/// records prose (L79);
+/// network-count pins int (3)
+/// file-wide; disposable-count pins
+/// int (3) file-wide; sh-fence-count
+/// pins int (4) file-wide.
+/// Facet map (call then verdict order):
+/// pg-run, pg-net, work-mount,
+/// install-env, db-url, pg-suite,
+/// pg-name, pg-image, pg-seventeen,
+/// sql-note, deny-note,
+/// runtime-note, qualify-note,
+/// canlc-assert, canlc-run,
+/// build-note, version-note,
+/// network-count, disposable-count,
+/// sh-fence-count.
+/// The run entry lives in
+/// edge-015-base-semantics.can; the
+/// smoke matrix lives in
+/// edge-015-roots-green.can.
+/// Variants: none (row lists zero
+/// variants).
+/// Environment: none (row lists zero
+/// gates; no live run now).
+/// Logical gates DOC/SUITE bind at P23;
+/// no live run now.
+/// Timeout 120000ms is the offline
+/// default bound (no run timeout in this
+/// row; binds at P23 like the M31
+/// no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// accept gate unmet).
+/// Intended consumed report: M41
+/// LIFE-012 plus LIFE-013 linux rows
+/// plus M43 EDGE-002 plus EDGE-003
+/// smoke caller rows (no qualified
+/// report yet; P23 unmet).
+/// Rewire stays blocked; README
+/// intact; no call retired.
+/// Case edge/linux-postgres-leg
+/// checks: pg-run, pg-net,
+/// work-mount, install-env, db-url,
+/// pg-suite, pg-name, pg-image,
+/// pg-seventeen, sql-note,
+/// deny-note, runtime-note,
+/// qualify-note, canlc-assert,
+/// canlc-run, build-note,
+/// version-note, network-count,
+/// disposable-count, sh-fence-count.
+/// Shared old files intact; retirement
+/// is a later integrator choice.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str pg_run
+    str pg_net
+    str work_mount
+    str install_env
+    str db_url
+    str pg_suite
+    str pg_name
+    str pg_image
+    str pg_seventeen
+    str sql_note
+    str deny_note
+    str runtime_note
+    str qualify_note
+    str canlc_assert
+    str canlc_run
+    str build_note
+    str version_note
+    int network_count
+    int disposable_count
+    int sh_fence_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("edge/linux-postgres-leg", "default", "", "offline"), "pg-run" => ok "case edge/linux-postgres-leg variant default root pg-run run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("edge/linux-postgres-leg", "default", "", "offline"), "pg-run" => ok evidence("pg-run", "true", "true", true, "case edge/linux-postgres-leg variant default root pg-run run offline")
+        different: false, true, context("edge/linux-postgres-leg", "default", "", "offline"), "pg-run" => failed{"pg-run"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("edge/linux-postgres-leg", "default", "", "offline"), "network-count" => ok evidence("network-count", "3", "3", true, "case edge/linux-postgres-leg variant default root network-count run offline")
+        different: 2, 3, context("edge/linux-postgres-leg", "default", "", "offline"), "network-count" => failed{"network-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "docker run --rm --platform linux/amd64 --network can-t19-smoke", "docker run --rm --platform linux/amd64 --network can-t19-smoke", context("edge/linux-postgres-leg", "default", "", "offline"), "pg-run" => ok evidence("pg-run", "docker run --rm --platform linux/amd64 --network can-t19-smoke", "docker run --rm --platform linux/amd64 --network can-t19-smoke", true, "case edge/linux-postgres-leg variant default root pg-run run offline")
+        different: "docker run --rm --platform linux/amd64 --network can-t19-smoke_2", "docker run --rm --platform linux/amd64 --network can-t19-smoke", context("edge/linux-postgres-leg", "default", "", "offline"), "pg-run" => failed{"pg-run"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        seed_pg_run: "seed-pg-run-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke_2", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        seed_pg_net: "seed-pg-net-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke_2", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        seed_work_mount: "seed-work-mount-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work_2", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        seed_install_env: "seed-install-env-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root_2", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        seed_db_url: "seed-db-url-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke_2", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        seed_pg_suite: "seed-pg-suite-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/_2", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        seed_pg_name: "seed-pg-name-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip_2", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        seed_pg_image: "seed-pg-image-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17_2", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        seed_pg_seventeen: "seed-pg-seventeen-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17_2", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        seed_sql_note: "seed-sql-note-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL_2", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        seed_deny_note: "seed-deny-note-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied_2", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        seed_runtime_note: "seed-runtime-note-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check_2", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        seed_qualify_note: "seed-qualify-note-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py_2", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        seed_canlc_assert: "seed-canlc-assert-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert_2", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        seed_canlc_run: "seed-canlc-run-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run_2", "stable build ID", "records its version", 3, 3, 4)
+        seed_build_note: "seed-build-note-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID_2", "records its version", 3, 3, 4)
+        seed_version_note: "seed-version-note-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version_2", 3, 3, 4)
+        seed_network_count: "seed-network-count-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 2, 3, 4)
+        seed_disposable_count: "seed-disposable-count-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 2, 4)
+        seed_sh_fence_count: "seed-sh-fence-count-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 3)
+    match variant_id
+        "seed-pg-run-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke_2", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        "seed-pg-net-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke_2", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        "seed-work-mount-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work_2", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        "seed-install-env-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root_2", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        "seed-db-url-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke_2", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        "seed-pg-suite-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/_2", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        "seed-pg-name-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip_2", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        "seed-pg-image-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17_2", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        "seed-pg-seventeen-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17_2", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        "seed-sql-note-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL_2", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        "seed-deny-note-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied_2", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        "seed-runtime-note-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check_2", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        "seed-qualify-note-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py_2", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        "seed-canlc-assert-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert_2", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+        "seed-canlc-run-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run_2", "stable build ID", "records its version", 3, 3, 4)
+        "seed-build-note-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID_2", "records its version", 3, 3, 4)
+        "seed-version-note-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version_2", 3, 3, 4)
+        "seed-network-count-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 2, 3, 4)
+        "seed-disposable-count-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 2, 4)
+        "seed-sh-fence-count-drift" => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 3)
+        _ => ok observation("docker run --rm --platform linux/amd64 --network can-t19-smoke", "--network can-t19-smoke", "out/linux-work:/work", "CAN_LINUX_INSTALL_ROOT=/work/install-root", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", "TestLinuxPostgresRoundtrip", "postgres:17", "PostgreSQL 17", "Bun.SQL", "networking denied", "runtime-check", "qualify.py", "canlc assert", "canlc run", "stable build ID", "records its version", 3, 3, 4)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m45_e015: "m45-e015" => ok [check("pg-run", "pg run keeps its bytes"), check("pg-net", "pg net keeps its bytes"), check("work-mount", "work mount keeps its bytes"), check("install-env", "install env keeps its bytes"), check("db-url", "db url keeps its bytes"), check("pg-suite", "pg suite keeps its bytes"), check("pg-name", "pg name keeps its spelling"), check("pg-image", "pg image keeps its spelling"), check("pg-seventeen", "pg seventeen keeps its spelling"), check("sql-note", "sql note keeps its spelling"), check("deny-note", "deny note keeps its bytes"), check("runtime-note", "runtime note keeps its spelling"), check("qualify-note", "qualify note keeps its spelling"), check("canlc-assert", "canlc assert keeps its spelling"), check("canlc-run", "canlc run keeps its spelling"), check("build-note", "build note keeps its bytes"), check("version-note", "version note keeps its bytes"), check("network-count", "three networks exist"), check("disposable-count", "three disposables exist"), check("sh-fence-count", "four sh fences exist")]
+        other: "nope" => ok []
+    match scope is "m45-e015"
+        false => ok []
+        true => ok [check("pg-run", "pg run keeps its bytes"), check("pg-net", "pg net keeps its bytes"), check("work-mount", "work mount keeps its bytes"), check("install-env", "install env keeps its bytes"), check("db-url", "db url keeps its bytes"), check("pg-suite", "pg suite keeps its bytes"), check("pg-name", "pg name keeps its spelling"), check("pg-image", "pg image keeps its spelling"), check("pg-seventeen", "pg seventeen keeps its spelling"), check("sql-note", "sql note keeps its spelling"), check("deny-note", "deny note keeps its bytes"), check("runtime-note", "runtime note keeps its spelling"), check("qualify-note", "qualify note keeps its spelling"), check("canlc-assert", "canlc assert keeps its spelling"), check("canlc-run", "canlc run keeps its spelling"), check("build-note", "build note keeps its bytes"), check("version-note", "version note keeps its bytes"), check("network-count", "three networks exist"), check("disposable-count", "three disposables exist"), check("sh-fence-count", "four sh fences exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "edge/linux-postgres-leg" => ok [expected_check("pg-run", "docker run --rm --platform linux/amd64 --network can-t19-smoke"), expected_check("pg-net", "--network can-t19-smoke"), expected_check("work-mount", "out/linux-work:/work"), expected_check("install-env", "CAN_LINUX_INSTALL_ROOT=/work/install-root"), expected_check("db-url", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke"), expected_check("pg-suite", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/"), expected_check("pg-name", "TestLinuxPostgresRoundtrip"), expected_check("pg-image", "postgres:17"), expected_check("pg-seventeen", "PostgreSQL 17"), expected_check("sql-note", "Bun.SQL"), expected_check("deny-note", "networking denied"), expected_check("runtime-note", "runtime-check"), expected_check("qualify-note", "qualify.py"), expected_check("canlc-assert", "canlc assert"), expected_check("canlc-run", "canlc run"), expected_check("build-note", "stable build ID"), expected_check("version-note", "records its version"), expected_check("network-count", "3"), expected_check("disposable-count", "3"), expected_check("sh-fence-count", "4")]
+        unknown: "nope" => ok []
+    match case is "edge/linux-postgres-leg"
+        false => ok []
+        true => ok [expected_check("pg-run", "docker run --rm --platform linux/amd64 --network can-t19-smoke"), expected_check("pg-net", "--network can-t19-smoke"), expected_check("work-mount", "out/linux-work:/work"), expected_check("install-env", "CAN_LINUX_INSTALL_ROOT=/work/install-root"), expected_check("db-url", "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke"), expected_check("pg-suite", "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/"), expected_check("pg-name", "TestLinuxPostgresRoundtrip"), expected_check("pg-image", "postgres:17"), expected_check("pg-seventeen", "PostgreSQL 17"), expected_check("sql-note", "Bun.SQL"), expected_check("deny-note", "networking denied"), expected_check("runtime-note", "runtime-check"), expected_check("qualify-note", "qualify.py"), expected_check("canlc-assert", "canlc assert"), expected_check("canlc-run", "canlc run"), expected_check("build-note", "stable build ID"), expected_check("version-note", "records its version"), expected_check("network-count", "3"), expected_check("disposable-count", "3"), expected_check("sh-fence-count", "4")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("edge/linux-postgres-leg", "default", "", "offline") => ok
+        seed_pg_run: context("edge/linux-postgres-leg", "seed-pg-run-drift", "", "offline") => failed{"pg-run"}
+        seed_pg_net: context("edge/linux-postgres-leg", "seed-pg-net-drift", "", "offline") => failed{"pg-net"}
+        seed_work_mount: context("edge/linux-postgres-leg", "seed-work-mount-drift", "", "offline") => failed{"work-mount"}
+        seed_install_env: context("edge/linux-postgres-leg", "seed-install-env-drift", "", "offline") => failed{"install-env"}
+        seed_db_url: context("edge/linux-postgres-leg", "seed-db-url-drift", "", "offline") => failed{"db-url"}
+        seed_pg_suite: context("edge/linux-postgres-leg", "seed-pg-suite-drift", "", "offline") => failed{"pg-suite"}
+        seed_pg_name: context("edge/linux-postgres-leg", "seed-pg-name-drift", "", "offline") => failed{"pg-name"}
+        seed_pg_image: context("edge/linux-postgres-leg", "seed-pg-image-drift", "", "offline") => failed{"pg-image"}
+        seed_pg_seventeen: context("edge/linux-postgres-leg", "seed-pg-seventeen-drift", "", "offline") => failed{"pg-seventeen"}
+        seed_sql_note: context("edge/linux-postgres-leg", "seed-sql-note-drift", "", "offline") => failed{"sql-note"}
+        seed_deny_note: context("edge/linux-postgres-leg", "seed-deny-note-drift", "", "offline") => failed{"deny-note"}
+        seed_runtime_note: context("edge/linux-postgres-leg", "seed-runtime-note-drift", "", "offline") => failed{"runtime-note"}
+        seed_qualify_note: context("edge/linux-postgres-leg", "seed-qualify-note-drift", "", "offline") => failed{"qualify-note"}
+        seed_canlc_assert: context("edge/linux-postgres-leg", "seed-canlc-assert-drift", "", "offline") => failed{"canlc-assert"}
+        seed_canlc_run: context("edge/linux-postgres-leg", "seed-canlc-run-drift", "", "offline") => failed{"canlc-run"}
+        seed_build_note: context("edge/linux-postgres-leg", "seed-build-note-drift", "", "offline") => failed{"build-note"}
+        seed_version_note: context("edge/linux-postgres-leg", "seed-version-note-drift", "", "offline") => failed{"version-note"}
+        seed_network_count: context("edge/linux-postgres-leg", "seed-network-count-drift", "", "offline") => failed{"network-count"}
+        seed_disposable_count: context("edge/linux-postgres-leg", "seed-disposable-count-drift", "", "offline") => failed{"disposable-count"}
+        seed_sh_fence_count: context("edge/linux-postgres-leg", "seed-sh-fence-count-drift", "", "offline") => failed{"sh-fence-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.pg_run, "docker run --rm --platform linux/amd64 --network can-t19-smoke", c, "pg-run")
+            failed
+            ok evidence pg_run_evidence => match call require_text(got.pg_net, "--network can-t19-smoke", c, "pg-net")
+                failed
+                ok evidence pg_net_evidence => match call require_text(got.work_mount, "out/linux-work:/work", c, "work-mount")
+                    failed
+                    ok evidence work_mount_evidence => match call require_text(got.install_env, "CAN_LINUX_INSTALL_ROOT=/work/install-root", c, "install-env")
+                        failed
+                        ok evidence install_env_evidence => match call require_text(got.db_url, "DATABASE_URL=postgres://postgres:smoke@can-t19-pg:5432/smoke", c, "db-url")
+                            failed
+                            ok evidence db_url_evidence => match call require_text(got.pg_suite, "go test -count=1 -run TestLinuxPostgresRoundtrip -v ./tests/integration/", c, "pg-suite")
+                                failed
+                                ok evidence pg_suite_evidence => match call require_text(got.pg_name, "TestLinuxPostgresRoundtrip", c, "pg-name")
+                                    failed
+                                    ok evidence pg_name_evidence => match call require_text(got.pg_image, "postgres:17", c, "pg-image")
+                                        failed
+                                        ok evidence pg_image_evidence => match call require_text(got.pg_seventeen, "PostgreSQL 17", c, "pg-seventeen")
+                                            failed
+                                            ok evidence pg_seventeen_evidence => match call require_text(got.sql_note, "Bun.SQL", c, "sql-note")
+                                                failed
+                                                ok evidence sql_note_evidence => match call require_text(got.deny_note, "networking denied", c, "deny-note")
+                                                    failed
+                                                    ok evidence deny_note_evidence => match call require_text(got.runtime_note, "runtime-check", c, "runtime-note")
+                                                        failed
+                                                        ok evidence runtime_note_evidence => match call require_text(got.qualify_note, "qualify.py", c, "qualify-note")
+                                                            failed
+                                                            ok evidence qualify_note_evidence => match call require_text(got.canlc_assert, "canlc assert", c, "canlc-assert")
+                                                                failed
+                                                                ok evidence canlc_assert_evidence => match call require_text(got.canlc_run, "canlc run", c, "canlc-run")
+                                                                    failed
+                                                                    ok evidence canlc_run_evidence => match call require_text(got.build_note, "stable build ID", c, "build-note")
+                                                                        failed
+                                                                        ok evidence build_note_evidence => match call require_text(got.version_note, "records its version", c, "version-note")
+                                                                            failed
+                                                                            ok evidence version_note_evidence => match call require_int(got.network_count, 3, c, "network-count")
+                                                                                failed
+                                                                                ok evidence network_count_evidence => match call require_int(got.disposable_count, 3, c, "disposable-count")
+                                                                                    failed
+                                                                                    ok evidence disposable_count_evidence => match call require_int(got.sh_fence_count, 4, c, "sh-fence-count")
+                                                                                        failed
+                                                                                        ok evidence sh_fence_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m45_e015: "m45-e015" => ok test_case("edge/linux-postgres-leg", ["edge", "m45"], [], 120000, [check_ref("pg-run"), check_ref("pg-net"), check_ref("work-mount"), check_ref("install-env"), check_ref("db-url"), check_ref("pg-suite"), check_ref("pg-name"), check_ref("pg-image"), check_ref("pg-seventeen"), check_ref("sql-note"), check_ref("deny-note"), check_ref("runtime-note"), check_ref("qualify-note"), check_ref("canlc-assert"), check_ref("canlc-run"), check_ref("build-note"), check_ref("version-note"), check_ref("network-count"), check_ref("disposable-count"), check_ref("sh-fence-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m45-e015"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("edge/linux-postgres-leg", ["edge", "m45"], [], 120000, [check_ref("pg-run"), check_ref("pg-net"), check_ref("work-mount"), check_ref("install-env"), check_ref("db-url"), check_ref("pg-suite"), check_ref("pg-name"), check_ref("pg-image"), check_ref("pg-seventeen"), check_ref("sql-note"), check_ref("deny-note"), check_ref("runtime-note"), check_ref("qualify-note"), check_ref("canlc-assert"), check_ref("canlc-run"), check_ref("build-note"), check_ref("version-note"), check_ref("network-count"), check_ref("disposable-count"), check_ref("sh-fence-count")], callable case_body)
