@@ -1,0 +1,206 @@
+package m04core013roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M04 CORE-013 "coordination snapshot: roots green, single selected root".
+/// Source: tests/integration/coordination_test.go symbol
+/// TestStandardSnapshotIdentity (L116-218; C9.1).
+/// Related fixtures: none external (related_sources empty); every count pin
+/// below grounds the inline src/main.can fixture staged at L146-176 (boom 1
+/// root, identical 1 root, main 1 root; assert argv L177 selects only
+/// can.project.root/app::identical sample, so the observed report carries 1
+/// root while boom/sample and main/empty stay unselected).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): canlc assert green with a passed report carrying
+/// exactly 1 selected root, grounded per function in the inline main.can
+/// fixture (boom 1, identical 1, main 1).
+/// Catch/aggregate identity facets live in
+/// core-013-snapshot-identity.can; the silent production run shape lives in
+/// core-013-run-shape.can.
+/// Variants: catch then aggregate of same standard occurrence.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. CAN_TSC/CAN_BUN gate the optional
+/// strict tsc leg (pinned conditional in the run-shape file). Logical gates
+/// SUITE/N1/N2/N3/CHILD and C/R/N/S/A identities bind at P23; no live run
+/// now.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QN1/QN3).
+/// Case coordination/snapshot-roots checks: assert-green, report-passed,
+/// root-count, fixture-name, boom-roots, identical-roots, main-roots.
+/// Facet map (coordination_test.go legs): assert-green pins the assert leg
+/// (L184-190: cmd.Run succeeds or the test fatals with the exit code;
+/// L191-193: diagnostics must be empty); report-passed pins the report leg
+/// (L194-197: passed true); root-count pins the single selected root
+/// (L177: argv selects package can.project.root/app, function
+/// can.project.root/app::identical, root sample); fixture-name grounds the
+/// pins in the staged main.can fixture (L146: write src/main.can);
+/// boom-roots pins boom (L152-156: sample => ok 0; body ok 1 / 0 raises
+/// the standard occurrence); identical-roots pins identical (L157-160:
+/// sample => ok true, the selected root); main-roots pins main (L169-175:
+/// empty [] => ok, silent entry).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int root_count
+    str fixture_name
+    int boom_roots
+    int identical_roots
+    int main_roots
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("coordination/snapshot-roots", "default", "", "offline"), "assert-green" => ok "case coordination/snapshot-roots variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("coordination/snapshot-roots", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case coordination/snapshot-roots variant default root assert-green run offline")
+        different: false, true, context("coordination/snapshot-roots", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("coordination/snapshot-roots", "default", "", "offline"), "root-count" => ok evidence("root-count", "1", "1", true, "case coordination/snapshot-roots variant default root root-count run offline")
+        different: 0, 1, context("coordination/snapshot-roots", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "main.can", "main.can", context("coordination/snapshot-roots", "default", "", "offline"), "fixture-name" => ok evidence("fixture-name", "main.can", "main.can", true, "case coordination/snapshot-roots variant default root fixture-name run offline")
+        different: "writes.can", "main.can", context("coordination/snapshot-roots", "default", "", "offline"), "fixture-name" => failed{"fixture-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 1, "main.can", 1, 1, 1)
+        seed_assert_red: "seed-assert-red" => ok observation(false, true, 1, "main.can", 1, 1, 1)
+        seed_report_red: "seed-report-red" => ok observation(true, false, 1, "main.can", 1, 1, 1)
+        seed_root_short: "seed-root-short" => ok observation(true, true, 0, "main.can", 1, 1, 1)
+        seed_fixture_drift: "seed-fixture-drift" => ok observation(true, true, 1, "writes.can", 1, 1, 1)
+        seed_boom_loss: "seed-boom-loss" => ok observation(true, true, 1, "main.can", 0, 1, 1)
+        seed_identical_loss: "seed-identical-loss" => ok observation(true, true, 1, "main.can", 1, 0, 1)
+        seed_main_loss: "seed-main-loss" => ok observation(true, true, 1, "main.can", 1, 1, 0)
+    match variant_id
+        "seed-assert-red" => ok observation(false, true, 1, "main.can", 1, 1, 1)
+        "seed-report-red" => ok observation(true, false, 1, "main.can", 1, 1, 1)
+        "seed-root-short" => ok observation(true, true, 0, "main.can", 1, 1, 1)
+        "seed-fixture-drift" => ok observation(true, true, 1, "writes.can", 1, 1, 1)
+        "seed-boom-loss" => ok observation(true, true, 1, "main.can", 0, 1, 1)
+        "seed-identical-loss" => ok observation(true, true, 1, "main.can", 1, 0, 1)
+        "seed-main-loss" => ok observation(true, true, 1, "main.can", 1, 1, 0)
+        _ => ok observation(true, true, 1, "main.can", 1, 1, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m04_013: "m04-013" => ok [check("assert-green", "canlc assert exits 0 with empty diagnostics"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 1 selected root"), check("fixture-name", "root pins ground the staged main.can fixture"), check("boom-roots", "boom contributes 1 root (sample => ok 0)"), check("identical-roots", "identical contributes 1 root (sample => ok true)"), check("main-roots", "main contributes 1 root (empty [] => ok)")]
+        other: "nope" => ok []
+    match scope is "m04-013"
+        false => ok []
+        true => ok [check("assert-green", "canlc assert exits 0 with empty diagnostics"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 1 selected root"), check("fixture-name", "root pins ground the staged main.can fixture"), check("boom-roots", "boom contributes 1 root (sample => ok 0)"), check("identical-roots", "identical contributes 1 root (sample => ok true)"), check("main-roots", "main contributes 1 root (empty [] => ok)")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "coordination/snapshot-roots" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "1"), expected_check("fixture-name", "main.can"), expected_check("boom-roots", "1"), expected_check("identical-roots", "1"), expected_check("main-roots", "1")]
+        unknown: "nope" => ok []
+    match case is "coordination/snapshot-roots"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "1"), expected_check("fixture-name", "main.can"), expected_check("boom-roots", "1"), expected_check("identical-roots", "1"), expected_check("main-roots", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("coordination/snapshot-roots", "default", "", "offline") => ok
+        seed_assert_red: context("coordination/snapshot-roots", "seed-assert-red", "", "offline") => failed{"assert-green"}
+        seed_report_red: context("coordination/snapshot-roots", "seed-report-red", "", "offline") => failed{"report-passed"}
+        seed_root_short: context("coordination/snapshot-roots", "seed-root-short", "", "offline") => failed{"root-count"}
+        seed_fixture_drift: context("coordination/snapshot-roots", "seed-fixture-drift", "", "offline") => failed{"fixture-name"}
+        seed_boom_loss: context("coordination/snapshot-roots", "seed-boom-loss", "", "offline") => failed{"boom-roots"}
+        seed_identical_loss: context("coordination/snapshot-roots", "seed-identical-loss", "", "offline") => failed{"identical-roots"}
+        seed_main_loss: context("coordination/snapshot-roots", "seed-main-loss", "", "offline") => failed{"main-roots"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence assert_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence passed_evidence => match call require_int(got.root_count, 1, c, "root-count")
+                    failed
+                    ok evidence count_evidence => match call require_text(got.fixture_name, "main.can", c, "fixture-name")
+                        failed
+                        ok evidence fixture_evidence => match call require_int(got.boom_roots, 1, c, "boom-roots")
+                            failed
+                            ok evidence boom_evidence => match call require_int(got.identical_roots, 1, c, "identical-roots")
+                                failed
+                                ok evidence identical_evidence => match call require_int(got.main_roots, 1, c, "main-roots")
+                                    failed
+                                    ok evidence main_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m04_013: "m04-013" => ok test_case("coordination/snapshot-roots", ["coordination", "m04"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("boom-roots"), check_ref("identical-roots"), check_ref("main-roots")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m04-013"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("coordination/snapshot-roots", ["coordination", "m04"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("boom-roots"), check_ref("identical-roots"), check_ref("main-roots")], callable case_body)

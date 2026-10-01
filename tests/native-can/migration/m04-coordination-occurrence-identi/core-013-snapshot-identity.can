@@ -1,0 +1,234 @@
+package m04core013identity
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M04 CORE-013 "coordination snapshot: catch-then-aggregate identity".
+/// Source: tests/integration/coordination_test.go symbol
+/// TestStandardSnapshotIdentity (L116-218; C9.1: one standard occurrence
+/// observed through an ordinary catch and re-observed through an aggregate
+/// leaf retains identity and projections).
+/// Related fixtures: none external (related_sources empty); every pin below
+/// grounds the inline src/main.can fixture at L146-176 (variant failure
+/// L149-151, boom L152-156, identical L157-168, main L169-175).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): one standard occurrence seen through ordinary
+/// catch and through the coordination aggregate retains identity (same
+/// occurrence id, kind, message) rather than minting a new error; the
+/// domain codec::invalid_data arm stays distinct from standard_failure.
+/// The roots-green pin lives in core-013-roots-green.can; the silent
+/// production run shape lives in core-013-run-shape.can.
+/// Variants: catch then aggregate of same standard occurrence.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. CAN_TSC/CAN_BUN gate the optional
+/// strict tsc leg (pinned conditional in the run-shape file). Logical gates
+/// SUITE/N1/N2/N3/CHILD and C/R/N/S/A identities bind at P23; no live run
+/// now.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QN1/QN3).
+/// Case coordination/snapshot-identity checks: raise-source, catch-kind,
+/// catch-bound, aggregate-op, leaf-first, occurrence-same, kind-same,
+/// message-same, no-fresh-mint, domain-kind, value-arm-false.
+/// Facet map (fixture L146-176 + assert legs): raise-source pins the
+/// occurrence origin (L156: boom body ok 1 / 0); catch-kind/catch-bound
+/// pin the ordinary catch (L162: [_] as standard_failure caught);
+/// aggregate-op pins the coordination wrap (L163:
+/// all_failed<failure>([caught])); leaf-first pins the re-observation
+/// (L164: failure leaf = wrapped.failures[0]); occurrence-same/kind-same/
+/// message-same pin the retained projections (L167:
+/// caught.occurrence_id/kind/message is leaf.occurrence_id/kind/message);
+/// no-fresh-mint pins the retained identity (L167: the conjunction holds,
+/// so identical/sample => ok true per L160 and the report passes per
+/// L194-197); domain-kind pins the standard-vs-domain distinction (L166:
+/// codec::invalid_data => ok false; member declared L150);
+/// value-arm-false pins the normal-return arm (L168: ok int value => ok
+/// false, since boom raises instead of returning).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str raise_source
+    str catch_kind
+    bool catch_bound
+    str aggregate_op
+    bool leaf_first
+    bool occurrence_same
+    bool kind_same
+    bool message_same
+    bool no_fresh_mint
+    str domain_kind
+    bool value_arm_false
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("coordination/snapshot-identity", "default", "", "offline"), "raise-source" => ok "case coordination/snapshot-identity variant default root raise-source run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("coordination/snapshot-identity", "default", "", "offline"), "catch-bound" => ok evidence("catch-bound", "true", "true", true, "case coordination/snapshot-identity variant default root catch-bound run offline")
+        different: false, true, context("coordination/snapshot-identity", "default", "", "offline"), "catch-bound" => failed{"catch-bound"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("coordination/snapshot-identity", "default", "", "offline"), "leaf-count" => ok evidence("leaf-count", "1", "1", true, "case coordination/snapshot-identity variant default root leaf-count run offline")
+        different: 0, 1, context("coordination/snapshot-identity", "default", "", "offline"), "leaf-count" => failed{"leaf-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "standard_failure", "standard_failure", context("coordination/snapshot-identity", "default", "", "offline"), "catch-kind" => ok evidence("catch-kind", "standard_failure", "standard_failure", true, "case coordination/snapshot-identity variant default root catch-kind run offline")
+        different: "standard_error", "standard_failure", context("coordination/snapshot-identity", "default", "", "offline"), "catch-kind" => failed{"catch-kind"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("1 / 0", "standard_failure", true, "all_failed", true, true, true, true, true, "codec::invalid_data", true)
+        seed_raise_drift: "seed-raise-drift" => ok observation("1 / 1", "standard_failure", true, "all_failed", true, true, true, true, true, "codec::invalid_data", true)
+        seed_catch_drift: "seed-catch-drift" => ok observation("1 / 0", "standard_error", true, "all_failed", true, true, true, true, true, "codec::invalid_data", true)
+        seed_catch_lost: "seed-catch-lost" => ok observation("1 / 0", "standard_failure", false, "all_failed", true, true, true, true, true, "codec::invalid_data", true)
+        seed_aggregate_drift: "seed-aggregate-drift" => ok observation("1 / 0", "standard_failure", true, "all_settled", true, true, true, true, true, "codec::invalid_data", true)
+        seed_leaf_lost: "seed-leaf-lost" => ok observation("1 / 0", "standard_failure", true, "all_failed", false, true, true, true, true, "codec::invalid_data", true)
+        seed_occurrence_reminted: "seed-occurrence-reminted" => ok observation("1 / 0", "standard_failure", true, "all_failed", true, false, true, true, true, "codec::invalid_data", true)
+        seed_kind_reminted: "seed-kind-reminted" => ok observation("1 / 0", "standard_failure", true, "all_failed", true, true, false, true, true, "codec::invalid_data", true)
+        seed_message_reminted: "seed-message-reminted" => ok observation("1 / 0", "standard_failure", true, "all_failed", true, true, true, false, true, "codec::invalid_data", true)
+        seed_fresh_mint: "seed-fresh-mint" => ok observation("1 / 0", "standard_failure", true, "all_failed", true, true, true, true, false, "codec::invalid_data", true)
+        seed_domain_drift: "seed-domain-drift" => ok observation("1 / 0", "standard_failure", true, "all_failed", true, true, true, true, true, "codec::invalid_bytes", true)
+        seed_value_accepted: "seed-value-accepted" => ok observation("1 / 0", "standard_failure", true, "all_failed", true, true, true, true, true, "codec::invalid_data", false)
+    match variant_id
+        "seed-raise-drift" => ok observation("1 / 1", "standard_failure", true, "all_failed", true, true, true, true, true, "codec::invalid_data", true)
+        "seed-catch-drift" => ok observation("1 / 0", "standard_error", true, "all_failed", true, true, true, true, true, "codec::invalid_data", true)
+        "seed-catch-lost" => ok observation("1 / 0", "standard_failure", false, "all_failed", true, true, true, true, true, "codec::invalid_data", true)
+        "seed-aggregate-drift" => ok observation("1 / 0", "standard_failure", true, "all_settled", true, true, true, true, true, "codec::invalid_data", true)
+        "seed-leaf-lost" => ok observation("1 / 0", "standard_failure", true, "all_failed", false, true, true, true, true, "codec::invalid_data", true)
+        "seed-occurrence-reminted" => ok observation("1 / 0", "standard_failure", true, "all_failed", true, false, true, true, true, "codec::invalid_data", true)
+        "seed-kind-reminted" => ok observation("1 / 0", "standard_failure", true, "all_failed", true, true, false, true, true, "codec::invalid_data", true)
+        "seed-message-reminted" => ok observation("1 / 0", "standard_failure", true, "all_failed", true, true, true, false, true, "codec::invalid_data", true)
+        "seed-fresh-mint" => ok observation("1 / 0", "standard_failure", true, "all_failed", true, true, true, true, false, "codec::invalid_data", true)
+        "seed-domain-drift" => ok observation("1 / 0", "standard_failure", true, "all_failed", true, true, true, true, true, "codec::invalid_bytes", true)
+        "seed-value-accepted" => ok observation("1 / 0", "standard_failure", true, "all_failed", true, true, true, true, true, "codec::invalid_data", false)
+        _ => ok observation("1 / 0", "standard_failure", true, "all_failed", true, true, true, true, true, "codec::invalid_data", true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m04_013: "m04-013" => ok [check("raise-source", "boom raises via integer division 1 / 0"), check("catch-kind", "ordinary catch binds the standard_failure kind"), check("catch-bound", "caught occurrence observed through ordinary catch"), check("aggregate-op", "coordination aggregate wraps [caught] via all_failed"), check("leaf-first", "leaf re-observed as wrapped.failures[0]"), check("occurrence-same", "caught and leaf share occurrence_id"), check("kind-same", "caught and leaf share kind"), check("message-same", "caught and leaf share message"), check("no-fresh-mint", "aggregate retains identity without minting a new error"), check("domain-kind", "domain arm pins codec::invalid_data and yields false"), check("value-arm-false", "normal-return arm yields false")]
+        other: "nope" => ok []
+    match scope is "m04-013"
+        false => ok []
+        true => ok [check("raise-source", "boom raises via integer division 1 / 0"), check("catch-kind", "ordinary catch binds the standard_failure kind"), check("catch-bound", "caught occurrence observed through ordinary catch"), check("aggregate-op", "coordination aggregate wraps [caught] via all_failed"), check("leaf-first", "leaf re-observed as wrapped.failures[0]"), check("occurrence-same", "caught and leaf share occurrence_id"), check("kind-same", "caught and leaf share kind"), check("message-same", "caught and leaf share message"), check("no-fresh-mint", "aggregate retains identity without minting a new error"), check("domain-kind", "domain arm pins codec::invalid_data and yields false"), check("value-arm-false", "normal-return arm yields false")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "coordination/snapshot-identity" => ok [expected_check("raise-source", "1 / 0"), expected_check("catch-kind", "standard_failure"), expected_check("catch-bound", "true"), expected_check("aggregate-op", "all_failed"), expected_check("leaf-first", "true"), expected_check("occurrence-same", "true"), expected_check("kind-same", "true"), expected_check("message-same", "true"), expected_check("no-fresh-mint", "true"), expected_check("domain-kind", "codec::invalid_data"), expected_check("value-arm-false", "true")]
+        unknown: "nope" => ok []
+    match case is "coordination/snapshot-identity"
+        false => ok []
+        true => ok [expected_check("raise-source", "1 / 0"), expected_check("catch-kind", "standard_failure"), expected_check("catch-bound", "true"), expected_check("aggregate-op", "all_failed"), expected_check("leaf-first", "true"), expected_check("occurrence-same", "true"), expected_check("kind-same", "true"), expected_check("message-same", "true"), expected_check("no-fresh-mint", "true"), expected_check("domain-kind", "codec::invalid_data"), expected_check("value-arm-false", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("coordination/snapshot-identity", "default", "", "offline") => ok
+        seed_raise_drift: context("coordination/snapshot-identity", "seed-raise-drift", "", "offline") => failed{"raise-source"}
+        seed_catch_drift: context("coordination/snapshot-identity", "seed-catch-drift", "", "offline") => failed{"catch-kind"}
+        seed_catch_lost: context("coordination/snapshot-identity", "seed-catch-lost", "", "offline") => failed{"catch-bound"}
+        seed_aggregate_drift: context("coordination/snapshot-identity", "seed-aggregate-drift", "", "offline") => failed{"aggregate-op"}
+        seed_leaf_lost: context("coordination/snapshot-identity", "seed-leaf-lost", "", "offline") => failed{"leaf-first"}
+        seed_occurrence_reminted: context("coordination/snapshot-identity", "seed-occurrence-reminted", "", "offline") => failed{"occurrence-same"}
+        seed_kind_reminted: context("coordination/snapshot-identity", "seed-kind-reminted", "", "offline") => failed{"kind-same"}
+        seed_message_reminted: context("coordination/snapshot-identity", "seed-message-reminted", "", "offline") => failed{"message-same"}
+        seed_fresh_mint: context("coordination/snapshot-identity", "seed-fresh-mint", "", "offline") => failed{"no-fresh-mint"}
+        seed_domain_drift: context("coordination/snapshot-identity", "seed-domain-drift", "", "offline") => failed{"domain-kind"}
+        seed_value_accepted: context("coordination/snapshot-identity", "seed-value-accepted", "", "offline") => failed{"value-arm-false"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.raise_source, "1 / 0", c, "raise-source")
+            failed
+            ok evidence raise_evidence => match call require_text(got.catch_kind, "standard_failure", c, "catch-kind")
+                failed
+                ok evidence kind_evidence => match call require_bool(got.catch_bound, true, c, "catch-bound")
+                    failed
+                    ok evidence bound_evidence => match call require_text(got.aggregate_op, "all_failed", c, "aggregate-op")
+                        failed
+                        ok evidence aggregate_evidence => match call require_bool(got.leaf_first, true, c, "leaf-first")
+                            failed
+                            ok evidence leaf_evidence => match call require_bool(got.occurrence_same, true, c, "occurrence-same")
+                                failed
+                                ok evidence occurrence_evidence => match call require_bool(got.kind_same, true, c, "kind-same")
+                                    failed
+                                    ok evidence kindsame_evidence => match call require_bool(got.message_same, true, c, "message-same")
+                                        failed
+                                        ok evidence message_evidence => match call require_bool(got.no_fresh_mint, true, c, "no-fresh-mint")
+                                            failed
+                                            ok evidence mint_evidence => match call require_text(got.domain_kind, "codec::invalid_data", c, "domain-kind")
+                                                failed
+                                                ok evidence domain_evidence => match call require_bool(got.value_arm_false, true, c, "value-arm-false")
+                                                    failed
+                                                    ok evidence value_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m04_013: "m04-013" => ok test_case("coordination/snapshot-identity", ["coordination", "m04"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("raise-source"), check_ref("catch-kind"), check_ref("catch-bound"), check_ref("aggregate-op"), check_ref("leaf-first"), check_ref("occurrence-same"), check_ref("kind-same"), check_ref("message-same"), check_ref("no-fresh-mint"), check_ref("domain-kind"), check_ref("value-arm-false")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m04-013"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("coordination/snapshot-identity", ["coordination", "m04"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("raise-source"), check_ref("catch-kind"), check_ref("catch-bound"), check_ref("aggregate-op"), check_ref("leaf-first"), check_ref("occurrence-same"), check_ref("kind-same"), check_ref("message-same"), check_ref("no-fresh-mint"), check_ref("domain-kind"), check_ref("value-arm-false")], callable case_body)
