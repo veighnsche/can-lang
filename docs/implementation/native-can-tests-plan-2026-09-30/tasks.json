@@ -557,7 +557,7 @@
       "acceptance": "`build` publication state stays untouched; `canlc run` does not compile the judge; changed source/runtime/entry invalidates lease; listing does no subject execution. Code and bounded bootstrap/local controls only at this task; authoritative live execution is gated by P14, P26 and P23.",
       "evidence": "Save staged manifest/root set and controlled invalidation; commit stage/entry.",
       "commit": "feat(testing): stage nonpublishing suite generation",
-      "status": "planned",
+      "status": "complete",
       "start_after": [
         "P05",
         "P15",
