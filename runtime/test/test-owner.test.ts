@@ -265,6 +265,20 @@ test("foreign handles are stale on fallible ops and loud on release/close", asyn
   await expect(second.transport.closeChannel(channel)).rejects.toThrow(TypeError);
 });
 
+test("raw thenables and plain objects are rejected as channel handles", async () => {
+  const { transport } = rig();
+  // oxlint-disable no-thenable -- The impostor deliberately exposes then to prove raw thenables are rejected.
+  const rawThenable = { then: () => undefined };
+  // oxlint-enable no-thenable
+  const plainObject = { queue: [] };
+  for (const impostor of [rawThenable, plainObject, null, undefined, 42, "channel#1"]) {
+    await expect(transport.sendEnvelope(impostor, envelope())).rejects.toThrow(TypeError);
+    await expect(transport.recvEnvelope(impostor)).rejects.toThrow(TypeError);
+    await expect(transport.closeChannel(impostor)).rejects.toThrow(TypeError);
+    await expect(transport.pendingDepth(impostor)).rejects.toThrow(TypeError);
+  }
+});
+
 test("codec and frame faults map onto test::transport_failure reasons", async () => {
   const { owner, transport } = rig();
   const handle = value(await owner.admitGrant(GRANT));

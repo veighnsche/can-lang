@@ -187,8 +187,10 @@ export function createTestTransport(
     },
 
     // Sever the N link: every channel detaches at once. Idempotent.
-    // The emitter calls this on worker teardown / N-link loss; depth and
-    // close stay available so incomplete executions keep their facts.
+    // Reserved for the N-link loss path (integrated runner scope); the
+    // loopback slice never triggers it and no emitter teardown calls it
+    // yet. Depth and close stay available so incomplete executions keep
+    // their facts.
     detach(): void {
       detached = true;
     },
