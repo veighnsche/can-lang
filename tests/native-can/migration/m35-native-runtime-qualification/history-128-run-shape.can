@@ -1,0 +1,272 @@
+package m35history128run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M35 HISTORY-128 "Missing API: run shape".
+/// Source: tests/conformance/native.test.ts
+/// symbol `refuse missing ${name} without fallback`
+/// (L12-24): call shape plus the mutate and restore
+/// pins plus the refusal flag plus the three site
+/// tallies.
+/// Disposition: migrate (this row owns the
+/// refuse-missing offline pact as reviewable Can
+/// facts; the old bun check stays until the
+/// integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the run shape: the ten
+/// call and word pins, the refusal flag, and the
+/// three tallies.
+/// ADAPTATION (recorded, with source lines): call
+/// pins hold call ident bytes; word pins hold
+/// quoted or guard bytes; the flag pins the L20
+/// bool word; counts pin ints tallied from the
+/// L12-24 span.
+/// owner-call pins startsWith (L14); key-call pins
+/// split (L15); key-index pins at (L15);
+/// descriptor-call pins getOwnPropertyDescriptor
+/// (L16); define-call pins defineProperty (L18 plus
+/// L22); qualify-call pins qualify (L19);
+/// passed-assert pins toBe (L20); reason-assert pins
+/// toContain (L21); mutate-value pins undefined
+/// (L18); restore-guard pins finally (L22);
+/// passed-flag pins bool (false) from L20;
+/// define-site-count pins int (2) from L18 plus
+/// L22; assert-count pins int (2) from L20 plus
+/// L21; owner-branch-count pins int (4) from L14.
+/// Facet map (run in span order): owner-call,
+/// key-call, key-index, descriptor-call,
+/// define-call, qualify-call, passed-assert,
+/// reason-assert, mutate-value, restore-guard,
+/// passed-flag, define-site-count, assert-count,
+/// owner-branch-count.
+/// The variant legs live in
+/// history-128-base-semantics.can; the per-variant
+/// reasons live in history-128-roots-green.can.
+/// Variants: six listed (row lists six variants;
+/// run shape is shared by all legs; default plus
+/// seeded drifts only).
+/// Environment: one gate (pinned Bun runtime/native
+/// host; parsed-history work only: no suite run, no
+/// global mutation; binds at QN1/QN2).
+/// Logical gates N1/N2/ENV/ARCHIVE bind at
+/// P23/QN1/QN2; no live run now.
+/// Timeout 120000ms is the offline default bound (no
+/// runner timeout in this row; binds at P23 like the
+/// M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23/QN1/QN2 accept
+/// gates unmet).
+/// Case history/missing-api-run checks: owner-call,
+/// key-call, key-index, descriptor-call,
+/// define-call, qualify-call, passed-assert,
+/// reason-assert, mutate-value, restore-guard,
+/// passed-flag, define-site-count, assert-count,
+/// owner-branch-count.
+/// Shared old files unmoved; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str owner_call
+    str key_call
+    str key_index
+    str descriptor_call
+    str define_call
+    str qualify_call
+    str passed_assert
+    str reason_assert
+    str mutate_value
+    str restore_guard
+    bool passed_flag
+    int define_site_count
+    int assert_count
+    int owner_branch_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/missing-api-run", "default", "", "offline"), "owner-call" => ok "case history/missing-api-run variant default root owner-call run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/missing-api-run", "default", "", "offline"), "passed-flag" => ok evidence("passed-flag", "true", "true", true, "case history/missing-api-run variant default root passed-flag run offline")
+        different: false, true, context("history/missing-api-run", "default", "", "offline"), "passed-flag" => failed{"passed-flag"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("history/missing-api-run", "default", "", "offline"), "define-site-count" => ok evidence("define-site-count", "2", "2", true, "case history/missing-api-run variant default root define-site-count run offline")
+        different: 1, 2, context("history/missing-api-run", "default", "", "offline"), "define-site-count" => failed{"define-site-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "startsWith", "startsWith", context("history/missing-api-run", "default", "", "offline"), "owner-call" => ok evidence("owner-call", "startsWith", "startsWith", true, "case history/missing-api-run variant default root owner-call run offline")
+        different: "startsWith_2", "startsWith", context("history/missing-api-run", "default", "", "offline"), "owner-call" => failed{"owner-call"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", false, 2, 2, 4)
+        seed_owner_call: "seed-owner-call-drift" => ok observation("startsWith_2", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", false, 2, 2, 4)
+        seed_key_call: "seed-key-call-drift" => ok observation("startsWith", "split_2", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", false, 2, 2, 4)
+        seed_key_index: "seed-key-index-drift" => ok observation("startsWith", "split", "at_2", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", false, 2, 2, 4)
+        seed_descriptor_call: "seed-descriptor-call-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor_2", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", false, 2, 2, 4)
+        seed_define_call: "seed-define-call-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty_2", "qualify", "toBe", "toContain", "undefined", "finally", false, 2, 2, 4)
+        seed_qualify_call: "seed-qualify-call-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify_2", "toBe", "toContain", "undefined", "finally", false, 2, 2, 4)
+        seed_passed_assert: "seed-passed-assert-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe_2", "toContain", "undefined", "finally", false, 2, 2, 4)
+        seed_reason_assert: "seed-reason-assert-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain_2", "undefined", "finally", false, 2, 2, 4)
+        seed_mutate_value: "seed-mutate-value-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined_2", "finally", false, 2, 2, 4)
+        seed_restore_guard: "seed-restore-guard-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally_2", false, 2, 2, 4)
+        seed_passed_flag: "seed-passed-flag-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", true, 2, 2, 4)
+        seed_define_site_count: "seed-define-site-count-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", false, 1, 2, 4)
+        seed_assert_count: "seed-assert-count-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", false, 2, 1, 4)
+        seed_owner_branch_count: "seed-owner-branch-count-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", false, 2, 2, 3)
+    match variant_id
+        "seed-owner-call-drift" => ok observation("startsWith_2", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", false, 2, 2, 4)
+        "seed-key-call-drift" => ok observation("startsWith", "split_2", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", false, 2, 2, 4)
+        "seed-key-index-drift" => ok observation("startsWith", "split", "at_2", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", false, 2, 2, 4)
+        "seed-descriptor-call-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor_2", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", false, 2, 2, 4)
+        "seed-define-call-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty_2", "qualify", "toBe", "toContain", "undefined", "finally", false, 2, 2, 4)
+        "seed-qualify-call-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify_2", "toBe", "toContain", "undefined", "finally", false, 2, 2, 4)
+        "seed-passed-assert-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe_2", "toContain", "undefined", "finally", false, 2, 2, 4)
+        "seed-reason-assert-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain_2", "undefined", "finally", false, 2, 2, 4)
+        "seed-mutate-value-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined_2", "finally", false, 2, 2, 4)
+        "seed-restore-guard-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally_2", false, 2, 2, 4)
+        "seed-passed-flag-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", true, 2, 2, 4)
+        "seed-define-site-count-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", false, 1, 2, 4)
+        "seed-assert-count-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", false, 2, 1, 4)
+        "seed-owner-branch-count-drift" => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", false, 2, 2, 3)
+        _ => ok observation("startsWith", "split", "at", "getOwnPropertyDescriptor", "defineProperty", "qualify", "toBe", "toContain", "undefined", "finally", false, 2, 2, 4)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m35_h128: "m35-h128" => ok [check("owner-call", "owner pick keeps its call"), check("key-call", "key pick keeps its call"), check("key-index", "key tail keeps its call"), check("descriptor-call", "descriptor read keeps its call"), check("define-call", "define keeps its call"), check("qualify-call", "report keeps its call"), check("passed-assert", "passed check keeps its call"), check("reason-assert", "reason check keeps its call"), check("mutate-value", "mutation keeps its value"), check("restore-guard", "restore keeps its guard"), check("passed-flag", "refusal keeps its flag"), check("define-site-count", "two define sites exist"), check("assert-count", "two asserts exist"), check("owner-branch-count", "four owner arms exist")]
+        other: "nope" => ok []
+    match scope is "m35-h128"
+        false => ok []
+        true => ok [check("owner-call", "owner pick keeps its call"), check("key-call", "key pick keeps its call"), check("key-index", "key tail keeps its call"), check("descriptor-call", "descriptor read keeps its call"), check("define-call", "define keeps its call"), check("qualify-call", "report keeps its call"), check("passed-assert", "passed check keeps its call"), check("reason-assert", "reason check keeps its call"), check("mutate-value", "mutation keeps its value"), check("restore-guard", "restore keeps its guard"), check("passed-flag", "refusal keeps its flag"), check("define-site-count", "two define sites exist"), check("assert-count", "two asserts exist"), check("owner-branch-count", "four owner arms exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/missing-api-run" => ok [expected_check("owner-call", "startsWith"), expected_check("key-call", "split"), expected_check("key-index", "at"), expected_check("descriptor-call", "getOwnPropertyDescriptor"), expected_check("define-call", "defineProperty"), expected_check("qualify-call", "qualify"), expected_check("passed-assert", "toBe"), expected_check("reason-assert", "toContain"), expected_check("mutate-value", "undefined"), expected_check("restore-guard", "finally"), expected_check("passed-flag", "false"), expected_check("define-site-count", "2"), expected_check("assert-count", "2"), expected_check("owner-branch-count", "4")]
+        unknown: "nope" => ok []
+    match case is "history/missing-api-run"
+        false => ok []
+        true => ok [expected_check("owner-call", "startsWith"), expected_check("key-call", "split"), expected_check("key-index", "at"), expected_check("descriptor-call", "getOwnPropertyDescriptor"), expected_check("define-call", "defineProperty"), expected_check("qualify-call", "qualify"), expected_check("passed-assert", "toBe"), expected_check("reason-assert", "toContain"), expected_check("mutate-value", "undefined"), expected_check("restore-guard", "finally"), expected_check("passed-flag", "false"), expected_check("define-site-count", "2"), expected_check("assert-count", "2"), expected_check("owner-branch-count", "4")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/missing-api-run", "default", "", "offline") => ok
+        seed_owner_call: context("history/missing-api-run", "seed-owner-call-drift", "", "offline") => failed{"owner-call"}
+        seed_key_call: context("history/missing-api-run", "seed-key-call-drift", "", "offline") => failed{"key-call"}
+        seed_key_index: context("history/missing-api-run", "seed-key-index-drift", "", "offline") => failed{"key-index"}
+        seed_descriptor_call: context("history/missing-api-run", "seed-descriptor-call-drift", "", "offline") => failed{"descriptor-call"}
+        seed_define_call: context("history/missing-api-run", "seed-define-call-drift", "", "offline") => failed{"define-call"}
+        seed_qualify_call: context("history/missing-api-run", "seed-qualify-call-drift", "", "offline") => failed{"qualify-call"}
+        seed_passed_assert: context("history/missing-api-run", "seed-passed-assert-drift", "", "offline") => failed{"passed-assert"}
+        seed_reason_assert: context("history/missing-api-run", "seed-reason-assert-drift", "", "offline") => failed{"reason-assert"}
+        seed_mutate_value: context("history/missing-api-run", "seed-mutate-value-drift", "", "offline") => failed{"mutate-value"}
+        seed_restore_guard: context("history/missing-api-run", "seed-restore-guard-drift", "", "offline") => failed{"restore-guard"}
+        seed_passed_flag: context("history/missing-api-run", "seed-passed-flag-drift", "", "offline") => failed{"passed-flag"}
+        seed_define_site_count: context("history/missing-api-run", "seed-define-site-count-drift", "", "offline") => failed{"define-site-count"}
+        seed_assert_count: context("history/missing-api-run", "seed-assert-count-drift", "", "offline") => failed{"assert-count"}
+        seed_owner_branch_count: context("history/missing-api-run", "seed-owner-branch-count-drift", "", "offline") => failed{"owner-branch-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.owner_call, "startsWith", c, "owner-call")
+            failed
+            ok evidence owner_call_evidence => match call require_text(got.key_call, "split", c, "key-call")
+                failed
+                ok evidence key_call_evidence => match call require_text(got.key_index, "at", c, "key-index")
+                    failed
+                    ok evidence key_index_evidence => match call require_text(got.descriptor_call, "getOwnPropertyDescriptor", c, "descriptor-call")
+                        failed
+                        ok evidence descriptor_call_evidence => match call require_text(got.define_call, "defineProperty", c, "define-call")
+                            failed
+                            ok evidence define_call_evidence => match call require_text(got.qualify_call, "qualify", c, "qualify-call")
+                                failed
+                                ok evidence qualify_call_evidence => match call require_text(got.passed_assert, "toBe", c, "passed-assert")
+                                    failed
+                                    ok evidence passed_assert_evidence => match call require_text(got.reason_assert, "toContain", c, "reason-assert")
+                                        failed
+                                        ok evidence reason_assert_evidence => match call require_text(got.mutate_value, "undefined", c, "mutate-value")
+                                            failed
+                                            ok evidence mutate_value_evidence => match call require_text(got.restore_guard, "finally", c, "restore-guard")
+                                                failed
+                                                ok evidence restore_guard_evidence => match call require_bool(got.passed_flag, false, c, "passed-flag")
+                                                    failed
+                                                    ok evidence passed_flag_evidence => match call require_int(got.define_site_count, 2, c, "define-site-count")
+                                                        failed
+                                                        ok evidence define_site_count_evidence => match call require_int(got.assert_count, 2, c, "assert-count")
+                                                            failed
+                                                            ok evidence assert_count_evidence => match call require_int(got.owner_branch_count, 4, c, "owner-branch-count")
+                                                                failed
+                                                                ok evidence owner_branch_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m35_h128: "m35-h128" => ok test_case("history/missing-api-run", ["history", "m35"], [], 120000, [check_ref("owner-call"), check_ref("key-call"), check_ref("key-index"), check_ref("descriptor-call"), check_ref("define-call"), check_ref("qualify-call"), check_ref("passed-assert"), check_ref("reason-assert"), check_ref("mutate-value"), check_ref("restore-guard"), check_ref("passed-flag"), check_ref("define-site-count"), check_ref("assert-count"), check_ref("owner-branch-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m35-h128"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/missing-api-run", ["history", "m35"], [], 120000, [check_ref("owner-call"), check_ref("key-call"), check_ref("key-index"), check_ref("descriptor-call"), check_ref("define-call"), check_ref("qualify-call"), check_ref("passed-assert"), check_ref("reason-assert"), check_ref("mutate-value"), check_ref("restore-guard"), check_ref("passed-flag"), check_ref("define-site-count"), check_ref("assert-count"), check_ref("owner-branch-count")], callable case_body)
