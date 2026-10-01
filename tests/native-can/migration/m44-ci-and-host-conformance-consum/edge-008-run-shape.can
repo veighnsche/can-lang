@@ -1,0 +1,324 @@
+package m44edge008run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M44 EDGE-008 "fresh emit plus strict
+/// TypeScript gate" verdict pact.
+/// Source: .github/workflows/tsc.yml
+/// symbol "fresh emit plus strict
+/// TypeScript gate" (L50-63): pinned
+/// strict tsc run plus upload shape.
+/// Disposition: rewire (same row pact as
+/// the stage slice; this file owns the
+/// gate run plus verdict).
+/// Protects (this file): the tsc run plus
+/// log capture plus exit gate (L50-55)
+/// plus artifact upload (L56-63) plus
+/// tallies that bound the gate.
+/// ADAPTATION (noted, plus source lines):
+/// gate pins hold tsc run bytes; verdict
+/// pins hold exit bytes; upload pins hold
+/// artifact bytes; count pins hold ints
+/// tallied from L47 plus L53-63.
+/// work-dir pins working-directory (L41
+/// plus L51); check-dir pins tscheck (L5
+/// plus L41 plus L45 plus L51 plus L61,
+/// five hits); tsc-bin pins
+/// typescript/bin/tsc (L54); tsc-project
+/// pins -p (L54); tsc-config pins
+/// tsconfig.json (L54); pipe-tee pins tee
+/// (L54); gate-log pins
+/// fresh-emit-tsc-v1.txt (L54 plus L62);
+/// gate-name pins fresh-emit-tsc-v1 (L54
+/// plus L59 plus L62, three hits);
+/// pipe-status pins PIPESTATUS (L55);
+/// exit-eq pins -eq 0 (L55); runner-gh
+/// pins runner.temp (L44 plus L54 plus
+/// L62); upload-ref pins
+/// actions/upload-artifact@v4 (L56);
+/// upload-always pins always() (L57);
+/// upload-missing pins if-no-files-found
+/// (L63); missing-mode pins error (L63);
+/// pipefail-shell pins set -o pipefail
+/// (L47 plus L53); upload-path-count pins
+/// int (2) from L61 plus L62;
+/// pipefail-count pins int (2) from L47
+/// plus L53; emit-name-count pins int (3)
+/// from L54 plus L59 plus L62.
+/// Facet map (gate then upload order):
+/// work-dir, check-dir, tsc-bin,
+/// tsc-project, tsc-config, pipe-tee,
+/// gate-log, gate-name, pipe-status,
+/// exit-eq, runner-gh, upload-ref,
+/// upload-always, upload-missing,
+/// missing-mode, pipefail-shell,
+/// upload-path-count, pipefail-count,
+/// emit-name-count.
+/// The stage pact lives in
+/// edge-008-base-semantics.can; the
+/// provision roots live in
+/// edge-008-roots-green.can.
+/// Variants: none listed (row lists zero
+/// variants; one default run).
+/// Environment: none listed (row lists
+/// zero gates; bind at P23; no live run
+/// now).
+/// Logical gates SUITE/BUILD/CAN/PROC/
+/// FILES/WORK bind at P23; no live run now.
+/// Timeout 120000ms is the offline default
+/// bound (binds at P23 like the M37
+/// no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// accept gate unmet).
+/// Intended consumed report: none exists
+/// (no P23-qualified Can report yet; P23
+/// unmet).
+/// Rewire stays blocked; tsc.yml
+/// intact; no call retired.
+/// Case edge/strict-tsc-gate
+/// checks: work-dir, check-dir, tsc-bin,
+/// tsc-project, tsc-config, pipe-tee,
+/// gate-log, gate-name, pipe-status,
+/// exit-eq, runner-gh, upload-ref,
+/// upload-always, upload-missing,
+/// missing-mode, pipefail-shell,
+/// upload-path-count, pipefail-count,
+/// emit-name-count.
+/// Shared old files intact; retirement is a
+/// later integrator choice.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str work_dir
+    str check_dir
+    str tsc_bin
+    str tsc_project
+    str tsc_config
+    str pipe_tee
+    str gate_log
+    str gate_name
+    str pipe_status
+    str exit_eq
+    str runner_gh
+    str upload_ref
+    str upload_always
+    str upload_missing
+    str missing_mode
+    str pipefail_shell
+    int upload_path_count
+    int pipefail_count
+    int emit_name_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("edge/strict-tsc-gate", "default", "", "offline"), "work-dir" => ok "case edge/strict-tsc-gate variant default root work-dir run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("edge/strict-tsc-gate", "default", "", "offline"), "work-dir" => ok evidence("work-dir", "true", "true", true, "case edge/strict-tsc-gate variant default root work-dir run offline")
+        different: false, true, context("edge/strict-tsc-gate", "default", "", "offline"), "work-dir" => failed{"work-dir"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("edge/strict-tsc-gate", "default", "", "offline"), "upload-path-count" => ok evidence("upload-path-count", "2", "2", true, "case edge/strict-tsc-gate variant default root upload-path-count run offline")
+        different: 1, 2, context("edge/strict-tsc-gate", "default", "", "offline"), "upload-path-count" => failed{"upload-path-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "working-directory", "working-directory", context("edge/strict-tsc-gate", "default", "", "offline"), "work-dir" => ok evidence("work-dir", "working-directory", "working-directory", true, "case edge/strict-tsc-gate variant default root work-dir run offline")
+        different: "working-directory_2", "working-directory", context("edge/strict-tsc-gate", "default", "", "offline"), "work-dir" => failed{"work-dir"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        seed_work_dir: "seed-work-dir-drift" => ok observation("working-directory_2", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        seed_check_dir: "seed-check-dir-drift" => ok observation("working-directory", "tscheck_2", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        seed_tsc_bin: "seed-tsc-bin-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc_2", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        seed_tsc_project: "seed-tsc-project-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p_2", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        seed_tsc_config: "seed-tsc-config-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json_2", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        seed_pipe_tee: "seed-pipe-tee-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee_2", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        seed_gate_log: "seed-gate-log-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt_2", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        seed_gate_name: "seed-gate-name-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1_2", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        seed_pipe_status: "seed-pipe-status-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS_2", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        seed_exit_eq: "seed-exit-eq-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0_2", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        seed_runner_gh: "seed-runner-gh-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp_2", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        seed_upload_ref: "seed-upload-ref-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4_2", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        seed_upload_always: "seed-upload-always-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()_2", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        seed_upload_missing: "seed-upload-missing-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found_2", "error", "set -o pipefail", 2, 2, 3)
+        seed_missing_mode: "seed-missing-mode-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error_2", "set -o pipefail", 2, 2, 3)
+        seed_pipefail_shell: "seed-pipefail-shell-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail_2", 2, 2, 3)
+        seed_upload_path_count: "seed-upload-path-count-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 1, 2, 3)
+        seed_pipefail_count: "seed-pipefail-count-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 1, 3)
+        seed_emit_name_count: "seed-emit-name-count-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 2)
+    match variant_id
+        "seed-work-dir-drift" => ok observation("working-directory_2", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        "seed-check-dir-drift" => ok observation("working-directory", "tscheck_2", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        "seed-tsc-bin-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc_2", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        "seed-tsc-project-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p_2", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        "seed-tsc-config-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json_2", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        "seed-pipe-tee-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee_2", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        "seed-gate-log-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt_2", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        "seed-gate-name-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1_2", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        "seed-pipe-status-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS_2", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        "seed-exit-eq-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0_2", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        "seed-runner-gh-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp_2", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        "seed-upload-ref-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4_2", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        "seed-upload-always-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()_2", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+        "seed-upload-missing-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found_2", "error", "set -o pipefail", 2, 2, 3)
+        "seed-missing-mode-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error_2", "set -o pipefail", 2, 2, 3)
+        "seed-pipefail-shell-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail_2", 2, 2, 3)
+        "seed-upload-path-count-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 1, 2, 3)
+        "seed-pipefail-count-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 1, 3)
+        "seed-emit-name-count-drift" => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 2)
+        _ => ok observation("working-directory", "tscheck", "typescript/bin/tsc", "-p", "tsconfig.json", "tee", "fresh-emit-tsc-v1.txt", "fresh-emit-tsc-v1", "PIPESTATUS", "-eq 0", "runner.temp", "actions/upload-artifact@v4", "always()", "if-no-files-found", "error", "set -o pipefail", 2, 2, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e008: "m44-e008" => ok [check("work-dir", "work dir keeps its spelling"), check("check-dir", "check dir keeps its spelling"), check("tsc-bin", "tsc bin keeps its bytes"), check("tsc-project", "project flag keeps its spelling"), check("tsc-config", "tsc config keeps its bytes"), check("pipe-tee", "pipe tee keeps its spelling"), check("gate-log", "gate log keeps its bytes"), check("gate-name", "gate name keeps its bytes"), check("pipe-status", "pipe status keeps its spelling"), check("exit-eq", "exit eq keeps its bytes"), check("runner-gh", "runner gh keeps its bytes"), check("upload-ref", "upload ref keeps its bytes"), check("upload-always", "upload always keeps its bytes"), check("upload-missing", "missing rule keeps its spelling"), check("missing-mode", "missing mode keeps its spelling"), check("pipefail-shell", "pipefail shell keeps its bytes"), check("upload-path-count", "two upload paths exist"), check("pipefail-count", "two pipefail shells exist"), check("emit-name-count", "three emit names exist")]
+        other: "nope" => ok []
+    match scope is "m44-e008"
+        false => ok []
+        true => ok [check("work-dir", "work dir keeps its spelling"), check("check-dir", "check dir keeps its spelling"), check("tsc-bin", "tsc bin keeps its bytes"), check("tsc-project", "project flag keeps its spelling"), check("tsc-config", "tsc config keeps its bytes"), check("pipe-tee", "pipe tee keeps its spelling"), check("gate-log", "gate log keeps its bytes"), check("gate-name", "gate name keeps its bytes"), check("pipe-status", "pipe status keeps its spelling"), check("exit-eq", "exit eq keeps its bytes"), check("runner-gh", "runner gh keeps its bytes"), check("upload-ref", "upload ref keeps its bytes"), check("upload-always", "upload always keeps its bytes"), check("upload-missing", "missing rule keeps its spelling"), check("missing-mode", "missing mode keeps its spelling"), check("pipefail-shell", "pipefail shell keeps its bytes"), check("upload-path-count", "two upload paths exist"), check("pipefail-count", "two pipefail shells exist"), check("emit-name-count", "three emit names exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "edge/strict-tsc-gate" => ok [expected_check("work-dir", "working-directory"), expected_check("check-dir", "tscheck"), expected_check("tsc-bin", "typescript/bin/tsc"), expected_check("tsc-project", "-p"), expected_check("tsc-config", "tsconfig.json"), expected_check("pipe-tee", "tee"), expected_check("gate-log", "fresh-emit-tsc-v1.txt"), expected_check("gate-name", "fresh-emit-tsc-v1"), expected_check("pipe-status", "PIPESTATUS"), expected_check("exit-eq", "-eq 0"), expected_check("runner-gh", "runner.temp"), expected_check("upload-ref", "actions/upload-artifact@v4"), expected_check("upload-always", "always()"), expected_check("upload-missing", "if-no-files-found"), expected_check("missing-mode", "error"), expected_check("pipefail-shell", "set -o pipefail"), expected_check("upload-path-count", "2"), expected_check("pipefail-count", "2"), expected_check("emit-name-count", "3")]
+        unknown: "nope" => ok []
+    match case is "edge/strict-tsc-gate"
+        false => ok []
+        true => ok [expected_check("work-dir", "working-directory"), expected_check("check-dir", "tscheck"), expected_check("tsc-bin", "typescript/bin/tsc"), expected_check("tsc-project", "-p"), expected_check("tsc-config", "tsconfig.json"), expected_check("pipe-tee", "tee"), expected_check("gate-log", "fresh-emit-tsc-v1.txt"), expected_check("gate-name", "fresh-emit-tsc-v1"), expected_check("pipe-status", "PIPESTATUS"), expected_check("exit-eq", "-eq 0"), expected_check("runner-gh", "runner.temp"), expected_check("upload-ref", "actions/upload-artifact@v4"), expected_check("upload-always", "always()"), expected_check("upload-missing", "if-no-files-found"), expected_check("missing-mode", "error"), expected_check("pipefail-shell", "set -o pipefail"), expected_check("upload-path-count", "2"), expected_check("pipefail-count", "2"), expected_check("emit-name-count", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("edge/strict-tsc-gate", "default", "", "offline") => ok
+        seed_work_dir: context("edge/strict-tsc-gate", "seed-work-dir-drift", "", "offline") => failed{"work-dir"}
+        seed_check_dir: context("edge/strict-tsc-gate", "seed-check-dir-drift", "", "offline") => failed{"check-dir"}
+        seed_tsc_bin: context("edge/strict-tsc-gate", "seed-tsc-bin-drift", "", "offline") => failed{"tsc-bin"}
+        seed_tsc_project: context("edge/strict-tsc-gate", "seed-tsc-project-drift", "", "offline") => failed{"tsc-project"}
+        seed_tsc_config: context("edge/strict-tsc-gate", "seed-tsc-config-drift", "", "offline") => failed{"tsc-config"}
+        seed_pipe_tee: context("edge/strict-tsc-gate", "seed-pipe-tee-drift", "", "offline") => failed{"pipe-tee"}
+        seed_gate_log: context("edge/strict-tsc-gate", "seed-gate-log-drift", "", "offline") => failed{"gate-log"}
+        seed_gate_name: context("edge/strict-tsc-gate", "seed-gate-name-drift", "", "offline") => failed{"gate-name"}
+        seed_pipe_status: context("edge/strict-tsc-gate", "seed-pipe-status-drift", "", "offline") => failed{"pipe-status"}
+        seed_exit_eq: context("edge/strict-tsc-gate", "seed-exit-eq-drift", "", "offline") => failed{"exit-eq"}
+        seed_runner_gh: context("edge/strict-tsc-gate", "seed-runner-gh-drift", "", "offline") => failed{"runner-gh"}
+        seed_upload_ref: context("edge/strict-tsc-gate", "seed-upload-ref-drift", "", "offline") => failed{"upload-ref"}
+        seed_upload_always: context("edge/strict-tsc-gate", "seed-upload-always-drift", "", "offline") => failed{"upload-always"}
+        seed_upload_missing: context("edge/strict-tsc-gate", "seed-upload-missing-drift", "", "offline") => failed{"upload-missing"}
+        seed_missing_mode: context("edge/strict-tsc-gate", "seed-missing-mode-drift", "", "offline") => failed{"missing-mode"}
+        seed_pipefail_shell: context("edge/strict-tsc-gate", "seed-pipefail-shell-drift", "", "offline") => failed{"pipefail-shell"}
+        seed_upload_path_count: context("edge/strict-tsc-gate", "seed-upload-path-count-drift", "", "offline") => failed{"upload-path-count"}
+        seed_pipefail_count: context("edge/strict-tsc-gate", "seed-pipefail-count-drift", "", "offline") => failed{"pipefail-count"}
+        seed_emit_name_count: context("edge/strict-tsc-gate", "seed-emit-name-count-drift", "", "offline") => failed{"emit-name-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.work_dir, "working-directory", c, "work-dir")
+            failed
+            ok evidence work_dir_evidence => match call require_text(got.check_dir, "tscheck", c, "check-dir")
+                failed
+                ok evidence check_dir_evidence => match call require_text(got.tsc_bin, "typescript/bin/tsc", c, "tsc-bin")
+                    failed
+                    ok evidence tsc_bin_evidence => match call require_text(got.tsc_project, "-p", c, "tsc-project")
+                        failed
+                        ok evidence tsc_project_evidence => match call require_text(got.tsc_config, "tsconfig.json", c, "tsc-config")
+                            failed
+                            ok evidence tsc_config_evidence => match call require_text(got.pipe_tee, "tee", c, "pipe-tee")
+                                failed
+                                ok evidence pipe_tee_evidence => match call require_text(got.gate_log, "fresh-emit-tsc-v1.txt", c, "gate-log")
+                                    failed
+                                    ok evidence gate_log_evidence => match call require_text(got.gate_name, "fresh-emit-tsc-v1", c, "gate-name")
+                                        failed
+                                        ok evidence gate_name_evidence => match call require_text(got.pipe_status, "PIPESTATUS", c, "pipe-status")
+                                            failed
+                                            ok evidence pipe_status_evidence => match call require_text(got.exit_eq, "-eq 0", c, "exit-eq")
+                                                failed
+                                                ok evidence exit_eq_evidence => match call require_text(got.runner_gh, "runner.temp", c, "runner-gh")
+                                                    failed
+                                                    ok evidence runner_gh_evidence => match call require_text(got.upload_ref, "actions/upload-artifact@v4", c, "upload-ref")
+                                                        failed
+                                                        ok evidence upload_ref_evidence => match call require_text(got.upload_always, "always()", c, "upload-always")
+                                                            failed
+                                                            ok evidence upload_always_evidence => match call require_text(got.upload_missing, "if-no-files-found", c, "upload-missing")
+                                                                failed
+                                                                ok evidence upload_missing_evidence => match call require_text(got.missing_mode, "error", c, "missing-mode")
+                                                                    failed
+                                                                    ok evidence missing_mode_evidence => match call require_text(got.pipefail_shell, "set -o pipefail", c, "pipefail-shell")
+                                                                        failed
+                                                                        ok evidence pipefail_shell_evidence => match call require_int(got.upload_path_count, 2, c, "upload-path-count")
+                                                                            failed
+                                                                            ok evidence upload_path_count_evidence => match call require_int(got.pipefail_count, 2, c, "pipefail-count")
+                                                                                failed
+                                                                                ok evidence pipefail_count_evidence => match call require_int(got.emit_name_count, 3, c, "emit-name-count")
+                                                                                    failed
+                                                                                    ok evidence emit_name_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e008: "m44-e008" => ok test_case("edge/strict-tsc-gate", ["edge", "m44"], [], 120000, [check_ref("work-dir"), check_ref("check-dir"), check_ref("tsc-bin"), check_ref("tsc-project"), check_ref("tsc-config"), check_ref("pipe-tee"), check_ref("gate-log"), check_ref("gate-name"), check_ref("pipe-status"), check_ref("exit-eq"), check_ref("runner-gh"), check_ref("upload-ref"), check_ref("upload-always"), check_ref("upload-missing"), check_ref("missing-mode"), check_ref("pipefail-shell"), check_ref("upload-path-count"), check_ref("pipefail-count"), check_ref("emit-name-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m44-e008"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("edge/strict-tsc-gate", ["edge", "m44"], [], 120000, [check_ref("work-dir"), check_ref("check-dir"), check_ref("tsc-bin"), check_ref("tsc-project"), check_ref("tsc-config"), check_ref("pipe-tee"), check_ref("gate-log"), check_ref("gate-name"), check_ref("pipe-status"), check_ref("exit-eq"), check_ref("runner-gh"), check_ref("upload-ref"), check_ref("upload-always"), check_ref("upload-missing"), check_ref("missing-mode"), check_ref("pipefail-shell"), check_ref("upload-path-count"), check_ref("pipefail-count"), check_ref("emit-name-count")], callable case_body)

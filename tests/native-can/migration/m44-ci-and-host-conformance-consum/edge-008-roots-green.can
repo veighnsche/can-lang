@@ -1,0 +1,363 @@
+package m44edge008roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M44 EDGE-008 "fresh emit plus strict
+/// TypeScript gate" provision pact.
+/// Source: .github/workflows/tsc.yml
+/// symbol "fresh emit plus strict
+/// TypeScript gate" (L18-41): pinned
+/// provision toolchain plus pin-check
+/// gates.
+/// Disposition: rewire (same row pact as
+/// the stage slice; this file owns the
+/// provision roots).
+/// Protects (this file): the checkout plus
+/// setup-go plus mod prime (L18-25) plus
+/// archive fetch plus unzip plus pin
+/// checks (L26-39) plus ci install (L40)
+/// plus tallies that bound provision.
+/// ADAPTATION (noted, plus source lines):
+/// ref pins hold action bytes; fetch pins
+/// hold archive bytes; pin pins hold
+/// shasum plus revision bytes; count pins
+/// hold ints tallied from L18-40.
+/// co-ref pins actions/checkout@v6 (L18);
+/// go-ref pins actions/setup-go@v6 (L19);
+/// go-version-key pins go-version-file
+/// (L21); go-mod pins go.mod (L21);
+/// mod-download pins go mod download
+/// (L25); target-json pins
+/// distribution/target.json (L30);
+/// fetch-verb pins urlretrieve (L31);
+/// upstream-key pins ['upstream'] (L31);
+/// bun-archive pins bun.zip (L31 plus L36
+/// plus L37 plus L44, four hits);
+/// unzip-bin pins unzip (L36); shasum-bin
+/// pins shasum (L37); bun-sha pins the
+/// pinned digest (L37, 64 hex);
+/// revision-flag pins --revision (L38);
+/// bun-revision pins 1.4.2+744846f84
+/// (L38); bun-triple pins
+/// bun-darwin-aarch64 (L38 plus L39);
+/// path-export pins GITHUB_PATH (L39);
+/// runner-tmp pins RUNNER_TEMP (L31 plus
+/// L36 plus L37 plus L38 plus L39, six
+/// hits); ci-verb pins bun ci (L40);
+/// shell-strict pins set -euo pipefail
+/// (L35); fetch-runtime pins python3
+/// (L28); provision-step-count pins int
+/// (6) from L18-40; pin-test-count pins
+/// int (2) from L37 plus L38;
+/// runner-temp-count pins int (6) from
+/// L31 plus L36-39; shasum-bits pins int
+/// (256) from L37.
+/// Facet map (provision order): co-ref,
+/// go-ref, go-version-key, go-mod,
+/// mod-download, target-json, fetch-verb,
+/// upstream-key, bun-archive, unzip-bin,
+/// shasum-bin, bun-sha, revision-flag,
+/// bun-revision, bun-triple, path-export,
+/// runner-tmp, ci-verb, shell-strict,
+/// fetch-runtime, provision-step-count,
+/// pin-test-count, runner-temp-count,
+/// shasum-bits.
+/// The stage pact lives in
+/// edge-008-base-semantics.can; the gate
+/// shape plus upload live in
+/// edge-008-run-shape.can.
+/// Variants: none listed (row lists zero
+/// variants; one default run).
+/// Environment: none listed (row lists
+/// zero gates; bind at P23; no live run
+/// now).
+/// Logical gates SUITE/BUILD/CAN/PROC/
+/// FILES/WORK bind at P23; no live run now.
+/// Timeout 120000ms is the offline default
+/// bound (binds at P23 like the M37
+/// no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// accept gate unmet).
+/// Intended consumed report: none exists
+/// (no P23-qualified Can report yet; P23
+/// unmet).
+/// Rewire stays blocked; tsc.yml
+/// intact; no call retired.
+/// Case edge/fresh-emit-roots
+/// checks: co-ref, go-ref, go-version-key,
+/// go-mod, mod-download, target-json,
+/// fetch-verb, upstream-key, bun-archive,
+/// unzip-bin, shasum-bin, bun-sha,
+/// revision-flag, bun-revision, bun-triple,
+/// path-export, runner-tmp, ci-verb,
+/// shell-strict, fetch-runtime,
+/// provision-step-count, pin-test-count,
+/// runner-temp-count, shasum-bits.
+/// Shared old files intact; retirement is a
+/// later integrator choice.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str co_ref
+    str go_ref
+    str go_version_key
+    str go_mod
+    str mod_download
+    str target_json
+    str fetch_verb
+    str upstream_key
+    str bun_archive
+    str unzip_bin
+    str shasum_bin
+    str bun_sha
+    str revision_flag
+    str bun_revision
+    str bun_triple
+    str path_export
+    str runner_tmp
+    str ci_verb
+    str shell_strict
+    str fetch_runtime
+    int provision_step_count
+    int pin_test_count
+    int runner_temp_count
+    int shasum_bits
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("edge/fresh-emit-roots", "default", "", "offline"), "co-ref" => ok "case edge/fresh-emit-roots variant default root co-ref run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("edge/fresh-emit-roots", "default", "", "offline"), "co-ref" => ok evidence("co-ref", "true", "true", true, "case edge/fresh-emit-roots variant default root co-ref run offline")
+        different: false, true, context("edge/fresh-emit-roots", "default", "", "offline"), "co-ref" => failed{"co-ref"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 6, 6, context("edge/fresh-emit-roots", "default", "", "offline"), "provision-step-count" => ok evidence("provision-step-count", "6", "6", true, "case edge/fresh-emit-roots variant default root provision-step-count run offline")
+        different: 5, 6, context("edge/fresh-emit-roots", "default", "", "offline"), "provision-step-count" => failed{"provision-step-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "actions/checkout@v6", "actions/checkout@v6", context("edge/fresh-emit-roots", "default", "", "offline"), "co-ref" => ok evidence("co-ref", "actions/checkout@v6", "actions/checkout@v6", true, "case edge/fresh-emit-roots variant default root co-ref run offline")
+        different: "actions/checkout@v6_2", "actions/checkout@v6", context("edge/fresh-emit-roots", "default", "", "offline"), "co-ref" => failed{"co-ref"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_co_ref: "seed-co-ref-drift" => ok observation("actions/checkout@v6_2", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_go_ref: "seed-go-ref-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6_2", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_go_version_key: "seed-go-version-key-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file_2", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_go_mod: "seed-go-mod-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod_2", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_mod_download: "seed-mod-download-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download_2", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_target_json: "seed-target-json-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json_2", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_fetch_verb: "seed-fetch-verb-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve_2", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_upstream_key: "seed-upstream-key-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']_2", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_bun_archive: "seed-bun-archive-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip_2", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_unzip_bin: "seed-unzip-bin-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip_2", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_shasum_bin: "seed-shasum-bin-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum_2", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_bun_sha: "seed-bun-sha-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f_2", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_revision_flag: "seed-revision-flag-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision_2", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_bun_revision: "seed-bun-revision-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84_2", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_bun_triple: "seed-bun-triple-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64_2", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_path_export: "seed-path-export-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH_2", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_runner_tmp: "seed-runner-tmp-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP_2", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_ci_verb: "seed-ci-verb-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci_2", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        seed_shell_strict: "seed-shell-strict-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail_2", "python3", 6, 2, 6, 256)
+        seed_fetch_runtime: "seed-fetch-runtime-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3_2", 6, 2, 6, 256)
+        seed_provision_step_count: "seed-provision-step-count-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 5, 2, 6, 256)
+        seed_pin_test_count: "seed-pin-test-count-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 1, 6, 256)
+        seed_runner_temp_count: "seed-runner-temp-count-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 5, 256)
+        seed_shasum_bits: "seed-shasum-bits-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 255)
+    match variant_id
+        "seed-co-ref-drift" => ok observation("actions/checkout@v6_2", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-go-ref-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6_2", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-go-version-key-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file_2", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-go-mod-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod_2", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-mod-download-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download_2", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-target-json-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json_2", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-fetch-verb-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve_2", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-upstream-key-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']_2", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-bun-archive-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip_2", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-unzip-bin-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip_2", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-shasum-bin-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum_2", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-bun-sha-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f_2", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-revision-flag-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision_2", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-bun-revision-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84_2", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-bun-triple-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64_2", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-path-export-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH_2", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-runner-tmp-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP_2", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-ci-verb-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci_2", "set -euo pipefail", "python3", 6, 2, 6, 256)
+        "seed-shell-strict-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail_2", "python3", 6, 2, 6, 256)
+        "seed-fetch-runtime-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3_2", 6, 2, 6, 256)
+        "seed-provision-step-count-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 5, 2, 6, 256)
+        "seed-pin-test-count-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 1, 6, 256)
+        "seed-runner-temp-count-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 5, 256)
+        "seed-shasum-bits-drift" => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 255)
+        _ => ok observation("actions/checkout@v6", "actions/setup-go@v6", "go-version-file", "go.mod", "go mod download", "distribution/target.json", "urlretrieve", "['upstream']", "bun.zip", "unzip", "shasum", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "--revision", "1.4.2+744846f84", "bun-darwin-aarch64", "GITHUB_PATH", "RUNNER_TEMP", "bun ci", "set -euo pipefail", "python3", 6, 2, 6, 256)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e008: "m44-e008" => ok [check("co-ref", "checkout ref keeps its bytes"), check("go-ref", "setup go ref keeps its bytes"), check("go-version-key", "version key keeps its spelling"), check("go-mod", "go mod keeps its bytes"), check("mod-download", "mod download keeps its bytes"), check("target-json", "target json keeps its bytes"), check("fetch-verb", "fetch verb keeps its spelling"), check("upstream-key", "upstream key keeps its bytes"), check("bun-archive", "bun archive keeps its bytes"), check("unzip-bin", "unzip bin keeps its spelling"), check("shasum-bin", "shasum bin keeps its spelling"), check("bun-sha", "bun sha keeps its bytes"), check("revision-flag", "revision flag keeps its spelling"), check("bun-revision", "bun revision keeps its bytes"), check("bun-triple", "bun triple keeps its bytes"), check("path-export", "path export keeps its spelling"), check("runner-tmp", "runner tmp keeps its spelling"), check("ci-verb", "ci verb keeps its bytes"), check("shell-strict", "strict shell keeps its bytes"), check("fetch-runtime", "fetch runtime keeps its spelling"), check("provision-step-count", "six provision steps exist"), check("pin-test-count", "two pin tests exist"), check("runner-temp-count", "six runner temps exist"), check("shasum-bits", "shasum width is two hundred fifty six")]
+        other: "nope" => ok []
+    match scope is "m44-e008"
+        false => ok []
+        true => ok [check("co-ref", "checkout ref keeps its bytes"), check("go-ref", "setup go ref keeps its bytes"), check("go-version-key", "version key keeps its spelling"), check("go-mod", "go mod keeps its bytes"), check("mod-download", "mod download keeps its bytes"), check("target-json", "target json keeps its bytes"), check("fetch-verb", "fetch verb keeps its spelling"), check("upstream-key", "upstream key keeps its bytes"), check("bun-archive", "bun archive keeps its bytes"), check("unzip-bin", "unzip bin keeps its spelling"), check("shasum-bin", "shasum bin keeps its spelling"), check("bun-sha", "bun sha keeps its bytes"), check("revision-flag", "revision flag keeps its spelling"), check("bun-revision", "bun revision keeps its bytes"), check("bun-triple", "bun triple keeps its bytes"), check("path-export", "path export keeps its spelling"), check("runner-tmp", "runner tmp keeps its spelling"), check("ci-verb", "ci verb keeps its bytes"), check("shell-strict", "strict shell keeps its bytes"), check("fetch-runtime", "fetch runtime keeps its spelling"), check("provision-step-count", "six provision steps exist"), check("pin-test-count", "two pin tests exist"), check("runner-temp-count", "six runner temps exist"), check("shasum-bits", "shasum width is two hundred fifty six")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "edge/fresh-emit-roots" => ok [expected_check("co-ref", "actions/checkout@v6"), expected_check("go-ref", "actions/setup-go@v6"), expected_check("go-version-key", "go-version-file"), expected_check("go-mod", "go.mod"), expected_check("mod-download", "go mod download"), expected_check("target-json", "distribution/target.json"), expected_check("fetch-verb", "urlretrieve"), expected_check("upstream-key", "['upstream']"), expected_check("bun-archive", "bun.zip"), expected_check("unzip-bin", "unzip"), expected_check("shasum-bin", "shasum"), expected_check("bun-sha", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f"), expected_check("revision-flag", "--revision"), expected_check("bun-revision", "1.4.2+744846f84"), expected_check("bun-triple", "bun-darwin-aarch64"), expected_check("path-export", "GITHUB_PATH"), expected_check("runner-tmp", "RUNNER_TEMP"), expected_check("ci-verb", "bun ci"), expected_check("shell-strict", "set -euo pipefail"), expected_check("fetch-runtime", "python3"), expected_check("provision-step-count", "6"), expected_check("pin-test-count", "2"), expected_check("runner-temp-count", "6"), expected_check("shasum-bits", "256")]
+        unknown: "nope" => ok []
+    match case is "edge/fresh-emit-roots"
+        false => ok []
+        true => ok [expected_check("co-ref", "actions/checkout@v6"), expected_check("go-ref", "actions/setup-go@v6"), expected_check("go-version-key", "go-version-file"), expected_check("go-mod", "go.mod"), expected_check("mod-download", "go mod download"), expected_check("target-json", "distribution/target.json"), expected_check("fetch-verb", "urlretrieve"), expected_check("upstream-key", "['upstream']"), expected_check("bun-archive", "bun.zip"), expected_check("unzip-bin", "unzip"), expected_check("shasum-bin", "shasum"), expected_check("bun-sha", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f"), expected_check("revision-flag", "--revision"), expected_check("bun-revision", "1.4.2+744846f84"), expected_check("bun-triple", "bun-darwin-aarch64"), expected_check("path-export", "GITHUB_PATH"), expected_check("runner-tmp", "RUNNER_TEMP"), expected_check("ci-verb", "bun ci"), expected_check("shell-strict", "set -euo pipefail"), expected_check("fetch-runtime", "python3"), expected_check("provision-step-count", "6"), expected_check("pin-test-count", "2"), expected_check("runner-temp-count", "6"), expected_check("shasum-bits", "256")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("edge/fresh-emit-roots", "default", "", "offline") => ok
+        seed_co_ref: context("edge/fresh-emit-roots", "seed-co-ref-drift", "", "offline") => failed{"co-ref"}
+        seed_go_ref: context("edge/fresh-emit-roots", "seed-go-ref-drift", "", "offline") => failed{"go-ref"}
+        seed_go_version_key: context("edge/fresh-emit-roots", "seed-go-version-key-drift", "", "offline") => failed{"go-version-key"}
+        seed_go_mod: context("edge/fresh-emit-roots", "seed-go-mod-drift", "", "offline") => failed{"go-mod"}
+        seed_mod_download: context("edge/fresh-emit-roots", "seed-mod-download-drift", "", "offline") => failed{"mod-download"}
+        seed_target_json: context("edge/fresh-emit-roots", "seed-target-json-drift", "", "offline") => failed{"target-json"}
+        seed_fetch_verb: context("edge/fresh-emit-roots", "seed-fetch-verb-drift", "", "offline") => failed{"fetch-verb"}
+        seed_upstream_key: context("edge/fresh-emit-roots", "seed-upstream-key-drift", "", "offline") => failed{"upstream-key"}
+        seed_bun_archive: context("edge/fresh-emit-roots", "seed-bun-archive-drift", "", "offline") => failed{"bun-archive"}
+        seed_unzip_bin: context("edge/fresh-emit-roots", "seed-unzip-bin-drift", "", "offline") => failed{"unzip-bin"}
+        seed_shasum_bin: context("edge/fresh-emit-roots", "seed-shasum-bin-drift", "", "offline") => failed{"shasum-bin"}
+        seed_bun_sha: context("edge/fresh-emit-roots", "seed-bun-sha-drift", "", "offline") => failed{"bun-sha"}
+        seed_revision_flag: context("edge/fresh-emit-roots", "seed-revision-flag-drift", "", "offline") => failed{"revision-flag"}
+        seed_bun_revision: context("edge/fresh-emit-roots", "seed-bun-revision-drift", "", "offline") => failed{"bun-revision"}
+        seed_bun_triple: context("edge/fresh-emit-roots", "seed-bun-triple-drift", "", "offline") => failed{"bun-triple"}
+        seed_path_export: context("edge/fresh-emit-roots", "seed-path-export-drift", "", "offline") => failed{"path-export"}
+        seed_runner_tmp: context("edge/fresh-emit-roots", "seed-runner-tmp-drift", "", "offline") => failed{"runner-tmp"}
+        seed_ci_verb: context("edge/fresh-emit-roots", "seed-ci-verb-drift", "", "offline") => failed{"ci-verb"}
+        seed_shell_strict: context("edge/fresh-emit-roots", "seed-shell-strict-drift", "", "offline") => failed{"shell-strict"}
+        seed_fetch_runtime: context("edge/fresh-emit-roots", "seed-fetch-runtime-drift", "", "offline") => failed{"fetch-runtime"}
+        seed_provision_step_count: context("edge/fresh-emit-roots", "seed-provision-step-count-drift", "", "offline") => failed{"provision-step-count"}
+        seed_pin_test_count: context("edge/fresh-emit-roots", "seed-pin-test-count-drift", "", "offline") => failed{"pin-test-count"}
+        seed_runner_temp_count: context("edge/fresh-emit-roots", "seed-runner-temp-count-drift", "", "offline") => failed{"runner-temp-count"}
+        seed_shasum_bits: context("edge/fresh-emit-roots", "seed-shasum-bits-drift", "", "offline") => failed{"shasum-bits"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.co_ref, "actions/checkout@v6", c, "co-ref")
+            failed
+            ok evidence co_ref_evidence => match call require_text(got.go_ref, "actions/setup-go@v6", c, "go-ref")
+                failed
+                ok evidence go_ref_evidence => match call require_text(got.go_version_key, "go-version-file", c, "go-version-key")
+                    failed
+                    ok evidence go_version_key_evidence => match call require_text(got.go_mod, "go.mod", c, "go-mod")
+                        failed
+                        ok evidence go_mod_evidence => match call require_text(got.mod_download, "go mod download", c, "mod-download")
+                            failed
+                            ok evidence mod_download_evidence => match call require_text(got.target_json, "distribution/target.json", c, "target-json")
+                                failed
+                                ok evidence target_json_evidence => match call require_text(got.fetch_verb, "urlretrieve", c, "fetch-verb")
+                                    failed
+                                    ok evidence fetch_verb_evidence => match call require_text(got.upstream_key, "['upstream']", c, "upstream-key")
+                                        failed
+                                        ok evidence upstream_key_evidence => match call require_text(got.bun_archive, "bun.zip", c, "bun-archive")
+                                            failed
+                                            ok evidence bun_archive_evidence => match call require_text(got.unzip_bin, "unzip", c, "unzip-bin")
+                                                failed
+                                                ok evidence unzip_bin_evidence => match call require_text(got.shasum_bin, "shasum", c, "shasum-bin")
+                                                    failed
+                                                    ok evidence shasum_bin_evidence => match call require_text(got.bun_sha, "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", c, "bun-sha")
+                                                        failed
+                                                        ok evidence bun_sha_evidence => match call require_text(got.revision_flag, "--revision", c, "revision-flag")
+                                                            failed
+                                                            ok evidence revision_flag_evidence => match call require_text(got.bun_revision, "1.4.2+744846f84", c, "bun-revision")
+                                                                failed
+                                                                ok evidence bun_revision_evidence => match call require_text(got.bun_triple, "bun-darwin-aarch64", c, "bun-triple")
+                                                                    failed
+                                                                    ok evidence bun_triple_evidence => match call require_text(got.path_export, "GITHUB_PATH", c, "path-export")
+                                                                        failed
+                                                                        ok evidence path_export_evidence => match call require_text(got.runner_tmp, "RUNNER_TEMP", c, "runner-tmp")
+                                                                            failed
+                                                                            ok evidence runner_tmp_evidence => match call require_text(got.ci_verb, "bun ci", c, "ci-verb")
+                                                                                failed
+                                                                                ok evidence ci_verb_evidence => match call require_text(got.shell_strict, "set -euo pipefail", c, "shell-strict")
+                                                                                    failed
+                                                                                    ok evidence shell_strict_evidence => match call require_text(got.fetch_runtime, "python3", c, "fetch-runtime")
+                                                                                        failed
+                                                                                        ok evidence fetch_runtime_evidence => match call require_int(got.provision_step_count, 6, c, "provision-step-count")
+                                                                                            failed
+                                                                                            ok evidence provision_step_count_evidence => match call require_int(got.pin_test_count, 2, c, "pin-test-count")
+                                                                                                failed
+                                                                                                ok evidence pin_test_count_evidence => match call require_int(got.runner_temp_count, 6, c, "runner-temp-count")
+                                                                                                    failed
+                                                                                                    ok evidence runner_temp_count_evidence => match call require_int(got.shasum_bits, 256, c, "shasum-bits")
+                                                                                                        failed
+                                                                                                        ok evidence shasum_bits_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e008: "m44-e008" => ok test_case("edge/fresh-emit-roots", ["edge", "m44"], [], 120000, [check_ref("co-ref"), check_ref("go-ref"), check_ref("go-version-key"), check_ref("go-mod"), check_ref("mod-download"), check_ref("target-json"), check_ref("fetch-verb"), check_ref("upstream-key"), check_ref("bun-archive"), check_ref("unzip-bin"), check_ref("shasum-bin"), check_ref("bun-sha"), check_ref("revision-flag"), check_ref("bun-revision"), check_ref("bun-triple"), check_ref("path-export"), check_ref("runner-tmp"), check_ref("ci-verb"), check_ref("shell-strict"), check_ref("fetch-runtime"), check_ref("provision-step-count"), check_ref("pin-test-count"), check_ref("runner-temp-count"), check_ref("shasum-bits")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m44-e008"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("edge/fresh-emit-roots", ["edge", "m44"], [], 120000, [check_ref("co-ref"), check_ref("go-ref"), check_ref("go-version-key"), check_ref("go-mod"), check_ref("mod-download"), check_ref("target-json"), check_ref("fetch-verb"), check_ref("upstream-key"), check_ref("bun-archive"), check_ref("unzip-bin"), check_ref("shasum-bin"), check_ref("bun-sha"), check_ref("revision-flag"), check_ref("bun-revision"), check_ref("bun-triple"), check_ref("path-export"), check_ref("runner-tmp"), check_ref("ci-verb"), check_ref("shell-strict"), check_ref("fetch-runtime"), check_ref("provision-step-count"), check_ref("pin-test-count"), check_ref("runner-temp-count"), check_ref("shasum-bits")], callable case_body)
