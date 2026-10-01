@@ -1,0 +1,20 @@
+{
+ "pairs": {
+  "1-vs-2": {
+   "criteria": "all-3-differ",
+   "instructions": "differ",
+   "state": "differ"
+  },
+  "1-vs-3": {
+   "criteria": "all-3-differ",
+   "instructions": "differ",
+   "state": "differ"
+  },
+  "2-vs-3": {
+   "criteria": "all-3-differ",
+   "instructions": "differ",
+   "state": "differ"
+  }
+ },
+ "structural": "model/question-id/question-type/option-keys identical; 29 technical identifiers present in all three requests (4 const names, 19 member strings incl. bytes/events drift markers, checkBrowserTag, DisallowUnknownFields, nativeTest, 3 file paths)"
+}
