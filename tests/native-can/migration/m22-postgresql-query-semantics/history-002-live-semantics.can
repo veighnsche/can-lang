@@ -1,0 +1,275 @@
+package m22history002live
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M22 HISTORY-002 "live SQL queries: answer and error semantics".
+/// Source: tests/integration/sql_test.go symbol TestCurrentSQLQueriesLive
+/// (L186-347); query legs ok (L306-313) and fault (L314-321) with the
+/// sixteen answer vectors (L324-345).
+/// Disposition: migrate (this row ports TestCurrentSQLQueriesLive to
+/// ordinary Can functions; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): the sixteen compiled-CLI answers over the
+/// live PostgreSQL 17 seed: one/optional/many/execute plus bytes and
+/// nullable cover rows, with row-missing, row-count, row-limit,
+/// duplicate, hostile bound input and refused connection staying
+/// distinct error codes.
+/// ADAPTATION (recorded, with source lines): fault codes pin bare
+/// (sql::row_missing and siblings) while Go wraps each want as a
+/// Contains needle error-colon-plus-code-plus-quote (L318); the
+/// wrap prefix itself pins in history-002-run-shape.can; the hostile
+/// leg pins its none stdout (L338) with the hostile term cited in
+/// the check title; the none vector repeats for by-term-none and
+/// hostile-term because Go asserts the identical stdout twice.
+/// Facet map (sql_test.go legs): close-ok pins closed (L324);
+/// by-id-hit pins the Bob row (L325); by-id-missing pins
+/// sql::row_missing (L326); by-term-hit pins the some envelope
+/// (L327); by-term-none pins the none envelope (L328);
+/// by-term-ambiguous pins sql::row_count (L329); rows-limited pins
+/// the Jason/Mason pair (L330); rows-over-limit pins sql::row_limit
+/// (L331); add-first pins 1 (L332); add-duplicate pins
+/// sql::constraint_failed (L333); cover-bytes-some pins the bytes
+/// plus some-n row (L334); cover-empty-none pins the empty bytes
+/// plus none row (L335); cover-missing pins sql::row_missing
+/// (L336); hostile-term pins the none stdout for the hostile bind
+/// (L338, term %' OR '1'='1); rows-full pins all seven rows (L339);
+/// refused-error pins sql::connection_failed (L343).
+/// The roots-green pin lives in history-002-roots-green.can; the
+/// fd-3 delivery plus ok/fault run shape lives in
+/// history-002-run-shape.can.
+/// Variants: by_id present/missing, by_term present/none/ambiguous/
+/// hostile, rows limited/full, add first/duplicate, cover bytes and
+/// nullable, refused port (all sixteen legs in Go order).
+/// Environment: CAN_BUN_ARCHIVE plus CAN_TEST_POSTGRES_URL gates;
+/// requires can-bun-archive and can-test-postgres-url.
+/// Logical gates SUITE/CAN/PROC/CHILD/DB/WORK/ENV and C/R/N/S/A
+/// identities bind at P23; no live run now. Accept gates P23/QD1/QF1
+/// are unmet. Descriptor timeout 360000ms mirrors the Go 6-minute
+/// ctx (L207).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QD1/QF1 unmet).
+/// Case history/live-queries checks: close-ok, by-id-hit,
+/// by-id-missing, by-term-hit, by-term-none, by-term-ambiguous,
+/// rows-limited, rows-over-limit, add-first, add-duplicate,
+/// cover-bytes-some, cover-empty-none, cover-missing, hostile-term,
+/// rows-full, refused-error.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str close_ok
+    str by_id_hit
+    str by_id_missing
+    str by_term_hit
+    str by_term_none
+    str by_term_ambiguous
+    str rows_limited
+    str rows_over_limit
+    str add_first
+    str add_duplicate
+    str cover_bytes_some
+    str cover_empty_none
+    str cover_missing
+    str hostile_term
+    str rows_full
+    str refused_error
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/live-queries", "default", "", "offline"), "close-ok" => ok "case history/live-queries variant default root close-ok run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/live-queries", "default", "", "offline"), "close-ok" => ok evidence("close-ok", "true", "true", true, "case history/live-queries variant default root close-ok run offline")
+        different: false, true, context("history/live-queries", "default", "", "offline"), "close-ok" => failed{"close-ok"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("history/live-queries", "default", "", "offline"), "close-ok" => ok evidence("close-ok", "0", "0", true, "case history/live-queries variant default root close-ok run offline")
+        different: 1, 0, context("history/live-queries", "default", "", "offline"), "close-ok" => failed{"close-ok"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "closed", "closed", context("history/live-queries", "default", "", "offline"), "close-ok" => ok evidence("close-ok", "closed", "closed", true, "case history/live-queries variant default root close-ok run offline")
+        different: "closed_2", "closed", context("history/live-queries", "default", "", "offline"), "close-ok" => failed{"close-ok"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        seed_close_ok: "seed-close-ok-drift" => ok observation("open", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        seed_by_id_hit: "seed-by-id-hit-drift" => ok observation("closed", "{\"id\":5,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        seed_by_id_missing: "seed-by-id-missing-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::other", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        seed_by_term_hit: "seed-by-term-hit-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Rob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        seed_by_term_none: "seed-by-term-none-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::some\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        seed_by_term_ambiguous: "seed-by-term-ambiguous-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::other", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        seed_rows_limited: "seed-rows-limited-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        seed_rows_over_limit: "seed-rows-over-limit-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::other", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        seed_add_first: "seed-add-first-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "2", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        seed_add_duplicate: "seed-add-duplicate-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::other", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        seed_cover_bytes_some: "seed-cover-bytes-some-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,67]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        seed_cover_empty_none: "seed-cover-empty-none-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "3[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        seed_cover_missing: "seed-cover-missing-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::other", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        seed_hostile_term: "seed-hostile-term-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::some\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        seed_rows_full: "seed-rows-full-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann2\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        seed_refused_error: "seed-refused-error-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::other")
+    match variant_id
+        "seed-close-ok-drift" => ok observation("open", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        "seed-by-id-hit-drift" => ok observation("closed", "{\"id\":5,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        "seed-by-id-missing-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::other", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        "seed-by-term-hit-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Rob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        "seed-by-term-none-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::some\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        "seed-by-term-ambiguous-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::other", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        "seed-rows-limited-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        "seed-rows-over-limit-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::other", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        "seed-add-first-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "2", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        "seed-add-duplicate-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::other", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        "seed-cover-bytes-some-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,67]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        "seed-cover-empty-none-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "3[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        "seed-cover-missing-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::other", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        "seed-hostile-term-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::some\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        "seed-rows-full-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann2\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+        "seed-refused-error-drift" => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::other")
+        _ => ok observation("closed", "{\"id\":4,\"display_name\":\"Bob\"}", "sql::row_missing", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", "{\"case\":\"option::none\",\"value\":{}}", "sql::row_count", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", "sql::row_limit", "1", "sql::constraint_failed", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", "2[]{\"case\":\"option::none\",\"value\":{}}", "sql::row_missing", "{\"case\":\"option::none\",\"value\":{}}", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", "sql::connection_failed")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m22_h002: "m22-h002" => ok [check("close-ok", "close round trip prints closed"), check("by-id-hit", "by_id 4 returns the Bob row"), check("by-id-missing", "by_id 999 refuses row_missing"), check("by-term-hit", "by_term Bob returns the some envelope"), check("by-term-none", "by_term Nobody returns the none envelope"), check("by-term-ambiguous", "by_term %o% refuses row_count"), check("rows-limited", "rows %son% 10 returns Jason and Mason"), check("rows-over-limit", "rows %o% 1 refuses row_limit"), check("add-first", "add Zed inserts one row"), check("add-duplicate", "add Zed again refuses constraint_failed"), check("cover-bytes-some", "cover 1 returns bytes plus some n"), check("cover-empty-none", "cover 2 returns empty bytes plus none"), check("cover-missing", "cover 999 refuses row_missing"), check("hostile-term", "hostile term binds as a value and matches nothing"), check("rows-full", "rows % 100 returns all seven rows"), check("refused-error", "refused port refuses connection_failed")]
+        other: "nope" => ok []
+    match scope is "m22-h002"
+        false => ok []
+        true => ok [check("close-ok", "close round trip prints closed"), check("by-id-hit", "by_id 4 returns the Bob row"), check("by-id-missing", "by_id 999 refuses row_missing"), check("by-term-hit", "by_term Bob returns the some envelope"), check("by-term-none", "by_term Nobody returns the none envelope"), check("by-term-ambiguous", "by_term %o% refuses row_count"), check("rows-limited", "rows %son% 10 returns Jason and Mason"), check("rows-over-limit", "rows %o% 1 refuses row_limit"), check("add-first", "add Zed inserts one row"), check("add-duplicate", "add Zed again refuses constraint_failed"), check("cover-bytes-some", "cover 1 returns bytes plus some n"), check("cover-empty-none", "cover 2 returns empty bytes plus none"), check("cover-missing", "cover 999 refuses row_missing"), check("hostile-term", "hostile term binds as a value and matches nothing"), check("rows-full", "rows % 100 returns all seven rows"), check("refused-error", "refused port refuses connection_failed")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/live-queries" => ok [expected_check("close-ok", "closed"), expected_check("by-id-hit", "{\"id\":4,\"display_name\":\"Bob\"}"), expected_check("by-id-missing", "sql::row_missing"), expected_check("by-term-hit", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}"), expected_check("by-term-none", "{\"case\":\"option::none\",\"value\":{}}"), expected_check("by-term-ambiguous", "sql::row_count"), expected_check("rows-limited", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]"), expected_check("rows-over-limit", "sql::row_limit"), expected_check("add-first", "1"), expected_check("add-duplicate", "sql::constraint_failed"), expected_check("cover-bytes-some", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}"), expected_check("cover-empty-none", "2[]{\"case\":\"option::none\",\"value\":{}}"), expected_check("cover-missing", "sql::row_missing"), expected_check("hostile-term", "{\"case\":\"option::none\",\"value\":{}}"), expected_check("rows-full", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]"), expected_check("refused-error", "sql::connection_failed")]
+        unknown: "nope" => ok []
+    match case is "history/live-queries"
+        false => ok []
+        true => ok [expected_check("close-ok", "closed"), expected_check("by-id-hit", "{\"id\":4,\"display_name\":\"Bob\"}"), expected_check("by-id-missing", "sql::row_missing"), expected_check("by-term-hit", "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}"), expected_check("by-term-none", "{\"case\":\"option::none\",\"value\":{}}"), expected_check("by-term-ambiguous", "sql::row_count"), expected_check("rows-limited", "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]"), expected_check("rows-over-limit", "sql::row_limit"), expected_check("add-first", "1"), expected_check("add-duplicate", "sql::constraint_failed"), expected_check("cover-bytes-some", "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}"), expected_check("cover-empty-none", "2[]{\"case\":\"option::none\",\"value\":{}}"), expected_check("cover-missing", "sql::row_missing"), expected_check("hostile-term", "{\"case\":\"option::none\",\"value\":{}}"), expected_check("rows-full", "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]"), expected_check("refused-error", "sql::connection_failed")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/live-queries", "default", "", "offline") => ok
+        seed_close_ok: context("history/live-queries", "seed-close-ok-drift", "", "offline") => failed{"close-ok"}
+        seed_by_id_hit: context("history/live-queries", "seed-by-id-hit-drift", "", "offline") => failed{"by-id-hit"}
+        seed_by_id_missing: context("history/live-queries", "seed-by-id-missing-drift", "", "offline") => failed{"by-id-missing"}
+        seed_by_term_hit: context("history/live-queries", "seed-by-term-hit-drift", "", "offline") => failed{"by-term-hit"}
+        seed_by_term_none: context("history/live-queries", "seed-by-term-none-drift", "", "offline") => failed{"by-term-none"}
+        seed_by_term_ambiguous: context("history/live-queries", "seed-by-term-ambiguous-drift", "", "offline") => failed{"by-term-ambiguous"}
+        seed_rows_limited: context("history/live-queries", "seed-rows-limited-drift", "", "offline") => failed{"rows-limited"}
+        seed_rows_over_limit: context("history/live-queries", "seed-rows-over-limit-drift", "", "offline") => failed{"rows-over-limit"}
+        seed_add_first: context("history/live-queries", "seed-add-first-drift", "", "offline") => failed{"add-first"}
+        seed_add_duplicate: context("history/live-queries", "seed-add-duplicate-drift", "", "offline") => failed{"add-duplicate"}
+        seed_cover_bytes_some: context("history/live-queries", "seed-cover-bytes-some-drift", "", "offline") => failed{"cover-bytes-some"}
+        seed_cover_empty_none: context("history/live-queries", "seed-cover-empty-none-drift", "", "offline") => failed{"cover-empty-none"}
+        seed_cover_missing: context("history/live-queries", "seed-cover-missing-drift", "", "offline") => failed{"cover-missing"}
+        seed_hostile_term: context("history/live-queries", "seed-hostile-term-drift", "", "offline") => failed{"hostile-term"}
+        seed_rows_full: context("history/live-queries", "seed-rows-full-drift", "", "offline") => failed{"rows-full"}
+        seed_refused_error: context("history/live-queries", "seed-refused-error-drift", "", "offline") => failed{"refused-error"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.close_ok, "closed", c, "close-ok")
+            failed
+            ok evidence close_ok_evidence => match call require_text(got.by_id_hit, "{\"id\":4,\"display_name\":\"Bob\"}", c, "by-id-hit")
+                failed
+                ok evidence by_id_hit_evidence => match call require_text(got.by_id_missing, "sql::row_missing", c, "by-id-missing")
+                    failed
+                    ok evidence by_id_missing_evidence => match call require_text(got.by_term_hit, "{\"case\":\"option::some<app::account_row>\",\"value\":{\"value\":{\"id\":4,\"display_name\":\"Bob\"}}}", c, "by-term-hit")
+                        failed
+                        ok evidence by_term_hit_evidence => match call require_text(got.by_term_none, "{\"case\":\"option::none\",\"value\":{}}", c, "by-term-none")
+                            failed
+                            ok evidence by_term_none_evidence => match call require_text(got.by_term_ambiguous, "sql::row_count", c, "by-term-ambiguous")
+                                failed
+                                ok evidence by_term_ambiguous_evidence => match call require_text(got.rows_limited, "[{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"}]", c, "rows-limited")
+                                    failed
+                                    ok evidence rows_limited_evidence => match call require_text(got.rows_over_limit, "sql::row_limit", c, "rows-over-limit")
+                                        failed
+                                        ok evidence rows_over_limit_evidence => match call require_text(got.add_first, "1", c, "add-first")
+                                            failed
+                                            ok evidence add_first_evidence => match call require_text(got.add_duplicate, "sql::constraint_failed", c, "add-duplicate")
+                                                failed
+                                                ok evidence add_duplicate_evidence => match call require_text(got.cover_bytes_some, "1[65,66]{\"case\":\"option::some<str>\",\"value\":{\"value\":\"n\"}}", c, "cover-bytes-some")
+                                                    failed
+                                                    ok evidence cover_bytes_some_evidence => match call require_text(got.cover_empty_none, "2[]{\"case\":\"option::none\",\"value\":{}}", c, "cover-empty-none")
+                                                        failed
+                                                        ok evidence cover_empty_none_evidence => match call require_text(got.cover_missing, "sql::row_missing", c, "cover-missing")
+                                                            failed
+                                                            ok evidence cover_missing_evidence => match call require_text(got.hostile_term, "{\"case\":\"option::none\",\"value\":{}}", c, "hostile-term")
+                                                                failed
+                                                                ok evidence hostile_term_evidence => match call require_text(got.rows_full, "[{\"id\":1,\"display_name\":\"Ann\"},{\"id\":2,\"display_name\":\"Jason\"},{\"id\":3,\"display_name\":\"Mason\"},{\"id\":4,\"display_name\":\"Bob\"},{\"id\":5,\"display_name\":\"O'Brien\"},{\"id\":6,\"display_name\":\"Zoë\"},{\"id\":7,\"display_name\":\"Zed\"}]", c, "rows-full")
+                                                                    failed
+                                                                    ok evidence rows_full_evidence => match call require_text(got.refused_error, "sql::connection_failed", c, "refused-error")
+                                                                        failed
+                                                                        ok evidence refused_error_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m22_h002: "m22-h002" => ok test_case("history/live-queries", ["history", "m22"], ["can-bun-archive", "can-test-postgres-url"], 360000, [check_ref("close-ok"), check_ref("by-id-hit"), check_ref("by-id-missing"), check_ref("by-term-hit"), check_ref("by-term-none"), check_ref("by-term-ambiguous"), check_ref("rows-limited"), check_ref("rows-over-limit"), check_ref("add-first"), check_ref("add-duplicate"), check_ref("cover-bytes-some"), check_ref("cover-empty-none"), check_ref("cover-missing"), check_ref("hostile-term"), check_ref("rows-full"), check_ref("refused-error")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m22-h002"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/live-queries", ["history", "m22"], ["can-bun-archive", "can-test-postgres-url"], 360000, [check_ref("close-ok"), check_ref("by-id-hit"), check_ref("by-id-missing"), check_ref("by-term-hit"), check_ref("by-term-none"), check_ref("by-term-ambiguous"), check_ref("rows-limited"), check_ref("rows-over-limit"), check_ref("add-first"), check_ref("add-duplicate"), check_ref("cover-bytes-some"), check_ref("cover-empty-none"), check_ref("cover-missing"), check_ref("hostile-term"), check_ref("rows-full"), check_ref("refused-error")], callable case_body)

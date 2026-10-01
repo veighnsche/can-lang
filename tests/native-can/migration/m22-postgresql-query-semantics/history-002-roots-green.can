@@ -1,0 +1,258 @@
+package m22history002roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M22 HISTORY-002 "live SQL queries: roots green, seed inventory".
+/// Source: tests/integration/sql_test.go symbol TestCurrentSQLQueriesLive
+/// (L186-347); env gates (L187-194); live context (L207); seed and
+/// driver paths (L235-236); setup report (L255-262); teardown defer
+/// (L263); seed schema tests/integration/testdata/sql/queries.sql.
+/// Disposition: migrate (this row ports TestCurrentSQLQueriesLive to
+/// ordinary Can functions; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): the static live baseline as the green root:
+/// both environment gates plus skip messages, the live context, the
+/// seed/driver fixture paths, the setup and teardown driver modes,
+/// the PostgreSQL 17 version prefix, the six-account/two-cover seed
+/// counts, and the two seed table names.
+/// ADAPTATION (recorded, with source lines): the context timeout pins
+/// int minutes (6) from 6*time.Minute (L207); setup counts pin int
+/// (6/2) from the float64 report comparison (L260); teardown-mode
+/// pins the deferred drive teardown (L263), which runs on both
+/// success and failure.
+/// Facet map (sql_test.go legs): env-archive pins CAN_BUN_ARCHIVE
+/// (L187); skip-archive pins the staged-query skip (L189);
+/// env-postgres-url pins CAN_TEST_POSTGRES_URL (L191);
+/// skip-postgres-url pins the disposable-database skip (L193);
+/// ctx-timeout-min pins 6 (L207); seed-path pins queries.sql (L235);
+/// driver-path pins queries-driver.ts (L236); driver-setup-mode pins
+/// setup (L255); driver-teardown-mode pins teardown (L263);
+/// version-prefix pins PostgreSQL 17. (L257); seed-accounts pins 6
+/// and seed-cover pins 2 (L260); accounts-table and cover-table pin
+/// the seed tables (queries.sql L9/L21).
+/// Answer semantics live in history-002-live-semantics.can; the fd-3
+/// delivery plus ok/fault run shape lives in
+/// history-002-run-shape.can.
+/// Variants: none in this file (default only); the sixteen query
+/// variants live in live-semantics.
+/// Environment: CAN_BUN_ARCHIVE plus CAN_TEST_POSTGRES_URL gates;
+/// requires can-bun-archive and can-test-postgres-url.
+/// Logical gates SUITE/CAN/PROC/CHILD/DB/WORK/ENV and C/R/N/S/A
+/// identities bind at P23; no live run now. Accept gates P23/QD1/QF1
+/// are unmet. Descriptor timeout 360000ms mirrors the Go 6-minute
+/// ctx (L207).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QD1/QF1 unmet).
+/// Case history/live-roots checks: env-archive, skip-archive,
+/// env-postgres-url, skip-postgres-url, ctx-timeout-min, seed-path,
+/// driver-path, driver-setup-mode, driver-teardown-mode,
+/// version-prefix, seed-accounts, seed-cover, accounts-table,
+/// cover-table.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str env_archive
+    str skip_archive
+    str env_postgres_url
+    str skip_postgres_url
+    int ctx_timeout_min
+    str seed_path
+    str driver_path
+    str driver_setup_mode
+    str driver_teardown_mode
+    str version_prefix
+    int seed_accounts
+    int seed_cover
+    str accounts_table
+    str cover_table
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/live-roots", "default", "", "offline"), "env-archive" => ok "case history/live-roots variant default root env-archive run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/live-roots", "default", "", "offline"), "env-archive" => ok evidence("env-archive", "true", "true", true, "case history/live-roots variant default root env-archive run offline")
+        different: false, true, context("history/live-roots", "default", "", "offline"), "env-archive" => failed{"env-archive"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 6, 6, context("history/live-roots", "default", "", "offline"), "ctx-timeout-min" => ok evidence("ctx-timeout-min", "6", "6", true, "case history/live-roots variant default root ctx-timeout-min run offline")
+        different: 7, 6, context("history/live-roots", "default", "", "offline"), "ctx-timeout-min" => failed{"ctx-timeout-min"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "CAN_BUN_ARCHIVE", "CAN_BUN_ARCHIVE", context("history/live-roots", "default", "", "offline"), "env-archive" => ok evidence("env-archive", "CAN_BUN_ARCHIVE", "CAN_BUN_ARCHIVE", true, "case history/live-roots variant default root env-archive run offline")
+        different: "CAN_BUN_ARCHIVE_2", "CAN_BUN_ARCHIVE", context("history/live-roots", "default", "", "offline"), "env-archive" => failed{"env-archive"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        seed_env_archive: "seed-env-archive-drift" => ok observation("CAN_BUN_ARCHIVE_2", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        seed_skip_archive: "seed-skip-archive-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query checks", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        seed_env_postgres_url: "seed-env-postgres-url-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL_2", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        seed_skip_postgres_url: "seed-skip-postgres-url-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query runs", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        seed_ctx_timeout_min: "seed-ctx-timeout-min-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 5, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        seed_seed_path: "seed-seed-path-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries2.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        seed_driver_path: "seed-driver-path-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver2.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        seed_driver_setup_mode: "seed-driver-setup-mode-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "prepare", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        seed_driver_teardown_mode: "seed-driver-teardown-mode-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "destroy", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        seed_version_prefix: "seed-version-prefix-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 16.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        seed_seed_accounts: "seed-seed-accounts-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 5, 2, "can_i35_accounts", "can_i35_cover")
+        seed_seed_cover: "seed-seed-cover-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 1, "can_i35_accounts", "can_i35_cover")
+        seed_accounts_table: "seed-accounts-table-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts2", "can_i35_cover")
+        seed_cover_table: "seed-cover-table-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover2")
+    match variant_id
+        "seed-env-archive-drift" => ok observation("CAN_BUN_ARCHIVE_2", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        "seed-skip-archive-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query checks", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        "seed-env-postgres-url-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL_2", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        "seed-skip-postgres-url-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query runs", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        "seed-ctx-timeout-min-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 5, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        "seed-seed-path-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries2.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        "seed-driver-path-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver2.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        "seed-driver-setup-mode-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "prepare", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        "seed-driver-teardown-mode-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "destroy", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        "seed-version-prefix-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 16.", 6, 2, "can_i35_accounts", "can_i35_cover")
+        "seed-seed-accounts-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 5, 2, "can_i35_accounts", "can_i35_cover")
+        "seed-seed-cover-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 1, "can_i35_accounts", "can_i35_cover")
+        "seed-accounts-table-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts2", "can_i35_cover")
+        "seed-cover-table-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover2")
+        _ => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged SQL query execution", "CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", 6, "tests/integration/testdata/sql/queries.sql", "tests/integration/testdata/sql/queries-driver.ts", "setup", "teardown", "PostgreSQL 17.", 6, 2, "can_i35_accounts", "can_i35_cover")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m22_h002: "m22-h002" => ok [check("env-archive", "staging gate reads CAN_BUN_ARCHIVE"), check("skip-archive", "unset archive skips with the staged-query message"), check("env-postgres-url", "live gate reads CAN_TEST_POSTGRES_URL"), check("skip-postgres-url", "unset URL skips with the disposable-database message"), check("ctx-timeout-min", "live context spans 6 minutes"), check("seed-path", "setup consumes the queries.sql seed"), check("driver-path", "setup runs through queries-driver.ts"), check("driver-setup-mode", "setup mode prepares schema and counts"), check("driver-teardown-mode", "teardown mode drops schema after the run"), check("version-prefix", "live server reports PostgreSQL 17"), check("seed-accounts", "seed holds six accounts"), check("seed-cover", "seed holds two cover rows"), check("accounts-table", "seed creates can_i35_accounts"), check("cover-table", "seed creates can_i35_cover")]
+        other: "nope" => ok []
+    match scope is "m22-h002"
+        false => ok []
+        true => ok [check("env-archive", "staging gate reads CAN_BUN_ARCHIVE"), check("skip-archive", "unset archive skips with the staged-query message"), check("env-postgres-url", "live gate reads CAN_TEST_POSTGRES_URL"), check("skip-postgres-url", "unset URL skips with the disposable-database message"), check("ctx-timeout-min", "live context spans 6 minutes"), check("seed-path", "setup consumes the queries.sql seed"), check("driver-path", "setup runs through queries-driver.ts"), check("driver-setup-mode", "setup mode prepares schema and counts"), check("driver-teardown-mode", "teardown mode drops schema after the run"), check("version-prefix", "live server reports PostgreSQL 17"), check("seed-accounts", "seed holds six accounts"), check("seed-cover", "seed holds two cover rows"), check("accounts-table", "seed creates can_i35_accounts"), check("cover-table", "seed creates can_i35_cover")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/live-roots" => ok [expected_check("env-archive", "CAN_BUN_ARCHIVE"), expected_check("skip-archive", "set CAN_BUN_ARCHIVE for staged SQL query execution"), expected_check("env-postgres-url", "CAN_TEST_POSTGRES_URL"), expected_check("skip-postgres-url", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks"), expected_check("ctx-timeout-min", "6"), expected_check("seed-path", "tests/integration/testdata/sql/queries.sql"), expected_check("driver-path", "tests/integration/testdata/sql/queries-driver.ts"), expected_check("driver-setup-mode", "setup"), expected_check("driver-teardown-mode", "teardown"), expected_check("version-prefix", "PostgreSQL 17."), expected_check("seed-accounts", "6"), expected_check("seed-cover", "2"), expected_check("accounts-table", "can_i35_accounts"), expected_check("cover-table", "can_i35_cover")]
+        unknown: "nope" => ok []
+    match case is "history/live-roots"
+        false => ok []
+        true => ok [expected_check("env-archive", "CAN_BUN_ARCHIVE"), expected_check("skip-archive", "set CAN_BUN_ARCHIVE for staged SQL query execution"), expected_check("env-postgres-url", "CAN_TEST_POSTGRES_URL"), expected_check("skip-postgres-url", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks"), expected_check("ctx-timeout-min", "6"), expected_check("seed-path", "tests/integration/testdata/sql/queries.sql"), expected_check("driver-path", "tests/integration/testdata/sql/queries-driver.ts"), expected_check("driver-setup-mode", "setup"), expected_check("driver-teardown-mode", "teardown"), expected_check("version-prefix", "PostgreSQL 17."), expected_check("seed-accounts", "6"), expected_check("seed-cover", "2"), expected_check("accounts-table", "can_i35_accounts"), expected_check("cover-table", "can_i35_cover")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/live-roots", "default", "", "offline") => ok
+        seed_env_archive: context("history/live-roots", "seed-env-archive-drift", "", "offline") => failed{"env-archive"}
+        seed_skip_archive: context("history/live-roots", "seed-skip-archive-drift", "", "offline") => failed{"skip-archive"}
+        seed_env_postgres_url: context("history/live-roots", "seed-env-postgres-url-drift", "", "offline") => failed{"env-postgres-url"}
+        seed_skip_postgres_url: context("history/live-roots", "seed-skip-postgres-url-drift", "", "offline") => failed{"skip-postgres-url"}
+        seed_ctx_timeout_min: context("history/live-roots", "seed-ctx-timeout-min-drift", "", "offline") => failed{"ctx-timeout-min"}
+        seed_seed_path: context("history/live-roots", "seed-seed-path-drift", "", "offline") => failed{"seed-path"}
+        seed_driver_path: context("history/live-roots", "seed-driver-path-drift", "", "offline") => failed{"driver-path"}
+        seed_driver_setup_mode: context("history/live-roots", "seed-driver-setup-mode-drift", "", "offline") => failed{"driver-setup-mode"}
+        seed_driver_teardown_mode: context("history/live-roots", "seed-driver-teardown-mode-drift", "", "offline") => failed{"driver-teardown-mode"}
+        seed_version_prefix: context("history/live-roots", "seed-version-prefix-drift", "", "offline") => failed{"version-prefix"}
+        seed_seed_accounts: context("history/live-roots", "seed-seed-accounts-drift", "", "offline") => failed{"seed-accounts"}
+        seed_seed_cover: context("history/live-roots", "seed-seed-cover-drift", "", "offline") => failed{"seed-cover"}
+        seed_accounts_table: context("history/live-roots", "seed-accounts-table-drift", "", "offline") => failed{"accounts-table"}
+        seed_cover_table: context("history/live-roots", "seed-cover-table-drift", "", "offline") => failed{"cover-table"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.env_archive, "CAN_BUN_ARCHIVE", c, "env-archive")
+            failed
+            ok evidence env_archive_evidence => match call require_text(got.skip_archive, "set CAN_BUN_ARCHIVE for staged SQL query execution", c, "skip-archive")
+                failed
+                ok evidence skip_archive_evidence => match call require_text(got.env_postgres_url, "CAN_TEST_POSTGRES_URL", c, "env-postgres-url")
+                    failed
+                    ok evidence env_postgres_url_evidence => match call require_text(got.skip_postgres_url, "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for live query checks", c, "skip-postgres-url")
+                        failed
+                        ok evidence skip_postgres_url_evidence => match call require_int(got.ctx_timeout_min, 6, c, "ctx-timeout-min")
+                            failed
+                            ok evidence ctx_timeout_min_evidence => match call require_text(got.seed_path, "tests/integration/testdata/sql/queries.sql", c, "seed-path")
+                                failed
+                                ok evidence seed_path_evidence => match call require_text(got.driver_path, "tests/integration/testdata/sql/queries-driver.ts", c, "driver-path")
+                                    failed
+                                    ok evidence driver_path_evidence => match call require_text(got.driver_setup_mode, "setup", c, "driver-setup-mode")
+                                        failed
+                                        ok evidence driver_setup_mode_evidence => match call require_text(got.driver_teardown_mode, "teardown", c, "driver-teardown-mode")
+                                            failed
+                                            ok evidence driver_teardown_mode_evidence => match call require_text(got.version_prefix, "PostgreSQL 17.", c, "version-prefix")
+                                                failed
+                                                ok evidence version_prefix_evidence => match call require_int(got.seed_accounts, 6, c, "seed-accounts")
+                                                    failed
+                                                    ok evidence seed_accounts_evidence => match call require_int(got.seed_cover, 2, c, "seed-cover")
+                                                        failed
+                                                        ok evidence seed_cover_evidence => match call require_text(got.accounts_table, "can_i35_accounts", c, "accounts-table")
+                                                            failed
+                                                            ok evidence accounts_table_evidence => match call require_text(got.cover_table, "can_i35_cover", c, "cover-table")
+                                                                failed
+                                                                ok evidence cover_table_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m22_h002: "m22-h002" => ok test_case("history/live-roots", ["history", "m22"], ["can-bun-archive", "can-test-postgres-url"], 360000, [check_ref("env-archive"), check_ref("skip-archive"), check_ref("env-postgres-url"), check_ref("skip-postgres-url"), check_ref("ctx-timeout-min"), check_ref("seed-path"), check_ref("driver-path"), check_ref("driver-setup-mode"), check_ref("driver-teardown-mode"), check_ref("version-prefix"), check_ref("seed-accounts"), check_ref("seed-cover"), check_ref("accounts-table"), check_ref("cover-table")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m22-h002"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/live-roots", ["history", "m22"], ["can-bun-archive", "can-test-postgres-url"], 360000, [check_ref("env-archive"), check_ref("skip-archive"), check_ref("env-postgres-url"), check_ref("skip-postgres-url"), check_ref("ctx-timeout-min"), check_ref("seed-path"), check_ref("driver-path"), check_ref("driver-setup-mode"), check_ref("driver-teardown-mode"), check_ref("version-prefix"), check_ref("seed-accounts"), check_ref("seed-cover"), check_ref("accounts-table"), check_ref("cover-table")], callable case_body)
