@@ -1,0 +1,319 @@
+package m30history054base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-054 "Runner shell: flags plus provenance".
+/// Source: tests/baseline/run.sh (L1-45 CLI plus
+/// provenance legs; full runs live in
+/// history-054-run-shape.can; the report shape lives
+/// in history-054-roots-green.can).
+/// Disposition: migrate (this row pins the runner
+/// static pact as reviewable Can facts; the old shell
+/// stays until the integrator retires it after every
+/// linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): CLI surface plus variants
+/// plus provenance collection: shebang, strict flags,
+/// default mode, smoke plus full plus help flags,
+/// help slice, unknown-arg refusal, fresh-dir plus
+/// retention plus trap legs, four provenance calls,
+/// both record leaves, and the variant plus leg
+/// tallies.
+/// ADAPTATION (recorded, with source lines): each pin
+/// holds its shell inner bytes; counts are int
+/// tallied from the guarded legs.
+/// shebang pins the L1 launcher line; strict-mode
+/// pins set -euo pipefail (L10); default-mode pins
+/// smoke (L12); flag-smoke pins --smoke (L14);
+/// flag-full pins --full (L15); flag-help pins
+/// -h|--help (L16); help-range pins 2,12p (L17);
+/// unknown-wording pins the refusal inner (L21);
+/// fresh-dir pins mktemp -d (L26); keep-name pins
+/// KEEP_DIR (L27); keep-on pins 1 (L27); trap-call
+/// pins the rm inner (L28); prov-bun-ver pins
+/// bun --version (L31); prov-bun-rev pins
+/// bun --revision (L32); prov-go-ver pins go version
+/// (L33); prov-git-call pins the rev-parse inner
+/// (L34); report-leaf pins baseline-report.json
+/// (L35); steps-leaf pins steps.tsv (L41);
+/// unknown-exit pins int (2) from L21;
+/// variant-count pins int (3); prov-count pins int
+/// (4) from L31-34.
+/// Facet map (script order): shebang, strict-mode,
+/// default-mode, flag-smoke, flag-full, flag-help,
+/// help-range, unknown-wording, fresh-dir, keep-name,
+/// keep-on, trap-call, prov-bun-ver, prov-bun-rev,
+/// prov-go-ver, prov-git-call, report-leaf,
+/// steps-leaf, unknown-exit, variant-count,
+/// prov-count.
+/// The report shape pin lives in
+/// history-054-roots-green.can; the step run shape
+/// lives in history-054-run-shape.can.
+/// Variants: three (--smoke, --full, KEEP_DIR
+/// retention); default plus seeded drifts only.
+/// Environment: one gate (local Bun/Go/Git; full is
+/// broad and currently deferred); binds at P23,
+/// requires [] now (offline only).
+/// Logical gates bind at P23; no live run now.
+/// Accept gate P23 is unmet.
+/// Timeout 120000ms is the offline default bound (no
+/// shell timeout here; binds at P23 like the M11
+/// no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23
+/// unmet; full-mode execution deferred).
+/// Case history/baseline-base checks: shebang, strict-mode,
+/// default-mode, flag-smoke, flag-full, flag-help,
+/// help-range, unknown-wording, fresh-dir, keep-name,
+/// keep-on, trap-call, prov-bun-ver, prov-bun-rev,
+/// prov-go-ver, prov-git-call, report-leaf,
+/// steps-leaf, unknown-exit, variant-count, prov-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str shebang
+    str strict_mode
+    str default_mode
+    str flag_smoke
+    str flag_full
+    str flag_help
+    str help_range
+    str unknown_wording
+    str fresh_dir
+    str keep_name
+    str keep_on
+    str trap_call
+    str prov_bun_ver
+    str prov_bun_rev
+    str prov_go_ver
+    str prov_git_call
+    str report_leaf
+    str steps_leaf
+    int unknown_exit
+    int variant_count
+    int prov_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/baseline-base", "default", "", "offline"), "shebang" => ok "case history/baseline-base variant default root shebang run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/baseline-base", "default", "", "offline"), "shebang" => ok evidence("shebang", "true", "true", true, "case history/baseline-base variant default root shebang run offline")
+        different: false, true, context("history/baseline-base", "default", "", "offline"), "shebang" => failed{"shebang"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("history/baseline-base", "default", "", "offline"), "unknown-exit" => ok evidence("unknown-exit", "2", "2", true, "case history/baseline-base variant default root unknown-exit run offline")
+        different: 1, 2, context("history/baseline-base", "default", "", "offline"), "unknown-exit" => failed{"unknown-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "#!/usr/bin/env bash", "#!/usr/bin/env bash", context("history/baseline-base", "default", "", "offline"), "shebang" => ok evidence("shebang", "#!/usr/bin/env bash", "#!/usr/bin/env bash", true, "case history/baseline-base variant default root shebang run offline")
+        different: "#!/usr/bin/env bash_2", "#!/usr/bin/env bash", context("history/baseline-base", "default", "", "offline"), "shebang" => failed{"shebang"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        seed_shebang: "seed-shebang-drift" => ok observation("#!/usr/bin/env bash_2", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        seed_strict_mode: "seed-strict-mode-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail_2", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        seed_default_mode: "seed-default-mode-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke_2", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        seed_flag_smoke: "seed-flag-smoke-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke_2", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        seed_flag_full: "seed-flag-full-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full_2", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        seed_flag_help: "seed-flag-help-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help_2", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        seed_help_range: "seed-help-range-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p_2", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        seed_unknown_wording: "seed-unknown-wording-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)_2", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        seed_fresh_dir: "seed-fresh-dir-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d_2", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        seed_keep_name: "seed-keep-name-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR_2", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        seed_keep_on: "seed-keep-on-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1_2", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        seed_trap_call: "seed-trap-call-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"_2", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        seed_prov_bun_ver: "seed-prov-bun-ver-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version_2", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        seed_prov_bun_rev: "seed-prov-bun-rev-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision_2", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        seed_prov_go_ver: "seed-prov-go-ver-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version_2", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        seed_prov_git_call: "seed-prov-git-call-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD_2", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        seed_report_leaf: "seed-report-leaf-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json_2", "steps.tsv", 2, 3, 4)
+        seed_steps_leaf: "seed-steps-leaf-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv_2", 2, 3, 4)
+        seed_unknown_exit: "seed-unknown-exit-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 1, 3, 4)
+        seed_variant_count: "seed-variant-count-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 2, 4)
+        seed_prov_count: "seed-prov-count-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 3)
+    match variant_id
+        "seed-shebang-drift" => ok observation("#!/usr/bin/env bash_2", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        "seed-strict-mode-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail_2", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        "seed-default-mode-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke_2", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        "seed-flag-smoke-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke_2", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        "seed-flag-full-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full_2", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        "seed-flag-help-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help_2", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        "seed-help-range-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p_2", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        "seed-unknown-wording-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)_2", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        "seed-fresh-dir-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d_2", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        "seed-keep-name-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR_2", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        "seed-keep-on-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1_2", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        "seed-trap-call-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"_2", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        "seed-prov-bun-ver-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version_2", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        "seed-prov-bun-rev-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision_2", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        "seed-prov-go-ver-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version_2", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        "seed-prov-git-call-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD_2", "baseline-report.json", "steps.tsv", 2, 3, 4)
+        "seed-report-leaf-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json_2", "steps.tsv", 2, 3, 4)
+        "seed-steps-leaf-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv_2", 2, 3, 4)
+        "seed-unknown-exit-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 1, 3, 4)
+        "seed-variant-count-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 2, 4)
+        "seed-prov-count-drift" => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 3)
+        _ => ok observation("#!/usr/bin/env bash", "set -euo pipefail", "smoke", "--smoke", "--full", "-h|--help", "2,12p", "unknown argument: $1 (want --smoke or --full)", "mktemp -d", "KEEP_DIR", "1", "rm -rf \"$DIR\"", "bun --version", "bun --revision", "go version", "git -C \"$ROOT\" rev-parse HEAD", "baseline-report.json", "steps.tsv", 2, 3, 4)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h054: "m30-h054" => ok [check("shebang", "shebang pins the bash launcher line"), check("strict-mode", "strict shell flags are pinned"), check("default-mode", "default mode pins smoke"), check("flag-smoke", "smoke flag spelling is pinned"), check("flag-full", "full flag spelling is pinned"), check("flag-help", "help flag spelling is pinned"), check("help-range", "help prints the header slice"), check("unknown-wording", "unknown arg wording is pinned"), check("fresh-dir", "fresh dir uses mktemp"), check("keep-name", "retention var name is pinned"), check("keep-on", "retention on-value is pinned"), check("trap-call", "exit trap clears the fresh dir"), check("prov-bun-ver", "bun version call is pinned"), check("prov-bun-rev", "bun revision call is pinned"), check("prov-go-ver", "go version call is pinned"), check("prov-git-call", "git revision call is pinned"), check("report-leaf", "report leaf name is pinned"), check("steps-leaf", "steps leaf name is pinned"), check("unknown-exit", "unknown arg exits two"), check("variant-count", "three variants exist"), check("prov-count", "four provenance legs exist")]
+        other: "nope" => ok []
+    match scope is "m30-h054"
+        false => ok []
+        true => ok [check("shebang", "shebang pins the bash launcher line"), check("strict-mode", "strict shell flags are pinned"), check("default-mode", "default mode pins smoke"), check("flag-smoke", "smoke flag spelling is pinned"), check("flag-full", "full flag spelling is pinned"), check("flag-help", "help flag spelling is pinned"), check("help-range", "help prints the header slice"), check("unknown-wording", "unknown arg wording is pinned"), check("fresh-dir", "fresh dir uses mktemp"), check("keep-name", "retention var name is pinned"), check("keep-on", "retention on-value is pinned"), check("trap-call", "exit trap clears the fresh dir"), check("prov-bun-ver", "bun version call is pinned"), check("prov-bun-rev", "bun revision call is pinned"), check("prov-go-ver", "go version call is pinned"), check("prov-git-call", "git revision call is pinned"), check("report-leaf", "report leaf name is pinned"), check("steps-leaf", "steps leaf name is pinned"), check("unknown-exit", "unknown arg exits two"), check("variant-count", "three variants exist"), check("prov-count", "four provenance legs exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/baseline-base" => ok [expected_check("shebang", "#!/usr/bin/env bash"), expected_check("strict-mode", "set -euo pipefail"), expected_check("default-mode", "smoke"), expected_check("flag-smoke", "--smoke"), expected_check("flag-full", "--full"), expected_check("flag-help", "-h|--help"), expected_check("help-range", "2,12p"), expected_check("unknown-wording", "unknown argument: $1 (want --smoke or --full)"), expected_check("fresh-dir", "mktemp -d"), expected_check("keep-name", "KEEP_DIR"), expected_check("keep-on", "1"), expected_check("trap-call", "rm -rf \"$DIR\""), expected_check("prov-bun-ver", "bun --version"), expected_check("prov-bun-rev", "bun --revision"), expected_check("prov-go-ver", "go version"), expected_check("prov-git-call", "git -C \"$ROOT\" rev-parse HEAD"), expected_check("report-leaf", "baseline-report.json"), expected_check("steps-leaf", "steps.tsv"), expected_check("unknown-exit", "2"), expected_check("variant-count", "3"), expected_check("prov-count", "4")]
+        unknown: "nope" => ok []
+    match case is "history/baseline-base"
+        false => ok []
+        true => ok [expected_check("shebang", "#!/usr/bin/env bash"), expected_check("strict-mode", "set -euo pipefail"), expected_check("default-mode", "smoke"), expected_check("flag-smoke", "--smoke"), expected_check("flag-full", "--full"), expected_check("flag-help", "-h|--help"), expected_check("help-range", "2,12p"), expected_check("unknown-wording", "unknown argument: $1 (want --smoke or --full)"), expected_check("fresh-dir", "mktemp -d"), expected_check("keep-name", "KEEP_DIR"), expected_check("keep-on", "1"), expected_check("trap-call", "rm -rf \"$DIR\""), expected_check("prov-bun-ver", "bun --version"), expected_check("prov-bun-rev", "bun --revision"), expected_check("prov-go-ver", "go version"), expected_check("prov-git-call", "git -C \"$ROOT\" rev-parse HEAD"), expected_check("report-leaf", "baseline-report.json"), expected_check("steps-leaf", "steps.tsv"), expected_check("unknown-exit", "2"), expected_check("variant-count", "3"), expected_check("prov-count", "4")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/baseline-base", "default", "", "offline") => ok
+        seed_shebang: context("history/baseline-base", "seed-shebang-drift", "", "offline") => failed{"shebang"}
+        seed_strict_mode: context("history/baseline-base", "seed-strict-mode-drift", "", "offline") => failed{"strict-mode"}
+        seed_default_mode: context("history/baseline-base", "seed-default-mode-drift", "", "offline") => failed{"default-mode"}
+        seed_flag_smoke: context("history/baseline-base", "seed-flag-smoke-drift", "", "offline") => failed{"flag-smoke"}
+        seed_flag_full: context("history/baseline-base", "seed-flag-full-drift", "", "offline") => failed{"flag-full"}
+        seed_flag_help: context("history/baseline-base", "seed-flag-help-drift", "", "offline") => failed{"flag-help"}
+        seed_help_range: context("history/baseline-base", "seed-help-range-drift", "", "offline") => failed{"help-range"}
+        seed_unknown_wording: context("history/baseline-base", "seed-unknown-wording-drift", "", "offline") => failed{"unknown-wording"}
+        seed_fresh_dir: context("history/baseline-base", "seed-fresh-dir-drift", "", "offline") => failed{"fresh-dir"}
+        seed_keep_name: context("history/baseline-base", "seed-keep-name-drift", "", "offline") => failed{"keep-name"}
+        seed_keep_on: context("history/baseline-base", "seed-keep-on-drift", "", "offline") => failed{"keep-on"}
+        seed_trap_call: context("history/baseline-base", "seed-trap-call-drift", "", "offline") => failed{"trap-call"}
+        seed_prov_bun_ver: context("history/baseline-base", "seed-prov-bun-ver-drift", "", "offline") => failed{"prov-bun-ver"}
+        seed_prov_bun_rev: context("history/baseline-base", "seed-prov-bun-rev-drift", "", "offline") => failed{"prov-bun-rev"}
+        seed_prov_go_ver: context("history/baseline-base", "seed-prov-go-ver-drift", "", "offline") => failed{"prov-go-ver"}
+        seed_prov_git_call: context("history/baseline-base", "seed-prov-git-call-drift", "", "offline") => failed{"prov-git-call"}
+        seed_report_leaf: context("history/baseline-base", "seed-report-leaf-drift", "", "offline") => failed{"report-leaf"}
+        seed_steps_leaf: context("history/baseline-base", "seed-steps-leaf-drift", "", "offline") => failed{"steps-leaf"}
+        seed_unknown_exit: context("history/baseline-base", "seed-unknown-exit-drift", "", "offline") => failed{"unknown-exit"}
+        seed_variant_count: context("history/baseline-base", "seed-variant-count-drift", "", "offline") => failed{"variant-count"}
+        seed_prov_count: context("history/baseline-base", "seed-prov-count-drift", "", "offline") => failed{"prov-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.shebang, "#!/usr/bin/env bash", c, "shebang")
+            failed
+            ok evidence shebang_evidence => match call require_text(got.strict_mode, "set -euo pipefail", c, "strict-mode")
+                failed
+                ok evidence strict_mode_evidence => match call require_text(got.default_mode, "smoke", c, "default-mode")
+                    failed
+                    ok evidence default_mode_evidence => match call require_text(got.flag_smoke, "--smoke", c, "flag-smoke")
+                        failed
+                        ok evidence flag_smoke_evidence => match call require_text(got.flag_full, "--full", c, "flag-full")
+                            failed
+                            ok evidence flag_full_evidence => match call require_text(got.flag_help, "-h|--help", c, "flag-help")
+                                failed
+                                ok evidence flag_help_evidence => match call require_text(got.help_range, "2,12p", c, "help-range")
+                                    failed
+                                    ok evidence help_range_evidence => match call require_text(got.unknown_wording, "unknown argument: $1 (want --smoke or --full)", c, "unknown-wording")
+                                        failed
+                                        ok evidence unknown_wording_evidence => match call require_text(got.fresh_dir, "mktemp -d", c, "fresh-dir")
+                                            failed
+                                            ok evidence fresh_dir_evidence => match call require_text(got.keep_name, "KEEP_DIR", c, "keep-name")
+                                                failed
+                                                ok evidence keep_name_evidence => match call require_text(got.keep_on, "1", c, "keep-on")
+                                                    failed
+                                                    ok evidence keep_on_evidence => match call require_text(got.trap_call, "rm -rf \"$DIR\"", c, "trap-call")
+                                                        failed
+                                                        ok evidence trap_call_evidence => match call require_text(got.prov_bun_ver, "bun --version", c, "prov-bun-ver")
+                                                            failed
+                                                            ok evidence prov_bun_ver_evidence => match call require_text(got.prov_bun_rev, "bun --revision", c, "prov-bun-rev")
+                                                                failed
+                                                                ok evidence prov_bun_rev_evidence => match call require_text(got.prov_go_ver, "go version", c, "prov-go-ver")
+                                                                    failed
+                                                                    ok evidence prov_go_ver_evidence => match call require_text(got.prov_git_call, "git -C \"$ROOT\" rev-parse HEAD", c, "prov-git-call")
+                                                                        failed
+                                                                        ok evidence prov_git_call_evidence => match call require_text(got.report_leaf, "baseline-report.json", c, "report-leaf")
+                                                                            failed
+                                                                            ok evidence report_leaf_evidence => match call require_text(got.steps_leaf, "steps.tsv", c, "steps-leaf")
+                                                                                failed
+                                                                                ok evidence steps_leaf_evidence => match call require_int(got.unknown_exit, 2, c, "unknown-exit")
+                                                                                    failed
+                                                                                    ok evidence unknown_exit_evidence => match call require_int(got.variant_count, 3, c, "variant-count")
+                                                                                        failed
+                                                                                        ok evidence variant_count_evidence => match call require_int(got.prov_count, 4, c, "prov-count")
+                                                                                            failed
+                                                                                            ok evidence prov_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h054: "m30-h054" => ok test_case("history/baseline-base", ["history", "m30"], [], 120000, [check_ref("shebang"), check_ref("strict-mode"), check_ref("default-mode"), check_ref("flag-smoke"), check_ref("flag-full"), check_ref("flag-help"), check_ref("help-range"), check_ref("unknown-wording"), check_ref("fresh-dir"), check_ref("keep-name"), check_ref("keep-on"), check_ref("trap-call"), check_ref("prov-bun-ver"), check_ref("prov-bun-rev"), check_ref("prov-go-ver"), check_ref("prov-git-call"), check_ref("report-leaf"), check_ref("steps-leaf"), check_ref("unknown-exit"), check_ref("variant-count"), check_ref("prov-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h054"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/baseline-base", ["history", "m30"], [], 120000, [check_ref("shebang"), check_ref("strict-mode"), check_ref("default-mode"), check_ref("flag-smoke"), check_ref("flag-full"), check_ref("flag-help"), check_ref("help-range"), check_ref("unknown-wording"), check_ref("fresh-dir"), check_ref("keep-name"), check_ref("keep-on"), check_ref("trap-call"), check_ref("prov-bun-ver"), check_ref("prov-bun-rev"), check_ref("prov-go-ver"), check_ref("prov-git-call"), check_ref("report-leaf"), check_ref("steps-leaf"), check_ref("unknown-exit"), check_ref("variant-count"), check_ref("prov-count")], callable case_body)
