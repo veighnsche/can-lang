@@ -1,0 +1,317 @@
+package m30history050roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-050 "No deferred: sweep roots".
+/// Source: tests/baseline/t27_release_audit_test.go
+/// symbol TestT27NoDeferredMechanismPresent (L166-286)
+/// sweep legs (L172-209) plus the registry row shape
+/// (L250-260 plus L288-290).
+/// Disposition: historical_candidate (this row pins
+/// the TestT27NoDeferredMechanismPresent offline pact
+/// as reviewable Can facts; the old Go check stays
+/// until the integrator retires it after every linked
+/// row, variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the sweep roots: the four
+/// walk dirs, the two suffixes, the skip suffix, the
+/// row plus group shape, the two tag bytes, the live
+/// third-hit file, and the four tallies.
+/// ADAPTATION (recorded, with source lines): dir pins
+/// hold L178 bytes; suffix pins hold L183 bytes; skip
+/// pins hold L186 bytes; shape pins hold L251-260
+/// plus L288-290 spellings; tag pins hold L289-290
+/// inner bytes; extra-hit pins the live third-hit
+/// file (a tracked migration slice pinning an HTTP
+/// 401 marker at L76); hit-count pins the live scan
+/// tally (3); allow-count pins the Go map size (2).
+/// walk-dir-compiler pins compiler (L178);
+/// walk-dir-examples pins examples (L178);
+/// walk-dir-std pins std (L178);
+/// walk-dir-tests pins tests (L178);
+/// suffix-can pins .can (L183);
+/// suffix-go pins .go (L183);
+/// skip-test-suffix pins _test.go (L186);
+/// entry-type pins namedEntry (L251);
+/// entry-name-field pins Name (L289);
+/// entry-identity-field pins Identity (L290);
+/// group-kind-field pins kind (L259);
+/// group-entries-field pins entries (L260);
+/// entry-tag-name pins name (L289);
+/// entry-tag-identity pins identity (L290);
+/// numbered-extra-hit pins
+/// tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can
+/// (live third hit, md5 in evidence);
+/// walk-dir-count pins int (4) from L178;
+/// suffix-count pins int (2) from L183;
+/// numbered-hit-count pins int (3) live scan tally;
+/// numbered-allow-count pins int (2) from L173-176.
+/// Facet map (sweep in Go order): walk-dir-compiler,
+/// walk-dir-examples, walk-dir-std, walk-dir-tests,
+/// suffix-can, suffix-go, skip-test-suffix, entry-type,
+/// entry-name-field, entry-identity-field,
+/// group-kind-field, group-entries-field,
+/// entry-tag-name, entry-tag-identity,
+/// numbered-extra-hit, walk-dir-count, suffix-count,
+/// numbered-hit-count, numbered-allow-count.
+/// The anchor legs live in
+/// history-050-base-semantics.can; the run shape plus
+/// diagnostics live in history-050-run-shape.can.
+/// Variants: none (row lists zero variants; default
+/// plus seeded drifts only).
+/// Environment: one gate (Bun/Go/Git for T01 smoke or
+/// generator when applicable); binds at P23, requires
+/// [] now (offline only).
+/// Logical gates SUITE/DOC/FILES/PROC/BUILD/WORK bind
+/// at P23; no live run now. Accept needs a reviewed
+/// disposition; P23 binds only if retained live.
+/// Timeout 120000ms is the offline default bound (no
+/// Go timeout in this row; binds at P23 like the M11
+/// no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (reviewed
+/// disposition unmet).
+/// Case history/t27-no-deferred-roots checks: walk-dir-compiler,
+/// walk-dir-examples, walk-dir-std, walk-dir-tests, suffix-can,
+/// suffix-go, skip-test-suffix, entry-type, entry-name-field,
+/// entry-identity-field, group-kind-field, group-entries-field,
+/// entry-tag-name, entry-tag-identity, numbered-extra-hit,
+/// walk-dir-count, suffix-count, numbered-hit-count,
+/// numbered-allow-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str walk_dir_compiler
+    str walk_dir_examples
+    str walk_dir_std
+    str walk_dir_tests
+    str suffix_can
+    str suffix_go
+    str skip_test_suffix
+    str entry_type
+    str entry_name_field
+    str entry_identity_field
+    str group_kind_field
+    str group_entries_field
+    str entry_tag_name
+    str entry_tag_identity
+    str numbered_extra_hit
+    int walk_dir_count
+    int suffix_count
+    int numbered_hit_count
+    int numbered_allow_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/t27-no-deferred-roots", "default", "", "offline"), "walk-dir-compiler" => ok "case history/t27-no-deferred-roots variant default root walk-dir-compiler run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/t27-no-deferred-roots", "default", "", "offline"), "walk-dir-compiler" => ok evidence("walk-dir-compiler", "true", "true", true, "case history/t27-no-deferred-roots variant default root walk-dir-compiler run offline")
+        different: false, true, context("history/t27-no-deferred-roots", "default", "", "offline"), "walk-dir-compiler" => failed{"walk-dir-compiler"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("history/t27-no-deferred-roots", "default", "", "offline"), "walk-dir-count" => ok evidence("walk-dir-count", "4", "4", true, "case history/t27-no-deferred-roots variant default root walk-dir-count run offline")
+        different: 3, 4, context("history/t27-no-deferred-roots", "default", "", "offline"), "walk-dir-count" => failed{"walk-dir-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "compiler", "compiler", context("history/t27-no-deferred-roots", "default", "", "offline"), "walk-dir-compiler" => ok evidence("walk-dir-compiler", "compiler", "compiler", true, "case history/t27-no-deferred-roots variant default root walk-dir-compiler run offline")
+        different: "compiler_2", "compiler", context("history/t27-no-deferred-roots", "default", "", "offline"), "walk-dir-compiler" => failed{"walk-dir-compiler"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        seed_walk_dir_compiler: "seed-walk-dir-compiler-drift" => ok observation("compiler_2", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        seed_walk_dir_examples: "seed-walk-dir-examples-drift" => ok observation("compiler", "examples_2", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        seed_walk_dir_std: "seed-walk-dir-std-drift" => ok observation("compiler", "examples", "std_2", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        seed_walk_dir_tests: "seed-walk-dir-tests-drift" => ok observation("compiler", "examples", "std", "tests_2", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        seed_suffix_can: "seed-suffix-can-drift" => ok observation("compiler", "examples", "std", "tests", ".can_2", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        seed_suffix_go: "seed-suffix-go-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go_2", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        seed_skip_test_suffix: "seed-skip-test-suffix-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go_2", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        seed_entry_type: "seed-entry-type-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry_2", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        seed_entry_name_field: "seed-entry-name-field-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name_2", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        seed_entry_identity_field: "seed-entry-identity-field-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity_2", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        seed_group_kind_field: "seed-group-kind-field-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind_2", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        seed_group_entries_field: "seed-group-entries-field-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries_2", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        seed_entry_tag_name: "seed-entry-tag-name-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name_2", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        seed_entry_tag_identity: "seed-entry-tag-identity-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity_2", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        seed_numbered_extra_hit: "seed-numbered-extra-hit-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can_2", 4, 2, 3, 2)
+        seed_walk_dir_count: "seed-walk-dir-count-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 3, 2, 3, 2)
+        seed_suffix_count: "seed-suffix-count-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 1, 3, 2)
+        seed_numbered_hit_count: "seed-numbered-hit-count-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 2, 2)
+        seed_numbered_allow_count: "seed-numbered-allow-count-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 1)
+    match variant_id
+        "seed-walk-dir-compiler-drift" => ok observation("compiler_2", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        "seed-walk-dir-examples-drift" => ok observation("compiler", "examples_2", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        "seed-walk-dir-std-drift" => ok observation("compiler", "examples", "std_2", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        "seed-walk-dir-tests-drift" => ok observation("compiler", "examples", "std", "tests_2", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        "seed-suffix-can-drift" => ok observation("compiler", "examples", "std", "tests", ".can_2", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        "seed-suffix-go-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go_2", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        "seed-skip-test-suffix-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go_2", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        "seed-entry-type-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry_2", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        "seed-entry-name-field-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name_2", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        "seed-entry-identity-field-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity_2", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        "seed-group-kind-field-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind_2", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        "seed-group-entries-field-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries_2", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        "seed-entry-tag-name-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name_2", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        "seed-entry-tag-identity-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity_2", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+        "seed-numbered-extra-hit-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can_2", 4, 2, 3, 2)
+        "seed-walk-dir-count-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 3, 2, 3, 2)
+        "seed-suffix-count-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 1, 3, 2)
+        "seed-numbered-hit-count-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 2, 2)
+        "seed-numbered-allow-count-drift" => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 1)
+        _ => ok observation("compiler", "examples", "std", "tests", ".can", ".go", "_test.go", "namedEntry", "Name", "Identity", "kind", "entries", "name", "identity", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", 4, 2, 3, 2)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h050: "m30-h050" => ok [check("walk-dir-compiler", "sweep keeps the compiler dir"), check("walk-dir-examples", "sweep keeps the examples dir"), check("walk-dir-std", "sweep keeps the std dir"), check("walk-dir-tests", "sweep keeps the tests dir"), check("suffix-can", "sweep keeps the can suffix"), check("suffix-go", "sweep keeps the go suffix"), check("skip-test-suffix", "sweep skips the test suffix"), check("entry-type", "rows keep their row name"), check("entry-name-field", "rows keep the Name field"), check("entry-identity-field", "rows keep the Identity field"), check("group-kind-field", "groups keep the kind field"), check("group-entries-field", "groups keep the entries field"), check("entry-tag-name", "rows keep the name tag"), check("entry-tag-identity", "rows keep the identity tag"), check("numbered-extra-hit", "third hit keeps its file"), check("walk-dir-count", "four sweep dirs exist"), check("suffix-count", "two sweep suffixes exist"), check("numbered-hit-count", "three live hits exist"), check("numbered-allow-count", "two allow entries exist")]
+        other: "nope" => ok []
+    match scope is "m30-h050"
+        false => ok []
+        true => ok [check("walk-dir-compiler", "sweep keeps the compiler dir"), check("walk-dir-examples", "sweep keeps the examples dir"), check("walk-dir-std", "sweep keeps the std dir"), check("walk-dir-tests", "sweep keeps the tests dir"), check("suffix-can", "sweep keeps the can suffix"), check("suffix-go", "sweep keeps the go suffix"), check("skip-test-suffix", "sweep skips the test suffix"), check("entry-type", "rows keep their row name"), check("entry-name-field", "rows keep the Name field"), check("entry-identity-field", "rows keep the Identity field"), check("group-kind-field", "groups keep the kind field"), check("group-entries-field", "groups keep the entries field"), check("entry-tag-name", "rows keep the name tag"), check("entry-tag-identity", "rows keep the identity tag"), check("numbered-extra-hit", "third hit keeps its file"), check("walk-dir-count", "four sweep dirs exist"), check("suffix-count", "two sweep suffixes exist"), check("numbered-hit-count", "three live hits exist"), check("numbered-allow-count", "two allow entries exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/t27-no-deferred-roots" => ok [expected_check("walk-dir-compiler", "compiler"), expected_check("walk-dir-examples", "examples"), expected_check("walk-dir-std", "std"), expected_check("walk-dir-tests", "tests"), expected_check("suffix-can", ".can"), expected_check("suffix-go", ".go"), expected_check("skip-test-suffix", "_test.go"), expected_check("entry-type", "namedEntry"), expected_check("entry-name-field", "Name"), expected_check("entry-identity-field", "Identity"), expected_check("group-kind-field", "kind"), expected_check("group-entries-field", "entries"), expected_check("entry-tag-name", "name"), expected_check("entry-tag-identity", "identity"), expected_check("numbered-extra-hit", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can"), expected_check("walk-dir-count", "4"), expected_check("suffix-count", "2"), expected_check("numbered-hit-count", "3"), expected_check("numbered-allow-count", "2")]
+        unknown: "nope" => ok []
+    match case is "history/t27-no-deferred-roots"
+        false => ok []
+        true => ok [expected_check("walk-dir-compiler", "compiler"), expected_check("walk-dir-examples", "examples"), expected_check("walk-dir-std", "std"), expected_check("walk-dir-tests", "tests"), expected_check("suffix-can", ".can"), expected_check("suffix-go", ".go"), expected_check("skip-test-suffix", "_test.go"), expected_check("entry-type", "namedEntry"), expected_check("entry-name-field", "Name"), expected_check("entry-identity-field", "Identity"), expected_check("group-kind-field", "kind"), expected_check("group-entries-field", "entries"), expected_check("entry-tag-name", "name"), expected_check("entry-tag-identity", "identity"), expected_check("numbered-extra-hit", "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can"), expected_check("walk-dir-count", "4"), expected_check("suffix-count", "2"), expected_check("numbered-hit-count", "3"), expected_check("numbered-allow-count", "2")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/t27-no-deferred-roots", "default", "", "offline") => ok
+        seed_walk_dir_compiler: context("history/t27-no-deferred-roots", "seed-walk-dir-compiler-drift", "", "offline") => failed{"walk-dir-compiler"}
+        seed_walk_dir_examples: context("history/t27-no-deferred-roots", "seed-walk-dir-examples-drift", "", "offline") => failed{"walk-dir-examples"}
+        seed_walk_dir_std: context("history/t27-no-deferred-roots", "seed-walk-dir-std-drift", "", "offline") => failed{"walk-dir-std"}
+        seed_walk_dir_tests: context("history/t27-no-deferred-roots", "seed-walk-dir-tests-drift", "", "offline") => failed{"walk-dir-tests"}
+        seed_suffix_can: context("history/t27-no-deferred-roots", "seed-suffix-can-drift", "", "offline") => failed{"suffix-can"}
+        seed_suffix_go: context("history/t27-no-deferred-roots", "seed-suffix-go-drift", "", "offline") => failed{"suffix-go"}
+        seed_skip_test_suffix: context("history/t27-no-deferred-roots", "seed-skip-test-suffix-drift", "", "offline") => failed{"skip-test-suffix"}
+        seed_entry_type: context("history/t27-no-deferred-roots", "seed-entry-type-drift", "", "offline") => failed{"entry-type"}
+        seed_entry_name_field: context("history/t27-no-deferred-roots", "seed-entry-name-field-drift", "", "offline") => failed{"entry-name-field"}
+        seed_entry_identity_field: context("history/t27-no-deferred-roots", "seed-entry-identity-field-drift", "", "offline") => failed{"entry-identity-field"}
+        seed_group_kind_field: context("history/t27-no-deferred-roots", "seed-group-kind-field-drift", "", "offline") => failed{"group-kind-field"}
+        seed_group_entries_field: context("history/t27-no-deferred-roots", "seed-group-entries-field-drift", "", "offline") => failed{"group-entries-field"}
+        seed_entry_tag_name: context("history/t27-no-deferred-roots", "seed-entry-tag-name-drift", "", "offline") => failed{"entry-tag-name"}
+        seed_entry_tag_identity: context("history/t27-no-deferred-roots", "seed-entry-tag-identity-drift", "", "offline") => failed{"entry-tag-identity"}
+        seed_numbered_extra_hit: context("history/t27-no-deferred-roots", "seed-numbered-extra-hit-drift", "", "offline") => failed{"numbered-extra-hit"}
+        seed_walk_dir_count: context("history/t27-no-deferred-roots", "seed-walk-dir-count-drift", "", "offline") => failed{"walk-dir-count"}
+        seed_suffix_count: context("history/t27-no-deferred-roots", "seed-suffix-count-drift", "", "offline") => failed{"suffix-count"}
+        seed_numbered_hit_count: context("history/t27-no-deferred-roots", "seed-numbered-hit-count-drift", "", "offline") => failed{"numbered-hit-count"}
+        seed_numbered_allow_count: context("history/t27-no-deferred-roots", "seed-numbered-allow-count-drift", "", "offline") => failed{"numbered-allow-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.walk_dir_compiler, "compiler", c, "walk-dir-compiler")
+            failed
+            ok evidence walk_dir_compiler_evidence => match call require_text(got.walk_dir_examples, "examples", c, "walk-dir-examples")
+                failed
+                ok evidence walk_dir_examples_evidence => match call require_text(got.walk_dir_std, "std", c, "walk-dir-std")
+                    failed
+                    ok evidence walk_dir_std_evidence => match call require_text(got.walk_dir_tests, "tests", c, "walk-dir-tests")
+                        failed
+                        ok evidence walk_dir_tests_evidence => match call require_text(got.suffix_can, ".can", c, "suffix-can")
+                            failed
+                            ok evidence suffix_can_evidence => match call require_text(got.suffix_go, ".go", c, "suffix-go")
+                                failed
+                                ok evidence suffix_go_evidence => match call require_text(got.skip_test_suffix, "_test.go", c, "skip-test-suffix")
+                                    failed
+                                    ok evidence skip_test_suffix_evidence => match call require_text(got.entry_type, "namedEntry", c, "entry-type")
+                                        failed
+                                        ok evidence entry_type_evidence => match call require_text(got.entry_name_field, "Name", c, "entry-name-field")
+                                            failed
+                                            ok evidence entry_name_field_evidence => match call require_text(got.entry_identity_field, "Identity", c, "entry-identity-field")
+                                                failed
+                                                ok evidence entry_identity_field_evidence => match call require_text(got.group_kind_field, "kind", c, "group-kind-field")
+                                                    failed
+                                                    ok evidence group_kind_field_evidence => match call require_text(got.group_entries_field, "entries", c, "group-entries-field")
+                                                        failed
+                                                        ok evidence group_entries_field_evidence => match call require_text(got.entry_tag_name, "name", c, "entry-tag-name")
+                                                            failed
+                                                            ok evidence entry_tag_name_evidence => match call require_text(got.entry_tag_identity, "identity", c, "entry-tag-identity")
+                                                                failed
+                                                                ok evidence entry_tag_identity_evidence => match call require_text(got.numbered_extra_hit, "tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can", c, "numbered-extra-hit")
+                                                                    failed
+                                                                    ok evidence numbered_extra_hit_evidence => match call require_int(got.walk_dir_count, 4, c, "walk-dir-count")
+                                                                        failed
+                                                                        ok evidence walk_dir_count_evidence => match call require_int(got.suffix_count, 2, c, "suffix-count")
+                                                                            failed
+                                                                            ok evidence suffix_count_evidence => match call require_int(got.numbered_hit_count, 3, c, "numbered-hit-count")
+                                                                                failed
+                                                                                ok evidence numbered_hit_count_evidence => match call require_int(got.numbered_allow_count, 2, c, "numbered-allow-count")
+                                                                                    failed
+                                                                                    ok evidence numbered_allow_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h050: "m30-h050" => ok test_case("history/t27-no-deferred-roots", ["history", "m30"], [], 120000, [check_ref("walk-dir-compiler"), check_ref("walk-dir-examples"), check_ref("walk-dir-std"), check_ref("walk-dir-tests"), check_ref("suffix-can"), check_ref("suffix-go"), check_ref("skip-test-suffix"), check_ref("entry-type"), check_ref("entry-name-field"), check_ref("entry-identity-field"), check_ref("group-kind-field"), check_ref("group-entries-field"), check_ref("entry-tag-name"), check_ref("entry-tag-identity"), check_ref("numbered-extra-hit"), check_ref("walk-dir-count"), check_ref("suffix-count"), check_ref("numbered-hit-count"), check_ref("numbered-allow-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h050"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/t27-no-deferred-roots", ["history", "m30"], [], 120000, [check_ref("walk-dir-compiler"), check_ref("walk-dir-examples"), check_ref("walk-dir-std"), check_ref("walk-dir-tests"), check_ref("suffix-can"), check_ref("suffix-go"), check_ref("skip-test-suffix"), check_ref("entry-type"), check_ref("entry-name-field"), check_ref("entry-identity-field"), check_ref("group-kind-field"), check_ref("group-entries-field"), check_ref("entry-tag-name"), check_ref("entry-tag-identity"), check_ref("numbered-extra-hit"), check_ref("walk-dir-count"), check_ref("suffix-count"), check_ref("numbered-hit-count"), check_ref("numbered-allow-count")], callable case_body)
