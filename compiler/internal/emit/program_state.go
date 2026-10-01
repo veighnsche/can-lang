@@ -74,6 +74,7 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 		builder.declareHttpPeerState()
 		builder.declareNativeValuesState()
 		builder.declareDescriptorState()
+		builder.declareCState()
 		builder.declareStreamState()
 		builder.declareWebSocketState()
 	}
@@ -116,6 +117,7 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 		builder.initializeHttpPeerState()
 		builder.initializeNativeValuesState()
 		builder.initializeDescriptorState()
+		builder.initializeCState()
 		builder.initializeStreamState()
 		builder.initializeWebSocketState()
 	}
@@ -478,6 +480,7 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 		imports = append(imports, builder.assembly.httpPeerStateImports(runtime)...)
 		imports = append(imports, builder.assembly.nativeValuesStateImports(runtime)...)
 		imports = append(imports, builder.assembly.descriptorStateImports(runtime)...)
+		imports = append(imports, builder.assembly.cStateImports(runtime)...)
 		imports = append(imports, builder.assembly.streamStateImports(runtime)...)
 		imports = append(imports, builder.assembly.websocketStateImports(runtime)...)
 	}
@@ -508,6 +511,7 @@ func stateValueImportNames() []ImportName {
 	names = append(names, httpPeerStateValueImportNames()...)
 	names = append(names, nativeValuesStateValueImportNames()...)
 	names = append(names, descriptorStateValueImportNames()...)
+	names = append(names, cStateValueImportNames()...)
 	names = append(names, streamStateValueImportNames()...)
 	names = append(names, websocketStateValueImportNames()...)
 	names = append(names, cookiesStateValueImportNames()...)

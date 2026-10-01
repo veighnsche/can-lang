@@ -1,0 +1,23 @@
+package test_c_ingress
+    provides []
+    uses [c, option, test]
+fn int c_roundtrip
+    emits {test::invalid_grant, test::stale_handle}
+    given
+        str grant
+    asserts
+        probe: "ng1-0123456789abcdef0123456789abcdef" => ok 0
+    match chain
+        call test::grant_admit(grant) as test::owner owner
+        call c::parse_module(owner, "export const $canCase = 1;") as c::parsed_module parsed
+        call c::check_module(owner, c::manifest("c", [], [], c::manifest_entry("src/main.js", ".*", []), c::manifest_entry("src/assert.js", ".*", []), c::case_requirements([], [], [])), "executable", "src/main.js", "export const a = 1;") as str[] problems
+        test::invalid_grant
+        test::stale_handle
+        ok => ok 0
+fn void main
+    emits {}
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok
