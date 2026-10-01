@@ -125,6 +125,53 @@ func emitAssertionCase(assembly *programAssembly, runtime string, test *ir.Asser
 	return Module{Path: path, Imports: imports, Body: body}, nil
 }
 
+// stagingRoot is one listable assertion identity in a staging entry.
+type stagingRoot struct {
+	Package     string `json:"package"`
+	Declaration string `json:"declaration"`
+	Name        string `json:"name"`
+}
+
+// emitStagingModules lowers every attached assertion into its own module
+// plus the staging entry module. The staging entry runs the suite like the
+// assertion entry, except --list prints the root identities as JSON without
+// touching any case body: listing never executes a subject.
+func emitStagingModules(assembly *programAssembly, runtime string) ([]Module, error) {
+	program := assembly.program
+	if len(program.Assertions) == 0 {
+		return nil, fmt.Errorf("project has no concrete assertions")
+	}
+	modules := []Module{}
+	entry := Module{Path: "entry.ts", Imports: []ModuleImport{
+		{Target: runtime + "/assert/runner.ts", Names: []ImportName{{"runAssertionRoot", "$canRunAssertionRoot"}}},
+		{Target: programStatePath, Names: []ImportName{{"$canInitialize", "$canInitialize"}}},
+		{Target: runtime + "/diagnostics.ts", Names: []ImportName{{"configureDiagnostics", "$canConfigureDiagnostics"}}},
+	}}
+	var cases []string
+	roots := make([]stagingRoot, 0, len(program.Assertions))
+	for i, test := range program.Assertions {
+		caseModule, err := emitAssertionCase(assembly, runtime, test)
+		if err != nil {
+			return nil, err
+		}
+		modules = append(modules, caseModule)
+		name := fmt.Sprintf("$canCase%d", i)
+		cases = append(cases, name)
+		entry.Imports = append(entry.Imports, ModuleImport{Target: caseModule.Path, Names: []ImportName{{"$canCase", name}}})
+		roots = append(roots, stagingRoot{Package: test.Root.Package, Declaration: test.Root.Declaration, Name: test.Root.Name})
+	}
+	rootsJSON, err := json.Marshal(roots)
+	if err != nil {
+		return nil, err
+	}
+	entry.Body = "const $canStageRoots = " + string(rootsJSON) + ";\n" +
+		"const $canStageArgs = process.argv.slice(2);\n" +
+		"if ($canStageArgs.includes(\"--list\")) {\nprocess.stdout.write(JSON.stringify($canStageRoots) + \"\\n\");\n} else {\n" +
+		"process.exitCode = await $canRunAssertionRoot([" + strings.Join(cases, ",") + "], () => {$canConfigureDiagnostics(import.meta.url); $canInitialize();}, $canStageArgs);\n}\n"
+	modules = append(modules, entry)
+	return modules, nil
+}
+
 // emitExecutableEntry builds the production entry module invoking the
 // checked main region through the entry supervisor.
 func emitExecutableEntry(assembly *programAssembly, runtime string) Module {

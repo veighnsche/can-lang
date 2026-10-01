@@ -32,6 +32,37 @@ func AssertionModulesPaired(program *check.Program, runtime string, dependencies
 	return programModules(program, runtime, dependencies, true, pairing)
 }
 
+// StagingModules emits the same program with assertion roots plus the
+// staging entry: --list prints root identities without executing subjects,
+// otherwise the suite runs. Used only by the nonpublishing suite staging
+// path; production emission never includes the staging entry.
+func StagingModules(program *check.Program, runtime string, dependencies []ir.Artifact) ([]ir.Artifact, error) {
+	assembly, err := assembleProgramBindings(program)
+	if err != nil {
+		return nil, err
+	}
+	state, assetFiles, err := emitStateModule(assembly, runtime)
+	if err != nil {
+		return nil, err
+	}
+	modules := []Module{state}
+	authored, err := emitAuthoredModules(assembly, runtime)
+	if err != nil {
+		return nil, err
+	}
+	modules = append(modules, authored...)
+	entries, err := emitStagingModules(assembly, runtime)
+	if err != nil {
+		return nil, err
+	}
+	modules = append(modules, entries...)
+	artifacts, err := Modules(modules, dependencies...)
+	if err != nil {
+		return nil, err
+	}
+	return append(artifacts, assetFiles...), nil
+}
+
 // programModules assembles a program from its shared state module, authored
 // modules and entry artifacts in that fixed order. Domain bindings live in
 // runtime_*.go, the state module in program_state.go, authored modules in
