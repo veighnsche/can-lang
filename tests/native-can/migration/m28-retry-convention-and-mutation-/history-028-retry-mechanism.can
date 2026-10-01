@@ -1,0 +1,189 @@
+package m28history028mechanism
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M28 HISTORY-028 "retry green: shared-helper mechanism (FIFO, sets,
+/// capture/re-raise, traces, fault transparency)".
+/// Source: tests/failure-conventions/retry_test.go symbol
+/// TestRetryConventionGreen (lines 9-13 doc comment: one shared retry helper
+/// serves two unrelated failure sets with oracle-verified attempt/sequence
+/// contracts, faithful capture, re-raise round-trips, wrapper-around-wrapper
+/// traces, and standard-fault transparency).
+/// Related fixtures: tests/failure-conventions/retry/src/retry/retry.can,
+/// tests/failure-conventions/retry/src/profiles/profiles.can,
+/// tests/failure-conventions/retry/src/billing/billing.can.
+/// Disposition: MIGRATE. The mechanism file pins the static contracts that
+/// make the 35 green roots meaningful: a single generic helper over two
+/// unrelated failure sets with FIFO attempt sequencing.
+/// Protects (this file): one retry::retry serves both profiles and billing
+/// consumers with bound 2 (profiles.can:82, billing.can:72); the profiles
+/// failure set is exactly {unavailable, forbidden} (profiles.can:14-16) and
+/// the billing set exactly {over_limit, codec::invalid_data}
+/// (billing.can:12-14); adapters rebuild error values with identity and
+/// payloads intact (profiles.can:66-71, billing.can:55-60); read_profile,
+/// read_quote and read_traced re-raise terminal rejections to identical
+/// emitted errors; fetch_traced nests "directory.lookup" over "profiles.load"
+/// and read_traced recovers out.reason.cause.cause; standard failures
+/// propagate through retry untouched (retry emits {}, retry.can:27) and
+/// blast_kind pins "arithmetic" through the helper (profiles.can:141-147).
+/// Per-function green flags live in history-028-roots-green.can; report shape
+/// and provenance live in history-028-report-provenance.can.
+/// Variants: positive retry project only (profiles + billing). The no-retry
+/// mutant (first-outcome helper), the over-attempt mutant (bound 3 against
+/// two queued rows) and the fixed-bound comparison are sibling M28 rows:
+/// this file pins the green mechanism, not their rejections.
+/// Environment: CONV_BUNDLE or CAN_BUN_ARCHIVE; requires
+/// conv-bundle-or-can-bun-archive. Logical gates SUITE/DIAG/FAULT and C/R/N/S/A
+/// identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case retry/retry-mechanism checks: shared-helper, fifo-bound-two,
+/// profiles-failure-set, billing-failure-set, capture-faithful,
+/// reraise-roundtrip, traces-nested, faults-transparent, fault-kind.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool shared_helper
+    bool fifo_bound_two
+    bool profiles_failure_set
+    bool billing_failure_set
+    bool capture_faithful
+    bool reraise_roundtrip
+    bool traces_nested
+    bool faults_transparent
+    str fault_kind
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("retry/retry-mechanism", "default", "", "offline"), "shared-helper" => ok "case retry/retry-mechanism variant default root shared-helper run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("retry/retry-mechanism", "default", "", "offline"), "faults-transparent" => ok evidence("faults-transparent", "true", "true", true, "case retry/retry-mechanism variant default root faults-transparent run offline")
+        different: false, true, context("retry/retry-mechanism", "default", "", "offline"), "faults-transparent" => failed{"faults-transparent"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "arithmetic", "arithmetic", context("retry/retry-mechanism", "default", "", "offline"), "fault-kind" => ok evidence("fault-kind", "arithmetic", "arithmetic", true, "case retry/retry-mechanism variant default root fault-kind run offline")
+        different: "no-fault", "arithmetic", context("retry/retry-mechanism", "default", "", "offline"), "fault-kind" => failed{"fault-kind"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, true, true, true, true, true, true, "arithmetic")
+        seed_split_helper: "seed-split-helper" => ok observation(false, true, true, true, true, true, true, true, "arithmetic")
+        seed_bound_drift: "seed-bound-drift" => ok observation(true, false, true, true, true, true, true, true, "arithmetic")
+        seed_fault_swallow: "seed-fault-swallow" => ok observation(true, true, true, true, true, true, true, false, "no-fault")
+        seed_kind_missing: "seed-kind-missing" => ok observation(true, true, true, true, true, true, true, true, "")
+    match variant_id
+        "seed-split-helper" => ok observation(false, true, true, true, true, true, true, true, "arithmetic")
+        "seed-bound-drift" => ok observation(true, false, true, true, true, true, true, true, "arithmetic")
+        "seed-fault-swallow" => ok observation(true, true, true, true, true, true, true, false, "no-fault")
+        "seed-kind-missing" => ok observation(true, true, true, true, true, true, true, true, "")
+        _ => ok observation(true, true, true, true, true, true, true, true, "arithmetic")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m28_028: "m28-028" => ok [check("shared-helper", "one retry::retry serves profiles and billing consumers"), check("fifo-bound-two", "both consumers relay with bound 2 over two queued FIFO outcomes"), check("profiles-failure-set", "profiles load_failure is exactly unavailable plus forbidden"), check("billing-failure-set", "billing bill_failure is over_limit plus codec::invalid_data"), check("capture-faithful", "adapters rebuild error values with identity and payloads intact"), check("reraise-roundtrip", "read_* re-raise terminal rejections to identical emitted errors"), check("traces-nested", "fetch_traced nests directory.lookup over profiles.load; read_traced recovers the cause"), check("faults-transparent", "standard failures propagate through retry untouched"), check("fault-kind", "blast_kind pins arithmetic through the helper")]
+        other: "nope" => ok []
+    match scope is "m28-028"
+        false => ok []
+        true => ok [check("shared-helper", "one retry::retry serves profiles and billing consumers"), check("fifo-bound-two", "both consumers relay with bound 2 over two queued FIFO outcomes"), check("profiles-failure-set", "profiles load_failure is exactly unavailable plus forbidden"), check("billing-failure-set", "billing bill_failure is over_limit plus codec::invalid_data"), check("capture-faithful", "adapters rebuild error values with identity and payloads intact"), check("reraise-roundtrip", "read_* re-raise terminal rejections to identical emitted errors"), check("traces-nested", "fetch_traced nests directory.lookup over profiles.load; read_traced recovers the cause"), check("faults-transparent", "standard failures propagate through retry untouched"), check("fault-kind", "blast_kind pins arithmetic through the helper")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "retry/retry-mechanism" => ok [expected_check("shared-helper", "true"), expected_check("fifo-bound-two", "true"), expected_check("profiles-failure-set", "true"), expected_check("billing-failure-set", "true"), expected_check("capture-faithful", "true"), expected_check("reraise-roundtrip", "true"), expected_check("traces-nested", "true"), expected_check("faults-transparent", "true"), expected_check("fault-kind", "arithmetic")]
+        unknown: "nope" => ok []
+    match case is "retry/retry-mechanism"
+        false => ok []
+        true => ok [expected_check("shared-helper", "true"), expected_check("fifo-bound-two", "true"), expected_check("profiles-failure-set", "true"), expected_check("billing-failure-set", "true"), expected_check("capture-faithful", "true"), expected_check("reraise-roundtrip", "true"), expected_check("traces-nested", "true"), expected_check("faults-transparent", "true"), expected_check("fault-kind", "arithmetic")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("retry/retry-mechanism", "default", "", "offline") => ok
+        seed_split_helper: context("retry/retry-mechanism", "seed-split-helper", "", "offline") => failed{"shared-helper"}
+        seed_bound_drift: context("retry/retry-mechanism", "seed-bound-drift", "", "offline") => failed{"fifo-bound-two"}
+        seed_fault_swallow: context("retry/retry-mechanism", "seed-fault-swallow", "", "offline") => failed{"faults-transparent"}
+        seed_kind_missing: context("retry/retry-mechanism", "seed-kind-missing", "", "offline") => failed{"fault-kind"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.shared_helper, true, c, "shared-helper")
+            failed
+            ok evidence shared_evidence => match call require_bool(got.fifo_bound_two, true, c, "fifo-bound-two")
+                failed
+                ok evidence bound_evidence => match call require_bool(got.profiles_failure_set, true, c, "profiles-failure-set")
+                    failed
+                    ok evidence profiles_set_evidence => match call require_bool(got.billing_failure_set, true, c, "billing-failure-set")
+                        failed
+                        ok evidence billing_set_evidence => match call require_bool(got.capture_faithful, true, c, "capture-faithful")
+                            failed
+                            ok evidence capture_evidence => match call require_bool(got.reraise_roundtrip, true, c, "reraise-roundtrip")
+                                failed
+                                ok evidence reraise_evidence => match call require_bool(got.traces_nested, true, c, "traces-nested")
+                                    failed
+                                    ok evidence traces_evidence => match call require_bool(got.faults_transparent, true, c, "faults-transparent")
+                                        failed
+                                        ok evidence faults_evidence => match call require_text(got.fault_kind, "arithmetic", c, "fault-kind")
+                                            failed
+                                            ok evidence kind_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m28_028: "m28-028" => ok test_case("retry/retry-mechanism", ["retry", "m28"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("shared-helper"), check_ref("fifo-bound-two"), check_ref("profiles-failure-set"), check_ref("billing-failure-set"), check_ref("capture-faithful"), check_ref("reraise-roundtrip"), check_ref("traces-nested"), check_ref("faults-transparent"), check_ref("fault-kind")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m28-028"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("retry/retry-mechanism", ["retry", "m28"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("shared-helper"), check_ref("fifo-bound-two"), check_ref("profiles-failure-set"), check_ref("billing-failure-set"), check_ref("capture-faithful"), check_ref("reraise-roundtrip"), check_ref("traces-nested"), check_ref("faults-transparent"), check_ref("fault-kind")], callable case_body)
