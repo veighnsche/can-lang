@@ -1,0 +1,271 @@
+package i14
+    provides [enter_actor, read_actor, record_id, read_id, compare_id, settle_committed_postgres, settle_committed_sqlite, settle_committed_mysql, settle_rolled_back_postgres, settle_rolled_back_sqlite, settle_rolled_back_mysql, settle_unknown_postgres, settle_unknown_sqlite, settle_unknown_mysql, read_settlement, release_actor, read_release]
+    uses [db, test]
+
+/// Fresh-pool transaction operation wrappers (I14): one function
+/// per operation, except record_settlement, which splits one per
+/// outcome/engine word forced by the NT-I14 literal allowlists
+/// (I01 per-kind precedent). Wrappers are check-time-only:
+/// when-stubs pin the call shape and stub facts; rows execute
+/// live at the Q gate. Owners are admission-first (test::owner
+/// elides in rows). Rejection verdicts stay visible as
+/// db::db_fault{layer, code} (the adapter contract tests pin
+/// those verdicts instead).
+
+/// Enter one fresh-pool actor callback.
+fn db::callback_entry enter_actor
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str actor
+    asserts
+        fresh: "a1" => ok db::callback_entry(db::callback_entry_facts("a1", "conn:a1", 0, "sha256:stub"), "txn-token-stub")
+    match call db::enter_callback(owner, actor)
+        when
+            fresh: owner, "a1" => ok db::callback_entry(db::callback_entry_facts("a1", "conn:a1", 0, "sha256:stub"), "txn-token-stub")
+        test::stale_handle
+        db::db_fault
+        ok db::callback_entry got => ok got
+/// Re-read actor identity facts.
+fn db::actor_identity_facts read_actor
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str actor
+    asserts
+        fresh: "a1" => ok db::actor_identity_facts("a1", "conn:a1", "sha256:stub", 0, false, false)
+    match call db::actor_facts(owner, actor)
+        when
+            fresh: owner, "a1" => ok db::actor_identity_facts("a1", "conn:a1", "sha256:stub", 0, false, false)
+        test::stale_handle
+        db::db_fault
+        ok db::actor_identity_facts got => ok got
+/// Record the LAST_INSERT_ID bound to the actor handle.
+fn db::last_insert_id_record record_id
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str actor
+        str token
+        db::cell id
+    asserts
+        first: "a1", "txn-token-stub", db::number_cell("42") => ok db::last_insert_id_record("a1", "conn:a1", "sha256:stub", db::number_cell("42"), "sha256:stub")
+    match call db::record_last_insert_id(owner, actor, token, id)
+        when
+            first: owner, "a1", "txn-token-stub", db::number_cell("42") => ok db::last_insert_id_record("a1", "conn:a1", "sha256:stub", db::number_cell("42"), "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::last_insert_id_record got => ok got
+/// Re-read bound LAST_INSERT_ID facts.
+fn db::last_insert_id_record read_id
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str actor
+    asserts
+        first: "a1" => ok db::last_insert_id_record("a1", "conn:a1", "sha256:stub", db::number_cell("42"), "sha256:stub")
+    match call db::last_insert_id_facts(owner, actor)
+        when
+            first: owner, "a1" => ok db::last_insert_id_record("a1", "conn:a1", "sha256:stub", db::number_cell("42"), "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::last_insert_id_record got => ok got
+/// Compare a claimed LAST_INSERT_ID against bound facts, identity
+/// before value: wrong actor/connection mismatches [-1] even when
+/// the value matches; wrong values mismatch [0]. Never throws:
+/// emits stale_handle only.
+fn db::identity_comparison compare_id
+    emits {test::stale_handle}
+    given
+        test::owner owner
+        db::last_insert_id_record stored
+        db::last_insert_id_claim claimed
+    asserts
+        exact: db::last_insert_id_record("a1", "conn:a1", "sha256:stub", db::number_cell("42"), "sha256:stub"), db::last_insert_id_claim("a1", "conn:a1", db::number_cell("42")) => ok db::identity_comparison(true, [])
+        swapped: db::last_insert_id_record("a1", "conn:a1", "sha256:stub", db::number_cell("42"), "sha256:stub"), db::last_insert_id_claim("a2", "conn:a1", db::number_cell("42")) => ok db::identity_comparison(false, [-1])
+        drifted: db::last_insert_id_record("a1", "conn:a1", "sha256:stub", db::number_cell("42"), "sha256:stub"), db::last_insert_id_claim("a1", "conn:a1", db::number_cell("43")) => ok db::identity_comparison(false, [0])
+    match call db::compare_last_insert_id(owner, stored, claimed)
+        when
+            exact: owner, db::last_insert_id_record("a1", "conn:a1", "sha256:stub", db::number_cell("42"), "sha256:stub"), db::last_insert_id_claim("a1", "conn:a1", db::number_cell("42")) => ok db::identity_comparison(true, [])
+            swapped: owner, db::last_insert_id_record("a1", "conn:a1", "sha256:stub", db::number_cell("42"), "sha256:stub"), db::last_insert_id_claim("a2", "conn:a1", db::number_cell("42")) => ok db::identity_comparison(false, [-1])
+            drifted: owner, db::last_insert_id_record("a1", "conn:a1", "sha256:stub", db::number_cell("42"), "sha256:stub"), db::last_insert_id_claim("a1", "conn:a1", db::number_cell("43")) => ok db::identity_comparison(false, [0])
+        test::stale_handle
+        ok db::identity_comparison got => ok got
+/// Record a committed settlement observed on postgres.
+fn db::settlement_record settle_committed_postgres
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str actor
+        str token
+    asserts
+        first: "a1", "txn-token-stub" => ok db::settlement_record("a1", "conn:a1", "committed", "postgres", "sha256:stub")
+    match call db::record_settlement(owner, actor, token, "committed", "postgres")
+        when
+            first: owner, "a1", "txn-token-stub", "committed", "postgres" => ok db::settlement_record("a1", "conn:a1", "committed", "postgres", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::settlement_record got => ok got
+/// Record a committed settlement observed on sqlite.
+fn db::settlement_record settle_committed_sqlite
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str actor
+        str token
+    asserts
+        first: "a1", "txn-token-stub" => ok db::settlement_record("a1", "conn:a1", "committed", "sqlite", "sha256:stub")
+    match call db::record_settlement(owner, actor, token, "committed", "sqlite")
+        when
+            first: owner, "a1", "txn-token-stub", "committed", "sqlite" => ok db::settlement_record("a1", "conn:a1", "committed", "sqlite", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::settlement_record got => ok got
+/// Record a committed settlement observed on mysql.
+fn db::settlement_record settle_committed_mysql
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str actor
+        str token
+    asserts
+        first: "a1", "txn-token-stub" => ok db::settlement_record("a1", "conn:a1", "committed", "mysql", "sha256:stub")
+    match call db::record_settlement(owner, actor, token, "committed", "mysql")
+        when
+            first: owner, "a1", "txn-token-stub", "committed", "mysql" => ok db::settlement_record("a1", "conn:a1", "committed", "mysql", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::settlement_record got => ok got
+/// Record a rolled-back settlement observed on postgres.
+fn db::settlement_record settle_rolled_back_postgres
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str actor
+        str token
+    asserts
+        first: "a1", "txn-token-stub" => ok db::settlement_record("a1", "conn:a1", "rolled-back", "postgres", "sha256:stub")
+    match call db::record_settlement(owner, actor, token, "rolled-back", "postgres")
+        when
+            first: owner, "a1", "txn-token-stub", "rolled-back", "postgres" => ok db::settlement_record("a1", "conn:a1", "rolled-back", "postgres", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::settlement_record got => ok got
+/// Record a rolled-back settlement observed on sqlite.
+fn db::settlement_record settle_rolled_back_sqlite
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str actor
+        str token
+    asserts
+        first: "a1", "txn-token-stub" => ok db::settlement_record("a1", "conn:a1", "rolled-back", "sqlite", "sha256:stub")
+    match call db::record_settlement(owner, actor, token, "rolled-back", "sqlite")
+        when
+            first: owner, "a1", "txn-token-stub", "rolled-back", "sqlite" => ok db::settlement_record("a1", "conn:a1", "rolled-back", "sqlite", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::settlement_record got => ok got
+/// Record a rolled-back settlement observed on mysql.
+fn db::settlement_record settle_rolled_back_mysql
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str actor
+        str token
+    asserts
+        first: "a1", "txn-token-stub" => ok db::settlement_record("a1", "conn:a1", "rolled-back", "mysql", "sha256:stub")
+    match call db::record_settlement(owner, actor, token, "rolled-back", "mysql")
+        when
+            first: owner, "a1", "txn-token-stub", "rolled-back", "mysql" => ok db::settlement_record("a1", "conn:a1", "rolled-back", "mysql", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::settlement_record got => ok got
+/// Record an unknown settlement observed on postgres.
+fn db::settlement_record settle_unknown_postgres
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str actor
+        str token
+    asserts
+        first: "a1", "txn-token-stub" => ok db::settlement_record("a1", "conn:a1", "unknown", "postgres", "sha256:stub")
+    match call db::record_settlement(owner, actor, token, "unknown", "postgres")
+        when
+            first: owner, "a1", "txn-token-stub", "unknown", "postgres" => ok db::settlement_record("a1", "conn:a1", "unknown", "postgres", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::settlement_record got => ok got
+/// Record an unknown settlement observed on sqlite.
+fn db::settlement_record settle_unknown_sqlite
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str actor
+        str token
+    asserts
+        first: "a1", "txn-token-stub" => ok db::settlement_record("a1", "conn:a1", "unknown", "sqlite", "sha256:stub")
+    match call db::record_settlement(owner, actor, token, "unknown", "sqlite")
+        when
+            first: owner, "a1", "txn-token-stub", "unknown", "sqlite" => ok db::settlement_record("a1", "conn:a1", "unknown", "sqlite", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::settlement_record got => ok got
+/// Record an unknown settlement observed on mysql.
+fn db::settlement_record settle_unknown_mysql
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str actor
+        str token
+    asserts
+        first: "a1", "txn-token-stub" => ok db::settlement_record("a1", "conn:a1", "unknown", "mysql", "sha256:stub")
+    match call db::record_settlement(owner, actor, token, "unknown", "mysql")
+        when
+            first: owner, "a1", "txn-token-stub", "unknown", "mysql" => ok db::settlement_record("a1", "conn:a1", "unknown", "mysql", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::settlement_record got => ok got
+/// Re-read settlement facts; unsettled actors throw.
+fn db::settlement_record read_settlement
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str actor
+    asserts
+        first: "a1" => ok db::settlement_record("a1", "conn:a1", "committed", "postgres", "sha256:stub")
+    match call db::settlement_facts(owner, actor)
+        when
+            first: owner, "a1" => ok db::settlement_record("a1", "conn:a1", "committed", "postgres", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::settlement_record got => ok got
+/// Release the actor handle after settlement; early release refuses.
+fn db::release_record release_actor
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str actor
+        str token
+    asserts
+        freed: "a1", "txn-token-stub" => ok db::release_record("a1", "conn:a1", true, "sha256:stub")
+    match call db::release(owner, actor, token)
+        when
+            freed: owner, "a1", "txn-token-stub" => ok db::release_record("a1", "conn:a1", true, "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::release_record got => ok got
+/// Re-read the release acknowledgment.
+fn db::release_record read_release
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str actor
+    asserts
+        freed: "a1" => ok db::release_record("a1", "conn:a1", true, "sha256:stub")
+    match call db::release_ack(owner, actor)
+        when
+            freed: owner, "a1" => ok db::release_record("a1", "conn:a1", true, "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::release_record got => ok got
