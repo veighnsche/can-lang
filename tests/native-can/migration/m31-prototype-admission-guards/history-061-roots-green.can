@@ -1,0 +1,257 @@
+package m31history061roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M31 HISTORY-061 "Prototype admission: sweep roots".
+/// Source: tests/host-discrimination/admission_test.go
+/// symbol TestPrototypeCapabilitiesUnadmitted (L29-61)
+/// list shape (L23-27) plus the two inspected trees
+/// (L30 plus L52).
+/// Disposition: migrate (this row owns the
+/// TestPrototypeCapabilitiesUnadmitted offline pact
+/// as reviewable Can facts; the old Go check stays
+/// until the integrator retires it after every linked
+/// row, variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the sweep roots: the prefix
+/// list name, the two tree dirs, the two leaves, the
+/// row plus tag shape, the two leg calls, and the two
+/// tallies.
+/// ADAPTATION (recorded, with source lines): list pins
+/// hold L23 bytes; dir pins hold Join dir bytes;
+/// leaf pins hold Join leaf bytes; shape pins hold
+/// L35-37 spellings; call pins hold L47 plus L57
+/// selector bytes; counts pin ints tallied from the
+/// Go sites.
+/// list-name pins hypotheticalPackages (L23);
+/// catalogue-rel-dir pins compiler/internal/catalogue
+/// (L30); catalogue-leaf pins catalogue.json (L30);
+/// generated-rel-dir pins runtime (L52);
+/// generated-leaf pins catalogue.ts (L52);
+/// inventory-field pins Operations (L35);
+/// identity-tag pins identity (L36);
+/// operations-tag pins operations (L37);
+/// prefix-call pins strings.HasPrefix (L47);
+/// contains-call pins strings.Contains (L57);
+/// read-count pins int (2) from L30 plus L52;
+/// loop-count pins int (3) from L45, L46 plus L56.
+/// Facet map (sweep in Go order): list-name,
+/// catalogue-rel-dir, catalogue-leaf,
+/// generated-rel-dir, generated-leaf, inventory-field,
+/// identity-tag, operations-tag, prefix-call,
+/// contains-call, read-count, loop-count.
+/// The anchor legs live in
+/// history-061-base-semantics.can; the run shape plus
+/// diagnostics live in history-061-run-shape.can.
+/// Variants: none (row lists zero variants; default
+/// plus seeded drifts only).
+/// Environment: no gates (row lists zero environment
+/// gates; offline only).
+/// Logical gates SUITE/DOC/FILES/BUILD bind at P23;
+/// no live run now.
+/// Timeout 120000ms is the offline default bound (no
+/// Go timeout in this row; binds at P23 like the M11
+/// no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23 accept gate
+/// unmet).
+/// Case history/prototype-admission-roots checks:
+/// list-name, catalogue-rel-dir, catalogue-leaf,
+/// generated-rel-dir, generated-leaf, inventory-field,
+/// identity-tag, operations-tag, prefix-call,
+/// contains-call, read-count, loop-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str list_name
+    str catalogue_rel_dir
+    str catalogue_leaf
+    str generated_rel_dir
+    str generated_leaf
+    str inventory_field
+    str identity_tag
+    str operations_tag
+    str prefix_call
+    str contains_call
+    int read_count
+    int loop_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/prototype-admission-roots", "default", "", "offline"), "list-name" => ok "case history/prototype-admission-roots variant default root list-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/prototype-admission-roots", "default", "", "offline"), "list-name" => ok evidence("list-name", "true", "true", true, "case history/prototype-admission-roots variant default root list-name run offline")
+        different: false, true, context("history/prototype-admission-roots", "default", "", "offline"), "list-name" => failed{"list-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("history/prototype-admission-roots", "default", "", "offline"), "read-count" => ok evidence("read-count", "2", "2", true, "case history/prototype-admission-roots variant default root read-count run offline")
+        different: 1, 2, context("history/prototype-admission-roots", "default", "", "offline"), "read-count" => failed{"read-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "hypotheticalPackages", "hypotheticalPackages", context("history/prototype-admission-roots", "default", "", "offline"), "list-name" => ok evidence("list-name", "hypotheticalPackages", "hypotheticalPackages", true, "case history/prototype-admission-roots variant default root list-name run offline")
+        different: "hypotheticalPackages_2", "hypotheticalPackages", context("history/prototype-admission-roots", "default", "", "offline"), "list-name" => failed{"list-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains", 2, 3)
+        seed_list_name: "seed-list-name-drift" => ok observation("hypotheticalPackages_2", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains", 2, 3)
+        seed_catalogue_rel_dir: "seed-catalogue-rel-dir-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue_2", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains", 2, 3)
+        seed_catalogue_leaf: "seed-catalogue-leaf-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json_2", "runtime", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains", 2, 3)
+        seed_generated_rel_dir: "seed-generated-rel-dir-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime_2", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains", 2, 3)
+        seed_generated_leaf: "seed-generated-leaf-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts_2", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains", 2, 3)
+        seed_inventory_field: "seed-inventory-field-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations_2", "identity", "operations", "strings.HasPrefix", "strings.Contains", 2, 3)
+        seed_identity_tag: "seed-identity-tag-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity_2", "operations", "strings.HasPrefix", "strings.Contains", 2, 3)
+        seed_operations_tag: "seed-operations-tag-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity", "operations_2", "strings.HasPrefix", "strings.Contains", 2, 3)
+        seed_prefix_call: "seed-prefix-call-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix_2", "strings.Contains", 2, 3)
+        seed_contains_call: "seed-contains-call-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains_2", 2, 3)
+        seed_read_count: "seed-read-count-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains", 1, 3)
+        seed_loop_count: "seed-loop-count-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains", 2, 2)
+    match variant_id
+        "seed-list-name-drift" => ok observation("hypotheticalPackages_2", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains", 2, 3)
+        "seed-catalogue-rel-dir-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue_2", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains", 2, 3)
+        "seed-catalogue-leaf-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json_2", "runtime", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains", 2, 3)
+        "seed-generated-rel-dir-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime_2", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains", 2, 3)
+        "seed-generated-leaf-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts_2", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains", 2, 3)
+        "seed-inventory-field-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations_2", "identity", "operations", "strings.HasPrefix", "strings.Contains", 2, 3)
+        "seed-identity-tag-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity_2", "operations", "strings.HasPrefix", "strings.Contains", 2, 3)
+        "seed-operations-tag-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity", "operations_2", "strings.HasPrefix", "strings.Contains", 2, 3)
+        "seed-prefix-call-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix_2", "strings.Contains", 2, 3)
+        "seed-contains-call-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains_2", 2, 3)
+        "seed-read-count-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains", 1, 3)
+        "seed-loop-count-drift" => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains", 2, 2)
+        _ => ok observation("hypotheticalPackages", "compiler/internal/catalogue", "catalogue.json", "runtime", "catalogue.ts", "Operations", "identity", "operations", "strings.HasPrefix", "strings.Contains", 2, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m31_h061: "m31-h061" => ok [check("list-name", "prefix list keeps its name"), check("catalogue-rel-dir", "catalogue leg keeps its dir"), check("catalogue-leaf", "catalogue leg keeps its leaf"), check("generated-rel-dir", "generated leg keeps its dir"), check("generated-leaf", "generated leg keeps its leaf"), check("inventory-field", "inventory field keeps its spelling"), check("identity-tag", "identity tag keeps its spelling"), check("operations-tag", "operations tag keeps its spelling"), check("prefix-call", "prefix leg keeps its call"), check("contains-call", "generated leg keeps its call"), check("read-count", "two reads exist"), check("loop-count", "three loops exist")]
+        other: "nope" => ok []
+    match scope is "m31-h061"
+        false => ok []
+        true => ok [check("list-name", "prefix list keeps its name"), check("catalogue-rel-dir", "catalogue leg keeps its dir"), check("catalogue-leaf", "catalogue leg keeps its leaf"), check("generated-rel-dir", "generated leg keeps its dir"), check("generated-leaf", "generated leg keeps its leaf"), check("inventory-field", "inventory field keeps its spelling"), check("identity-tag", "identity tag keeps its spelling"), check("operations-tag", "operations tag keeps its spelling"), check("prefix-call", "prefix leg keeps its call"), check("contains-call", "generated leg keeps its call"), check("read-count", "two reads exist"), check("loop-count", "three loops exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/prototype-admission-roots" => ok [expected_check("list-name", "hypotheticalPackages"), expected_check("catalogue-rel-dir", "compiler/internal/catalogue"), expected_check("catalogue-leaf", "catalogue.json"), expected_check("generated-rel-dir", "runtime"), expected_check("generated-leaf", "catalogue.ts"), expected_check("inventory-field", "Operations"), expected_check("identity-tag", "identity"), expected_check("operations-tag", "operations"), expected_check("prefix-call", "strings.HasPrefix"), expected_check("contains-call", "strings.Contains"), expected_check("read-count", "2"), expected_check("loop-count", "3")]
+        unknown: "nope" => ok []
+    match case is "history/prototype-admission-roots"
+        false => ok []
+        true => ok [expected_check("list-name", "hypotheticalPackages"), expected_check("catalogue-rel-dir", "compiler/internal/catalogue"), expected_check("catalogue-leaf", "catalogue.json"), expected_check("generated-rel-dir", "runtime"), expected_check("generated-leaf", "catalogue.ts"), expected_check("inventory-field", "Operations"), expected_check("identity-tag", "identity"), expected_check("operations-tag", "operations"), expected_check("prefix-call", "strings.HasPrefix"), expected_check("contains-call", "strings.Contains"), expected_check("read-count", "2"), expected_check("loop-count", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/prototype-admission-roots", "default", "", "offline") => ok
+        seed_list_name: context("history/prototype-admission-roots", "seed-list-name-drift", "", "offline") => failed{"list-name"}
+        seed_catalogue_rel_dir: context("history/prototype-admission-roots", "seed-catalogue-rel-dir-drift", "", "offline") => failed{"catalogue-rel-dir"}
+        seed_catalogue_leaf: context("history/prototype-admission-roots", "seed-catalogue-leaf-drift", "", "offline") => failed{"catalogue-leaf"}
+        seed_generated_rel_dir: context("history/prototype-admission-roots", "seed-generated-rel-dir-drift", "", "offline") => failed{"generated-rel-dir"}
+        seed_generated_leaf: context("history/prototype-admission-roots", "seed-generated-leaf-drift", "", "offline") => failed{"generated-leaf"}
+        seed_inventory_field: context("history/prototype-admission-roots", "seed-inventory-field-drift", "", "offline") => failed{"inventory-field"}
+        seed_identity_tag: context("history/prototype-admission-roots", "seed-identity-tag-drift", "", "offline") => failed{"identity-tag"}
+        seed_operations_tag: context("history/prototype-admission-roots", "seed-operations-tag-drift", "", "offline") => failed{"operations-tag"}
+        seed_prefix_call: context("history/prototype-admission-roots", "seed-prefix-call-drift", "", "offline") => failed{"prefix-call"}
+        seed_contains_call: context("history/prototype-admission-roots", "seed-contains-call-drift", "", "offline") => failed{"contains-call"}
+        seed_read_count: context("history/prototype-admission-roots", "seed-read-count-drift", "", "offline") => failed{"read-count"}
+        seed_loop_count: context("history/prototype-admission-roots", "seed-loop-count-drift", "", "offline") => failed{"loop-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.list_name, "hypotheticalPackages", c, "list-name")
+            failed
+            ok evidence list_name_evidence => match call require_text(got.catalogue_rel_dir, "compiler/internal/catalogue", c, "catalogue-rel-dir")
+                failed
+                ok evidence catalogue_rel_dir_evidence => match call require_text(got.catalogue_leaf, "catalogue.json", c, "catalogue-leaf")
+                    failed
+                    ok evidence catalogue_leaf_evidence => match call require_text(got.generated_rel_dir, "runtime", c, "generated-rel-dir")
+                        failed
+                        ok evidence generated_rel_dir_evidence => match call require_text(got.generated_leaf, "catalogue.ts", c, "generated-leaf")
+                            failed
+                            ok evidence generated_leaf_evidence => match call require_text(got.inventory_field, "Operations", c, "inventory-field")
+                                failed
+                                ok evidence inventory_field_evidence => match call require_text(got.identity_tag, "identity", c, "identity-tag")
+                                    failed
+                                    ok evidence identity_tag_evidence => match call require_text(got.operations_tag, "operations", c, "operations-tag")
+                                        failed
+                                        ok evidence operations_tag_evidence => match call require_text(got.prefix_call, "strings.HasPrefix", c, "prefix-call")
+                                            failed
+                                            ok evidence prefix_call_evidence => match call require_text(got.contains_call, "strings.Contains", c, "contains-call")
+                                                failed
+                                                ok evidence contains_call_evidence => match call require_int(got.read_count, 2, c, "read-count")
+                                                    failed
+                                                    ok evidence read_count_evidence => match call require_int(got.loop_count, 3, c, "loop-count")
+                                                        failed
+                                                        ok evidence loop_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m31_h061: "m31-h061" => ok test_case("history/prototype-admission-roots", ["history", "m31"], [], 120000, [check_ref("list-name"), check_ref("catalogue-rel-dir"), check_ref("catalogue-leaf"), check_ref("generated-rel-dir"), check_ref("generated-leaf"), check_ref("inventory-field"), check_ref("identity-tag"), check_ref("operations-tag"), check_ref("prefix-call"), check_ref("contains-call"), check_ref("read-count"), check_ref("loop-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m31-h061"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/prototype-admission-roots", ["history", "m31"], [], 120000, [check_ref("list-name"), check_ref("catalogue-rel-dir"), check_ref("catalogue-leaf"), check_ref("generated-rel-dir"), check_ref("generated-leaf"), check_ref("inventory-field"), check_ref("identity-tag"), check_ref("operations-tag"), check_ref("prefix-call"), check_ref("contains-call"), check_ref("read-count"), check_ref("loop-count")], callable case_body)

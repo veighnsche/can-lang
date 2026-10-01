@@ -1,0 +1,253 @@
+package m31history061base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M31 HISTORY-061 "Prototype admission: legs plus needles".
+/// Source: tests/host-discrimination/admission_test.go
+/// symbol TestPrototypeCapabilitiesUnadmitted (L29-61):
+/// two no-admission legs, each pinning a file plus a
+/// needle (or a zero tally).
+/// Disposition: migrate (this row owns the
+/// TestPrototypeCapabilitiesUnadmitted offline pact
+/// as reviewable Can facts; the old Go check stays
+/// until the integrator retires it after every linked
+/// row, variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the two legs in Go order:
+/// the catalogue leg (file plus identity field plus
+/// three prefixes plus HasPrefix call) and the
+/// generated leg (file plus Contains call), with five
+/// tallies.
+/// ADAPTATION (recorded, with source lines): prefix
+/// pins hold Go quoted bytes; file pins hold Join arg
+/// bytes; field pins hold Go ident bytes; call pins
+/// hold Go selector bytes; counts pin ints tallied
+/// from the Go lists; tally pins hold live scan
+/// results over the two trees.
+/// prefix-storage pins can.std.storage@ (L24);
+/// prefix-clipboard pins can.std.clipboard@ (L25);
+/// prefix-chart pins can.std.chart@ (L26);
+/// catalogue-path pins
+/// compiler/internal/catalogue/catalogue.json (L30);
+/// identity-field pins Identity (L36);
+/// generated-path pins runtime/catalogue.ts (L52);
+/// prefix-count pins int (3) from L23-27;
+/// tree-count pins int (2) from L30 plus L52;
+/// operation-count pins int (377) live tally;
+/// catalogue-hit-count pins int (0) live HasPrefix
+/// tally; generated-hit-count pins int (0) live
+/// Contains tally.
+/// Facet map (legs in Go order): prefix-storage,
+/// prefix-clipboard, prefix-chart, catalogue-path,
+/// identity-field, generated-path, prefix-count,
+/// tree-count, operation-count, catalogue-hit-count,
+/// generated-hit-count.
+/// The sweep roots live in
+/// history-061-roots-green.can; the run shape plus
+/// diagnostics live in history-061-run-shape.can.
+/// Variants: none (row lists zero variants; default
+/// plus seeded drifts only).
+/// Environment: no gates (row lists zero environment
+/// gates; offline only).
+/// Logical gates SUITE/DOC/FILES/BUILD bind at P23;
+/// no live run now.
+/// Timeout 120000ms is the offline default bound (no
+/// Go timeout in this row; binds at P23 like the M11
+/// no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23 accept gate
+/// unmet).
+/// Case history/prototype-admission-base checks:
+/// prefix-storage, prefix-clipboard, prefix-chart,
+/// catalogue-path, identity-field, generated-path,
+/// prefix-count, tree-count, operation-count,
+/// catalogue-hit-count, generated-hit-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str prefix_storage
+    str prefix_clipboard
+    str prefix_chart
+    str catalogue_path
+    str identity_field
+    str generated_path
+    int prefix_count
+    int tree_count
+    int operation_count
+    int catalogue_hit_count
+    int generated_hit_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/prototype-admission-base", "default", "", "offline"), "prefix-storage" => ok "case history/prototype-admission-base variant default root prefix-storage run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/prototype-admission-base", "default", "", "offline"), "prefix-storage" => ok evidence("prefix-storage", "true", "true", true, "case history/prototype-admission-base variant default root prefix-storage run offline")
+        different: false, true, context("history/prototype-admission-base", "default", "", "offline"), "prefix-storage" => failed{"prefix-storage"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("history/prototype-admission-base", "default", "", "offline"), "prefix-count" => ok evidence("prefix-count", "3", "3", true, "case history/prototype-admission-base variant default root prefix-count run offline")
+        different: 2, 3, context("history/prototype-admission-base", "default", "", "offline"), "prefix-count" => failed{"prefix-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "can.std.storage@", "can.std.storage@", context("history/prototype-admission-base", "default", "", "offline"), "prefix-storage" => ok evidence("prefix-storage", "can.std.storage@", "can.std.storage@", true, "case history/prototype-admission-base variant default root prefix-storage run offline")
+        different: "can.std.storage@_2", "can.std.storage@", context("history/prototype-admission-base", "default", "", "offline"), "prefix-storage" => failed{"prefix-storage"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 3, 2, 377, 0, 0)
+        seed_prefix_storage: "seed-prefix-storage-drift" => ok observation("can.std.storage@_2", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 3, 2, 377, 0, 0)
+        seed_prefix_clipboard: "seed-prefix-clipboard-drift" => ok observation("can.std.storage@", "can.std.clipboard@_2", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 3, 2, 377, 0, 0)
+        seed_prefix_chart: "seed-prefix-chart-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@_2", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 3, 2, 377, 0, 0)
+        seed_catalogue_path: "seed-catalogue-path-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json_2", "Identity", "runtime/catalogue.ts", 3, 2, 377, 0, 0)
+        seed_identity_field: "seed-identity-field-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity_2", "runtime/catalogue.ts", 3, 2, 377, 0, 0)
+        seed_generated_path: "seed-generated-path-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts_2", 3, 2, 377, 0, 0)
+        seed_prefix_count: "seed-prefix-count-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 2, 2, 377, 0, 0)
+        seed_tree_count: "seed-tree-count-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 3, 1, 377, 0, 0)
+        seed_operation_count: "seed-operation-count-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 3, 2, 376, 0, 0)
+        seed_catalogue_hit_count: "seed-catalogue-hit-count-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 3, 2, 377, -1, 0)
+        seed_generated_hit_count: "seed-generated-hit-count-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 3, 2, 377, 0, -1)
+    match variant_id
+        "seed-prefix-storage-drift" => ok observation("can.std.storage@_2", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 3, 2, 377, 0, 0)
+        "seed-prefix-clipboard-drift" => ok observation("can.std.storage@", "can.std.clipboard@_2", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 3, 2, 377, 0, 0)
+        "seed-prefix-chart-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@_2", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 3, 2, 377, 0, 0)
+        "seed-catalogue-path-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json_2", "Identity", "runtime/catalogue.ts", 3, 2, 377, 0, 0)
+        "seed-identity-field-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity_2", "runtime/catalogue.ts", 3, 2, 377, 0, 0)
+        "seed-generated-path-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts_2", 3, 2, 377, 0, 0)
+        "seed-prefix-count-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 2, 2, 377, 0, 0)
+        "seed-tree-count-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 3, 1, 377, 0, 0)
+        "seed-operation-count-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 3, 2, 376, 0, 0)
+        "seed-catalogue-hit-count-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 3, 2, 377, -1, 0)
+        "seed-generated-hit-count-drift" => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 3, 2, 377, 0, -1)
+        _ => ok observation("can.std.storage@", "can.std.clipboard@", "can.std.chart@", "compiler/internal/catalogue/catalogue.json", "Identity", "runtime/catalogue.ts", 3, 2, 377, 0, 0)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m31_h061: "m31-h061" => ok [check("prefix-storage", "storage prefix keeps its bytes"), check("prefix-clipboard", "clipboard prefix keeps its bytes"), check("prefix-chart", "chart prefix keeps its bytes"), check("catalogue-path", "catalogue leg keeps its file"), check("identity-field", "identity field keeps its spelling"), check("generated-path", "generated leg keeps its file"), check("prefix-count", "three prefixes exist"), check("tree-count", "two trees exist"), check("operation-count", "live operations tally is pinned"), check("catalogue-hit-count", "zero catalogue hits exist"), check("generated-hit-count", "zero generated hits exist")]
+        other: "nope" => ok []
+    match scope is "m31-h061"
+        false => ok []
+        true => ok [check("prefix-storage", "storage prefix keeps its bytes"), check("prefix-clipboard", "clipboard prefix keeps its bytes"), check("prefix-chart", "chart prefix keeps its bytes"), check("catalogue-path", "catalogue leg keeps its file"), check("identity-field", "identity field keeps its spelling"), check("generated-path", "generated leg keeps its file"), check("prefix-count", "three prefixes exist"), check("tree-count", "two trees exist"), check("operation-count", "live operations tally is pinned"), check("catalogue-hit-count", "zero catalogue hits exist"), check("generated-hit-count", "zero generated hits exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/prototype-admission-base" => ok [expected_check("prefix-storage", "can.std.storage@"), expected_check("prefix-clipboard", "can.std.clipboard@"), expected_check("prefix-chart", "can.std.chart@"), expected_check("catalogue-path", "compiler/internal/catalogue/catalogue.json"), expected_check("identity-field", "Identity"), expected_check("generated-path", "runtime/catalogue.ts"), expected_check("prefix-count", "3"), expected_check("tree-count", "2"), expected_check("operation-count", "377"), expected_check("catalogue-hit-count", "0"), expected_check("generated-hit-count", "0")]
+        unknown: "nope" => ok []
+    match case is "history/prototype-admission-base"
+        false => ok []
+        true => ok [expected_check("prefix-storage", "can.std.storage@"), expected_check("prefix-clipboard", "can.std.clipboard@"), expected_check("prefix-chart", "can.std.chart@"), expected_check("catalogue-path", "compiler/internal/catalogue/catalogue.json"), expected_check("identity-field", "Identity"), expected_check("generated-path", "runtime/catalogue.ts"), expected_check("prefix-count", "3"), expected_check("tree-count", "2"), expected_check("operation-count", "377"), expected_check("catalogue-hit-count", "0"), expected_check("generated-hit-count", "0")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/prototype-admission-base", "default", "", "offline") => ok
+        seed_prefix_storage: context("history/prototype-admission-base", "seed-prefix-storage-drift", "", "offline") => failed{"prefix-storage"}
+        seed_prefix_clipboard: context("history/prototype-admission-base", "seed-prefix-clipboard-drift", "", "offline") => failed{"prefix-clipboard"}
+        seed_prefix_chart: context("history/prototype-admission-base", "seed-prefix-chart-drift", "", "offline") => failed{"prefix-chart"}
+        seed_catalogue_path: context("history/prototype-admission-base", "seed-catalogue-path-drift", "", "offline") => failed{"catalogue-path"}
+        seed_identity_field: context("history/prototype-admission-base", "seed-identity-field-drift", "", "offline") => failed{"identity-field"}
+        seed_generated_path: context("history/prototype-admission-base", "seed-generated-path-drift", "", "offline") => failed{"generated-path"}
+        seed_prefix_count: context("history/prototype-admission-base", "seed-prefix-count-drift", "", "offline") => failed{"prefix-count"}
+        seed_tree_count: context("history/prototype-admission-base", "seed-tree-count-drift", "", "offline") => failed{"tree-count"}
+        seed_operation_count: context("history/prototype-admission-base", "seed-operation-count-drift", "", "offline") => failed{"operation-count"}
+        seed_catalogue_hit_count: context("history/prototype-admission-base", "seed-catalogue-hit-count-drift", "", "offline") => failed{"catalogue-hit-count"}
+        seed_generated_hit_count: context("history/prototype-admission-base", "seed-generated-hit-count-drift", "", "offline") => failed{"generated-hit-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.prefix_storage, "can.std.storage@", c, "prefix-storage")
+            failed
+            ok evidence prefix_storage_evidence => match call require_text(got.prefix_clipboard, "can.std.clipboard@", c, "prefix-clipboard")
+                failed
+                ok evidence prefix_clipboard_evidence => match call require_text(got.prefix_chart, "can.std.chart@", c, "prefix-chart")
+                    failed
+                    ok evidence prefix_chart_evidence => match call require_text(got.catalogue_path, "compiler/internal/catalogue/catalogue.json", c, "catalogue-path")
+                        failed
+                        ok evidence catalogue_path_evidence => match call require_text(got.identity_field, "Identity", c, "identity-field")
+                            failed
+                            ok evidence identity_field_evidence => match call require_text(got.generated_path, "runtime/catalogue.ts", c, "generated-path")
+                                failed
+                                ok evidence generated_path_evidence => match call require_int(got.prefix_count, 3, c, "prefix-count")
+                                    failed
+                                    ok evidence prefix_count_evidence => match call require_int(got.tree_count, 2, c, "tree-count")
+                                        failed
+                                        ok evidence tree_count_evidence => match call require_int(got.operation_count, 377, c, "operation-count")
+                                            failed
+                                            ok evidence operation_count_evidence => match call require_int(got.catalogue_hit_count, 0, c, "catalogue-hit-count")
+                                                failed
+                                                ok evidence catalogue_hit_count_evidence => match call require_int(got.generated_hit_count, 0, c, "generated-hit-count")
+                                                    failed
+                                                    ok evidence generated_hit_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m31_h061: "m31-h061" => ok test_case("history/prototype-admission-base", ["history", "m31"], [], 120000, [check_ref("prefix-storage"), check_ref("prefix-clipboard"), check_ref("prefix-chart"), check_ref("catalogue-path"), check_ref("identity-field"), check_ref("generated-path"), check_ref("prefix-count"), check_ref("tree-count"), check_ref("operation-count"), check_ref("catalogue-hit-count"), check_ref("generated-hit-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m31-h061"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/prototype-admission-base", ["history", "m31"], [], 120000, [check_ref("prefix-storage"), check_ref("prefix-clipboard"), check_ref("prefix-chart"), check_ref("catalogue-path"), check_ref("identity-field"), check_ref("generated-path"), check_ref("prefix-count"), check_ref("tree-count"), check_ref("operation-count"), check_ref("catalogue-hit-count"), check_ref("generated-hit-count")], callable case_body)
