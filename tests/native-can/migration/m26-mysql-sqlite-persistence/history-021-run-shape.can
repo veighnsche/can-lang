@@ -1,0 +1,231 @@
+package m26history021run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M26 HISTORY-021 "sqlite-seed.sql: statement order and verbatim shape".
+/// Source: tests/integration/testdata/sql/sqlite-seed.sql (91 bytes,
+/// 2 lines, md5 cba9709c6b216c1c13aedcff452c1677).
+/// Disposition: retain_fixture (support row; the SQL file stays as
+/// data and this slice holds it accountable byte for byte; only the
+/// integrator may retire the shared old file after every linked row,
+/// variant, environment and control has accepted evidence).
+/// Protects (this file): the statement order and verbatim shape:
+/// the exact text of each of the 2 statements in seed order (L1
+/// drop, then L2 create), the terminator-line count, the
+/// DROP/CREATE/INSERT verb occurrence counts, the DROP/CREATE
+/// kind heads, the IF EXISTS guard, and the semicolon terminator
+/// needle.
+/// ADAPTATION (recorded, with source lines): s1-line/s2-line pin
+/// the full line text without the trailing newline (the newline
+/// itself pins by md5/span in history-021-seed-semantics.can);
+/// stmt-terms counts lines ending in ; (2, equal to the raw 3b
+/// count here since no comment carries a stray semicolon);
+/// reset-kind/create-kind mirror the driver startsWith needles
+/// (sqlite-driver.ts L33) while if-exists pins the L1 guard the
+/// driver does not needle. Line drifts append 2; kind drifts
+/// append S; the split drift doubles the needle.
+/// Facet map (sqlite-seed.sql legs): s1-line pins the L1 drop;
+/// s2-line the L2 create; stmt-terms pins 2; drop-count pins 1
+/// DROP TABLE occurrence (L1); create-count pins 1 CREATE TABLE
+/// occurrence (L2); insert-count pins 0 INSERT occurrences;
+/// reset-kind pins DROP TABLE; create-kind pins CREATE TABLE;
+/// if-exists pins IF EXISTS (L1); stmt-split pins ;.
+/// Seed semantics live in history-021-seed-semantics.can; the
+/// roots-green pin lives in history-021-roots-green.can.
+/// Variants: none (row lists none; static fixture, one shape).
+/// Environment: none (row lists no environment gates; descriptor
+/// requires [] and timeout 0 record that no timed or gated leg
+/// exists for this static input).
+/// R/N/C/S/A identities identified in evidence; S/A bind at QD1;
+/// no live run now. Descriptor timeout 0 records that the fixture
+/// pins no timeout (no ctx/deadline leg in a static SQL file).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (support row; static fixture
+/// accountability only; if_retained_accept_after QD1 unmet).
+/// Case history/sqlite-fixture-run checks: s1-line, s2-line,
+/// stmt-terms, drop-count, create-count, insert-count, reset-kind,
+/// create-kind, if-exists, stmt-split.
+/// Shared old files untouched; retirement is a later integrator
+/// decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str s1_line
+    str s2_line
+    int stmt_terms
+    int drop_count
+    int create_count
+    int insert_count
+    str reset_kind
+    str create_kind
+    str if_exists
+    str stmt_split
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/sqlite-fixture-run", "default", "", "offline"), "s1-line" => ok "case history/sqlite-fixture-run variant default root s1-line run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/sqlite-fixture-run", "default", "", "offline"), "s1-line" => ok evidence("s1-line", "true", "true", true, "case history/sqlite-fixture-run variant default root s1-line run offline")
+        different: false, true, context("history/sqlite-fixture-run", "default", "", "offline"), "s1-line" => failed{"s1-line"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("history/sqlite-fixture-run", "default", "", "offline"), "stmt-terms" => ok evidence("stmt-terms", "2", "2", true, "case history/sqlite-fixture-run variant default root stmt-terms run offline")
+        different: 3, 2, context("history/sqlite-fixture-run", "default", "", "offline"), "stmt-terms" => failed{"stmt-terms"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "DROP TABLE IF EXISTS notes;", "DROP TABLE IF EXISTS notes;", context("history/sqlite-fixture-run", "default", "", "offline"), "s1-line" => ok evidence("s1-line", "DROP TABLE IF EXISTS notes;", "DROP TABLE IF EXISTS notes;", true, "case history/sqlite-fixture-run variant default root s1-line run offline")
+        different: "DROP TABLE IF EXISTS notes;2", "DROP TABLE IF EXISTS notes;", context("history/sqlite-fixture-run", "default", "", "offline"), "s1-line" => failed{"s1-line"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 1, 1, 0, "DROP TABLE", "CREATE TABLE", "IF EXISTS", ";")
+        seed_s1_line: "seed-s1-line-drift" => ok observation("DROP TABLE IF EXISTS notes;2", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 1, 1, 0, "DROP TABLE", "CREATE TABLE", "IF EXISTS", ";")
+        seed_s2_line: "seed-s2-line-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);2", 2, 1, 1, 0, "DROP TABLE", "CREATE TABLE", "IF EXISTS", ";")
+        seed_stmt_terms: "seed-stmt-terms-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 3, 1, 1, 0, "DROP TABLE", "CREATE TABLE", "IF EXISTS", ";")
+        seed_drop_count: "seed-drop-count-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 2, 1, 0, "DROP TABLE", "CREATE TABLE", "IF EXISTS", ";")
+        seed_create_count: "seed-create-count-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 1, 2, 0, "DROP TABLE", "CREATE TABLE", "IF EXISTS", ";")
+        seed_insert_count: "seed-insert-count-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 1, 1, 1, "DROP TABLE", "CREATE TABLE", "IF EXISTS", ";")
+        seed_reset_kind: "seed-reset-kind-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 1, 1, 0, "DROP TABLES", "CREATE TABLE", "IF EXISTS", ";")
+        seed_create_kind: "seed-create-kind-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 1, 1, 0, "DROP TABLE", "CREATE TABLES", "IF EXISTS", ";")
+        seed_if_exists: "seed-if-exists-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 1, 1, 0, "DROP TABLE", "CREATE TABLE", "IF EXISTSS", ";")
+        seed_stmt_split: "seed-stmt-split-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 1, 1, 0, "DROP TABLE", "CREATE TABLE", "IF EXISTS", ";;")
+    match variant_id
+        "seed-s1-line-drift" => ok observation("DROP TABLE IF EXISTS notes;2", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 1, 1, 0, "DROP TABLE", "CREATE TABLE", "IF EXISTS", ";")
+        "seed-s2-line-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);2", 2, 1, 1, 0, "DROP TABLE", "CREATE TABLE", "IF EXISTS", ";")
+        "seed-stmt-terms-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 3, 1, 1, 0, "DROP TABLE", "CREATE TABLE", "IF EXISTS", ";")
+        "seed-drop-count-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 2, 1, 0, "DROP TABLE", "CREATE TABLE", "IF EXISTS", ";")
+        "seed-create-count-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 1, 2, 0, "DROP TABLE", "CREATE TABLE", "IF EXISTS", ";")
+        "seed-insert-count-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 1, 1, 1, "DROP TABLE", "CREATE TABLE", "IF EXISTS", ";")
+        "seed-reset-kind-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 1, 1, 0, "DROP TABLES", "CREATE TABLE", "IF EXISTS", ";")
+        "seed-create-kind-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 1, 1, 0, "DROP TABLE", "CREATE TABLES", "IF EXISTS", ";")
+        "seed-if-exists-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 1, 1, 0, "DROP TABLE", "CREATE TABLE", "IF EXISTSS", ";")
+        "seed-stmt-split-drift" => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 1, 1, 0, "DROP TABLE", "CREATE TABLE", "IF EXISTS", ";;")
+        _ => ok observation("DROP TABLE IF EXISTS notes;", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", 2, 1, 1, 0, "DROP TABLE", "CREATE TABLE", "IF EXISTS", ";")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m26_h021: "m26-h021" => ok [check("s1-line", "statement 1 line is byte-exact"), check("s2-line", "statement 2 line is byte-exact"), check("stmt-terms", "exactly 2 lines end in a statement terminator"), check("drop-count", "DROP TABLE occurs exactly once"), check("create-count", "CREATE TABLE occurs exactly once"), check("insert-count", "INSERT occurs zero times"), check("reset-kind", "statement 1 starts with DROP TABLE"), check("create-kind", "statement 2 starts with CREATE TABLE"), check("if-exists", "reset guards with IF EXISTS"), check("stmt-split", "statements terminate on semicolon")]
+        other: "nope" => ok []
+    match scope is "m26-h021"
+        false => ok []
+        true => ok [check("s1-line", "statement 1 line is byte-exact"), check("s2-line", "statement 2 line is byte-exact"), check("stmt-terms", "exactly 2 lines end in a statement terminator"), check("drop-count", "DROP TABLE occurs exactly once"), check("create-count", "CREATE TABLE occurs exactly once"), check("insert-count", "INSERT occurs zero times"), check("reset-kind", "statement 1 starts with DROP TABLE"), check("create-kind", "statement 2 starts with CREATE TABLE"), check("if-exists", "reset guards with IF EXISTS"), check("stmt-split", "statements terminate on semicolon")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/sqlite-fixture-run" => ok [expected_check("s1-line", "DROP TABLE IF EXISTS notes;"), expected_check("s2-line", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);"), expected_check("stmt-terms", "2"), expected_check("drop-count", "1"), expected_check("create-count", "1"), expected_check("insert-count", "0"), expected_check("reset-kind", "DROP TABLE"), expected_check("create-kind", "CREATE TABLE"), expected_check("if-exists", "IF EXISTS"), expected_check("stmt-split", ";")]
+        unknown: "nope" => ok []
+    match case is "history/sqlite-fixture-run"
+        false => ok []
+        true => ok [expected_check("s1-line", "DROP TABLE IF EXISTS notes;"), expected_check("s2-line", "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);"), expected_check("stmt-terms", "2"), expected_check("drop-count", "1"), expected_check("create-count", "1"), expected_check("insert-count", "0"), expected_check("reset-kind", "DROP TABLE"), expected_check("create-kind", "CREATE TABLE"), expected_check("if-exists", "IF EXISTS"), expected_check("stmt-split", ";")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/sqlite-fixture-run", "default", "", "offline") => ok
+        seed_s1_line: context("history/sqlite-fixture-run", "seed-s1-line-drift", "", "offline") => failed{"s1-line"}
+        seed_s2_line: context("history/sqlite-fixture-run", "seed-s2-line-drift", "", "offline") => failed{"s2-line"}
+        seed_stmt_terms: context("history/sqlite-fixture-run", "seed-stmt-terms-drift", "", "offline") => failed{"stmt-terms"}
+        seed_drop_count: context("history/sqlite-fixture-run", "seed-drop-count-drift", "", "offline") => failed{"drop-count"}
+        seed_create_count: context("history/sqlite-fixture-run", "seed-create-count-drift", "", "offline") => failed{"create-count"}
+        seed_insert_count: context("history/sqlite-fixture-run", "seed-insert-count-drift", "", "offline") => failed{"insert-count"}
+        seed_reset_kind: context("history/sqlite-fixture-run", "seed-reset-kind-drift", "", "offline") => failed{"reset-kind"}
+        seed_create_kind: context("history/sqlite-fixture-run", "seed-create-kind-drift", "", "offline") => failed{"create-kind"}
+        seed_if_exists: context("history/sqlite-fixture-run", "seed-if-exists-drift", "", "offline") => failed{"if-exists"}
+        seed_stmt_split: context("history/sqlite-fixture-run", "seed-stmt-split-drift", "", "offline") => failed{"stmt-split"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.s1_line, "DROP TABLE IF EXISTS notes;", c, "s1-line")
+            failed
+            ok evidence s1_line_evidence => match call require_text(got.s2_line, "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT UNIQUE);", c, "s2-line")
+                failed
+                ok evidence s2_line_evidence => match call require_int(got.stmt_terms, 2, c, "stmt-terms")
+                    failed
+                    ok evidence stmt_terms_evidence => match call require_int(got.drop_count, 1, c, "drop-count")
+                        failed
+                        ok evidence drop_count_evidence => match call require_int(got.create_count, 1, c, "create-count")
+                            failed
+                            ok evidence create_count_evidence => match call require_int(got.insert_count, 0, c, "insert-count")
+                                failed
+                                ok evidence insert_count_evidence => match call require_text(got.reset_kind, "DROP TABLE", c, "reset-kind")
+                                    failed
+                                    ok evidence reset_kind_evidence => match call require_text(got.create_kind, "CREATE TABLE", c, "create-kind")
+                                        failed
+                                        ok evidence create_kind_evidence => match call require_text(got.if_exists, "IF EXISTS", c, "if-exists")
+                                            failed
+                                            ok evidence if_exists_evidence => match call require_text(got.stmt_split, ";", c, "stmt-split")
+                                                failed
+                                                ok evidence stmt_split_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m26_h021: "m26-h021" => ok test_case("history/sqlite-fixture-run", ["history", "m26"], [], 0, [check_ref("s1-line"), check_ref("s2-line"), check_ref("stmt-terms"), check_ref("drop-count"), check_ref("create-count"), check_ref("insert-count"), check_ref("reset-kind"), check_ref("create-kind"), check_ref("if-exists"), check_ref("stmt-split")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m26-h021"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/sqlite-fixture-run", ["history", "m26"], [], 0, [check_ref("s1-line"), check_ref("s2-line"), check_ref("stmt-terms"), check_ref("drop-count"), check_ref("create-count"), check_ref("insert-count"), check_ref("reset-kind"), check_ref("create-kind"), check_ref("if-exists"), check_ref("stmt-split")], callable case_body)
