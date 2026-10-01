@@ -1,0 +1,43 @@
+package test_http_peer
+    provides []
+    uses [checks, http_peer, test]
+fn int peer_roundtrip
+    emits {test::invalid_grant, test::stale_handle, test::closed_handle, http_peer::peer_fault}
+    given
+        str grant
+    asserts
+        probe: "ng1-0123456789abcdef0123456789abcdef" => ok 0
+    match chain
+        call test::grant_admit(grant) as test::owner owner
+        call http_peer::open_listener(owner, "peer-a") as http_peer::listener listener
+        call http_peer::read_listener_facts(owner, listener) as http_peer::listener_facts lfacts
+        call http_peer::dial_peer(owner, "peer-a") as http_peer::dial_result dialed
+        call http_peer::read_dial_facts(owner, dialed.dial) as http_peer::dial_facts dfacts
+        call http_peer::retry_dial(owner, dialed.dial) as http_peer::dial_result retried
+        call http_peer::accept(owner, listener) as http_peer::connection conn
+        call http_peer::read_connection_facts(owner, conn) as http_peer::connection_facts cfacts
+        call http_peer::write(owner, conn, [1, 2, 3]) as http_peer::write_receipt receipt
+        call http_peer::read(owner, conn, 16) as http_peer::read_result got
+        call http_peer::half_close(owner, conn, "write") as http_peer::connection_facts halved
+        call http_peer::close_connection(owner, conn) as http_peer::connection_close_receipt cclosed
+        call http_peer::close_listener(owner, listener) as http_peer::listener_close_receipt lclosed
+        call test::grant_release(owner)
+        test::invalid_grant
+        test::stale_handle
+        test::closed_handle
+        http_peer::peer_fault
+        ok => ok 0
+fn void main
+    emits {test::invalid_grant, test::stale_handle, test::closed_handle, http_peer::peer_fault, checks::failed}
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match call peer_roundtrip("ng1-0123456789abcdef0123456789abcdef")
+        test::invalid_grant
+        test::stale_handle
+        test::closed_handle
+        http_peer::peer_fault
+        ok int depth => match call checks::require(depth is 0, "expected drained peer")
+            checks::failed
+            ok => ok

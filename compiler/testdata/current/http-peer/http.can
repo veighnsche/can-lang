@@ -1,0 +1,41 @@
+package test_http_request
+    provides []
+    uses [checks, http, http_peer, option, test]
+fn int http_roundtrip
+    emits {test::invalid_grant, test::stale_handle, test::closed_handle, http_peer::http_fault}
+    given
+        str grant
+    asserts
+        probe: "ng1-0123456789abcdef0123456789abcdef" => ok 0
+    match chain
+        call test::grant_admit(grant) as test::owner owner
+        call http_peer::open_request(owner, "origin-a", "GET", "/", "1.1") as http_peer::request req
+        call http_peer::add_header(owner, req, "x-a", "1") as http_peer::header_receipt hreceipt
+        call http_peer::send_body_chunk(owner, req, [1, 2]) as http_peer::body_chunk_receipt breceipt
+        call http_peer::end_upload(owner, req) as http_peer::request_facts ufacts
+        call http_peer::deliver_response(owner, req, 200, [http::header("x-b", "2")], [3]) as http_peer::response_facts rfacts
+        call http_peer::read_body_chunk(owner, req, 16) as http_peer::read_result got
+        call http_peer::read_request_facts(owner, req) as http_peer::request_facts qfacts
+        call http_peer::read_response_facts(owner, req) as option::value<http_peer::response_facts> maybe
+        call http_peer::reissue(owner, req) as http_peer::request req2
+        call http_peer::close_request(owner, req) as http_peer::request_close_receipt rclosed
+        call test::grant_release(owner)
+        test::invalid_grant
+        test::stale_handle
+        test::closed_handle
+        http_peer::http_fault
+        ok => ok 0
+fn void main
+    emits {test::invalid_grant, test::stale_handle, test::closed_handle, http_peer::http_fault, checks::failed}
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match call http_roundtrip("ng1-0123456789abcdef0123456789abcdef")
+        test::invalid_grant
+        test::stale_handle
+        test::closed_handle
+        http_peer::http_fault
+        ok int depth => match call checks::require(depth is 0, "expected drained request")
+            checks::failed
+            ok => ok
