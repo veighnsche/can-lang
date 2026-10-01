@@ -642,7 +642,7 @@
       "acceptance": "Report-only pass, stale/missing/conflicting receipt, late credible host effect, unresolved cleanup or correction-registry failure prevents qualification; a fresh pass never erases old failure. Code and bounded bootstrap/local controls only at this task; authoritative live execution is gated by P14, P26 and P23.",
       "evidence": "Save before/after digest chain; commit report authority.",
       "commit": "feat(testing): resolve reports, receipts and corrections",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P11",
         "P17",
