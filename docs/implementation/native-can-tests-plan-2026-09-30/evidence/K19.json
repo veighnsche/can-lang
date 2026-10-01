@@ -10,7 +10,9 @@
     "P27 recorded"
   ],
   "acceptance_prerequisite_receipts": [],
-  "commits": [],
+  "commits": [
+    "cdd4ac104df637c4355f96a42c7c8cb995430e56"
+  ],
   "changed_paths": [
     "tests/native-can/subjects/descriptors/f2/"
   ],
