@@ -1,10 +1,11 @@
 package migration
-    provides [row_map, job_entry, claim, campaign, m33_chart_slice, slice_obligations, validate_slice_coverage, claim_identity_problems, claim_credit_problems, validate_claim, reduce_attempt, campaign_manifest, campaign_problems, declared_problems]
+    provides [row_map, job_entry, claim, campaign, m33_chart_slice, m33_chart_b_slice, slice_obligations, validate_slice_coverage, claim_identity_problems, claim_b_identity_problems, claim_credit_problems, validate_claim, validate_b_claim, reduce_attempt, campaign_manifest, campaign_b_manifest, campaign_problems, declared_problems]
     uses [coverage, reducer, registry, spec, text]
 
-/// Z01 migration-coverage reconciliation, slice m33-chart-a (HISTORY-091..095).
+/// Z01 migration-coverage reconciliation, slices m33-chart-a (HISTORY-091..095)
+/// and m33-chart-b (HISTORY-096..098).
 /// Per-row facet, variant, environment and delegated-declaration mappings for
-/// the five retained M33 chart-companion rows, with source hashes,
+/// the eight retained M33 chart-companion rows, with source hashes,
 /// dispositions, expected case/check IDs, required receipts and correction
 /// chains. Slice obligations project onto coverage::retained_row so the P16
 /// forward/reverse reconciliation detects dropped or unretained checks by
@@ -87,6 +88,24 @@ fn row_map[] m33_chart_slice
     match scope is "m33"
         false => ok []
         true => ok [row_map("HISTORY-091", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-091-chart-roundtrip.can", "9632f2f8d7fe6c9e56e5858300d2f4368bce5c271b8117d37121e53a42a3af3b", "chart-companion/render-select-release-roundtrip", ["render-ok", "select-label", "release-ok", "server-drained", "output-frozen"], ["lifecycle-roundtrip", "frozen-output"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("HISTORY-092", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-092-chart-invalid-spec.can", "7df49ca6260e259abcbca9584679fbb59bf07dd68d6b56b8c159bd49e9bdfb67", "chart-companion/invalid-specs-reject", ["reject-code", "all-four-reject", "no-wire-send"], ["invalid-spec-rejects", "no-wire-send"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("HISTORY-093", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-093-chart-release-expiry.can", "bf2a88cdef40f4abbd432a0915e9c99fc032231c23db21c72ed392cb00ab7b9c", "chart-companion/release-expiry", ["double-release-ok", "stale-select-expired", "unknown-select-expired"], ["release-expiry", "idempotent-release"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("HISTORY-094", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-094-chart-out-of-range.can", "c40fa1b1f94f07bf2f7b2587f1375878fd1245e37dfca9fcce09956d5fcd35e1", "chart-companion/out-of-range-rejects", ["live-render-ok", "reject-code"], ["out-of-range-rejects"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("HISTORY-095", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-095-chart-fail-closed.can", "30825e186bee66f2ea23e12e906b1fdba339ccc9ef5318f4cece2acd6827cca1", "chart-companion/fail-closed", ["denied-code", "denied-no-send", "unauthorized-code", "transport-code", "no-transport-text"], ["fail-closed", "no-secret-leak"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], "")]
+/// M33 chart-companion slice b: HISTORY-096..098, all retained with Can ports
+/// under tests/native-can/migration/m33-prototype-companion-surfaces-a/.
+/// Same binding contract as m33_chart_slice: reviewed sha256 source hashes,
+/// dispositions, case/check IDs, facets, variants, environments, receipts and
+/// correction heads. HISTORY-098 is a partial retain: the port keeps envelope
+/// determinism and measured lengths while the absolute 209/164 byte pins stay
+/// obsolete and absent from its checks. Seeded defect variants live in each
+/// port's observe declaration; "default" is the matrix leg.
+fn row_map[] m33_chart_b_slice
+    emits {}
+    given
+        str scope
+    asserts
+        m33: "m33" => ok [row_map("HISTORY-096", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-096-chart-version-mismatch.can", "f0f7a8155c850387a37a3fd36a804b26d824cf21d0006701757f4d20a712ac0a", "chart-companion/version-mismatch", ["request-version-code", "response-version-code"], ["version-mismatch-fails-closed"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("HISTORY-097", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-097-chart-auth-parity.can", "c1762e5bd7562c778ab2062458039f5d9cf829c6ec21c95ce1fcda3303dcff37", "chart-companion/auth-parity", ["policy-admits", "policy-versions-match", "render-ok", "secret-sealed"], ["auth-parity", "secret-sealed"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("HISTORY-098", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-098-chart-envelope-bytes.can", "ab57f71ac2c08667b04dbe0addcdbc9018e852788f95b0d641a671aacd89668f", "chart-companion/envelope-deterministic", ["request-deterministic", "response-deterministic", "request-measured", "response-measured"], ["envelope-deterministic", "measured-lengths"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], "")]
+        other: "nope" => ok []
+    match scope is "m33"
+        false => ok []
+        true => ok [row_map("HISTORY-096", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-096-chart-version-mismatch.can", "f0f7a8155c850387a37a3fd36a804b26d824cf21d0006701757f4d20a712ac0a", "chart-companion/version-mismatch", ["request-version-code", "response-version-code"], ["version-mismatch-fails-closed"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("HISTORY-097", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-097-chart-auth-parity.can", "c1762e5bd7562c778ab2062458039f5d9cf829c6ec21c95ce1fcda3303dcff37", "chart-companion/auth-parity", ["policy-admits", "policy-versions-match", "render-ok", "secret-sealed"], ["auth-parity", "secret-sealed"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("HISTORY-098", "retained", "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-098-chart-envelope-bytes.can", "ab57f71ac2c08667b04dbe0addcdbc9018e852788f95b0d641a671aacd89668f", "chart-companion/envelope-deterministic", ["request-deterministic", "response-deterministic", "request-measured", "response-measured"], ["envelope-deterministic", "measured-lengths"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], "")]
 /// Position of a row id at or after an index, or -1 when absent.
 fn int row_index
     emits {}
@@ -446,6 +465,47 @@ fn spec::diagnostic[] claim_identity_problems
                                                         ok bool cited => match cited
                                                             false => ok [spec::diagnostic("migration::claim_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unaccepted-reference", c.job_id)]
                                                             true => ok []
+/// Identity side of a complete-coverage claim against the slice-b manifest:
+/// same first-only contract as claim_identity_problems, resolved against
+/// m33_chart_b_slice so HISTORY-096..098 claims reconcile while slice-a
+/// rows stay unknown here. Delegate coverage is one-directional (required
+/// subset of offered): all three slice-b rows declare no delegates, so the
+/// reverse subset lands with the first delegate-bearing slice.
+fn spec::diagnostic[] claim_b_identity_problems
+    emits {}
+    given
+        job_entry[] entries
+        claim c
+    asserts
+        clean: [job_entry("j1", "HISTORY-096", "chart-companion/version-mismatch", "default", "r1", 0, "register", "registered", "full", 0, 0, "", "", -1)], claim("j1", "HISTORY-096", "chart-companion/version-mismatch", "default", "r1", ["bun-prototype-env"], [], false, false) => ok []
+        unknown_row: [], claim("j1", "HISTORY-999", "c", "v", "r", [], [], false, false) => ok [spec::diagnostic("migration::claim_b_identity_problems", "case c variant v root coverage run r", "unknown-row", "HISTORY-999")]
+        unregistered: [], claim("j1", "HISTORY-096", "chart-companion/version-mismatch", "default", "r1", ["bun-prototype-env"], [], false, false) => ok [spec::diagnostic("migration::claim_b_identity_problems", "case chart-companion/version-mismatch variant default root coverage run r1", "unregistered-job", "j1")]
+        manifest_case: [job_entry("j1", "HISTORY-096", "c", "v", "r", 0, "register", "registered", "full", 0, 0, "", "", -1)], claim("j1", "HISTORY-096", "c", "v", "r", ["bun-prototype-env"], [], false, false) => ok [spec::diagnostic("migration::claim_b_identity_problems", "case c variant v root coverage run r", "incompatible-identity", "c")]
+        entry_drift: [job_entry("j1", "HISTORY-096", "chart-companion/version-mismatch", "default", "r1", 0, "register", "registered", "full", 0, 0, "", "", -1), job_entry("j1", "HISTORY-096", "other", "default", "r1", 1, "attempt", "passed", "full", 2, 2, "", "", -1)], claim("j1", "HISTORY-096", "chart-companion/version-mismatch", "default", "r1", ["bun-prototype-env"], [], false, false) => ok [spec::diagnostic("migration::claim_b_identity_problems", "case chart-companion/version-mismatch variant default root coverage run r1", "incompatible-identity", "j1")]
+        missing_engine: [job_entry("j1", "HISTORY-096", "chart-companion/version-mismatch", "default", "r1", 0, "register", "registered", "full", 0, 0, "", "", -1)], claim("j1", "HISTORY-096", "chart-companion/version-mismatch", "default", "r1", [], [], false, false) => ok [spec::diagnostic("migration::claim_b_identity_problems", "case chart-companion/version-mismatch variant default root coverage run r1", "missing-engine", "HISTORY-096")]
+        unaccepted: [job_entry("j1", "HISTORY-096", "chart-companion/version-mismatch", "default", "r1", 0, "register", "registered", "full", 0, 0, "s1", "", -1)], claim("j1", "HISTORY-096", "chart-companion/version-mismatch", "default", "r1", ["bun-prototype-env"], [], false, false) => ok [spec::diagnostic("migration::claim_b_identity_problems", "case chart-companion/version-mismatch variant default root coverage run r1", "unaccepted-reference", "j1")]
+    match call m33_chart_b_slice("m33")
+        ok row_map[] rows => match call row_index(rows, c.row_id, 0)
+            ok int at => match at is -1
+                true => ok [spec::diagnostic("migration::claim_b_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unknown-row", c.row_id)]
+                false => match call job_registered(entries, c.job_id, 0)
+                    ok bool reg => match reg
+                        false => ok [spec::diagnostic("migration::claim_b_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unregistered-job", c.job_id)]
+                        true => match rows[at].case_id is c.case_id
+                            false => ok [spec::diagnostic("migration::claim_b_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "incompatible-identity", c.case_id)]
+                            true => match call identity_compatible(entries, c, 0)
+                                ok bool same => match same
+                                    false => ok [spec::diagnostic("migration::claim_b_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "incompatible-identity", c.job_id)]
+                                    true => match call str_subset(rows[at].environments, c.engines, 0)
+                                        ok bool engined => match engined
+                                            false => ok [spec::diagnostic("migration::claim_b_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "missing-engine", c.row_id)]
+                                            true => match call str_subset(rows[at].delegates, c.delegates, 0)
+                                                ok bool delegated => match delegated
+                                                    false => ok [spec::diagnostic("migration::claim_b_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "undeclared-delegate", c.row_id)]
+                                                    true => match call references_accepted(entries, c, 0)
+                                                        ok bool cited => match cited
+                                                            false => ok [spec::diagnostic("migration::claim_b_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unaccepted-reference", c.job_id)]
+                                                            true => ok []
 /// Credit side of a complete-coverage claim: unreconciled failures are
 /// cherry-picked reports, a pass without a single complete attempt is
 /// either stitched partials or missing evidence, and a second full pass
@@ -493,6 +553,22 @@ fn spec::diagnostic[] validate_claim
         ok spec::diagnostic[] shaped => match shaped.length is 0
             false => ok shaped
             true => relay call claim_credit_problems(entries, c, shaped)
+/// Validate one complete-coverage claim against slice b: identity first,
+/// then the shared credit side. Mirrors validate_claim resolved against
+/// m33_chart_b_slice.
+fn spec::diagnostic[] validate_b_claim
+    emits {}
+    given
+        job_entry[] entries
+        claim c
+    asserts
+        clean: [job_entry("j1", "HISTORY-096", "chart-companion/version-mismatch", "default", "r1", 0, "register", "registered", "full", 0, 0, "", "", -1), job_entry("j1", "HISTORY-096", "chart-companion/version-mismatch", "default", "r1", 1, "attempt", "passed", "full", 2, 2, "", "", -1)], claim("j1", "HISTORY-096", "chart-companion/version-mismatch", "default", "r1", ["bun-prototype-env"], [], false, false) => ok []
+        unknown_row: [], claim("j1", "HISTORY-999", "c", "v", "r", [], [], false, false) => ok [spec::diagnostic("migration::claim_b_identity_problems", "case c variant v root coverage run r", "unknown-row", "HISTORY-999")]
+        cherry_full: [job_entry("j1", "HISTORY-096", "chart-companion/version-mismatch", "default", "r1", 0, "register", "registered", "full", 0, 0, "", "", -1), job_entry("j1", "HISTORY-096", "chart-companion/version-mismatch", "default", "r1", 1, "attempt", "failed", "full", 0, 2, "", "", -1), job_entry("j1", "HISTORY-096", "chart-companion/version-mismatch", "default", "r1", 3, "attempt", "passed", "full", 2, 2, "", "", -1)], claim("j1", "HISTORY-096", "chart-companion/version-mismatch", "default", "r1", ["bun-prototype-env"], [], false, false) => ok [spec::diagnostic("migration::claim_credit_problems", "case chart-companion/version-mismatch variant default root coverage run r1", "cherry-picked-report", "j1")]
+    match call claim_b_identity_problems(entries, c)
+        ok spec::diagnostic[] shaped => match shaped.length is 0
+            false => ok shaped
+            true => relay call claim_credit_problems(entries, c, shaped)
 /// Reduce one slice attempt report in full scope: verdict words on index
 /// entries must equal this outcome once P23 executes; a matched claim
 /// over missing rows already rejects here as early-ok.
@@ -520,6 +596,18 @@ fn campaign campaign_manifest
     match scope is "m33"
         false => ok campaign("", "", [])
         true => ok campaign("z01-manifest/m33-chart-a/2026-10-01", "z01-campaign/m33-chart-a/attempt-1", ["HISTORY-091", "HISTORY-092", "HISTORY-093", "HISTORY-094", "HISTORY-095"])
+/// Reviewed campaign manifest for slice b: fixed IDs plus every declared
+/// row. ID shapes are exact reviewed strings, not patterns.
+fn campaign campaign_b_manifest
+    emits {}
+    given
+        str scope
+    asserts
+        m33: "m33" => ok campaign("z01-manifest/m33-chart-b/2026-10-01", "z01-campaign/m33-chart-b/attempt-1", ["HISTORY-096", "HISTORY-097", "HISTORY-098"])
+        other: "nope" => ok campaign("", "", [])
+    match scope is "m33"
+        false => ok campaign("", "", [])
+        true => ok campaign("z01-manifest/m33-chart-b/2026-10-01", "z01-campaign/m33-chart-b/attempt-1", ["HISTORY-096", "HISTORY-097", "HISTORY-098"])
 /// Whether a row id is declared by any index entry from an index.
 fn bool row_declared
     emits {}
