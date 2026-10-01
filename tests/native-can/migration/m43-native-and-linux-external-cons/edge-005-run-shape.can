@@ -1,0 +1,290 @@
+package m43edge005run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M43 EDGE-005 "native SQLite seed"
+/// migrate slice pact.
+/// Source: distribution/linux/smoke/sqlite-seed.ts
+/// symbol "native SQLite seed" (L19-27):
+/// pinned readback plus report
+/// plus close plus failure shape.
+/// Disposition: migrate slice only (this
+/// row owns the seed pact as reviewable
+/// Can facts; no seed file changes
+/// here; old driver call stays until the
+/// integrator rewires it after each
+/// linked row plus gate has accepted
+/// proof).
+/// Protects (this file): native
+/// insertion plus readback plus pool
+/// closure wants, verdict leg:
+/// row check plus JSON plus close.
+/// ADAPTATION (noted, plus source
+/// lines): name pins hold spellings;
+/// call pins hold call bytes; count
+/// pins hold ints tallied from L8 plus
+/// L13 plus L14 plus L15 plus L18 plus L19.
+/// rows-length pins rows.length (L19);
+/// rows-index pins rows[0] (L19 plus L20; L20 holds two);
+/// body-word pins body (L17 plus L18 plus L19 plus L20; L18 holds two plus L20 holds two);
+/// seed-body pins seed (L1 plus L17 plus L19; L19 holds two);
+/// seed-missing-want pins seed row missing (L19);
+/// console-log pins console.log (L20);
+/// json-word pins JSON.stringify (L20);
+/// finally-word pins finally (L21);
+/// close-call pins sql.close (L22);
+/// console-error pins console.error (L25);
+/// exit-call pins process.exit (L26);
+/// expected-row-count pins 1 (L19);
+/// const-count pins 4 (L8 plus L13 plus L15 plus L18);
+/// throw-count pins 2 (L14 plus L19).
+/// Facet map (pin order): rows-length,
+/// rows-index, body-word,
+/// seed-body, seed-missing-want,
+/// console-log, json-word,
+/// finally-word, close-call,
+/// console-error, exit-call,
+/// expected-row-count, const-count,
+/// throw-count.
+/// The envelope plus helper shape lives in
+/// edge-005-base-semantics.can; the
+/// provision plus insertion roots live in
+/// edge-005-roots-green.can.
+/// Pool close is awaited in L22;
+/// failure exits live in L24 plus L25 plus L26.
+/// Variants: none (row lists zero
+/// variants).
+/// Environment: zero gates; bind at P23
+/// plus QD1; no live run now.
+/// Logical gates SUITE plus WORK plus
+/// DB plus NATIVE bind at P23
+/// plus QD1; no live run now.
+/// Timeout 120000ms is the offline
+/// default bound (binds at P23 like the
+/// M31 no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// plus QD1 accept gates unmet).
+/// Intended consumed report: M26
+/// HISTORY-010 plus HISTORY-016 parsed slices (no qualified
+/// report yet; P23 plus QD1
+/// unmet).
+/// Caller stays as is; sqlite-seed.ts
+/// plus smoke.sh plus the Go caller
+/// intact; no call retired.
+/// Shared old files intact; retirement
+/// is a later integrator choice; Z03
+/// owns activation.
+/// Case edge/sqlite-verdict checks:
+/// rows-length, rows-index, body-word,
+/// seed-body, seed-missing-want,
+/// console-log, json-word,
+/// finally-word, close-call,
+/// console-error, exit-call,
+/// expected-row-count, const-count,
+/// throw-count.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str rows_length
+    str rows_index
+    str body_word
+    str seed_body
+    str seed_missing_want
+    str console_log
+    str json_word
+    str finally_word
+    str close_call
+    str console_error
+    str exit_call
+    int expected_row_count
+    int const_count
+    int throw_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("edge/sqlite-verdict", "default", "", "offline"), "rows-length" => ok "case edge/sqlite-verdict variant default root rows-length run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("edge/sqlite-verdict", "default", "", "offline"), "rows-length" => ok evidence("rows-length", "true", "true", true, "case edge/sqlite-verdict variant default root rows-length run offline")
+        different: false, true, context("edge/sqlite-verdict", "default", "", "offline"), "rows-length" => failed{"rows-length"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("edge/sqlite-verdict", "default", "", "offline"), "expected-row-count" => ok evidence("expected-row-count", "1", "1", true, "case edge/sqlite-verdict variant default root expected-row-count run offline")
+        different: 0, 1, context("edge/sqlite-verdict", "default", "", "offline"), "expected-row-count" => failed{"expected-row-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "rows.length", "rows.length", context("edge/sqlite-verdict", "default", "", "offline"), "rows-length" => ok evidence("rows-length", "rows.length", "rows.length", true, "case edge/sqlite-verdict variant default root rows-length run offline")
+        different: "rows.length_2", "rows.length", context("edge/sqlite-verdict", "default", "", "offline"), "rows-length" => failed{"rows-length"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 4, 2)
+        seed_rows_length: "seed-rows-length-drift" => ok observation("rows.length_2", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 4, 2)
+        seed_rows_index: "seed-rows-index-drift" => ok observation("rows.length", "rows[0]_2", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 4, 2)
+        seed_body_word: "seed-body-word-drift" => ok observation("rows.length", "rows[0]", "body_2", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 4, 2)
+        seed_seed_body: "seed-seed-body-drift" => ok observation("rows.length", "rows[0]", "body", "seed_2", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 4, 2)
+        seed_seed_missing_want: "seed-seed-missing-want-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing_2", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 4, 2)
+        seed_console_log: "seed-console-log-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log_2", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 4, 2)
+        seed_json_word: "seed-json-word-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify_2", "finally", "sql.close", "console.error", "process.exit", 1, 4, 2)
+        seed_finally_word: "seed-finally-word-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally_2", "sql.close", "console.error", "process.exit", 1, 4, 2)
+        seed_close_call: "seed-close-call-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close_2", "console.error", "process.exit", 1, 4, 2)
+        seed_console_error: "seed-console-error-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error_2", "process.exit", 1, 4, 2)
+        seed_exit_call: "seed-exit-call-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit_2", 1, 4, 2)
+        seed_expected_row_count: "seed-expected-row-count-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 0, 4, 2)
+        seed_const_count: "seed-const-count-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 3, 2)
+        seed_throw_count: "seed-throw-count-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 4, 1)
+    match variant_id
+        "seed-rows-length-drift" => ok observation("rows.length_2", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 4, 2)
+        "seed-rows-index-drift" => ok observation("rows.length", "rows[0]_2", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 4, 2)
+        "seed-body-word-drift" => ok observation("rows.length", "rows[0]", "body_2", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 4, 2)
+        "seed-seed-body-drift" => ok observation("rows.length", "rows[0]", "body", "seed_2", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 4, 2)
+        "seed-seed-missing-want-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing_2", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 4, 2)
+        "seed-console-log-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log_2", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 4, 2)
+        "seed-json-word-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify_2", "finally", "sql.close", "console.error", "process.exit", 1, 4, 2)
+        "seed-finally-word-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally_2", "sql.close", "console.error", "process.exit", 1, 4, 2)
+        "seed-close-call-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close_2", "console.error", "process.exit", 1, 4, 2)
+        "seed-console-error-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error_2", "process.exit", 1, 4, 2)
+        "seed-exit-call-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit_2", 1, 4, 2)
+        "seed-expected-row-count-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 0, 4, 2)
+        "seed-const-count-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 3, 2)
+        "seed-throw-count-drift" => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 4, 1)
+        _ => ok observation("rows.length", "rows[0]", "body", "seed", "seed row missing", "console.log", "JSON.stringify", "finally", "sql.close", "console.error", "process.exit", 1, 4, 2)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        edge_scope: "m43-e005" => ok [check("rows-length", "rows length keeps its bytes"), check("rows-index", "rows index keeps its bytes"), check("body-word", "body word keeps its bytes"), check("seed-body", "seed body keeps its bytes"), check("seed-missing-want", "seed missing want keeps its bytes"), check("console-log", "console log keeps its bytes"), check("json-word", "json word keeps its spelling"), check("finally-word", "finally word keeps its bytes"), check("close-call", "close call keeps its bytes"), check("console-error", "console error keeps its bytes"), check("exit-call", "exit call keeps its bytes"), check("expected-row-count", "one row is wanted"), check("const-count", "four const uses exist"), check("throw-count", "two throws exist")]
+        other: "nope" => ok []
+    match scope is "m43-e005"
+        false => ok []
+        true => ok [check("rows-length", "rows length keeps its bytes"), check("rows-index", "rows index keeps its bytes"), check("body-word", "body word keeps its bytes"), check("seed-body", "seed body keeps its bytes"), check("seed-missing-want", "seed missing want keeps its bytes"), check("console-log", "console log keeps its bytes"), check("json-word", "json word keeps its spelling"), check("finally-word", "finally word keeps its bytes"), check("close-call", "close call keeps its bytes"), check("console-error", "console error keeps its bytes"), check("exit-call", "exit call keeps its bytes"), check("expected-row-count", "one row is wanted"), check("const-count", "four const uses exist"), check("throw-count", "two throws exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "edge/sqlite-verdict" => ok [expected_check("rows-length", "rows.length"), expected_check("rows-index", "rows[0]"), expected_check("body-word", "body"), expected_check("seed-body", "seed"), expected_check("seed-missing-want", "seed row missing"), expected_check("console-log", "console.log"), expected_check("json-word", "JSON.stringify"), expected_check("finally-word", "finally"), expected_check("close-call", "sql.close"), expected_check("console-error", "console.error"), expected_check("exit-call", "process.exit"), expected_check("expected-row-count", "1"), expected_check("const-count", "4"), expected_check("throw-count", "2")]
+        unknown: "nope" => ok []
+    match case is "edge/sqlite-verdict"
+        false => ok []
+        true => ok [expected_check("rows-length", "rows.length"), expected_check("rows-index", "rows[0]"), expected_check("body-word", "body"), expected_check("seed-body", "seed"), expected_check("seed-missing-want", "seed row missing"), expected_check("console-log", "console.log"), expected_check("json-word", "JSON.stringify"), expected_check("finally-word", "finally"), expected_check("close-call", "sql.close"), expected_check("console-error", "console.error"), expected_check("exit-call", "process.exit"), expected_check("expected-row-count", "1"), expected_check("const-count", "4"), expected_check("throw-count", "2")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("edge/sqlite-verdict", "default", "", "offline") => ok
+        seed_rows_length: context("edge/sqlite-verdict", "seed-rows-length-drift", "", "offline") => failed{"rows-length"}
+        seed_rows_index: context("edge/sqlite-verdict", "seed-rows-index-drift", "", "offline") => failed{"rows-index"}
+        seed_body_word: context("edge/sqlite-verdict", "seed-body-word-drift", "", "offline") => failed{"body-word"}
+        seed_seed_body: context("edge/sqlite-verdict", "seed-seed-body-drift", "", "offline") => failed{"seed-body"}
+        seed_seed_missing_want: context("edge/sqlite-verdict", "seed-seed-missing-want-drift", "", "offline") => failed{"seed-missing-want"}
+        seed_console_log: context("edge/sqlite-verdict", "seed-console-log-drift", "", "offline") => failed{"console-log"}
+        seed_json_word: context("edge/sqlite-verdict", "seed-json-word-drift", "", "offline") => failed{"json-word"}
+        seed_finally_word: context("edge/sqlite-verdict", "seed-finally-word-drift", "", "offline") => failed{"finally-word"}
+        seed_close_call: context("edge/sqlite-verdict", "seed-close-call-drift", "", "offline") => failed{"close-call"}
+        seed_console_error: context("edge/sqlite-verdict", "seed-console-error-drift", "", "offline") => failed{"console-error"}
+        seed_exit_call: context("edge/sqlite-verdict", "seed-exit-call-drift", "", "offline") => failed{"exit-call"}
+        seed_expected_row_count: context("edge/sqlite-verdict", "seed-expected-row-count-drift", "", "offline") => failed{"expected-row-count"}
+        seed_const_count: context("edge/sqlite-verdict", "seed-const-count-drift", "", "offline") => failed{"const-count"}
+        seed_throw_count: context("edge/sqlite-verdict", "seed-throw-count-drift", "", "offline") => failed{"throw-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.rows_length, "rows.length", c, "rows-length")
+            failed
+            ok evidence rows_length_evidence => match call require_text(got.rows_index, "rows[0]", c, "rows-index")
+                failed
+                ok evidence rows_index_evidence => match call require_text(got.body_word, "body", c, "body-word")
+                    failed
+                    ok evidence body_word_evidence => match call require_text(got.seed_body, "seed", c, "seed-body")
+                        failed
+                        ok evidence seed_body_evidence => match call require_text(got.seed_missing_want, "seed row missing", c, "seed-missing-want")
+                            failed
+                            ok evidence seed_missing_want_evidence => match call require_text(got.console_log, "console.log", c, "console-log")
+                                failed
+                                ok evidence console_log_evidence => match call require_text(got.json_word, "JSON.stringify", c, "json-word")
+                                    failed
+                                    ok evidence json_word_evidence => match call require_text(got.finally_word, "finally", c, "finally-word")
+                                        failed
+                                        ok evidence finally_word_evidence => match call require_text(got.close_call, "sql.close", c, "close-call")
+                                            failed
+                                            ok evidence close_call_evidence => match call require_text(got.console_error, "console.error", c, "console-error")
+                                                failed
+                                                ok evidence console_error_evidence => match call require_text(got.exit_call, "process.exit", c, "exit-call")
+                                                    failed
+                                                    ok evidence exit_call_evidence => match call require_int(got.expected_row_count, 1, c, "expected-row-count")
+                                                        failed
+                                                        ok evidence expected_row_count_evidence => match call require_int(got.const_count, 4, c, "const-count")
+                                                            failed
+                                                            ok evidence const_count_evidence => match call require_int(got.throw_count, 2, c, "throw-count")
+                                                                failed
+                                                                ok evidence throw_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        edge_scope: "m43-e005" => ok test_case("edge/sqlite-verdict", ["edge", "m43"], [], 120000, [check_ref("rows-length"), check_ref("rows-index"), check_ref("body-word"), check_ref("seed-body"), check_ref("seed-missing-want"), check_ref("console-log"), check_ref("json-word"), check_ref("finally-word"), check_ref("close-call"), check_ref("console-error"), check_ref("exit-call"), check_ref("expected-row-count"), check_ref("const-count"), check_ref("throw-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m43-e005"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("edge/sqlite-verdict", ["edge", "m43"], [], 120000, [check_ref("rows-length"), check_ref("rows-index"), check_ref("body-word"), check_ref("seed-body"), check_ref("seed-missing-want"), check_ref("console-log"), check_ref("json-word"), check_ref("finally-word"), check_ref("close-call"), check_ref("console-error"), check_ref("exit-call"), check_ref("expected-row-count"), check_ref("const-count"), check_ref("throw-count")], callable case_body)
