@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "98c73c14dc32ca56660bda5d35e59119403b1a895ab36f802099c5a21d90fc7c";
+export const catalogueSHA256 = "8f2f684aa95e177c938656830d6907d61126d3ed9676a68d4515cf6db4ff2eaf";
 export const catalogue = freeze({
  "schemaVersion": 1,
  "revision": 1,
@@ -17610,6 +17610,10 @@ export const catalogue = freeze({
    "receiver": "",
    "parameters": [],
    "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
     {
      "name": "runtime",
      "type": "str"

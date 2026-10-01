@@ -9,23 +9,26 @@ import (
 
 const nativeSurfaceFixture = `package app
     provides []
-    uses [native, option]
+    uses [native, option, test]
 fn void demo
-    emits {}
+    emits {test::invalid_grant}
     given
         str kind
     asserts
         sample: "text" => ok
-    native::limits lim = native::limits(1, 8, 8, 64, 65536, 4, 4)
-    native::session s = call native::open("bun", "observer", "run", lim)
-    native::inert_literal lit = native::inert_literal("text", option::none(), option::none(), option::some("hi"), option::none(), option::none())
-    native::value_handle h = call native::make(s, "text", lit)
-    native::observe_bounds b = native::observe_bounds(64, 65536)
-    native::value_handle[] hs = [h]
-    native::inert_facts f = call native::observe(s, hs, "lexeme", b)
-    native::deadline d = native::deadline("wall-utc", 5000)
-    native::close_receipt r = call native::close(s, d)
-    ok
+    match call test::grant_admit("ng1-0123456789abcdef0123456789abcdef")
+        test::invalid_grant
+        ok test::owner o => do
+            native::limits lim = native::limits(1, 8, 8, 64, 65536, 4, 4)
+            native::session s = call native::open(o, "bun", "observer", "run", lim)
+            native::inert_literal lit = native::inert_literal("text", option::none(), option::none(), option::some("hi"), option::none(), option::none())
+            native::value_handle h = call native::make(s, "text", lit)
+            native::observe_bounds b = native::observe_bounds(64, 65536)
+            native::value_handle[] hs = [h]
+            native::inert_facts f = call native::observe(s, hs, "lexeme", b)
+            native::deadline d = native::deadline("wall-utc", 5000)
+            native::close_receipt r = call native::close(s, d)
+            ok
 ` + programMain + "    ok\n"
 
 func TestNativeSurfaceAdmitsKindLiterals(t *testing.T) {

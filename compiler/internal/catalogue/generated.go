@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "98c73c14dc32ca56660bda5d35e59119403b1a895ab36f802099c5a21d90fc7c"
+const GeneratedSourceSHA256 = "8f2f684aa95e177c938656830d6907d61126d3ed9676a68d4515cf6db4ff2eaf"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"

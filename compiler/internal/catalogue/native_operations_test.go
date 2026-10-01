@@ -72,7 +72,7 @@ func TestNativeCatalogueContract(t *testing.T) {
 		refs   []string
 	}
 	want := map[string]descriptor{
-		"native::open":          {"native::session", []string{"str", "str", "str", "native::limits"}, []string{"N1"}},
+		"native::open":          {"native::session", []string{"test::owner", "str", "str", "str", "native::limits"}, []string{"N1"}},
 		"native::describe":      {"native::descriptor_or_unknown", []string{"native::session", "str"}, []string{"N1"}},
 		"native::make":          {"native::value_handle", []string{"native::session", "str", "native::inert_literal"}, []string{"N1"}},
 		"native::invoke":        {"native::handle_or_pending_action", []string{"native::session", "str", "option::value<native::value_handle>", "native::value_handle[]"}, []string{"N1", "N2"}},

@@ -17601,6 +17601,10 @@
    "parameters": [],
    "inputs": [
     {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
      "name": "runtime",
      "type": "str"
     },

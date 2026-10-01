@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 98c73c14dc32ca56660bda5d35e59119403b1a895ab36f802099c5a21d90fc7c.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 8f2f684aa95e177c938656830d6907d61126d3ed9676a68d4515cf6db4ff2eaf.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -712,7 +712,7 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | http_peer::close_request | test::owner owner, http_peer::request request → http_peer::request_close_receipt | {test::stale_handle, test::closed_handle, http_peer::http_fault} |  | Map, domain.create | http test adapter (runtime/test-support/slices/i04/http.ts) | real | NT-I04 / NT-I04 |
 | http_peer::read_request_facts | test::owner owner, http_peer::request request → http_peer::request_facts | {test::stale_handle, http_peer::http_fault} |  | Map, domain.create | http test adapter (runtime/test-support/slices/i04/http.ts) | real | NT-I04 / NT-I04 |
 | http_peer::read_response_facts | test::owner owner, http_peer::request request → option::value&lt;http_peer::response_facts&gt; | {test::stale_handle, http_peer::http_fault} |  | Map, domain.create | http test adapter (runtime/test-support/slices/i04/http.ts) | real | NT-I04 / NT-I04 |
-| native::open | str runtime, str observer, str scope, native::limits limits → native::session | {} |  | JSON.stringify, JSON.parse | N-owner isolated subject/observation session; reports supported catalogue. Never silently substitutes the reference runtime. (services K02: schema.ts, session.ts) | supplied | NT-I01 / N1 |
+| native::open | test::owner owner, str runtime, str observer, str scope, native::limits limits → native::session | {} |  | JSON.stringify, JSON.parse | N-owner isolated subject/observation session; reports supported catalogue. Never silently substitutes the reference runtime. (services K02: schema.ts, session.ts) | supplied | NT-I01 / N1 |
 | native::describe | native::session session, str api → native::descriptor_or_unknown | {} |  | JSON.stringify, JSON.parse | N-owner effect-free presence/descriptor metadata for one registered API. (services K02) | supplied | NT-I01 / N1 |
 | native::make | native::session session, str kind, native::inert_literal payload → native::value_handle | {} |  | JSON.stringify, JSON.parse | N-owner raw-value construction behind a handle; construction facts only. (services K02: session.ts) | supplied | NT-I01 / N1 |
 | native::invoke | native::session session, str operation, option::value&lt;native::value_handle&gt; receiver, native::value_handle[] arguments → native::handle_or_pending_action | {} |  | JSON.stringify, JSON.parse | N-owner single registered typed-operation dispatch against receiver/argument handles. (services K02) | supplied | NT-I01 / N1,N2 |
