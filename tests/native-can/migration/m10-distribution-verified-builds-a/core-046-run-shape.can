@@ -1,0 +1,316 @@
+package m10core046run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M10 CORE-046 "bundled verified build: run shape, pinned current".
+/// Source: tests/integration/verified_build_test.go symbol
+/// TestCurrentBundledVerifiedBuild (L22-402); the runAt helper
+/// (L75-103) with the sandbox profile (L77), cleared env (L91)
+/// and run separator (L86-88); the current reader (L104-111).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): production run shape of the published
+/// generations. Every published run is silent by design (exit 0,
+/// empty stdout and stderr), the restored run stays on the same
+/// selection, the pinned generation keeps its manifest identity
+/// and entry, and the sandbox invocation shape plus the live
+/// fixture contract are pinned verbatim.
+/// ADAPTATION (recorded, with source lines): per the accepted
+/// CORE-014/019/040 precedent, the sandbox profile (L77), the
+/// cleared PATH (L91), the live payload (L380) and the fixture
+/// schema (L385) are pinned verbatim with source lines
+/// recorded; the pinned-manifest binding records the
+/// manifestSHA256 equality (L217); no execution is claimed here
+/// (accept_after P23/QHTTP unmet).
+/// The roots-green baseline lives in
+/// core-046-roots-green.can; publication gates and needles live
+/// in core-046-build-semantics.can.
+/// Variants: ok path (published run, restored run), pinned
+/// survival path (manifest identity, entry), invocation shape
+/// (sandbox profile, env, separator, canlc path, env gate),
+/// live contract path (payload count, fixture schema).
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates
+/// SUITE/BUILD/ENV/HTTP and C/R/N/S/A identities bind at P23;
+/// no live run now. Descriptor timeout 360000ms mirrors the Go
+/// 6-minute ctx (L29).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QHTTP unmet).
+/// Case dist/verified-build-run checks: run-exit, live-count,
+/// run-stdout-empty, run-stderr-empty, restored-run-green,
+/// restored-keeps-current, old-generation-runs,
+/// pinned-manifest-bound, pinned-entry-survives,
+/// build-id-field, manifest-field, current-path, builds-dir,
+/// manifest-name, sandbox-profile, offline-path,
+/// run-separator, env-gate, canlc-path, fixture-schema,
+/// live-body.
+/// Facet map (verified_build_test.go legs): run-exit pins exit
+/// 0 (L173); live-count pins the live payload count 7 (L380);
+/// run-stdout-empty pins the silent stdout (L173);
+/// run-stderr-empty pins the empty stderr (L173);
+/// restored-run-green pins the silent restored run (L229-231);
+/// restored-keeps-current pins the unchanged current after the
+/// restored run (L232-234); old-generation-runs pins the leased
+/// old generation still running (L188-189);
+/// pinned-manifest-bound pins the manifest sha equality
+/// (L217-219); pinned-entry-survives pins the surviving pinned
+/// entry.ts (L220-222); build-id-field pins buildID (L123);
+/// manifest-field pins manifestSHA256 (L207); current-path pins
+/// dist/current.json (L106); builds-dir pins dist/builds (L161);
+/// manifest-name pins manifest.json (L213); sandbox-profile
+/// pins the invocation profile verbatim (L77); offline-path
+/// pins the cleared environment (L91: PATH=/nonexistent
+/// verbatim); run-separator pins -- (L86-88); env-gate pins
+/// CAN_BUN_ARCHIVE (L24); canlc-path pins bin/canlc (L78);
+/// fixture-schema pins can.native-fixture.v1 (L385); live-body
+/// pins {"count":7} (L380).
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int run_exit
+    int live_count
+    bool run_stdout_empty
+    bool run_stderr_empty
+    bool restored_run_green
+    bool restored_keeps_current
+    bool old_generation_runs
+    bool pinned_manifest_bound
+    bool pinned_entry_survives
+    str build_id_field
+    str manifest_field
+    str current_path
+    str builds_dir
+    str manifest_name
+    str sandbox_profile
+    str offline_path
+    str run_separator
+    str env_gate
+    str canlc_path
+    str fixture_schema
+    str live_body
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("dist/verified-build-run", "default", "", "offline"), "run-stdout-empty" => ok "case dist/verified-build-run variant default root run-stdout-empty run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("dist/verified-build-run", "default", "", "offline"), "run-stdout-empty" => ok evidence("run-stdout-empty", "true", "true", true, "case dist/verified-build-run variant default root run-stdout-empty run offline")
+        different: false, true, context("dist/verified-build-run", "default", "", "offline"), "run-stdout-empty" => failed{"run-stdout-empty"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("dist/verified-build-run", "default", "", "offline"), "run-exit" => ok evidence("run-exit", "0", "0", true, "case dist/verified-build-run variant default root run-exit run offline")
+        different: 1, 0, context("dist/verified-build-run", "default", "", "offline"), "run-exit" => failed{"run-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "buildID", "buildID", context("dist/verified-build-run", "default", "", "offline"), "build-id-field" => ok evidence("build-id-field", "buildID", "buildID", true, "case dist/verified-build-run variant default root build-id-field run offline")
+        different: "buildID-other", "buildID", context("dist/verified-build-run", "default", "", "offline"), "build-id-field" => failed{"build-id-field"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_run_exit: "seed-run-exit-drift" => ok observation(1, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_live_count: "seed-live-count-drift" => ok observation(0, 8, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_run_stdout_empty: "seed-run-stdout-empty-drift" => ok observation(0, 7, false, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_run_stderr_empty: "seed-run-stderr-empty-drift" => ok observation(0, 7, true, false, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_restored_run_green: "seed-restored-run-green-drift" => ok observation(0, 7, true, true, false, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_restored_keeps_current: "seed-restored-keeps-current-drift" => ok observation(0, 7, true, true, true, false, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_old_generation_runs: "seed-old-generation-runs-drift" => ok observation(0, 7, true, true, true, true, false, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_pinned_manifest_bound: "seed-pinned-manifest-bound-drift" => ok observation(0, 7, true, true, true, true, true, false, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_pinned_entry_survives: "seed-pinned-entry-survives-drift" => ok observation(0, 7, true, true, true, true, true, true, false, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_build_id_field: "seed-build-id-field-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildId", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_manifest_field: "seed-manifest-field-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSha", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_current_path: "seed-current-path-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/previous.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_builds_dir: "seed-builds-dir-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/staging", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_manifest_name: "seed-manifest-name-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifests.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_sandbox_profile: "seed-sandbox-profile-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_offline_path: "seed-offline-path-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/usr/bin:/bin", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_run_separator: "seed-run-separator-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "-", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_env_gate: "seed-env-gate-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        seed_canlc_path: "seed-canlc-path-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/can", "can.native-fixture.v1", "{\"count\":7}")
+        seed_fixture_schema: "seed-fixture-schema-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v0", "{\"count\":7}")
+        seed_live_body: "seed-live-body-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":8}")
+    match variant_id
+        "seed-run-exit-drift" => ok observation(1, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-live-count-drift" => ok observation(0, 8, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-run-stdout-empty-drift" => ok observation(0, 7, false, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-run-stderr-empty-drift" => ok observation(0, 7, true, false, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-restored-run-green-drift" => ok observation(0, 7, true, true, false, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-restored-keeps-current-drift" => ok observation(0, 7, true, true, true, false, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-old-generation-runs-drift" => ok observation(0, 7, true, true, true, true, false, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-pinned-manifest-bound-drift" => ok observation(0, 7, true, true, true, true, true, false, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-pinned-entry-survives-drift" => ok observation(0, 7, true, true, true, true, true, true, false, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-build-id-field-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildId", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-manifest-field-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSha", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-current-path-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/previous.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-builds-dir-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/staging", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-manifest-name-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifests.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-sandbox-profile-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-offline-path-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/usr/bin:/bin", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-run-separator-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "-", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-env-gate-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-canlc-path-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/can", "can.native-fixture.v1", "{\"count\":7}")
+        "seed-fixture-schema-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v0", "{\"count\":7}")
+        "seed-live-body-drift" => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":8}")
+        _ => ok observation(0, 7, true, true, true, true, true, true, true, "buildID", "manifestSHA256", "dist/current.json", "dist/builds", "manifest.json", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", "PATH=/nonexistent", "--", "CAN_BUN_ARCHIVE", "bin/canlc", "can.native-fixture.v1", "{\"count\":7}")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m10_046: "m10-046" => ok [check("run-exit", "published run exits 0"), check("live-count", "live payload carries count 7"), check("run-stdout-empty", "published run stdout is empty"), check("run-stderr-empty", "published run stderr is empty"), check("restored-run-green", "restored run exits 0 silent on the same selection"), check("restored-keeps-current", "restored run leaves production current unchanged"), check("old-generation-runs", "leased old generation still runs after a failing rebuild"), check("pinned-manifest-bound", "pinned manifest sha matches the selected current"), check("pinned-entry-survives", "pinned generation entry.ts survives"), check("build-id-field", "report and current carry the buildID field"), check("manifest-field", "current carries the manifestSHA256 field"), check("current-path", "production selection lives at dist/current.json"), check("builds-dir", "published generations live under dist/builds"), check("manifest-name", "pinned generation keeps manifest.json"), check("sandbox-profile", "runAt pins the sandbox profile verbatim"), check("offline-path", "runAt clears PATH to /nonexistent"), check("run-separator", "run leg appends the -- separator"), check("env-gate", "execution gates on CAN_BUN_ARCHIVE"), check("canlc-path", "legs invoke the bundled bin/canlc"), check("fixture-schema", "live fixture declares can.native-fixture.v1"), check("live-body", "live server answers the count payload verbatim")]
+        other: "nope" => ok []
+    match scope is "m10-046"
+        false => ok []
+        true => ok [check("run-exit", "published run exits 0"), check("live-count", "live payload carries count 7"), check("run-stdout-empty", "published run stdout is empty"), check("run-stderr-empty", "published run stderr is empty"), check("restored-run-green", "restored run exits 0 silent on the same selection"), check("restored-keeps-current", "restored run leaves production current unchanged"), check("old-generation-runs", "leased old generation still runs after a failing rebuild"), check("pinned-manifest-bound", "pinned manifest sha matches the selected current"), check("pinned-entry-survives", "pinned generation entry.ts survives"), check("build-id-field", "report and current carry the buildID field"), check("manifest-field", "current carries the manifestSHA256 field"), check("current-path", "production selection lives at dist/current.json"), check("builds-dir", "published generations live under dist/builds"), check("manifest-name", "pinned generation keeps manifest.json"), check("sandbox-profile", "runAt pins the sandbox profile verbatim"), check("offline-path", "runAt clears PATH to /nonexistent"), check("run-separator", "run leg appends the -- separator"), check("env-gate", "execution gates on CAN_BUN_ARCHIVE"), check("canlc-path", "legs invoke the bundled bin/canlc"), check("fixture-schema", "live fixture declares can.native-fixture.v1"), check("live-body", "live server answers the count payload verbatim")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "dist/verified-build-run" => ok [expected_check("run-exit", "0"), expected_check("live-count", "7"), expected_check("run-stdout-empty", "true"), expected_check("run-stderr-empty", "true"), expected_check("restored-run-green", "true"), expected_check("restored-keeps-current", "true"), expected_check("old-generation-runs", "true"), expected_check("pinned-manifest-bound", "true"), expected_check("pinned-entry-survives", "true"), expected_check("build-id-field", "buildID"), expected_check("manifest-field", "manifestSHA256"), expected_check("current-path", "dist/current.json"), expected_check("builds-dir", "dist/builds"), expected_check("manifest-name", "manifest.json"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))"), expected_check("offline-path", "PATH=/nonexistent"), expected_check("run-separator", "--"), expected_check("env-gate", "CAN_BUN_ARCHIVE"), expected_check("canlc-path", "bin/canlc"), expected_check("fixture-schema", "can.native-fixture.v1"), expected_check("live-body", "{\"count\":7}")]
+        unknown: "nope" => ok []
+    match case is "dist/verified-build-run"
+        false => ok []
+        true => ok [expected_check("run-exit", "0"), expected_check("live-count", "7"), expected_check("run-stdout-empty", "true"), expected_check("run-stderr-empty", "true"), expected_check("restored-run-green", "true"), expected_check("restored-keeps-current", "true"), expected_check("old-generation-runs", "true"), expected_check("pinned-manifest-bound", "true"), expected_check("pinned-entry-survives", "true"), expected_check("build-id-field", "buildID"), expected_check("manifest-field", "manifestSHA256"), expected_check("current-path", "dist/current.json"), expected_check("builds-dir", "dist/builds"), expected_check("manifest-name", "manifest.json"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))"), expected_check("offline-path", "PATH=/nonexistent"), expected_check("run-separator", "--"), expected_check("env-gate", "CAN_BUN_ARCHIVE"), expected_check("canlc-path", "bin/canlc"), expected_check("fixture-schema", "can.native-fixture.v1"), expected_check("live-body", "{\"count\":7}")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("dist/verified-build-run", "default", "", "offline") => ok
+        seed_run_exit: context("dist/verified-build-run", "seed-run-exit-drift", "", "offline") => failed{"run-exit"}
+        seed_live_count: context("dist/verified-build-run", "seed-live-count-drift", "", "offline") => failed{"live-count"}
+        seed_run_stdout_empty: context("dist/verified-build-run", "seed-run-stdout-empty-drift", "", "offline") => failed{"run-stdout-empty"}
+        seed_run_stderr_empty: context("dist/verified-build-run", "seed-run-stderr-empty-drift", "", "offline") => failed{"run-stderr-empty"}
+        seed_restored_run_green: context("dist/verified-build-run", "seed-restored-run-green-drift", "", "offline") => failed{"restored-run-green"}
+        seed_restored_keeps_current: context("dist/verified-build-run", "seed-restored-keeps-current-drift", "", "offline") => failed{"restored-keeps-current"}
+        seed_old_generation_runs: context("dist/verified-build-run", "seed-old-generation-runs-drift", "", "offline") => failed{"old-generation-runs"}
+        seed_pinned_manifest_bound: context("dist/verified-build-run", "seed-pinned-manifest-bound-drift", "", "offline") => failed{"pinned-manifest-bound"}
+        seed_pinned_entry_survives: context("dist/verified-build-run", "seed-pinned-entry-survives-drift", "", "offline") => failed{"pinned-entry-survives"}
+        seed_build_id_field: context("dist/verified-build-run", "seed-build-id-field-drift", "", "offline") => failed{"build-id-field"}
+        seed_manifest_field: context("dist/verified-build-run", "seed-manifest-field-drift", "", "offline") => failed{"manifest-field"}
+        seed_current_path: context("dist/verified-build-run", "seed-current-path-drift", "", "offline") => failed{"current-path"}
+        seed_builds_dir: context("dist/verified-build-run", "seed-builds-dir-drift", "", "offline") => failed{"builds-dir"}
+        seed_manifest_name: context("dist/verified-build-run", "seed-manifest-name-drift", "", "offline") => failed{"manifest-name"}
+        seed_sandbox_profile: context("dist/verified-build-run", "seed-sandbox-profile-drift", "", "offline") => failed{"sandbox-profile"}
+        seed_offline_path: context("dist/verified-build-run", "seed-offline-path-drift", "", "offline") => failed{"offline-path"}
+        seed_run_separator: context("dist/verified-build-run", "seed-run-separator-drift", "", "offline") => failed{"run-separator"}
+        seed_env_gate: context("dist/verified-build-run", "seed-env-gate-drift", "", "offline") => failed{"env-gate"}
+        seed_canlc_path: context("dist/verified-build-run", "seed-canlc-path-drift", "", "offline") => failed{"canlc-path"}
+        seed_fixture_schema: context("dist/verified-build-run", "seed-fixture-schema-drift", "", "offline") => failed{"fixture-schema"}
+        seed_live_body: context("dist/verified-build-run", "seed-live-body-drift", "", "offline") => failed{"live-body"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.run_exit, 0, c, "run-exit")
+            failed
+            ok evidence run_exit_evidence => match call require_int(got.live_count, 7, c, "live-count")
+                failed
+                ok evidence live_count_evidence => match call require_bool(got.run_stdout_empty, true, c, "run-stdout-empty")
+                    failed
+                    ok evidence run_stdout_empty_evidence => match call require_bool(got.run_stderr_empty, true, c, "run-stderr-empty")
+                        failed
+                        ok evidence run_stderr_empty_evidence => match call require_bool(got.restored_run_green, true, c, "restored-run-green")
+                            failed
+                            ok evidence restored_run_green_evidence => match call require_bool(got.restored_keeps_current, true, c, "restored-keeps-current")
+                                failed
+                                ok evidence restored_keeps_current_evidence => match call require_bool(got.old_generation_runs, true, c, "old-generation-runs")
+                                    failed
+                                    ok evidence old_generation_runs_evidence => match call require_bool(got.pinned_manifest_bound, true, c, "pinned-manifest-bound")
+                                        failed
+                                        ok evidence pinned_manifest_bound_evidence => match call require_bool(got.pinned_entry_survives, true, c, "pinned-entry-survives")
+                                            failed
+                                            ok evidence pinned_entry_survives_evidence => match call require_text(got.build_id_field, "buildID", c, "build-id-field")
+                                                failed
+                                                ok evidence build_id_field_evidence => match call require_text(got.manifest_field, "manifestSHA256", c, "manifest-field")
+                                                    failed
+                                                    ok evidence manifest_field_evidence => match call require_text(got.current_path, "dist/current.json", c, "current-path")
+                                                        failed
+                                                        ok evidence current_path_evidence => match call require_text(got.builds_dir, "dist/builds", c, "builds-dir")
+                                                            failed
+                                                            ok evidence builds_dir_evidence => match call require_text(got.manifest_name, "manifest.json", c, "manifest-name")
+                                                                failed
+                                                                ok evidence manifest_name_evidence => match call require_text(got.sandbox_profile, "(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))", c, "sandbox-profile")
+                                                                    failed
+                                                                    ok evidence sandbox_profile_evidence => match call require_text(got.offline_path, "PATH=/nonexistent", c, "offline-path")
+                                                                        failed
+                                                                        ok evidence offline_path_evidence => match call require_text(got.run_separator, "--", c, "run-separator")
+                                                                            failed
+                                                                            ok evidence run_separator_evidence => match call require_text(got.env_gate, "CAN_BUN_ARCHIVE", c, "env-gate")
+                                                                                failed
+                                                                                ok evidence env_gate_evidence => match call require_text(got.canlc_path, "bin/canlc", c, "canlc-path")
+                                                                                    failed
+                                                                                    ok evidence canlc_path_evidence => match call require_text(got.fixture_schema, "can.native-fixture.v1", c, "fixture-schema")
+                                                                                        failed
+                                                                                        ok evidence fixture_schema_evidence => match call require_text(got.live_body, "{\"count\":7}", c, "live-body")
+                                                                                            failed
+                                                                                            ok evidence live_body_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m10_046: "m10-046" => ok test_case("dist/verified-build-run", ["dist", "m10"], ["can-bun-archive", "macos-sandbox-exec"], 360000, [check_ref("run-exit"), check_ref("live-count"), check_ref("run-stdout-empty"), check_ref("run-stderr-empty"), check_ref("restored-run-green"), check_ref("restored-keeps-current"), check_ref("old-generation-runs"), check_ref("pinned-manifest-bound"), check_ref("pinned-entry-survives"), check_ref("build-id-field"), check_ref("manifest-field"), check_ref("current-path"), check_ref("builds-dir"), check_ref("manifest-name"), check_ref("sandbox-profile"), check_ref("offline-path"), check_ref("run-separator"), check_ref("env-gate"), check_ref("canlc-path"), check_ref("fixture-schema"), check_ref("live-body")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m10-046"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("dist/verified-build-run", ["dist", "m10"], ["can-bun-archive", "macos-sandbox-exec"], 360000, [check_ref("run-exit"), check_ref("live-count"), check_ref("run-stdout-empty"), check_ref("run-stderr-empty"), check_ref("restored-run-green"), check_ref("restored-keeps-current"), check_ref("old-generation-runs"), check_ref("pinned-manifest-bound"), check_ref("pinned-entry-survives"), check_ref("build-id-field"), check_ref("manifest-field"), check_ref("current-path"), check_ref("builds-dir"), check_ref("manifest-name"), check_ref("sandbox-profile"), check_ref("offline-path"), check_ref("run-separator"), check_ref("env-gate"), check_ref("canlc-path"), check_ref("fixture-schema"), check_ref("live-body")], callable case_body)
