@@ -1,5 +1,5 @@
 package m33history101
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M33 HISTORY-101 "denied destination and bad credential fail closed".

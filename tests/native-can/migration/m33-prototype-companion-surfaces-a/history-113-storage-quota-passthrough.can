@@ -1,5 +1,5 @@
 package m33history113
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M33 HISTORY-113 "server quota passes through as quota_exceeded".

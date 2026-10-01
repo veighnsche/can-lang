@@ -1,5 +1,5 @@
 package m33history097
-    provides [checks, expected_vector, observe, case_body, descriptor]
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
     uses [text]
 
 /// M33 HISTORY-097 "auth parity: same policy both sides; secret never logged".

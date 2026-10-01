@@ -1,5 +1,5 @@
 package m33history105
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M33 HISTORY-105 "envelope bytes are deterministic and measured".

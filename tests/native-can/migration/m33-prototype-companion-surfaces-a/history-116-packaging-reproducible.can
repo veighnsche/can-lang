@@ -1,5 +1,5 @@
 package m33history116
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M33 HISTORY-116 "prototype bundles are byte-identical across builds".

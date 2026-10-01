@@ -1,5 +1,5 @@
 package m33history107
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M33 HISTORY-107 "invalid keys reject client-side without sending".

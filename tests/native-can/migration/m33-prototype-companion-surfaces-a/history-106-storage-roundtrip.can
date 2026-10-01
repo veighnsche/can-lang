@@ -1,5 +1,5 @@
 package m33history106
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M33 HISTORY-106 "roundtrip: set, get, remove, missing reads null".

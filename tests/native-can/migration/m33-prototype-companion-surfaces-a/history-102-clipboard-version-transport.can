@@ -1,5 +1,5 @@
 package m33history102
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M33 HISTORY-102 "version mismatch and transport failure map honestly".

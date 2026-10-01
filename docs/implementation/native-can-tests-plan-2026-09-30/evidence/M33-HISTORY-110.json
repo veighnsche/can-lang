@@ -1,0 +1,153 @@
+{
+  "status": "complete",
+  "executor": "worker M33-repair",
+  "writing_owner": "migration-history",
+  "task_id": "M33",
+  "row_or_file_slice": "HISTORY-110",
+  "start_prerequisite_receipts": [
+    "P15 complete"
+  ],
+  "acceptance_prerequisite_receipts": [],
+  "commits": [],
+  "changed_paths": [
+    "tests/native-can/migration/m33-prototype-companion-surfaces-a/history-110-storage-version-mismatch.can",
+    "docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-110.json"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "repair provides line in history-110-storage-version-mismatch.can (H023 precedent: export declared shape types)",
+      "deadline": "60s",
+      "result": "exit 0. history-110-storage-version-mismatch.can declares record/error types ['disposition'] (file order); provides extended: 'provides [decide]' -> 'provides [decide, disposition]'. ONLY line 2 changed (unified diff: 1 line). Pre-repair md5 474f68e91b9c60ddb54b4519d33b9c53 1751 bytes (== gate worker's pre-gate md5); post-repair md5 71d1620f3a7e2d75ecb88c3d6c7f54f6 1764 bytes. No value, comment, or disposition edits."
+    },
+    {
+      "command": "go run ./compiler parse /Users/vince/Projects/can-lang/tests/native-can/migration/m33-prototype-companion-surfaces-a/history-110-storage-version-mismatch.can",
+      "deadline": "280s",
+      "result": "exit 0. Verbatim: parsed /Users/vince/Projects/can-lang/tests/native-can/migration/m33-prototype-companion-surfaces-a/history-110-storage-version-mismatch.can: package m33history110, 2 declarations (repaired file; declarations count recorded)"
+    },
+    {
+      "command": "md5 /Users/vince/Projects/can-lang/tests/native-can/migration/m33-prototype-companion-surfaces-a/history-110-storage-version-mismatch.can /Users/vince/Projects/can-lang/tests/host-discrimination/companions/storage.test.ts ; md5 /Users/vince/Projects/can-lang/tests/host-discrimination/companions/storage.ts ; wc -c /Users/vince/Projects/can-lang/tests/native-can/migration/m33-prototype-companion-surfaces-a/history-110-storage-version-mismatch.can /Users/vince/Projects/can-lang/tests/host-discrimination/companions/storage.test.ts ; printf 'companion::version_mismatch@test='; grep -o -e companion::version_mismatch /Users/vince/Projects/can-lang/tests/host-discrimination/companions/storage.test.ts | wc -l ; test -f /Users/vince/Projects/can-lang/tests/native-can/migration/m32-prototype-local-adapters/history-090-storage-census.can && echo M32-EXISTS:history-090-storage-census.can || echo M32-GONE:history-090-storage-census.can",
+      "deadline": "60s",
+      "result": "exit 0. history-110-storage-version-mismatch.can md5 474f68e91b9c60ddb54b4519d33b9c53 1751 bytes; tests/host-discrimination/companions/storage.test.ts md5 c337568c9906f5eebc3a76ab5dc7623e 9213 bytes; tests/host-discrimination/companions/storage.ts md5 b3128601b997430cc0ccc28037ee33f7 14413 bytes. Claim greps exact: companion::version_mismatch@test=2. M32 cites exist: history-090-storage-census.can. Header cross-check: package=m33history110, Source=tests/host-discrimination/companions/storage.test.ts, Disposition=OBSOLETE all match. BYTTRUTH CLEAN (0 fails)."
+    },
+    {
+      "command": "rm -rf /tmp/m33repair/probe-110 && mkdir -p /tmp/m33repair/probe-110/src && cp /Users/vince/Projects/can-lang/tests/native-can/migration/m33-prototype-companion-surfaces-a/history-110-storage-version-mismatch.can /tmp/m33repair/probe-110/src/main.can && printf '%s' '{\"error_registry\":\"can.errors.json\",\"source_root\":\"src\"}' > /tmp/m33repair/probe-110/can.project.json && printf '%s' '{\"active\": [], \"retired\": []}' > /tmp/m33repair/probe-110/can.errors.json && diff /Users/vince/Projects/can-lang/tests/native-can/migration/m33-prototype-companion-surfaces-a/history-110-storage-version-mismatch.can /tmp/m33repair/probe-110/src/main.can && echo STAGE-IDENTICAL",
+      "deadline": "60s",
+      "result": "STAGE-IDENTICAL (diff empty; absolute paths). Calibrated registry active:[] mirroring declared errors (file declares no error; M30 precedent)."
+    },
+    {
+      "command": "go run ./compiler check --json /tmp/m33repair/probe-110",
+      "deadline": "280s",
+      "result": "exit 0, accepted:True, 0 diagnostics. Verbatim: (no diagnostics)"
+    },
+    {
+      "command": "rm -rf /tmp/m33repair/neg-110 && cp -r /tmp/m33repair/probe-110 /tmp/m33repair/neg-110 && mutate /tmp/m33repair/neg-110/src/main.can L19 'str verdict' -> 'int verdict' (probe copy only) && go run ./compiler check --json /tmp/m33repair/neg-110 && md5 /Users/vince/Projects/can-lang/tests/native-can/migration/m33-prototype-companion-surfaces-a/history-110-storage-version-mismatch.can",
+      "deadline": "280s",
+      "result": "exit 1, accepted:False, N=4 errors, all naming src/main.can: True. Seed: /tmp/m33repair/neg-110/src/main.can L19 str verdict -> int verdict (gate-worker seed family; expected L19). New-vs-baseline diagnostics: 4. Verbatim: check/error/CAN-CHECK @ src/main.can:26: expression type does not fit expected type || check/error/CAN-CHECK @ src/main.can:27: expression type does not fit expected type || check/error/CAN-CHECK @ src/main.can:29: expression type does not fit expected type || check/error/CAN-CHECK @ src/main.can:30: expression type does not fit expected type. Repaired file intact: md5 71d1620f3a7e2d75ecb88c3d6c7f54f6 == post-repair 71d1620f3a7e2d75ecb88c3d6c7f54f6: True. Verdict: DISCRIMINATING (seeded type defect detected: check-phase errors name the mutated file; baseline was accepted:true with 0 diagnostics)."
+    },
+    {
+      "command": "python3 /tmp/m33repair/vocab.py /Users/vince/Projects/can-lang/tests/native-can/migration/m33-prototype-companion-surfaces-a/history-110-storage-version-mismatch.can",
+      "deadline": "60s",
+      "result": "exit 0. bare_text_fields=0; record_heads={'str': 4}; given_heads={'str': 1}; uses=['uses []']; text_qualifier_occs=0; bad_record_heads=[] bad_given_heads=[]; VOCAB: PASS. (contract rule = gate vocab2 precedent: bare `text` record/given type heads only; shape refs/str[]/callable pass.)"
+    },
+    {
+      "command": "rm -rf /tmp/m33repair/probe-110 /tmp/m33repair/neg-110 && test ! -e /tmp/m33repair/probe-110 && test ! -e /tmp/m33repair/neg-110 && echo ROW-SCRATCH-ABSENT",
+      "deadline": "60s",
+      "result": "ROW-SCRATCH-ABSENT (probe + neg dirs removed: True)."
+    },
+    {
+      "command": "go run ./compiler check --json /Users/vince/Projects/can-lang/tests/native-can > /tmp/m33repair/live.json 2>/tmp/m33repair/live.err",
+      "deadline": "280s",
+      "result": "exit 0, accepted:True, diagnostics: 2 (0 errors, 2 warnings), only the 2 pre-existing reducer warnings. Stderr capture 0 bytes. Verbatim: check/warning/CAN-CHECK-STRING-MATCH-LADDER @ src/report/reducer/reducer.can:466: nested string comparisons on execution; use match execution with literal arms, | for shared cases, and _ for the fallback || check/warning/CAN-CHECK-STRING-MATCH-LADDER @ src/report/reducer/reducer.can:486: nested string comparisons on execution; use match execution with literal arms, | for shared cases, and _ for the fallback (shared; run once; identical in all 27 row files)"
+    },
+    {
+      "command": "printf 'CAN_TEST_COUNT='; env | grep -c '^CAN_TEST_'; printf 'GOCACHE='; go env GOCACHE",
+      "deadline": "60s",
+      "result": "CAN_TEST_COUNT=0; GOCACHE=/Users/vince/Library/Caches/go-build. CAN_TEST_* count 0 (unset); default GOCACHE only, no repo cache dir created; compiler runs are local with no remote refs; no network, database, or cache-dir contact. (shared; run once; identical in all 27 row files)"
+    },
+    {
+      "command": "stage cal-liv-r (091, literal registry) + cal-liv-o (099, active:[]), each STAGE-IDENTICAL, then append one line 'fn broken (((' to each probe copy only",
+      "deadline": "60s",
+      "result": "STAGE-IDENTICAL x2; syntax-break lines appended to probe copies only. (shared calibration; run once)"
+    },
+    {
+      "command": "go run ./compiler check --json /tmp/m33gate/cal-liv-r; go run ./compiler check --json /tmp/m33gate/cal-liv-o",
+      "deadline": "280s",
+      "result": "cal-liv-r: exit 1, accepted:false, 8 diagnostics (phases ['lex', 'parse', 'resolve']), all naming src/main.can. Verbatim: lex/error/CAN-LEX-CONTINUATION @ src/main.can:165: parentheses, brackets, and braces must stay on one physical line || parse/error/syntax @ src/main.can:165: expected name, found \"(\" || resolve/error/CAN-CHECK @ src/main.can:90: exported signature exposes private type can.project.root/m33history091::observation || resolve/error/CAN-CHECK @ src/main.can:110: exported signature exposes private type can.project.root/m33history091::check || resolve/error/CAN-CHECK @ src/main.can:120: exported signature exposes private type can.project.root/m33history091::expected_check || resolve/error/CAN-CHECK @ src/main.can:131: exported signature exposes private type can.project.root/m33history091::failed || resolve/error/CAN-CHECK @ src/main.can:133: exported signature exposes private type can.project.root/m33history091::context || resolve/error/CAN-CHECK @ src/main.can:154: exported signature exposes private type can.project.root/m33history091::test_case; cal-liv-o: exit 1, accepted:false, 3 diagnostics (phases ['lex', 'parse', 'resolve']), all naming src/main.can. Verbatim: lex/error/CAN-LEX-CONTINUATION @ src/main.can:32: parentheses, brackets, and braces must stay on one physical line || parse/error/syntax @ src/main.can:32: expected name, found \"(\" || resolve/error/CAN-CHECK @ src/main.can:21: exported signature exposes private type can.project.root/m33history099::disposition. The probe+checker detect lex/parse defects per file, so the negative-control masking below is caused by the resolve halt, not a dead probe. (shared; run once; identical in all 27 row files)"
+    },
+    {
+      "command": "rm -rf /tmp/m33gate/cal-reg && mkdir -p /tmp/m33gate/cal-reg/src && cp /Users/vince/Projects/can-lang/tests/native-can/migration/m33-prototype-companion-surfaces-a/history-099-clipboard-roundtrip.can /tmp/m33gate/cal-reg/src/main.can && printf '%s' '{\"error_registry\":\"can.errors.json\",\"source_root\":\"src\"}' > /tmp/m33gate/cal-reg/can.project.json && printf '%s' '{\"active\": [\"m33history099::failed\"], \"retired\": []}' > /tmp/m33gate/cal-reg/can.errors.json && diff /Users/vince/Projects/can-lang/tests/native-can/migration/m33-prototype-companion-surfaces-a/history-099-clipboard-roundtrip.can /tmp/m33gate/cal-reg/src/main.can && echo STAGE-IDENTICAL",
+      "deadline": "60s",
+      "result": "STAGE-IDENTICAL. (shared calibration; run once)"
+    },
+    {
+      "command": "go run ./compiler check --json /tmp/m33gate/cal-reg",
+      "deadline": "280s",
+      "result": "exit 1, accepted:false, 2 diagnostics, stderr 'exit status 1'. Verbatim: project/error/CAN-PROJECT @ can.errors.json:project status has no source span: can.project.root error registry differs from source declarations || resolve/error/CAN-CHECK @ src/main.can:21: exported signature exposes private type can.project.root/m33history099::disposition. A phantom active entry on a file declaring no error manufactures a registry mismatch naming can.errors.json (alongside the file's own resolve refusal), so obsolete probes use active:[] mirroring declared errors (M30 precedent); retain probes use the literal prescribed active entry. (shared; run once; identical in all 19 obsolete row files)"
+    },
+    {
+      "command": "rm -rf /tmp/m33gate/cal-reg /tmp/m33gate/cal-liv-r /tmp/m33gate/cal-liv-o /tmp/m33gate/live.json /tmp/m33gate/live.err && ls /tmp/m33gate && echo --- && go run ./compiler check --json /Users/vince/Projects/can-lang/tests/native-can 2>/dev/null | head -1 | python3 -c \"import json,sys; d=json.load(sys.stdin); print('recheck accepted:', d['result']['accepted'], 'ndiag:', len(d['result']['diagnostics']))\" && echo --- && git status --short -- /Users/vince/Projects/can-lang/tests/native-can/migration/m33-prototype-companion-surfaces-a && echo --- && git status --short | head -40 && echo --- && ls /Users/vince/Projects/can-lang/docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-*.json | wc -l && <driver self-removes /tmp/m33gate after patching>",
+      "deadline": "280s",
+      "result": "exit 0. Shared scratch (cal-reg, cal-liv-r, cal-liv-o, live.json/err) removed; /tmp/m33gate then holds only run.py + vocab.py (self-removed by the driver after patching this receipt). Live re-check on tests/native-can: accepted:true, 2 diagnostics (unchanged from prelim). M33 .can dir clean (no modifications). git status (verbatim, may include pre-existing unrelated dirt outside this task's owned paths): run.py | vocab.py | --- | recheck accepted: True ndiag: 2 | --- | --- |  M docs/implementation/native-can-tests-plan-2026-09-30/muse-resume.md |  M tests/native-can/migration/m32-prototype-local-adapters/history-064-chart-roundtrip.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-065-chart-invalid-spec.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-066-chart-unavailable.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-067-chart-sdk-mapping.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-068-chart-deep-copies.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-069-chart-callback-seal.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-070-chart-nested-events.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-071-chart-reentrant-update.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-072-chart-dispose-poison.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-073-chart-dispose-callback.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-074-chart-opaque-tokens.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-075-chart-census.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-076-clipboard-roundtrip.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-077-clipboard-empty-leaf.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-078-clipboard-invalid-writes.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-079-clipboard-denied.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-080-clipboard-unavailable.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-081-clipboard-native-mapping.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-082-clipboard-reentrancy.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-083-clipboard-census.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-084-storage-roundtrip.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-085-storage-invalid-keys.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-086-storage-quota.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-087-storage-unavailable.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-088-storage-security-mapping.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-089-storage-immutable-copies.can |  M tests/native-can/migration/m32-prototype-local-adapters/history-090-storage-census.can | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-064.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-065.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-066.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-067.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-068.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-069.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-070.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-071.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-072.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-073.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-074.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-075.json | --- |       27. Evidence count: 27."
+    },
+    {
+      "command": "rm -f /tmp/m33repair/live.json /tmp/m33repair/live.err && verify-absent && go run ./compiler check --json /Users/vince/Projects/can-lang/tests/native-can 2>/dev/null | <accepted/ndiag> && git status --short -- <m33dir> && git status --short | head -60 && ls <evdir>/M33-HISTORY-*.json | wc -l && <driver self-removes /tmp/m33repair after patching>",
+      "deadline": "280s",
+      "result": "exit 0. LIVE-SCRATCH-ABSENT. Live re-check on tests/native-can (repaired tree): recheck accepted: True ndiag: 2 (unchanged from prelim: accepted:true, 2 pre-existing reducer warnings). M33 .can dir: 27 repaired files, provides-line only: \u2014 M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-091-chart-roundtrip.can; M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-092-chart-invalid-spec.can; M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-093-chart-release-expiry.can ... (+24 more). git status (verbatim; pre-existing muse-resume.md modification untouched by this worker): M docs/implementation/native-can-tests-plan-2026-09-30/muse-resume.md |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-091-chart-roundtrip.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-092-chart-invalid-spec.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-093-chart-release-expiry.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-094-chart-out-of-range.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-095-chart-fail-closed.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-096-chart-version-mismatch.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-097-chart-auth-parity.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-098-chart-envelope-bytes.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-099-clipboard-roundtrip.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-100-clipboard-empty-leaf.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-101-clipboard-fail-closed.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-102-clipboard-version-transport.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-103-clipboard-auth-parity.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-104-clipboard-semantic-gap.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-105-clipboard-envelope-bytes.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-106-storage-roundtrip.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-107-storage-invalid-keys.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-108-storage-denied-destination.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-109-storage-bad-credential.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-110-storage-version-mismatch.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-111-storage-transport-failure.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-112-storage-malformed-response.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-113-storage-quota-passthrough.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-114-storage-auth-parity.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-115-storage-envelope-bytes.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-116-packaging-reproducible.can |  M tests/native-can/migration/m33-prototype-companion-surfaces-a/history-117-packaging-sizes-pinned.can | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-091.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-092.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-093.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-094.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-095.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-096.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-097.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-098.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-099.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-100.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-101.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-102.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-103.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-104.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-105.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-106.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-107.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-108.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-109.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-110.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-111.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-112.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-113.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-114.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-115.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-116.json | ?? docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-117.json. Evidence count: 27. (shared; run once; identical in all 27 row files)"
+    }
+  ],
+  "identities": {
+    "reference": "R-seed scope identified per reference-seed.md (R-core/P26 and suite acceptance/P23 unfinished). No R bundle built or used; mandatory R checks deferred to P23.",
+    "owner": "N/A as an N artifact; this row exercises no N admission path.",
+    "candidate": "N/A: no candidate executed; Can asserts are static/type-level only (provisional until P23).",
+    "suite": "1 standalone Can package (m33history110); uses []; self-contained local shapes; S identity binding deferred to P23 (no execution credit). Provides repaired provides [decide, disposition]; staged probe accepted:true.",
+    "artifact": "N/A: no built executable promoted; no live Can run, so no artifact identity to bind (binds at P23).",
+    "host_profile": "Darwin arm64; go version go1.27.1 darwin/arm64 (observed via uname/go version this session).",
+    "observer": "go run ./compiler check --json output (accepted flag + diagnostic phase/severity/code/file/line/message), go run ./compiler parse output (package + declaration counts), and md5/grep bytes recorded verbatim in commands above."
+  },
+  "coverage": {
+    "case_check_ids": [
+      "HISTORY-110 disposition decide: history_110 arm pins ('HISTORY-110','obsolete','M32 HISTORY-090; x-r01-1.md Op A table (T2 assigned)') + unknown arm ('unreviewed') (history-110-storage-version-mismatch.can, package m33history110)"
+    ],
+    "controls": [
+      "Positive: Positive (authored, UNEXECUTED): decide(\"HISTORY-110\") must yield ok disposition(HISTORY-110, obsolete, live_owner). No execution: no retained behavior, no P23 port.",
+      "Seeded defect: Seeded defect (authored, UNEXECUTED): decide(\"nope\") unknown arm must yield unreviewed with empty owner/rationale. Static only.",
+      "Missing-evidence (EXECUTED): staged check on the repaired file accepts the package (accepted:true, 0 diagnostics); the gate-worker's privacy refusal is resolved by the provides repair.",
+      "Negative control (EXECUTED probe mutation): seed history-110-storage-version-mismatch.can L19 str verdict -> int verdict in a /tmp copy only; check exit 1 with N=4 errors all naming src/main.can; 4 new-vs-baseline diagnostics; repaired md5 unchanged (71d1620f3a7e2d75ecb88c3d6c7f54f6). DISCRIMINATING."
+    ]
+  },
+  "controls": {
+    "positive": [
+      "Positive (authored, UNEXECUTED): decide(\"HISTORY-110\") must yield ok disposition(HISTORY-110, obsolete, live_owner). No execution: no retained behavior, no P23 port."
+    ],
+    "seeded_defect": [
+      "Seeded defect (authored, UNEXECUTED): decide(\"nope\") unknown arm must yield unreviewed with empty owner/rationale. Static only."
+    ],
+    "missing_evidence": [
+      "Missing-evidence (EXECUTED): staged check on the repaired file accepts the package (accepted:true, 0 diagnostics); the gate-worker's privacy refusal is resolved by the provides repair.",
+      "Negative control (EXECUTED probe mutation): seed history-110-storage-version-mismatch.can L19 str verdict -> int verdict in a /tmp copy only; check exit 1 with N=4 errors all naming src/main.can; 4 new-vs-baseline diagnostics; repaired md5 unchanged (71d1620f3a7e2d75ecb88c3d6c7f54f6). DISCRIMINATING."
+    ]
+  },
+  "resource_and_cleanup_receipts": [
+    "Repair worker: no live Can runs, no R-seed use, no bundles built, no network, no database contact, no filesystem mutation outside the 27 repaired .can files + 27 evidence files plus /tmp scratch (default GOCACHE only; no repo cache dir). Driver: run.py md5 66abede74243cd9b464ff49a389b96ff; vocab.py md5 96bcc96fafa51e70759fb2b9e2e32001 (self-removed after use).",
+    "Per-row probe /tmp/m33repair/probe-110 + neg copy /tmp/m33repair/neg-110 removed with verify-absent receipt (ROW-SCRATCH-ABSENT). Repaired .can md5 71d1620f3a7e2d75ecb88c3d6c7f54f6 stable across the neg step; no stage, no commit.",
+    "Shared /tmp scratch removed with verify-absent; live tree re-check recorded in the final shared row; 27 M33-HISTORY-*.json evidence files present; driver self-removed /tmp/m33repair after patching (operator verifies absent post-run)."
+  ],
+  "correction_registry_head": null,
+  "relevance_decision": {
+    "row": "HISTORY-110",
+    "verdict": "obsolete",
+    "rationale": "T3 storage not selected for Op A (x-r01-1.md assigns the T2 reviewed adapter): companion version faults are boundary-only and vacated with the tier. The T2 reviewed adapter has no version surface.",
+    "recorded_in": "history-110-storage-version-mismatch.can header + evidence/M33.json",
+    "re_decided_by_gate_worker": false
+  },
+  "retirement_eligible": false,
+  "retirement_commit": null,
+  "reviewer_disposition": null,
+  "limitations": [
+    "Static-only verification: parse + staged cancheck (accepted:true) + executed DISCRIMINATING negative control + authored (unexecuted) Can assert controls + gate-worker byte-truth audit (reused). Assert bodies are unaudited by execution; P23 qualification + an execution leg must bind before any execution credit.",
+    "Repair scope: ONLY the provides line changed (shape types appended per H023 precedent; disposition/values/comments untouched). Gate-worker's staged-check blocker resolved; disposition NOT re-decided.",
+    "Slice package avoids uses [spec] (outside the src/ source root, M32 precedent); at P23 the local shapes map onto spec:: equivalents."
+  ],
+  "deletion_policy": "No shared old file is deleted by this gate run. All cited sources stay intact; retirement_eligible=false; retirement is a later integrator decision. Nothing proposed for deletion.",
+  "blockers": []
+}

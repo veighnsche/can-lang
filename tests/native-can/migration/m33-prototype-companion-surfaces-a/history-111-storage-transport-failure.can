@@ -1,5 +1,5 @@
 package m33history111
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M33 HISTORY-111 "transport failure maps to transport_failed".

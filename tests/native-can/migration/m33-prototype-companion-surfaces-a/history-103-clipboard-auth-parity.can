@@ -1,5 +1,5 @@
 package m33history103
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M33 HISTORY-103 "auth parity: same policy both sides; secret never logged".

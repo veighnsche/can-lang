@@ -1,5 +1,5 @@
 package m33history110
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M33 HISTORY-110 "version mismatch fails closed both directions".

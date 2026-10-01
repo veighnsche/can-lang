@@ -1,5 +1,5 @@
 package m33history100
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M33 HISTORY-100 "empty companion cell reads the empty leaf".
