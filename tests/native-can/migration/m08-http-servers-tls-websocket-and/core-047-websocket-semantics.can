@@ -1,0 +1,313 @@
+package m08core047websocket
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M08 CORE-047 "websocket: compiled lifecycle over the owned socket".
+/// Source: tests/integration/websocket_test.go symbol
+/// TestCurrentBundledWebSocket (L17-203).
+/// Related fixture: compiler/testdata/current/ws/socket.can (read at
+/// L46, staged as src/main.can at L50); the lifecycle pins ground the
+/// socket handler (fixture L74-88: ws::accept then pump until close),
+/// the router (fixture L89-99: GET /socket), boot (fixture L100-116:
+/// bind 127.0.0.1 then serve), link (fixture L145-158: ws::connect),
+/// push (fixture L160-171: ws::send_text), push_raw (fixture L173-186:
+/// bytes::from_ints then ws::send_bytes), drain (fixture L188-201:
+/// stream::read_many), bye (fixture L203-213: ws::close 1000 done)
+/// and release (fixture L215-225: stream::close_reader).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): the compiled websocket lifecycle over the owned
+/// server. Boot returns ok on 18373, link dials the ws loopback socket
+/// url with an empty subprotocol, push of hi returns 2 and the first
+/// drain preserves text hi, push_raw of [1,2,3] returns 3 and the second
+/// drain preserves bytes 1,2,3, bye returns ok and the close drain pins
+/// code 1000 reason done, the final drain is empty, release returns ok,
+/// the emitted entry passes strict tsc when CAN_TSC is set, stop and
+/// wait return ok, the owned root completes clean, and the harness
+/// prints its marker.
+/// The roots-green pin lives in core-047-roots-green.can; the production
+/// process shape lives in core-047-run-shape.can.
+/// Variants: text hi (push-ok + text-frame, L160-164); bytes [1,2,3]
+/// (push-raw-ok + binary-frame, L165-169); close 1000 done (bye-ok +
+/// close-code + close-reason, L170-174); empty drain (empty-drain,
+/// L175-176).
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. CAN_TSC gates the optional
+/// strict tsc leg (pinned as strict-emission here, never waived).
+/// Logical gates SUITE/WORK/PROC and C/R/N/S/A identities bind at P23;
+/// no live run now. Descriptor timeout 120000ms mirrors the Go 2-minute
+/// ctx (L24).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QHTTP/QWS unmet).
+/// Case ws/ws-lifecycle checks: boot-ok, boot-port,
+/// link-ok, link-url, protocol-empty, push-ok, text-frame, push-raw-ok,
+/// binary-frame, bye-ok, close-code, close-reason, empty-drain,
+/// release-ok, strict-emission, stop-ok, wait-ok, owned-completion-ok,
+/// cleanup-clean, lifecycle-marker.
+/// Facet map (websocket_test.go harness, L144-184): boot-ok pins the
+/// boot result (L153-154: boot(18373n) kind is ok); boot-port pins the
+/// loopback port (L153: 18373n verbatim); link-ok pins the dial result
+/// (L156-157: link kind is ok); link-url pins the socket url (L156:
+/// "ws://127.0.0.1:18373/socket" verbatim); protocol-empty pins the
+/// subprotocol (L159: conn.protocol is ""); push-ok pins the text send
+/// (L160-161: push kind ok and value 2n); text-frame pins the text echo
+/// (L162-164: first drain length 1 with text "hi"); push-raw-ok pins
+/// the binary send (L165-166: pushRaw kind ok and value 3n);
+/// binary-frame pins the binary echo (L167-169: second drain length 1
+/// with data [1,2,3]); bye-ok pins the close result (L170-171: bye
+/// kind is ok); close-code pins the close code (L174: 1000n);
+/// close-reason pins the close reason (L174: "done"); empty-drain pins
+/// the final drain (L175-176: empty drain length 0); release-ok pins
+/// the release result (L177: release kind is ok); strict-emission pins
+/// the optional emission leg (L95-100: strict tsc over the emitted
+/// entry.ts passes if and only if CAN_TSC is set); stop-ok pins the
+/// stop result (L178: $canServer.stop kind is ok); wait-ok pins the
+/// wait result (L179: $canServer.wait kind is ok);
+/// owned-completion-ok pins the owned completion (L182:
+/// owned.completion.kind is ok); cleanup-clean pins clean teardown
+/// (L182: cleanupFailed is false); lifecycle-marker pins the harness
+/// marker (L183: "compiled websocket lifecycle passed" verbatim; the
+/// harness prints it only after every lifecycle assertion passes).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool boot_ok
+    int boot_port
+    bool link_ok
+    str link_url
+    str protocol
+    int push_sent
+    str text_frame
+    int raw_sent
+    str binary_frame
+    bool bye_ok
+    int close_code
+    str close_reason
+    int empty_count
+    bool release_ok
+    bool strict_emission
+    bool stop_ok
+    bool wait_ok
+    bool owned_completion_ok
+    bool cleanup_clean
+    str lifecycle_marker
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("ws/ws-lifecycle", "default", "", "offline"), "boot-ok" => ok "case ws/ws-lifecycle variant default root boot-ok run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("ws/ws-lifecycle", "default", "", "offline"), "boot-ok" => ok evidence("boot-ok", "true", "true", true, "case ws/ws-lifecycle variant default root boot-ok run offline")
+        different: false, true, context("ws/ws-lifecycle", "default", "", "offline"), "boot-ok" => failed{"boot-ok"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 18373, 18373, context("ws/ws-lifecycle", "default", "", "offline"), "boot-port" => ok evidence("boot-port", "18373", "18373", true, "case ws/ws-lifecycle variant default root boot-port run offline")
+        different: 18372, 18373, context("ws/ws-lifecycle", "default", "", "offline"), "boot-port" => failed{"boot-port"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "hi", "hi", context("ws/ws-lifecycle", "default", "", "offline"), "text-frame" => ok evidence("text-frame", "hi", "hi", true, "case ws/ws-lifecycle variant default root text-frame run offline")
+        different: "bye", "hi", context("ws/ws-lifecycle", "default", "", "offline"), "text-frame" => failed{"text-frame"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        seed_boot_fail: "seed-boot-fail" => ok observation(false, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        seed_port_drift: "seed-port-drift" => ok observation(true, 18372, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        seed_link_fail: "seed-link-fail" => ok observation(true, 18373, false, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        seed_url_drift: "seed-url-drift" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/status", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        seed_protocol_drift: "seed-protocol-drift" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "chat", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        seed_push_short: "seed-push-short" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 1, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        seed_text_drift: "seed-text-drift" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "bye", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        seed_raw_short: "seed-raw-short" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 2, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        seed_binary_drift: "seed-binary-drift" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        seed_bye_fail: "seed-bye-fail" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", false, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        seed_code_drift: "seed-code-drift" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1001, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        seed_reason_drift: "seed-reason-drift" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "bye", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        seed_drain_full: "seed-drain-full" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 1, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        seed_release_fail: "seed-release-fail" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, false, true, true, true, true, true, "compiled websocket lifecycle passed")
+        seed_emission_lax: "seed-emission-lax" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, false, true, true, true, true, "compiled websocket lifecycle passed")
+        seed_stop_fail: "seed-stop-fail" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, false, true, true, true, "compiled websocket lifecycle passed")
+        seed_wait_fail: "seed-wait-fail" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, false, true, true, "compiled websocket lifecycle passed")
+        seed_completion_fail: "seed-completion-fail" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, false, true, "compiled websocket lifecycle passed")
+        seed_cleanup_dirty: "seed-cleanup-dirty" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, false, "compiled websocket lifecycle passed")
+        seed_marker_drift: "seed-marker-drift" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle done")
+    match variant_id
+        "seed-boot-fail" => ok observation(false, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        "seed-port-drift" => ok observation(true, 18372, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        "seed-link-fail" => ok observation(true, 18373, false, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        "seed-url-drift" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/status", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        "seed-protocol-drift" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "chat", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        "seed-push-short" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 1, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        "seed-text-drift" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "bye", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        "seed-raw-short" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 2, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        "seed-binary-drift" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        "seed-bye-fail" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", false, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        "seed-code-drift" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1001, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        "seed-reason-drift" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "bye", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        "seed-drain-full" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 1, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+        "seed-release-fail" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, false, true, true, true, true, true, "compiled websocket lifecycle passed")
+        "seed-emission-lax" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, false, true, true, true, true, "compiled websocket lifecycle passed")
+        "seed-stop-fail" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, false, true, true, true, "compiled websocket lifecycle passed")
+        "seed-wait-fail" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, false, true, true, "compiled websocket lifecycle passed")
+        "seed-completion-fail" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, false, true, "compiled websocket lifecycle passed")
+        "seed-cleanup-dirty" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, false, "compiled websocket lifecycle passed")
+        "seed-marker-drift" => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle done")
+        _ => ok observation(true, 18373, true, "ws://127.0.0.1:18373/socket", "", 2, "hi", 3, "1,2,3", true, 1000, "done", 0, true, true, true, true, true, true, "compiled websocket lifecycle passed")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m08_047: "m08-047" => ok [check("boot-ok", "boot returns ok on the loopback port"), check("boot-port", "boot pins port 18373"), check("link-ok", "link returns ok on the socket url"), check("link-url", "link pins the ws loopback socket url"), check("protocol-empty", "linked connection pins empty subprotocol"), check("push-ok", "push of hi returns 2"), check("text-frame", "first drain preserves text hi"), check("push-raw-ok", "push_raw of [1,2,3] returns 3"), check("binary-frame", "second drain preserves bytes 1,2,3"), check("bye-ok", "bye returns ok"), check("close-code", "close drain pins code 1000"), check("close-reason", "close drain pins reason done"), check("empty-drain", "final drain is empty"), check("release-ok", "release returns ok"), check("strict-emission", "emitted entry passes strict tsc when CAN_TSC is set"), check("stop-ok", "server stop returns ok"), check("wait-ok", "server wait returns ok"), check("owned-completion-ok", "owned root completes ok"), check("cleanup-clean", "owned root cleans up without failure"), check("lifecycle-marker", "harness prints the compiled websocket lifecycle marker")]
+        other: "nope" => ok []
+    match scope is "m08-047"
+        false => ok []
+        true => ok [check("boot-ok", "boot returns ok on the loopback port"), check("boot-port", "boot pins port 18373"), check("link-ok", "link returns ok on the socket url"), check("link-url", "link pins the ws loopback socket url"), check("protocol-empty", "linked connection pins empty subprotocol"), check("push-ok", "push of hi returns 2"), check("text-frame", "first drain preserves text hi"), check("push-raw-ok", "push_raw of [1,2,3] returns 3"), check("binary-frame", "second drain preserves bytes 1,2,3"), check("bye-ok", "bye returns ok"), check("close-code", "close drain pins code 1000"), check("close-reason", "close drain pins reason done"), check("empty-drain", "final drain is empty"), check("release-ok", "release returns ok"), check("strict-emission", "emitted entry passes strict tsc when CAN_TSC is set"), check("stop-ok", "server stop returns ok"), check("wait-ok", "server wait returns ok"), check("owned-completion-ok", "owned root completes ok"), check("cleanup-clean", "owned root cleans up without failure"), check("lifecycle-marker", "harness prints the compiled websocket lifecycle marker")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "ws/ws-lifecycle" => ok [expected_check("boot-ok", "true"), expected_check("boot-port", "18373"), expected_check("link-ok", "true"), expected_check("link-url", "ws://127.0.0.1:18373/socket"), expected_check("protocol-empty", ""), expected_check("push-ok", "2"), expected_check("text-frame", "hi"), expected_check("push-raw-ok", "3"), expected_check("binary-frame", "1,2,3"), expected_check("bye-ok", "true"), expected_check("close-code", "1000"), expected_check("close-reason", "done"), expected_check("empty-drain", "0"), expected_check("release-ok", "true"), expected_check("strict-emission", "true"), expected_check("stop-ok", "true"), expected_check("wait-ok", "true"), expected_check("owned-completion-ok", "true"), expected_check("cleanup-clean", "true"), expected_check("lifecycle-marker", "compiled websocket lifecycle passed")]
+        unknown: "nope" => ok []
+    match case is "ws/ws-lifecycle"
+        false => ok []
+        true => ok [expected_check("boot-ok", "true"), expected_check("boot-port", "18373"), expected_check("link-ok", "true"), expected_check("link-url", "ws://127.0.0.1:18373/socket"), expected_check("protocol-empty", ""), expected_check("push-ok", "2"), expected_check("text-frame", "hi"), expected_check("push-raw-ok", "3"), expected_check("binary-frame", "1,2,3"), expected_check("bye-ok", "true"), expected_check("close-code", "1000"), expected_check("close-reason", "done"), expected_check("empty-drain", "0"), expected_check("release-ok", "true"), expected_check("strict-emission", "true"), expected_check("stop-ok", "true"), expected_check("wait-ok", "true"), expected_check("owned-completion-ok", "true"), expected_check("cleanup-clean", "true"), expected_check("lifecycle-marker", "compiled websocket lifecycle passed")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("ws/ws-lifecycle", "default", "", "offline") => ok
+        seed_boot_fail: context("ws/ws-lifecycle", "seed-boot-fail", "", "offline") => failed{"boot-ok"}
+        seed_port_drift: context("ws/ws-lifecycle", "seed-port-drift", "", "offline") => failed{"boot-port"}
+        seed_link_fail: context("ws/ws-lifecycle", "seed-link-fail", "", "offline") => failed{"link-ok"}
+        seed_url_drift: context("ws/ws-lifecycle", "seed-url-drift", "", "offline") => failed{"link-url"}
+        seed_protocol_drift: context("ws/ws-lifecycle", "seed-protocol-drift", "", "offline") => failed{"protocol-empty"}
+        seed_push_short: context("ws/ws-lifecycle", "seed-push-short", "", "offline") => failed{"push-ok"}
+        seed_text_drift: context("ws/ws-lifecycle", "seed-text-drift", "", "offline") => failed{"text-frame"}
+        seed_raw_short: context("ws/ws-lifecycle", "seed-raw-short", "", "offline") => failed{"push-raw-ok"}
+        seed_binary_drift: context("ws/ws-lifecycle", "seed-binary-drift", "", "offline") => failed{"binary-frame"}
+        seed_bye_fail: context("ws/ws-lifecycle", "seed-bye-fail", "", "offline") => failed{"bye-ok"}
+        seed_code_drift: context("ws/ws-lifecycle", "seed-code-drift", "", "offline") => failed{"close-code"}
+        seed_reason_drift: context("ws/ws-lifecycle", "seed-reason-drift", "", "offline") => failed{"close-reason"}
+        seed_drain_full: context("ws/ws-lifecycle", "seed-drain-full", "", "offline") => failed{"empty-drain"}
+        seed_release_fail: context("ws/ws-lifecycle", "seed-release-fail", "", "offline") => failed{"release-ok"}
+        seed_emission_lax: context("ws/ws-lifecycle", "seed-emission-lax", "", "offline") => failed{"strict-emission"}
+        seed_stop_fail: context("ws/ws-lifecycle", "seed-stop-fail", "", "offline") => failed{"stop-ok"}
+        seed_wait_fail: context("ws/ws-lifecycle", "seed-wait-fail", "", "offline") => failed{"wait-ok"}
+        seed_completion_fail: context("ws/ws-lifecycle", "seed-completion-fail", "", "offline") => failed{"owned-completion-ok"}
+        seed_cleanup_dirty: context("ws/ws-lifecycle", "seed-cleanup-dirty", "", "offline") => failed{"cleanup-clean"}
+        seed_marker_drift: context("ws/ws-lifecycle", "seed-marker-drift", "", "offline") => failed{"lifecycle-marker"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.boot_ok, true, c, "boot-ok")
+            failed
+            ok evidence boot_evidence => match call require_int(got.boot_port, 18373, c, "boot-port")
+                failed
+                ok evidence port_evidence => match call require_bool(got.link_ok, true, c, "link-ok")
+                    failed
+                    ok evidence link_evidence => match call require_text(got.link_url, "ws://127.0.0.1:18373/socket", c, "link-url")
+                        failed
+                        ok evidence url_evidence => match call require_text(got.protocol, "", c, "protocol-empty")
+                            failed
+                            ok evidence protocol_evidence => match call require_int(got.push_sent, 2, c, "push-ok")
+                                failed
+                                ok evidence push_evidence => match call require_text(got.text_frame, "hi", c, "text-frame")
+                                    failed
+                                    ok evidence text_evidence => match call require_int(got.raw_sent, 3, c, "push-raw-ok")
+                                        failed
+                                        ok evidence raw_evidence => match call require_text(got.binary_frame, "1,2,3", c, "binary-frame")
+                                            failed
+                                            ok evidence binary_evidence => match call require_bool(got.bye_ok, true, c, "bye-ok")
+                                                failed
+                                                ok evidence bye_evidence => match call require_int(got.close_code, 1000, c, "close-code")
+                                                    failed
+                                                    ok evidence code_evidence => match call require_text(got.close_reason, "done", c, "close-reason")
+                                                        failed
+                                                        ok evidence reason_evidence => match call require_int(got.empty_count, 0, c, "empty-drain")
+                                                            failed
+                                                            ok evidence empty_evidence => match call require_bool(got.release_ok, true, c, "release-ok")
+                                                                failed
+                                                                ok evidence release_evidence => match call require_bool(got.strict_emission, true, c, "strict-emission")
+                                                                    failed
+                                                                    ok evidence emission_evidence => match call require_bool(got.stop_ok, true, c, "stop-ok")
+                                                                        failed
+                                                                        ok evidence stop_evidence => match call require_bool(got.wait_ok, true, c, "wait-ok")
+                                                                            failed
+                                                                            ok evidence wait_evidence => match call require_bool(got.owned_completion_ok, true, c, "owned-completion-ok")
+                                                                                failed
+                                                                                ok evidence completion_evidence => match call require_bool(got.cleanup_clean, true, c, "cleanup-clean")
+                                                                                    failed
+                                                                                    ok evidence cleanup_evidence => match call require_text(got.lifecycle_marker, "compiled websocket lifecycle passed", c, "lifecycle-marker")
+                                                                                        failed
+                                                                                        ok evidence marker_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m08_047: "m08-047" => ok test_case("ws/ws-lifecycle", ["ws", "m08"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("boot-ok"), check_ref("boot-port"), check_ref("link-ok"), check_ref("link-url"), check_ref("protocol-empty"), check_ref("push-ok"), check_ref("text-frame"), check_ref("push-raw-ok"), check_ref("binary-frame"), check_ref("bye-ok"), check_ref("close-code"), check_ref("close-reason"), check_ref("empty-drain"), check_ref("release-ok"), check_ref("strict-emission"), check_ref("stop-ok"), check_ref("wait-ok"), check_ref("owned-completion-ok"), check_ref("cleanup-clean"), check_ref("lifecycle-marker")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m08-047"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("ws/ws-lifecycle", ["ws", "m08"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("boot-ok"), check_ref("boot-port"), check_ref("link-ok"), check_ref("link-url"), check_ref("protocol-empty"), check_ref("push-ok"), check_ref("text-frame"), check_ref("push-raw-ok"), check_ref("binary-frame"), check_ref("bye-ok"), check_ref("close-code"), check_ref("close-reason"), check_ref("empty-drain"), check_ref("release-ok"), check_ref("strict-emission"), check_ref("stop-ok"), check_ref("wait-ok"), check_ref("owned-completion-ok"), check_ref("cleanup-clean"), check_ref("lifecycle-marker")], callable case_body)
