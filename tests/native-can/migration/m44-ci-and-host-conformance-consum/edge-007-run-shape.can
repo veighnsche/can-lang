@@ -1,0 +1,354 @@
+package m44edge007run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M44 EDGE-007 "release
+/// qualification" suite pact.
+/// Source:
+/// .github/workflows/release-qualify.yml
+/// symbol "release qualification"
+/// (L47-63): pinned suite calls plus
+/// select names plus upload records.
+/// Disposition: rewire (same row pact
+/// as the provision slice; this file
+/// owns the suite plus receipt
+/// spellings).
+/// Protects (this file): the two go
+/// suite calls plus select names plus
+/// log names plus upload records plus
+/// tallies.
+/// ADAPTATION (noted, plus source
+/// lines): call pins hold suite verb
+/// spellings; name pins hold select
+/// plus log spellings; glob pins hold
+/// upload bytes; count pins hold ints
+/// tallied from L52-62.
+/// suite-name pins Run release,
+/// install, and update tests (L47);
+/// pipefail-shell pins set -o pipefail
+/// (L51); unit-suite-call pins go test
+/// -count=1 -v ./distribution (L52);
+/// unit-log-name pins
+/// release-unit-v1.txt (L52 plus L61);
+/// select-release pins
+/// TestReleaseInstallUpdate (L53);
+/// select-refusals pins
+/// TestInstallRootRefusals (L53);
+/// select-sidecar pins
+/// TestDevelopmentSidecar (L53);
+/// integration-dir pins
+/// ./tests/integration (L53);
+/// integration-log-name pins
+/// release-integration-v1.txt (L53
+/// plus L62); upload-action pins
+/// actions/upload-artifact@v4 (L54);
+/// always-guard pins always() (L55);
+/// artifact-name pins
+/// release-qualification-v1 (L57);
+/// sha-glob pins *.sha256 (L59);
+/// inspection-glob pins
+/// *.inspection.json (L60);
+/// no-files-found pins
+/// if-no-files-found: error (L63);
+/// tee-call pins tee (L52 plus L53);
+/// go-test-count pins int (2) from L52
+/// plus L53; upload-path-count pins
+/// int (4) from L59-62;
+/// select-name-count pins int (3) from
+/// L53.
+/// Facet map (suite then upload
+/// order): suite-name, pipefail-shell,
+/// unit-suite-call, unit-log-name,
+/// select-release, select-refusals,
+/// select-sidecar, integration-dir,
+/// integration-log-name, upload-action,
+/// always-guard, artifact-name,
+/// sha-glob, inspection-glob,
+/// no-files-found, tee-call,
+/// go-test-count, upload-path-count,
+/// select-name-count.
+/// The provision pact lives in
+/// edge-007-base-semantics.can; the
+/// offline shape lives in
+/// edge-007-roots-green.can.
+/// Variants: none listed (row lists
+/// zero variants).
+/// Environment: no gates listed (binds
+/// at P23; no live run now).
+/// Logical gates SUITE/ENV/ARCHIVE/
+/// WORK/BUILD bind at P23; no live run
+/// now.
+/// Timeout 120000ms is the offline
+/// default bound (no bun timeout in
+/// this row; binds at P23 like the M31
+/// no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// accept gate unmet).
+/// Intended consumed report: M41
+/// LIFE-012 Linux distribution slices
+/// (no qualified report yet; P23/QD1/
+/// QN1 unmet).
+/// Rewire stays blocked; the workflow
+/// stays intact; no call retired.
+/// Caller pact note: the suite plus
+/// upload pins above are the exact
+/// calls Z03 will rewire once a
+/// qualified Can report exists; the
+/// staged probe below already proves
+/// the report plus receipt handling
+/// shape (require plus observe plus
+/// expected vector).
+/// Related: tests/integration/
+/// release_test.go plus
+/// tests/integration/
+/// distribution_test.go (invoked by
+/// the caller; owned outside M44).
+/// Case release/qualify-suites checks:
+/// suite-name, pipefail-shell,
+/// unit-suite-call, unit-log-name,
+/// select-release, select-refusals,
+/// select-sidecar, integration-dir,
+/// integration-log-name, upload-action,
+/// always-guard, artifact-name,
+/// sha-glob, inspection-glob,
+/// no-files-found, tee-call,
+/// go-test-count, upload-path-count,
+/// select-name-count.
+/// Shared old files intact; retirement
+/// is a later integrator choice.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str suite_name
+    str pipefail_shell
+    str unit_suite_call
+    str unit_log_name
+    str select_release
+    str select_refusals
+    str select_sidecar
+    str integration_dir
+    str integration_log_name
+    str upload_action
+    str always_guard
+    str artifact_name
+    str sha_glob
+    str inspection_glob
+    str no_files_found
+    str tee_call
+    int go_test_count
+    int upload_path_count
+    int select_name_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("release/qualify-suites", "default", "", "offline"), "suite-name" => ok "case release/qualify-suites variant default root suite-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("release/qualify-suites", "default", "", "offline"), "suite-name" => ok evidence("suite-name", "true", "true", true, "case release/qualify-suites variant default root suite-name run offline")
+        different: false, true, context("release/qualify-suites", "default", "", "offline"), "suite-name" => failed{"suite-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("release/qualify-suites", "default", "", "offline"), "go-test-count" => ok evidence("go-test-count", "2", "2", true, "case release/qualify-suites variant default root go-test-count run offline")
+        different: 1, 2, context("release/qualify-suites", "default", "", "offline"), "go-test-count" => failed{"go-test-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "Run release, install, and update tests", "Run release, install, and update tests", context("release/qualify-suites", "default", "", "offline"), "suite-name" => ok evidence("suite-name", "Run release, install, and update tests", "Run release, install, and update tests", true, "case release/qualify-suites variant default root suite-name run offline")
+        different: "Run release, install, and update tests_2", "Run release, install, and update tests", context("release/qualify-suites", "default", "", "offline"), "suite-name" => failed{"suite-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        seed_suite_name: "seed-suite-name-drift" => ok observation("Run release, install, and update tests_2", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        seed_pipefail_shell: "seed-pipefail-shell-drift" => ok observation("Run release, install, and update tests", "set -o pipefail_2", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        seed_unit_suite_call: "seed-unit-suite-call-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution_2", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        seed_unit_log_name: "seed-unit-log-name-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt_2", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        seed_select_release: "seed-select-release-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate_2", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        seed_select_refusals: "seed-select-refusals-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals_2", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        seed_select_sidecar: "seed-select-sidecar-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar_2", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        seed_integration_dir: "seed-integration-dir-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration_2", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        seed_integration_log_name: "seed-integration-log-name-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt_2", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        seed_upload_action: "seed-upload-action-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4_2", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        seed_always_guard: "seed-always-guard-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()_2", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        seed_artifact_name: "seed-artifact-name-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1_2", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        seed_sha_glob: "seed-sha-glob-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256_2", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        seed_inspection_glob: "seed-inspection-glob-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json_2", "if-no-files-found: error", "tee", 2, 4, 3)
+        seed_no_files_found: "seed-no-files-found-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error_2", "tee", 2, 4, 3)
+        seed_tee_call: "seed-tee-call-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee_2", 2, 4, 3)
+        seed_go_test_count: "seed-go-test-count-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 1, 4, 3)
+        seed_upload_path_count: "seed-upload-path-count-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 3, 3)
+        seed_select_name_count: "seed-select-name-count-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 2)
+    match variant_id
+        "seed-suite-name-drift" => ok observation("Run release, install, and update tests_2", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        "seed-pipefail-shell-drift" => ok observation("Run release, install, and update tests", "set -o pipefail_2", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        "seed-unit-suite-call-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution_2", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        "seed-unit-log-name-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt_2", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        "seed-select-release-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate_2", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        "seed-select-refusals-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals_2", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        "seed-select-sidecar-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar_2", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        "seed-integration-dir-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration_2", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        "seed-integration-log-name-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt_2", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        "seed-upload-action-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4_2", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        "seed-always-guard-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()_2", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        "seed-artifact-name-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1_2", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        "seed-sha-glob-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256_2", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+        "seed-inspection-glob-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json_2", "if-no-files-found: error", "tee", 2, 4, 3)
+        "seed-no-files-found-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error_2", "tee", 2, 4, 3)
+        "seed-tee-call-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee_2", 2, 4, 3)
+        "seed-go-test-count-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 1, 4, 3)
+        "seed-upload-path-count-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 3, 3)
+        "seed-select-name-count-drift" => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 2)
+        _ => ok observation("Run release, install, and update tests", "set -o pipefail", "go test -count=1 -v ./distribution", "release-unit-v1.txt", "TestReleaseInstallUpdate", "TestInstallRootRefusals", "TestDevelopmentSidecar", "./tests/integration", "release-integration-v1.txt", "actions/upload-artifact@v4", "always()", "release-qualification-v1", "*.sha256", "*.inspection.json", "if-no-files-found: error", "tee", 2, 4, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e007: "m44-e007" => ok [check("suite-name", "suite name keeps its bytes"), check("pipefail-shell", "pipefail shell keeps its spelling"), check("unit-suite-call", "unit suite call keeps its bytes"), check("unit-log-name", "unit log name keeps its bytes"), check("select-release", "select release keeps its spelling"), check("select-refusals", "select refusals keeps its spelling"), check("select-sidecar", "select sidecar keeps its spelling"), check("integration-dir", "integration dir keeps its bytes"), check("integration-log-name", "integration log name keeps its bytes"), check("upload-action", "upload action keeps its bytes"), check("always-guard", "always guard keeps its spelling"), check("artifact-name", "artifact name keeps its bytes"), check("sha-glob", "sha glob keeps its bytes"), check("inspection-glob", "inspection glob keeps its bytes"), check("no-files-found", "no files found keeps its spelling"), check("tee-call", "tee call keeps its spelling"), check("go-test-count", "two go tests exist"), check("upload-path-count", "four upload paths exist"), check("select-name-count", "three select names exist")]
+        other: "nope" => ok []
+    match scope is "m44-e007"
+        false => ok []
+        true => ok [check("suite-name", "suite name keeps its bytes"), check("pipefail-shell", "pipefail shell keeps its spelling"), check("unit-suite-call", "unit suite call keeps its bytes"), check("unit-log-name", "unit log name keeps its bytes"), check("select-release", "select release keeps its spelling"), check("select-refusals", "select refusals keeps its spelling"), check("select-sidecar", "select sidecar keeps its spelling"), check("integration-dir", "integration dir keeps its bytes"), check("integration-log-name", "integration log name keeps its bytes"), check("upload-action", "upload action keeps its bytes"), check("always-guard", "always guard keeps its spelling"), check("artifact-name", "artifact name keeps its bytes"), check("sha-glob", "sha glob keeps its bytes"), check("inspection-glob", "inspection glob keeps its bytes"), check("no-files-found", "no files found keeps its spelling"), check("tee-call", "tee call keeps its spelling"), check("go-test-count", "two go tests exist"), check("upload-path-count", "four upload paths exist"), check("select-name-count", "three select names exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "release/qualify-suites" => ok [expected_check("suite-name", "Run release, install, and update tests"), expected_check("pipefail-shell", "set -o pipefail"), expected_check("unit-suite-call", "go test -count=1 -v ./distribution"), expected_check("unit-log-name", "release-unit-v1.txt"), expected_check("select-release", "TestReleaseInstallUpdate"), expected_check("select-refusals", "TestInstallRootRefusals"), expected_check("select-sidecar", "TestDevelopmentSidecar"), expected_check("integration-dir", "./tests/integration"), expected_check("integration-log-name", "release-integration-v1.txt"), expected_check("upload-action", "actions/upload-artifact@v4"), expected_check("always-guard", "always()"), expected_check("artifact-name", "release-qualification-v1"), expected_check("sha-glob", "*.sha256"), expected_check("inspection-glob", "*.inspection.json"), expected_check("no-files-found", "if-no-files-found: error"), expected_check("tee-call", "tee"), expected_check("go-test-count", "2"), expected_check("upload-path-count", "4"), expected_check("select-name-count", "3")]
+        unknown: "nope" => ok []
+    match case is "release/qualify-suites"
+        false => ok []
+        true => ok [expected_check("suite-name", "Run release, install, and update tests"), expected_check("pipefail-shell", "set -o pipefail"), expected_check("unit-suite-call", "go test -count=1 -v ./distribution"), expected_check("unit-log-name", "release-unit-v1.txt"), expected_check("select-release", "TestReleaseInstallUpdate"), expected_check("select-refusals", "TestInstallRootRefusals"), expected_check("select-sidecar", "TestDevelopmentSidecar"), expected_check("integration-dir", "./tests/integration"), expected_check("integration-log-name", "release-integration-v1.txt"), expected_check("upload-action", "actions/upload-artifact@v4"), expected_check("always-guard", "always()"), expected_check("artifact-name", "release-qualification-v1"), expected_check("sha-glob", "*.sha256"), expected_check("inspection-glob", "*.inspection.json"), expected_check("no-files-found", "if-no-files-found: error"), expected_check("tee-call", "tee"), expected_check("go-test-count", "2"), expected_check("upload-path-count", "4"), expected_check("select-name-count", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("release/qualify-suites", "default", "", "offline") => ok
+        seed_suite_name: context("release/qualify-suites", "seed-suite-name-drift", "", "offline") => failed{"suite-name"}
+        seed_pipefail_shell: context("release/qualify-suites", "seed-pipefail-shell-drift", "", "offline") => failed{"pipefail-shell"}
+        seed_unit_suite_call: context("release/qualify-suites", "seed-unit-suite-call-drift", "", "offline") => failed{"unit-suite-call"}
+        seed_unit_log_name: context("release/qualify-suites", "seed-unit-log-name-drift", "", "offline") => failed{"unit-log-name"}
+        seed_select_release: context("release/qualify-suites", "seed-select-release-drift", "", "offline") => failed{"select-release"}
+        seed_select_refusals: context("release/qualify-suites", "seed-select-refusals-drift", "", "offline") => failed{"select-refusals"}
+        seed_select_sidecar: context("release/qualify-suites", "seed-select-sidecar-drift", "", "offline") => failed{"select-sidecar"}
+        seed_integration_dir: context("release/qualify-suites", "seed-integration-dir-drift", "", "offline") => failed{"integration-dir"}
+        seed_integration_log_name: context("release/qualify-suites", "seed-integration-log-name-drift", "", "offline") => failed{"integration-log-name"}
+        seed_upload_action: context("release/qualify-suites", "seed-upload-action-drift", "", "offline") => failed{"upload-action"}
+        seed_always_guard: context("release/qualify-suites", "seed-always-guard-drift", "", "offline") => failed{"always-guard"}
+        seed_artifact_name: context("release/qualify-suites", "seed-artifact-name-drift", "", "offline") => failed{"artifact-name"}
+        seed_sha_glob: context("release/qualify-suites", "seed-sha-glob-drift", "", "offline") => failed{"sha-glob"}
+        seed_inspection_glob: context("release/qualify-suites", "seed-inspection-glob-drift", "", "offline") => failed{"inspection-glob"}
+        seed_no_files_found: context("release/qualify-suites", "seed-no-files-found-drift", "", "offline") => failed{"no-files-found"}
+        seed_tee_call: context("release/qualify-suites", "seed-tee-call-drift", "", "offline") => failed{"tee-call"}
+        seed_go_test_count: context("release/qualify-suites", "seed-go-test-count-drift", "", "offline") => failed{"go-test-count"}
+        seed_upload_path_count: context("release/qualify-suites", "seed-upload-path-count-drift", "", "offline") => failed{"upload-path-count"}
+        seed_select_name_count: context("release/qualify-suites", "seed-select-name-count-drift", "", "offline") => failed{"select-name-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.suite_name, "Run release, install, and update tests", c, "suite-name")
+            failed
+            ok evidence suite_name_evidence => match call require_text(got.pipefail_shell, "set -o pipefail", c, "pipefail-shell")
+                failed
+                ok evidence pipefail_shell_evidence => match call require_text(got.unit_suite_call, "go test -count=1 -v ./distribution", c, "unit-suite-call")
+                    failed
+                    ok evidence unit_suite_call_evidence => match call require_text(got.unit_log_name, "release-unit-v1.txt", c, "unit-log-name")
+                        failed
+                        ok evidence unit_log_name_evidence => match call require_text(got.select_release, "TestReleaseInstallUpdate", c, "select-release")
+                            failed
+                            ok evidence select_release_evidence => match call require_text(got.select_refusals, "TestInstallRootRefusals", c, "select-refusals")
+                                failed
+                                ok evidence select_refusals_evidence => match call require_text(got.select_sidecar, "TestDevelopmentSidecar", c, "select-sidecar")
+                                    failed
+                                    ok evidence select_sidecar_evidence => match call require_text(got.integration_dir, "./tests/integration", c, "integration-dir")
+                                        failed
+                                        ok evidence integration_dir_evidence => match call require_text(got.integration_log_name, "release-integration-v1.txt", c, "integration-log-name")
+                                            failed
+                                            ok evidence integration_log_name_evidence => match call require_text(got.upload_action, "actions/upload-artifact@v4", c, "upload-action")
+                                                failed
+                                                ok evidence upload_action_evidence => match call require_text(got.always_guard, "always()", c, "always-guard")
+                                                    failed
+                                                    ok evidence always_guard_evidence => match call require_text(got.artifact_name, "release-qualification-v1", c, "artifact-name")
+                                                        failed
+                                                        ok evidence artifact_name_evidence => match call require_text(got.sha_glob, "*.sha256", c, "sha-glob")
+                                                            failed
+                                                            ok evidence sha_glob_evidence => match call require_text(got.inspection_glob, "*.inspection.json", c, "inspection-glob")
+                                                                failed
+                                                                ok evidence inspection_glob_evidence => match call require_text(got.no_files_found, "if-no-files-found: error", c, "no-files-found")
+                                                                    failed
+                                                                    ok evidence no_files_found_evidence => match call require_text(got.tee_call, "tee", c, "tee-call")
+                                                                        failed
+                                                                        ok evidence tee_call_evidence => match call require_int(got.go_test_count, 2, c, "go-test-count")
+                                                                            failed
+                                                                            ok evidence go_test_count_evidence => match call require_int(got.upload_path_count, 4, c, "upload-path-count")
+                                                                                failed
+                                                                                ok evidence upload_path_count_evidence => match call require_int(got.select_name_count, 3, c, "select-name-count")
+                                                                                    failed
+                                                                                    ok evidence select_name_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e007: "m44-e007" => ok test_case("release/qualify-suites", ["release", "m44"], [], 120000, [check_ref("suite-name"), check_ref("pipefail-shell"), check_ref("unit-suite-call"), check_ref("unit-log-name"), check_ref("select-release"), check_ref("select-refusals"), check_ref("select-sidecar"), check_ref("integration-dir"), check_ref("integration-log-name"), check_ref("upload-action"), check_ref("always-guard"), check_ref("artifact-name"), check_ref("sha-glob"), check_ref("inspection-glob"), check_ref("no-files-found"), check_ref("tee-call"), check_ref("go-test-count"), check_ref("upload-path-count"), check_ref("select-name-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m44-e007"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("release/qualify-suites", ["release", "m44"], [], 120000, [check_ref("suite-name"), check_ref("pipefail-shell"), check_ref("unit-suite-call"), check_ref("unit-log-name"), check_ref("select-release"), check_ref("select-refusals"), check_ref("select-sidecar"), check_ref("integration-dir"), check_ref("integration-log-name"), check_ref("upload-action"), check_ref("always-guard"), check_ref("artifact-name"), check_ref("sha-glob"), check_ref("inspection-glob"), check_ref("no-files-found"), check_ref("tee-call"), check_ref("go-test-count"), check_ref("upload-path-count"), check_ref("select-name-count")], callable case_body)
