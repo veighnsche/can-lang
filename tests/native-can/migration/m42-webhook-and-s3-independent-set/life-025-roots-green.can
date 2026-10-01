@@ -1,0 +1,300 @@
+package m42life025roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M42 LIFE-025 webhook driver inspect
+/// query legs.
+/// Source: tests/integration/
+/// testdata/webhook/driver.ts symbol
+/// inspect (L46-54): five ordered
+/// SELECT legs over ledger, outbox,
+/// attempt, dead-letter, plus nonce;
+/// large ints ride as strings.
+/// Disposition: replace_support (this
+/// row owns setup plus inspect as
+/// reviewable Can facts; driver.ts
+/// stays until every webhook plus
+/// lifecycle scenario uses Can setup).
+/// Protects (this file): ordered
+/// ledger, outbox, attempt, dead-letter,
+/// plus nonce views with large ints
+/// held: mode word, five full SELECT
+/// legs, three order keys, plus column
+/// tallies.
+/// ADAPTATION (recorded, with source
+/// lines): inspect-mode-word pins
+/// inspect (L46); ledger-query pins
+/// the ledger SELECT (L47);
+/// outbox-query pins the outbox SELECT
+/// (L48); attempt-query pins the
+/// attempt SELECT (L49); dead-query
+/// pins the dead-letter SELECT (L50);
+/// nonce-query pins the nonce SELECT
+/// (L51); order-delivery-key pins the
+/// delivery order key (L47);
+/// order-attempt-key pins the id order
+/// key (L49); order-nonce-key pins the
+/// nonce order key (L51);
+/// inspect-query-count pins int (5)
+/// from L47-51; ledger-column-count
+/// pins int (6) from L47;
+/// outbox-column-count pins int (9)
+/// from L48; attempt-column-count pins
+/// int (4) from L49; dead-column-count
+/// pins int (6) from L50;
+/// nonce-column-count pins int (2)
+/// from L51; observed-table-count pins
+/// int (5) from L47-51.
+/// Facet map (leg order):
+/// inspect-mode-word, ledger-query,
+/// outbox-query, attempt-query,
+/// dead-query, nonce-query,
+/// order-delivery-key, order-attempt-key,
+/// order-nonce-key, inspect-query-count,
+/// ledger-column-count,
+/// outbox-column-count,
+/// attempt-column-count,
+/// dead-column-count, nonce-column-count,
+/// observed-table-count.
+/// The schema setup legs live in
+/// life-025-base-semantics.can; driver
+/// shape lives in
+/// life-025-run-shape.can.
+/// Variants: none.
+/// Environment: none (no live run
+/// now; binds at P23 plus QD1).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// plus QD1 accept gates unmet).
+/// Case life/webhook-inspect-queries
+/// checks: inspect-mode-word,
+/// ledger-query, outbox-query,
+/// attempt-query, dead-query,
+/// nonce-query, order-delivery-key,
+/// order-attempt-key, order-nonce-key,
+/// inspect-query-count,
+/// ledger-column-count,
+/// outbox-column-count,
+/// attempt-column-count,
+/// dead-column-count, nonce-column-count,
+/// observed-table-count.
+/// Shared old files untouched;
+/// retirement is a later integrator
+/// decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str inspect_mode_word
+    str ledger_query
+    str outbox_query
+    str attempt_query
+    str dead_query
+    str nonce_query
+    str order_delivery_key
+    str order_attempt_key
+    str order_nonce_key
+    int inspect_query_count
+    int ledger_column_count
+    int outbox_column_count
+    int attempt_column_count
+    int dead_column_count
+    int nonce_column_count
+    int observed_table_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/webhook-inspect-queries", "default", "", "offline"), "inspect-mode-word" => ok "case life/webhook-inspect-queries variant default root inspect-mode-word run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/webhook-inspect-queries", "default", "", "offline"), "inspect-mode-word" => ok evidence("inspect-mode-word", "true", "true", true, "case life/webhook-inspect-queries variant default root inspect-mode-word run offline")
+        different: false, true, context("life/webhook-inspect-queries", "default", "", "offline"), "inspect-mode-word" => failed{"inspect-mode-word"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 5, 5, context("life/webhook-inspect-queries", "default", "", "offline"), "inspect-query-count" => ok evidence("inspect-query-count", "5", "5", true, "case life/webhook-inspect-queries variant default root inspect-query-count run offline")
+        different: 4, 5, context("life/webhook-inspect-queries", "default", "", "offline"), "inspect-query-count" => failed{"inspect-query-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "inspect", "inspect", context("life/webhook-inspect-queries", "default", "", "offline"), "inspect-mode-word" => ok evidence("inspect-mode-word", "inspect", "inspect", true, "case life/webhook-inspect-queries variant default root inspect-mode-word run offline")
+        different: "inspect_2", "inspect", context("life/webhook-inspect-queries", "default", "", "offline"), "inspect-mode-word" => failed{"inspect-mode-word"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+        seed_inspect_mode_word: "seed-inspect-mode-word-drift" => ok observation("inspect_2", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+        seed_ledger_query: "seed-ledger-query-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id_2", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+        seed_outbox_query: "seed-outbox-query-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id_2", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+        seed_attempt_query: "seed-attempt-query-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id_2", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+        seed_dead_query: "seed-dead-query-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id_2", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+        seed_nonce_query: "seed-nonce-query-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce_2", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+        seed_order_delivery_key: "seed-order-delivery-key-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id_2", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+        seed_order_attempt_key: "seed-order-attempt-key-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id_2", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+        seed_order_nonce_key: "seed-order-nonce-key-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce_2", 5, 6, 9, 4, 6, 2, 5)
+        seed_inspect_query_count: "seed-inspect-query-count-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 4, 6, 9, 4, 6, 2, 5)
+        seed_ledger_column_count: "seed-ledger-column-count-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 5, 9, 4, 6, 2, 5)
+        seed_outbox_column_count: "seed-outbox-column-count-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 8, 4, 6, 2, 5)
+        seed_attempt_column_count: "seed-attempt-column-count-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 3, 6, 2, 5)
+        seed_dead_column_count: "seed-dead-column-count-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 5, 2, 5)
+        seed_nonce_column_count: "seed-nonce-column-count-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 1, 5)
+        seed_observed_table_count: "seed-observed-table-count-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 4)
+    match variant_id
+        "seed-inspect-mode-word-drift" => ok observation("inspect_2", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+        "seed-ledger-query-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id_2", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+        "seed-outbox-query-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id_2", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+        "seed-attempt-query-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id_2", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+        "seed-dead-query-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id_2", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+        "seed-nonce-query-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce_2", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+        "seed-order-delivery-key-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id_2", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+        "seed-order-attempt-key-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id_2", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+        "seed-order-nonce-key-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce_2", 5, 6, 9, 4, 6, 2, 5)
+        "seed-inspect-query-count-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 4, 6, 9, 4, 6, 2, 5)
+        "seed-ledger-column-count-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 5, 9, 4, 6, 2, 5)
+        "seed-outbox-column-count-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 8, 4, 6, 2, 5)
+        "seed-attempt-column-count-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 3, 6, 2, 5)
+        "seed-dead-column-count-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 5, 2, 5)
+        "seed-nonce-column-count-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 1, 5)
+        "seed-observed-table-count-drift" => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 4)
+        _ => ok observation("inspect", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", "ORDER BY delivery_id", "ORDER BY id", "ORDER BY nonce", 5, 6, 9, 4, 6, 2, 5)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m42_l025: "m42-l025" => ok [check("inspect-mode-word", "inspect leg keeps its mode word"), check("ledger-query", "inspect leg keeps its ledger leg"), check("outbox-query", "inspect leg keeps its outbox leg"), check("attempt-query", "inspect leg keeps its attempt leg"), check("dead-query", "inspect leg keeps its dead leg"), check("nonce-query", "inspect leg keeps its nonce leg"), check("order-delivery-key", "inspect leg keeps its delivery order"), check("order-attempt-key", "inspect leg keeps its id order"), check("order-nonce-key", "inspect leg keeps its nonce order"), check("inspect-query-count", "five inspect legs exist"), check("ledger-column-count", "six ledger columns exist"), check("outbox-column-count", "nine outbox columns exist"), check("attempt-column-count", "four attempt columns exist"), check("dead-column-count", "six dead columns exist"), check("nonce-column-count", "two nonce columns exist"), check("observed-table-count", "five views exist")]
+        other: "nope" => ok []
+    match scope is "m42-l025"
+        false => ok []
+        true => ok [check("inspect-mode-word", "inspect leg keeps its mode word"), check("ledger-query", "inspect leg keeps its ledger leg"), check("outbox-query", "inspect leg keeps its outbox leg"), check("attempt-query", "inspect leg keeps its attempt leg"), check("dead-query", "inspect leg keeps its dead leg"), check("nonce-query", "inspect leg keeps its nonce leg"), check("order-delivery-key", "inspect leg keeps its delivery order"), check("order-attempt-key", "inspect leg keeps its id order"), check("order-nonce-key", "inspect leg keeps its nonce order"), check("inspect-query-count", "five inspect legs exist"), check("ledger-column-count", "six ledger columns exist"), check("outbox-column-count", "nine outbox columns exist"), check("attempt-column-count", "four attempt columns exist"), check("dead-column-count", "six dead columns exist"), check("nonce-column-count", "two nonce columns exist"), check("observed-table-count", "five views exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/webhook-inspect-queries" => ok [expected_check("inspect-mode-word", "inspect"), expected_check("ledger-query", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id"), expected_check("outbox-query", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id"), expected_check("attempt-query", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id"), expected_check("dead-query", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id"), expected_check("nonce-query", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce"), expected_check("order-delivery-key", "ORDER BY delivery_id"), expected_check("order-attempt-key", "ORDER BY id"), expected_check("order-nonce-key", "ORDER BY nonce"), expected_check("inspect-query-count", "5"), expected_check("ledger-column-count", "6"), expected_check("outbox-column-count", "9"), expected_check("attempt-column-count", "4"), expected_check("dead-column-count", "6"), expected_check("nonce-column-count", "2"), expected_check("observed-table-count", "5")]
+        unknown: "nope" => ok []
+    match case is "life/webhook-inspect-queries"
+        false => ok []
+        true => ok [expected_check("inspect-mode-word", "inspect"), expected_check("ledger-query", "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id"), expected_check("outbox-query", "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id"), expected_check("attempt-query", "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id"), expected_check("dead-query", "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id"), expected_check("nonce-query", "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce"), expected_check("order-delivery-key", "ORDER BY delivery_id"), expected_check("order-attempt-key", "ORDER BY id"), expected_check("order-nonce-key", "ORDER BY nonce"), expected_check("inspect-query-count", "5"), expected_check("ledger-column-count", "6"), expected_check("outbox-column-count", "9"), expected_check("attempt-column-count", "4"), expected_check("dead-column-count", "6"), expected_check("nonce-column-count", "2"), expected_check("observed-table-count", "5")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/webhook-inspect-queries", "default", "", "offline") => ok
+        seed_inspect_mode_word: context("life/webhook-inspect-queries", "seed-inspect-mode-word-drift", "", "offline") => failed{"inspect-mode-word"}
+        seed_ledger_query: context("life/webhook-inspect-queries", "seed-ledger-query-drift", "", "offline") => failed{"ledger-query"}
+        seed_outbox_query: context("life/webhook-inspect-queries", "seed-outbox-query-drift", "", "offline") => failed{"outbox-query"}
+        seed_attempt_query: context("life/webhook-inspect-queries", "seed-attempt-query-drift", "", "offline") => failed{"attempt-query"}
+        seed_dead_query: context("life/webhook-inspect-queries", "seed-dead-query-drift", "", "offline") => failed{"dead-query"}
+        seed_nonce_query: context("life/webhook-inspect-queries", "seed-nonce-query-drift", "", "offline") => failed{"nonce-query"}
+        seed_order_delivery_key: context("life/webhook-inspect-queries", "seed-order-delivery-key-drift", "", "offline") => failed{"order-delivery-key"}
+        seed_order_attempt_key: context("life/webhook-inspect-queries", "seed-order-attempt-key-drift", "", "offline") => failed{"order-attempt-key"}
+        seed_order_nonce_key: context("life/webhook-inspect-queries", "seed-order-nonce-key-drift", "", "offline") => failed{"order-nonce-key"}
+        seed_inspect_query_count: context("life/webhook-inspect-queries", "seed-inspect-query-count-drift", "", "offline") => failed{"inspect-query-count"}
+        seed_ledger_column_count: context("life/webhook-inspect-queries", "seed-ledger-column-count-drift", "", "offline") => failed{"ledger-column-count"}
+        seed_outbox_column_count: context("life/webhook-inspect-queries", "seed-outbox-column-count-drift", "", "offline") => failed{"outbox-column-count"}
+        seed_attempt_column_count: context("life/webhook-inspect-queries", "seed-attempt-column-count-drift", "", "offline") => failed{"attempt-column-count"}
+        seed_dead_column_count: context("life/webhook-inspect-queries", "seed-dead-column-count-drift", "", "offline") => failed{"dead-column-count"}
+        seed_nonce_column_count: context("life/webhook-inspect-queries", "seed-nonce-column-count-drift", "", "offline") => failed{"nonce-column-count"}
+        seed_observed_table_count: context("life/webhook-inspect-queries", "seed-observed-table-count-drift", "", "offline") => failed{"observed-table-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.inspect_mode_word, "inspect", c, "inspect-mode-word")
+            failed
+            ok evidence inspect_mode_word_evidence => match call require_text(got.ledger_query, "SELECT delivery_id, digest, event, subscription, outcome, received_ms FROM webhook_ledger ORDER BY delivery_id", c, "ledger-query")
+                failed
+                ok evidence ledger_query_evidence => match call require_text(got.outbox_query, "SELECT delivery_id, event, subscription, state, attempts, updated_ms, worker_id, lease_until_ms, version FROM webhook_outbox ORDER BY delivery_id", c, "outbox-query")
+                    failed
+                    ok evidence outbox_query_evidence => match call require_text(got.attempt_query, "SELECT id, delivery_id, outcome, at_ms FROM webhook_attempt ORDER BY id", c, "attempt-query")
+                        failed
+                        ok evidence attempt_query_evidence => match call require_text(got.dead_query, "SELECT delivery_id, event, subscription, reason, attempts, dead_ms FROM webhook_dead_letter ORDER BY delivery_id", c, "dead-query")
+                            failed
+                            ok evidence dead_query_evidence => match call require_text(got.nonce_query, "SELECT nonce, seen_ms FROM webhook_carrier_nonce ORDER BY nonce", c, "nonce-query")
+                                failed
+                                ok evidence nonce_query_evidence => match call require_text(got.order_delivery_key, "ORDER BY delivery_id", c, "order-delivery-key")
+                                    failed
+                                    ok evidence order_delivery_key_evidence => match call require_text(got.order_attempt_key, "ORDER BY id", c, "order-attempt-key")
+                                        failed
+                                        ok evidence order_attempt_key_evidence => match call require_text(got.order_nonce_key, "ORDER BY nonce", c, "order-nonce-key")
+                                            failed
+                                            ok evidence order_nonce_key_evidence => match call require_int(got.inspect_query_count, 5, c, "inspect-query-count")
+                                                failed
+                                                ok evidence inspect_query_count_evidence => match call require_int(got.ledger_column_count, 6, c, "ledger-column-count")
+                                                    failed
+                                                    ok evidence ledger_column_count_evidence => match call require_int(got.outbox_column_count, 9, c, "outbox-column-count")
+                                                        failed
+                                                        ok evidence outbox_column_count_evidence => match call require_int(got.attempt_column_count, 4, c, "attempt-column-count")
+                                                            failed
+                                                            ok evidence attempt_column_count_evidence => match call require_int(got.dead_column_count, 6, c, "dead-column-count")
+                                                                failed
+                                                                ok evidence dead_column_count_evidence => match call require_int(got.nonce_column_count, 2, c, "nonce-column-count")
+                                                                    failed
+                                                                    ok evidence nonce_column_count_evidence => match call require_int(got.observed_table_count, 5, c, "observed-table-count")
+                                                                        failed
+                                                                        ok evidence observed_table_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m42_l025: "m42-l025" => ok test_case("life/webhook-inspect-queries", ["life", "m42"], [], 120000, [check_ref("inspect-mode-word"), check_ref("ledger-query"), check_ref("outbox-query"), check_ref("attempt-query"), check_ref("dead-query"), check_ref("nonce-query"), check_ref("order-delivery-key"), check_ref("order-attempt-key"), check_ref("order-nonce-key"), check_ref("inspect-query-count"), check_ref("ledger-column-count"), check_ref("outbox-column-count"), check_ref("attempt-column-count"), check_ref("dead-column-count"), check_ref("nonce-column-count"), check_ref("observed-table-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m42-l025"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/webhook-inspect-queries", ["life", "m42"], [], 120000, [check_ref("inspect-mode-word"), check_ref("ledger-query"), check_ref("outbox-query"), check_ref("attempt-query"), check_ref("dead-query"), check_ref("nonce-query"), check_ref("order-delivery-key"), check_ref("order-attempt-key"), check_ref("order-nonce-key"), check_ref("inspect-query-count"), check_ref("ledger-column-count"), check_ref("outbox-column-count"), check_ref("attempt-column-count"), check_ref("dead-column-count"), check_ref("nonce-column-count"), check_ref("observed-table-count")], callable case_body)

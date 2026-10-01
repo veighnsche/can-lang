@@ -1,0 +1,270 @@
+package m42life025base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M42 LIFE-025 webhook driver setup
+/// schema legs.
+/// Source: tests/integration/
+/// testdata/webhook/driver.ts symbol
+/// setup (L27-45): five schema legs
+/// must each open with the guard
+/// prefix; count drift refuses.
+/// Disposition: replace_support (this
+/// row owns setup plus inspect as
+/// reviewable Can facts; driver.ts
+/// stays until every webhook plus
+/// lifecycle scenario uses Can setup).
+/// Protects (this file): five-table
+/// schema setup validation: mode word,
+/// count note, guard prefix, guard
+/// refusal, missing arg notes, comment
+/// marker, tables key, separator, plus
+/// arg index pins.
+/// ADAPTATION (recorded, with source
+/// lines): setup-mode-word pins setup
+/// (L27); schema-count-note pins the
+/// count refusal head (L38);
+/// table-prefix-guard pins the CREATE
+/// guard head (L40); guard-note pins
+/// the refusal line (L41);
+/// db-missing-note pins the db arg
+/// refusal (L24); schema-missing-note
+/// pins the schema arg refusal (L29);
+/// comment-marker pins the dash pair
+/// (L33); tables-key pins the tables
+/// key (L45); statement-separator pins
+/// the split mark (L35);
+/// schema-statement-count pins int (5)
+/// from L38; mode-arg-index pins int
+/// (2) from L22; db-arg-index pins int
+/// (3) from L23; schema-arg-index pins
+/// int (4) from L28.
+/// Facet map (leg order):
+/// setup-mode-word, schema-count-note,
+/// table-prefix-guard, guard-note,
+/// db-missing-note,
+/// schema-missing-note, comment-marker,
+/// tables-key, statement-separator,
+/// schema-statement-count, mode-arg-index,
+/// db-arg-index, schema-arg-index.
+/// The five inspect queries live in
+/// life-025-roots-green.can; driver
+/// shape lives in
+/// life-025-run-shape.can.
+/// Variants: none.
+/// Environment: none (no live run
+/// now; binds at P23 plus QD1).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// plus QD1 accept gates unmet).
+/// Case life/webhook-setup-schema
+/// checks: setup-mode-word,
+/// schema-count-note,
+/// table-prefix-guard, guard-note,
+/// db-missing-note,
+/// schema-missing-note, comment-marker,
+/// tables-key, statement-separator,
+/// schema-statement-count, mode-arg-index,
+/// db-arg-index, schema-arg-index.
+/// Shared old files untouched;
+/// retirement is a later integrator
+/// decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str setup_mode_word
+    str schema_count_note
+    str table_prefix_guard
+    str guard_note
+    str db_missing_note
+    str schema_missing_note
+    str comment_marker
+    str tables_key
+    str statement_separator
+    int schema_statement_count
+    int mode_arg_index
+    int db_arg_index
+    int schema_arg_index
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/webhook-setup-schema", "default", "", "offline"), "setup-mode-word" => ok "case life/webhook-setup-schema variant default root setup-mode-word run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/webhook-setup-schema", "default", "", "offline"), "setup-mode-word" => ok evidence("setup-mode-word", "true", "true", true, "case life/webhook-setup-schema variant default root setup-mode-word run offline")
+        different: false, true, context("life/webhook-setup-schema", "default", "", "offline"), "setup-mode-word" => failed{"setup-mode-word"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 5, 5, context("life/webhook-setup-schema", "default", "", "offline"), "schema-statement-count" => ok evidence("schema-statement-count", "5", "5", true, "case life/webhook-setup-schema variant default root schema-statement-count run offline")
+        different: 4, 5, context("life/webhook-setup-schema", "default", "", "offline"), "schema-statement-count" => failed{"schema-statement-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "setup", "setup", context("life/webhook-setup-schema", "default", "", "offline"), "setup-mode-word" => ok evidence("setup-mode-word", "setup", "setup", true, "case life/webhook-setup-schema variant default root setup-mode-word run offline")
+        different: "setup_2", "setup", context("life/webhook-setup-schema", "default", "", "offline"), "setup-mode-word" => failed{"setup-mode-word"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";", 5, 2, 3, 4)
+        seed_setup_mode_word: "seed-setup-mode-word-drift" => ok observation("setup_2", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";", 5, 2, 3, 4)
+        seed_schema_count_note: "seed-schema-count-note-drift" => ok observation("setup", "schema file must hold 5 statements, saw _2", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";", 5, 2, 3, 4)
+        seed_table_prefix_guard: "seed-table-prefix-guard-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook__2", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";", 5, 2, 3, 4)
+        seed_guard_note: "seed-guard-note-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup_2", "missing database path argument", "missing schema path argument", "--", "tables", ";", 5, 2, 3, 4)
+        seed_db_missing_note: "seed-db-missing-note-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument_2", "missing schema path argument", "--", "tables", ";", 5, 2, 3, 4)
+        seed_schema_missing_note: "seed-schema-missing-note-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument_2", "--", "tables", ";", 5, 2, 3, 4)
+        seed_comment_marker: "seed-comment-marker-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--_2", "tables", ";", 5, 2, 3, 4)
+        seed_tables_key: "seed-tables-key-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables_2", ";", 5, 2, 3, 4)
+        seed_statement_separator: "seed-statement-separator-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";_2", 5, 2, 3, 4)
+        seed_schema_statement_count: "seed-schema-statement-count-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";", 4, 2, 3, 4)
+        seed_mode_arg_index: "seed-mode-arg-index-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";", 5, 1, 3, 4)
+        seed_db_arg_index: "seed-db-arg-index-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";", 5, 2, 2, 4)
+        seed_schema_arg_index: "seed-schema-arg-index-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";", 5, 2, 3, 3)
+    match variant_id
+        "seed-setup-mode-word-drift" => ok observation("setup_2", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";", 5, 2, 3, 4)
+        "seed-schema-count-note-drift" => ok observation("setup", "schema file must hold 5 statements, saw _2", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";", 5, 2, 3, 4)
+        "seed-table-prefix-guard-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook__2", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";", 5, 2, 3, 4)
+        "seed-guard-note-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup_2", "missing database path argument", "missing schema path argument", "--", "tables", ";", 5, 2, 3, 4)
+        "seed-db-missing-note-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument_2", "missing schema path argument", "--", "tables", ";", 5, 2, 3, 4)
+        "seed-schema-missing-note-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument_2", "--", "tables", ";", 5, 2, 3, 4)
+        "seed-comment-marker-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--_2", "tables", ";", 5, 2, 3, 4)
+        "seed-tables-key-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables_2", ";", 5, 2, 3, 4)
+        "seed-statement-separator-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";_2", 5, 2, 3, 4)
+        "seed-schema-statement-count-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";", 4, 2, 3, 4)
+        "seed-mode-arg-index-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";", 5, 1, 3, 4)
+        "seed-db-arg-index-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";", 5, 2, 2, 4)
+        "seed-schema-arg-index-drift" => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";", 5, 2, 3, 3)
+        _ => ok observation("setup", "schema file must hold 5 statements, saw ", "CREATE TABLE IF NOT EXISTS webhook_", "schema file shape changed; refusing to run setup", "missing database path argument", "missing schema path argument", "--", "tables", ";", 5, 2, 3, 4)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m42_l025: "m42-l025" => ok [check("setup-mode-word", "setup leg keeps its mode word"), check("schema-count-note", "setup leg keeps its count note"), check("table-prefix-guard", "setup leg keeps its table guard"), check("guard-note", "setup leg keeps its guard refusal"), check("db-missing-note", "setup leg keeps its db refusal"), check("schema-missing-note", "setup leg keeps its schema refusal"), check("comment-marker", "setup leg keeps its comment marker"), check("tables-key", "setup leg keeps its tables key"), check("statement-separator", "setup leg keeps its split mark"), check("schema-statement-count", "five schema legs exist"), check("mode-arg-index", "mode sits at arg two"), check("db-arg-index", "db sits at arg three"), check("schema-arg-index", "schema sits at arg four")]
+        other: "nope" => ok []
+    match scope is "m42-l025"
+        false => ok []
+        true => ok [check("setup-mode-word", "setup leg keeps its mode word"), check("schema-count-note", "setup leg keeps its count note"), check("table-prefix-guard", "setup leg keeps its table guard"), check("guard-note", "setup leg keeps its guard refusal"), check("db-missing-note", "setup leg keeps its db refusal"), check("schema-missing-note", "setup leg keeps its schema refusal"), check("comment-marker", "setup leg keeps its comment marker"), check("tables-key", "setup leg keeps its tables key"), check("statement-separator", "setup leg keeps its split mark"), check("schema-statement-count", "five schema legs exist"), check("mode-arg-index", "mode sits at arg two"), check("db-arg-index", "db sits at arg three"), check("schema-arg-index", "schema sits at arg four")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/webhook-setup-schema" => ok [expected_check("setup-mode-word", "setup"), expected_check("schema-count-note", "schema file must hold 5 statements, saw "), expected_check("table-prefix-guard", "CREATE TABLE IF NOT EXISTS webhook_"), expected_check("guard-note", "schema file shape changed; refusing to run setup"), expected_check("db-missing-note", "missing database path argument"), expected_check("schema-missing-note", "missing schema path argument"), expected_check("comment-marker", "--"), expected_check("tables-key", "tables"), expected_check("statement-separator", ";"), expected_check("schema-statement-count", "5"), expected_check("mode-arg-index", "2"), expected_check("db-arg-index", "3"), expected_check("schema-arg-index", "4")]
+        unknown: "nope" => ok []
+    match case is "life/webhook-setup-schema"
+        false => ok []
+        true => ok [expected_check("setup-mode-word", "setup"), expected_check("schema-count-note", "schema file must hold 5 statements, saw "), expected_check("table-prefix-guard", "CREATE TABLE IF NOT EXISTS webhook_"), expected_check("guard-note", "schema file shape changed; refusing to run setup"), expected_check("db-missing-note", "missing database path argument"), expected_check("schema-missing-note", "missing schema path argument"), expected_check("comment-marker", "--"), expected_check("tables-key", "tables"), expected_check("statement-separator", ";"), expected_check("schema-statement-count", "5"), expected_check("mode-arg-index", "2"), expected_check("db-arg-index", "3"), expected_check("schema-arg-index", "4")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/webhook-setup-schema", "default", "", "offline") => ok
+        seed_setup_mode_word: context("life/webhook-setup-schema", "seed-setup-mode-word-drift", "", "offline") => failed{"setup-mode-word"}
+        seed_schema_count_note: context("life/webhook-setup-schema", "seed-schema-count-note-drift", "", "offline") => failed{"schema-count-note"}
+        seed_table_prefix_guard: context("life/webhook-setup-schema", "seed-table-prefix-guard-drift", "", "offline") => failed{"table-prefix-guard"}
+        seed_guard_note: context("life/webhook-setup-schema", "seed-guard-note-drift", "", "offline") => failed{"guard-note"}
+        seed_db_missing_note: context("life/webhook-setup-schema", "seed-db-missing-note-drift", "", "offline") => failed{"db-missing-note"}
+        seed_schema_missing_note: context("life/webhook-setup-schema", "seed-schema-missing-note-drift", "", "offline") => failed{"schema-missing-note"}
+        seed_comment_marker: context("life/webhook-setup-schema", "seed-comment-marker-drift", "", "offline") => failed{"comment-marker"}
+        seed_tables_key: context("life/webhook-setup-schema", "seed-tables-key-drift", "", "offline") => failed{"tables-key"}
+        seed_statement_separator: context("life/webhook-setup-schema", "seed-statement-separator-drift", "", "offline") => failed{"statement-separator"}
+        seed_schema_statement_count: context("life/webhook-setup-schema", "seed-schema-statement-count-drift", "", "offline") => failed{"schema-statement-count"}
+        seed_mode_arg_index: context("life/webhook-setup-schema", "seed-mode-arg-index-drift", "", "offline") => failed{"mode-arg-index"}
+        seed_db_arg_index: context("life/webhook-setup-schema", "seed-db-arg-index-drift", "", "offline") => failed{"db-arg-index"}
+        seed_schema_arg_index: context("life/webhook-setup-schema", "seed-schema-arg-index-drift", "", "offline") => failed{"schema-arg-index"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.setup_mode_word, "setup", c, "setup-mode-word")
+            failed
+            ok evidence setup_mode_word_evidence => match call require_text(got.schema_count_note, "schema file must hold 5 statements, saw ", c, "schema-count-note")
+                failed
+                ok evidence schema_count_note_evidence => match call require_text(got.table_prefix_guard, "CREATE TABLE IF NOT EXISTS webhook_", c, "table-prefix-guard")
+                    failed
+                    ok evidence table_prefix_guard_evidence => match call require_text(got.guard_note, "schema file shape changed; refusing to run setup", c, "guard-note")
+                        failed
+                        ok evidence guard_note_evidence => match call require_text(got.db_missing_note, "missing database path argument", c, "db-missing-note")
+                            failed
+                            ok evidence db_missing_note_evidence => match call require_text(got.schema_missing_note, "missing schema path argument", c, "schema-missing-note")
+                                failed
+                                ok evidence schema_missing_note_evidence => match call require_text(got.comment_marker, "--", c, "comment-marker")
+                                    failed
+                                    ok evidence comment_marker_evidence => match call require_text(got.tables_key, "tables", c, "tables-key")
+                                        failed
+                                        ok evidence tables_key_evidence => match call require_text(got.statement_separator, ";", c, "statement-separator")
+                                            failed
+                                            ok evidence statement_separator_evidence => match call require_int(got.schema_statement_count, 5, c, "schema-statement-count")
+                                                failed
+                                                ok evidence schema_statement_count_evidence => match call require_int(got.mode_arg_index, 2, c, "mode-arg-index")
+                                                    failed
+                                                    ok evidence mode_arg_index_evidence => match call require_int(got.db_arg_index, 3, c, "db-arg-index")
+                                                        failed
+                                                        ok evidence db_arg_index_evidence => match call require_int(got.schema_arg_index, 4, c, "schema-arg-index")
+                                                            failed
+                                                            ok evidence schema_arg_index_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m42_l025: "m42-l025" => ok test_case("life/webhook-setup-schema", ["life", "m42"], [], 120000, [check_ref("setup-mode-word"), check_ref("schema-count-note"), check_ref("table-prefix-guard"), check_ref("guard-note"), check_ref("db-missing-note"), check_ref("schema-missing-note"), check_ref("comment-marker"), check_ref("tables-key"), check_ref("statement-separator"), check_ref("schema-statement-count"), check_ref("mode-arg-index"), check_ref("db-arg-index"), check_ref("schema-arg-index")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m42-l025"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/webhook-setup-schema", ["life", "m42"], [], 120000, [check_ref("setup-mode-word"), check_ref("schema-count-note"), check_ref("table-prefix-guard"), check_ref("guard-note"), check_ref("db-missing-note"), check_ref("schema-missing-note"), check_ref("comment-marker"), check_ref("tables-key"), check_ref("statement-separator"), check_ref("schema-statement-count"), check_ref("mode-arg-index"), check_ref("db-arg-index"), check_ref("schema-arg-index")], callable case_body)
