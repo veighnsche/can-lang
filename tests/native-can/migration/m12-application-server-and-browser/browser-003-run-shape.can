@@ -1,0 +1,269 @@
+package m12browser003run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M12 BROWSER-003 "stubbed native-ai: call order and run shape".
+/// Source: tests/integration/applications_test.go symbol
+/// TestApplicationsNativeAIStubbed (L529-599); runner helper runEntry
+/// (L505-527); snapshot helper snapshotMap (L145-156).
+/// Disposition: migrate (this row ports
+/// TestApplicationsNativeAIStubbed to ordinary Can functions; the old
+/// Go harness stays until the integrator retires it after every linked
+/// row, variant, environment and control has accepted evidence).
+/// Protects (this file): the stub call order and cumulative counts per
+/// variant (2 then 3 then 5 with the exact path at each position) plus
+/// the compiled-CLI run shape: the triage-refused snapshot keys, the
+/// single snapshot file, the Ann argument, entry.ts, runtime/bun and
+/// the cleared PATH.
+/// SINGLE PIN SITE (recorded): /responses and /systemone pin ONLY in
+/// this file as ordered calls (L555/L581/L595); the stub-serve lines
+/// (L439/L449) are cited as mechanism, never re-pinned. Snapshot-name
+/// composes "triage-refused" (L549) with name plus .json (L151);
+/// snapshot VALUES are never pinned (key names only); the token value
+/// bytes assert zero occurrences in authored files (counts only, never
+/// printed). Snapshot-count pins the single ExtraFiles entry (L515).
+/// Facet map (applications_test.go legs): refused-calls pins 2 (L555);
+/// call-first and call-second pin /responses then /systemone (L555);
+/// badplan-calls pins 3 (L581); badplan-third pins /responses (L581);
+/// badanswers-calls pins 5 (L595); badanswers-fourth and
+/// badanswers-fifth pin /responses then /systemone (L595);
+/// snapshot-name, snapshot-key-triage and snapshot-key-token pin the
+/// refused input (L549/L151); snapshot-count pins one file (L515);
+/// run-arg pins Ann (L550); entry-name pins entry.ts (L548);
+/// bun-entry pins runtime/bun (L512); offline-path pins
+/// PATH=/nonexistent (L514).
+/// The stub-roots pin lives in browser-003-roots-green.can; stage gates
+/// plus envelope needles live in browser-003-nativeai-semantics.can.
+/// Variants: refusal (2 calls), bad plan (3 calls), bad answers (5
+/// calls); counts are cumulative across the three runEntry legs.
+/// Environment: CAN_BUN_ARCHIVE gate; requires can-bun-archive.
+/// Logical gates CAN/PROC/HTTP/WIRE/FAULT/WORK and C/R/N/S/A
+/// identities bind at P23; no live run now. QHTTP is unmet (accept
+/// gate). Descriptor timeout 360000ms mirrors the Go 6-minute ctx
+/// (L536).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QHTTP unmet).
+/// Case browser/nativeai-run checks: refused-calls, call-first,
+/// call-second, badplan-calls, badplan-third, badanswers-calls,
+/// badanswers-fourth, badanswers-fifth, snapshot-name,
+/// snapshot-key-triage, snapshot-key-token, snapshot-count, run-arg,
+/// entry-name, bun-entry, offline-path.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int refused_calls
+    str call_first
+    str call_second
+    int badplan_calls
+    str badplan_third
+    int badanswers_calls
+    str badanswers_fourth
+    str badanswers_fifth
+    str snapshot_name
+    str snapshot_key_triage
+    str snapshot_key_token
+    int snapshot_count
+    str run_arg
+    str entry_name
+    str bun_entry
+    str offline_path
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("browser/nativeai-run", "default", "", "offline"), "refused-calls" => ok "case browser/nativeai-run variant default root refused-calls run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("browser/nativeai-run", "default", "", "offline"), "refused-calls" => ok evidence("refused-calls", "true", "true", true, "case browser/nativeai-run variant default root refused-calls run offline")
+        different: false, true, context("browser/nativeai-run", "default", "", "offline"), "refused-calls" => failed{"refused-calls"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("browser/nativeai-run", "default", "", "offline"), "refused-calls" => ok evidence("refused-calls", "2", "2", true, "case browser/nativeai-run variant default root refused-calls run offline")
+        different: 1, 2, context("browser/nativeai-run", "default", "", "offline"), "refused-calls" => failed{"refused-calls"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "/responses", "/responses", context("browser/nativeai-run", "default", "", "offline"), "call-first" => ok evidence("call-first", "/responses", "/responses", true, "case browser/nativeai-run variant default root call-first run offline")
+        different: "/responses-2", "/responses", context("browser/nativeai-run", "default", "", "offline"), "call-first" => failed{"call-first"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        seed_refused_calls: "seed-refused-calls-drift" => ok observation(1, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        seed_call_first: "seed-call-first-drift" => ok observation(2, "/responses-2", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        seed_call_second: "seed-call-second-drift" => ok observation(2, "/responses", "/systemone-2", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        seed_badplan_calls: "seed-badplan-calls-drift" => ok observation(2, "/responses", "/systemone", 4, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        seed_badplan_third: "seed-badplan-third-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses-2", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        seed_badanswers_calls: "seed-badanswers-calls-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 4, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        seed_badanswers_fourth: "seed-badanswers-fourth-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses-2", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        seed_badanswers_fifth: "seed-badanswers-fifth-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone-2", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        seed_snapshot_name: "seed-snapshot-name-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-accepted.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        seed_snapshot_key_triage: "seed-snapshot-key-triage-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB_2", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        seed_snapshot_key_token: "seed-snapshot-key-token-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN_2", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        seed_snapshot_count: "seed-snapshot-count-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 0, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        seed_run_arg: "seed-run-arg-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Bob", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        seed_entry_name: "seed-entry-name-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "main.ts", "runtime/bun", "PATH=/nonexistent")
+        seed_bun_entry: "seed-bun-entry-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/node", "PATH=/nonexistent")
+        seed_offline_path: "seed-offline-path-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/usr/bin")
+    match variant_id
+        "seed-refused-calls-drift" => ok observation(1, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        "seed-call-first-drift" => ok observation(2, "/responses-2", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        "seed-call-second-drift" => ok observation(2, "/responses", "/systemone-2", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        "seed-badplan-calls-drift" => ok observation(2, "/responses", "/systemone", 4, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        "seed-badplan-third-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses-2", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        "seed-badanswers-calls-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 4, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        "seed-badanswers-fourth-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses-2", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        "seed-badanswers-fifth-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone-2", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        "seed-snapshot-name-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-accepted.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        "seed-snapshot-key-triage-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB_2", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        "seed-snapshot-key-token-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN_2", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        "seed-snapshot-count-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 0, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        "seed-run-arg-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Bob", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+        "seed-entry-name-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "main.ts", "runtime/bun", "PATH=/nonexistent")
+        "seed-bun-entry-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/node", "PATH=/nonexistent")
+        "seed-offline-path-drift" => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/usr/bin")
+        _ => ok observation(2, "/responses", "/systemone", 3, "/responses", 5, "/responses", "/systemone", "triage-refused.json", "TRIAGE_DB", "CAN_I28_TOKEN", 1, "Ann", "entry.ts", "runtime/bun", "PATH=/nonexistent")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m12_b003: "m12-b003" => ok [check("refused-calls", "refused run makes two provider calls"), check("call-first", "first provider call plans via /responses"), check("call-second", "second provider call judges via /systemone"), check("badplan-calls", "bad plan run stops at three provider calls"), check("badplan-third", "bad plan third call retries /responses only"), check("badanswers-calls", "bad answers run totals five provider calls"), check("badanswers-fourth", "bad answers fourth call plans via /responses"), check("badanswers-fifth", "bad answers fifth call judges via /systemone"), check("snapshot-name", "refused input stages as triage-refused.json"), check("snapshot-key-triage", "snapshot input carries the TRIAGE_DB key"), check("snapshot-key-token", "snapshot input carries the CAN_I28_TOKEN key"), check("snapshot-count", "run passes one snapshot file"), check("run-arg", "stubbed runs triage Ann"), check("entry-name", "compiled entry is entry.ts"), check("bun-entry", "run executes runtime/bun"), check("offline-path", "run clears PATH to /nonexistent")]
+        other: "nope" => ok []
+    match scope is "m12-b003"
+        false => ok []
+        true => ok [check("refused-calls", "refused run makes two provider calls"), check("call-first", "first provider call plans via /responses"), check("call-second", "second provider call judges via /systemone"), check("badplan-calls", "bad plan run stops at three provider calls"), check("badplan-third", "bad plan third call retries /responses only"), check("badanswers-calls", "bad answers run totals five provider calls"), check("badanswers-fourth", "bad answers fourth call plans via /responses"), check("badanswers-fifth", "bad answers fifth call judges via /systemone"), check("snapshot-name", "refused input stages as triage-refused.json"), check("snapshot-key-triage", "snapshot input carries the TRIAGE_DB key"), check("snapshot-key-token", "snapshot input carries the CAN_I28_TOKEN key"), check("snapshot-count", "run passes one snapshot file"), check("run-arg", "stubbed runs triage Ann"), check("entry-name", "compiled entry is entry.ts"), check("bun-entry", "run executes runtime/bun"), check("offline-path", "run clears PATH to /nonexistent")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "browser/nativeai-run" => ok [expected_check("refused-calls", "2"), expected_check("call-first", "/responses"), expected_check("call-second", "/systemone"), expected_check("badplan-calls", "3"), expected_check("badplan-third", "/responses"), expected_check("badanswers-calls", "5"), expected_check("badanswers-fourth", "/responses"), expected_check("badanswers-fifth", "/systemone"), expected_check("snapshot-name", "triage-refused.json"), expected_check("snapshot-key-triage", "TRIAGE_DB"), expected_check("snapshot-key-token", "CAN_I28_TOKEN"), expected_check("snapshot-count", "1"), expected_check("run-arg", "Ann"), expected_check("entry-name", "entry.ts"), expected_check("bun-entry", "runtime/bun"), expected_check("offline-path", "PATH=/nonexistent")]
+        unknown: "nope" => ok []
+    match case is "browser/nativeai-run"
+        false => ok []
+        true => ok [expected_check("refused-calls", "2"), expected_check("call-first", "/responses"), expected_check("call-second", "/systemone"), expected_check("badplan-calls", "3"), expected_check("badplan-third", "/responses"), expected_check("badanswers-calls", "5"), expected_check("badanswers-fourth", "/responses"), expected_check("badanswers-fifth", "/systemone"), expected_check("snapshot-name", "triage-refused.json"), expected_check("snapshot-key-triage", "TRIAGE_DB"), expected_check("snapshot-key-token", "CAN_I28_TOKEN"), expected_check("snapshot-count", "1"), expected_check("run-arg", "Ann"), expected_check("entry-name", "entry.ts"), expected_check("bun-entry", "runtime/bun"), expected_check("offline-path", "PATH=/nonexistent")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("browser/nativeai-run", "default", "", "offline") => ok
+        seed_refused_calls: context("browser/nativeai-run", "seed-refused-calls-drift", "", "offline") => failed{"refused-calls"}
+        seed_call_first: context("browser/nativeai-run", "seed-call-first-drift", "", "offline") => failed{"call-first"}
+        seed_call_second: context("browser/nativeai-run", "seed-call-second-drift", "", "offline") => failed{"call-second"}
+        seed_badplan_calls: context("browser/nativeai-run", "seed-badplan-calls-drift", "", "offline") => failed{"badplan-calls"}
+        seed_badplan_third: context("browser/nativeai-run", "seed-badplan-third-drift", "", "offline") => failed{"badplan-third"}
+        seed_badanswers_calls: context("browser/nativeai-run", "seed-badanswers-calls-drift", "", "offline") => failed{"badanswers-calls"}
+        seed_badanswers_fourth: context("browser/nativeai-run", "seed-badanswers-fourth-drift", "", "offline") => failed{"badanswers-fourth"}
+        seed_badanswers_fifth: context("browser/nativeai-run", "seed-badanswers-fifth-drift", "", "offline") => failed{"badanswers-fifth"}
+        seed_snapshot_name: context("browser/nativeai-run", "seed-snapshot-name-drift", "", "offline") => failed{"snapshot-name"}
+        seed_snapshot_key_triage: context("browser/nativeai-run", "seed-snapshot-key-triage-drift", "", "offline") => failed{"snapshot-key-triage"}
+        seed_snapshot_key_token: context("browser/nativeai-run", "seed-snapshot-key-token-drift", "", "offline") => failed{"snapshot-key-token"}
+        seed_snapshot_count: context("browser/nativeai-run", "seed-snapshot-count-drift", "", "offline") => failed{"snapshot-count"}
+        seed_run_arg: context("browser/nativeai-run", "seed-run-arg-drift", "", "offline") => failed{"run-arg"}
+        seed_entry_name: context("browser/nativeai-run", "seed-entry-name-drift", "", "offline") => failed{"entry-name"}
+        seed_bun_entry: context("browser/nativeai-run", "seed-bun-entry-drift", "", "offline") => failed{"bun-entry"}
+        seed_offline_path: context("browser/nativeai-run", "seed-offline-path-drift", "", "offline") => failed{"offline-path"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.refused_calls, 2, c, "refused-calls")
+            failed
+            ok evidence refused_calls_evidence => match call require_text(got.call_first, "/responses", c, "call-first")
+                failed
+                ok evidence call_first_evidence => match call require_text(got.call_second, "/systemone", c, "call-second")
+                    failed
+                    ok evidence call_second_evidence => match call require_int(got.badplan_calls, 3, c, "badplan-calls")
+                        failed
+                        ok evidence badplan_calls_evidence => match call require_text(got.badplan_third, "/responses", c, "badplan-third")
+                            failed
+                            ok evidence badplan_third_evidence => match call require_int(got.badanswers_calls, 5, c, "badanswers-calls")
+                                failed
+                                ok evidence badanswers_calls_evidence => match call require_text(got.badanswers_fourth, "/responses", c, "badanswers-fourth")
+                                    failed
+                                    ok evidence badanswers_fourth_evidence => match call require_text(got.badanswers_fifth, "/systemone", c, "badanswers-fifth")
+                                        failed
+                                        ok evidence badanswers_fifth_evidence => match call require_text(got.snapshot_name, "triage-refused.json", c, "snapshot-name")
+                                            failed
+                                            ok evidence snapshot_name_evidence => match call require_text(got.snapshot_key_triage, "TRIAGE_DB", c, "snapshot-key-triage")
+                                                failed
+                                                ok evidence snapshot_key_triage_evidence => match call require_text(got.snapshot_key_token, "CAN_I28_TOKEN", c, "snapshot-key-token")
+                                                    failed
+                                                    ok evidence snapshot_key_token_evidence => match call require_int(got.snapshot_count, 1, c, "snapshot-count")
+                                                        failed
+                                                        ok evidence snapshot_count_evidence => match call require_text(got.run_arg, "Ann", c, "run-arg")
+                                                            failed
+                                                            ok evidence run_arg_evidence => match call require_text(got.entry_name, "entry.ts", c, "entry-name")
+                                                                failed
+                                                                ok evidence entry_name_evidence => match call require_text(got.bun_entry, "runtime/bun", c, "bun-entry")
+                                                                    failed
+                                                                    ok evidence bun_entry_evidence => match call require_text(got.offline_path, "PATH=/nonexistent", c, "offline-path")
+                                                                        failed
+                                                                        ok evidence offline_path_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m12_b003: "m12-b003" => ok test_case("browser/nativeai-run", ["browser", "m12"], ["can-bun-archive"], 360000, [check_ref("refused-calls"), check_ref("call-first"), check_ref("call-second"), check_ref("badplan-calls"), check_ref("badplan-third"), check_ref("badanswers-calls"), check_ref("badanswers-fourth"), check_ref("badanswers-fifth"), check_ref("snapshot-name"), check_ref("snapshot-key-triage"), check_ref("snapshot-key-token"), check_ref("snapshot-count"), check_ref("run-arg"), check_ref("entry-name"), check_ref("bun-entry"), check_ref("offline-path")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m12-b003"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("browser/nativeai-run", ["browser", "m12"], ["can-bun-archive"], 360000, [check_ref("refused-calls"), check_ref("call-first"), check_ref("call-second"), check_ref("badplan-calls"), check_ref("badplan-third"), check_ref("badanswers-calls"), check_ref("badanswers-fourth"), check_ref("badanswers-fifth"), check_ref("snapshot-name"), check_ref("snapshot-key-triage"), check_ref("snapshot-key-token"), check_ref("snapshot-count"), check_ref("run-arg"), check_ref("entry-name"), check_ref("bun-entry"), check_ref("offline-path")], callable case_body)

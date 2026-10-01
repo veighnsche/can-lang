@@ -1,0 +1,265 @@
+package m12browser003nativeai
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M12 BROWSER-003 "stubbed native-ai: stage-gate semantics".
+/// Source: tests/integration/applications_test.go symbol
+/// TestApplicationsNativeAIStubbed (L529-599); stub helper
+/// stubProviders (L406-461); runner helper runEntry (L505-527).
+/// Disposition: migrate (this row ports
+/// TestApplicationsNativeAIStubbed to ordinary Can functions; the old
+/// Go harness stays until the integrator retires it after every linked
+/// row, variant, environment and control has accepted evidence).
+/// Protects (this file): the three variant stage gates over separated
+/// streams (exit 1, empty stdout, one typed stderr code each) plus the
+/// env gate and the four raw request-envelope needles.
+/// ADAPTATION (recorded, with source lines): the typed codes pin bare
+/// (sql::connection_failed, llm::invalid_response, ai::invalid_answer)
+/// while Go wraps each as an error-code Contains needle
+/// (L551/L577/L589); stdout-empty pins the empty-stdout refusal (L551,
+/// L577, L589); the context timeout pins int minutes (6) from
+/// 6*time.Minute (L536).
+/// Facet map (applications_test.go legs): env-gate pins CAN_BUN_ARCHIVE
+/// (L531); skip-needle pins the skip message (L533); ctx-timeout-min
+/// pins 6 (L536); refused-exit, refused-stdout-empty and refused-error
+/// pin the refusal gate (L551); badplan-exit, badplan-stdout-empty and
+/// badplan-error pin the bad-plan gate (L577); badanswers-exit,
+/// badanswers-stdout-empty and badanswers-error pin the bad-answers
+/// gate (L589); env-draft, env-pick, env-likely and env-rate pin the
+/// instructions raw-body needles (L562).
+/// The stub-roots pin lives in browser-003-roots-green.can; call order
+/// plus the run shape live in browser-003-run-shape.can.
+/// Variants: refusal, bad plan, bad answers (each carries its own
+/// exit/stdout-empty/error gate in this file; modes flip at L574/L586).
+/// Environment: CAN_BUN_ARCHIVE gate; requires can-bun-archive.
+/// Logical gates CAN/PROC/HTTP/WIRE/FAULT/WORK and C/R/N/S/A
+/// identities bind at P23; no live run now. QHTTP is unmet (accept
+/// gate). The stub legs additionally run compiled entry.ts under the
+/// bundled runtime/bun (recorded mechanism, not waived). Descriptor
+/// timeout 360000ms mirrors the Go 6-minute ctx (L536).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QHTTP unmet).
+/// Case browser/nativeai checks: env-gate, skip-needle,
+/// ctx-timeout-min, refused-exit, refused-stdout-empty, refused-error,
+/// badplan-exit, badplan-stdout-empty, badplan-error, badanswers-exit,
+/// badanswers-stdout-empty, badanswers-error, env-draft, env-pick,
+/// env-likely, env-rate.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str env_gate
+    str skip_needle
+    int ctx_timeout_min
+    int refused_exit
+    bool refused_stdout_empty
+    str refused_error
+    int badplan_exit
+    bool badplan_stdout_empty
+    str badplan_error
+    int badanswers_exit
+    bool badanswers_stdout_empty
+    str badanswers_error
+    str env_draft
+    str env_pick
+    str env_likely
+    str env_rate
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("browser/nativeai", "default", "", "offline"), "env-gate" => ok "case browser/nativeai variant default root env-gate run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("browser/nativeai", "default", "", "offline"), "refused-stdout-empty" => ok evidence("refused-stdout-empty", "true", "true", true, "case browser/nativeai variant default root refused-stdout-empty run offline")
+        different: false, true, context("browser/nativeai", "default", "", "offline"), "refused-stdout-empty" => failed{"refused-stdout-empty"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 6, 6, context("browser/nativeai", "default", "", "offline"), "ctx-timeout-min" => ok evidence("ctx-timeout-min", "6", "6", true, "case browser/nativeai variant default root ctx-timeout-min run offline")
+        different: 5, 6, context("browser/nativeai", "default", "", "offline"), "ctx-timeout-min" => failed{"ctx-timeout-min"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "CAN_BUN_ARCHIVE", "CAN_BUN_ARCHIVE", context("browser/nativeai", "default", "", "offline"), "env-gate" => ok evidence("env-gate", "CAN_BUN_ARCHIVE", "CAN_BUN_ARCHIVE", true, "case browser/nativeai variant default root env-gate run offline")
+        different: "CAN_BUN_ARCHIVE_2", "CAN_BUN_ARCHIVE", context("browser/nativeai", "default", "", "offline"), "env-gate" => failed{"env-gate"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        seed_env_gate: "seed-env-gate-drift" => ok observation("CAN_BUN_ARCHIVE_2", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        seed_skip_needle: "seed-skip-needle-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application checks", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        seed_ctx_timeout_min: "seed-ctx-timeout-min-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 5, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        seed_refused_exit: "seed-refused-exit-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 2, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        seed_refused_stdout_empty: "seed-refused-stdout-empty-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, false, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        seed_refused_error: "seed-refused-error-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::other", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        seed_badplan_exit: "seed-badplan-exit-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 2, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        seed_badplan_stdout_empty: "seed-badplan-stdout-empty-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, false, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        seed_badplan_error: "seed-badplan-error-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::other", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        seed_badanswers_exit: "seed-badanswers-exit-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 2, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        seed_badanswers_stdout_empty: "seed-badanswers-stdout-empty-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, false, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        seed_badanswers_error: "seed-badanswers-error-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::other", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        seed_env_draft: "seed-env-draft-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft2\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        seed_env_pick: "seed-env-pick-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick2\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        seed_env_likely: "seed-env-likely-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely2\"", "\"instructions\":\"Rate\"")
+        seed_env_rate: "seed-env-rate-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate2\"")
+    match variant_id
+        "seed-env-gate-drift" => ok observation("CAN_BUN_ARCHIVE_2", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        "seed-skip-needle-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application checks", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        "seed-ctx-timeout-min-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 5, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        "seed-refused-exit-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 2, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        "seed-refused-stdout-empty-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, false, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        "seed-refused-error-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::other", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        "seed-badplan-exit-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 2, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        "seed-badplan-stdout-empty-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, false, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        "seed-badplan-error-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::other", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        "seed-badanswers-exit-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 2, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        "seed-badanswers-stdout-empty-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, false, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        "seed-badanswers-error-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::other", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        "seed-env-draft-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft2\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        "seed-env-pick-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick2\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+        "seed-env-likely-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely2\"", "\"instructions\":\"Rate\"")
+        "seed-env-rate-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate2\"")
+        _ => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged application execution", 6, 1, true, "sql::connection_failed", 1, true, "llm::invalid_response", 1, true, "ai::invalid_answer", "\"instructions\":\"Draft\"", "\"instructions\":\"Pick\"", "\"instructions\":\"Likely\"", "\"instructions\":\"Rate\"")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m12_b003: "m12-b003" => ok [check("env-gate", "row gates on CAN_BUN_ARCHIVE"), check("skip-needle", "unset archive skips with the staged message"), check("ctx-timeout-min", "row context spans 6 minutes"), check("refused-exit", "refused run exits 1"), check("refused-stdout-empty", "refused run keeps stdout empty"), check("refused-error", "refused run surfaces sql::connection_failed"), check("badplan-exit", "bad plan run exits 1"), check("badplan-stdout-empty", "bad plan run keeps stdout empty"), check("badplan-error", "bad plan run surfaces llm::invalid_response"), check("badanswers-exit", "bad answers run exits 1"), check("badanswers-stdout-empty", "bad answers run keeps stdout empty"), check("badanswers-error", "bad answers run surfaces ai::invalid_answer"), check("env-draft", "stub sees the Draft instruction envelope"), check("env-pick", "stub sees the Pick instruction envelope"), check("env-likely", "stub sees the Likely instruction envelope"), check("env-rate", "stub sees the Rate instruction envelope")]
+        other: "nope" => ok []
+    match scope is "m12-b003"
+        false => ok []
+        true => ok [check("env-gate", "row gates on CAN_BUN_ARCHIVE"), check("skip-needle", "unset archive skips with the staged message"), check("ctx-timeout-min", "row context spans 6 minutes"), check("refused-exit", "refused run exits 1"), check("refused-stdout-empty", "refused run keeps stdout empty"), check("refused-error", "refused run surfaces sql::connection_failed"), check("badplan-exit", "bad plan run exits 1"), check("badplan-stdout-empty", "bad plan run keeps stdout empty"), check("badplan-error", "bad plan run surfaces llm::invalid_response"), check("badanswers-exit", "bad answers run exits 1"), check("badanswers-stdout-empty", "bad answers run keeps stdout empty"), check("badanswers-error", "bad answers run surfaces ai::invalid_answer"), check("env-draft", "stub sees the Draft instruction envelope"), check("env-pick", "stub sees the Pick instruction envelope"), check("env-likely", "stub sees the Likely instruction envelope"), check("env-rate", "stub sees the Rate instruction envelope")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "browser/nativeai" => ok [expected_check("env-gate", "CAN_BUN_ARCHIVE"), expected_check("skip-needle", "set CAN_BUN_ARCHIVE for staged application execution"), expected_check("ctx-timeout-min", "6"), expected_check("refused-exit", "1"), expected_check("refused-stdout-empty", "true"), expected_check("refused-error", "sql::connection_failed"), expected_check("badplan-exit", "1"), expected_check("badplan-stdout-empty", "true"), expected_check("badplan-error", "llm::invalid_response"), expected_check("badanswers-exit", "1"), expected_check("badanswers-stdout-empty", "true"), expected_check("badanswers-error", "ai::invalid_answer"), expected_check("env-draft", "\"instructions\":\"Draft\""), expected_check("env-pick", "\"instructions\":\"Pick\""), expected_check("env-likely", "\"instructions\":\"Likely\""), expected_check("env-rate", "\"instructions\":\"Rate\"")]
+        unknown: "nope" => ok []
+    match case is "browser/nativeai"
+        false => ok []
+        true => ok [expected_check("env-gate", "CAN_BUN_ARCHIVE"), expected_check("skip-needle", "set CAN_BUN_ARCHIVE for staged application execution"), expected_check("ctx-timeout-min", "6"), expected_check("refused-exit", "1"), expected_check("refused-stdout-empty", "true"), expected_check("refused-error", "sql::connection_failed"), expected_check("badplan-exit", "1"), expected_check("badplan-stdout-empty", "true"), expected_check("badplan-error", "llm::invalid_response"), expected_check("badanswers-exit", "1"), expected_check("badanswers-stdout-empty", "true"), expected_check("badanswers-error", "ai::invalid_answer"), expected_check("env-draft", "\"instructions\":\"Draft\""), expected_check("env-pick", "\"instructions\":\"Pick\""), expected_check("env-likely", "\"instructions\":\"Likely\""), expected_check("env-rate", "\"instructions\":\"Rate\"")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("browser/nativeai", "default", "", "offline") => ok
+        seed_env_gate: context("browser/nativeai", "seed-env-gate-drift", "", "offline") => failed{"env-gate"}
+        seed_skip_needle: context("browser/nativeai", "seed-skip-needle-drift", "", "offline") => failed{"skip-needle"}
+        seed_ctx_timeout_min: context("browser/nativeai", "seed-ctx-timeout-min-drift", "", "offline") => failed{"ctx-timeout-min"}
+        seed_refused_exit: context("browser/nativeai", "seed-refused-exit-drift", "", "offline") => failed{"refused-exit"}
+        seed_refused_stdout_empty: context("browser/nativeai", "seed-refused-stdout-empty-drift", "", "offline") => failed{"refused-stdout-empty"}
+        seed_refused_error: context("browser/nativeai", "seed-refused-error-drift", "", "offline") => failed{"refused-error"}
+        seed_badplan_exit: context("browser/nativeai", "seed-badplan-exit-drift", "", "offline") => failed{"badplan-exit"}
+        seed_badplan_stdout_empty: context("browser/nativeai", "seed-badplan-stdout-empty-drift", "", "offline") => failed{"badplan-stdout-empty"}
+        seed_badplan_error: context("browser/nativeai", "seed-badplan-error-drift", "", "offline") => failed{"badplan-error"}
+        seed_badanswers_exit: context("browser/nativeai", "seed-badanswers-exit-drift", "", "offline") => failed{"badanswers-exit"}
+        seed_badanswers_stdout_empty: context("browser/nativeai", "seed-badanswers-stdout-empty-drift", "", "offline") => failed{"badanswers-stdout-empty"}
+        seed_badanswers_error: context("browser/nativeai", "seed-badanswers-error-drift", "", "offline") => failed{"badanswers-error"}
+        seed_env_draft: context("browser/nativeai", "seed-env-draft-drift", "", "offline") => failed{"env-draft"}
+        seed_env_pick: context("browser/nativeai", "seed-env-pick-drift", "", "offline") => failed{"env-pick"}
+        seed_env_likely: context("browser/nativeai", "seed-env-likely-drift", "", "offline") => failed{"env-likely"}
+        seed_env_rate: context("browser/nativeai", "seed-env-rate-drift", "", "offline") => failed{"env-rate"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.env_gate, "CAN_BUN_ARCHIVE", c, "env-gate")
+            failed
+            ok evidence env_gate_evidence => match call require_text(got.skip_needle, "set CAN_BUN_ARCHIVE for staged application execution", c, "skip-needle")
+                failed
+                ok evidence skip_needle_evidence => match call require_int(got.ctx_timeout_min, 6, c, "ctx-timeout-min")
+                    failed
+                    ok evidence ctx_timeout_min_evidence => match call require_int(got.refused_exit, 1, c, "refused-exit")
+                        failed
+                        ok evidence refused_exit_evidence => match call require_bool(got.refused_stdout_empty, true, c, "refused-stdout-empty")
+                            failed
+                            ok evidence refused_stdout_empty_evidence => match call require_text(got.refused_error, "sql::connection_failed", c, "refused-error")
+                                failed
+                                ok evidence refused_error_evidence => match call require_int(got.badplan_exit, 1, c, "badplan-exit")
+                                    failed
+                                    ok evidence badplan_exit_evidence => match call require_bool(got.badplan_stdout_empty, true, c, "badplan-stdout-empty")
+                                        failed
+                                        ok evidence badplan_stdout_empty_evidence => match call require_text(got.badplan_error, "llm::invalid_response", c, "badplan-error")
+                                            failed
+                                            ok evidence badplan_error_evidence => match call require_int(got.badanswers_exit, 1, c, "badanswers-exit")
+                                                failed
+                                                ok evidence badanswers_exit_evidence => match call require_bool(got.badanswers_stdout_empty, true, c, "badanswers-stdout-empty")
+                                                    failed
+                                                    ok evidence badanswers_stdout_empty_evidence => match call require_text(got.badanswers_error, "ai::invalid_answer", c, "badanswers-error")
+                                                        failed
+                                                        ok evidence badanswers_error_evidence => match call require_text(got.env_draft, "\"instructions\":\"Draft\"", c, "env-draft")
+                                                            failed
+                                                            ok evidence env_draft_evidence => match call require_text(got.env_pick, "\"instructions\":\"Pick\"", c, "env-pick")
+                                                                failed
+                                                                ok evidence env_pick_evidence => match call require_text(got.env_likely, "\"instructions\":\"Likely\"", c, "env-likely")
+                                                                    failed
+                                                                    ok evidence env_likely_evidence => match call require_text(got.env_rate, "\"instructions\":\"Rate\"", c, "env-rate")
+                                                                        failed
+                                                                        ok evidence env_rate_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m12_b003: "m12-b003" => ok test_case("browser/nativeai", ["browser", "m12"], ["can-bun-archive"], 360000, [check_ref("env-gate"), check_ref("skip-needle"), check_ref("ctx-timeout-min"), check_ref("refused-exit"), check_ref("refused-stdout-empty"), check_ref("refused-error"), check_ref("badplan-exit"), check_ref("badplan-stdout-empty"), check_ref("badplan-error"), check_ref("badanswers-exit"), check_ref("badanswers-stdout-empty"), check_ref("badanswers-error"), check_ref("env-draft"), check_ref("env-pick"), check_ref("env-likely"), check_ref("env-rate")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m12-b003"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("browser/nativeai", ["browser", "m12"], ["can-bun-archive"], 360000, [check_ref("env-gate"), check_ref("skip-needle"), check_ref("ctx-timeout-min"), check_ref("refused-exit"), check_ref("refused-stdout-empty"), check_ref("refused-error"), check_ref("badplan-exit"), check_ref("badplan-stdout-empty"), check_ref("badplan-error"), check_ref("badanswers-exit"), check_ref("badanswers-stdout-empty"), check_ref("badanswers-error"), check_ref("env-draft"), check_ref("env-pick"), check_ref("env-likely"), check_ref("env-rate")], callable case_body)
