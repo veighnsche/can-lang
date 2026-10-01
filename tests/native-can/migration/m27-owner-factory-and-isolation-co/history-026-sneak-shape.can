@@ -1,0 +1,172 @@
+package m27history026shape
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M27 HISTORY-026 "factory private to package: injected sneak shape".
+/// Source: tests/failure-conventions/owner_test.go symbol TestFactoryPrivateToPackage
+/// (sneak source inline at owner_test.go:112, injected at src/sneak/sneak.can).
+/// Related fixtures: tests/failure-conventions/owner-setup/src/handler/handler.can
+/// (provides [tier_view, tier_for, handle_tier]; fixture_id defined but unprovided).
+/// Disposition: RETAIN. The test stages owner-setup, injects a foreign sneak
+/// package whose grab calls handler::fixture_id(1), and expects check-phase
+/// rejection with no assert report.
+/// Protects (this file): the injected sneak shape (foreign package sneak with
+/// provides [] and uses [handler], grab calling handler::fixture_id(1)) plus
+/// the static reason the call is illegal (fixture_id absent from the handler
+/// provides list at owner-setup handler.can:2).
+/// Check-phase outcome (nonzero exit, no decoded report) lives in
+/// history-026-check-rejection.can; the "handler::fixture_id is private"
+/// diagnostic pin lives in history-026-diagnostic-text.can.
+/// Variants: sneak-injected owner project only. Green-setup (023), tainted
+/// frames (024), forged-owner (025) and repair (027) variants are other rows,
+/// not this one.
+/// Environment: CONV_BUNDLE or CAN_BUN_ARCHIVE; requires
+/// conv-bundle-or-can-bun-archive. Logical gates SUITE/DIAG/FAULT and C/R/N/S/A
+/// identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case owner-sneak/sneak-shape checks: sneak-package, sneak-provides-empty,
+/// sneak-uses-handler, sneak-calls-factory, factory-unprovided.
+/// Facet map: sneak-package pins the injected foreign package name sneak
+/// (owner_test.go:112); sneak-provides-empty pins its provides [];
+/// sneak-uses-handler pins its uses [handler]; sneak-calls-factory pins the
+/// grab body `ok call handler::fixture_id(1)`; factory-unprovided pins the
+/// handler provides exclusion that makes that call illegal.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str sneak_package
+    bool sneak_provides_empty
+    bool sneak_uses_handler
+    bool sneak_calls_factory
+    bool factory_unprovided
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("owner-sneak/sneak-shape", "default", "", "offline"), "sneak-package" => ok "case owner-sneak/sneak-shape variant default root sneak-package run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("owner-sneak/sneak-shape", "default", "", "offline"), "sneak-uses-handler" => ok evidence("sneak-uses-handler", "true", "true", true, "case owner-sneak/sneak-shape variant default root sneak-uses-handler run offline")
+        different: false, true, context("owner-sneak/sneak-shape", "default", "", "offline"), "sneak-uses-handler" => failed{"sneak-uses-handler"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "sneak", "sneak", context("owner-sneak/sneak-shape", "default", "", "offline"), "sneak-package" => ok evidence("sneak-package", "sneak", "sneak", true, "case owner-sneak/sneak-shape variant default root sneak-package run offline")
+        different: "", "sneak", context("owner-sneak/sneak-shape", "default", "", "offline"), "sneak-package" => failed{"sneak-package"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("sneak", true, true, true, true)
+        seed_sneak_missing: "seed-sneak-missing" => ok observation("", false, false, false, true)
+        seed_provides_leak: "seed-provides-leak" => ok observation("sneak", false, true, true, true)
+        seed_uses_drift: "seed-uses-drift" => ok observation("sneak", true, false, true, true)
+        seed_call_drift: "seed-call-drift" => ok observation("sneak", true, true, false, true)
+        seed_factory_provided: "seed-factory-provided" => ok observation("sneak", true, true, true, false)
+    match variant_id
+        "seed-sneak-missing" => ok observation("", false, false, false, true)
+        "seed-provides-leak" => ok observation("sneak", false, true, true, true)
+        "seed-uses-drift" => ok observation("sneak", true, false, true, true)
+        "seed-call-drift" => ok observation("sneak", true, true, false, true)
+        "seed-factory-provided" => ok observation("sneak", true, true, true, false)
+        _ => ok observation("sneak", true, true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m27_026: "m27-026" => ok [check("sneak-package", "injected file declares the foreign sneak package"), check("sneak-provides-empty", "sneak provides nothing"), check("sneak-uses-handler", "sneak uses the handler package"), check("sneak-calls-factory", "grab calls handler::fixture_id(1)"), check("factory-unprovided", "handler provides excludes fixture_id")]
+        other: "nope" => ok []
+    match scope is "m27-026"
+        false => ok []
+        true => ok [check("sneak-package", "injected file declares the foreign sneak package"), check("sneak-provides-empty", "sneak provides nothing"), check("sneak-uses-handler", "sneak uses the handler package"), check("sneak-calls-factory", "grab calls handler::fixture_id(1)"), check("factory-unprovided", "handler provides excludes fixture_id")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "owner-sneak/sneak-shape" => ok [expected_check("sneak-package", "sneak"), expected_check("sneak-provides-empty", "true"), expected_check("sneak-uses-handler", "true"), expected_check("sneak-calls-factory", "true"), expected_check("factory-unprovided", "true")]
+        unknown: "nope" => ok []
+    match case is "owner-sneak/sneak-shape"
+        false => ok []
+        true => ok [expected_check("sneak-package", "sneak"), expected_check("sneak-provides-empty", "true"), expected_check("sneak-uses-handler", "true"), expected_check("sneak-calls-factory", "true"), expected_check("factory-unprovided", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("owner-sneak/sneak-shape", "default", "", "offline") => ok
+        seed_sneak_missing: context("owner-sneak/sneak-shape", "seed-sneak-missing", "", "offline") => failed{"sneak-package"}
+        seed_provides_leak: context("owner-sneak/sneak-shape", "seed-provides-leak", "", "offline") => failed{"sneak-provides-empty"}
+        seed_uses_drift: context("owner-sneak/sneak-shape", "seed-uses-drift", "", "offline") => failed{"sneak-uses-handler"}
+        seed_call_drift: context("owner-sneak/sneak-shape", "seed-call-drift", "", "offline") => failed{"sneak-calls-factory"}
+        seed_factory_provided: context("owner-sneak/sneak-shape", "seed-factory-provided", "", "offline") => failed{"factory-unprovided"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.sneak_package, "sneak", c, "sneak-package")
+            failed
+            ok evidence package_evidence => match call require_bool(got.sneak_provides_empty, true, c, "sneak-provides-empty")
+                failed
+                ok evidence provides_evidence => match call require_bool(got.sneak_uses_handler, true, c, "sneak-uses-handler")
+                    failed
+                    ok evidence uses_evidence => match call require_bool(got.sneak_calls_factory, true, c, "sneak-calls-factory")
+                        failed
+                        ok evidence call_evidence => match call require_bool(got.factory_unprovided, true, c, "factory-unprovided")
+                            failed
+                            ok evidence unprovided_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m27_026: "m27-026" => ok test_case("owner-sneak/sneak-shape", ["owner", "m27", "sneak"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("sneak-package"), check_ref("sneak-provides-empty"), check_ref("sneak-uses-handler"), check_ref("sneak-calls-factory"), check_ref("factory-unprovided")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m27-026"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("owner-sneak/sneak-shape", ["owner", "m27", "sneak"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("sneak-package"), check_ref("sneak-provides-empty"), check_ref("sneak-uses-handler"), check_ref("sneak-calls-factory"), check_ref("factory-unprovided")], callable case_body)

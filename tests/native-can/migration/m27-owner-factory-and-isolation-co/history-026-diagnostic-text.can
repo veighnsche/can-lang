@@ -1,0 +1,162 @@
+package m27history026diagnostic
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M27 HISTORY-026 "factory private to package: compiler diagnostic text".
+/// Source: tests/failure-conventions/owner_test.go symbol TestFactoryPrivateToPackage
+/// (diagnostic predicate at owner_test.go:124).
+/// Related fixtures: tests/failure-conventions/owner-setup/ plus the injected
+/// src/sneak/sneak.can (asserted project).
+/// Disposition: RETAIN. The sneak leg observes a compiler rejection
+/// diagnostic, not an assert report: the combined stdout+stderr names the
+/// private factory.
+/// Protects (this file): diagnostic-present, needle-exact, and
+/// streams-combined pins.
+/// The injected sneak shape lives in history-026-sneak-shape.can; the
+/// check-phase outcome (nonzero exit, no decoded report) lives in
+/// history-026-check-rejection.can.
+/// Variants: sneak-injected owner project only. Green-setup (023), tainted
+/// frames (024), forged-owner (025) and repair (027) variants are other rows,
+/// not this one.
+/// Environment: CONV_BUNDLE or CAN_BUN_ARCHIVE; requires
+/// conv-bundle-or-can-bun-archive. Logical gates SUITE/DIAG/FAULT and C/R/N/S/A
+/// identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case owner-sneak/diagnostic-text checks: diagnostic-present, needle-exact,
+/// streams-combined.
+/// Facet map: diagnostic-present pins that the combined output contains the
+/// needle (owner_test.go:124 `strings.Contains`); needle-exact pins the exact
+/// needle text "handler::fixture_id is private"; streams-combined pins the
+/// observation method (stdout and stderr are both scanned, mirroring the Go
+/// `outcome.Stdout+outcome.Stderr` concatenation). No full-output golden is
+/// pinned: the Go test pins the substring only.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool diagnostic_present
+    str needle
+    bool streams_combined
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("owner-sneak/diagnostic-text", "default", "", "offline"), "diagnostic-present" => ok "case owner-sneak/diagnostic-text variant default root diagnostic-present run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("owner-sneak/diagnostic-text", "default", "", "offline"), "diagnostic-present" => ok evidence("diagnostic-present", "true", "true", true, "case owner-sneak/diagnostic-text variant default root diagnostic-present run offline")
+        different: false, true, context("owner-sneak/diagnostic-text", "default", "", "offline"), "diagnostic-present" => failed{"diagnostic-present"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "handler::fixture_id is private", "handler::fixture_id is private", context("owner-sneak/diagnostic-text", "default", "", "offline"), "needle-exact" => ok evidence("needle-exact", "handler::fixture_id is private", "handler::fixture_id is private", true, "case owner-sneak/diagnostic-text variant default root needle-exact run offline")
+        different: "handler::fixture_id is public", "handler::fixture_id is private", context("owner-sneak/diagnostic-text", "default", "", "offline"), "needle-exact" => failed{"needle-exact"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, "handler::fixture_id is private", true)
+        seed_diagnostic_missing: "seed-diagnostic-missing" => ok observation(false, "handler::fixture_id is private", true)
+        seed_needle_drift: "seed-needle-drift" => ok observation(true, "handler::fixture_id is public", true)
+        seed_output_empty: "seed-output-empty" => ok observation(false, "", true)
+        seed_single_stream: "seed-single-stream" => ok observation(true, "handler::fixture_id is private", false)
+    match variant_id
+        "seed-diagnostic-missing" => ok observation(false, "handler::fixture_id is private", true)
+        "seed-needle-drift" => ok observation(true, "handler::fixture_id is public", true)
+        "seed-output-empty" => ok observation(false, "", true)
+        "seed-single-stream" => ok observation(true, "handler::fixture_id is private", false)
+        _ => ok observation(true, "handler::fixture_id is private", true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m27_026: "m27-026" => ok [check("diagnostic-present", "combined output names the private factory"), check("needle-exact", "diagnostic needle is handler::fixture_id is private"), check("streams-combined", "stdout and stderr are both scanned")]
+        other: "nope" => ok []
+    match scope is "m27-026"
+        false => ok []
+        true => ok [check("diagnostic-present", "combined output names the private factory"), check("needle-exact", "diagnostic needle is handler::fixture_id is private"), check("streams-combined", "stdout and stderr are both scanned")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "owner-sneak/diagnostic-text" => ok [expected_check("diagnostic-present", "true"), expected_check("needle-exact", "handler::fixture_id is private"), expected_check("streams-combined", "true")]
+        unknown: "nope" => ok []
+    match case is "owner-sneak/diagnostic-text"
+        false => ok []
+        true => ok [expected_check("diagnostic-present", "true"), expected_check("needle-exact", "handler::fixture_id is private"), expected_check("streams-combined", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("owner-sneak/diagnostic-text", "default", "", "offline") => ok
+        seed_diagnostic_missing: context("owner-sneak/diagnostic-text", "seed-diagnostic-missing", "", "offline") => failed{"diagnostic-present"}
+        seed_needle_drift: context("owner-sneak/diagnostic-text", "seed-needle-drift", "", "offline") => failed{"needle-exact"}
+        seed_output_empty: context("owner-sneak/diagnostic-text", "seed-output-empty", "", "offline") => failed{"diagnostic-present"}
+        seed_single_stream: context("owner-sneak/diagnostic-text", "seed-single-stream", "", "offline") => failed{"streams-combined"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.diagnostic_present, true, c, "diagnostic-present")
+            failed
+            ok evidence present_evidence => match call require_text(got.needle, "handler::fixture_id is private", c, "needle-exact")
+                failed
+                ok evidence needle_evidence => match call require_bool(got.streams_combined, true, c, "streams-combined")
+                    failed
+                    ok evidence streams_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m27_026: "m27-026" => ok test_case("owner-sneak/diagnostic-text", ["owner", "m27", "sneak"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("diagnostic-present"), check_ref("needle-exact"), check_ref("streams-combined")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m27-026"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("owner-sneak/diagnostic-text", ["owner", "m27", "sneak"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("diagnostic-present"), check_ref("needle-exact"), check_ref("streams-combined")], callable case_body)
