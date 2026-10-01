@@ -579,7 +579,7 @@
       "acceptance": "Candidate code never imports into judge realm; worker crash, timeout or controller death lacks valid aggregate; source/output channels are separate and bounded. Code and bounded bootstrap/local controls only at this task; authoritative live execution is gated by P14, P26 and P23.",
       "evidence": "Save local/provisional run-worker identity controls; commit the implementation. Authoritative live-path evidence is P23.",
       "commit": "feat(testing): launch can controller and fresh workers",
-      "status": "planned",
+      "status": "complete",
       "start_after": [
         "P18",
         "P12",
