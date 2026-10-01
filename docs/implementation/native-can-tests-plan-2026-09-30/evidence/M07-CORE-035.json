@@ -131,7 +131,7 @@
    "finding": "Committed pins carried the literal string \"Bearer [REDACTED]\" (52 occurrences) copied from display-masked transcripts; byte truth (od) is \"Bearer test-only\", the harness-supplied dummy asserted by the Go test.",
    "fix": "All pins now \"Bearer test-only\"; No seed change: no seed arm was identical to default; all seeds drift non-credential fields. Live leg pins \"Bearer test-only\" (questions_test.go L80, CAN_I27_TOKEN=test-only at L123); the separate fixture-secret JSON leg (L240-243) was and remains unpinned in Can. Byte-truth footer note appended (EOF, no line shifts above).",
    "verification": "grep -c test-only 52; parse 17 decls; re-staged STAGE-IDENTICAL, check accepted:true diagnostics:[]. Neg controls from original acceptance stand (neg seeds target untouched lines).",
-   "commit": "pending (M07 Bearer-truth correction commit)"
+   "commit": "38370ce9"
   }
  ]
 }

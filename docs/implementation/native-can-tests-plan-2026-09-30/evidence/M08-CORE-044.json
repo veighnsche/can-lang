@@ -133,7 +133,7 @@
    "finding": "Worker pins carried the literal string \"Bearer [REDACTED]\" (51 occurrences: 48 observation arms + gate L299 + expected_check L261/L265; the 2 seed arms already carried the true value) copied from display-masked transcripts; the SUT passes the fixture credential through unredacted (\"Bearer secret\", transport-request.test.ts L28). Header (L48-49) and check descriptions (L251/L255) falsely claimed redaction.",
    "fix": "Pins now \"Bearer secret\" (54 occurrences incl. header + descriptions); descriptions/header rewritten to passthrough wording; seed-prep-auth-drift arms (L197/L222) now carry \"Bearer drift\" so they still fail exactly at prep-auth; byte-truth footer note appended (EOF, no line shifts above). Evidence prose corrected (passthrough L28-29, test-token L61-63).",
    "verification": "grep -c: secret 54, drift 2, REDACTED 0 outside footer note. Field-diff: seeds differ from default only in auth field (arity 25/25). Re-staged (STAGE-IDENTICAL) check accepted:true diagnostics:[]; neg re-run 25/25 errors naming the seeded file, matching worker-declared 25.",
-   "commit": "pending (this correction lands in the row acceptance commit)"
+   "commit": "3304f461"
   }
  ]
 }

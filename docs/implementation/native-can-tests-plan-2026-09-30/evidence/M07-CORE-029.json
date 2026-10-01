@@ -129,7 +129,7 @@
    "finding": "Committed pins carried the literal string \"Bearer [REDACTED]\" (32 occurrences) copied from display-masked transcripts; byte truth (od) is \"Bearer test-only\", the harness-supplied dummy asserted by the Go test.",
    "fix": "All pins now \"Bearer test-only\"; No seed change: no seed arm was identical to default; all seeds drift non-credential fields. Byte-truth footer note appended (EOF, no line shifts above).",
    "verification": "grep -c test-only 32; parse 17 decls; re-staged STAGE-IDENTICAL, check accepted:true diagnostics:[]. Neg controls from original acceptance stand (neg seeds target untouched lines).",
-   "commit": "pending (M07 Bearer-truth correction commit)"
+   "commit": "38370ce9"
   }
  ]
 }
