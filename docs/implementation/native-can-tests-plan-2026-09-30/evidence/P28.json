@@ -116,7 +116,7 @@
   {
    "command": "timeout 170 bun test runtime/test/test-workspace-tools-evidence.test.ts runtime/test/test-owner.test.ts",
    "deadline": "180s",
-   "result": "20 pass / 0 fail (9 new S1c + 11 S1a/b)"
+   "result": "21 pass / 0 fail (9 S1c + 12 S1a/b incl. raw-thenable control added in 1c2b5384; reviewer independently re-ran 21/0)"
   },
   {
    "command": "timeout 120 bun test tools/runtime/module-inventory.test.ts",
@@ -132,12 +132,23 @@
    "command": "gofmt -l + go vet emit/catalogue",
    "deadline": "130s",
    "result": "clean"
+  },
+  {
+   "command": "timeout 60 bun /tmp/p28-smuggle.ts (integrator, deleted after run)",
+   "deadline": "60s",
+   "result": "all rejections fire: forged-grant=test::invalid_grant, wellformed-grant=ok (documented), thenable/plain/str x send/recv/close/pending = TypeError x12, unknown-tool=test::unknown_tool"
+  },
+  {
+   "command": "reviewer independent re-run: cataloguegen --check + go test catalogue/check/emit + bun test test-owner + test-workspace-tools-evidence + module-inventory + check:runtime",
+   "deadline": "170s each",
+   "result": "all green: --check clean, catalogue ok 0.477s, check ok 14.456s, emit ok 8.279s (W4 passed, no flake), bun 21/0, inventory 2/0, check:runtime 0/0"
   }
  ],
  "commits": [
   "858f96d14107c9d39cb20a143c6072f3fdf9d355",
   "a8edc40a8468c080618d03125b234898d1a35dfd",
-  "b527e5fcb880ddeed8585ee64d05620a4a1e31ba"
+  "b527e5fcb880ddeed8585ee64d05620a4a1e31ba",
+  "1c2b5384d96cc9e14e8861bc7e18a78ff811ad20"
  ],
  "controls": {
   "missing_evidence": [
@@ -160,14 +171,15 @@
    "Jev x3 S1c (evidence/P28-jev-s1c/): unanimous keyed_dispatch (1.00/0.99/0.98), opaque_handle workspace (0.97/1.00/0.98), bundle_handle evidence (0.95/0.92/0.84); advisory only, independently supported by the arbitrary-dispatch ban"
   ],
   "seeded_defect": [
-   "bad grant shapes x4, bad channel kind, empty/full/closed/detached/stale/foreign handles, mistagged encode, malformed + non-object + oversize frames \u2014 all map onto the declared union with nothing retained on failure"
+   "bad grant shapes x4, bad channel kind, empty/full/closed/detached/stale/foreign handles, mistagged encode, malformed + non-object + oversize frames \u2014 all map onto the declared union with nothing retained on failure",
+   "raw thenable + plain object + scalar impostors rejected with TypeError on all 4 channel entrypoints (12th test-owner test, 1c2b5384)"
   ]
  },
  "correction_registry_head": null,
  "coverage": {
   "case_check_ids": [
    "TestOwnerTransportCatalogueContract subtests (7 ops + 2 types + reservation)",
-   "test-owner.test.ts: 11 tests incl. admission/roundtrip/close/full/detach/foreign/codec/oversize + createTestSupport composition",
+   "test-owner.test.ts: 12 tests incl. admission/roundtrip/close/full/detach/foreign/codec/oversize/raw-thenable + createTestSupport composition",
    "TestOwnerTransportEmission: owner.can checker+emitter agreement over all 7 ops",
    "TestWorkspaceProcessEvidenceCatalogueContract (9 ops + 4 types + traceability)",
    "test-workspace-tools-evidence.test.ts: 9 tests (workspace roundtrip/removal/confinement/delegation/stale, tools dispatch/vocabulary, evidence roundtrip/seal)",
@@ -203,11 +215,12 @@
  "resource_and_cleanup_receipts": [
   "owned /tmp/p28-s1a-append.py + /tmp/k05-* logs removed at commit (rm -f receipt in commit chain)",
   "no services, builds, bundles, or retained workspaces",
-  "S1c: /tmp/p28-s1c-append.py + /tmp/dbg/probe scratch removed; /tmp/can-base-w4 worktree removed after use; no services/builds retained"
+  "S1c: /tmp/p28-s1c-append.py + /tmp/dbg/probe scratch removed; /tmp/can-base-w4 worktree removed after use; no services/builds retained",
+  "review: /tmp/p28-smuggle.ts removed after run (rm -f); reviewer created zero files"
  ],
  "retirement_commit": null,
  "retirement_eligible": false,
- "reviewer_disposition": null,
+ "reviewer_disposition": "independent review ACCEPT (reviewer read all 16 bindings + adapters + fixtures; implementer did not judge itself): all 6 acceptance clauses MET with file:line evidence; counts verified 16 ops/6 types/12 errors/322/121/123/39; limitations honestly scoped; no live hosts. Advisory 1 (test-count drift 11/20 vs true 12/21): fixed in this evidence (counts, not tests). Advisory 2 (forged-owner wording): reviewed reading recorded — forged means shape-forged (rejected with closed reasons); well-formed-but-unissued grants are admitted by documented design until N-link issuance verification; behavior correct and disclosed. Reviewer could not run fresh smuggling probes (tool-layer EMFILE); gap closed by integrator /tmp/p28-smuggle.ts (all rejections fire, probe removed). No must-fix findings.",
  "row_or_file_slice": "owner-transport-base + checker/emitter + workspace/process/evidence (S1a+S1b+S1c)",
  "start_prerequisite_receipts": [
   "P02 complete",
