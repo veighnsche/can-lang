@@ -1,0 +1,370 @@
+package m09core031native
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M09 CORE-031 "bundled native declarations: build-accept plus six rejections".
+/// Source: tests/integration/native_test.go symbol
+/// TestCurrentBundledNativeDeclarations (L15-87).
+/// Related fixture: compiler/testdata/current/native/declarations.can (read
+/// at L63, staged pristine as src/main.can at L67) with the 8 native raw
+/// fixtures staged at L68 via stageRawFixtures (raw_fixtures_test.go L16-36:
+/// every native/fixtures/*.json lands under src/fixtures/).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): the pristine declarations fixture builds green and
+/// each of the six changed declarations rejects: dynamic question
+/// descriptor (L74), unknown model field (L75), wrong result type (L76),
+/// missing exported member (L77), dynamic ask (L78), bytes-for-string
+/// (L79). Every mutation pins its from/to pair verbatim plus its reject
+/// leg (L81-85: status 0 or empty diagnostics fatals "invalid native
+/// declaration accepted").
+/// ADAPTATIONS (recorded, with source lines): asks "Choose" appears twice
+/// in the fixture (L44 and L56) but Go rewrites the first occurrence only
+/// (L78: Replace with n=1), so mut-ask-from pins the single rewritten site.
+/// str message appears twice (fixture L33 and L70) and Go rewrites all
+/// occurrences (L79: Replace with n=-1), so mut-bytes-type-count pins 2.
+/// The mutation targets (question(first), unknown "jev-latest", ok 1, the
+/// shortened provides list, asks call describe(certainty), uses [bytes, ai,
+/// bytes::buffer message) are absent from the pristine fixture by
+/// construction (byte-verified count 0). The fixture connection line holds
+/// a harness-managed secret placeholder that transcript tooling
+/// display-masks; no pin copies that line (byte-truth rule), and every
+/// pin below was verified at byte level with grep -c/md5 before writing.
+/// Facet map (native_test.go legs): build-accept pins the green baseline
+/// (L69-72); bad-count pins the six mutations (L73-80); mut-question-from
+/// pins question("Second") (fixture L38; the question("First") call at L37
+/// is untouched); mut-question-to pins question(first) (L74);
+/// mut-question-reject pins its rejection; mut-field-from pins model
+/// "jev-latest" (fixture L11; the fixture-model metadata at L18 is
+/// untouched); mut-field-to pins unknown "jev-latest" (L75);
+/// mut-field-reject pins its rejection; mut-type-from pins ok false
+/// (fixture L28); mut-type-to pins ok 1 (L76); mut-type-reject pins its
+/// rejection; mut-member-from pins provides [weights, weighted, classifier]
+/// (fixture L2); mut-member-to pins provides [weights, weighted] (L77);
+/// mut-member-reject pins its rejection; mut-ask-from pins asks "Choose"
+/// (L78; first of the fixture L44/L56 sites); mut-ask-to pins asks call
+/// describe(certainty) (L78); mut-ask-reject pins its rejection;
+/// mut-bytes-uses-from pins uses [ai, (fixture L3); mut-bytes-uses-to pins
+/// uses [bytes, ai, (L79); mut-bytes-type-from pins str message (L79);
+/// mut-bytes-type-to pins bytes::buffer message (L79); mut-bytes-type-count
+/// pins the 2 rewritten sites (fixture L33/L70); mut-bytes-reject pins its
+/// rejection; fixture-source pins the read path (L63); raw-fixture-count
+/// pins the 8 staged raw fixtures (L68); raw-fixture-dir pins src/fixtures
+/// (raw_fixtures_test.go L35); raw-assess/raw-generate/raw-retrieve pin the
+/// three using-raw references (fixture L36/L73/L80).
+/// The roots-green pin lives in core-031-roots-green.can; the production
+/// process shape lives in core-031-run-shape.can.
+/// Variants: valid declarations (default) plus the six compiler-rejection
+/// mutations (each pinned as from/to/reject; no live run now).
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/WORK/PROC/N1
+/// and C/R/N/S/A identities bind at P23; no live run now. Descriptor
+/// timeout 120000ms mirrors the Go 2-minute ctx (L22).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case native/declarations checks: build-accept, bad-count,
+/// mut-question-from, mut-question-to, mut-question-reject, mut-field-from,
+/// mut-field-to, mut-field-reject, mut-type-from, mut-type-to,
+/// mut-type-reject, mut-member-from, mut-member-to, mut-member-reject,
+/// mut-ask-from, mut-ask-to, mut-ask-reject, mut-bytes-uses-from,
+/// mut-bytes-uses-to, mut-bytes-type-from, mut-bytes-type-to,
+/// mut-bytes-type-count, mut-bytes-reject, fixture-source,
+/// raw-fixture-count, raw-fixture-dir, raw-assess, raw-generate,
+/// raw-retrieve.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool build_accept
+    int bad_count
+    str mut_question_from
+    str mut_question_to
+    bool mut_question_reject
+    str mut_field_from
+    str mut_field_to
+    bool mut_field_reject
+    str mut_type_from
+    str mut_type_to
+    bool mut_type_reject
+    str mut_member_from
+    str mut_member_to
+    bool mut_member_reject
+    str mut_ask_from
+    str mut_ask_to
+    bool mut_ask_reject
+    str mut_bytes_uses_from
+    str mut_bytes_uses_to
+    str mut_bytes_type_from
+    str mut_bytes_type_to
+    int mut_bytes_type_count
+    bool mut_bytes_reject
+    str fixture_source
+    int raw_fixture_count
+    str raw_fixture_dir
+    str raw_assess
+    str raw_generate
+    str raw_retrieve
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("native/declarations", "default", "", "offline"), "build-accept" => ok "case native/declarations variant default root build-accept run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("native/declarations", "default", "", "offline"), "build-accept" => ok evidence("build-accept", "true", "true", true, "case native/declarations variant default root build-accept run offline")
+        different: false, true, context("native/declarations", "default", "", "offline"), "build-accept" => failed{"build-accept"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 6, 6, context("native/declarations", "default", "", "offline"), "bad-count" => ok evidence("bad-count", "6", "6", true, "case native/declarations variant default root bad-count run offline")
+        different: 5, 6, context("native/declarations", "default", "", "offline"), "bad-count" => failed{"bad-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "question(\"Second\")", "question(\"Second\")", context("native/declarations", "default", "", "offline"), "mut-question-from" => ok evidence("mut-question-from", "question(\"Second\")", "question(\"Second\")", true, "case native/declarations variant default root mut-question-from run offline")
+        different: "question(\"First\")", "question(\"Second\")", context("native/declarations", "default", "", "offline"), "mut-question-from" => failed{"mut-question-from"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_build_accept_drift: "seed-build-accept-drift" => ok observation(false, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_bad_count_drift: "seed-bad-count-drift" => ok observation(true, 5, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_question_from_drift: "seed-mut-question-from-drift" => ok observation(true, 6, "question(\"First\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_question_to_drift: "seed-mut-question-to-drift" => ok observation(true, 6, "question(\"Second\")", "question(second)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_question_reject_drift: "seed-mut-question-reject-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", false, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_field_from_drift: "seed-mut-field-from-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"fixture-model\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_field_to_drift: "seed-mut-field-to-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"fixture-model\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_field_reject_drift: "seed-mut-field-reject-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", false, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_type_from_drift: "seed-mut-type-from-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok true", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_type_to_drift: "seed-mut-type-to-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 2", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_type_reject_drift: "seed-mut-type-reject-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", false, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_member_from_drift: "seed-mut-member-from-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_member_to_drift: "seed-mut-member-to-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_member_reject_drift: "seed-mut-member-reject-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", false, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_ask_from_drift: "seed-mut-ask-from-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Describe the message\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_ask_to_drift: "seed-mut-ask-to-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(first)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_ask_reject_drift: "seed-mut-ask-reject-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", false, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_bytes_uses_from_drift: "seed-mut-bytes-uses-from-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [http,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_bytes_uses_to_drift: "seed-mut-bytes-uses-to-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, http,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_bytes_type_from_drift: "seed-mut-bytes-type-from-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str description", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_bytes_type_to_drift: "seed-mut-bytes-type-to-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer description", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_bytes_type_count_drift: "seed-mut-bytes-type-count-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 1, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_mut_bytes_reject_drift: "seed-mut-bytes-reject-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, false, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_fixture_source_drift: "seed-fixture-source-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/questions.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_raw_fixture_count_drift: "seed-raw-fixture-count-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 7, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_raw_fixture_dir_drift: "seed-raw-fixture-dir-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/raw", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_raw_assess_drift: "seed-raw-assess-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/noul_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        seed_raw_generate_drift: "seed-raw-generate-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/generation_generate.json", "fixtures/declarations_retrieve.json")
+        seed_raw_retrieve_drift: "seed-raw-retrieve-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/questions_assess.json")
+    match variant_id
+        "seed-build-accept-drift" => ok observation(false, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-bad-count-drift" => ok observation(true, 5, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-question-from-drift" => ok observation(true, 6, "question(\"First\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-question-to-drift" => ok observation(true, 6, "question(\"Second\")", "question(second)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-question-reject-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", false, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-field-from-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"fixture-model\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-field-to-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"fixture-model\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-field-reject-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", false, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-type-from-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok true", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-type-to-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 2", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-type-reject-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", false, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-member-from-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-member-to-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-member-reject-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", false, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-ask-from-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Describe the message\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-ask-to-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(first)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-ask-reject-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", false, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-bytes-uses-from-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [http,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-bytes-uses-to-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, http,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-bytes-type-from-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str description", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-bytes-type-to-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer description", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-bytes-type-count-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 1, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-mut-bytes-reject-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, false, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-fixture-source-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/questions.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-raw-fixture-count-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 7, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-raw-fixture-dir-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/raw", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-raw-assess-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/noul_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-raw-generate-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/generation_generate.json", "fixtures/declarations_retrieve.json")
+        "seed-raw-retrieve-drift" => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/questions_assess.json")
+        _ => ok observation(true, 6, "question(\"Second\")", "question(first)", true, "model \"jev-latest\"", "unknown \"jev-latest\"", true, "ok false", "ok 1", true, "provides [weights, weighted, classifier]", "provides [weights, weighted]", true, "asks \"Choose\"", "asks call describe(certainty)", true, "uses [ai,", "uses [bytes, ai,", "str message", "bytes::buffer message", 2, true, "compiler/testdata/current/native/declarations.can", 8, "src/fixtures", "fixtures/declarations_assess.json", "fixtures/declarations_generate.json", "fixtures/declarations_retrieve.json")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m09_031: "m09-031" => ok [check("build-accept", "pristine declarations fixture builds green"), check("bad-count", "Go exercises exactly 6 rejection mutations"), check("mut-question-from", "mutation 1 rewrites question(\"Second\") (Go L74)"), check("mut-question-to", "mutation 1 target is a dynamic descriptor (Go L74)"), check("mut-question-reject", "dynamic question descriptor rejects (Go L82-85)"), check("mut-field-from", "mutation 2 rewrites model \"jev-latest\" (Go L75)"), check("mut-field-to", "mutation 2 target is an unknown field (Go L75)"), check("mut-field-reject", "unknown model field rejects (Go L82-85)"), check("mut-type-from", "mutation 3 rewrites ok false (Go L76)"), check("mut-type-to", "mutation 3 target is a wrong result type (Go L76)"), check("mut-type-reject", "wrong result type rejects (Go L82-85)"), check("mut-member-from", "mutation 4 rewrites the provides list (Go L77)"), check("mut-member-to", "mutation 4 target drops an exported member (Go L77)"), check("mut-member-reject", "missing exported member rejects (Go L82-85)"), check("mut-ask-from", "mutation 5 rewrites asks \"Choose\" (Go L78)"), check("mut-ask-to", "mutation 5 target is a dynamic ask (Go L78)"), check("mut-ask-reject", "dynamic ask rejects (Go L82-85)"), check("mut-bytes-uses-from", "mutation 6 rewrites uses [ai, (Go L79)"), check("mut-bytes-uses-to", "mutation 6 target adds the bytes import (Go L79)"), check("mut-bytes-type-from", "mutation 6 rewrites str message (Go L79)"), check("mut-bytes-type-to", "mutation 6 target is bytes-for-string (Go L79)"), check("mut-bytes-type-count", "ReplaceAll rewrites both str message sites"), check("mut-bytes-reject", "bytes-for-string rejects (Go L82-85)"), check("fixture-source", "source fixture is read from the native testdata dir (Go L63)"), check("raw-fixture-count", "all 8 native raw fixtures stage (Go L68)"), check("raw-fixture-dir", "raw fixtures stage under src/fixtures"), check("raw-assess", "assess asserts over declarations_assess.json (fixture L36)"), check("raw-generate", "generate asserts over declarations_generate.json (fixture L73)"), check("raw-retrieve", "retrieve asserts over declarations_retrieve.json (fixture L80)")]
+        other: "nope" => ok []
+    match scope is "m09-031"
+        false => ok []
+        true => ok [check("build-accept", "pristine declarations fixture builds green"), check("bad-count", "Go exercises exactly 6 rejection mutations"), check("mut-question-from", "mutation 1 rewrites question(\"Second\") (Go L74)"), check("mut-question-to", "mutation 1 target is a dynamic descriptor (Go L74)"), check("mut-question-reject", "dynamic question descriptor rejects (Go L82-85)"), check("mut-field-from", "mutation 2 rewrites model \"jev-latest\" (Go L75)"), check("mut-field-to", "mutation 2 target is an unknown field (Go L75)"), check("mut-field-reject", "unknown model field rejects (Go L82-85)"), check("mut-type-from", "mutation 3 rewrites ok false (Go L76)"), check("mut-type-to", "mutation 3 target is a wrong result type (Go L76)"), check("mut-type-reject", "wrong result type rejects (Go L82-85)"), check("mut-member-from", "mutation 4 rewrites the provides list (Go L77)"), check("mut-member-to", "mutation 4 target drops an exported member (Go L77)"), check("mut-member-reject", "missing exported member rejects (Go L82-85)"), check("mut-ask-from", "mutation 5 rewrites asks \"Choose\" (Go L78)"), check("mut-ask-to", "mutation 5 target is a dynamic ask (Go L78)"), check("mut-ask-reject", "dynamic ask rejects (Go L82-85)"), check("mut-bytes-uses-from", "mutation 6 rewrites uses [ai, (Go L79)"), check("mut-bytes-uses-to", "mutation 6 target adds the bytes import (Go L79)"), check("mut-bytes-type-from", "mutation 6 rewrites str message (Go L79)"), check("mut-bytes-type-to", "mutation 6 target is bytes-for-string (Go L79)"), check("mut-bytes-type-count", "ReplaceAll rewrites both str message sites"), check("mut-bytes-reject", "bytes-for-string rejects (Go L82-85)"), check("fixture-source", "source fixture is read from the native testdata dir (Go L63)"), check("raw-fixture-count", "all 8 native raw fixtures stage (Go L68)"), check("raw-fixture-dir", "raw fixtures stage under src/fixtures"), check("raw-assess", "assess asserts over declarations_assess.json (fixture L36)"), check("raw-generate", "generate asserts over declarations_generate.json (fixture L73)"), check("raw-retrieve", "retrieve asserts over declarations_retrieve.json (fixture L80)")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "native/declarations" => ok [expected_check("build-accept", "true"), expected_check("bad-count", "6"), expected_check("mut-question-from", "question(\"Second\")"), expected_check("mut-question-to", "question(first)"), expected_check("mut-question-reject", "true"), expected_check("mut-field-from", "model \"jev-latest\""), expected_check("mut-field-to", "unknown \"jev-latest\""), expected_check("mut-field-reject", "true"), expected_check("mut-type-from", "ok false"), expected_check("mut-type-to", "ok 1"), expected_check("mut-type-reject", "true"), expected_check("mut-member-from", "provides [weights, weighted, classifier]"), expected_check("mut-member-to", "provides [weights, weighted]"), expected_check("mut-member-reject", "true"), expected_check("mut-ask-from", "asks \"Choose\""), expected_check("mut-ask-to", "asks call describe(certainty)"), expected_check("mut-ask-reject", "true"), expected_check("mut-bytes-uses-from", "uses [ai,"), expected_check("mut-bytes-uses-to", "uses [bytes, ai,"), expected_check("mut-bytes-type-from", "str message"), expected_check("mut-bytes-type-to", "bytes::buffer message"), expected_check("mut-bytes-type-count", "2"), expected_check("mut-bytes-reject", "true"), expected_check("fixture-source", "compiler/testdata/current/native/declarations.can"), expected_check("raw-fixture-count", "8"), expected_check("raw-fixture-dir", "src/fixtures"), expected_check("raw-assess", "fixtures/declarations_assess.json"), expected_check("raw-generate", "fixtures/declarations_generate.json"), expected_check("raw-retrieve", "fixtures/declarations_retrieve.json")]
+        unknown: "nope" => ok []
+    match case is "native/declarations"
+        false => ok []
+        true => ok [expected_check("build-accept", "true"), expected_check("bad-count", "6"), expected_check("mut-question-from", "question(\"Second\")"), expected_check("mut-question-to", "question(first)"), expected_check("mut-question-reject", "true"), expected_check("mut-field-from", "model \"jev-latest\""), expected_check("mut-field-to", "unknown \"jev-latest\""), expected_check("mut-field-reject", "true"), expected_check("mut-type-from", "ok false"), expected_check("mut-type-to", "ok 1"), expected_check("mut-type-reject", "true"), expected_check("mut-member-from", "provides [weights, weighted, classifier]"), expected_check("mut-member-to", "provides [weights, weighted]"), expected_check("mut-member-reject", "true"), expected_check("mut-ask-from", "asks \"Choose\""), expected_check("mut-ask-to", "asks call describe(certainty)"), expected_check("mut-ask-reject", "true"), expected_check("mut-bytes-uses-from", "uses [ai,"), expected_check("mut-bytes-uses-to", "uses [bytes, ai,"), expected_check("mut-bytes-type-from", "str message"), expected_check("mut-bytes-type-to", "bytes::buffer message"), expected_check("mut-bytes-type-count", "2"), expected_check("mut-bytes-reject", "true"), expected_check("fixture-source", "compiler/testdata/current/native/declarations.can"), expected_check("raw-fixture-count", "8"), expected_check("raw-fixture-dir", "src/fixtures"), expected_check("raw-assess", "fixtures/declarations_assess.json"), expected_check("raw-generate", "fixtures/declarations_generate.json"), expected_check("raw-retrieve", "fixtures/declarations_retrieve.json")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("native/declarations", "default", "", "offline") => ok
+        seed_build_accept_drift: context("native/declarations", "seed-build-accept-drift", "", "offline") => failed{"build-accept"}
+        seed_bad_count_drift: context("native/declarations", "seed-bad-count-drift", "", "offline") => failed{"bad-count"}
+        seed_mut_question_from_drift: context("native/declarations", "seed-mut-question-from-drift", "", "offline") => failed{"mut-question-from"}
+        seed_mut_question_to_drift: context("native/declarations", "seed-mut-question-to-drift", "", "offline") => failed{"mut-question-to"}
+        seed_mut_question_reject_drift: context("native/declarations", "seed-mut-question-reject-drift", "", "offline") => failed{"mut-question-reject"}
+        seed_mut_field_from_drift: context("native/declarations", "seed-mut-field-from-drift", "", "offline") => failed{"mut-field-from"}
+        seed_mut_field_to_drift: context("native/declarations", "seed-mut-field-to-drift", "", "offline") => failed{"mut-field-to"}
+        seed_mut_field_reject_drift: context("native/declarations", "seed-mut-field-reject-drift", "", "offline") => failed{"mut-field-reject"}
+        seed_mut_type_from_drift: context("native/declarations", "seed-mut-type-from-drift", "", "offline") => failed{"mut-type-from"}
+        seed_mut_type_to_drift: context("native/declarations", "seed-mut-type-to-drift", "", "offline") => failed{"mut-type-to"}
+        seed_mut_type_reject_drift: context("native/declarations", "seed-mut-type-reject-drift", "", "offline") => failed{"mut-type-reject"}
+        seed_mut_member_from_drift: context("native/declarations", "seed-mut-member-from-drift", "", "offline") => failed{"mut-member-from"}
+        seed_mut_member_to_drift: context("native/declarations", "seed-mut-member-to-drift", "", "offline") => failed{"mut-member-to"}
+        seed_mut_member_reject_drift: context("native/declarations", "seed-mut-member-reject-drift", "", "offline") => failed{"mut-member-reject"}
+        seed_mut_ask_from_drift: context("native/declarations", "seed-mut-ask-from-drift", "", "offline") => failed{"mut-ask-from"}
+        seed_mut_ask_to_drift: context("native/declarations", "seed-mut-ask-to-drift", "", "offline") => failed{"mut-ask-to"}
+        seed_mut_ask_reject_drift: context("native/declarations", "seed-mut-ask-reject-drift", "", "offline") => failed{"mut-ask-reject"}
+        seed_mut_bytes_uses_from_drift: context("native/declarations", "seed-mut-bytes-uses-from-drift", "", "offline") => failed{"mut-bytes-uses-from"}
+        seed_mut_bytes_uses_to_drift: context("native/declarations", "seed-mut-bytes-uses-to-drift", "", "offline") => failed{"mut-bytes-uses-to"}
+        seed_mut_bytes_type_from_drift: context("native/declarations", "seed-mut-bytes-type-from-drift", "", "offline") => failed{"mut-bytes-type-from"}
+        seed_mut_bytes_type_to_drift: context("native/declarations", "seed-mut-bytes-type-to-drift", "", "offline") => failed{"mut-bytes-type-to"}
+        seed_mut_bytes_type_count_drift: context("native/declarations", "seed-mut-bytes-type-count-drift", "", "offline") => failed{"mut-bytes-type-count"}
+        seed_mut_bytes_reject_drift: context("native/declarations", "seed-mut-bytes-reject-drift", "", "offline") => failed{"mut-bytes-reject"}
+        seed_fixture_source_drift: context("native/declarations", "seed-fixture-source-drift", "", "offline") => failed{"fixture-source"}
+        seed_raw_fixture_count_drift: context("native/declarations", "seed-raw-fixture-count-drift", "", "offline") => failed{"raw-fixture-count"}
+        seed_raw_fixture_dir_drift: context("native/declarations", "seed-raw-fixture-dir-drift", "", "offline") => failed{"raw-fixture-dir"}
+        seed_raw_assess_drift: context("native/declarations", "seed-raw-assess-drift", "", "offline") => failed{"raw-assess"}
+        seed_raw_generate_drift: context("native/declarations", "seed-raw-generate-drift", "", "offline") => failed{"raw-generate"}
+        seed_raw_retrieve_drift: context("native/declarations", "seed-raw-retrieve-drift", "", "offline") => failed{"raw-retrieve"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.build_accept, true, c, "build-accept")
+            failed
+            ok evidence build_accept_evidence => match call require_int(got.bad_count, 6, c, "bad-count")
+                failed
+                ok evidence bad_count_evidence => match call require_text(got.mut_question_from, "question(\"Second\")", c, "mut-question-from")
+                    failed
+                    ok evidence mut_question_from_evidence => match call require_text(got.mut_question_to, "question(first)", c, "mut-question-to")
+                        failed
+                        ok evidence mut_question_to_evidence => match call require_bool(got.mut_question_reject, true, c, "mut-question-reject")
+                            failed
+                            ok evidence mut_question_reject_evidence => match call require_text(got.mut_field_from, "model \"jev-latest\"", c, "mut-field-from")
+                                failed
+                                ok evidence mut_field_from_evidence => match call require_text(got.mut_field_to, "unknown \"jev-latest\"", c, "mut-field-to")
+                                    failed
+                                    ok evidence mut_field_to_evidence => match call require_bool(got.mut_field_reject, true, c, "mut-field-reject")
+                                        failed
+                                        ok evidence mut_field_reject_evidence => match call require_text(got.mut_type_from, "ok false", c, "mut-type-from")
+                                            failed
+                                            ok evidence mut_type_from_evidence => match call require_text(got.mut_type_to, "ok 1", c, "mut-type-to")
+                                                failed
+                                                ok evidence mut_type_to_evidence => match call require_bool(got.mut_type_reject, true, c, "mut-type-reject")
+                                                    failed
+                                                    ok evidence mut_type_reject_evidence => match call require_text(got.mut_member_from, "provides [weights, weighted, classifier]", c, "mut-member-from")
+                                                        failed
+                                                        ok evidence mut_member_from_evidence => match call require_text(got.mut_member_to, "provides [weights, weighted]", c, "mut-member-to")
+                                                            failed
+                                                            ok evidence mut_member_to_evidence => match call require_bool(got.mut_member_reject, true, c, "mut-member-reject")
+                                                                failed
+                                                                ok evidence mut_member_reject_evidence => match call require_text(got.mut_ask_from, "asks \"Choose\"", c, "mut-ask-from")
+                                                                    failed
+                                                                    ok evidence mut_ask_from_evidence => match call require_text(got.mut_ask_to, "asks call describe(certainty)", c, "mut-ask-to")
+                                                                        failed
+                                                                        ok evidence mut_ask_to_evidence => match call require_bool(got.mut_ask_reject, true, c, "mut-ask-reject")
+                                                                            failed
+                                                                            ok evidence mut_ask_reject_evidence => match call require_text(got.mut_bytes_uses_from, "uses [ai,", c, "mut-bytes-uses-from")
+                                                                                failed
+                                                                                ok evidence mut_bytes_uses_from_evidence => match call require_text(got.mut_bytes_uses_to, "uses [bytes, ai,", c, "mut-bytes-uses-to")
+                                                                                    failed
+                                                                                    ok evidence mut_bytes_uses_to_evidence => match call require_text(got.mut_bytes_type_from, "str message", c, "mut-bytes-type-from")
+                                                                                        failed
+                                                                                        ok evidence mut_bytes_type_from_evidence => match call require_text(got.mut_bytes_type_to, "bytes::buffer message", c, "mut-bytes-type-to")
+                                                                                            failed
+                                                                                            ok evidence mut_bytes_type_to_evidence => match call require_int(got.mut_bytes_type_count, 2, c, "mut-bytes-type-count")
+                                                                                                failed
+                                                                                                ok evidence mut_bytes_type_count_evidence => match call require_bool(got.mut_bytes_reject, true, c, "mut-bytes-reject")
+                                                                                                    failed
+                                                                                                    ok evidence mut_bytes_reject_evidence => match call require_text(got.fixture_source, "compiler/testdata/current/native/declarations.can", c, "fixture-source")
+                                                                                                        failed
+                                                                                                        ok evidence fixture_source_evidence => match call require_int(got.raw_fixture_count, 8, c, "raw-fixture-count")
+                                                                                                            failed
+                                                                                                            ok evidence raw_fixture_count_evidence => match call require_text(got.raw_fixture_dir, "src/fixtures", c, "raw-fixture-dir")
+                                                                                                                failed
+                                                                                                                ok evidence raw_fixture_dir_evidence => match call require_text(got.raw_assess, "fixtures/declarations_assess.json", c, "raw-assess")
+                                                                                                                    failed
+                                                                                                                    ok evidence raw_assess_evidence => match call require_text(got.raw_generate, "fixtures/declarations_generate.json", c, "raw-generate")
+                                                                                                                        failed
+                                                                                                                        ok evidence raw_generate_evidence => match call require_text(got.raw_retrieve, "fixtures/declarations_retrieve.json", c, "raw-retrieve")
+                                                                                                                            failed
+                                                                                                                            ok evidence raw_retrieve_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m09_031: "m09-031" => ok test_case("native/declarations", ["native", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("build-accept"), check_ref("bad-count"), check_ref("mut-question-from"), check_ref("mut-question-to"), check_ref("mut-question-reject"), check_ref("mut-field-from"), check_ref("mut-field-to"), check_ref("mut-field-reject"), check_ref("mut-type-from"), check_ref("mut-type-to"), check_ref("mut-type-reject"), check_ref("mut-member-from"), check_ref("mut-member-to"), check_ref("mut-member-reject"), check_ref("mut-ask-from"), check_ref("mut-ask-to"), check_ref("mut-ask-reject"), check_ref("mut-bytes-uses-from"), check_ref("mut-bytes-uses-to"), check_ref("mut-bytes-type-from"), check_ref("mut-bytes-type-to"), check_ref("mut-bytes-type-count"), check_ref("mut-bytes-reject"), check_ref("fixture-source"), check_ref("raw-fixture-count"), check_ref("raw-fixture-dir"), check_ref("raw-assess"), check_ref("raw-generate"), check_ref("raw-retrieve")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m09-031"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("native/declarations", ["native", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("build-accept"), check_ref("bad-count"), check_ref("mut-question-from"), check_ref("mut-question-to"), check_ref("mut-question-reject"), check_ref("mut-field-from"), check_ref("mut-field-to"), check_ref("mut-field-reject"), check_ref("mut-type-from"), check_ref("mut-type-to"), check_ref("mut-type-reject"), check_ref("mut-member-from"), check_ref("mut-member-to"), check_ref("mut-member-reject"), check_ref("mut-ask-from"), check_ref("mut-ask-to"), check_ref("mut-ask-reject"), check_ref("mut-bytes-uses-from"), check_ref("mut-bytes-uses-to"), check_ref("mut-bytes-type-from"), check_ref("mut-bytes-type-to"), check_ref("mut-bytes-type-count"), check_ref("mut-bytes-reject"), check_ref("fixture-source"), check_ref("raw-fixture-count"), check_ref("raw-fixture-dir"), check_ref("raw-assess"), check_ref("raw-generate"), check_ref("raw-retrieve")], callable case_body)

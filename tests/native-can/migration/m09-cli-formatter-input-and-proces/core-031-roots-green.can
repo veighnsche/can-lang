@@ -1,0 +1,263 @@
+package m09core031roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M09 CORE-031 "bundled native declarations: roots green, five assert roots".
+/// Source: tests/integration/native_test.go symbol
+/// TestCurrentBundledNativeDeclarations (L15-87).
+/// Related fixture: compiler/testdata/current/native/declarations.can (read
+/// at L63, staged pristine as src/main.can at L67; the six bad sources at
+/// L73-80 apply to later legs only, never the green baseline; the 8 native
+/// raw fixtures stage at L68).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): static green-baseline inventory of the staged
+/// declarations project: build-green with a passing report carrying exactly
+/// 5 roots, grounded per declaration in declarations.can (question 0,
+/// assess 1, weighted 0, arms 0, variadic_weighted 0, describe 1, generate
+/// 1, retrieve 1, main 1).
+/// ADAPTATION (recorded, with source lines): the Go test runs canlc build,
+/// not canlc assert (L69: run("build"); L70: status 0 and empty diagnostics
+/// or the test fatals "native frontend"), so no assert report exists to
+/// observe; assert-green/report-passed record the static green baseline for
+/// P23 qualification, and root-count plus the per-declaration *-roots pins
+/// record the assert inventory the fixture would report (per the CORE-014
+/// seal_size precedent and declaration.Assertions roots: asks branches and
+/// plain records without asserts blocks contribute 0, matching the CORE-022
+/// select and CORE-029 likelihood precedents). No execution is claimed here
+/// (accept_after P23 unmet).
+/// Facet map (native_test.go legs plus fixture arms): assert-green pins the
+/// green baseline (L69-72: build exit 0 with empty diagnostics);
+/// report-passed pins the passing report on the pristine fixture;
+/// root-count pins the five roots (fixture asserts blocks: assess L35-36,
+/// describe L64, generate L72-73, retrieve L79-80, main L90);
+/// fixture-name grounds the pins in the staged path (L63: declarations.can
+/// source; L67: src/main.can); question-roots pins question (fixture L20-28:
+/// asks branches only, no asserts block, 0 roots); assess-roots pins assess
+/// (fixture L30-39: defaults with the raw declarations_assess.json fixture,
+/// 1 root); weights-roots pins weighted (fixture L41-46: asks branches
+/// only, no asserts block, 0 roots); arms-roots pins arms (fixture L48-50:
+/// plain record, no asserts block, 0 roots); variadic-roots pins
+/// variadic_weighted (fixture L52-57: asks branches only, no asserts block,
+/// 0 roots); describe-roots pins describe (fixture L59-65: sample, 1 root);
+/// generate-roots pins generate (fixture L67-74: drafted with the raw
+/// declarations_generate.json fixture, 1 root); retrieve-roots pins
+/// retrieve (fixture L76-83: fetched with the raw
+/// declarations_retrieve.json fixture, 1 root); main-roots pins main
+/// (fixture L85-91: empty, 1 root).
+/// Declaration build-accept, the six rejection mutations and the raw
+/// fixture staging live in core-031-native-semantics.can; the production
+/// process shape lives in core-031-run-shape.can.
+/// Variants: none in this file (default only); the six mutations live in
+/// the native-semantics file.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/WORK/PROC/N1
+/// and C/R/N/S/A identities bind at P23; no live run now. Descriptor
+/// timeout 120000ms mirrors the Go 2-minute ctx (L22).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case native/declarations-roots checks: assert-green, report-passed,
+/// root-count, fixture-name, question-roots, assess-roots, weights-roots,
+/// arms-roots, variadic-roots, describe-roots, generate-roots,
+/// retrieve-roots, main-roots.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int root_count
+    str fixture_name
+    int question_roots
+    int assess_roots
+    int weights_roots
+    int arms_roots
+    int variadic_roots
+    int describe_roots
+    int generate_roots
+    int retrieve_roots
+    int main_roots
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("native/declarations-roots", "default", "", "offline"), "assert-green" => ok "case native/declarations-roots variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("native/declarations-roots", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case native/declarations-roots variant default root assert-green run offline")
+        different: false, true, context("native/declarations-roots", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 5, 5, context("native/declarations-roots", "default", "", "offline"), "root-count" => ok evidence("root-count", "5", "5", true, "case native/declarations-roots variant default root root-count run offline")
+        different: 4, 5, context("native/declarations-roots", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "src/main.can", "src/main.can", context("native/declarations-roots", "default", "", "offline"), "fixture-name" => ok evidence("fixture-name", "src/main.can", "src/main.can", true, "case native/declarations-roots variant default root fixture-name run offline")
+        different: "src/other.can", "src/main.can", context("native/declarations-roots", "default", "", "offline"), "fixture-name" => failed{"fixture-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 5, "src/main.can", 0, 1, 0, 0, 0, 1, 1, 1, 1)
+        seed_assert_green_drift: "seed-assert-green-drift" => ok observation(false, true, 5, "src/main.can", 0, 1, 0, 0, 0, 1, 1, 1, 1)
+        seed_report_passed_drift: "seed-report-passed-drift" => ok observation(true, false, 5, "src/main.can", 0, 1, 0, 0, 0, 1, 1, 1, 1)
+        seed_root_count_drift: "seed-root-count-drift" => ok observation(true, true, 4, "src/main.can", 0, 1, 0, 0, 0, 1, 1, 1, 1)
+        seed_fixture_name_drift: "seed-fixture-name-drift" => ok observation(true, true, 5, "src/other.can", 0, 1, 0, 0, 0, 1, 1, 1, 1)
+        seed_question_roots_phantom: "seed-question-roots-phantom" => ok observation(true, true, 5, "src/main.can", 1, 1, 0, 0, 0, 1, 1, 1, 1)
+        seed_assess_roots_drift: "seed-assess-roots-drift" => ok observation(true, true, 5, "src/main.can", 0, 0, 0, 0, 0, 1, 1, 1, 1)
+        seed_weights_roots_phantom: "seed-weights-roots-phantom" => ok observation(true, true, 5, "src/main.can", 0, 1, 1, 0, 0, 1, 1, 1, 1)
+        seed_arms_roots_phantom: "seed-arms-roots-phantom" => ok observation(true, true, 5, "src/main.can", 0, 1, 0, 1, 0, 1, 1, 1, 1)
+        seed_variadic_roots_phantom: "seed-variadic-roots-phantom" => ok observation(true, true, 5, "src/main.can", 0, 1, 0, 0, 1, 1, 1, 1, 1)
+        seed_describe_roots_drift: "seed-describe-roots-drift" => ok observation(true, true, 5, "src/main.can", 0, 1, 0, 0, 0, 0, 1, 1, 1)
+        seed_generate_roots_drift: "seed-generate-roots-drift" => ok observation(true, true, 5, "src/main.can", 0, 1, 0, 0, 0, 1, 0, 1, 1)
+        seed_retrieve_roots_drift: "seed-retrieve-roots-drift" => ok observation(true, true, 5, "src/main.can", 0, 1, 0, 0, 0, 1, 1, 0, 1)
+        seed_main_roots_drift: "seed-main-roots-drift" => ok observation(true, true, 5, "src/main.can", 0, 1, 0, 0, 0, 1, 1, 1, 0)
+    match variant_id
+        "seed-assert-green-drift" => ok observation(false, true, 5, "src/main.can", 0, 1, 0, 0, 0, 1, 1, 1, 1)
+        "seed-report-passed-drift" => ok observation(true, false, 5, "src/main.can", 0, 1, 0, 0, 0, 1, 1, 1, 1)
+        "seed-root-count-drift" => ok observation(true, true, 4, "src/main.can", 0, 1, 0, 0, 0, 1, 1, 1, 1)
+        "seed-fixture-name-drift" => ok observation(true, true, 5, "src/other.can", 0, 1, 0, 0, 0, 1, 1, 1, 1)
+        "seed-question-roots-phantom" => ok observation(true, true, 5, "src/main.can", 1, 1, 0, 0, 0, 1, 1, 1, 1)
+        "seed-assess-roots-drift" => ok observation(true, true, 5, "src/main.can", 0, 0, 0, 0, 0, 1, 1, 1, 1)
+        "seed-weights-roots-phantom" => ok observation(true, true, 5, "src/main.can", 0, 1, 1, 0, 0, 1, 1, 1, 1)
+        "seed-arms-roots-phantom" => ok observation(true, true, 5, "src/main.can", 0, 1, 0, 1, 0, 1, 1, 1, 1)
+        "seed-variadic-roots-phantom" => ok observation(true, true, 5, "src/main.can", 0, 1, 0, 0, 1, 1, 1, 1, 1)
+        "seed-describe-roots-drift" => ok observation(true, true, 5, "src/main.can", 0, 1, 0, 0, 0, 0, 1, 1, 1)
+        "seed-generate-roots-drift" => ok observation(true, true, 5, "src/main.can", 0, 1, 0, 0, 0, 1, 0, 1, 1)
+        "seed-retrieve-roots-drift" => ok observation(true, true, 5, "src/main.can", 0, 1, 0, 0, 0, 1, 1, 0, 1)
+        "seed-main-roots-drift" => ok observation(true, true, 5, "src/main.can", 0, 1, 0, 0, 0, 1, 1, 1, 0)
+        _ => ok observation(true, true, 5, "src/main.can", 0, 1, 0, 0, 0, 1, 1, 1, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m09_031: "m09-031" => ok [check("assert-green", "baseline declarations project builds green (exit 0, empty diagnostics)"), check("report-passed", "build report passes on the pristine fixture"), check("root-count", "fixture carries exactly 5 assert roots"), check("fixture-name", "staged path is src/main.can"), check("question-roots", "question contributes 0 roots (asks branches only, no asserts block)"), check("assess-roots", "assess contributes 1 root (defaults)"), check("weights-roots", "weighted contributes 0 roots (asks branches only, no asserts block)"), check("arms-roots", "arms contributes 0 roots (plain record, no asserts block)"), check("variadic-roots", "variadic_weighted contributes 0 roots (asks branches only, no asserts block)"), check("describe-roots", "describe contributes 1 root (sample)"), check("generate-roots", "generate contributes 1 root (drafted)"), check("retrieve-roots", "retrieve contributes 1 root (fetched)"), check("main-roots", "main contributes 1 root (empty)")]
+        other: "nope" => ok []
+    match scope is "m09-031"
+        false => ok []
+        true => ok [check("assert-green", "baseline declarations project builds green (exit 0, empty diagnostics)"), check("report-passed", "build report passes on the pristine fixture"), check("root-count", "fixture carries exactly 5 assert roots"), check("fixture-name", "staged path is src/main.can"), check("question-roots", "question contributes 0 roots (asks branches only, no asserts block)"), check("assess-roots", "assess contributes 1 root (defaults)"), check("weights-roots", "weighted contributes 0 roots (asks branches only, no asserts block)"), check("arms-roots", "arms contributes 0 roots (plain record, no asserts block)"), check("variadic-roots", "variadic_weighted contributes 0 roots (asks branches only, no asserts block)"), check("describe-roots", "describe contributes 1 root (sample)"), check("generate-roots", "generate contributes 1 root (drafted)"), check("retrieve-roots", "retrieve contributes 1 root (fetched)"), check("main-roots", "main contributes 1 root (empty)")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "native/declarations-roots" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "5"), expected_check("fixture-name", "src/main.can"), expected_check("question-roots", "0"), expected_check("assess-roots", "1"), expected_check("weights-roots", "0"), expected_check("arms-roots", "0"), expected_check("variadic-roots", "0"), expected_check("describe-roots", "1"), expected_check("generate-roots", "1"), expected_check("retrieve-roots", "1"), expected_check("main-roots", "1")]
+        unknown: "nope" => ok []
+    match case is "native/declarations-roots"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "5"), expected_check("fixture-name", "src/main.can"), expected_check("question-roots", "0"), expected_check("assess-roots", "1"), expected_check("weights-roots", "0"), expected_check("arms-roots", "0"), expected_check("variadic-roots", "0"), expected_check("describe-roots", "1"), expected_check("generate-roots", "1"), expected_check("retrieve-roots", "1"), expected_check("main-roots", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("native/declarations-roots", "default", "", "offline") => ok
+        seed_assert_green_drift: context("native/declarations-roots", "seed-assert-green-drift", "", "offline") => failed{"assert-green"}
+        seed_report_passed_drift: context("native/declarations-roots", "seed-report-passed-drift", "", "offline") => failed{"report-passed"}
+        seed_root_count_drift: context("native/declarations-roots", "seed-root-count-drift", "", "offline") => failed{"root-count"}
+        seed_fixture_name_drift: context("native/declarations-roots", "seed-fixture-name-drift", "", "offline") => failed{"fixture-name"}
+        seed_question_roots_phantom: context("native/declarations-roots", "seed-question-roots-phantom", "", "offline") => failed{"question-roots"}
+        seed_assess_roots_drift: context("native/declarations-roots", "seed-assess-roots-drift", "", "offline") => failed{"assess-roots"}
+        seed_weights_roots_phantom: context("native/declarations-roots", "seed-weights-roots-phantom", "", "offline") => failed{"weights-roots"}
+        seed_arms_roots_phantom: context("native/declarations-roots", "seed-arms-roots-phantom", "", "offline") => failed{"arms-roots"}
+        seed_variadic_roots_phantom: context("native/declarations-roots", "seed-variadic-roots-phantom", "", "offline") => failed{"variadic-roots"}
+        seed_describe_roots_drift: context("native/declarations-roots", "seed-describe-roots-drift", "", "offline") => failed{"describe-roots"}
+        seed_generate_roots_drift: context("native/declarations-roots", "seed-generate-roots-drift", "", "offline") => failed{"generate-roots"}
+        seed_retrieve_roots_drift: context("native/declarations-roots", "seed-retrieve-roots-drift", "", "offline") => failed{"retrieve-roots"}
+        seed_main_roots_drift: context("native/declarations-roots", "seed-main-roots-drift", "", "offline") => failed{"main-roots"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence assert_green_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence report_passed_evidence => match call require_int(got.root_count, 5, c, "root-count")
+                    failed
+                    ok evidence root_count_evidence => match call require_text(got.fixture_name, "src/main.can", c, "fixture-name")
+                        failed
+                        ok evidence fixture_name_evidence => match call require_int(got.question_roots, 0, c, "question-roots")
+                            failed
+                            ok evidence question_roots_evidence => match call require_int(got.assess_roots, 1, c, "assess-roots")
+                                failed
+                                ok evidence assess_roots_evidence => match call require_int(got.weights_roots, 0, c, "weights-roots")
+                                    failed
+                                    ok evidence weights_roots_evidence => match call require_int(got.arms_roots, 0, c, "arms-roots")
+                                        failed
+                                        ok evidence arms_roots_evidence => match call require_int(got.variadic_roots, 0, c, "variadic-roots")
+                                            failed
+                                            ok evidence variadic_roots_evidence => match call require_int(got.describe_roots, 1, c, "describe-roots")
+                                                failed
+                                                ok evidence describe_roots_evidence => match call require_int(got.generate_roots, 1, c, "generate-roots")
+                                                    failed
+                                                    ok evidence generate_roots_evidence => match call require_int(got.retrieve_roots, 1, c, "retrieve-roots")
+                                                        failed
+                                                        ok evidence retrieve_roots_evidence => match call require_int(got.main_roots, 1, c, "main-roots")
+                                                            failed
+                                                            ok evidence main_roots_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m09_031: "m09-031" => ok test_case("native/declarations-roots", ["native", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("question-roots"), check_ref("assess-roots"), check_ref("weights-roots"), check_ref("arms-roots"), check_ref("variadic-roots"), check_ref("describe-roots"), check_ref("generate-roots"), check_ref("retrieve-roots"), check_ref("main-roots")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m09-031"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("native/declarations-roots", ["native", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("question-roots"), check_ref("assess-roots"), check_ref("weights-roots"), check_ref("arms-roots"), check_ref("variadic-roots"), check_ref("describe-roots"), check_ref("generate-roots"), check_ref("retrieve-roots"), check_ref("main-roots")], callable case_body)

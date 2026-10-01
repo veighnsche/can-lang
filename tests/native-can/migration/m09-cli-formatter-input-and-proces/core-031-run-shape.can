@@ -1,0 +1,246 @@
+package m09core031run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M09 CORE-031 "bundled native declarations: run shape, build/reject split".
+/// Source: tests/integration/native_test.go symbol
+/// TestCurrentBundledNativeDeclarations (L15-87).
+/// Related fixture: compiler/testdata/current/native/declarations.can
+/// (staged as src/main.can at L67, rebuilt mutated at L81-82).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): production process shape of the native declaration
+/// checks. The green build exits 0 with empty diagnostics (L70); each of
+/// the six mutated rebuilds exits nonzero with nonempty diagnostics (L83).
+/// ADAPTATIONS (recorded, with source lines): the build stdout is captured
+/// (L51/L69) but never asserted (L70-72 check status and diagnostics only),
+/// and the reject-leg stdout is likewise unchecked (L82), so no
+/// build-stdout or reject-stdout check is authored here (silent where Go is
+/// silent, per the accepted CORE-014/019/040 precedent: pin verbatim only
+/// what Go pins). HOME=cmd.Dir (L50), cmd.Dir=t.TempDir() (L49) and the
+/// bundle prefix joined at L46 are temp-scoped, so no HOME/workdir/bundle
+/// check is authored; canlc-bin pins the stable bin/canlc suffix only.
+/// Command "build" (L69/L82), the sandbox profile (L46), the sandbox binary
+/// (L48), the cleared PATH (L50) and the staged project files (L42-43) are
+/// pinned verbatim.
+/// The roots-green pin lives in core-031-roots-green.can; declaration
+/// build-accept and the six mutations live in core-031-native-semantics.can.
+/// Variants: green path (pristine fixture build) plus the six reject legs
+/// (each mutated source rebuilds and fails).
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/WORK/PROC/N1
+/// and C/R/N/S/A identities bind at P23; no live run now. Descriptor
+/// timeout 120000ms mirrors the Go 2-minute ctx (L22).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case native/declarations-run checks: build-exit, build-diag-empty,
+/// reject-count, reject-exit-nonzero, reject-diag-nonempty, sandbox-profile,
+/// sandbox-binary, offline-path, project-manifest, errors-registry,
+/// command-build, canlc-bin.
+/// Facet map (native_test.go legs): build-exit pins exit 0 on the pristine
+/// build (L70); build-diag-empty pins empty diagnostics there (L70);
+/// reject-count pins the six mutated rebuilds (L73); reject-exit-nonzero
+/// pins nonzero exit on every reject leg (L83: status 0 fatals);
+/// reject-diag-nonempty pins nonempty diagnostics there (L83: empty
+/// diagnostics fatals); sandbox-profile pins the invocation profile (L46:
+/// the deny-network profile verbatim); sandbox-binary pins
+/// /usr/bin/sandbox-exec (L48); offline-path pins the cleared environment
+/// (L50: "PATH=/nonexistent" verbatim); project-manifest pins the staged
+/// manifest (L42 verbatim); errors-registry pins the staged registry (L43
+/// verbatim); command-build pins the build command (L69/L82: run("build"));
+/// canlc-bin pins the tool suffix (L46: bin/canlc under the temp bundle).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int build_exit
+    bool build_diag_empty
+    int reject_count
+    bool reject_exit_nonzero
+    bool reject_diag_nonempty
+    str sandbox_profile
+    str sandbox_binary
+    str offline_path
+    str project_manifest
+    str errors_registry
+    str command_build
+    str canlc_bin
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("native/declarations-run", "default", "", "offline"), "build-exit" => ok "case native/declarations-run variant default root build-exit run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("native/declarations-run", "default", "", "offline"), "build-diag-empty" => ok evidence("build-diag-empty", "true", "true", true, "case native/declarations-run variant default root build-diag-empty run offline")
+        different: false, true, context("native/declarations-run", "default", "", "offline"), "build-diag-empty" => failed{"build-diag-empty"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("native/declarations-run", "default", "", "offline"), "build-exit" => ok evidence("build-exit", "0", "0", true, "case native/declarations-run variant default root build-exit run offline")
+        different: 1, 0, context("native/declarations-run", "default", "", "offline"), "build-exit" => failed{"build-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "(version 1)(allow default)(deny network*)", "(version 1)(allow default)(deny network*)", context("native/declarations-run", "default", "", "offline"), "sandbox-profile" => ok evidence("sandbox-profile", "(version 1)(allow default)(deny network*)", "(version 1)(allow default)(deny network*)", true, "case native/declarations-run variant default root sandbox-profile run offline")
+        different: "(version 1)(allow default)", "(version 1)(allow default)(deny network*)", context("native/declarations-run", "default", "", "offline"), "sandbox-profile" => failed{"sandbox-profile"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(0, true, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        seed_build_exit_drift: "seed-build-exit-drift" => ok observation(1, true, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        seed_build_diag_empty_drift: "seed-build-diag-empty-drift" => ok observation(0, false, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        seed_reject_count_drift: "seed-reject-count-drift" => ok observation(0, true, 5, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        seed_reject_exit_nonzero_drift: "seed-reject-exit-nonzero-drift" => ok observation(0, true, 6, false, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        seed_reject_diag_nonempty_drift: "seed-reject-diag-nonempty-drift" => ok observation(0, true, 6, true, false, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        seed_sandbox_profile_drift: "seed-sandbox-profile-drift" => ok observation(0, true, 6, true, true, "(version 1)(allow default)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        seed_sandbox_binary_drift: "seed-sandbox-binary-drift" => ok observation(0, true, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        seed_offline_path_drift: "seed-offline-path-drift" => ok observation(0, true, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/usr/bin", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        seed_project_manifest_drift: "seed-project-manifest-drift" => ok observation(0, true, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"other.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        seed_errors_registry_drift: "seed-errors-registry-drift" => ok observation(0, true, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[\"x\"]}", "build", "bin/canlc")
+        seed_command_build_drift: "seed-command-build-drift" => ok observation(0, true, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "assert", "bin/canlc")
+        seed_canlc_bin_drift: "seed-canlc-bin-drift" => ok observation(0, true, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/can")
+    match variant_id
+        "seed-build-exit-drift" => ok observation(1, true, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        "seed-build-diag-empty-drift" => ok observation(0, false, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        "seed-reject-count-drift" => ok observation(0, true, 5, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        "seed-reject-exit-nonzero-drift" => ok observation(0, true, 6, false, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        "seed-reject-diag-nonempty-drift" => ok observation(0, true, 6, true, false, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        "seed-sandbox-profile-drift" => ok observation(0, true, 6, true, true, "(version 1)(allow default)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        "seed-sandbox-binary-drift" => ok observation(0, true, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        "seed-offline-path-drift" => ok observation(0, true, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/usr/bin", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        "seed-project-manifest-drift" => ok observation(0, true, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"other.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+        "seed-errors-registry-drift" => ok observation(0, true, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[\"x\"]}", "build", "bin/canlc")
+        "seed-command-build-drift" => ok observation(0, true, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "assert", "bin/canlc")
+        "seed-canlc-bin-drift" => ok observation(0, true, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/can")
+        _ => ok observation(0, true, 6, true, true, "(version 1)(allow default)(deny network*)", "/usr/bin/sandbox-exec", "PATH=/nonexistent", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", "{\"active\":[],\"retired\":[]}", "build", "bin/canlc")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m09_031: "m09-031" => ok [check("build-exit", "build exits 0 on the pristine fixture (Go L70)"), check("build-diag-empty", "build diagnostics are empty on the pristine fixture (Go L70)"), check("reject-count", "six mutated sources each rebuild (Go L73)"), check("reject-exit-nonzero", "every mutated build exits nonzero (Go L83)"), check("reject-diag-nonempty", "every mutated build reports diagnostics (Go L83)"), check("sandbox-profile", "sandbox profile denies network (Go L46)"), check("sandbox-binary", "builds run under sandbox-exec (Go L48)"), check("offline-path", "sandboxed env clears PATH (Go L50)"), check("project-manifest", "staged project manifest (Go L42)"), check("errors-registry", "staged error registry starts empty (Go L43)"), check("command-build", "production command is build (Go L69)"), check("canlc-bin", "tool path suffix under the bundle dir (Go L46)")]
+        other: "nope" => ok []
+    match scope is "m09-031"
+        false => ok []
+        true => ok [check("build-exit", "build exits 0 on the pristine fixture (Go L70)"), check("build-diag-empty", "build diagnostics are empty on the pristine fixture (Go L70)"), check("reject-count", "six mutated sources each rebuild (Go L73)"), check("reject-exit-nonzero", "every mutated build exits nonzero (Go L83)"), check("reject-diag-nonempty", "every mutated build reports diagnostics (Go L83)"), check("sandbox-profile", "sandbox profile denies network (Go L46)"), check("sandbox-binary", "builds run under sandbox-exec (Go L48)"), check("offline-path", "sandboxed env clears PATH (Go L50)"), check("project-manifest", "staged project manifest (Go L42)"), check("errors-registry", "staged error registry starts empty (Go L43)"), check("command-build", "production command is build (Go L69)"), check("canlc-bin", "tool path suffix under the bundle dir (Go L46)")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "native/declarations-run" => ok [expected_check("build-exit", "0"), expected_check("build-diag-empty", "true"), expected_check("reject-count", "6"), expected_check("reject-exit-nonzero", "true"), expected_check("reject-diag-nonempty", "true"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("sandbox-binary", "/usr/bin/sandbox-exec"), expected_check("offline-path", "PATH=/nonexistent"), expected_check("project-manifest", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}"), expected_check("errors-registry", "{\"active\":[],\"retired\":[]}"), expected_check("command-build", "build"), expected_check("canlc-bin", "bin/canlc")]
+        unknown: "nope" => ok []
+    match case is "native/declarations-run"
+        false => ok []
+        true => ok [expected_check("build-exit", "0"), expected_check("build-diag-empty", "true"), expected_check("reject-count", "6"), expected_check("reject-exit-nonzero", "true"), expected_check("reject-diag-nonempty", "true"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("sandbox-binary", "/usr/bin/sandbox-exec"), expected_check("offline-path", "PATH=/nonexistent"), expected_check("project-manifest", "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}"), expected_check("errors-registry", "{\"active\":[],\"retired\":[]}"), expected_check("command-build", "build"), expected_check("canlc-bin", "bin/canlc")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("native/declarations-run", "default", "", "offline") => ok
+        seed_build_exit_drift: context("native/declarations-run", "seed-build-exit-drift", "", "offline") => failed{"build-exit"}
+        seed_build_diag_empty_drift: context("native/declarations-run", "seed-build-diag-empty-drift", "", "offline") => failed{"build-diag-empty"}
+        seed_reject_count_drift: context("native/declarations-run", "seed-reject-count-drift", "", "offline") => failed{"reject-count"}
+        seed_reject_exit_nonzero_drift: context("native/declarations-run", "seed-reject-exit-nonzero-drift", "", "offline") => failed{"reject-exit-nonzero"}
+        seed_reject_diag_nonempty_drift: context("native/declarations-run", "seed-reject-diag-nonempty-drift", "", "offline") => failed{"reject-diag-nonempty"}
+        seed_sandbox_profile_drift: context("native/declarations-run", "seed-sandbox-profile-drift", "", "offline") => failed{"sandbox-profile"}
+        seed_sandbox_binary_drift: context("native/declarations-run", "seed-sandbox-binary-drift", "", "offline") => failed{"sandbox-binary"}
+        seed_offline_path_drift: context("native/declarations-run", "seed-offline-path-drift", "", "offline") => failed{"offline-path"}
+        seed_project_manifest_drift: context("native/declarations-run", "seed-project-manifest-drift", "", "offline") => failed{"project-manifest"}
+        seed_errors_registry_drift: context("native/declarations-run", "seed-errors-registry-drift", "", "offline") => failed{"errors-registry"}
+        seed_command_build_drift: context("native/declarations-run", "seed-command-build-drift", "", "offline") => failed{"command-build"}
+        seed_canlc_bin_drift: context("native/declarations-run", "seed-canlc-bin-drift", "", "offline") => failed{"canlc-bin"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.build_exit, 0, c, "build-exit")
+            failed
+            ok evidence build_exit_evidence => match call require_bool(got.build_diag_empty, true, c, "build-diag-empty")
+                failed
+                ok evidence build_diag_empty_evidence => match call require_int(got.reject_count, 6, c, "reject-count")
+                    failed
+                    ok evidence reject_count_evidence => match call require_bool(got.reject_exit_nonzero, true, c, "reject-exit-nonzero")
+                        failed
+                        ok evidence reject_exit_nonzero_evidence => match call require_bool(got.reject_diag_nonempty, true, c, "reject-diag-nonempty")
+                            failed
+                            ok evidence reject_diag_nonempty_evidence => match call require_text(got.sandbox_profile, "(version 1)(allow default)(deny network*)", c, "sandbox-profile")
+                                failed
+                                ok evidence sandbox_profile_evidence => match call require_text(got.sandbox_binary, "/usr/bin/sandbox-exec", c, "sandbox-binary")
+                                    failed
+                                    ok evidence sandbox_binary_evidence => match call require_text(got.offline_path, "PATH=/nonexistent", c, "offline-path")
+                                        failed
+                                        ok evidence offline_path_evidence => match call require_text(got.project_manifest, "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}", c, "project-manifest")
+                                            failed
+                                            ok evidence project_manifest_evidence => match call require_text(got.errors_registry, "{\"active\":[],\"retired\":[]}", c, "errors-registry")
+                                                failed
+                                                ok evidence errors_registry_evidence => match call require_text(got.command_build, "build", c, "command-build")
+                                                    failed
+                                                    ok evidence command_build_evidence => match call require_text(got.canlc_bin, "bin/canlc", c, "canlc-bin")
+                                                        failed
+                                                        ok evidence canlc_bin_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m09_031: "m09-031" => ok test_case("native/declarations-run", ["native", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("build-exit"), check_ref("build-diag-empty"), check_ref("reject-count"), check_ref("reject-exit-nonzero"), check_ref("reject-diag-nonempty"), check_ref("sandbox-profile"), check_ref("sandbox-binary"), check_ref("offline-path"), check_ref("project-manifest"), check_ref("errors-registry"), check_ref("command-build"), check_ref("canlc-bin")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m09-031"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("native/declarations-run", ["native", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("build-exit"), check_ref("build-diag-empty"), check_ref("reject-count"), check_ref("reject-exit-nonzero"), check_ref("reject-diag-nonempty"), check_ref("sandbox-profile"), check_ref("sandbox-binary"), check_ref("offline-path"), check_ref("project-manifest"), check_ref("errors-registry"), check_ref("command-build"), check_ref("canlc-bin")], callable case_body)
