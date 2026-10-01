@@ -1,0 +1,182 @@
+package m28history030failing
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M28 HISTORY-030 "no-retry mutant: exactly eleven two-attempt oracle roots
+/// fail unused-fixture".
+/// Source: tests/failure-conventions/retry_test.go symbol
+/// TestRetryNoRetryMutantFails (lines 45-87: stageProject "retry-negative",
+/// wantFail 11 named roots, one "unused fixture" violation each, every other
+/// root green).
+/// Related fixtures: tests/failure-conventions/retry-negative/ (profiles,
+/// billing, app, mutant retry packages).
+/// Disposition: MIGRATE. The no-retry mutant leg stages the mutant helper
+/// (retry returns the first outcome) so exactly the eleven two-attempt oracle
+/// roots fail with unused-fixture violations while the 24 remaining roots
+/// stay green.
+/// Protects (this file): the failing eleven plus the exact failing-count pin.
+/// Report shape, exit-nonzero and remainder-green live in
+/// history-030-report-provenance.can; the mutant mechanics (two-attempt oracle
+/// shape, no-retry enforcement, fixture consumption) live in
+/// history-030-mutant-mechanism.can.
+/// Variants: eleven named roots, unused fixture. The result-data green leg
+/// (H028), the fixed-bound green leg (H029), the over-attempt mutant and the
+/// add-error legs are sibling M28 rows, not this one.
+/// Environment: CONV_BUNDLE or CAN_BUN_ARCHIVE; requires
+/// conv-bundle-or-can-bun-archive. Logical gates SUITE/DIAG/FAULT and C/R/N/S/A
+/// identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case no-retry/failing-eleven checks: failing-count, billing-fetch-fail,
+/// billing-reraise-fail, profiles-fetch-fail, profiles-traced-fail,
+/// profiles-reraise-fail, profiles-roundtrip-fail.
+/// Root map (retry_test.go:58-70; 3 billing + 8 profiles = 11, each with two
+/// queued when-rows in the retry-negative fixtures):
+/// billing::fetch_quote flaky/down, billing::read_quote refused,
+/// profiles::fetch_profile flaky/down, profiles::fetch_traced
+/// traced_ok/traced_down, profiles::read_profile locked/recover,
+/// profiles::read_traced roundtrip/roundtrip_denied.
+/// Checks group by assert-owning function (H027 precedent: the Go test pins
+/// the count only); every one of the 11 roots is named above and failing
+/// below, each with exactly one "unused fixture" violation.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int failing_count
+    bool billing_fetch_fail
+    bool billing_reraise_fail
+    bool profiles_fetch_fail
+    bool profiles_traced_fail
+    bool profiles_reraise_fail
+    bool profiles_roundtrip_fail
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("no-retry/failing-eleven", "default", "", "offline"), "failing-count" => ok "case no-retry/failing-eleven variant default root failing-count run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("no-retry/failing-eleven", "default", "", "offline"), "billing-fetch-fail" => ok evidence("billing-fetch-fail", "true", "true", true, "case no-retry/failing-eleven variant default root billing-fetch-fail run offline")
+        different: false, true, context("no-retry/failing-eleven", "default", "", "offline"), "billing-fetch-fail" => failed{"billing-fetch-fail"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 11, 11, context("no-retry/failing-eleven", "default", "", "offline"), "failing-count" => ok evidence("failing-count", "11", "11", true, "case no-retry/failing-eleven variant default root failing-count run offline")
+        different: 10, 11, context("no-retry/failing-eleven", "default", "", "offline"), "failing-count" => failed{"failing-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(11, true, true, true, true, true, true)
+        seed_ten_failing: "seed-ten-failing" => ok observation(10, true, true, true, true, true, true)
+        seed_twelve_failing: "seed-twelve-failing" => ok observation(12, true, true, true, true, true, true)
+        seed_billing_fetch_pass: "seed-billing-fetch-pass" => ok observation(11, false, true, true, true, true, true)
+        seed_roundtrip_pass: "seed-roundtrip-pass" => ok observation(11, true, true, true, true, true, false)
+    match variant_id
+        "seed-ten-failing" => ok observation(10, true, true, true, true, true, true)
+        "seed-twelve-failing" => ok observation(12, true, true, true, true, true, true)
+        "seed-billing-fetch-pass" => ok observation(11, false, true, true, true, true, true)
+        "seed-roundtrip-pass" => ok observation(11, true, true, true, true, true, false)
+        _ => ok observation(11, true, true, true, true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m28_030: "m28-030" => ok [check("failing-count", "assert report carries exactly 11 failing roots"), check("billing-fetch-fail", "billing::fetch_quote flaky/down roots fail unused-fixture"), check("billing-reraise-fail", "billing::read_quote refused root fails unused-fixture"), check("profiles-fetch-fail", "profiles::fetch_profile flaky/down roots fail unused-fixture"), check("profiles-traced-fail", "profiles::fetch_traced traced_ok/traced_down roots fail unused-fixture"), check("profiles-reraise-fail", "profiles::read_profile locked/recover roots fail unused-fixture"), check("profiles-roundtrip-fail", "profiles::read_traced roundtrip/roundtrip_denied roots fail unused-fixture")]
+        other: "nope" => ok []
+    match scope is "m28-030"
+        false => ok []
+        true => ok [check("failing-count", "assert report carries exactly 11 failing roots"), check("billing-fetch-fail", "billing::fetch_quote flaky/down roots fail unused-fixture"), check("billing-reraise-fail", "billing::read_quote refused root fails unused-fixture"), check("profiles-fetch-fail", "profiles::fetch_profile flaky/down roots fail unused-fixture"), check("profiles-traced-fail", "profiles::fetch_traced traced_ok/traced_down roots fail unused-fixture"), check("profiles-reraise-fail", "profiles::read_profile locked/recover roots fail unused-fixture"), check("profiles-roundtrip-fail", "profiles::read_traced roundtrip/roundtrip_denied roots fail unused-fixture")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "no-retry/failing-eleven" => ok [expected_check("failing-count", "11"), expected_check("billing-fetch-fail", "true"), expected_check("billing-reraise-fail", "true"), expected_check("profiles-fetch-fail", "true"), expected_check("profiles-traced-fail", "true"), expected_check("profiles-reraise-fail", "true"), expected_check("profiles-roundtrip-fail", "true")]
+        unknown: "nope" => ok []
+    match case is "no-retry/failing-eleven"
+        false => ok []
+        true => ok [expected_check("failing-count", "11"), expected_check("billing-fetch-fail", "true"), expected_check("billing-reraise-fail", "true"), expected_check("profiles-fetch-fail", "true"), expected_check("profiles-traced-fail", "true"), expected_check("profiles-reraise-fail", "true"), expected_check("profiles-roundtrip-fail", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("no-retry/failing-eleven", "default", "", "offline") => ok
+        seed_ten_failing: context("no-retry/failing-eleven", "seed-ten-failing", "", "offline") => failed{"failing-count"}
+        seed_twelve_failing: context("no-retry/failing-eleven", "seed-twelve-failing", "", "offline") => failed{"failing-count"}
+        seed_billing_fetch_pass: context("no-retry/failing-eleven", "seed-billing-fetch-pass", "", "offline") => failed{"billing-fetch-fail"}
+        seed_roundtrip_pass: context("no-retry/failing-eleven", "seed-roundtrip-pass", "", "offline") => failed{"profiles-roundtrip-fail"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.failing_count, 11, c, "failing-count")
+            failed
+            ok evidence count_evidence => match call require_bool(got.billing_fetch_fail, true, c, "billing-fetch-fail")
+                failed
+                ok evidence billing_fetch_fail_evidence => match call require_bool(got.billing_reraise_fail, true, c, "billing-reraise-fail")
+                    failed
+                    ok evidence billing_reraise_fail_evidence => match call require_bool(got.profiles_fetch_fail, true, c, "profiles-fetch-fail")
+                        failed
+                        ok evidence profiles_fetch_fail_evidence => match call require_bool(got.profiles_traced_fail, true, c, "profiles-traced-fail")
+                            failed
+                            ok evidence profiles_traced_fail_evidence => match call require_bool(got.profiles_reraise_fail, true, c, "profiles-reraise-fail")
+                                failed
+                                ok evidence profiles_reraise_fail_evidence => match call require_bool(got.profiles_roundtrip_fail, true, c, "profiles-roundtrip-fail")
+                                    failed
+                                    ok evidence profiles_roundtrip_fail_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m28_030: "m28-030" => ok test_case("no-retry/failing-eleven", ["no-retry", "m28"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("failing-count"), check_ref("billing-fetch-fail"), check_ref("billing-reraise-fail"), check_ref("profiles-fetch-fail"), check_ref("profiles-traced-fail"), check_ref("profiles-reraise-fail"), check_ref("profiles-roundtrip-fail")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m28-030"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("no-retry/failing-eleven", ["no-retry", "m28"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("failing-count"), check_ref("billing-fetch-fail"), check_ref("billing-reraise-fail"), check_ref("profiles-fetch-fail"), check_ref("profiles-traced-fail"), check_ref("profiles-reraise-fail"), check_ref("profiles-roundtrip-fail")], callable case_body)

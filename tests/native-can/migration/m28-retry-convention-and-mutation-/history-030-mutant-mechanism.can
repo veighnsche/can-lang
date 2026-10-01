@@ -1,0 +1,193 @@
+package m28history030mechanism
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M28 HISTORY-030 "no-retry mutant: two-attempt oracle shape, no-retry
+/// enforcement, fixture-consumption evidence".
+/// Source: tests/failure-conventions/retry_test.go symbol
+/// TestRetryNoRetryMutantFails (lines 45-48 doc comment: a helper that returns
+/// the first outcome fails exactly the two-attempt roots with unused-fixture
+/// violations).
+/// Related fixtures: tests/failure-conventions/retry-negative/src/retry/
+/// retry.can, tests/failure-conventions/retry-negative/src/profiles/
+/// profiles.can, tests/failure-conventions/retry-negative/src/billing/
+/// billing.can.
+/// Disposition: MIGRATE. The mechanism file pins the static contracts that
+/// make the eleven precise failures meaningful: the mutant helper returns the
+/// first outcome while each oracle root queues two fixture rows.
+/// Protects (this file): every oracle root queues exactly two when-rows
+/// (profiles load_outcome when-block: flaky/down/locked/recover/traced_ok/
+/// traced_down/roundtrip/roundtrip_denied doubled; billing quote_outcome
+/// when-block: flaky/down/refused doubled); the mutant helper returns the
+/// first outcome and ignores remaining (retry.can:35-38) even though
+/// consumers relay bound 2; exactly one attempt is consumed per failing root;
+/// the violation text pins "unused fixture" (retry_test.go:77); the leftover
+/// is the second queued row. Single-row roots (first_try, steady, direct
+/// load/quote rows, helper rows, blast, empty) stay green.
+/// The failing-eleven groups live in history-030-failing-eleven.can; report
+/// shape and remainder-green live in history-030-report-provenance.can.
+/// Variants: eleven named roots, unused fixture. The result-data green leg
+/// (H028), the fixed-bound green leg (H029), the over-attempt mutant and the
+/// add-error legs are sibling M28 rows: this file pins the no-retry mutant
+/// mechanism, not their outcomes.
+/// Environment: CONV_BUNDLE or CAN_BUN_ARCHIVE; requires
+/// conv-bundle-or-can-bun-archive. Logical gates SUITE/DIAG/FAULT and C/R/N/S/A
+/// identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case no-retry/mutant-mechanism checks: two-attempt-shape,
+/// no-retry-enforced, single-attempt, unused-fixture, second-row-leftover.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool two_attempt_queued
+    bool first_outcome_returned
+    int attempts_used
+    str unused_violation
+    bool second_row_leftover
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("no-retry/mutant-mechanism", "default", "", "offline"), "two-attempt-shape" => ok "case no-retry/mutant-mechanism variant default root two-attempt-shape run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("no-retry/mutant-mechanism", "default", "", "offline"), "second-row-leftover" => ok evidence("second-row-leftover", "true", "true", true, "case no-retry/mutant-mechanism variant default root second-row-leftover run offline")
+        different: false, true, context("no-retry/mutant-mechanism", "default", "", "offline"), "second-row-leftover" => failed{"second-row-leftover"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("no-retry/mutant-mechanism", "default", "", "offline"), "single-attempt" => ok evidence("single-attempt", "1", "1", true, "case no-retry/mutant-mechanism variant default root single-attempt run offline")
+        different: 2, 1, context("no-retry/mutant-mechanism", "default", "", "offline"), "single-attempt" => failed{"single-attempt"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "unused fixture", "unused fixture", context("no-retry/mutant-mechanism", "default", "", "offline"), "unused-fixture" => ok evidence("unused-fixture", "unused fixture", "unused fixture", true, "case no-retry/mutant-mechanism variant default root unused-fixture run offline")
+        different: "missing fixture", "unused fixture", context("no-retry/mutant-mechanism", "default", "", "offline"), "unused-fixture" => failed{"unused-fixture"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 1, "unused fixture", true)
+        seed_single_queued: "seed-single-queued" => ok observation(false, true, 1, "unused fixture", true)
+        seed_retries: "seed-retries" => ok observation(true, false, 1, "unused fixture", true)
+        seed_two_attempts: "seed-two-attempts" => ok observation(true, true, 2, "unused fixture", true)
+        seed_wrong_fixture: "seed-wrong-fixture" => ok observation(true, true, 1, "missing fixture", true)
+        seed_fixture_missing: "seed-fixture-missing" => ok observation(true, true, 1, "", true)
+        seed_first_leftover: "seed-first-leftover" => ok observation(true, true, 1, "unused fixture", false)
+    match variant_id
+        "seed-single-queued" => ok observation(false, true, 1, "unused fixture", true)
+        "seed-retries" => ok observation(true, false, 1, "unused fixture", true)
+        "seed-two-attempts" => ok observation(true, true, 2, "unused fixture", true)
+        "seed-wrong-fixture" => ok observation(true, true, 1, "missing fixture", true)
+        "seed-fixture-missing" => ok observation(true, true, 1, "", true)
+        "seed-first-leftover" => ok observation(true, true, 1, "unused fixture", false)
+        _ => ok observation(true, true, 1, "unused fixture", true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m28_030: "m28-030" => ok [check("two-attempt-shape", "each oracle root queues exactly two when-rows"), check("no-retry-enforced", "helper returns the first outcome and ignores remaining"), check("single-attempt", "exactly one attempt consumed per failing root"), check("unused-fixture", "violation text pins unused fixture"), check("second-row-leftover", "the leftover is the second queued row")]
+        other: "nope" => ok []
+    match scope is "m28-030"
+        false => ok []
+        true => ok [check("two-attempt-shape", "each oracle root queues exactly two when-rows"), check("no-retry-enforced", "helper returns the first outcome and ignores remaining"), check("single-attempt", "exactly one attempt consumed per failing root"), check("unused-fixture", "violation text pins unused fixture"), check("second-row-leftover", "the leftover is the second queued row")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "no-retry/mutant-mechanism" => ok [expected_check("two-attempt-shape", "true"), expected_check("no-retry-enforced", "true"), expected_check("single-attempt", "1"), expected_check("unused-fixture", "unused fixture"), expected_check("second-row-leftover", "true")]
+        unknown: "nope" => ok []
+    match case is "no-retry/mutant-mechanism"
+        false => ok []
+        true => ok [expected_check("two-attempt-shape", "true"), expected_check("no-retry-enforced", "true"), expected_check("single-attempt", "1"), expected_check("unused-fixture", "unused fixture"), expected_check("second-row-leftover", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("no-retry/mutant-mechanism", "default", "", "offline") => ok
+        seed_single_queued: context("no-retry/mutant-mechanism", "seed-single-queued", "", "offline") => failed{"two-attempt-shape"}
+        seed_retries: context("no-retry/mutant-mechanism", "seed-retries", "", "offline") => failed{"no-retry-enforced"}
+        seed_two_attempts: context("no-retry/mutant-mechanism", "seed-two-attempts", "", "offline") => failed{"single-attempt"}
+        seed_wrong_fixture: context("no-retry/mutant-mechanism", "seed-wrong-fixture", "", "offline") => failed{"unused-fixture"}
+        seed_fixture_missing: context("no-retry/mutant-mechanism", "seed-fixture-missing", "", "offline") => failed{"unused-fixture"}
+        seed_first_leftover: context("no-retry/mutant-mechanism", "seed-first-leftover", "", "offline") => failed{"second-row-leftover"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.two_attempt_queued, true, c, "two-attempt-shape")
+            failed
+            ok evidence shape_evidence => match call require_bool(got.first_outcome_returned, true, c, "no-retry-enforced")
+                failed
+                ok evidence enforced_evidence => match call require_int(got.attempts_used, 1, c, "single-attempt")
+                    failed
+                    ok evidence attempts_evidence => match call require_text(got.unused_violation, "unused fixture", c, "unused-fixture")
+                        failed
+                        ok evidence fixture_evidence => match call require_bool(got.second_row_leftover, true, c, "second-row-leftover")
+                            failed
+                            ok evidence leftover_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m28_030: "m28-030" => ok test_case("no-retry/mutant-mechanism", ["no-retry", "m28"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("two-attempt-shape"), check_ref("no-retry-enforced"), check_ref("single-attempt"), check_ref("unused-fixture"), check_ref("second-row-leftover")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m28-030"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("no-retry/mutant-mechanism", ["no-retry", "m28"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("two-attempt-shape"), check_ref("no-retry-enforced"), check_ref("single-attempt"), check_ref("unused-fixture"), check_ref("second-row-leftover")], callable case_body)
