@@ -1,0 +1,284 @@
+package m04core012coordination
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M04 CORE-012 "bundled coordination: selection, outcomes, delegation".
+/// Source: tests/integration/coordination_test.go symbol
+/// TestCurrentBundledCoordination (the staged bun leg L29-34) and
+/// runtime/test/coordination.test.ts (every verbatim pin below comes from
+/// its 15 test roots).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): Promise all/allSettled/any/race selection,
+/// ordered outcomes, empty modes, domain/standard failures, owner
+/// retention and native delegation, plus the late/losing-failure,
+/// handler-fault, empty-race and snapshot-identity variants.
+/// The 8-root assert pin lives in core-012-roots-green.can; the run
+/// output/status shape and silent production entry live in
+/// core-012-run-shape.can.
+/// Variants: main fixture outcomes (main.can L110-117 silent guard);
+/// late/losing failures, handler faults, empty race, snapshot identity.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: DELEGATE-009 (runtime/test/coordination.test.ts,
+/// read-only record; 15 declarations; not executed here).
+/// Execution credit: NOT claimed (accept_after P23/QN1/QN2/QN3 unmet).
+/// Case bundled/coordination-selection checks: all-first-rejection,
+/// settled-ordered, settled-handler-stop, any-allfailed-order,
+/// any-consume-late, race-first, empty-modes, aggregate-identity,
+/// first-failure-handling, settled-standard-slot, any-last-success,
+/// handler-faults, snapshot-identity, empty-race-pending, owner-retention,
+/// native-delegation.
+/// Facet map (coordination.test.ts roots): all-first-rejection pins native
+/// all selecting the first rejection (L66: index 1; L70: events [1]; L71:
+/// late-first diagnostic "Error: late first"); settled-ordered pins
+/// allSettled input-order handling (L89: events [0,1,2]; L91: ["A","B","C"]);
+/// settled-handler-stop pins the handler-failure stop (L89: events [0,1];
+/// L92: standard kind); any-allfailed-order pins any retaining original
+/// all-failed outcomes in input order by identity (L103-105);
+/// any-consume-late pins any consuming pre-success failures while keeping
+/// the thenable payload unassimilated (L128: value 7) and retaining the
+/// late diagnostic (L152: "Error: late"); race-first pins race selecting
+/// the first completion (L165-170: winner at index 1, events [1]);
+/// empty-modes pins empty all/settled succeeding with [] and empty any
+/// selecting one empty aggregate (L189/L196: "fallback"; L197: aggregate
+/// once for any, zero otherwise); aggregate-identity pins the typed
+/// aggregate keeping nominal payloads and opaque standard identity (L309:
+/// 4 values by identity; L315: frozen; L314: cause kept);
+/// first-failure-handling pins all/race selecting the first domain or
+/// standard failure (L367/L372: index 1, events [1]; L374: "handled";
+/// L376: race late "Error: late C"); settled-standard-slot pins allSettled
+/// propagating an unhandled standard slot in input order (L394: identity;
+/// L395: events [0,1]); any-last-success pins any succeeding last after
+/// domain and standard failures (L432-435: "C" at index 2, events [2],
+/// zero aggregate calls); handler-faults pins handler failures escaping
+/// without redispatch (L471: all ["each0"], any ["aggregate"]);
+/// snapshot-identity pins map conversion preserving snapshot identity and
+/// minting one outer aggregate occurrence (L494/L511: 3 leaves; L516-517:
+/// occurrence id stable then fresh); empty-race-pending pins empty race
+/// staying pending past the harness deadline (L531: 10ms; L533-534:
+/// deadline observed, completed false); owner-retention pins the losing
+/// participant's captured resource retained until late work finishes
+/// (L547/L562: value 7; L581: ["late use","close"]; L582: closed);
+/// native-delegation pins each mode delegating to its native Promise op
+/// (L618: calls[0] is the mode; owner drain also uses allSettled).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int all_first_index
+    bool settled_ordered
+    bool settled_handler_stop
+    bool any_allfailed_ordered
+    str any_late_diagnostic
+    int race_first_index
+    str empty_any_value
+    int aggregate_values
+    int first_failure_index
+    bool settled_standard_ordered
+    int any_success_index
+    bool handler_faults_escape
+    int snapshot_leaves
+    int empty_race_deadline_ms
+    int owner_value
+    bool native_delegated
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/coordination-selection", "default", "", "offline"), "all-first-rejection" => ok "case bundled/coordination-selection variant default root all-first-rejection run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/coordination-selection", "default", "", "offline"), "settled-ordered" => ok evidence("settled-ordered", "true", "true", true, "case bundled/coordination-selection variant default root settled-ordered run offline")
+        different: false, true, context("bundled/coordination-selection", "default", "", "offline"), "settled-ordered" => failed{"settled-ordered"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("bundled/coordination-selection", "default", "", "offline"), "all-first-rejection" => ok evidence("all-first-rejection", "1", "1", true, "case bundled/coordination-selection variant default root all-first-rejection run offline")
+        different: 0, 1, context("bundled/coordination-selection", "default", "", "offline"), "all-first-rejection" => failed{"all-first-rejection"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "Error: late", "Error: late", context("bundled/coordination-selection", "default", "", "offline"), "any-consume-late" => ok evidence("any-consume-late", "Error: late", "Error: late", true, "case bundled/coordination-selection variant default root any-consume-late run offline")
+        different: "Error: missing", "Error: late", context("bundled/coordination-selection", "default", "", "offline"), "any-consume-late" => failed{"any-consume-late"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 1, true, 2, true, 3, 10, 7, true)
+        seed_all_early: "seed-all-early" => ok observation(0, true, true, true, "Error: late", 1, "fallback", 4, 1, true, 2, true, 3, 10, 7, true)
+        seed_settled_unordered: "seed-settled-unordered" => ok observation(1, false, true, true, "Error: late", 1, "fallback", 4, 1, true, 2, true, 3, 10, 7, true)
+        seed_settled_continues: "seed-settled-continues" => ok observation(1, true, false, true, "Error: late", 1, "fallback", 4, 1, true, 2, true, 3, 10, 7, true)
+        seed_any_unordered: "seed-any-unordered" => ok observation(1, true, true, false, "Error: late", 1, "fallback", 4, 1, true, 2, true, 3, 10, 7, true)
+        seed_any_diagnostic_drift: "seed-any-diagnostic-drift" => ok observation(1, true, true, true, "Error: missing", 1, "fallback", 4, 1, true, 2, true, 3, 10, 7, true)
+        seed_race_late: "seed-race-late" => ok observation(1, true, true, true, "Error: late", 2, "fallback", 4, 1, true, 2, true, 3, 10, 7, true)
+        seed_empty_any_drift: "seed-empty-any-drift" => ok observation(1, true, true, true, "Error: late", 1, "empty", 4, 1, true, 2, true, 3, 10, 7, true)
+        seed_aggregate_short: "seed-aggregate-short" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 3, 1, true, 2, true, 3, 10, 7, true)
+        seed_failure_late: "seed-failure-late" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 0, true, 2, true, 3, 10, 7, true)
+        seed_settled_standard_lost: "seed-settled-standard-lost" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 1, false, 2, true, 3, 10, 7, true)
+        seed_any_early: "seed-any-early" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 1, true, 1, true, 3, 10, 7, true)
+        seed_handler_caught: "seed-handler-caught" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 1, true, 2, false, 3, 10, 7, true)
+        seed_snapshot_short: "seed-snapshot-short" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 1, true, 2, true, 2, 10, 7, true)
+        seed_race_deadline_drift: "seed-race-deadline-drift" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 1, true, 2, true, 3, 0, 7, true)
+        seed_owner_lost: "seed-owner-lost" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 1, true, 2, true, 3, 10, 0, true)
+        seed_native_bypass: "seed-native-bypass" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 1, true, 2, true, 3, 10, 7, false)
+    match variant_id
+        "seed-all-early" => ok observation(0, true, true, true, "Error: late", 1, "fallback", 4, 1, true, 2, true, 3, 10, 7, true)
+        "seed-settled-unordered" => ok observation(1, false, true, true, "Error: late", 1, "fallback", 4, 1, true, 2, true, 3, 10, 7, true)
+        "seed-settled-continues" => ok observation(1, true, false, true, "Error: late", 1, "fallback", 4, 1, true, 2, true, 3, 10, 7, true)
+        "seed-any-unordered" => ok observation(1, true, true, false, "Error: late", 1, "fallback", 4, 1, true, 2, true, 3, 10, 7, true)
+        "seed-any-diagnostic-drift" => ok observation(1, true, true, true, "Error: missing", 1, "fallback", 4, 1, true, 2, true, 3, 10, 7, true)
+        "seed-race-late" => ok observation(1, true, true, true, "Error: late", 2, "fallback", 4, 1, true, 2, true, 3, 10, 7, true)
+        "seed-empty-any-drift" => ok observation(1, true, true, true, "Error: late", 1, "empty", 4, 1, true, 2, true, 3, 10, 7, true)
+        "seed-aggregate-short" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 3, 1, true, 2, true, 3, 10, 7, true)
+        "seed-failure-late" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 0, true, 2, true, 3, 10, 7, true)
+        "seed-settled-standard-lost" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 1, false, 2, true, 3, 10, 7, true)
+        "seed-any-early" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 1, true, 1, true, 3, 10, 7, true)
+        "seed-handler-caught" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 1, true, 2, false, 3, 10, 7, true)
+        "seed-snapshot-short" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 1, true, 2, true, 2, 10, 7, true)
+        "seed-race-deadline-drift" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 1, true, 2, true, 3, 0, 7, true)
+        "seed-owner-lost" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 1, true, 2, true, 3, 10, 0, true)
+        "seed-native-bypass" => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 1, true, 2, true, 3, 10, 7, false)
+        _ => ok observation(1, true, true, true, "Error: late", 1, "fallback", 4, 1, true, 2, true, 3, 10, 7, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m04_012: "m04-012" => ok [check("all-first-rejection", "native all selects the first rejection at index 1"), check("settled-ordered", "allSettled handles all outcomes in input order"), check("settled-handler-stop", "allSettled stops at the first handler failure"), check("any-allfailed-order", "any retains original all-failed outcomes in input order"), check("any-consume-late", "any consumes pre-success failures and retains the late diagnostic"), check("race-first", "race selects the first completion at index 1"), check("empty-modes", "empty all and settled succeed; empty any selects one aggregate"), check("aggregate-identity", "typed aggregate keeps nominal payloads and standard identity"), check("first-failure-handling", "all and race select the first domain or standard failure"), check("settled-standard-slot", "allSettled propagates an unhandled standard slot in order"), check("any-last-success", "any succeeds last without aggregate dispatch"), check("handler-faults", "handler failures escape without redispatch"), check("snapshot-identity", "map conversion preserves snapshot identity with one outer occurrence"), check("empty-race-pending", "empty race stays pending past the harness deadline"), check("owner-retention", "losing participant resource retained until late work finishes"), check("native-delegation", "each mode delegates to its native Promise operation")]
+        other: "nope" => ok []
+    match scope is "m04-012"
+        false => ok []
+        true => ok [check("all-first-rejection", "native all selects the first rejection at index 1"), check("settled-ordered", "allSettled handles all outcomes in input order"), check("settled-handler-stop", "allSettled stops at the first handler failure"), check("any-allfailed-order", "any retains original all-failed outcomes in input order"), check("any-consume-late", "any consumes pre-success failures and retains the late diagnostic"), check("race-first", "race selects the first completion at index 1"), check("empty-modes", "empty all and settled succeed; empty any selects one aggregate"), check("aggregate-identity", "typed aggregate keeps nominal payloads and standard identity"), check("first-failure-handling", "all and race select the first domain or standard failure"), check("settled-standard-slot", "allSettled propagates an unhandled standard slot in order"), check("any-last-success", "any succeeds last without aggregate dispatch"), check("handler-faults", "handler failures escape without redispatch"), check("snapshot-identity", "map conversion preserves snapshot identity with one outer occurrence"), check("empty-race-pending", "empty race stays pending past the harness deadline"), check("owner-retention", "losing participant resource retained until late work finishes"), check("native-delegation", "each mode delegates to its native Promise operation")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/coordination-selection" => ok [expected_check("all-first-rejection", "1"), expected_check("settled-ordered", "true"), expected_check("settled-handler-stop", "true"), expected_check("any-allfailed-order", "true"), expected_check("any-consume-late", "Error: late"), expected_check("race-first", "1"), expected_check("empty-modes", "fallback"), expected_check("aggregate-identity", "4"), expected_check("first-failure-handling", "1"), expected_check("settled-standard-slot", "true"), expected_check("any-last-success", "2"), expected_check("handler-faults", "true"), expected_check("snapshot-identity", "3"), expected_check("empty-race-pending", "10"), expected_check("owner-retention", "7"), expected_check("native-delegation", "true")]
+        unknown: "nope" => ok []
+    match case is "bundled/coordination-selection"
+        false => ok []
+        true => ok [expected_check("all-first-rejection", "1"), expected_check("settled-ordered", "true"), expected_check("settled-handler-stop", "true"), expected_check("any-allfailed-order", "true"), expected_check("any-consume-late", "Error: late"), expected_check("race-first", "1"), expected_check("empty-modes", "fallback"), expected_check("aggregate-identity", "4"), expected_check("first-failure-handling", "1"), expected_check("settled-standard-slot", "true"), expected_check("any-last-success", "2"), expected_check("handler-faults", "true"), expected_check("snapshot-identity", "3"), expected_check("empty-race-pending", "10"), expected_check("owner-retention", "7"), expected_check("native-delegation", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/coordination-selection", "default", "", "offline") => ok
+        seed_all_early: context("bundled/coordination-selection", "seed-all-early", "", "offline") => failed{"all-first-rejection"}
+        seed_settled_unordered: context("bundled/coordination-selection", "seed-settled-unordered", "", "offline") => failed{"settled-ordered"}
+        seed_settled_continues: context("bundled/coordination-selection", "seed-settled-continues", "", "offline") => failed{"settled-handler-stop"}
+        seed_any_unordered: context("bundled/coordination-selection", "seed-any-unordered", "", "offline") => failed{"any-allfailed-order"}
+        seed_any_diagnostic_drift: context("bundled/coordination-selection", "seed-any-diagnostic-drift", "", "offline") => failed{"any-consume-late"}
+        seed_race_late: context("bundled/coordination-selection", "seed-race-late", "", "offline") => failed{"race-first"}
+        seed_empty_any_drift: context("bundled/coordination-selection", "seed-empty-any-drift", "", "offline") => failed{"empty-modes"}
+        seed_aggregate_short: context("bundled/coordination-selection", "seed-aggregate-short", "", "offline") => failed{"aggregate-identity"}
+        seed_failure_late: context("bundled/coordination-selection", "seed-failure-late", "", "offline") => failed{"first-failure-handling"}
+        seed_settled_standard_lost: context("bundled/coordination-selection", "seed-settled-standard-lost", "", "offline") => failed{"settled-standard-slot"}
+        seed_any_early: context("bundled/coordination-selection", "seed-any-early", "", "offline") => failed{"any-last-success"}
+        seed_handler_caught: context("bundled/coordination-selection", "seed-handler-caught", "", "offline") => failed{"handler-faults"}
+        seed_snapshot_short: context("bundled/coordination-selection", "seed-snapshot-short", "", "offline") => failed{"snapshot-identity"}
+        seed_race_deadline_drift: context("bundled/coordination-selection", "seed-race-deadline-drift", "", "offline") => failed{"empty-race-pending"}
+        seed_owner_lost: context("bundled/coordination-selection", "seed-owner-lost", "", "offline") => failed{"owner-retention"}
+        seed_native_bypass: context("bundled/coordination-selection", "seed-native-bypass", "", "offline") => failed{"native-delegation"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.all_first_index, 1, c, "all-first-rejection")
+            failed
+            ok evidence all_evidence => match call require_bool(got.settled_ordered, true, c, "settled-ordered")
+                failed
+                ok evidence settled_evidence => match call require_bool(got.settled_handler_stop, true, c, "settled-handler-stop")
+                    failed
+                    ok evidence handler_stop_evidence => match call require_bool(got.any_allfailed_ordered, true, c, "any-allfailed-order")
+                        failed
+                        ok evidence allfailed_evidence => match call require_text(got.any_late_diagnostic, "Error: late", c, "any-consume-late")
+                            failed
+                            ok evidence consume_evidence => match call require_int(got.race_first_index, 1, c, "race-first")
+                                failed
+                                ok evidence race_evidence => match call require_text(got.empty_any_value, "fallback", c, "empty-modes")
+                                    failed
+                                    ok evidence empty_evidence => match call require_int(got.aggregate_values, 4, c, "aggregate-identity")
+                                        failed
+                                        ok evidence aggregate_evidence => match call require_int(got.first_failure_index, 1, c, "first-failure-handling")
+                                            failed
+                                            ok evidence failure_evidence => match call require_bool(got.settled_standard_ordered, true, c, "settled-standard-slot")
+                                                failed
+                                                ok evidence standard_evidence => match call require_int(got.any_success_index, 2, c, "any-last-success")
+                                                    failed
+                                                    ok evidence success_evidence => match call require_bool(got.handler_faults_escape, true, c, "handler-faults")
+                                                        failed
+                                                        ok evidence faults_evidence => match call require_int(got.snapshot_leaves, 3, c, "snapshot-identity")
+                                                            failed
+                                                            ok evidence snapshot_evidence => match call require_int(got.empty_race_deadline_ms, 10, c, "empty-race-pending")
+                                                                failed
+                                                                ok evidence pending_evidence => match call require_int(got.owner_value, 7, c, "owner-retention")
+                                                                    failed
+                                                                    ok evidence retention_evidence => match call require_bool(got.native_delegated, true, c, "native-delegation")
+                                                                        failed
+                                                                        ok evidence delegation_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m04_012: "m04-012" => ok test_case("bundled/coordination-selection", ["coordination", "m04"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("all-first-rejection"), check_ref("settled-ordered"), check_ref("settled-handler-stop"), check_ref("any-allfailed-order"), check_ref("any-consume-late"), check_ref("race-first"), check_ref("empty-modes"), check_ref("aggregate-identity"), check_ref("first-failure-handling"), check_ref("settled-standard-slot"), check_ref("any-last-success"), check_ref("handler-faults"), check_ref("snapshot-identity"), check_ref("empty-race-pending"), check_ref("owner-retention"), check_ref("native-delegation")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m04-012"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/coordination-selection", ["coordination", "m04"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("all-first-rejection"), check_ref("settled-ordered"), check_ref("settled-handler-stop"), check_ref("any-allfailed-order"), check_ref("any-consume-late"), check_ref("race-first"), check_ref("empty-modes"), check_ref("aggregate-identity"), check_ref("first-failure-handling"), check_ref("settled-standard-slot"), check_ref("any-last-success"), check_ref("handler-faults"), check_ref("snapshot-identity"), check_ref("empty-race-pending"), check_ref("owner-retention"), check_ref("native-delegation")], callable case_body)

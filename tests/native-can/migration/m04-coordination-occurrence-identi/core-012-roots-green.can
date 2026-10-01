@@ -1,0 +1,267 @@
+package m04core012roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M04 CORE-012 "bundled coordination: roots green".
+/// Source: tests/integration/coordination_test.go symbol
+/// TestCurrentBundledCoordination.
+/// Related fixtures: compiler/testdata/current/coordination/main.can
+/// (ground for every per-function pin below: one 1, text 1,
+/// unavailable 1, fail_all 1, aggregate_size 1, summarize 1, observe 1,
+/// main 1 = 8 roots) and runtime/test/coordination.test.ts (the staged
+/// bun trace pinned by trace-pass/trace-fail).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): canlc assert green with passed report and exactly
+/// 8 roots grounded per function in main.can, the sibling fixture row
+/// counts from the Go loop table, and the staged bun trace counts.
+/// Selection semantics live in core-012-coordination-selection.can; the run
+/// output/status shape and silent production entry live in
+/// core-012-run-shape.can.
+/// Variants: main fixture; the aggregate-composition (37) and
+/// heterogeneous (7) loop rows are pinned as counts verbatim from the Go
+/// table (per-function detail for those fixtures is outside this row's
+/// related_sources).
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: DELEGATE-009 (runtime/test/coordination.test.ts,
+/// read-only record; 15 declarations; not executed here).
+/// Execution credit: NOT claimed (accept_after P23/QN1/QN2/QN3 unmet).
+/// Case bundled/coordination-roots checks: assert-green, report-passed,
+/// root-count, fixture-name, one-roots, text-roots, unavailable-roots,
+/// fail-all-roots, aggregate-size-roots, summarize-roots, observe-roots,
+/// main-roots, composition-rows, heterogeneous-rows, trace-pass, trace-fail.
+/// Facet map (coordination_test.go legs): assert-green pins the assert leg
+/// (L80-83: exit 0, empty stderr); report-passed/root-count pin the report
+/// leg (L84-87: passed true, 8 assertions for main); fixture-name grounds
+/// the 8 roots in main.can (L75-79); one-roots pins one (main.can L7:
+/// sample => ok 1); text-roots pins text (L12: sample => ok "two");
+/// unavailable-roots pins unavailable (L17: sample => codec::invalid_data);
+/// fail-all-roots pins fail_all (L25: sample => all_failed 1 leaf);
+/// aggregate-size-roots pins aggregate_size (L34: sample => ok 1);
+/// summarize-roots pins summarize (L43: empty [] => ok 0); observe-roots
+/// pins observe (L48: sample => ok 2); main-roots pins main (L62: empty []
+/// => ok); composition-rows pins the loop table (L74:
+/// aggregate-composition 37); heterogeneous-rows pins the loop table (L74:
+/// heterogeneous 7); trace-pass/trace-fail pin the staged bun trace (L32:
+/// "15 pass", "0 fail").
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int root_count
+    str fixture_name
+    int one_roots
+    int text_roots
+    int unavailable_roots
+    int fail_all_roots
+    int aggregate_size_roots
+    int summarize_roots
+    int observe_roots
+    int main_roots
+    int composition_rows
+    int heterogeneous_rows
+    int trace_pass
+    int trace_fail
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/coordination-roots", "default", "", "offline"), "assert-green" => ok "case bundled/coordination-roots variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/coordination-roots", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case bundled/coordination-roots variant default root assert-green run offline")
+        different: false, true, context("bundled/coordination-roots", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 8, 8, context("bundled/coordination-roots", "default", "", "offline"), "root-count" => ok evidence("root-count", "8", "8", true, "case bundled/coordination-roots variant default root root-count run offline")
+        different: 7, 8, context("bundled/coordination-roots", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "main.can", "main.can", context("bundled/coordination-roots", "default", "", "offline"), "fixture-name" => ok evidence("fixture-name", "main.can", "main.can", true, "case bundled/coordination-roots variant default root fixture-name run offline")
+        different: "heterogeneous.can", "main.can", context("bundled/coordination-roots", "default", "", "offline"), "fixture-name" => failed{"fixture-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 37, 7, 15, 0)
+        seed_assert_red: "seed-assert-red" => ok observation(false, true, 8, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 37, 7, 15, 0)
+        seed_report_red: "seed-report-red" => ok observation(true, false, 8, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 37, 7, 15, 0)
+        seed_root_short: "seed-root-short" => ok observation(true, true, 7, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 37, 7, 15, 0)
+        seed_fixture_drift: "seed-fixture-drift" => ok observation(true, true, 8, "heterogeneous.can", 1, 1, 1, 1, 1, 1, 1, 1, 37, 7, 15, 0)
+        seed_one_loss: "seed-one-loss" => ok observation(true, true, 8, "main.can", 0, 1, 1, 1, 1, 1, 1, 1, 37, 7, 15, 0)
+        seed_text_loss: "seed-text-loss" => ok observation(true, true, 8, "main.can", 1, 0, 1, 1, 1, 1, 1, 1, 37, 7, 15, 0)
+        seed_unavailable_loss: "seed-unavailable-loss" => ok observation(true, true, 8, "main.can", 1, 1, 0, 1, 1, 1, 1, 1, 37, 7, 15, 0)
+        seed_fail_all_loss: "seed-fail-all-loss" => ok observation(true, true, 8, "main.can", 1, 1, 1, 0, 1, 1, 1, 1, 37, 7, 15, 0)
+        seed_aggregate_size_loss: "seed-aggregate-size-loss" => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 0, 1, 1, 1, 37, 7, 15, 0)
+        seed_summarize_loss: "seed-summarize-loss" => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 1, 0, 1, 1, 37, 7, 15, 0)
+        seed_observe_loss: "seed-observe-loss" => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 1, 1, 0, 1, 37, 7, 15, 0)
+        seed_main_loss: "seed-main-loss" => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 1, 1, 1, 0, 37, 7, 15, 0)
+        seed_composition_short: "seed-composition-short" => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 36, 7, 15, 0)
+        seed_heterogeneous_short: "seed-heterogeneous-short" => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 37, 6, 15, 0)
+        seed_trace_short: "seed-trace-short" => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 37, 7, 14, 0)
+        seed_trace_fail_noisy: "seed-trace-fail-noisy" => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 37, 7, 15, 1)
+    match variant_id
+        "seed-assert-red" => ok observation(false, true, 8, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 37, 7, 15, 0)
+        "seed-report-red" => ok observation(true, false, 8, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 37, 7, 15, 0)
+        "seed-root-short" => ok observation(true, true, 7, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 37, 7, 15, 0)
+        "seed-fixture-drift" => ok observation(true, true, 8, "heterogeneous.can", 1, 1, 1, 1, 1, 1, 1, 1, 37, 7, 15, 0)
+        "seed-one-loss" => ok observation(true, true, 8, "main.can", 0, 1, 1, 1, 1, 1, 1, 1, 37, 7, 15, 0)
+        "seed-text-loss" => ok observation(true, true, 8, "main.can", 1, 0, 1, 1, 1, 1, 1, 1, 37, 7, 15, 0)
+        "seed-unavailable-loss" => ok observation(true, true, 8, "main.can", 1, 1, 0, 1, 1, 1, 1, 1, 37, 7, 15, 0)
+        "seed-fail-all-loss" => ok observation(true, true, 8, "main.can", 1, 1, 1, 0, 1, 1, 1, 1, 37, 7, 15, 0)
+        "seed-aggregate-size-loss" => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 0, 1, 1, 1, 37, 7, 15, 0)
+        "seed-summarize-loss" => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 1, 0, 1, 1, 37, 7, 15, 0)
+        "seed-observe-loss" => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 1, 1, 0, 1, 37, 7, 15, 0)
+        "seed-main-loss" => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 1, 1, 1, 0, 37, 7, 15, 0)
+        "seed-composition-short" => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 36, 7, 15, 0)
+        "seed-heterogeneous-short" => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 37, 6, 15, 0)
+        "seed-trace-short" => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 37, 7, 14, 0)
+        "seed-trace-fail-noisy" => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 37, 7, 15, 1)
+        _ => ok observation(true, true, 8, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 37, 7, 15, 0)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m04_012: "m04-012" => ok [check("assert-green", "canlc assert exits 0 with empty stderr"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 8 roots for main"), check("fixture-name", "root pins ground the main.can fixture"), check("one-roots", "one contributes 1 root (sample => ok 1)"), check("text-roots", "text contributes 1 root (sample => ok two)"), check("unavailable-roots", "unavailable contributes 1 root (sample => invalid_data)"), check("fail-all-roots", "fail_all contributes 1 root (sample => all_failed 1 leaf)"), check("aggregate-size-roots", "aggregate_size contributes 1 root (sample => ok 1)"), check("summarize-roots", "summarize contributes 1 root (empty [] => ok 0)"), check("observe-roots", "observe contributes 1 root (sample => ok 2)"), check("main-roots", "main contributes 1 root (empty [] => ok)"), check("composition-rows", "loop table pins aggregate-composition at 37 rows"), check("heterogeneous-rows", "loop table pins heterogeneous at 7 rows"), check("trace-pass", "staged bun trace pins 15 pass"), check("trace-fail", "staged bun trace pins 0 fail")]
+        other: "nope" => ok []
+    match scope is "m04-012"
+        false => ok []
+        true => ok [check("assert-green", "canlc assert exits 0 with empty stderr"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 8 roots for main"), check("fixture-name", "root pins ground the main.can fixture"), check("one-roots", "one contributes 1 root (sample => ok 1)"), check("text-roots", "text contributes 1 root (sample => ok two)"), check("unavailable-roots", "unavailable contributes 1 root (sample => invalid_data)"), check("fail-all-roots", "fail_all contributes 1 root (sample => all_failed 1 leaf)"), check("aggregate-size-roots", "aggregate_size contributes 1 root (sample => ok 1)"), check("summarize-roots", "summarize contributes 1 root (empty [] => ok 0)"), check("observe-roots", "observe contributes 1 root (sample => ok 2)"), check("main-roots", "main contributes 1 root (empty [] => ok)"), check("composition-rows", "loop table pins aggregate-composition at 37 rows"), check("heterogeneous-rows", "loop table pins heterogeneous at 7 rows"), check("trace-pass", "staged bun trace pins 15 pass"), check("trace-fail", "staged bun trace pins 0 fail")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/coordination-roots" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "8"), expected_check("fixture-name", "main.can"), expected_check("one-roots", "1"), expected_check("text-roots", "1"), expected_check("unavailable-roots", "1"), expected_check("fail-all-roots", "1"), expected_check("aggregate-size-roots", "1"), expected_check("summarize-roots", "1"), expected_check("observe-roots", "1"), expected_check("main-roots", "1"), expected_check("composition-rows", "37"), expected_check("heterogeneous-rows", "7"), expected_check("trace-pass", "15"), expected_check("trace-fail", "0")]
+        unknown: "nope" => ok []
+    match case is "bundled/coordination-roots"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "8"), expected_check("fixture-name", "main.can"), expected_check("one-roots", "1"), expected_check("text-roots", "1"), expected_check("unavailable-roots", "1"), expected_check("fail-all-roots", "1"), expected_check("aggregate-size-roots", "1"), expected_check("summarize-roots", "1"), expected_check("observe-roots", "1"), expected_check("main-roots", "1"), expected_check("composition-rows", "37"), expected_check("heterogeneous-rows", "7"), expected_check("trace-pass", "15"), expected_check("trace-fail", "0")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/coordination-roots", "default", "", "offline") => ok
+        seed_assert_red: context("bundled/coordination-roots", "seed-assert-red", "", "offline") => failed{"assert-green"}
+        seed_report_red: context("bundled/coordination-roots", "seed-report-red", "", "offline") => failed{"report-passed"}
+        seed_root_short: context("bundled/coordination-roots", "seed-root-short", "", "offline") => failed{"root-count"}
+        seed_fixture_drift: context("bundled/coordination-roots", "seed-fixture-drift", "", "offline") => failed{"fixture-name"}
+        seed_one_loss: context("bundled/coordination-roots", "seed-one-loss", "", "offline") => failed{"one-roots"}
+        seed_text_loss: context("bundled/coordination-roots", "seed-text-loss", "", "offline") => failed{"text-roots"}
+        seed_unavailable_loss: context("bundled/coordination-roots", "seed-unavailable-loss", "", "offline") => failed{"unavailable-roots"}
+        seed_fail_all_loss: context("bundled/coordination-roots", "seed-fail-all-loss", "", "offline") => failed{"fail-all-roots"}
+        seed_aggregate_size_loss: context("bundled/coordination-roots", "seed-aggregate-size-loss", "", "offline") => failed{"aggregate-size-roots"}
+        seed_summarize_loss: context("bundled/coordination-roots", "seed-summarize-loss", "", "offline") => failed{"summarize-roots"}
+        seed_observe_loss: context("bundled/coordination-roots", "seed-observe-loss", "", "offline") => failed{"observe-roots"}
+        seed_main_loss: context("bundled/coordination-roots", "seed-main-loss", "", "offline") => failed{"main-roots"}
+        seed_composition_short: context("bundled/coordination-roots", "seed-composition-short", "", "offline") => failed{"composition-rows"}
+        seed_heterogeneous_short: context("bundled/coordination-roots", "seed-heterogeneous-short", "", "offline") => failed{"heterogeneous-rows"}
+        seed_trace_short: context("bundled/coordination-roots", "seed-trace-short", "", "offline") => failed{"trace-pass"}
+        seed_trace_fail_noisy: context("bundled/coordination-roots", "seed-trace-fail-noisy", "", "offline") => failed{"trace-fail"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence assert_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence passed_evidence => match call require_int(got.root_count, 8, c, "root-count")
+                    failed
+                    ok evidence count_evidence => match call require_text(got.fixture_name, "main.can", c, "fixture-name")
+                        failed
+                        ok evidence fixture_evidence => match call require_int(got.one_roots, 1, c, "one-roots")
+                            failed
+                            ok evidence one_evidence => match call require_int(got.text_roots, 1, c, "text-roots")
+                                failed
+                                ok evidence text_evidence => match call require_int(got.unavailable_roots, 1, c, "unavailable-roots")
+                                    failed
+                                    ok evidence unavailable_evidence => match call require_int(got.fail_all_roots, 1, c, "fail-all-roots")
+                                        failed
+                                        ok evidence fail_all_evidence => match call require_int(got.aggregate_size_roots, 1, c, "aggregate-size-roots")
+                                            failed
+                                            ok evidence aggregate_size_evidence => match call require_int(got.summarize_roots, 1, c, "summarize-roots")
+                                                failed
+                                                ok evidence summarize_evidence => match call require_int(got.observe_roots, 1, c, "observe-roots")
+                                                    failed
+                                                    ok evidence observe_evidence => match call require_int(got.main_roots, 1, c, "main-roots")
+                                                        failed
+                                                        ok evidence main_evidence => match call require_int(got.composition_rows, 37, c, "composition-rows")
+                                                            failed
+                                                            ok evidence composition_evidence => match call require_int(got.heterogeneous_rows, 7, c, "heterogeneous-rows")
+                                                                failed
+                                                                ok evidence heterogeneous_evidence => match call require_int(got.trace_pass, 15, c, "trace-pass")
+                                                                    failed
+                                                                    ok evidence trace_pass_evidence => match call require_int(got.trace_fail, 0, c, "trace-fail")
+                                                                        failed
+                                                                        ok evidence trace_fail_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m04_012: "m04-012" => ok test_case("bundled/coordination-roots", ["coordination", "m04"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("one-roots"), check_ref("text-roots"), check_ref("unavailable-roots"), check_ref("fail-all-roots"), check_ref("aggregate-size-roots"), check_ref("summarize-roots"), check_ref("observe-roots"), check_ref("main-roots"), check_ref("composition-rows"), check_ref("heterogeneous-rows"), check_ref("trace-pass"), check_ref("trace-fail")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m04-012"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/coordination-roots", ["coordination", "m04"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("one-roots"), check_ref("text-roots"), check_ref("unavailable-roots"), check_ref("fail-all-roots"), check_ref("aggregate-size-roots"), check_ref("summarize-roots"), check_ref("observe-roots"), check_ref("main-roots"), check_ref("composition-rows"), check_ref("composition-rows"), check_ref("heterogeneous-rows"), check_ref("trace-pass"), check_ref("trace-fail")], callable case_body)
