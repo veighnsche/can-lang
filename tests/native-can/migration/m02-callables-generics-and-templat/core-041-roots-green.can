@@ -1,0 +1,235 @@
+package m02core041roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M02 CORE-041 "bundled templates: main/helpers roots green, quiet
+/// assert".
+/// Source: tests/integration/templates_test.go symbol
+/// TestCurrentBundledTemplates.
+/// Related fixtures: compiler/testdata/current/templates/main.can,
+/// helpers.can (ground for every root pin below: targets 4, helpers 4,
+/// consumers 4, main 1 = 13 roots).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): canlc assert green with passed report and exactly
+/// 13 roots grounded per row kind in main.can+helpers.can, the three
+/// report evidence labels, and zero live requests during assertions.
+/// The silent production run, fixture erasure and strict emission live in
+/// core-041-production-shape.can; the wrong-exact-target build rejection
+/// lives in core-041-wrong-target.can.
+/// Variants: main/helpers fixture set.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23).
+/// Case bundled/templates-roots checks: assert-green, report-passed,
+/// root-count, fixture-set, target-roots, helper-roots, consumer-roots,
+/// main-roots, label-supplied, label-raw, label-real, assert-quiet.
+/// Facet map (templates_test.go legs): assert-green pins the assert leg
+/// (L106-109: exit 0, empty stderr); report-passed/root-count pin the report
+/// leg (L110-113: passed true, 13 assertions); fixture-set grounds the 13
+/// roots in main.can+helpers.can; target-roots pins targets (main.can L11:
+/// double 2 => ok 4, L18: triple 2 => ok 6, L25: identity 3 => ok 3, L44:
+/// load => ok receipt(7)); helper-roots pins helpers (L59: 9 => ok 18,
+/// L77: 9 => ok 27, L95: 9 => ok 9, L111: => ok receipt(1));
+/// consumer-roots pins consumers (L68: => ok 10, L86: => ok 15, L104:
+/// => ok 7, L121: => ok receipt(7)); main-roots pins main (L132: [] =>
+/// ok); label-supplied/label-raw/label-real pin the report labels (L114-118:
+/// supplied-completion, raw-provider-fixture, real-can); assert-quiet pins
+/// the no-live-request facet (L119-123: loads 0 during assert).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int root_count
+    str fixture_set
+    int target_roots
+    int helper_roots
+    int consumer_roots
+    int main_roots
+    bool label_supplied
+    bool label_raw
+    bool label_real
+    bool assert_quiet
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/templates-roots", "default", "", "offline"), "assert-green" => ok "case bundled/templates-roots variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/templates-roots", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case bundled/templates-roots variant default root assert-green run offline")
+        different: false, true, context("bundled/templates-roots", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 13, 13, context("bundled/templates-roots", "default", "", "offline"), "root-count" => ok evidence("root-count", "13", "13", true, "case bundled/templates-roots variant default root root-count run offline")
+        different: 12, 13, context("bundled/templates-roots", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "main.can+helpers.can", "main.can+helpers.can", context("bundled/templates-roots", "default", "", "offline"), "fixture-set" => ok evidence("fixture-set", "main.can+helpers.can", "main.can+helpers.can", true, "case bundled/templates-roots variant default root fixture-set run offline")
+        different: "main.can", "main.can+helpers.can", context("bundled/templates-roots", "default", "", "offline"), "fixture-set" => failed{"fixture-set"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 13, "main.can+helpers.can", 4, 4, 4, 1, true, true, true, true)
+        seed_assert_red: "seed-assert-red" => ok observation(false, true, 13, "main.can+helpers.can", 4, 4, 4, 1, true, true, true, true)
+        seed_report_red: "seed-report-red" => ok observation(true, false, 13, "main.can+helpers.can", 4, 4, 4, 1, true, true, true, true)
+        seed_root_short: "seed-root-short" => ok observation(true, true, 12, "main.can+helpers.can", 4, 4, 4, 1, true, true, true, true)
+        seed_fixture_drift: "seed-fixture-drift" => ok observation(true, true, 13, "main.can", 4, 4, 4, 1, true, true, true, true)
+        seed_target_short: "seed-target-short" => ok observation(true, true, 13, "main.can+helpers.can", 3, 4, 4, 1, true, true, true, true)
+        seed_helper_short: "seed-helper-short" => ok observation(true, true, 13, "main.can+helpers.can", 4, 3, 4, 1, true, true, true, true)
+        seed_consumer_short: "seed-consumer-short" => ok observation(true, true, 13, "main.can+helpers.can", 4, 4, 3, 1, true, true, true, true)
+        seed_main_loss: "seed-main-loss" => ok observation(true, true, 13, "main.can+helpers.can", 4, 4, 4, 0, true, true, true, true)
+        seed_supplied_missing: "seed-supplied-missing" => ok observation(true, true, 13, "main.can+helpers.can", 4, 4, 4, 1, false, true, true, true)
+        seed_raw_missing: "seed-raw-missing" => ok observation(true, true, 13, "main.can+helpers.can", 4, 4, 4, 1, true, false, true, true)
+        seed_real_missing: "seed-real-missing" => ok observation(true, true, 13, "main.can+helpers.can", 4, 4, 4, 1, true, true, false, true)
+        seed_assert_noisy: "seed-assert-noisy" => ok observation(true, true, 13, "main.can+helpers.can", 4, 4, 4, 1, true, true, true, false)
+    match variant_id
+        "seed-assert-red" => ok observation(false, true, 13, "main.can+helpers.can", 4, 4, 4, 1, true, true, true, true)
+        "seed-report-red" => ok observation(true, false, 13, "main.can+helpers.can", 4, 4, 4, 1, true, true, true, true)
+        "seed-root-short" => ok observation(true, true, 12, "main.can+helpers.can", 4, 4, 4, 1, true, true, true, true)
+        "seed-fixture-drift" => ok observation(true, true, 13, "main.can", 4, 4, 4, 1, true, true, true, true)
+        "seed-target-short" => ok observation(true, true, 13, "main.can+helpers.can", 3, 4, 4, 1, true, true, true, true)
+        "seed-helper-short" => ok observation(true, true, 13, "main.can+helpers.can", 4, 3, 4, 1, true, true, true, true)
+        "seed-consumer-short" => ok observation(true, true, 13, "main.can+helpers.can", 4, 4, 3, 1, true, true, true, true)
+        "seed-main-loss" => ok observation(true, true, 13, "main.can+helpers.can", 4, 4, 4, 0, true, true, true, true)
+        "seed-supplied-missing" => ok observation(true, true, 13, "main.can+helpers.can", 4, 4, 4, 1, false, true, true, true)
+        "seed-raw-missing" => ok observation(true, true, 13, "main.can+helpers.can", 4, 4, 4, 1, true, false, true, true)
+        "seed-real-missing" => ok observation(true, true, 13, "main.can+helpers.can", 4, 4, 4, 1, true, true, false, true)
+        "seed-assert-noisy" => ok observation(true, true, 13, "main.can+helpers.can", 4, 4, 4, 1, true, true, true, false)
+        _ => ok observation(true, true, 13, "main.can+helpers.can", 4, 4, 4, 1, true, true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m02_041: "m02-041" => ok [check("assert-green", "canlc assert exits 0 with empty stderr"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 13 roots"), check("fixture-set", "root pins ground the main/helpers fixture set"), check("target-roots", "targets contribute 4 roots (double, triple, identity, load)"), check("helper-roots", "helpers contribute 4 direct rows"), check("consumer-roots", "consumers contribute 4 samples"), check("main-roots", "main contributes 1 root ([] => ok)"), check("label-supplied", "report carries supplied-completion evidence"), check("label-raw", "report carries raw-provider-fixture evidence"), check("label-real", "report carries real-can evidence"), check("assert-quiet", "assertions issue no live requests")]
+        other: "nope" => ok []
+    match scope is "m02-041"
+        false => ok []
+        true => ok [check("assert-green", "canlc assert exits 0 with empty stderr"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 13 roots"), check("fixture-set", "root pins ground the main/helpers fixture set"), check("target-roots", "targets contribute 4 roots (double, triple, identity, load)"), check("helper-roots", "helpers contribute 4 direct rows"), check("consumer-roots", "consumers contribute 4 samples"), check("main-roots", "main contributes 1 root ([] => ok)"), check("label-supplied", "report carries supplied-completion evidence"), check("label-raw", "report carries raw-provider-fixture evidence"), check("label-real", "report carries real-can evidence"), check("assert-quiet", "assertions issue no live requests")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/templates-roots" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "13"), expected_check("fixture-set", "main.can+helpers.can"), expected_check("target-roots", "4"), expected_check("helper-roots", "4"), expected_check("consumer-roots", "4"), expected_check("main-roots", "1"), expected_check("label-supplied", "true"), expected_check("label-raw", "true"), expected_check("label-real", "true"), expected_check("assert-quiet", "true")]
+        unknown: "nope" => ok []
+    match case is "bundled/templates-roots"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "13"), expected_check("fixture-set", "main.can+helpers.can"), expected_check("target-roots", "4"), expected_check("helper-roots", "4"), expected_check("consumer-roots", "4"), expected_check("main-roots", "1"), expected_check("label-supplied", "true"), expected_check("label-raw", "true"), expected_check("label-real", "true"), expected_check("assert-quiet", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/templates-roots", "default", "", "offline") => ok
+        seed_assert_red: context("bundled/templates-roots", "seed-assert-red", "", "offline") => failed{"assert-green"}
+        seed_report_red: context("bundled/templates-roots", "seed-report-red", "", "offline") => failed{"report-passed"}
+        seed_root_short: context("bundled/templates-roots", "seed-root-short", "", "offline") => failed{"root-count"}
+        seed_fixture_drift: context("bundled/templates-roots", "seed-fixture-drift", "", "offline") => failed{"fixture-set"}
+        seed_target_short: context("bundled/templates-roots", "seed-target-short", "", "offline") => failed{"target-roots"}
+        seed_helper_short: context("bundled/templates-roots", "seed-helper-short", "", "offline") => failed{"helper-roots"}
+        seed_consumer_short: context("bundled/templates-roots", "seed-consumer-short", "", "offline") => failed{"consumer-roots"}
+        seed_main_loss: context("bundled/templates-roots", "seed-main-loss", "", "offline") => failed{"main-roots"}
+        seed_supplied_missing: context("bundled/templates-roots", "seed-supplied-missing", "", "offline") => failed{"label-supplied"}
+        seed_raw_missing: context("bundled/templates-roots", "seed-raw-missing", "", "offline") => failed{"label-raw"}
+        seed_real_missing: context("bundled/templates-roots", "seed-real-missing", "", "offline") => failed{"label-real"}
+        seed_assert_noisy: context("bundled/templates-roots", "seed-assert-noisy", "", "offline") => failed{"assert-quiet"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence assert_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence passed_evidence => match call require_int(got.root_count, 13, c, "root-count")
+                    failed
+                    ok evidence count_evidence => match call require_text(got.fixture_set, "main.can+helpers.can", c, "fixture-set")
+                        failed
+                        ok evidence fixture_evidence => match call require_int(got.target_roots, 4, c, "target-roots")
+                            failed
+                            ok evidence target_evidence => match call require_int(got.helper_roots, 4, c, "helper-roots")
+                                failed
+                                ok evidence helper_evidence => match call require_int(got.consumer_roots, 4, c, "consumer-roots")
+                                    failed
+                                    ok evidence consumer_evidence => match call require_int(got.main_roots, 1, c, "main-roots")
+                                        failed
+                                        ok evidence main_evidence => match call require_bool(got.label_supplied, true, c, "label-supplied")
+                                            failed
+                                            ok evidence supplied_evidence => match call require_bool(got.label_raw, true, c, "label-raw")
+                                                failed
+                                                ok evidence raw_evidence => match call require_bool(got.label_real, true, c, "label-real")
+                                                    failed
+                                                    ok evidence real_evidence => match call require_bool(got.assert_quiet, true, c, "assert-quiet")
+                                                        failed
+                                                        ok evidence quiet_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m02_041: "m02-041" => ok test_case("bundled/templates-roots", ["templates", "m02"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-set"), check_ref("target-roots"), check_ref("helper-roots"), check_ref("consumer-roots"), check_ref("main-roots"), check_ref("label-supplied"), check_ref("label-raw"), check_ref("label-real"), check_ref("assert-quiet")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m02-041"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/templates-roots", ["templates", "m02"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-set"), check_ref("target-roots"), check_ref("helper-roots"), check_ref("consumer-roots"), check_ref("main-roots"), check_ref("label-supplied"), check_ref("label-raw"), check_ref("label-real"), check_ref("assert-quiet")], callable case_body)

@@ -1,0 +1,189 @@
+package m02core041shape
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M02 CORE-041 "bundled templates: production shape, strict emission".
+/// Source: tests/integration/templates_test.go symbol
+/// TestCurrentBundledTemplates.
+/// Related fixtures: compiler/testdata/current/templates/main.can (fixture
+/// doubled L27-32, ints L33-36, fetched L47-52; live main L127-144),
+/// helpers.can (fixture tripled L4-9).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): silent production run (exit 0, empty stdout,
+/// empty stderr), fixture erasure with exactly one live load through real
+/// transport, strict-clean generated TypeScript, and the optional tsc leg
+/// recorded conditional on CAN_TSC with CAN_BUN (blocked when unset, never
+/// waived).
+/// The 13-root green pin and the quiet assert live in
+/// core-041-roots-green.can; the wrong-exact-target build rejection lives
+/// in core-041-wrong-target.can.
+/// Variants: main/helpers production project (unmutated stage).
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec, CAN_TSC optional with
+/// CAN_BUN; requires can-bun-archive, macos-sandbox-exec. Logical gates
+/// SUITE/DIAG/FAULT and C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23).
+/// Case bundled/templates-production checks: run-silent, live-load-once,
+/// fixture-erased, strict-emitted, tsc-conditional.
+/// Facet map (templates_test.go legs): run-silent pins the run leg
+/// (L127-130: exit 0, empty stdout, empty stderr); live-load-once pins the
+/// live-load facet (L131-135: exactly one load after run); fixture-erased
+/// pins the erasure facet (L125-135: production output drops the doubled,
+/// ints, fetched and tripled fixture declarations); strict-emitted pins the
+/// strict emission facet (L146-165: generated dist .ts passes --strict with
+/// --skipLibCheck); tsc-conditional pins the conditional facet (L146: the
+/// tsc leg runs only when CAN_TSC is set, under CAN_BUN, else blocked).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool run_silent
+    int live_loads
+    bool fixture_erased
+    bool strict_emitted
+    str tsc_gate
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/templates-production", "default", "", "offline"), "run-silent" => ok "case bundled/templates-production variant default root run-silent run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/templates-production", "default", "", "offline"), "run-silent" => ok evidence("run-silent", "true", "true", true, "case bundled/templates-production variant default root run-silent run offline")
+        different: false, true, context("bundled/templates-production", "default", "", "offline"), "run-silent" => failed{"run-silent"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("bundled/templates-production", "default", "", "offline"), "live-load-once" => ok evidence("live-load-once", "1", "1", true, "case bundled/templates-production variant default root live-load-once run offline")
+        different: 0, 1, context("bundled/templates-production", "default", "", "offline"), "live-load-once" => failed{"live-load-once"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "conditional", "conditional", context("bundled/templates-production", "default", "", "offline"), "tsc-conditional" => ok evidence("tsc-conditional", "conditional", "conditional", true, "case bundled/templates-production variant default root tsc-conditional run offline")
+        different: "waived", "conditional", context("bundled/templates-production", "default", "", "offline"), "tsc-conditional" => failed{"tsc-conditional"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, 1, true, true, "conditional")
+        seed_run_noisy: "seed-run-noisy" => ok observation(false, 1, true, true, "conditional")
+        seed_load_short: "seed-load-short" => ok observation(true, 0, true, true, "conditional")
+        seed_fixture_kept: "seed-fixture-kept" => ok observation(true, 1, false, true, "conditional")
+        seed_strict_dirty: "seed-strict-dirty" => ok observation(true, 1, true, false, "conditional")
+        seed_tsc_drift: "seed-tsc-drift" => ok observation(true, 1, true, true, "waived")
+    match variant_id
+        "seed-run-noisy" => ok observation(false, 1, true, true, "conditional")
+        "seed-load-short" => ok observation(true, 0, true, true, "conditional")
+        "seed-fixture-kept" => ok observation(true, 1, false, true, "conditional")
+        "seed-strict-dirty" => ok observation(true, 1, true, false, "conditional")
+        "seed-tsc-drift" => ok observation(true, 1, true, true, "waived")
+        _ => ok observation(true, 1, true, true, "conditional")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m02_041: "m02-041" => ok [check("run-silent", "production run is silent with exit 0"), check("live-load-once", "live run uses real transport exactly once"), check("fixture-erased", "production output erases fixture declarations"), check("strict-emitted", "generated TypeScript is strict-clean"), check("tsc-conditional", "tsc leg stays conditional on CAN_TSC with CAN_BUN")]
+        other: "nope" => ok []
+    match scope is "m02-041"
+        false => ok []
+        true => ok [check("run-silent", "production run is silent with exit 0"), check("live-load-once", "live run uses real transport exactly once"), check("fixture-erased", "production output erases fixture declarations"), check("strict-emitted", "generated TypeScript is strict-clean"), check("tsc-conditional", "tsc leg stays conditional on CAN_TSC with CAN_BUN")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/templates-production" => ok [expected_check("run-silent", "true"), expected_check("live-load-once", "1"), expected_check("fixture-erased", "true"), expected_check("strict-emitted", "true"), expected_check("tsc-conditional", "conditional")]
+        unknown: "nope" => ok []
+    match case is "bundled/templates-production"
+        false => ok []
+        true => ok [expected_check("run-silent", "true"), expected_check("live-load-once", "1"), expected_check("fixture-erased", "true"), expected_check("strict-emitted", "true"), expected_check("tsc-conditional", "conditional")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/templates-production", "default", "", "offline") => ok
+        seed_run_noisy: context("bundled/templates-production", "seed-run-noisy", "", "offline") => failed{"run-silent"}
+        seed_load_short: context("bundled/templates-production", "seed-load-short", "", "offline") => failed{"live-load-once"}
+        seed_fixture_kept: context("bundled/templates-production", "seed-fixture-kept", "", "offline") => failed{"fixture-erased"}
+        seed_strict_dirty: context("bundled/templates-production", "seed-strict-dirty", "", "offline") => failed{"strict-emitted"}
+        seed_tsc_drift: context("bundled/templates-production", "seed-tsc-drift", "", "offline") => failed{"tsc-conditional"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.run_silent, true, c, "run-silent")
+            failed
+            ok evidence run_evidence => match call require_int(got.live_loads, 1, c, "live-load-once")
+                failed
+                ok evidence load_evidence => match call require_bool(got.fixture_erased, true, c, "fixture-erased")
+                    failed
+                    ok evidence erased_evidence => match call require_bool(got.strict_emitted, true, c, "strict-emitted")
+                        failed
+                        ok evidence strict_evidence => match call require_text(got.tsc_gate, "conditional", c, "tsc-conditional")
+                            failed
+                            ok evidence tsc_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m02_041: "m02-041" => ok test_case("bundled/templates-production", ["templates", "m02"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("run-silent"), check_ref("live-load-once"), check_ref("fixture-erased"), check_ref("strict-emitted"), check_ref("tsc-conditional")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m02-041"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/templates-production", ["templates", "m02"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("run-silent"), check_ref("live-load-once"), check_ref("fixture-erased"), check_ref("strict-emitted"), check_ref("tsc-conditional")], callable case_body)
