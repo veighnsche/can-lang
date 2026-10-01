@@ -1,0 +1,276 @@
+package m29life020cache
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 LIFE-020 "Entry complete: verdict semantics".
+/// Source: tests/integration/harness_cache_test.go symbol
+/// TestHarnessEntryComplete (L107-125).
+/// Disposition: consolidate (this row ports
+/// TestHarnessEntryComplete to ordinary Can functions; the old
+/// Go harness stays until the integrator retires it after
+/// every linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the three completion-key legs in Go
+/// order (missing marker vs foreign marker vs matching
+/// marker), the TrimSpace plus equality spelling that gates
+/// the verdict, the cannot-look-complete verdicts for the
+/// missing and foreign legs, the can-look-complete verdict
+/// for the matching leg, the two marker writes, and the
+/// call/write/guard/fatal counts.
+/// ADAPTATION (recorded, with source lines): leg bytes pin
+/// the []byte inner spellings (other plus newline L113, k
+/// plus newline L119); probe-key pins the k inner bytes
+/// (L110); compare-op pins == (H L313) as the comparison
+/// logic (no hash re-implementation anywhere); trim-call
+/// pins the TrimSpace spelling (H L313); missing/wrong
+/// verdicts pin bool (false) from the refused complete
+/// reports (L110-112, L116-118); correct verdict pins bool
+/// (true) from the refused incomplete report (L122-124);
+/// write-mode pins the 0600 spelling structurally as str
+/// (L113/L119); complete-call-count pins int (3) from the
+/// three legs (L110/L116/L122); write-count pins int (2)
+/// from the two writes (L113/L119); err-guard-count pins
+/// int (2) from the err guards (L113/L119); fatal-count
+/// pins int (3) from the Fatal legs (L111/L117/L123).
+/// Facet map (Go verdict legs): entry-name pins entry
+/// (L109); marker-name pins cache-complete (L113);
+/// probe-key pins k (L110); wrong-bytes pins other plus
+/// newline (L113); correct-bytes pins k plus newline
+/// (L119); compare-op pins == (H L313); trim-call pins
+/// strings.TrimSpace (H L313); write-mode pins 0600
+/// (L113/L119); missing-complete pins false (L110-112);
+/// wrong-complete pins false (L116-118); correct-complete
+/// pins true (L122-124); complete-call-count pins 3
+/// (L110/L116/L122); write-count pins 2 (L113/L119);
+/// err-guard-count pins 2 (L113/L119); fatal-count pins 3
+/// (L111/L117/L123).
+/// The roots-green pin lives in life-020-roots-green.can;
+/// the run shape plus diagnostics live in
+/// life-020-run-shape.can.
+/// Variants: none (row lists zero variants; default plus
+/// seeded drifts only).
+/// Environment: none (no gates; requires []).
+/// Logical gates WORK/BUILD/CHILD/CLOCK bind at P23; no
+/// live run now. Accept gate P23 is unmet. Timeout 120000ms
+/// is the offline default bound (no Go timeout in this row;
+/// binds at P23 like the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case life/entry-complete checks: entry-name,
+/// marker-name, probe-key, wrong-bytes, correct-bytes,
+/// compare-op, trim-call, write-mode, missing-complete,
+/// wrong-complete, correct-complete, complete-call-count,
+/// write-count, err-guard-count, fatal-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str entry_name
+    str marker_name
+    str probe_key
+    str wrong_bytes
+    str correct_bytes
+    str compare_op
+    str trim_call
+    str write_mode
+    bool missing_complete
+    bool wrong_complete
+    bool correct_complete
+    int complete_call_count
+    int write_count
+    int err_guard_count
+    int fatal_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/entry-complete", "default", "", "offline"), "entry-name" => ok "case life/entry-complete variant default root entry-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/entry-complete", "default", "", "offline"), "entry-name" => ok evidence("entry-name", "true", "true", true, "case life/entry-complete variant default root entry-name run offline")
+        different: false, true, context("life/entry-complete", "default", "", "offline"), "entry-name" => failed{"entry-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("life/entry-complete", "default", "", "offline"), "complete-call-count" => ok evidence("complete-call-count", "3", "3", true, "case life/entry-complete variant default root complete-call-count run offline")
+        different: 2, 3, context("life/entry-complete", "default", "", "offline"), "complete-call-count" => failed{"complete-call-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "entry", "entry", context("life/entry-complete", "default", "", "offline"), "entry-name" => ok evidence("entry-name", "entry", "entry", true, "case life/entry-complete variant default root entry-name run offline")
+        different: "entry_2", "entry", context("life/entry-complete", "default", "", "offline"), "entry-name" => failed{"entry-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 3, 2, 2, 3)
+        seed_entry_name: "seed-entry-name-drift" => ok observation("entry_2", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 3, 2, 2, 3)
+        seed_marker_name: "seed-marker-name-drift" => ok observation("entry", "cache-complete_2", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 3, 2, 2, 3)
+        seed_probe_key: "seed-probe-key-drift" => ok observation("entry", "cache-complete", "k_2", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 3, 2, 2, 3)
+        seed_wrong_bytes: "seed-wrong-bytes-drift" => ok observation("entry", "cache-complete", "k", "other\\n_2", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 3, 2, 2, 3)
+        seed_correct_bytes: "seed-correct-bytes-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n_2", "==", "strings.TrimSpace", "0600", false, false, true, 3, 2, 2, 3)
+        seed_compare_op: "seed-compare-op-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==_2", "strings.TrimSpace", "0600", false, false, true, 3, 2, 2, 3)
+        seed_trim_call: "seed-trim-call-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace_2", "0600", false, false, true, 3, 2, 2, 3)
+        seed_write_mode: "seed-write-mode-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600_2", false, false, true, 3, 2, 2, 3)
+        seed_missing_complete: "seed-missing-complete-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", true, false, true, 3, 2, 2, 3)
+        seed_wrong_complete: "seed-wrong-complete-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, true, true, 3, 2, 2, 3)
+        seed_correct_complete: "seed-correct-complete-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, false, 3, 2, 2, 3)
+        seed_complete_call_count: "seed-complete-call-count-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 2, 2, 2, 3)
+        seed_write_count: "seed-write-count-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 3, 1, 2, 3)
+        seed_err_guard_count: "seed-err-guard-count-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 3, 2, 1, 3)
+        seed_fatal_count: "seed-fatal-count-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 3, 2, 2, 2)
+    match variant_id
+        "seed-entry-name-drift" => ok observation("entry_2", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 3, 2, 2, 3)
+        "seed-marker-name-drift" => ok observation("entry", "cache-complete_2", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 3, 2, 2, 3)
+        "seed-probe-key-drift" => ok observation("entry", "cache-complete", "k_2", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 3, 2, 2, 3)
+        "seed-wrong-bytes-drift" => ok observation("entry", "cache-complete", "k", "other\\n_2", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 3, 2, 2, 3)
+        "seed-correct-bytes-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n_2", "==", "strings.TrimSpace", "0600", false, false, true, 3, 2, 2, 3)
+        "seed-compare-op-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==_2", "strings.TrimSpace", "0600", false, false, true, 3, 2, 2, 3)
+        "seed-trim-call-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace_2", "0600", false, false, true, 3, 2, 2, 3)
+        "seed-write-mode-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600_2", false, false, true, 3, 2, 2, 3)
+        "seed-missing-complete-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", true, false, true, 3, 2, 2, 3)
+        "seed-wrong-complete-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, true, true, 3, 2, 2, 3)
+        "seed-correct-complete-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, false, 3, 2, 2, 3)
+        "seed-complete-call-count-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 2, 2, 2, 3)
+        "seed-write-count-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 3, 1, 2, 3)
+        "seed-err-guard-count-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 3, 2, 1, 3)
+        "seed-fatal-count-drift" => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 3, 2, 2, 2)
+        _ => ok observation("entry", "cache-complete", "k", "other\\n", "k\\n", "==", "strings.TrimSpace", "0600", false, false, true, 3, 2, 2, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l020: "m29-l020" => ok [check("entry-name", "entry leg keeps its Go name"), check("marker-name", "legs pin the marker name"), check("probe-key", "legs pin the probe key"), check("wrong-bytes", "foreign leg pins the wrong marker bytes"), check("correct-bytes", "matching leg pins the correct marker bytes"), check("compare-op", "verdict pins the equality spelling"), check("trim-call", "verdict pins the TrimSpace call"), check("write-mode", "both legs land owner-only"), check("missing-complete", "missing marker cannot look complete"), check("wrong-complete", "foreign marker cannot look complete"), check("correct-complete", "matching marker can look complete"), check("complete-call-count", "exactly three complete legs run"), check("write-count", "exactly two marker writes run"), check("err-guard-count", "two legs face the err guard"), check("fatal-count", "three legs face the Fatal refusal")]
+        other: "nope" => ok []
+    match scope is "m29-l020"
+        false => ok []
+        true => ok [check("entry-name", "entry leg keeps its Go name"), check("marker-name", "legs pin the marker name"), check("probe-key", "legs pin the probe key"), check("wrong-bytes", "foreign leg pins the wrong marker bytes"), check("correct-bytes", "matching leg pins the correct marker bytes"), check("compare-op", "verdict pins the equality spelling"), check("trim-call", "verdict pins the TrimSpace call"), check("write-mode", "both legs land owner-only"), check("missing-complete", "missing marker cannot look complete"), check("wrong-complete", "foreign marker cannot look complete"), check("correct-complete", "matching marker can look complete"), check("complete-call-count", "exactly three complete legs run"), check("write-count", "exactly two marker writes run"), check("err-guard-count", "two legs face the err guard"), check("fatal-count", "three legs face the Fatal refusal")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/entry-complete" => ok [expected_check("entry-name", "entry"), expected_check("marker-name", "cache-complete"), expected_check("probe-key", "k"), expected_check("wrong-bytes", "other\\n"), expected_check("correct-bytes", "k\\n"), expected_check("compare-op", "=="), expected_check("trim-call", "strings.TrimSpace"), expected_check("write-mode", "0600"), expected_check("missing-complete", "false"), expected_check("wrong-complete", "false"), expected_check("correct-complete", "true"), expected_check("complete-call-count", "3"), expected_check("write-count", "2"), expected_check("err-guard-count", "2"), expected_check("fatal-count", "3")]
+        unknown: "nope" => ok []
+    match case is "life/entry-complete"
+        false => ok []
+        true => ok [expected_check("entry-name", "entry"), expected_check("marker-name", "cache-complete"), expected_check("probe-key", "k"), expected_check("wrong-bytes", "other\\n"), expected_check("correct-bytes", "k\\n"), expected_check("compare-op", "=="), expected_check("trim-call", "strings.TrimSpace"), expected_check("write-mode", "0600"), expected_check("missing-complete", "false"), expected_check("wrong-complete", "false"), expected_check("correct-complete", "true"), expected_check("complete-call-count", "3"), expected_check("write-count", "2"), expected_check("err-guard-count", "2"), expected_check("fatal-count", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/entry-complete", "default", "", "offline") => ok
+        seed_entry_name: context("life/entry-complete", "seed-entry-name-drift", "", "offline") => failed{"entry-name"}
+        seed_marker_name: context("life/entry-complete", "seed-marker-name-drift", "", "offline") => failed{"marker-name"}
+        seed_probe_key: context("life/entry-complete", "seed-probe-key-drift", "", "offline") => failed{"probe-key"}
+        seed_wrong_bytes: context("life/entry-complete", "seed-wrong-bytes-drift", "", "offline") => failed{"wrong-bytes"}
+        seed_correct_bytes: context("life/entry-complete", "seed-correct-bytes-drift", "", "offline") => failed{"correct-bytes"}
+        seed_compare_op: context("life/entry-complete", "seed-compare-op-drift", "", "offline") => failed{"compare-op"}
+        seed_trim_call: context("life/entry-complete", "seed-trim-call-drift", "", "offline") => failed{"trim-call"}
+        seed_write_mode: context("life/entry-complete", "seed-write-mode-drift", "", "offline") => failed{"write-mode"}
+        seed_missing_complete: context("life/entry-complete", "seed-missing-complete-drift", "", "offline") => failed{"missing-complete"}
+        seed_wrong_complete: context("life/entry-complete", "seed-wrong-complete-drift", "", "offline") => failed{"wrong-complete"}
+        seed_correct_complete: context("life/entry-complete", "seed-correct-complete-drift", "", "offline") => failed{"correct-complete"}
+        seed_complete_call_count: context("life/entry-complete", "seed-complete-call-count-drift", "", "offline") => failed{"complete-call-count"}
+        seed_write_count: context("life/entry-complete", "seed-write-count-drift", "", "offline") => failed{"write-count"}
+        seed_err_guard_count: context("life/entry-complete", "seed-err-guard-count-drift", "", "offline") => failed{"err-guard-count"}
+        seed_fatal_count: context("life/entry-complete", "seed-fatal-count-drift", "", "offline") => failed{"fatal-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.entry_name, "entry", c, "entry-name")
+            failed
+            ok evidence entry_name_evidence => match call require_text(got.marker_name, "cache-complete", c, "marker-name")
+                failed
+                ok evidence marker_name_evidence => match call require_text(got.probe_key, "k", c, "probe-key")
+                    failed
+                    ok evidence probe_key_evidence => match call require_text(got.wrong_bytes, "other\\n", c, "wrong-bytes")
+                        failed
+                        ok evidence wrong_bytes_evidence => match call require_text(got.correct_bytes, "k\\n", c, "correct-bytes")
+                            failed
+                            ok evidence correct_bytes_evidence => match call require_text(got.compare_op, "==", c, "compare-op")
+                                failed
+                                ok evidence compare_op_evidence => match call require_text(got.trim_call, "strings.TrimSpace", c, "trim-call")
+                                    failed
+                                    ok evidence trim_call_evidence => match call require_text(got.write_mode, "0600", c, "write-mode")
+                                        failed
+                                        ok evidence write_mode_evidence => match call require_bool(got.missing_complete, false, c, "missing-complete")
+                                            failed
+                                            ok evidence missing_complete_evidence => match call require_bool(got.wrong_complete, false, c, "wrong-complete")
+                                                failed
+                                                ok evidence wrong_complete_evidence => match call require_bool(got.correct_complete, true, c, "correct-complete")
+                                                    failed
+                                                    ok evidence correct_complete_evidence => match call require_int(got.complete_call_count, 3, c, "complete-call-count")
+                                                        failed
+                                                        ok evidence complete_call_count_evidence => match call require_int(got.write_count, 2, c, "write-count")
+                                                            failed
+                                                            ok evidence write_count_evidence => match call require_int(got.err_guard_count, 2, c, "err-guard-count")
+                                                                failed
+                                                                ok evidence err_guard_count_evidence => match call require_int(got.fatal_count, 3, c, "fatal-count")
+                                                                    failed
+                                                                    ok evidence fatal_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l020: "m29-l020" => ok test_case("life/entry-complete", ["life", "m29"], [], 120000, [check_ref("entry-name"), check_ref("marker-name"), check_ref("probe-key"), check_ref("wrong-bytes"), check_ref("correct-bytes"), check_ref("compare-op"), check_ref("trim-call"), check_ref("write-mode"), check_ref("missing-complete"), check_ref("wrong-complete"), check_ref("correct-complete"), check_ref("complete-call-count"), check_ref("write-count"), check_ref("err-guard-count"), check_ref("fatal-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-l020"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/entry-complete", ["life", "m29"], [], 120000, [check_ref("entry-name"), check_ref("marker-name"), check_ref("probe-key"), check_ref("wrong-bytes"), check_ref("correct-bytes"), check_ref("compare-op"), check_ref("trim-call"), check_ref("write-mode"), check_ref("missing-complete"), check_ref("wrong-complete"), check_ref("correct-complete"), check_ref("complete-call-count"), check_ref("write-count"), check_ref("err-guard-count"), check_ref("fatal-count")], callable case_body)

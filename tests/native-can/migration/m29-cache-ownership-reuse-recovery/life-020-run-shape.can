@@ -1,0 +1,299 @@
+package m29life020run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 LIFE-020 "Entry complete: run shape".
+/// Source: tests/integration/harness_cache_test.go symbol
+/// TestHarnessEntryComplete (L107-125): parallel gate
+/// (L108); entry setup (L109); missing probe (L110-112);
+/// foreign write plus probe (L113-118); matching write plus
+/// probe (L119-124).
+/// Disposition: consolidate (this row ports
+/// TestHarnessEntryComplete to ordinary Can functions; the old
+/// Go harness stays until the integrator retires it after
+/// every linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the live run shape: the test name,
+/// the Parallel gate, the TempDir entry setup, the full
+/// missing probe call, the Join plus WriteFile plus []byte
+/// legs, the wrong and correct marker bytes, the negation on
+/// the matching probe, the three Fatal wordings, the shared
+/// err guard plus Fatal err refusal, and the
+/// complete-call/write counts.
+/// ADAPTATION (recorded, with source lines): parallel-call
+/// pins t.Parallel() with parens (L108); tempdir-call pins
+/// t.TempDir() with parens (L109); missing-call pins the
+/// full harnessEntryComplete(entry, "k") spelling (L110);
+/// wrong-bytes pins other plus newline (L113);
+/// correct-bytes pins k plus newline (L119); neg-op pins !
+/// (L122) as the negation on the matching probe;
+/// fatal-missing pins the missing inner bytes (L111);
+/// fatal-foreign pins the foreign inner bytes (L117);
+/// fatal-matching pins the matching inner bytes (L123);
+/// err-guard pins the full err != nil spelling shared by two
+/// sites (L113/L119); fatal-err pins the t.Fatal(err) call
+/// shared by two sites (L114/L120); complete-call-count pins
+/// int (3) from the three probes (L110/L116/L122);
+/// write-count pins int (2) from the two writes (L113/L119).
+/// Facet map (launch plus diagnostics): test-name pins
+/// TestHarnessEntryComplete (L107); parallel-call pins
+/// t.Parallel() (L108); entry-name pins entry (L109);
+/// tempdir-call pins t.TempDir() (L109); missing-call pins
+/// harnessEntryComplete(entry, "k") (L110); fatal-missing
+/// pins missing marker reports complete (L111); join-call
+/// pins filepath.Join (L113); write-call pins os.WriteFile
+/// (L113); bytes-call pins []byte (L113); wrong-bytes pins
+/// other plus newline (L113); fatal-foreign pins foreign
+/// marker reports complete (L117); correct-bytes pins k
+/// plus newline (L119); neg-op pins ! (L122);
+/// fatal-matching pins matching marker reports incomplete
+/// (L123); err-guard pins err != nil (L113); fatal-err pins
+/// t.Fatal(err) (L114); complete-call-count pins 3
+/// (L110/L116/L122); write-count pins 2 (L113/L119).
+/// The verdict pins live in life-020-cache-semantics.can;
+/// the roots-green pin lives in life-020-roots-green.can.
+/// Variants: none (row lists zero variants; default plus
+/// seeded drifts only).
+/// Environment: none (no gates; requires []).
+/// Logical gates WORK/BUILD/CHILD/CLOCK bind at P23; no
+/// live run now. Accept gate P23 is unmet. Timeout 120000ms
+/// is the offline default bound (no Go timeout in this row;
+/// binds at P23 like the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case life/entry-run checks: test-name, parallel-call,
+/// entry-name, tempdir-call, missing-call, fatal-missing,
+/// join-call, write-call, bytes-call, wrong-bytes,
+/// fatal-foreign, correct-bytes, neg-op, fatal-matching,
+/// err-guard, fatal-err, complete-call-count, write-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str test_name
+    str parallel_call
+    str entry_name
+    str tempdir_call
+    str missing_call
+    str fatal_missing
+    str join_call
+    str write_call
+    str bytes_call
+    str wrong_bytes
+    str fatal_foreign
+    str correct_bytes
+    str neg_op
+    str fatal_matching
+    str err_guard
+    str fatal_err
+    int complete_call_count
+    int write_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/entry-run", "default", "", "offline"), "test-name" => ok "case life/entry-run variant default root test-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/entry-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "true", "true", true, "case life/entry-run variant default root test-name run offline")
+        different: false, true, context("life/entry-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("life/entry-run", "default", "", "offline"), "complete-call-count" => ok evidence("complete-call-count", "3", "3", true, "case life/entry-run variant default root complete-call-count run offline")
+        different: 2, 3, context("life/entry-run", "default", "", "offline"), "complete-call-count" => failed{"complete-call-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "TestHarnessEntryComplete", "TestHarnessEntryComplete", context("life/entry-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "TestHarnessEntryComplete", "TestHarnessEntryComplete", true, "case life/entry-run variant default root test-name run offline")
+        different: "TestHarnessEntryComplete_2", "TestHarnessEntryComplete", context("life/entry-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        seed_test_name: "seed-test-name-drift" => ok observation("TestHarnessEntryComplete_2", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        seed_parallel_call: "seed-parallel-call-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()_2", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        seed_entry_name: "seed-entry-name-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry_2", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        seed_tempdir_call: "seed-tempdir-call-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()_2", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        seed_missing_call: "seed-missing-call-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")_2", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        seed_fatal_missing: "seed-fatal-missing-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete_2", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        seed_join_call: "seed-join-call-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join_2", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        seed_write_call: "seed-write-call-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile_2", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        seed_bytes_call: "seed-bytes-call-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte_2", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        seed_wrong_bytes: "seed-wrong-bytes-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n_2", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        seed_fatal_foreign: "seed-fatal-foreign-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete_2", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        seed_correct_bytes: "seed-correct-bytes-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n_2", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        seed_neg_op: "seed-neg-op-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!_2", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        seed_fatal_matching: "seed-fatal-matching-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete_2", "err != nil", "t.Fatal(err)", 3, 2)
+        seed_err_guard: "seed-err-guard-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil_2", "t.Fatal(err)", 3, 2)
+        seed_fatal_err: "seed-fatal-err-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)_2", 3, 2)
+        seed_complete_call_count: "seed-complete-call-count-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 2, 2)
+        seed_write_count: "seed-write-count-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 1)
+    match variant_id
+        "seed-test-name-drift" => ok observation("TestHarnessEntryComplete_2", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        "seed-parallel-call-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()_2", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        "seed-entry-name-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry_2", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        "seed-tempdir-call-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()_2", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        "seed-missing-call-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")_2", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        "seed-fatal-missing-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete_2", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        "seed-join-call-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join_2", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        "seed-write-call-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile_2", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        "seed-bytes-call-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte_2", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        "seed-wrong-bytes-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n_2", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        "seed-fatal-foreign-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete_2", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        "seed-correct-bytes-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n_2", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        "seed-neg-op-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!_2", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+        "seed-fatal-matching-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete_2", "err != nil", "t.Fatal(err)", 3, 2)
+        "seed-err-guard-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil_2", "t.Fatal(err)", 3, 2)
+        "seed-fatal-err-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)_2", 3, 2)
+        "seed-complete-call-count-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 2, 2)
+        "seed-write-count-drift" => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 1)
+        _ => ok observation("TestHarnessEntryComplete", "t.Parallel()", "entry", "t.TempDir()", "harnessEntryComplete(entry, \"k\")", "missing marker reports complete", "filepath.Join", "os.WriteFile", "[]byte", "other\\n", "foreign marker reports complete", "k\\n", "!", "matching marker reports incomplete", "err != nil", "t.Fatal(err)", 3, 2)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l020: "m29-l020" => ok [check("test-name", "row pins the EntryComplete test name"), check("parallel-call", "test pins the Parallel call"), check("entry-name", "scratch entry is named entry"), check("tempdir-call", "scratch pins the TempDir call"), check("missing-call", "missing leg pins the full probe call"), check("fatal-missing", "missing leg refusal wording is pinned"), check("join-call", "markers join with filepath Join"), check("write-call", "legs land with WriteFile"), check("bytes-call", "bytes pin the byte slice cast"), check("wrong-bytes", "foreign leg pins the wrong marker bytes"), check("fatal-foreign", "foreign leg refusal wording is pinned"), check("correct-bytes", "matching leg pins the correct marker bytes"), check("neg-op", "matching leg pins the negation"), check("fatal-matching", "matching leg refusal wording is pinned"), check("err-guard", "two legs share the err guard"), check("fatal-err", "err legs refuse with Fatal err"), check("complete-call-count", "exactly three complete legs run"), check("write-count", "exactly two marker writes run")]
+        other: "nope" => ok []
+    match scope is "m29-l020"
+        false => ok []
+        true => ok [check("test-name", "row pins the EntryComplete test name"), check("parallel-call", "test pins the Parallel call"), check("entry-name", "scratch entry is named entry"), check("tempdir-call", "scratch pins the TempDir call"), check("missing-call", "missing leg pins the full probe call"), check("fatal-missing", "missing leg refusal wording is pinned"), check("join-call", "markers join with filepath Join"), check("write-call", "legs land with WriteFile"), check("bytes-call", "bytes pin the byte slice cast"), check("wrong-bytes", "foreign leg pins the wrong marker bytes"), check("fatal-foreign", "foreign leg refusal wording is pinned"), check("correct-bytes", "matching leg pins the correct marker bytes"), check("neg-op", "matching leg pins the negation"), check("fatal-matching", "matching leg refusal wording is pinned"), check("err-guard", "two legs share the err guard"), check("fatal-err", "err legs refuse with Fatal err"), check("complete-call-count", "exactly three complete legs run"), check("write-count", "exactly two marker writes run")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/entry-run" => ok [expected_check("test-name", "TestHarnessEntryComplete"), expected_check("parallel-call", "t.Parallel()"), expected_check("entry-name", "entry"), expected_check("tempdir-call", "t.TempDir()"), expected_check("missing-call", "harnessEntryComplete(entry, \"k\")"), expected_check("fatal-missing", "missing marker reports complete"), expected_check("join-call", "filepath.Join"), expected_check("write-call", "os.WriteFile"), expected_check("bytes-call", "[]byte"), expected_check("wrong-bytes", "other\\n"), expected_check("fatal-foreign", "foreign marker reports complete"), expected_check("correct-bytes", "k\\n"), expected_check("neg-op", "!"), expected_check("fatal-matching", "matching marker reports incomplete"), expected_check("err-guard", "err != nil"), expected_check("fatal-err", "t.Fatal(err)"), expected_check("complete-call-count", "3"), expected_check("write-count", "2")]
+        unknown: "nope" => ok []
+    match case is "life/entry-run"
+        false => ok []
+        true => ok [expected_check("test-name", "TestHarnessEntryComplete"), expected_check("parallel-call", "t.Parallel()"), expected_check("entry-name", "entry"), expected_check("tempdir-call", "t.TempDir()"), expected_check("missing-call", "harnessEntryComplete(entry, \"k\")"), expected_check("fatal-missing", "missing marker reports complete"), expected_check("join-call", "filepath.Join"), expected_check("write-call", "os.WriteFile"), expected_check("bytes-call", "[]byte"), expected_check("wrong-bytes", "other\\n"), expected_check("fatal-foreign", "foreign marker reports complete"), expected_check("correct-bytes", "k\\n"), expected_check("neg-op", "!"), expected_check("fatal-matching", "matching marker reports incomplete"), expected_check("err-guard", "err != nil"), expected_check("fatal-err", "t.Fatal(err)"), expected_check("complete-call-count", "3"), expected_check("write-count", "2")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/entry-run", "default", "", "offline") => ok
+        seed_test_name: context("life/entry-run", "seed-test-name-drift", "", "offline") => failed{"test-name"}
+        seed_parallel_call: context("life/entry-run", "seed-parallel-call-drift", "", "offline") => failed{"parallel-call"}
+        seed_entry_name: context("life/entry-run", "seed-entry-name-drift", "", "offline") => failed{"entry-name"}
+        seed_tempdir_call: context("life/entry-run", "seed-tempdir-call-drift", "", "offline") => failed{"tempdir-call"}
+        seed_missing_call: context("life/entry-run", "seed-missing-call-drift", "", "offline") => failed{"missing-call"}
+        seed_fatal_missing: context("life/entry-run", "seed-fatal-missing-drift", "", "offline") => failed{"fatal-missing"}
+        seed_join_call: context("life/entry-run", "seed-join-call-drift", "", "offline") => failed{"join-call"}
+        seed_write_call: context("life/entry-run", "seed-write-call-drift", "", "offline") => failed{"write-call"}
+        seed_bytes_call: context("life/entry-run", "seed-bytes-call-drift", "", "offline") => failed{"bytes-call"}
+        seed_wrong_bytes: context("life/entry-run", "seed-wrong-bytes-drift", "", "offline") => failed{"wrong-bytes"}
+        seed_fatal_foreign: context("life/entry-run", "seed-fatal-foreign-drift", "", "offline") => failed{"fatal-foreign"}
+        seed_correct_bytes: context("life/entry-run", "seed-correct-bytes-drift", "", "offline") => failed{"correct-bytes"}
+        seed_neg_op: context("life/entry-run", "seed-neg-op-drift", "", "offline") => failed{"neg-op"}
+        seed_fatal_matching: context("life/entry-run", "seed-fatal-matching-drift", "", "offline") => failed{"fatal-matching"}
+        seed_err_guard: context("life/entry-run", "seed-err-guard-drift", "", "offline") => failed{"err-guard"}
+        seed_fatal_err: context("life/entry-run", "seed-fatal-err-drift", "", "offline") => failed{"fatal-err"}
+        seed_complete_call_count: context("life/entry-run", "seed-complete-call-count-drift", "", "offline") => failed{"complete-call-count"}
+        seed_write_count: context("life/entry-run", "seed-write-count-drift", "", "offline") => failed{"write-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.test_name, "TestHarnessEntryComplete", c, "test-name")
+            failed
+            ok evidence test_name_evidence => match call require_text(got.parallel_call, "t.Parallel()", c, "parallel-call")
+                failed
+                ok evidence parallel_call_evidence => match call require_text(got.entry_name, "entry", c, "entry-name")
+                    failed
+                    ok evidence entry_name_evidence => match call require_text(got.tempdir_call, "t.TempDir()", c, "tempdir-call")
+                        failed
+                        ok evidence tempdir_call_evidence => match call require_text(got.missing_call, "harnessEntryComplete(entry, \"k\")", c, "missing-call")
+                            failed
+                            ok evidence missing_call_evidence => match call require_text(got.fatal_missing, "missing marker reports complete", c, "fatal-missing")
+                                failed
+                                ok evidence fatal_missing_evidence => match call require_text(got.join_call, "filepath.Join", c, "join-call")
+                                    failed
+                                    ok evidence join_call_evidence => match call require_text(got.write_call, "os.WriteFile", c, "write-call")
+                                        failed
+                                        ok evidence write_call_evidence => match call require_text(got.bytes_call, "[]byte", c, "bytes-call")
+                                            failed
+                                            ok evidence bytes_call_evidence => match call require_text(got.wrong_bytes, "other\\n", c, "wrong-bytes")
+                                                failed
+                                                ok evidence wrong_bytes_evidence => match call require_text(got.fatal_foreign, "foreign marker reports complete", c, "fatal-foreign")
+                                                    failed
+                                                    ok evidence fatal_foreign_evidence => match call require_text(got.correct_bytes, "k\\n", c, "correct-bytes")
+                                                        failed
+                                                        ok evidence correct_bytes_evidence => match call require_text(got.neg_op, "!", c, "neg-op")
+                                                            failed
+                                                            ok evidence neg_op_evidence => match call require_text(got.fatal_matching, "matching marker reports incomplete", c, "fatal-matching")
+                                                                failed
+                                                                ok evidence fatal_matching_evidence => match call require_text(got.err_guard, "err != nil", c, "err-guard")
+                                                                    failed
+                                                                    ok evidence err_guard_evidence => match call require_text(got.fatal_err, "t.Fatal(err)", c, "fatal-err")
+                                                                        failed
+                                                                        ok evidence fatal_err_evidence => match call require_int(got.complete_call_count, 3, c, "complete-call-count")
+                                                                            failed
+                                                                            ok evidence complete_call_count_evidence => match call require_int(got.write_count, 2, c, "write-count")
+                                                                                failed
+                                                                                ok evidence write_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l020: "m29-l020" => ok test_case("life/entry-run", ["life", "m29"], [], 120000, [check_ref("test-name"), check_ref("parallel-call"), check_ref("entry-name"), check_ref("tempdir-call"), check_ref("missing-call"), check_ref("fatal-missing"), check_ref("join-call"), check_ref("write-call"), check_ref("bytes-call"), check_ref("wrong-bytes"), check_ref("fatal-foreign"), check_ref("correct-bytes"), check_ref("neg-op"), check_ref("fatal-matching"), check_ref("err-guard"), check_ref("fatal-err"), check_ref("complete-call-count"), check_ref("write-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-l020"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/entry-run", ["life", "m29"], [], 120000, [check_ref("test-name"), check_ref("parallel-call"), check_ref("entry-name"), check_ref("tempdir-call"), check_ref("missing-call"), check_ref("fatal-missing"), check_ref("join-call"), check_ref("write-call"), check_ref("bytes-call"), check_ref("wrong-bytes"), check_ref("fatal-foreign"), check_ref("correct-bytes"), check_ref("neg-op"), check_ref("fatal-matching"), check_ref("err-guard"), check_ref("fatal-err"), check_ref("complete-call-count"), check_ref("write-count")], callable case_body)

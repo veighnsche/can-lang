@@ -1,0 +1,293 @@
+package m29life020roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 LIFE-020 "Entry complete: roots green".
+/// Source: tests/integration/harness_test.go helper
+/// harnessEntryComplete (L307-314) plus the marker write
+/// (L297).
+/// Disposition: consolidate (this row ports
+/// TestHarnessEntryComplete to ordinary Can functions; the old
+/// Go harness stays until the integrator retires it after
+/// every linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the static completion baseline as
+/// the green root: the helper name plus entry/key params,
+/// the bool return, the raw read plus Join marker path, the
+/// cache-complete pin, the err guard plus false return, the
+/// TrimSpace plus string-cast plus equality compare, the key
+/// right side, the writer bytes plus 0644 mode, and the
+/// param/call-site counts.
+/// ADAPTATION (recorded, with source lines):
+/// missing-returns pins the full return-false spelling
+/// (L311); string-call pins string(raw) with parens (L313);
+/// compare-op pins == (L313) as the comparison logic (no
+/// hash re-implementation anywhere); writer-bytes pins the
+/// key plus newline inner bytes (L297); writer-mode pins
+/// the 0644 spelling structurally as str (L297); param-count
+/// pins int (2) from the params (L308); call-site-count pins
+/// int (8) from the five helper-internal calls (H
+/// L119/L228/L237/L257/L262) plus the three test legs
+/// (L110/L116/L122); all call pins pin spellings only (no
+/// hash re-implementation anywhere).
+/// Facet map (static baseline): helper-name pins
+/// harnessEntryComplete (L308); entry-param pins entry
+/// (L308); key-param pins key (L308); return-type pins bool
+/// (L308); raw-name pins raw (L309); read-call pins
+/// os.ReadFile (L309); join-call pins filepath.Join (L309);
+/// marker-name pins cache-complete (L309); err-guard pins
+/// err != nil (L310); missing-returns pins return false
+/// (L311); trim-call pins strings.TrimSpace (L313);
+/// string-call pins string(raw) (L313); compare-op pins ==
+/// (L313); compare-rhs pins key (L313); writer-bytes pins
+/// key plus newline (L297); writer-mode pins 0644 (L297);
+/// param-count pins 2 (L308); call-site-count pins 8 (H
+/// L119/L228/L237/L257/L262 plus L110/L116/L122).
+/// The verdict pins live in life-020-cache-semantics.can;
+/// the run shape plus diagnostics live in
+/// life-020-run-shape.can.
+/// Variants: none (row lists zero variants; default plus
+/// seeded drifts only).
+/// Environment: none (no gates; requires []).
+/// Logical gates WORK/BUILD/CHILD/CLOCK bind at P23; no
+/// live run now. Accept gate P23 is unmet. Timeout 120000ms
+/// is the offline default bound (no Go timeout in this row;
+/// binds at P23 like the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case life/entry-roots checks: helper-name, entry-param,
+/// key-param, return-type, raw-name, read-call, join-call,
+/// marker-name, err-guard, missing-returns, trim-call,
+/// string-call, compare-op, compare-rhs, writer-bytes,
+/// writer-mode, param-count, call-site-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str helper_name
+    str entry_param
+    str key_param
+    str return_type
+    str raw_name
+    str read_call
+    str join_call
+    str marker_name
+    str err_guard
+    str missing_returns
+    str trim_call
+    str string_call
+    str compare_op
+    str compare_rhs
+    str writer_bytes
+    str writer_mode
+    int param_count
+    int call_site_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/entry-roots", "default", "", "offline"), "helper-name" => ok "case life/entry-roots variant default root helper-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/entry-roots", "default", "", "offline"), "helper-name" => ok evidence("helper-name", "true", "true", true, "case life/entry-roots variant default root helper-name run offline")
+        different: false, true, context("life/entry-roots", "default", "", "offline"), "helper-name" => failed{"helper-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("life/entry-roots", "default", "", "offline"), "param-count" => ok evidence("param-count", "2", "2", true, "case life/entry-roots variant default root param-count run offline")
+        different: 1, 2, context("life/entry-roots", "default", "", "offline"), "param-count" => failed{"param-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "harnessEntryComplete", "harnessEntryComplete", context("life/entry-roots", "default", "", "offline"), "helper-name" => ok evidence("helper-name", "harnessEntryComplete", "harnessEntryComplete", true, "case life/entry-roots variant default root helper-name run offline")
+        different: "harnessEntryComplete_2", "harnessEntryComplete", context("life/entry-roots", "default", "", "offline"), "helper-name" => failed{"helper-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        seed_helper_name: "seed-helper-name-drift" => ok observation("harnessEntryComplete_2", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        seed_entry_param: "seed-entry-param-drift" => ok observation("harnessEntryComplete", "entry_2", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        seed_key_param: "seed-key-param-drift" => ok observation("harnessEntryComplete", "entry", "key_2", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        seed_return_type: "seed-return-type-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool_2", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        seed_raw_name: "seed-raw-name-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw_2", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        seed_read_call: "seed-read-call-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile_2", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        seed_join_call: "seed-join-call-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join_2", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        seed_marker_name: "seed-marker-name-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete_2", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        seed_err_guard: "seed-err-guard-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil_2", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        seed_missing_returns: "seed-missing-returns-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false_2", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        seed_trim_call: "seed-trim-call-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace_2", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        seed_string_call: "seed-string-call-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)_2", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        seed_compare_op: "seed-compare-op-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==_2", "key", "key+\"\\n\"", "0644", 2, 8)
+        seed_compare_rhs: "seed-compare-rhs-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key_2", "key+\"\\n\"", "0644", 2, 8)
+        seed_writer_bytes: "seed-writer-bytes-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"_2", "0644", 2, 8)
+        seed_writer_mode: "seed-writer-mode-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644_2", 2, 8)
+        seed_param_count: "seed-param-count-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 1, 8)
+        seed_call_site_count: "seed-call-site-count-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 7)
+    match variant_id
+        "seed-helper-name-drift" => ok observation("harnessEntryComplete_2", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        "seed-entry-param-drift" => ok observation("harnessEntryComplete", "entry_2", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        "seed-key-param-drift" => ok observation("harnessEntryComplete", "entry", "key_2", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        "seed-return-type-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool_2", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        "seed-raw-name-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw_2", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        "seed-read-call-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile_2", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        "seed-join-call-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join_2", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        "seed-marker-name-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete_2", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        "seed-err-guard-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil_2", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        "seed-missing-returns-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false_2", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        "seed-trim-call-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace_2", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        "seed-string-call-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)_2", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+        "seed-compare-op-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==_2", "key", "key+\"\\n\"", "0644", 2, 8)
+        "seed-compare-rhs-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key_2", "key+\"\\n\"", "0644", 2, 8)
+        "seed-writer-bytes-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"_2", "0644", 2, 8)
+        "seed-writer-mode-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644_2", 2, 8)
+        "seed-param-count-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 1, 8)
+        "seed-call-site-count-drift" => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 7)
+        _ => ok observation("harnessEntryComplete", "entry", "key", "bool", "raw", "os.ReadFile", "filepath.Join", "cache-complete", "err != nil", "return false", "strings.TrimSpace", "string(raw)", "==", "key", "key+\"\\n\"", "0644", 2, 8)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l020: "m29-l020" => ok [check("helper-name", "helper is named harnessEntryComplete"), check("entry-param", "entry input is named entry"), check("key-param", "key input is named key"), check("return-type", "helper returns bool"), check("raw-name", "read bytes are named raw"), check("read-call", "marker loads with ReadFile"), check("join-call", "marker joins with filepath Join"), check("marker-name", "helper pins the marker name"), check("err-guard", "missing marker faces the err guard"), check("missing-returns", "missing marker returns false"), check("trim-call", "compare pins the TrimSpace call"), check("string-call", "compare pins the string cast"), check("compare-op", "compare pins the equality spelling"), check("compare-rhs", "compare pins key on the right"), check("writer-bytes", "writer pins the key plus newline bytes"), check("writer-mode", "writer pins the 0644 mode"), check("param-count", "helper takes two params"), check("call-site-count", "eight call sites pin the helper")]
+        other: "nope" => ok []
+    match scope is "m29-l020"
+        false => ok []
+        true => ok [check("helper-name", "helper is named harnessEntryComplete"), check("entry-param", "entry input is named entry"), check("key-param", "key input is named key"), check("return-type", "helper returns bool"), check("raw-name", "read bytes are named raw"), check("read-call", "marker loads with ReadFile"), check("join-call", "marker joins with filepath Join"), check("marker-name", "helper pins the marker name"), check("err-guard", "missing marker faces the err guard"), check("missing-returns", "missing marker returns false"), check("trim-call", "compare pins the TrimSpace call"), check("string-call", "compare pins the string cast"), check("compare-op", "compare pins the equality spelling"), check("compare-rhs", "compare pins key on the right"), check("writer-bytes", "writer pins the key plus newline bytes"), check("writer-mode", "writer pins the 0644 mode"), check("param-count", "helper takes two params"), check("call-site-count", "eight call sites pin the helper")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/entry-roots" => ok [expected_check("helper-name", "harnessEntryComplete"), expected_check("entry-param", "entry"), expected_check("key-param", "key"), expected_check("return-type", "bool"), expected_check("raw-name", "raw"), expected_check("read-call", "os.ReadFile"), expected_check("join-call", "filepath.Join"), expected_check("marker-name", "cache-complete"), expected_check("err-guard", "err != nil"), expected_check("missing-returns", "return false"), expected_check("trim-call", "strings.TrimSpace"), expected_check("string-call", "string(raw)"), expected_check("compare-op", "=="), expected_check("compare-rhs", "key"), expected_check("writer-bytes", "key+\"\\n\""), expected_check("writer-mode", "0644"), expected_check("param-count", "2"), expected_check("call-site-count", "8")]
+        unknown: "nope" => ok []
+    match case is "life/entry-roots"
+        false => ok []
+        true => ok [expected_check("helper-name", "harnessEntryComplete"), expected_check("entry-param", "entry"), expected_check("key-param", "key"), expected_check("return-type", "bool"), expected_check("raw-name", "raw"), expected_check("read-call", "os.ReadFile"), expected_check("join-call", "filepath.Join"), expected_check("marker-name", "cache-complete"), expected_check("err-guard", "err != nil"), expected_check("missing-returns", "return false"), expected_check("trim-call", "strings.TrimSpace"), expected_check("string-call", "string(raw)"), expected_check("compare-op", "=="), expected_check("compare-rhs", "key"), expected_check("writer-bytes", "key+\"\\n\""), expected_check("writer-mode", "0644"), expected_check("param-count", "2"), expected_check("call-site-count", "8")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/entry-roots", "default", "", "offline") => ok
+        seed_helper_name: context("life/entry-roots", "seed-helper-name-drift", "", "offline") => failed{"helper-name"}
+        seed_entry_param: context("life/entry-roots", "seed-entry-param-drift", "", "offline") => failed{"entry-param"}
+        seed_key_param: context("life/entry-roots", "seed-key-param-drift", "", "offline") => failed{"key-param"}
+        seed_return_type: context("life/entry-roots", "seed-return-type-drift", "", "offline") => failed{"return-type"}
+        seed_raw_name: context("life/entry-roots", "seed-raw-name-drift", "", "offline") => failed{"raw-name"}
+        seed_read_call: context("life/entry-roots", "seed-read-call-drift", "", "offline") => failed{"read-call"}
+        seed_join_call: context("life/entry-roots", "seed-join-call-drift", "", "offline") => failed{"join-call"}
+        seed_marker_name: context("life/entry-roots", "seed-marker-name-drift", "", "offline") => failed{"marker-name"}
+        seed_err_guard: context("life/entry-roots", "seed-err-guard-drift", "", "offline") => failed{"err-guard"}
+        seed_missing_returns: context("life/entry-roots", "seed-missing-returns-drift", "", "offline") => failed{"missing-returns"}
+        seed_trim_call: context("life/entry-roots", "seed-trim-call-drift", "", "offline") => failed{"trim-call"}
+        seed_string_call: context("life/entry-roots", "seed-string-call-drift", "", "offline") => failed{"string-call"}
+        seed_compare_op: context("life/entry-roots", "seed-compare-op-drift", "", "offline") => failed{"compare-op"}
+        seed_compare_rhs: context("life/entry-roots", "seed-compare-rhs-drift", "", "offline") => failed{"compare-rhs"}
+        seed_writer_bytes: context("life/entry-roots", "seed-writer-bytes-drift", "", "offline") => failed{"writer-bytes"}
+        seed_writer_mode: context("life/entry-roots", "seed-writer-mode-drift", "", "offline") => failed{"writer-mode"}
+        seed_param_count: context("life/entry-roots", "seed-param-count-drift", "", "offline") => failed{"param-count"}
+        seed_call_site_count: context("life/entry-roots", "seed-call-site-count-drift", "", "offline") => failed{"call-site-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.helper_name, "harnessEntryComplete", c, "helper-name")
+            failed
+            ok evidence helper_name_evidence => match call require_text(got.entry_param, "entry", c, "entry-param")
+                failed
+                ok evidence entry_param_evidence => match call require_text(got.key_param, "key", c, "key-param")
+                    failed
+                    ok evidence key_param_evidence => match call require_text(got.return_type, "bool", c, "return-type")
+                        failed
+                        ok evidence return_type_evidence => match call require_text(got.raw_name, "raw", c, "raw-name")
+                            failed
+                            ok evidence raw_name_evidence => match call require_text(got.read_call, "os.ReadFile", c, "read-call")
+                                failed
+                                ok evidence read_call_evidence => match call require_text(got.join_call, "filepath.Join", c, "join-call")
+                                    failed
+                                    ok evidence join_call_evidence => match call require_text(got.marker_name, "cache-complete", c, "marker-name")
+                                        failed
+                                        ok evidence marker_name_evidence => match call require_text(got.err_guard, "err != nil", c, "err-guard")
+                                            failed
+                                            ok evidence err_guard_evidence => match call require_text(got.missing_returns, "return false", c, "missing-returns")
+                                                failed
+                                                ok evidence missing_returns_evidence => match call require_text(got.trim_call, "strings.TrimSpace", c, "trim-call")
+                                                    failed
+                                                    ok evidence trim_call_evidence => match call require_text(got.string_call, "string(raw)", c, "string-call")
+                                                        failed
+                                                        ok evidence string_call_evidence => match call require_text(got.compare_op, "==", c, "compare-op")
+                                                            failed
+                                                            ok evidence compare_op_evidence => match call require_text(got.compare_rhs, "key", c, "compare-rhs")
+                                                                failed
+                                                                ok evidence compare_rhs_evidence => match call require_text(got.writer_bytes, "key+\"\\n\"", c, "writer-bytes")
+                                                                    failed
+                                                                    ok evidence writer_bytes_evidence => match call require_text(got.writer_mode, "0644", c, "writer-mode")
+                                                                        failed
+                                                                        ok evidence writer_mode_evidence => match call require_int(got.param_count, 2, c, "param-count")
+                                                                            failed
+                                                                            ok evidence param_count_evidence => match call require_int(got.call_site_count, 8, c, "call-site-count")
+                                                                                failed
+                                                                                ok evidence call_site_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l020: "m29-l020" => ok test_case("life/entry-roots", ["life", "m29"], [], 120000, [check_ref("helper-name"), check_ref("entry-param"), check_ref("key-param"), check_ref("return-type"), check_ref("raw-name"), check_ref("read-call"), check_ref("join-call"), check_ref("marker-name"), check_ref("err-guard"), check_ref("missing-returns"), check_ref("trim-call"), check_ref("string-call"), check_ref("compare-op"), check_ref("compare-rhs"), check_ref("writer-bytes"), check_ref("writer-mode"), check_ref("param-count"), check_ref("call-site-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-l020"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/entry-roots", ["life", "m29"], [], 120000, [check_ref("helper-name"), check_ref("entry-param"), check_ref("key-param"), check_ref("return-type"), check_ref("raw-name"), check_ref("read-call"), check_ref("join-call"), check_ref("marker-name"), check_ref("err-guard"), check_ref("missing-returns"), check_ref("trim-call"), check_ref("string-call"), check_ref("compare-op"), check_ref("compare-rhs"), check_ref("writer-bytes"), check_ref("writer-mode"), check_ref("param-count"), check_ref("call-site-count")], callable case_body)
