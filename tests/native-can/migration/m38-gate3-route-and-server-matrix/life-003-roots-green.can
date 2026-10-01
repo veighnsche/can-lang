@@ -1,0 +1,455 @@
+package m38life003roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M38 LIFE-003 TestGate3ServerMatrix
+/// load plus denial legs.
+/// Source: tests/integration/
+/// gate3_matrix_test.go symbol
+/// TestGate3ServerMatrix (L518-899):
+/// a member loads stored lines in
+/// stored order with the exact total;
+/// foreign, missing, anonymous,
+/// revoked and ghost callers share one
+/// nondisclosing 403; refused media,
+/// shape and bulk never reach the
+/// guarded entry.
+/// Disposition: migrate (this row owns
+/// the load plus denial pact as
+/// reviewable Can facts; the old go
+/// check stays until the integrator
+/// retires it after every linked row,
+/// variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): facet one load
+/// half (L661-688: member load, exact
+/// total, stored line order, denied
+/// loads) and facet three (L610-650:
+/// five-leg 403 grid, no stored bytes
+/// leak, 415 plus 400 plus 413
+/// refusals).
+/// ADAPTATION (recorded, with source
+/// lines): caller cookie bytes stay
+/// unquoted (L615-619 name the five
+/// legs; note labels pin the legs);
+/// path cells pin tenant 2 (L615) plus
+/// invoices 8 and 9 (L615-616); the
+/// plain media kind stays a line-ref
+/// (L639) since only its 415 status
+/// plus body are pinned; leak pins hold
+/// the three probe words (L629); load
+/// grid cells reuse the save grid
+/// tenant plus invoice ids (L676-682).
+/// load-leaf pins
+/// invoice_contract::grid_loaded
+/// (L667); load-revision pins 3 (L669);
+/// load-total pins 4196.0 (L669);
+/// load-key-first pins k1 (L673);
+/// load-key-second pins k2 (L673);
+/// load-forbidden-leaf pins
+/// invoice_contract::grid_load_forbidden
+/// (L687); denied-op pins op-denied
+/// (L621); denied-leaf pins
+/// invoice_contract::grid_forbidden
+/// (L625); denied-note-foreign pins
+/// json foreign (L615);
+/// denied-note-missing pins json
+/// missing (L616); denied-note-anonymous
+/// pins json anonymous (L617);
+/// denied-note-revoked pins json
+/// revoked (L618); denied-note-ghost
+/// pins json ghost (L619);
+/// leak-globex pins Globex (L629);
+/// leak-tenant-word pins tenant (L629);
+/// leak-acme pins Acme (L629);
+/// denied-invoice-foreign pins 8
+/// (L615); denied-invoice-missing pins
+/// 9 (L616); bad-media-body pins
+/// Unsupported Media Type (L640);
+/// malformed-body pins Bad Request
+/// (L644); oversize-body pins Payload
+/// Too Large (L648); load-line-count
+/// pins int (2) from L673;
+/// load-matrix-count pins int (3) from
+/// L676-682; denied-count pins int (5)
+/// from L612-620; denied-value-count
+/// pins int (2) from L626;
+/// denied-status pins int (403) from
+/// L622; denied-tenant-foreign pins int
+/// (2) from L615; bad-media-status pins
+/// int (415) from L639;
+/// malformed-status pins int (400) from
+/// L643; oversize-status pins int (413)
+/// from L647.
+/// Facet map (leg order): load-leaf,
+/// load-revision, load-total,
+/// load-key-first, load-key-second,
+/// load-forbidden-leaf, denied-op,
+/// denied-leaf, denied-note-foreign,
+/// denied-note-missing,
+/// denied-note-anonymous,
+/// denied-note-revoked,
+/// denied-note-ghost, leak-globex,
+/// leak-tenant-word, leak-acme,
+/// denied-invoice-foreign,
+/// denied-invoice-missing,
+/// bad-media-body, malformed-body,
+/// oversize-body, load-line-count,
+/// load-matrix-count, denied-count,
+/// denied-value-count, denied-status,
+/// denied-tenant-foreign,
+/// bad-media-status, malformed-status,
+/// oversize-status.
+/// The save plus replay legs live in
+/// life-003-base-semantics.can; the
+/// pact media plus outage plus reorder
+/// plus swap plus crash legs live in
+/// life-003-run-shape.can.
+/// Variants: save plus load allow plus
+/// deny grids; JSON plus form media and
+/// bulk refusals; mid-flight plus
+/// lost-ack crashes (this file holds
+/// the load plus denial plus refused
+/// media cells).
+/// Environment: CAN_BUN_ARCHIVE plus a
+/// staged bundle plus cut-off homes
+/// plus loopback ports plus disposable
+/// SQLite plus a managed server (row
+/// lists three gates; bind at P23; no
+/// live run now).
+/// Logical gates BUILD plus DIAG plus
+/// DB plus HTTP bind at P23 plus QHTTP
+/// plus QD1; no live run now.
+/// Timeout 120000ms is the offline
+/// default bound (the live fourteen
+/// minute hold is pinned in the run
+/// slice; binds at P23 like the M31
+/// no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// plus QHTTP plus QD1 accept gates
+/// unmet).
+/// Case life/server-matrix-scope
+/// checks: load-leaf, load-revision,
+/// load-total, load-key-first,
+/// load-key-second,
+/// load-forbidden-leaf, denied-op,
+/// denied-leaf, denied-note-foreign,
+/// denied-note-missing,
+/// denied-note-anonymous,
+/// denied-note-revoked,
+/// denied-note-ghost, leak-globex,
+/// leak-tenant-word, leak-acme,
+/// denied-invoice-foreign,
+/// denied-invoice-missing,
+/// bad-media-body, malformed-body,
+/// oversize-body, load-line-count,
+/// load-matrix-count, denied-count,
+/// denied-value-count, denied-status,
+/// denied-tenant-foreign,
+/// bad-media-status, malformed-status,
+/// oversize-status.
+/// Shared old files untouched;
+/// retirement is a later integrator
+/// decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str load_leaf
+    str load_revision
+    str load_total
+    str load_key_first
+    str load_key_second
+    str load_forbidden_leaf
+    str denied_op
+    str denied_leaf
+    str denied_note_foreign
+    str denied_note_missing
+    str denied_note_anonymous
+    str denied_note_revoked
+    str denied_note_ghost
+    str leak_globex
+    str leak_tenant_word
+    str leak_acme
+    str denied_invoice_foreign
+    str denied_invoice_missing
+    str bad_media_body
+    str malformed_body
+    str oversize_body
+    int load_line_count
+    int load_matrix_count
+    int denied_count
+    int denied_value_count
+    int denied_status
+    int denied_tenant_foreign
+    int bad_media_status
+    int malformed_status
+    int oversize_status
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/server-matrix-scope", "default", "", "offline"), "load-leaf" => ok "case life/server-matrix-scope variant default root load-leaf run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/server-matrix-scope", "default", "", "offline"), "load-leaf" => ok evidence("load-leaf", "true", "true", true, "case life/server-matrix-scope variant default root load-leaf run offline")
+        different: false, true, context("life/server-matrix-scope", "default", "", "offline"), "load-leaf" => failed{"load-leaf"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("life/server-matrix-scope", "default", "", "offline"), "load-line-count" => ok evidence("load-line-count", "2", "2", true, "case life/server-matrix-scope variant default root load-line-count run offline")
+        different: 1, 2, context("life/server-matrix-scope", "default", "", "offline"), "load-line-count" => failed{"load-line-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "invoice_contract::grid_loaded", "invoice_contract::grid_loaded", context("life/server-matrix-scope", "default", "", "offline"), "load-leaf" => ok evidence("load-leaf", "invoice_contract::grid_loaded", "invoice_contract::grid_loaded", true, "case life/server-matrix-scope variant default root load-leaf run offline")
+        different: "invoice_contract::grid_loaded_2", "invoice_contract::grid_loaded", context("life/server-matrix-scope", "default", "", "offline"), "load-leaf" => failed{"load-leaf"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_load_leaf: "seed-load-leaf-drift" => ok observation("invoice_contract::grid_loaded_2", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_load_revision: "seed-load-revision-drift" => ok observation("invoice_contract::grid_loaded", "3_2", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_load_total: "seed-load-total-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0_2", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_load_key_first: "seed-load-key-first-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1_2", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_load_key_second: "seed-load-key-second-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2_2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_load_forbidden_leaf: "seed-load-forbidden-leaf-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden_2", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_denied_op: "seed-denied-op-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied_2", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_denied_leaf: "seed-denied-leaf-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden_2", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_denied_note_foreign: "seed-denied-note-foreign-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign_2", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_denied_note_missing: "seed-denied-note-missing-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing_2", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_denied_note_anonymous: "seed-denied-note-anonymous-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous_2", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_denied_note_revoked: "seed-denied-note-revoked-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked_2", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_denied_note_ghost: "seed-denied-note-ghost-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost_2", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_leak_globex: "seed-leak-globex-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex_2", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_leak_tenant_word: "seed-leak-tenant-word-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant_2", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_leak_acme: "seed-leak-acme-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme_2", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_denied_invoice_foreign: "seed-denied-invoice-foreign-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8_2", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_denied_invoice_missing: "seed-denied-invoice-missing-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9_2", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_bad_media_body: "seed-bad-media-body-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type_2", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_malformed_body: "seed-malformed-body-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request_2", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_oversize_body: "seed-oversize-body-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large_2", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_load_line_count: "seed-load-line-count-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 1, 3, 5, 2, 403, 2, 415, 400, 413)
+        seed_load_matrix_count: "seed-load-matrix-count-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 2, 5, 2, 403, 2, 415, 400, 413)
+        seed_denied_count: "seed-denied-count-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 4, 2, 403, 2, 415, 400, 413)
+        seed_denied_value_count: "seed-denied-value-count-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 1, 403, 2, 415, 400, 413)
+        seed_denied_status: "seed-denied-status-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 402, 2, 415, 400, 413)
+        seed_denied_tenant_foreign: "seed-denied-tenant-foreign-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 1, 415, 400, 413)
+        seed_bad_media_status: "seed-bad-media-status-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 414, 400, 413)
+        seed_malformed_status: "seed-malformed-status-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 399, 413)
+        seed_oversize_status: "seed-oversize-status-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 412)
+    match variant_id
+        "seed-load-leaf-drift" => ok observation("invoice_contract::grid_loaded_2", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-load-revision-drift" => ok observation("invoice_contract::grid_loaded", "3_2", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-load-total-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0_2", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-load-key-first-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1_2", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-load-key-second-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2_2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-load-forbidden-leaf-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden_2", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-denied-op-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied_2", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-denied-leaf-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden_2", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-denied-note-foreign-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign_2", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-denied-note-missing-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing_2", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-denied-note-anonymous-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous_2", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-denied-note-revoked-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked_2", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-denied-note-ghost-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost_2", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-leak-globex-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex_2", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-leak-tenant-word-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant_2", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-leak-acme-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme_2", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-denied-invoice-foreign-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8_2", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-denied-invoice-missing-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9_2", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-bad-media-body-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type_2", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-malformed-body-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request_2", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-oversize-body-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large_2", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-load-line-count-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 1, 3, 5, 2, 403, 2, 415, 400, 413)
+        "seed-load-matrix-count-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 2, 5, 2, 403, 2, 415, 400, 413)
+        "seed-denied-count-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 4, 2, 403, 2, 415, 400, 413)
+        "seed-denied-value-count-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 1, 403, 2, 415, 400, 413)
+        "seed-denied-status-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 402, 2, 415, 400, 413)
+        "seed-denied-tenant-foreign-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 1, 415, 400, 413)
+        "seed-bad-media-status-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 414, 400, 413)
+        "seed-malformed-status-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 399, 413)
+        "seed-oversize-status-drift" => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 412)
+        _ => ok observation("invoice_contract::grid_loaded", "3", "4196.0", "k1", "k2", "invoice_contract::grid_load_forbidden", "op-denied", "invoice_contract::grid_forbidden", "json foreign", "json missing", "json anonymous", "json revoked", "json ghost", "Globex", "tenant", "Acme", "8", "9", "Unsupported Media Type", "Bad Request", "Payload Too Large", 2, 3, 5, 2, 403, 2, 415, 400, 413)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m38_life003: "m38-life003" => ok [check("load-leaf", "load keeps its tagged leaf"), check("load-revision", "load keeps its revision"), check("load-total", "load keeps its minor total"), check("load-key-first", "load keeps its first line key"), check("load-key-second", "load keeps its second line key"), check("load-forbidden-leaf", "denied load keeps its leaf"), check("denied-op", "denied save keeps its operation id"), check("denied-leaf", "denied save keeps its leaf"), check("denied-note-foreign", "foreign leg keeps its label"), check("denied-note-missing", "missing leg keeps its label"), check("denied-note-anonymous", "anonymous leg keeps its label"), check("denied-note-revoked", "revoked leg keeps its label"), check("denied-note-ghost", "ghost leg keeps its label"), check("leak-globex", "denial hides the foreign label"), check("leak-tenant-word", "denial hides the scope word"), check("leak-acme", "denial hides the home label"), check("denied-invoice-foreign", "foreign leg keeps its invoice"), check("denied-invoice-missing", "missing leg keeps its invoice"), check("bad-media-body", "refused media keeps its body"), check("malformed-body", "refused shape keeps its body"), check("oversize-body", "refused bulk keeps its body"), check("load-line-count", "two loaded lines are wanted"), check("load-matrix-count", "three denied loads are wanted"), check("denied-count", "five denied saves are wanted"), check("denied-value-count", "two denial fields are wanted"), check("denied-status", "403 denial status is wanted"), check("denied-tenant-foreign", "foreign tenant wants two"), check("bad-media-status", "415 media status is wanted"), check("malformed-status", "400 shape status is wanted"), check("oversize-status", "413 bulk status is wanted")]
+        other: "nope" => ok []
+    match scope is "m38-life003"
+        false => ok []
+        true => ok [check("load-leaf", "load keeps its tagged leaf"), check("load-revision", "load keeps its revision"), check("load-total", "load keeps its minor total"), check("load-key-first", "load keeps its first line key"), check("load-key-second", "load keeps its second line key"), check("load-forbidden-leaf", "denied load keeps its leaf"), check("denied-op", "denied save keeps its operation id"), check("denied-leaf", "denied save keeps its leaf"), check("denied-note-foreign", "foreign leg keeps its label"), check("denied-note-missing", "missing leg keeps its label"), check("denied-note-anonymous", "anonymous leg keeps its label"), check("denied-note-revoked", "revoked leg keeps its label"), check("denied-note-ghost", "ghost leg keeps its label"), check("leak-globex", "denial hides the foreign label"), check("leak-tenant-word", "denial hides the scope word"), check("leak-acme", "denial hides the home label"), check("denied-invoice-foreign", "foreign leg keeps its invoice"), check("denied-invoice-missing", "missing leg keeps its invoice"), check("bad-media-body", "refused media keeps its body"), check("malformed-body", "refused shape keeps its body"), check("oversize-body", "refused bulk keeps its body"), check("load-line-count", "two loaded lines are wanted"), check("load-matrix-count", "three denied loads are wanted"), check("denied-count", "five denied saves are wanted"), check("denied-value-count", "two denial fields are wanted"), check("denied-status", "403 denial status is wanted"), check("denied-tenant-foreign", "foreign tenant wants two"), check("bad-media-status", "415 media status is wanted"), check("malformed-status", "400 shape status is wanted"), check("oversize-status", "413 bulk status is wanted")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/server-matrix-scope" => ok [expected_check("load-leaf", "invoice_contract::grid_loaded"), expected_check("load-revision", "3"), expected_check("load-total", "4196.0"), expected_check("load-key-first", "k1"), expected_check("load-key-second", "k2"), expected_check("load-forbidden-leaf", "invoice_contract::grid_load_forbidden"), expected_check("denied-op", "op-denied"), expected_check("denied-leaf", "invoice_contract::grid_forbidden"), expected_check("denied-note-foreign", "json foreign"), expected_check("denied-note-missing", "json missing"), expected_check("denied-note-anonymous", "json anonymous"), expected_check("denied-note-revoked", "json revoked"), expected_check("denied-note-ghost", "json ghost"), expected_check("leak-globex", "Globex"), expected_check("leak-tenant-word", "tenant"), expected_check("leak-acme", "Acme"), expected_check("denied-invoice-foreign", "8"), expected_check("denied-invoice-missing", "9"), expected_check("bad-media-body", "Unsupported Media Type"), expected_check("malformed-body", "Bad Request"), expected_check("oversize-body", "Payload Too Large"), expected_check("load-line-count", "2"), expected_check("load-matrix-count", "3"), expected_check("denied-count", "5"), expected_check("denied-value-count", "2"), expected_check("denied-status", "403"), expected_check("denied-tenant-foreign", "2"), expected_check("bad-media-status", "415"), expected_check("malformed-status", "400"), expected_check("oversize-status", "413")]
+        unknown: "nope" => ok []
+    match case is "life/server-matrix-scope"
+        false => ok []
+        true => ok [expected_check("load-leaf", "invoice_contract::grid_loaded"), expected_check("load-revision", "3"), expected_check("load-total", "4196.0"), expected_check("load-key-first", "k1"), expected_check("load-key-second", "k2"), expected_check("load-forbidden-leaf", "invoice_contract::grid_load_forbidden"), expected_check("denied-op", "op-denied"), expected_check("denied-leaf", "invoice_contract::grid_forbidden"), expected_check("denied-note-foreign", "json foreign"), expected_check("denied-note-missing", "json missing"), expected_check("denied-note-anonymous", "json anonymous"), expected_check("denied-note-revoked", "json revoked"), expected_check("denied-note-ghost", "json ghost"), expected_check("leak-globex", "Globex"), expected_check("leak-tenant-word", "tenant"), expected_check("leak-acme", "Acme"), expected_check("denied-invoice-foreign", "8"), expected_check("denied-invoice-missing", "9"), expected_check("bad-media-body", "Unsupported Media Type"), expected_check("malformed-body", "Bad Request"), expected_check("oversize-body", "Payload Too Large"), expected_check("load-line-count", "2"), expected_check("load-matrix-count", "3"), expected_check("denied-count", "5"), expected_check("denied-value-count", "2"), expected_check("denied-status", "403"), expected_check("denied-tenant-foreign", "2"), expected_check("bad-media-status", "415"), expected_check("malformed-status", "400"), expected_check("oversize-status", "413")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/server-matrix-scope", "default", "", "offline") => ok
+        seed_load_leaf: context("life/server-matrix-scope", "seed-load-leaf-drift", "", "offline") => failed{"load-leaf"}
+        seed_load_revision: context("life/server-matrix-scope", "seed-load-revision-drift", "", "offline") => failed{"load-revision"}
+        seed_load_total: context("life/server-matrix-scope", "seed-load-total-drift", "", "offline") => failed{"load-total"}
+        seed_load_key_first: context("life/server-matrix-scope", "seed-load-key-first-drift", "", "offline") => failed{"load-key-first"}
+        seed_load_key_second: context("life/server-matrix-scope", "seed-load-key-second-drift", "", "offline") => failed{"load-key-second"}
+        seed_load_forbidden_leaf: context("life/server-matrix-scope", "seed-load-forbidden-leaf-drift", "", "offline") => failed{"load-forbidden-leaf"}
+        seed_denied_op: context("life/server-matrix-scope", "seed-denied-op-drift", "", "offline") => failed{"denied-op"}
+        seed_denied_leaf: context("life/server-matrix-scope", "seed-denied-leaf-drift", "", "offline") => failed{"denied-leaf"}
+        seed_denied_note_foreign: context("life/server-matrix-scope", "seed-denied-note-foreign-drift", "", "offline") => failed{"denied-note-foreign"}
+        seed_denied_note_missing: context("life/server-matrix-scope", "seed-denied-note-missing-drift", "", "offline") => failed{"denied-note-missing"}
+        seed_denied_note_anonymous: context("life/server-matrix-scope", "seed-denied-note-anonymous-drift", "", "offline") => failed{"denied-note-anonymous"}
+        seed_denied_note_revoked: context("life/server-matrix-scope", "seed-denied-note-revoked-drift", "", "offline") => failed{"denied-note-revoked"}
+        seed_denied_note_ghost: context("life/server-matrix-scope", "seed-denied-note-ghost-drift", "", "offline") => failed{"denied-note-ghost"}
+        seed_leak_globex: context("life/server-matrix-scope", "seed-leak-globex-drift", "", "offline") => failed{"leak-globex"}
+        seed_leak_tenant_word: context("life/server-matrix-scope", "seed-leak-tenant-word-drift", "", "offline") => failed{"leak-tenant-word"}
+        seed_leak_acme: context("life/server-matrix-scope", "seed-leak-acme-drift", "", "offline") => failed{"leak-acme"}
+        seed_denied_invoice_foreign: context("life/server-matrix-scope", "seed-denied-invoice-foreign-drift", "", "offline") => failed{"denied-invoice-foreign"}
+        seed_denied_invoice_missing: context("life/server-matrix-scope", "seed-denied-invoice-missing-drift", "", "offline") => failed{"denied-invoice-missing"}
+        seed_bad_media_body: context("life/server-matrix-scope", "seed-bad-media-body-drift", "", "offline") => failed{"bad-media-body"}
+        seed_malformed_body: context("life/server-matrix-scope", "seed-malformed-body-drift", "", "offline") => failed{"malformed-body"}
+        seed_oversize_body: context("life/server-matrix-scope", "seed-oversize-body-drift", "", "offline") => failed{"oversize-body"}
+        seed_load_line_count: context("life/server-matrix-scope", "seed-load-line-count-drift", "", "offline") => failed{"load-line-count"}
+        seed_load_matrix_count: context("life/server-matrix-scope", "seed-load-matrix-count-drift", "", "offline") => failed{"load-matrix-count"}
+        seed_denied_count: context("life/server-matrix-scope", "seed-denied-count-drift", "", "offline") => failed{"denied-count"}
+        seed_denied_value_count: context("life/server-matrix-scope", "seed-denied-value-count-drift", "", "offline") => failed{"denied-value-count"}
+        seed_denied_status: context("life/server-matrix-scope", "seed-denied-status-drift", "", "offline") => failed{"denied-status"}
+        seed_denied_tenant_foreign: context("life/server-matrix-scope", "seed-denied-tenant-foreign-drift", "", "offline") => failed{"denied-tenant-foreign"}
+        seed_bad_media_status: context("life/server-matrix-scope", "seed-bad-media-status-drift", "", "offline") => failed{"bad-media-status"}
+        seed_malformed_status: context("life/server-matrix-scope", "seed-malformed-status-drift", "", "offline") => failed{"malformed-status"}
+        seed_oversize_status: context("life/server-matrix-scope", "seed-oversize-status-drift", "", "offline") => failed{"oversize-status"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.load_leaf, "invoice_contract::grid_loaded", c, "load-leaf")
+            failed
+            ok evidence load_leaf_evidence => match call require_text(got.load_revision, "3", c, "load-revision")
+                failed
+                ok evidence load_revision_evidence => match call require_text(got.load_total, "4196.0", c, "load-total")
+                    failed
+                    ok evidence load_total_evidence => match call require_text(got.load_key_first, "k1", c, "load-key-first")
+                        failed
+                        ok evidence load_key_first_evidence => match call require_text(got.load_key_second, "k2", c, "load-key-second")
+                            failed
+                            ok evidence load_key_second_evidence => match call require_text(got.load_forbidden_leaf, "invoice_contract::grid_load_forbidden", c, "load-forbidden-leaf")
+                                failed
+                                ok evidence load_forbidden_leaf_evidence => match call require_text(got.denied_op, "op-denied", c, "denied-op")
+                                    failed
+                                    ok evidence denied_op_evidence => match call require_text(got.denied_leaf, "invoice_contract::grid_forbidden", c, "denied-leaf")
+                                        failed
+                                        ok evidence denied_leaf_evidence => match call require_text(got.denied_note_foreign, "json foreign", c, "denied-note-foreign")
+                                            failed
+                                            ok evidence denied_note_foreign_evidence => match call require_text(got.denied_note_missing, "json missing", c, "denied-note-missing")
+                                                failed
+                                                ok evidence denied_note_missing_evidence => match call require_text(got.denied_note_anonymous, "json anonymous", c, "denied-note-anonymous")
+                                                    failed
+                                                    ok evidence denied_note_anonymous_evidence => match call require_text(got.denied_note_revoked, "json revoked", c, "denied-note-revoked")
+                                                        failed
+                                                        ok evidence denied_note_revoked_evidence => match call require_text(got.denied_note_ghost, "json ghost", c, "denied-note-ghost")
+                                                            failed
+                                                            ok evidence denied_note_ghost_evidence => match call require_text(got.leak_globex, "Globex", c, "leak-globex")
+                                                                failed
+                                                                ok evidence leak_globex_evidence => match call require_text(got.leak_tenant_word, "tenant", c, "leak-tenant-word")
+                                                                    failed
+                                                                    ok evidence leak_tenant_word_evidence => match call require_text(got.leak_acme, "Acme", c, "leak-acme")
+                                                                        failed
+                                                                        ok evidence leak_acme_evidence => match call require_text(got.denied_invoice_foreign, "8", c, "denied-invoice-foreign")
+                                                                            failed
+                                                                            ok evidence denied_invoice_foreign_evidence => match call require_text(got.denied_invoice_missing, "9", c, "denied-invoice-missing")
+                                                                                failed
+                                                                                ok evidence denied_invoice_missing_evidence => match call require_text(got.bad_media_body, "Unsupported Media Type", c, "bad-media-body")
+                                                                                    failed
+                                                                                    ok evidence bad_media_body_evidence => match call require_text(got.malformed_body, "Bad Request", c, "malformed-body")
+                                                                                        failed
+                                                                                        ok evidence malformed_body_evidence => match call require_text(got.oversize_body, "Payload Too Large", c, "oversize-body")
+                                                                                            failed
+                                                                                            ok evidence oversize_body_evidence => match call require_int(got.load_line_count, 2, c, "load-line-count")
+                                                                                                failed
+                                                                                                ok evidence load_line_count_evidence => match call require_int(got.load_matrix_count, 3, c, "load-matrix-count")
+                                                                                                    failed
+                                                                                                    ok evidence load_matrix_count_evidence => match call require_int(got.denied_count, 5, c, "denied-count")
+                                                                                                        failed
+                                                                                                        ok evidence denied_count_evidence => match call require_int(got.denied_value_count, 2, c, "denied-value-count")
+                                                                                                            failed
+                                                                                                            ok evidence denied_value_count_evidence => match call require_int(got.denied_status, 403, c, "denied-status")
+                                                                                                                failed
+                                                                                                                ok evidence denied_status_evidence => match call require_int(got.denied_tenant_foreign, 2, c, "denied-tenant-foreign")
+                                                                                                                    failed
+                                                                                                                    ok evidence denied_tenant_foreign_evidence => match call require_int(got.bad_media_status, 415, c, "bad-media-status")
+                                                                                                                        failed
+                                                                                                                        ok evidence bad_media_status_evidence => match call require_int(got.malformed_status, 400, c, "malformed-status")
+                                                                                                                            failed
+                                                                                                                            ok evidence malformed_status_evidence => match call require_int(got.oversize_status, 413, c, "oversize-status")
+                                                                                                                                failed
+                                                                                                                                ok evidence oversize_status_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m38_life003: "m38-life003" => ok test_case("life/server-matrix-scope", ["life", "m38"], [], 120000, [check_ref("load-leaf"), check_ref("load-revision"), check_ref("load-total"), check_ref("load-key-first"), check_ref("load-key-second"), check_ref("load-forbidden-leaf"), check_ref("denied-op"), check_ref("denied-leaf"), check_ref("denied-note-foreign"), check_ref("denied-note-missing"), check_ref("denied-note-anonymous"), check_ref("denied-note-revoked"), check_ref("denied-note-ghost"), check_ref("leak-globex"), check_ref("leak-tenant-word"), check_ref("leak-acme"), check_ref("denied-invoice-foreign"), check_ref("denied-invoice-missing"), check_ref("bad-media-body"), check_ref("malformed-body"), check_ref("oversize-body"), check_ref("load-line-count"), check_ref("load-matrix-count"), check_ref("denied-count"), check_ref("denied-value-count"), check_ref("denied-status"), check_ref("denied-tenant-foreign"), check_ref("bad-media-status"), check_ref("malformed-status"), check_ref("oversize-status")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m38-life003"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/server-matrix-scope", ["life", "m38"], [], 120000, [check_ref("load-leaf"), check_ref("load-revision"), check_ref("load-total"), check_ref("load-key-first"), check_ref("load-key-second"), check_ref("load-forbidden-leaf"), check_ref("denied-op"), check_ref("denied-leaf"), check_ref("denied-note-foreign"), check_ref("denied-note-missing"), check_ref("denied-note-anonymous"), check_ref("denied-note-revoked"), check_ref("denied-note-ghost"), check_ref("leak-globex"), check_ref("leak-tenant-word"), check_ref("leak-acme"), check_ref("denied-invoice-foreign"), check_ref("denied-invoice-missing"), check_ref("bad-media-body"), check_ref("malformed-body"), check_ref("oversize-body"), check_ref("load-line-count"), check_ref("load-matrix-count"), check_ref("denied-count"), check_ref("denied-value-count"), check_ref("denied-status"), check_ref("denied-tenant-foreign"), check_ref("bad-media-status"), check_ref("malformed-status"), check_ref("oversize-status")], callable case_body)
