@@ -1,0 +1,229 @@
+package m23history022run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M23 HISTORY-022 "transactions.sql: statement order and head shape".
+/// Source: tests/integration/testdata/sql/transactions.sql (961
+/// bytes, 23 lines, md5 dc8e13a82f81b0bd5ab70e939a733eb5).
+/// Disposition: retain_fixture (support row; the SQL file stays as
+/// data and this slice holds it accountable byte for byte; only the
+/// integrator may retire the shared old file after every linked row,
+/// variant, environment and control has accepted evidence).
+/// Protects (this file): the statement order and head shape: the
+/// verbatim head line of each of the 5 statements in seed order
+/// (full text for single-line statements, first line for the two
+/// multi-line bodies), the terminator-line count, and the
+/// DROP/CREATE/TRUNCATE/INSERT occurrence cross-checks.
+/// ADAPTATION (recorded, with source lines): stmt-terms counts
+/// lines ending in ; (5), not raw ; bytes (6: the L2 header
+/// comment carries one extra semicolon, which must not count as
+/// a terminator). Multi-line bodies pin their head line here;
+/// their full bytes pin by md5 in
+/// history-022-seed-semantics.can.
+/// Facet map (transactions.sql legs): s1-line pins the L10 drop;
+/// s2-head the L11 create head; s3-line the L15 truncate;
+/// s4-head the L16 insert head; s5-line the L23 drop;
+/// stmt-terms pins 5 lines ending in ;; drop-count pins 2 DROP
+/// TABLE occurrences (L10, L23); create-count pins 1 CREATE
+/// TABLE occurrence (L11); truncate-count pins 1 TRUNCATE
+/// occurrence (L15); insert-count pins 1 INSERT INTO
+/// occurrence (L16).
+/// Seed semantics live in history-022-seed-semantics.can; the
+/// roots-green pin lives in history-022-roots-green.can.
+/// Variants: none (row lists none; static fixture, one shape).
+/// Environment: none (row lists no environment gates; descriptor
+/// requires [] and timeout 0 record that no timed or gated leg
+/// exists for this static input).
+/// R/N/C/S/A identities identified in evidence; S/A bind at QD1;
+/// no live run now. Descriptor timeout 0 records that the fixture
+/// pins no timeout (no ctx/deadline leg in a static SQL file).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (support row; static fixture
+/// accountability only; if_retained_accept_after QD1 unmet).
+/// Case history/transactions-run checks: s1-line, s2-head,
+/// s3-line, s4-head, s5-line, stmt-terms, drop-count,
+/// create-count, truncate-count, insert-count.
+/// Shared old files untouched; retirement is a later integrator
+/// decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str s1_line
+    str s2_head
+    str s3_line
+    str s4_head
+    str s5_line
+    int stmt_terms
+    int drop_count
+    int create_count
+    int truncate_count
+    int insert_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/transactions-run", "default", "", "offline"), "s1-line" => ok "case history/transactions-run variant default root s1-line run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/transactions-run", "default", "", "offline"), "s1-line" => ok evidence("s1-line", "true", "true", true, "case history/transactions-run variant default root s1-line run offline")
+        different: false, true, context("history/transactions-run", "default", "", "offline"), "s1-line" => failed{"s1-line"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 5, 5, context("history/transactions-run", "default", "", "offline"), "stmt-terms" => ok evidence("stmt-terms", "5", "5", true, "case history/transactions-run variant default root stmt-terms run offline")
+        different: 6, 5, context("history/transactions-run", "default", "", "offline"), "stmt-terms" => failed{"stmt-terms"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "DROP TABLE IF EXISTS can_i38_accounts;", "DROP TABLE IF EXISTS can_i38_accounts;", context("history/transactions-run", "default", "", "offline"), "s1-line" => ok evidence("s1-line", "DROP TABLE IF EXISTS can_i38_accounts;", "DROP TABLE IF EXISTS can_i38_accounts;", true, "case history/transactions-run variant default root s1-line run offline")
+        different: "DROP TABLE IF EXISTS can_i38_accounts;2", "DROP TABLE IF EXISTS can_i38_accounts;", context("history/transactions-run", "default", "", "offline"), "s1-line" => failed{"s1-line"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 5, 2, 1, 1, 1)
+        seed_s1_line: "seed-s1-line-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;2", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 5, 2, 1, 1, 1)
+        seed_s2_head: "seed-s2-head-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (2", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 5, 2, 1, 1, 1)
+        seed_s3_line: "seed-s3-line-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;2", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 5, 2, 1, 1, 1)
+        seed_s4_head: "seed-s4-head-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES2", "DROP TABLE can_i38_accounts;", 5, 2, 1, 1, 1)
+        seed_s5_line: "seed-s5-line-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;2", 5, 2, 1, 1, 1)
+        seed_stmt_terms: "seed-stmt-terms-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 4, 2, 1, 1, 1)
+        seed_drop_count: "seed-drop-count-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 5, 1, 1, 1, 1)
+        seed_create_count: "seed-create-count-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 5, 2, 0, 1, 1)
+        seed_truncate_count: "seed-truncate-count-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 5, 2, 1, 0, 1)
+        seed_insert_count: "seed-insert-count-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 5, 2, 1, 1, 0)
+    match variant_id
+        "seed-s1-line-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;2", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 5, 2, 1, 1, 1)
+        "seed-s2-head-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (2", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 5, 2, 1, 1, 1)
+        "seed-s3-line-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;2", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 5, 2, 1, 1, 1)
+        "seed-s4-head-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES2", "DROP TABLE can_i38_accounts;", 5, 2, 1, 1, 1)
+        "seed-s5-line-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;2", 5, 2, 1, 1, 1)
+        "seed-stmt-terms-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 4, 2, 1, 1, 1)
+        "seed-drop-count-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 5, 1, 1, 1, 1)
+        "seed-create-count-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 5, 2, 0, 1, 1)
+        "seed-truncate-count-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 5, 2, 1, 0, 1)
+        "seed-insert-count-drift" => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 5, 2, 1, 1, 0)
+        _ => ok observation("DROP TABLE IF EXISTS can_i38_accounts;", "CREATE TABLE IF NOT EXISTS can_i38_accounts (", "TRUNCATE can_i38_accounts RESTART IDENTITY;", "INSERT INTO can_i38_accounts (display_name) VALUES", "DROP TABLE can_i38_accounts;", 5, 2, 1, 1, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m23_h022: "m23-h022" => ok [check("s1-line", "statement 1 line is byte-exact"), check("s2-head", "statement 2 head line is byte-exact"), check("s3-line", "statement 3 line is byte-exact"), check("s4-head", "statement 4 head line is byte-exact"), check("s5-line", "statement 5 line is byte-exact"), check("stmt-terms", "exactly 5 lines end in a statement terminator"), check("drop-count", "DROP TABLE occurs exactly 2 times"), check("create-count", "CREATE TABLE occurs exactly 1 time"), check("truncate-count", "TRUNCATE occurs exactly 1 time"), check("insert-count", "INSERT INTO occurs exactly 1 time")]
+        other: "nope" => ok []
+    match scope is "m23-h022"
+        false => ok []
+        true => ok [check("s1-line", "statement 1 line is byte-exact"), check("s2-head", "statement 2 head line is byte-exact"), check("s3-line", "statement 3 line is byte-exact"), check("s4-head", "statement 4 head line is byte-exact"), check("s5-line", "statement 5 line is byte-exact"), check("stmt-terms", "exactly 5 lines end in a statement terminator"), check("drop-count", "DROP TABLE occurs exactly 2 times"), check("create-count", "CREATE TABLE occurs exactly 1 time"), check("truncate-count", "TRUNCATE occurs exactly 1 time"), check("insert-count", "INSERT INTO occurs exactly 1 time")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/transactions-run" => ok [expected_check("s1-line", "DROP TABLE IF EXISTS can_i38_accounts;"), expected_check("s2-head", "CREATE TABLE IF NOT EXISTS can_i38_accounts ("), expected_check("s3-line", "TRUNCATE can_i38_accounts RESTART IDENTITY;"), expected_check("s4-head", "INSERT INTO can_i38_accounts (display_name) VALUES"), expected_check("s5-line", "DROP TABLE can_i38_accounts;"), expected_check("stmt-terms", "5"), expected_check("drop-count", "2"), expected_check("create-count", "1"), expected_check("truncate-count", "1"), expected_check("insert-count", "1")]
+        unknown: "nope" => ok []
+    match case is "history/transactions-run"
+        false => ok []
+        true => ok [expected_check("s1-line", "DROP TABLE IF EXISTS can_i38_accounts;"), expected_check("s2-head", "CREATE TABLE IF NOT EXISTS can_i38_accounts ("), expected_check("s3-line", "TRUNCATE can_i38_accounts RESTART IDENTITY;"), expected_check("s4-head", "INSERT INTO can_i38_accounts (display_name) VALUES"), expected_check("s5-line", "DROP TABLE can_i38_accounts;"), expected_check("stmt-terms", "5"), expected_check("drop-count", "2"), expected_check("create-count", "1"), expected_check("truncate-count", "1"), expected_check("insert-count", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/transactions-run", "default", "", "offline") => ok
+        seed_s1_line: context("history/transactions-run", "seed-s1-line-drift", "", "offline") => failed{"s1-line"}
+        seed_s2_head: context("history/transactions-run", "seed-s2-head-drift", "", "offline") => failed{"s2-head"}
+        seed_s3_line: context("history/transactions-run", "seed-s3-line-drift", "", "offline") => failed{"s3-line"}
+        seed_s4_head: context("history/transactions-run", "seed-s4-head-drift", "", "offline") => failed{"s4-head"}
+        seed_s5_line: context("history/transactions-run", "seed-s5-line-drift", "", "offline") => failed{"s5-line"}
+        seed_stmt_terms: context("history/transactions-run", "seed-stmt-terms-drift", "", "offline") => failed{"stmt-terms"}
+        seed_drop_count: context("history/transactions-run", "seed-drop-count-drift", "", "offline") => failed{"drop-count"}
+        seed_create_count: context("history/transactions-run", "seed-create-count-drift", "", "offline") => failed{"create-count"}
+        seed_truncate_count: context("history/transactions-run", "seed-truncate-count-drift", "", "offline") => failed{"truncate-count"}
+        seed_insert_count: context("history/transactions-run", "seed-insert-count-drift", "", "offline") => failed{"insert-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.s1_line, "DROP TABLE IF EXISTS can_i38_accounts;", c, "s1-line")
+            failed
+            ok evidence s1_line_evidence => match call require_text(got.s2_head, "CREATE TABLE IF NOT EXISTS can_i38_accounts (", c, "s2-head")
+                failed
+                ok evidence s2_head_evidence => match call require_text(got.s3_line, "TRUNCATE can_i38_accounts RESTART IDENTITY;", c, "s3-line")
+                    failed
+                    ok evidence s3_line_evidence => match call require_text(got.s4_head, "INSERT INTO can_i38_accounts (display_name) VALUES", c, "s4-head")
+                        failed
+                        ok evidence s4_head_evidence => match call require_text(got.s5_line, "DROP TABLE can_i38_accounts;", c, "s5-line")
+                            failed
+                            ok evidence s5_line_evidence => match call require_int(got.stmt_terms, 5, c, "stmt-terms")
+                                failed
+                                ok evidence stmt_terms_evidence => match call require_int(got.drop_count, 2, c, "drop-count")
+                                    failed
+                                    ok evidence drop_count_evidence => match call require_int(got.create_count, 1, c, "create-count")
+                                        failed
+                                        ok evidence create_count_evidence => match call require_int(got.truncate_count, 1, c, "truncate-count")
+                                            failed
+                                            ok evidence truncate_count_evidence => match call require_int(got.insert_count, 1, c, "insert-count")
+                                                failed
+                                                ok evidence insert_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m23_h022: "m23-h022" => ok test_case("history/transactions-run", ["history", "m23"], [], 0, [check_ref("s1-line"), check_ref("s2-head"), check_ref("s3-line"), check_ref("s4-head"), check_ref("s5-line"), check_ref("stmt-terms"), check_ref("drop-count"), check_ref("create-count"), check_ref("truncate-count"), check_ref("insert-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m23-h022"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/transactions-run", ["history", "m23"], [], 0, [check_ref("s1-line"), check_ref("s2-head"), check_ref("s3-line"), check_ref("s4-head"), check_ref("s5-line"), check_ref("stmt-terms"), check_ref("drop-count"), check_ref("create-count"), check_ref("truncate-count"), check_ref("insert-count")], callable case_body)

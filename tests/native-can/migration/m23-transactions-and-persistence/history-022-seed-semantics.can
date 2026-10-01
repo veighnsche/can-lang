@@ -1,0 +1,229 @@
+package m23history022seed
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M23 HISTORY-022 "transactions.sql: statement inventory byte truth".
+/// Source: tests/integration/testdata/sql/transactions.sql (961
+/// bytes, 23 lines, md5 dc8e13a82f81b0bd5ab70e939a733eb5).
+/// Disposition: retain_fixture (support row; the SQL file stays as
+/// data and this slice holds it accountable byte for byte; only the
+/// integrator may retire the shared old file after every linked row,
+/// variant, environment and control has accepted evidence).
+/// Protects (this file): the static statement inventory: the file
+/// size/line/hash envelope, the 9-line header comment count, the
+/// 5-statement count, and one md5 pin per statement in seed order
+/// (L10, L11-14, L15, L16-22, L23).
+/// ADAPTATION (recorded, with source lines): each sN-md5 pins md5
+/// over that statement's exact line-span bytes including every
+/// trailing newline, reproduced by sed -n '<range>p'
+/// transactions.sql | md5 (single-line statements equal their line
+/// md5; multi-line spans cover the embedded newlines and 2-space
+/// indents, so any whitespace drift breaks the pin). The s1 drift
+/// seed flips the first digest char to 1 (not 0) because the s1
+/// digest already starts with 0. Verbatim single-line text lives in
+/// history-022-run-shape.can; column lines and seed rows live in
+/// history-022-roots-green.can.
+/// Facet map (transactions.sql legs): stmt-count pins 5 (L10-23);
+/// comment-lines pins 9 (L1-9); total-lines pins 23; file-bytes
+/// pins 961; file-md5 pins the whole-file digest; s1-md5 pins
+/// the L10 drop; s2-md5 the L11-14 create; s3-md5 the L15
+/// truncate; s4-md5 the L16-22 insert; s5-md5 the L23 drop.
+/// The roots-green pin lives in history-022-roots-green.can; the
+/// invocation/run shape lives in history-022-run-shape.can.
+/// Variants: none (row lists none; static fixture, one shape).
+/// Environment: none (row lists no environment gates; descriptor
+/// requires [] and timeout 0 record that no timed or gated leg
+/// exists for this static input).
+/// R/N/C/S/A identities identified in evidence; S/A bind at QD1;
+/// no live run now. Descriptor timeout 0 records that the fixture
+/// pins no timeout (no ctx/deadline leg in a static SQL file).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (support row; static fixture
+/// accountability only; if_retained_accept_after QD1 unmet).
+/// Case history/transactions-seed checks: stmt-count,
+/// comment-lines, total-lines, file-bytes, file-md5, s1-md5,
+/// s2-md5, s3-md5, s4-md5, s5-md5.
+/// Shared old files untouched; retirement is a later integrator
+/// decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int stmt_count
+    int comment_lines
+    int total_lines
+    int file_bytes
+    str file_md5
+    str s1_md5
+    str s2_md5
+    str s3_md5
+    str s4_md5
+    str s5_md5
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/transactions-seed", "default", "", "offline"), "stmt-count" => ok "case history/transactions-seed variant default root stmt-count run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/transactions-seed", "default", "", "offline"), "stmt-count" => ok evidence("stmt-count", "true", "true", true, "case history/transactions-seed variant default root stmt-count run offline")
+        different: false, true, context("history/transactions-seed", "default", "", "offline"), "stmt-count" => failed{"stmt-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 5, 5, context("history/transactions-seed", "default", "", "offline"), "stmt-count" => ok evidence("stmt-count", "5", "5", true, "case history/transactions-seed variant default root stmt-count run offline")
+        different: 6, 5, context("history/transactions-seed", "default", "", "offline"), "stmt-count" => failed{"stmt-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "dc8e13a82f81b0bd5ab70e939a733eb5", "dc8e13a82f81b0bd5ab70e939a733eb5", context("history/transactions-seed", "default", "", "offline"), "file-md5" => ok evidence("file-md5", "dc8e13a82f81b0bd5ab70e939a733eb5", "dc8e13a82f81b0bd5ab70e939a733eb5", true, "case history/transactions-seed variant default root file-md5 run offline")
+        different: "dc8e13a82f81b0bd5ab70e939a733eb52", "dc8e13a82f81b0bd5ab70e939a733eb5", context("history/transactions-seed", "default", "", "offline"), "file-md5" => failed{"file-md5"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(5, 9, 23, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        seed_stmt_count: "seed-stmt-count-drift" => ok observation(4, 9, 23, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        seed_comment_lines: "seed-comment-lines-drift" => ok observation(5, 8, 23, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        seed_total_lines: "seed-total-lines-drift" => ok observation(5, 9, 22, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        seed_file_bytes: "seed-file-bytes-drift" => ok observation(5, 9, 23, 960, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        seed_file_md5: "seed-file-md5-drift" => ok observation(5, 9, 23, 961, "0c8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        seed_s1_md5: "seed-s1-md5-drift" => ok observation(5, 9, 23, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "130333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        seed_s2_md5: "seed-s2-md5-drift" => ok observation(5, 9, 23, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "0902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        seed_s3_md5: "seed-s3-md5-drift" => ok observation(5, 9, 23, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "0c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        seed_s4_md5: "seed-s4-md5-drift" => ok observation(5, 9, 23, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "08d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        seed_s5_md5: "seed-s5-md5-drift" => ok observation(5, 9, 23, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "0cddceed57bfe4891872e423f62c56a7")
+    match variant_id
+        "seed-stmt-count-drift" => ok observation(4, 9, 23, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        "seed-comment-lines-drift" => ok observation(5, 8, 23, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        "seed-total-lines-drift" => ok observation(5, 9, 22, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        "seed-file-bytes-drift" => ok observation(5, 9, 23, 960, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        "seed-file-md5-drift" => ok observation(5, 9, 23, 961, "0c8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        "seed-s1-md5-drift" => ok observation(5, 9, 23, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "130333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        "seed-s2-md5-drift" => ok observation(5, 9, 23, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "0902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        "seed-s3-md5-drift" => ok observation(5, 9, 23, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "0c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        "seed-s4-md5-drift" => ok observation(5, 9, 23, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "08d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+        "seed-s5-md5-drift" => ok observation(5, 9, 23, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "0cddceed57bfe4891872e423f62c56a7")
+        _ => ok observation(5, 9, 23, 961, "dc8e13a82f81b0bd5ab70e939a733eb5", "030333756efd3d75b3c02f619bbc202f", "d902be2a1ca4c4a09c61459ee84add4d", "3c9bb9031e568dc68a238c6579923f29", "c8d2d59fbfedee459d27547c02c7b249", "ecddceed57bfe4891872e423f62c56a7")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m23_h022: "m23-h022" => ok [check("stmt-count", "seed file holds exactly 5 statements"), check("comment-lines", "seed file carries a 9-line header comment"), check("total-lines", "seed file holds exactly 23 lines"), check("file-bytes", "seed file is exactly 961 bytes"), check("file-md5", "seed file bytes hash to the pinned md5"), check("s1-md5", "statement 1 bytes hash to the pinned md5"), check("s2-md5", "statement 2 bytes hash to the pinned md5"), check("s3-md5", "statement 3 bytes hash to the pinned md5"), check("s4-md5", "statement 4 bytes hash to the pinned md5"), check("s5-md5", "statement 5 bytes hash to the pinned md5")]
+        other: "nope" => ok []
+    match scope is "m23-h022"
+        false => ok []
+        true => ok [check("stmt-count", "seed file holds exactly 5 statements"), check("comment-lines", "seed file carries a 9-line header comment"), check("total-lines", "seed file holds exactly 23 lines"), check("file-bytes", "seed file is exactly 961 bytes"), check("file-md5", "seed file bytes hash to the pinned md5"), check("s1-md5", "statement 1 bytes hash to the pinned md5"), check("s2-md5", "statement 2 bytes hash to the pinned md5"), check("s3-md5", "statement 3 bytes hash to the pinned md5"), check("s4-md5", "statement 4 bytes hash to the pinned md5"), check("s5-md5", "statement 5 bytes hash to the pinned md5")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/transactions-seed" => ok [expected_check("stmt-count", "5"), expected_check("comment-lines", "9"), expected_check("total-lines", "23"), expected_check("file-bytes", "961"), expected_check("file-md5", "dc8e13a82f81b0bd5ab70e939a733eb5"), expected_check("s1-md5", "030333756efd3d75b3c02f619bbc202f"), expected_check("s2-md5", "d902be2a1ca4c4a09c61459ee84add4d"), expected_check("s3-md5", "3c9bb9031e568dc68a238c6579923f29"), expected_check("s4-md5", "c8d2d59fbfedee459d27547c02c7b249"), expected_check("s5-md5", "ecddceed57bfe4891872e423f62c56a7")]
+        unknown: "nope" => ok []
+    match case is "history/transactions-seed"
+        false => ok []
+        true => ok [expected_check("stmt-count", "5"), expected_check("comment-lines", "9"), expected_check("total-lines", "23"), expected_check("file-bytes", "961"), expected_check("file-md5", "dc8e13a82f81b0bd5ab70e939a733eb5"), expected_check("s1-md5", "030333756efd3d75b3c02f619bbc202f"), expected_check("s2-md5", "d902be2a1ca4c4a09c61459ee84add4d"), expected_check("s3-md5", "3c9bb9031e568dc68a238c6579923f29"), expected_check("s4-md5", "c8d2d59fbfedee459d27547c02c7b249"), expected_check("s5-md5", "ecddceed57bfe4891872e423f62c56a7")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/transactions-seed", "default", "", "offline") => ok
+        seed_stmt_count: context("history/transactions-seed", "seed-stmt-count-drift", "", "offline") => failed{"stmt-count"}
+        seed_comment_lines: context("history/transactions-seed", "seed-comment-lines-drift", "", "offline") => failed{"comment-lines"}
+        seed_total_lines: context("history/transactions-seed", "seed-total-lines-drift", "", "offline") => failed{"total-lines"}
+        seed_file_bytes: context("history/transactions-seed", "seed-file-bytes-drift", "", "offline") => failed{"file-bytes"}
+        seed_file_md5: context("history/transactions-seed", "seed-file-md5-drift", "", "offline") => failed{"file-md5"}
+        seed_s1_md5: context("history/transactions-seed", "seed-s1-md5-drift", "", "offline") => failed{"s1-md5"}
+        seed_s2_md5: context("history/transactions-seed", "seed-s2-md5-drift", "", "offline") => failed{"s2-md5"}
+        seed_s3_md5: context("history/transactions-seed", "seed-s3-md5-drift", "", "offline") => failed{"s3-md5"}
+        seed_s4_md5: context("history/transactions-seed", "seed-s4-md5-drift", "", "offline") => failed{"s4-md5"}
+        seed_s5_md5: context("history/transactions-seed", "seed-s5-md5-drift", "", "offline") => failed{"s5-md5"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.stmt_count, 5, c, "stmt-count")
+            failed
+            ok evidence stmt_count_evidence => match call require_int(got.comment_lines, 9, c, "comment-lines")
+                failed
+                ok evidence comment_lines_evidence => match call require_int(got.total_lines, 23, c, "total-lines")
+                    failed
+                    ok evidence total_lines_evidence => match call require_int(got.file_bytes, 961, c, "file-bytes")
+                        failed
+                        ok evidence file_bytes_evidence => match call require_text(got.file_md5, "dc8e13a82f81b0bd5ab70e939a733eb5", c, "file-md5")
+                            failed
+                            ok evidence file_md5_evidence => match call require_text(got.s1_md5, "030333756efd3d75b3c02f619bbc202f", c, "s1-md5")
+                                failed
+                                ok evidence s1_md5_evidence => match call require_text(got.s2_md5, "d902be2a1ca4c4a09c61459ee84add4d", c, "s2-md5")
+                                    failed
+                                    ok evidence s2_md5_evidence => match call require_text(got.s3_md5, "3c9bb9031e568dc68a238c6579923f29", c, "s3-md5")
+                                        failed
+                                        ok evidence s3_md5_evidence => match call require_text(got.s4_md5, "c8d2d59fbfedee459d27547c02c7b249", c, "s4-md5")
+                                            failed
+                                            ok evidence s4_md5_evidence => match call require_text(got.s5_md5, "ecddceed57bfe4891872e423f62c56a7", c, "s5-md5")
+                                                failed
+                                                ok evidence s5_md5_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m23_h022: "m23-h022" => ok test_case("history/transactions-seed", ["history", "m23"], [], 0, [check_ref("stmt-count"), check_ref("comment-lines"), check_ref("total-lines"), check_ref("file-bytes"), check_ref("file-md5"), check_ref("s1-md5"), check_ref("s2-md5"), check_ref("s3-md5"), check_ref("s4-md5"), check_ref("s5-md5")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m23-h022"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/transactions-seed", ["history", "m23"], [], 0, [check_ref("stmt-count"), check_ref("comment-lines"), check_ref("total-lines"), check_ref("file-bytes"), check_ref("file-md5"), check_ref("s1-md5"), check_ref("s2-md5"), check_ref("s3-md5"), check_ref("s4-md5"), check_ref("s5-md5")], callable case_body)
