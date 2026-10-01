@@ -122,7 +122,9 @@
     "test::invalid_kind",
     "test::unknown_tool",
     "test::invalid_path",
-    "test::invalid_name"
+    "test::invalid_name",
+    "http_peer::peer_fault",
+    "http_peer::http_fault"
   ],
   "retired": []
 }

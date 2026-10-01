@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "18f3816bb7a5f3a89a266e61d28261a055580ba0ad7b1aecfba1694d308a8a16";
+export const catalogueSHA256 = "c718340296aadfab86df695f24d0628fa9ca5bb3373d44a5d7c1c2ded3dc9225";
 export const catalogue = freeze({
  "schemaVersion": 1,
  "revision": 1,
@@ -168,6 +168,10 @@ export const catalogue = freeze({
   {
    "name": "test",
    "identity": "can.std.test@1"
+  },
+  {
+   "name": "http_peer",
+   "identity": "can.std.http_peer@1"
   }
  ],
  "prelude": [
@@ -2229,6 +2233,588 @@ export const catalogue = freeze({
    "leaves": [],
    "projections": [],
    "constructible": true
+  },
+  {
+   "name": "http_peer::listener",
+   "identity": "can.std.http_peer@1::listener",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "http_peer::connection",
+   "identity": "can.std.http_peer@1::connection",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "http_peer::dial",
+   "identity": "can.std.http_peer@1::dial",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "http_peer::request",
+   "identity": "can.std.http_peer@1::request",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "http_peer::listener_facts",
+   "identity": "can.std.http_peer@1::listener_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "id",
+     "type": "str"
+    },
+    {
+     "name": "owner",
+     "type": "str"
+    },
+    {
+     "name": "destination",
+     "type": "str"
+    },
+    {
+     "name": "closed",
+     "type": "bool"
+    },
+    {
+     "name": "pending_accepts",
+     "type": "int"
+    },
+    {
+     "name": "accepted_total",
+     "type": "int"
+    },
+    {
+     "name": "stale_skipped",
+     "type": "int"
+    },
+    {
+     "name": "dropped_on_close",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::connection_facts",
+   "identity": "can.std.http_peer@1::connection_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "id",
+     "type": "str"
+    },
+    {
+     "name": "owner",
+     "type": "str"
+    },
+    {
+     "name": "destination",
+     "type": "str"
+    },
+    {
+     "name": "side",
+     "type": "str"
+    },
+    {
+     "name": "peer_id",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "peer_gone",
+     "type": "bool"
+    },
+    {
+     "name": "read_closed",
+     "type": "bool"
+    },
+    {
+     "name": "write_closed",
+     "type": "bool"
+    },
+    {
+     "name": "peer_write_closed",
+     "type": "bool"
+    },
+    {
+     "name": "closed",
+     "type": "bool"
+    },
+    {
+     "name": "buffered_bytes",
+     "type": "int"
+    },
+    {
+     "name": "accepted_bytes",
+     "type": "int"
+    },
+    {
+     "name": "consumed_bytes",
+     "type": "int"
+    },
+    {
+     "name": "discarded_bytes",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::dial_facts",
+   "identity": "can.std.http_peer@1::dial_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "id",
+     "type": "str"
+    },
+    {
+     "name": "owner",
+     "type": "str"
+    },
+    {
+     "name": "destination",
+     "type": "str"
+    },
+    {
+     "name": "state",
+     "type": "str"
+    },
+    {
+     "name": "fail_reason",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "attempt_count",
+     "type": "int"
+    },
+    {
+     "name": "retry_count",
+     "type": "int"
+    },
+    {
+     "name": "connection_id",
+     "type": "option::value<str>"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::dial_result",
+   "identity": "can.std.http_peer@1::dial_result",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "dial",
+     "type": "http_peer::dial"
+    },
+    {
+     "name": "state",
+     "type": "str"
+    },
+    {
+     "name": "fail_reason",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "connection",
+     "type": "option::value<http_peer::connection>"
+    },
+    {
+     "name": "attempt_count",
+     "type": "int"
+    },
+    {
+     "name": "retry_count",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::write_receipt",
+   "identity": "can.std.http_peer@1::write_receipt",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "accepted",
+     "type": "int"
+    },
+    {
+     "name": "peer_buffered",
+     "type": "int"
+    },
+    {
+     "name": "peer_accepted_total",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::read_result",
+   "identity": "can.std.http_peer@1::read_result",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "bytes",
+     "type": "int[]"
+    },
+    {
+     "name": "eof",
+     "type": "bool"
+    },
+    {
+     "name": "truncated",
+     "type": "bool"
+    },
+    {
+     "name": "consumed_total",
+     "type": "int"
+    },
+    {
+     "name": "accepted_total",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::connection_close_receipt",
+   "identity": "can.std.http_peer@1::connection_close_receipt",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "unread_bytes",
+     "type": "int"
+    },
+    {
+     "name": "accepted_bytes",
+     "type": "int"
+    },
+    {
+     "name": "consumed_bytes",
+     "type": "int"
+    },
+    {
+     "name": "discarded_bytes",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::listener_close_receipt",
+   "identity": "can.std.http_peer@1::listener_close_receipt",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "pending_accepts_dropped",
+     "type": "int"
+    },
+    {
+     "name": "accepted_total",
+     "type": "int"
+    },
+    {
+     "name": "stale_skipped",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::request_facts",
+   "identity": "can.std.http_peer@1::request_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "id",
+     "type": "str"
+    },
+    {
+     "name": "owner",
+     "type": "str"
+    },
+    {
+     "name": "origin",
+     "type": "str"
+    },
+    {
+     "name": "method",
+     "type": "str"
+    },
+    {
+     "name": "target",
+     "type": "str"
+    },
+    {
+     "name": "version",
+     "type": "str"
+    },
+    {
+     "name": "state",
+     "type": "str"
+    },
+    {
+     "name": "header_count",
+     "type": "int"
+    },
+    {
+     "name": "headers",
+     "type": "http::header[]"
+    },
+    {
+     "name": "header_bytes",
+     "type": "int"
+    },
+    {
+     "name": "headers_truncated",
+     "type": "bool"
+    },
+    {
+     "name": "upload_accepted",
+     "type": "int"
+    },
+    {
+     "name": "upload_complete",
+     "type": "bool"
+    },
+    {
+     "name": "upload_truncated",
+     "type": "bool"
+    },
+    {
+     "name": "upload_length_mismatch",
+     "type": "bool"
+    },
+    {
+     "name": "response_delivered",
+     "type": "bool"
+    },
+    {
+     "name": "response_status",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "response_body_accepted",
+     "type": "int"
+    },
+    {
+     "name": "response_body_consumed",
+     "type": "int"
+    },
+    {
+     "name": "response_headers_truncated",
+     "type": "bool"
+    },
+    {
+     "name": "response_body_truncated",
+     "type": "bool"
+    },
+    {
+     "name": "response_length_mismatch",
+     "type": "bool"
+    },
+    {
+     "name": "redirect",
+     "type": "option::value<http_peer::redirect>"
+    },
+    {
+     "name": "redirect_incomplete",
+     "type": "bool"
+    },
+    {
+     "name": "reissue_count",
+     "type": "int"
+    },
+    {
+     "name": "supersedes",
+     "type": "option::value<str>"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::redirect",
+   "identity": "can.std.http_peer@1::redirect",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "status",
+     "type": "int"
+    },
+    {
+     "name": "location",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::response_facts",
+   "identity": "can.std.http_peer@1::response_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "status",
+     "type": "int"
+    },
+    {
+     "name": "header_count",
+     "type": "int"
+    },
+    {
+     "name": "headers",
+     "type": "http::header[]"
+    },
+    {
+     "name": "header_bytes",
+     "type": "int"
+    },
+    {
+     "name": "body_accepted",
+     "type": "int"
+    },
+    {
+     "name": "body_consumed",
+     "type": "int"
+    },
+    {
+     "name": "body_fully_consumed",
+     "type": "bool"
+    },
+    {
+     "name": "length_mismatch",
+     "type": "bool"
+    },
+    {
+     "name": "redirect",
+     "type": "option::value<http_peer::redirect>"
+    },
+    {
+     "name": "redirect_incomplete",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::header_receipt",
+   "identity": "can.std.http_peer@1::header_receipt",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "header_count",
+     "type": "int"
+    },
+    {
+     "name": "header_bytes",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::body_chunk_receipt",
+   "identity": "can.std.http_peer@1::body_chunk_receipt",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "accepted",
+     "type": "int"
+    },
+    {
+     "name": "body_accepted_total",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::request_close_receipt",
+   "identity": "can.std.http_peer@1::request_close_receipt",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "upload_bytes",
+     "type": "int"
+    },
+    {
+     "name": "response_body_accepted",
+     "type": "int"
+    },
+    {
+     "name": "response_body_consumed",
+     "type": "int"
+    },
+    {
+     "name": "response_body_unread",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
   }
  ],
  "errors": [
@@ -3641,6 +4227,36 @@ export const catalogue = freeze({
    "fields": [
     {
      "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "http_peer::peer_fault",
+   "identity": "can.std.http_peer@1::peer_fault",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "http_peer::http_fault",
+   "identity": "can.std.http_peer@1::http_fault",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "kind",
      "type": "str"
     },
     {
@@ -15406,6 +16022,885 @@ export const catalogue = freeze({
    "refs": [
     "NT-P28"
    ]
+  },
+  {
+   "name": "http_peer::open_listener",
+   "identity": "can.std.http_peer@1::open_listener",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "destination",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::listener",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http peer adapter (runtime/test-support/slices/i04/peer.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::close_listener",
+   "identity": "can.std.http_peer@1::close_listener",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "listener",
+     "type": "http_peer::listener"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::listener_close_receipt",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http peer adapter (runtime/test-support/slices/i04/peer.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::dial_peer",
+   "identity": "can.std.http_peer@1::dial_peer",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "destination",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::dial_result",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http peer adapter (runtime/test-support/slices/i04/peer.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::retry_dial",
+   "identity": "can.std.http_peer@1::retry_dial",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "dial",
+     "type": "http_peer::dial"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::dial_result",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http peer adapter (runtime/test-support/slices/i04/peer.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::accept",
+   "identity": "can.std.http_peer@1::accept",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "listener",
+     "type": "http_peer::listener"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::connection",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http peer adapter (runtime/test-support/slices/i04/peer.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::write",
+   "identity": "can.std.http_peer@1::write",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "connection",
+     "type": "http_peer::connection"
+    },
+    {
+     "name": "bytes",
+     "type": "int[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::write_receipt",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http peer adapter (runtime/test-support/slices/i04/peer.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::read",
+   "identity": "can.std.http_peer@1::read",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "connection",
+     "type": "http_peer::connection"
+    },
+    {
+     "name": "max_bytes",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::read_result",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http peer adapter (runtime/test-support/slices/i04/peer.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::half_close",
+   "identity": "can.std.http_peer@1::half_close",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "connection",
+     "type": "http_peer::connection"
+    },
+    {
+     "name": "direction",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::connection_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http peer adapter (runtime/test-support/slices/i04/peer.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::close_connection",
+   "identity": "can.std.http_peer@1::close_connection",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "connection",
+     "type": "http_peer::connection"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::connection_close_receipt",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http peer adapter (runtime/test-support/slices/i04/peer.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::read_listener_facts",
+   "identity": "can.std.http_peer@1::read_listener_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "listener",
+     "type": "http_peer::listener"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::listener_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http peer adapter (runtime/test-support/slices/i04/peer.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::read_connection_facts",
+   "identity": "can.std.http_peer@1::read_connection_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "connection",
+     "type": "http_peer::connection"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::connection_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http peer adapter (runtime/test-support/slices/i04/peer.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::read_dial_facts",
+   "identity": "can.std.http_peer@1::read_dial_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "dial",
+     "type": "http_peer::dial"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::dial_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http peer adapter (runtime/test-support/slices/i04/peer.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::open_request",
+   "identity": "can.std.http_peer@1::open_request",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "origin",
+     "type": "str"
+    },
+    {
+     "name": "method",
+     "type": "str"
+    },
+    {
+     "name": "target",
+     "type": "str"
+    },
+    {
+     "name": "version",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::request",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "http_peer::http_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http test adapter (runtime/test-support/slices/i04/http.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::add_header",
+   "identity": "can.std.http_peer@1::add_header",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "request",
+     "type": "http_peer::request"
+    },
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::header_receipt",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::http_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http test adapter (runtime/test-support/slices/i04/http.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::send_body_chunk",
+   "identity": "can.std.http_peer@1::send_body_chunk",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "request",
+     "type": "http_peer::request"
+    },
+    {
+     "name": "bytes",
+     "type": "int[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::body_chunk_receipt",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::http_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http test adapter (runtime/test-support/slices/i04/http.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::end_upload",
+   "identity": "can.std.http_peer@1::end_upload",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "request",
+     "type": "http_peer::request"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::request_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::http_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http test adapter (runtime/test-support/slices/i04/http.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::deliver_response",
+   "identity": "can.std.http_peer@1::deliver_response",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "request",
+     "type": "http_peer::request"
+    },
+    {
+     "name": "status",
+     "type": "int"
+    },
+    {
+     "name": "headers",
+     "type": "http::header[]"
+    },
+    {
+     "name": "body",
+     "type": "int[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::response_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::http_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http test adapter (runtime/test-support/slices/i04/http.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::read_body_chunk",
+   "identity": "can.std.http_peer@1::read_body_chunk",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "request",
+     "type": "http_peer::request"
+    },
+    {
+     "name": "max_bytes",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::read_result",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::http_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http test adapter (runtime/test-support/slices/i04/http.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::reissue",
+   "identity": "can.std.http_peer@1::reissue",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "request",
+     "type": "http_peer::request"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::request",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::http_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http test adapter (runtime/test-support/slices/i04/http.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::close_request",
+   "identity": "can.std.http_peer@1::close_request",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "request",
+     "type": "http_peer::request"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::request_close_receipt",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::http_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http test adapter (runtime/test-support/slices/i04/http.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::read_request_facts",
+   "identity": "can.std.http_peer@1::read_request_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "request",
+     "type": "http_peer::request"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::request_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "http_peer::http_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http test adapter (runtime/test-support/slices/i04/http.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
+  },
+  {
+   "name": "http_peer::read_response_facts",
+   "identity": "can.std.http_peer@1::read_response_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "request",
+     "type": "http_peer::request"
+    }
+   ],
+   "staticInputs": [],
+   "result": "option::value<http_peer::response_facts>",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "http_peer::http_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "http test adapter (runtime/test-support/slices/i04/http.ts)",
+    "task": "NT-I04"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-I04"
+   ]
   }
  ],
  "nativeDeclarations": [
@@ -18088,6 +19583,903 @@ export const catalogueTypeShapes = freeze([
     "leaves": []
   },
   {
+    "name": "http_peer::listener",
+    "identity": "can.std.http_peer@1::listener",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::connection",
+    "identity": "can.std.http_peer@1::connection",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::dial",
+    "identity": "can.std.http_peer@1::dial",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::request",
+    "identity": "can.std.http_peer@1::request",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::listener_facts",
+    "identity": "can.std.http_peer@1::listener_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "id",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "owner",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "destination",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "closed",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "pending_accepts",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "accepted_total",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "stale_skipped",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "dropped_on_close",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::connection_facts",
+    "identity": "can.std.http_peer@1::connection_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "id",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "owner",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "destination",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "side",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "peer_id",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "peer_gone",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "read_closed",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "write_closed",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "peer_write_closed",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "closed",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "buffered_bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "accepted_bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "consumed_bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "discarded_bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::dial_facts",
+    "identity": "can.std.http_peer@1::dial_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "id",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "owner",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "destination",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "state",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "fail_reason",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "attempt_count",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "retry_count",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "connection_id",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::dial_result",
+    "identity": "can.std.http_peer@1::dial_result",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "dial",
+        "type": {
+          "name": "http_peer::dial",
+          "arguments": null
+        }
+      },
+      {
+        "name": "state",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "fail_reason",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "connection",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "http_peer::connection",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "attempt_count",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "retry_count",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::write_receipt",
+    "identity": "can.std.http_peer@1::write_receipt",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "accepted",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "peer_buffered",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "peer_accepted_total",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::read_result",
+    "identity": "can.std.http_peer@1::read_result",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "bytes",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "eof",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "truncated",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "consumed_total",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "accepted_total",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::connection_close_receipt",
+    "identity": "can.std.http_peer@1::connection_close_receipt",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "unread_bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "accepted_bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "consumed_bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "discarded_bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::listener_close_receipt",
+    "identity": "can.std.http_peer@1::listener_close_receipt",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "pending_accepts_dropped",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "accepted_total",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "stale_skipped",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::request_facts",
+    "identity": "can.std.http_peer@1::request_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "id",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "owner",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "origin",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "method",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "target",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "version",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "state",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "header_count",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "headers",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "http::header",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "header_bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "headers_truncated",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "upload_accepted",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "upload_complete",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "upload_truncated",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "upload_length_mismatch",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "response_delivered",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "response_status",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "response_body_accepted",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "response_body_consumed",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "response_headers_truncated",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "response_body_truncated",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "response_length_mismatch",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "redirect",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "http_peer::redirect",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "redirect_incomplete",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reissue_count",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "supersedes",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::redirect",
+    "identity": "can.std.http_peer@1::redirect",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "status",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "location",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::response_facts",
+    "identity": "can.std.http_peer@1::response_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "status",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "header_count",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "headers",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "http::header",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "header_bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "body_accepted",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "body_consumed",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "body_fully_consumed",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "length_mismatch",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "redirect",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "http_peer::redirect",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "redirect_incomplete",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::header_receipt",
+    "identity": "can.std.http_peer@1::header_receipt",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "header_count",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "header_bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::body_chunk_receipt",
+    "identity": "can.std.http_peer@1::body_chunk_receipt",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "accepted",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "body_accepted_total",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::request_close_receipt",
+    "identity": "can.std.http_peer@1::request_close_receipt",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "upload_bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "response_body_accepted",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "response_body_consumed",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "response_body_unread",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
     "name": "all_failed",
     "identity": "can.prelude@1::all_failed",
     "kind": "error",
@@ -20165,6 +22557,52 @@ export const catalogueTypeShapes = freeze([
     "fields": [
       {
         "name": "name",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::peer_fault",
+    "identity": "can.std.http_peer@1::peer_fault",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "kind",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::http_fault",
+    "identity": "can.std.http_peer@1::http_fault",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "kind",
         "type": {
           "name": "str",
           "arguments": null

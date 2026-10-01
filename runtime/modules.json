@@ -869,6 +869,35 @@
       "../data.ts",
       "../domain.ts"
     ],
+    "test-support/slices/i04/http-service.ts": [
+      "./peer-service.ts"
+    ],
+    "test-support/slices/i04/http.ts": [
+      "../../../completion.ts",
+      "../../../data.ts",
+      "../../../domain.ts",
+      "../../owner.ts",
+      "./http-service.ts",
+      "./support.ts"
+    ],
+    "test-support/slices/i04/peer-service.ts": [],
+    "test-support/slices/i04/peer.ts": [
+      "../../../completion.ts",
+      "../../../data.ts",
+      "../../../domain.ts",
+      "../../owner.ts",
+      "./peer-service.ts",
+      "./support.ts"
+    ],
+    "test-support/slices/i04/support.ts": [
+      "../../../completion.ts",
+      "../../../data.ts",
+      "../../../domain.ts",
+      "../../owner.ts",
+      "./http.ts",
+      "./peer-service.ts",
+      "./peer.ts"
+    ],
     "test-support/tools.ts": [
       "../completion.ts",
       "../data.ts",

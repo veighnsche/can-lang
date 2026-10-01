@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 18f3816bb7a5f3a89a266e61d28261a055580ba0ad7b1aecfba1694d308a8a16.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: c718340296aadfab86df695f24d0628fa9ca5bb3373d44a5d7c1c2ded3dc9225.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -52,6 +52,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - markdown → can.std.markdown@1
 - action → can.std.action@1
 - test → can.std.test@1
+- http_peer → can.std.http_peer@1
 
 ## Types
 
@@ -178,6 +179,24 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | test::tool_result | record |  | bytes::buffer stdout, bytes::buffer stderr, int code, str signal | true |
 | test::evidence | opaque |  |  | false |
 | test::evidence_receipt | record |  | str digest, str kind, int bytes, int entries | true |
+| http_peer::listener | opaque |  |  | false |
+| http_peer::connection | opaque |  |  | false |
+| http_peer::dial | opaque |  |  | false |
+| http_peer::request | opaque |  |  | false |
+| http_peer::listener_facts | record |  | str id, str owner, str destination, bool closed, int pending_accepts, int accepted_total, int stale_skipped, int dropped_on_close | true |
+| http_peer::connection_facts | record |  | str id, str owner, str destination, str side, option::value&lt;str&gt; peer_id, bool peer_gone, bool read_closed, bool write_closed, bool peer_write_closed, bool closed, int buffered_bytes, int accepted_bytes, int consumed_bytes, int discarded_bytes | true |
+| http_peer::dial_facts | record |  | str id, str owner, str destination, str state, option::value&lt;str&gt; fail_reason, int attempt_count, int retry_count, option::value&lt;str&gt; connection_id | true |
+| http_peer::dial_result | record |  | http_peer::dial dial, str state, option::value&lt;str&gt; fail_reason, option::value&lt;http_peer::connection&gt; connection, int attempt_count, int retry_count | true |
+| http_peer::write_receipt | record |  | int accepted, int peer_buffered, int peer_accepted_total | true |
+| http_peer::read_result | record |  | int[] bytes, bool eof, bool truncated, int consumed_total, int accepted_total | true |
+| http_peer::connection_close_receipt | record |  | int unread_bytes, int accepted_bytes, int consumed_bytes, int discarded_bytes | true |
+| http_peer::listener_close_receipt | record |  | int pending_accepts_dropped, int accepted_total, int stale_skipped | true |
+| http_peer::request_facts | record |  | str id, str owner, str origin, str method, str target, str version, str state, int header_count, http::header[] headers, int header_bytes, bool headers_truncated, int upload_accepted, bool upload_complete, bool upload_truncated, bool upload_length_mismatch, bool response_delivered, option::value&lt;int&gt; response_status, int response_body_accepted, int response_body_consumed, bool response_headers_truncated, bool response_body_truncated, bool response_length_mismatch, option::value&lt;http_peer::redirect&gt; redirect, bool redirect_incomplete, int reissue_count, option::value&lt;str&gt; supersedes | true |
+| http_peer::redirect | record |  | int status, str location | true |
+| http_peer::response_facts | record |  | int status, int header_count, http::header[] headers, int header_bytes, int body_accepted, int body_consumed, bool body_fully_consumed, bool length_mismatch, option::value&lt;http_peer::redirect&gt; redirect, bool redirect_incomplete | true |
+| http_peer::header_receipt | record |  | int header_count, int header_bytes | true |
+| http_peer::body_chunk_receipt | record |  | int accepted, int body_accepted_total | true |
+| http_peer::request_close_receipt | record |  | int upload_bytes, int response_body_accepted, int response_body_consumed, int response_body_unread | true |
 
 ## Domain errors
 
@@ -306,6 +325,8 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | test::unknown_tool | can.std.test@1::unknown_tool |  | str key |
 | test::invalid_path | can.std.test@1::invalid_path |  | str path, str reason |
 | test::invalid_name | can.std.test@1::invalid_name |  | str name, str reason |
+| http_peer::peer_fault | can.std.http_peer@1::peer_fault |  | str kind, str reason |
+| http_peer::http_fault | can.std.http_peer@1::http_fault |  | str kind, str reason |
 
 ## Operations
 
@@ -639,6 +660,28 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | test::evidence_open | test::owner handle → test::evidence | {test::stale_handle} |  | Map | test evidence adapter (runtime/test-support/evidence.ts) | real | NT-P28 / NT-P28 |
 | test::evidence_append | test::evidence ev, str name, bytes::buffer data → void | {test::stale_handle, test::closed_handle, test::invalid_name} |  | Map | test evidence adapter (runtime/test-support/evidence.ts) | real | NT-P28 / NT-P28 |
 | test::evidence_seal | test::evidence ev, str kind → test::evidence_receipt | {test::stale_handle, test::closed_handle, test::invalid_kind} |  | SubtleCrypto.digest | sha256 over length-framed entries; kinds are qualified-report, n-receipt, cleanup-receipt; test evidence adapter (runtime/test-support/evidence.ts) | real | NT-P28 / NT-P28 |
+| http_peer::open_listener | test::owner owner, str destination → http_peer::listener | {test::stale_handle, http_peer::peer_fault} |  | Map, domain.create | http peer adapter (runtime/test-support/slices/i04/peer.ts) | real | NT-I04 / NT-I04 |
+| http_peer::close_listener | test::owner owner, http_peer::listener listener → http_peer::listener_close_receipt | {test::stale_handle, test::closed_handle, http_peer::peer_fault} |  | Map, domain.create | http peer adapter (runtime/test-support/slices/i04/peer.ts) | real | NT-I04 / NT-I04 |
+| http_peer::dial_peer | test::owner owner, str destination → http_peer::dial_result | {test::stale_handle, http_peer::peer_fault} |  | Map, domain.create | http peer adapter (runtime/test-support/slices/i04/peer.ts) | real | NT-I04 / NT-I04 |
+| http_peer::retry_dial | test::owner owner, http_peer::dial dial → http_peer::dial_result | {test::stale_handle, http_peer::peer_fault} |  | Map, domain.create | http peer adapter (runtime/test-support/slices/i04/peer.ts) | real | NT-I04 / NT-I04 |
+| http_peer::accept | test::owner owner, http_peer::listener listener → http_peer::connection | {test::stale_handle, test::closed_handle, http_peer::peer_fault} |  | Map, domain.create | http peer adapter (runtime/test-support/slices/i04/peer.ts) | real | NT-I04 / NT-I04 |
+| http_peer::write | test::owner owner, http_peer::connection connection, int[] bytes → http_peer::write_receipt | {test::stale_handle, test::closed_handle, http_peer::peer_fault} |  | Map, domain.create | http peer adapter (runtime/test-support/slices/i04/peer.ts) | real | NT-I04 / NT-I04 |
+| http_peer::read | test::owner owner, http_peer::connection connection, int max_bytes → http_peer::read_result | {test::stale_handle, test::closed_handle, http_peer::peer_fault} |  | Map, domain.create | http peer adapter (runtime/test-support/slices/i04/peer.ts) | real | NT-I04 / NT-I04 |
+| http_peer::half_close | test::owner owner, http_peer::connection connection, str direction → http_peer::connection_facts | {test::stale_handle, test::closed_handle, http_peer::peer_fault} |  | Map, domain.create | http peer adapter (runtime/test-support/slices/i04/peer.ts) | real | NT-I04 / NT-I04 |
+| http_peer::close_connection | test::owner owner, http_peer::connection connection → http_peer::connection_close_receipt | {test::stale_handle, test::closed_handle, http_peer::peer_fault} |  | Map, domain.create | http peer adapter (runtime/test-support/slices/i04/peer.ts) | real | NT-I04 / NT-I04 |
+| http_peer::read_listener_facts | test::owner owner, http_peer::listener listener → http_peer::listener_facts | {test::stale_handle, http_peer::peer_fault} |  | Map, domain.create | http peer adapter (runtime/test-support/slices/i04/peer.ts) | real | NT-I04 / NT-I04 |
+| http_peer::read_connection_facts | test::owner owner, http_peer::connection connection → http_peer::connection_facts | {test::stale_handle, http_peer::peer_fault} |  | Map, domain.create | http peer adapter (runtime/test-support/slices/i04/peer.ts) | real | NT-I04 / NT-I04 |
+| http_peer::read_dial_facts | test::owner owner, http_peer::dial dial → http_peer::dial_facts | {test::stale_handle, http_peer::peer_fault} |  | Map, domain.create | http peer adapter (runtime/test-support/slices/i04/peer.ts) | real | NT-I04 / NT-I04 |
+| http_peer::open_request | test::owner owner, str origin, str method, str target, str version → http_peer::request | {test::stale_handle, http_peer::http_fault} |  | Map, domain.create | http test adapter (runtime/test-support/slices/i04/http.ts) | real | NT-I04 / NT-I04 |
+| http_peer::add_header | test::owner owner, http_peer::request request, str name, str value → http_peer::header_receipt | {test::stale_handle, test::closed_handle, http_peer::http_fault} |  | Map, domain.create | http test adapter (runtime/test-support/slices/i04/http.ts) | real | NT-I04 / NT-I04 |
+| http_peer::send_body_chunk | test::owner owner, http_peer::request request, int[] bytes → http_peer::body_chunk_receipt | {test::stale_handle, test::closed_handle, http_peer::http_fault} |  | Map, domain.create | http test adapter (runtime/test-support/slices/i04/http.ts) | real | NT-I04 / NT-I04 |
+| http_peer::end_upload | test::owner owner, http_peer::request request → http_peer::request_facts | {test::stale_handle, test::closed_handle, http_peer::http_fault} |  | Map, domain.create | http test adapter (runtime/test-support/slices/i04/http.ts) | real | NT-I04 / NT-I04 |
+| http_peer::deliver_response | test::owner owner, http_peer::request request, int status, http::header[] headers, int[] body → http_peer::response_facts | {test::stale_handle, test::closed_handle, http_peer::http_fault} |  | Map, domain.create | http test adapter (runtime/test-support/slices/i04/http.ts) | real | NT-I04 / NT-I04 |
+| http_peer::read_body_chunk | test::owner owner, http_peer::request request, int max_bytes → http_peer::read_result | {test::stale_handle, test::closed_handle, http_peer::http_fault} |  | Map, domain.create | http test adapter (runtime/test-support/slices/i04/http.ts) | real | NT-I04 / NT-I04 |
+| http_peer::reissue | test::owner owner, http_peer::request request → http_peer::request | {test::stale_handle, test::closed_handle, http_peer::http_fault} |  | Map, domain.create | http test adapter (runtime/test-support/slices/i04/http.ts) | real | NT-I04 / NT-I04 |
+| http_peer::close_request | test::owner owner, http_peer::request request → http_peer::request_close_receipt | {test::stale_handle, test::closed_handle, http_peer::http_fault} |  | Map, domain.create | http test adapter (runtime/test-support/slices/i04/http.ts) | real | NT-I04 / NT-I04 |
+| http_peer::read_request_facts | test::owner owner, http_peer::request request → http_peer::request_facts | {test::stale_handle, http_peer::http_fault} |  | Map, domain.create | http test adapter (runtime/test-support/slices/i04/http.ts) | real | NT-I04 / NT-I04 |
+| http_peer::read_response_facts | test::owner owner, http_peer::request request → option::value&lt;http_peer::response_facts&gt; | {test::stale_handle, http_peer::http_fault} |  | Map, domain.create | http test adapter (runtime/test-support/slices/i04/http.ts) | real | NT-I04 / NT-I04 |
 
 ## Native declaration profiles
 
