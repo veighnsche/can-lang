@@ -1,0 +1,147 @@
+{
+ "changed_paths": [
+  "tests/native-can/migration/m09-cli-formatter-input-and-proces/core-028-roots-green.can",
+  "tests/native-can/migration/m09-cli-formatter-input-and-proces/core-028-env-semantics.can",
+  "tests/native-can/migration/m09-cli-formatter-input-and-proces/core-028-run-shape.can",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/M09-CORE-028.json"
+ ],
+ "commands_with_deadlines_and_results": [
+  {
+   "command": "python3 -c \"b=open('tests/integration/io_env_test.go','rb').read(); pins=[...22 byte-exact pins...]; for p in pins: print(repr(p), 'count=', b.count(p)); md5\"; sed -n '91p' L91 | od -c; grep -n 'ufeff'; grep -c 'REDACTED' tests/integration/io_env_test.go",
+   "deadline": "60s",
+   "result": "All 22 pins byte-present: h+c3a9+f09f9880 x3 (L56/L80/L91), --preload=/must-not-execute.ts x2, http::credentials_missing needle x1, env::invalid_name needle x3, io::limit_exceeded needle x2, codec::invalid_data needle x1, deny-network profile x1, PATH=/nonexistent x1, supplied-completion x1, 'must not be read' x1, 'sample: 16 =>' x2, 'sample: -1 =>' x1, src/main.can x4, entry.ts x1, --strict x1, (16) x2, (-1) x1, (1048576) x1. Go md5 378786aaf3943a4533cebcaac026a722. L91 sample confirmed as 6-char ASCII escape \\ufeff + literal h-e-acute-emoji bytes (od -c), so the Can pin embeds a verbatim U+FEFF (no backslash-u escape in Can, CORE-008 precedent). REDACTED count 0 (grep exit 1)."
+  },
+  {
+   "command": "printf 'package prob ... asserts neg: => ok -1 ... ok 0 - 1' > /tmp/m09c028scratch/probe.can && go run ./compiler parse /tmp/m09c028scratch/probe.can",
+   "deadline": "120s",
+   "result": "exit 0, 'parsed, package prob, 1 declarations': negative int literal -1 parses (no prior .can precedent; needed for the L115 negative-limit pin). Typecheck of -1 confirmed later by the staged gate-b check (accepted:true)."
+  },
+  {
+   "command": "python3 /tmp/m09c028scratch/gen.py && D=tests/native-can/migration/m09-cli-formatter-input-and-proces; go run ./compiler parse $D/core-028-roots-green.can; go run ./compiler parse $D/core-028-env-semantics.can; go run ./compiler parse $D/core-028-run-shape.can",
+   "deadline": "180s",
+   "result": "Generator emitted the 3 owned slices deterministically (251/358/297 lines; 13/28/18 checks). Parse: m09core028roots 17 declarations exit 0; m09core028env 17 declarations exit 0; m09core028run 17 declarations exit 0 (17 = 8 shapes + 9 fns: selector/require_bool/require_int/require_text/observe/checks/expected_vector/case_body/descriptor, matching CORE-008). First roots parse failed on an unescaped quote in one check title (CAN-LEX-NAME); fixed in the generator (titles escaped as Can literals) and re-parsed clean."
+  },
+  {
+   "command": "python3 /tmp/m09c028scratch/deadseed.py (extracts every ok observation(...) tuple from observe asserts AND match arms in the authored files; diffs each seed tuple against the default tuple field-by-field; checks assert/arm parity)",
+   "deadline": "60s",
+   "result": "CLEAN, exit 0: roots 14 assert tuples + 14 match arms at 13 fields; env 29 + 29 at 28 fields; run 19 + 19 at 18 fields. All 59 seeds differ from default in exactly one field, always the seed's target field; every assert tuple is byte-identical to its match arm (including the default arm). Full per-seed diff table in coverage.controls."
+  },
+  {
+   "command": "D=tests/native-can/migration/m09-cli-formatter-input-and-proces; python3 byte audit (HE/FEFF/hostile/REDACTED counts from authored bytes; non-ASCII-line scan; FEFF-adjacency check); grep -c 'REDACTED' $D/core-028-*.can",
+   "deadline": "60s",
+   "result": "roots: all ASCII (counts/names/needles only). env: HE byte-sequence x125, FEFF x59 with all 59 immediately before HE (the L91 BOM-sample pin), hostile value x120 (118 pins + 2 ASCII doc mentions), REDACTED 0. run: HE x44, hostile x40 (39 pins + 1 doc mention), REDACTED 0. Every HE occurrence is the exact Go byte sequence h+c3a9+f09f9880 (counted from bytes, reconciled: env 63 value-pins + 59 BOM-pins + 3 seed/doc HE = 125; run 36 + 2 + 1 + 5 require rows = 44). No non-ASCII line outside HE/FEFF pins (docs ASCII-only). REDACTED grep 0 per file (trailing exit 1 = no matches)."
+  },
+  {
+   "command": "D=tests/native-can/migration/m09-cli-formatter-input-and-proces; rm -rf /tmp/m09c028check && mkdir -p /tmp/m09c028check/src/roots /tmp/m09c028check/src/env /tmp/m09c028check/src/run && cp $D/core-028-*.can (one per subdir) && printf can.project.json + can.errors.json active [m09core028env::failed, m09core028roots::failed, m09core028run::failed] && 3x diff && echo STAGE-IDENTICAL",
+   "deadline": "60s",
+   "result": "STAGE-IDENTICAL: all 3 diffs empty. Registry active sorted: [m09core028env::failed, m09core028roots::failed, m09core028run::failed]."
+  },
+  {
+   "command": "go run ./compiler check --json /tmp/m09c028check > /tmp/m09c028check-out.json 2>/tmp/m09c028check-err.txt; python3 print keys/accepted/diagnostics/status/kind/schema; head + wc stderr capture",
+   "deadline": "280s",
+   "result": "exit 0, accepted:true, diagnostics:[], first run. Top-level keys kind/result/schema_version/status (can.check/completed/1). Stderr capture empty (0 bytes). Slice is cancheck-clean standalone (provides include the shape types per the H023 lesson; one package per src subdirectory; -1 literal and from_int(-1) typecheck)."
+  },
+  {
+   "command": "rm -rf /tmp/m09c028neg && cp -r /tmp/m09c028check /tmp/m09c028neg && sed -i '' 's/^    int root_count$/    str root_count/' /tmp/m09c028neg/src/roots/core-028-roots-green.can && go run ./compiler check --json /tmp/m09c028neg > captures; python3 print accepted/nd boundary/files/codes/sev/first",
+   "deadline": "280s",
+   "result": "Seed applied in neg copy only (L75 now 'str root_count'). check exit 1, accepted:false, diagnostics: 29 (29 errors), all 29 naming src/roots/core-028-roots-green.can, code CAN-CHECK, message 'expression type does not fit expected type' (first at start_line 145). Harness is non-vacuous."
+  },
+  {
+   "command": "python3 start_lines from neg output; grep -c '^    int root_count$' live file; grep -c 'str root_count' live file; rm -rf /tmp/m09c028neg + captures; ls (verify absent)",
+   "deadline": "60s",
+   "result": "start_lines: 14 observe asserts (L145-158) + 14 match arms (L160-173) + 1 case_body require_int call site (L218) = 29. Live-tree file verified still 'int root_count' (grep count 1, str-defect count 0). /tmp/m09c028neg and captures removed after (ls confirms absent; trailing exit 1 is the expected absent-path ls plus the zero-match grep)."
+  },
+  {
+   "command": "go run ./compiler check --json /Users/vince/Projects/can-lang/tests/native-can > /tmp/m09c028-live.json 2>/tmp/m09c028-live.err; python3 print accepted/ndiag/sev/each diagnostic/core-028+m09core028 mentions; head + wc stderr",
+   "deadline": "280s",
+   "result": "exit 0, accepted:true, diagnostics: 2 (0 errors), first run. Both are the pre-existing CAN-CHECK-STRING-MATCH-LADDER warnings in untouched src/report/reducer/reducer.can (start_line 466, 486). core-028 mentions: 0; m09core028 mentions: 0; stderr empty (0 bytes). Slice contributes zero live-tree diagnostics (read-only; zero live-tree writes outside owned paths)."
+  },
+  {
+   "command": "printf CAN_BUN_ARCHIVE/CAN_TSC/CAN_BUN; ls archive-or-nonexistent; ls /usr/bin/sandbox-exec; ls evidence | grep -E '^P23'; grep -E '^QF'; grep -E '^(P15|P20|P27|P28|K17|K18)\\.json'; uname -sm; go version; ls /tmp/muse-m09c028-*",
+   "deadline": "60s",
+   "result": "CAN_BUN_ARCHIVE=<unset>; CAN_TSC=<unset>; CAN_BUN=<unset>; archive ls: 'No such file or directory'. /usr/bin/sandbox-exec present (macOS host tool). No P23 evidence file and no QF evidence file (both greps exit 1): accept_after P23/QF1 UNMET. Start gates satisfied: P15.json, P20.json, P27.json, P28.json, K17.json, K18.json all present. No live canlc assert/run attempted, no bundle build, no tsc run (broad builds deferred; execution BLOCKED, recorded not waived). Host: Darwin arm64; go1.27.1 darwin/arm64. Integrator-owned /tmp/muse-m09c028-prompt.md listed only, untouched."
+  },
+  {
+   "command": "git status --short; git log --oneline -3; ls tests/native-can/migration/m09-cli-formatter-input-and-proces/",
+   "deadline": "60s",
+   "result": "Only untracked paths: this row's 3 owned .can files + sibling-worker M09-C020/C027 files (core-020/027 slices + M09-CORE-020/027.json evidence), all untouched by this worker; nothing staged. Dir holds core-008 (landed), core-020, core-027, core-028 triples. HEAD bf9ddb9a feat(emit): bind NT-I11 descriptor ops (CORE-008 landed at 8aaf69f0)."
+  },
+  {
+   "command": "rm -rf /tmp/m09c028check /tmp/m09c028check-out.json /tmp/m09c028check-err.txt /tmp/m09c028-live.json /tmp/m09c028-live.err /tmp/m09c028scratch; ls each (verify absent); ls /tmp/muse-m09c028-*; git status --short",
+   "deadline": "60s",
+   "result": "Owned scratch gone: /tmp/m09c028check probe, both check captures, both live-tree captures, and /tmp/m09c028scratch (generator + dead-seed scripts + parse probe) removed (all ls confirm absent; /tmp/m09c028neg already removed at gate c). Integrator-owned /tmp/muse-m09c028-prompt.md left untouched. Final git status shows only this row's 3 .can files + this evidence file alongside sibling-worker M09-C020/C027 files, all unstaged; nothing committed, nothing pushed."
+  },
+  {
+   "command": "integrator independent re-verification: parse 3 files; fresh stage /tmp/m09c028check (3 diffs) + check --json; fresh neg copy (int->str root_count); combined live-tree check; dead-seed scan; Bearer/REDACTED scan; env probe",
+   "deadline": "280s",
+   "result": "parse 3x17 decls (m09core028roots/env/run). STAGE-IDENTICAL; check exit 0 accepted:true diagnostics:[]. Neg exit 1 accepted:false 29 errors all in seeded file (matches worker-declared 29). Live-tree accepted:true, 2 pre-existing warnings, 0 mentions. Dead-seed scan clean; no Bearer/REDACTED pins. Archives unset; P23/QF1 unmet."
+  }
+ ],
+ "coverage": {
+  "case_check_ids": [
+   "cli/input-env-roots: assert-green, report-passed, root-count, subtest-count, fixture-name, input-source, input-text-source, environment-source, input-roots, input-text-roots, environment-roots, assert-needle, assert-stdin-ignored (core-028-roots-green.can, package m09core028roots)",
+   "cli/input-env: env-value-unicode, env-empty, env-hostile-value, env-ok-exit, env-ok-stderr-empty, missing-identity, invalid-identity, invalid-lower, invalid-equals, invalid-empty-name, env-error-exit, env-error-stdout-empty, hostile-bun-options, stdin-limit, sample-bom-text, sample-width, sample-binary-length, overflow-width, overflow-identity, utf8-identity, negative-limit, large-limit, large-roundtrip, mutation-from, mutation-to, tsc-strict, tsc-entry, tsc-optional (core-028-env-semantics.can, package m09core028env)",
+   "cli/input-env-run: run-exit, env-stderr-empty, input-text-stderr-empty, stderr-mirror-input, stdout-value, stdout-empty, stdout-hostile, input-sample-count, input-text-sample-count, roundtrip-equal, fault-exit, fault-stdout-empty, build-exit, large-stdout-length, large-stderr-length, sandbox-profile, offline-path, offline-ok (core-028-run-shape.can, package m09core028run)"
+  ],
+  "controls": [
+   "Positive: every case_body 'expected' root on the default variant yields ok (59 checks across 3 cases: 13 + 28 + 18).",
+   "Seeded defect: each of the 59 checks has its own seed refusing with the exact check id - input-env-roots: seed-assert-green-drift -> failed{assert-green}; seed-report-passed-drift -> failed{report-passed}; seed-root-count-drift -> failed{root-count}; seed-subtest-count-drift -> failed{subtest-count}; seed-fixture-name-drift -> failed{fixture-name}; seed-input-source-drift -> failed{input-source}; seed-input-text-source-drift -> failed{input-text-source}; seed-environment-source-drift -> failed{environment-source}; seed-input-roots-drift -> failed{input-roots}; seed-input-text-roots-drift -> failed{input-text-roots}; seed-environment-roots-drift -> failed{environment-roots}; seed-assert-needle-drift -> failed{assert-needle}; seed-assert-stdin-ignored-drift -> failed{assert-stdin-ignored}. input-env: seed-env-value-unicode-drift -> failed{env-value-unicode}; seed-env-empty-drift -> failed{env-empty}; seed-env-hostile-value-drift -> failed{env-hostile-value}; seed-env-ok-exit-drift -> failed{env-ok-exit}; seed-env-ok-stderr-empty-drift -> failed{env-ok-stderr-empty}; seed-missing-identity-drift -> failed{missing-identity}; seed-invalid-identity-drift -> failed{invalid-identity}; seed-invalid-lower-drift -> failed{invalid-lower}; seed-invalid-equals-drift -> failed{invalid-equals}; seed-invalid-empty-name-drift -> failed{invalid-empty-name}; seed-env-error-exit-drift -> failed{env-error-exit}; seed-env-error-stdout-empty-drift -> failed{env-error-stdout-empty}; seed-hostile-bun-options-drift -> failed{hostile-bun-options}; seed-stdin-limit-drift -> failed{stdin-limit}; seed-sample-bom-text-drift -> failed{sample-bom-text}; seed-sample-width-drift -> failed{sample-width}; seed-sample-binary-length-drift -> failed{sample-binary-length}; seed-overflow-width-drift -> failed{overflow-width}; seed-overflow-identity-drift -> failed{overflow-identity}; seed-utf8-identity-drift -> failed{utf8-identity}; seed-negative-limit-drift -> failed{negative-limit}; seed-large-limit-drift -> failed{large-limit}; seed-large-roundtrip-drift -> failed{large-roundtrip}; seed-mutation-from-drift -> failed{mutation-from}; seed-mutation-to-drift -> failed{mutation-to}; seed-tsc-strict-drift -> failed{tsc-strict}; seed-tsc-entry-drift -> failed{tsc-entry}; seed-tsc-optional-drift -> failed{tsc-optional}. input-env-run: seed-run-exit-drift -> failed{run-exit}; seed-env-stderr-empty-drift -> failed{env-stderr-empty}; seed-input-text-stderr-empty-drift -> failed{input-text-stderr-empty}; seed-stderr-mirror-input-drift -> failed{stderr-mirror-input}; seed-stdout-value-drift -> failed{stdout-value}; seed-stdout-empty-drift -> failed{stdout-empty}; seed-stdout-hostile-drift -> failed{stdout-hostile}; seed-input-sample-count-drift -> failed{input-sample-count}; seed-input-text-sample-count-drift -> failed{input-text-sample-count}; seed-roundtrip-equal-drift -> failed{roundtrip-equal}; seed-fault-exit-drift -> failed{fault-exit}; seed-fault-stdout-empty-drift -> failed{fault-stdout-empty}; seed-build-exit-drift -> failed{build-exit}; seed-large-stdout-length-drift -> failed{large-stdout-length}; seed-large-stderr-length-drift -> failed{large-stderr-length}; seed-sandbox-profile-drift -> failed{sandbox-profile}; seed-offline-path-drift -> failed{offline-path}; seed-offline-ok-drift -> failed{offline-ok}.",
+   "Dead-seed diff (programmatic, from authored bytes; every seed differs in exactly its target field, assert tuple identical to its match arm): roots[13]: assert-green f0 true->false; report-passed f1 true->false; root-count f2 1->0; subtest-count f3 3->2; fixture-name f4 src/main.can->src/other.can; input-source f5 input.can->input2.can; input-text-source f6 input-text.can->input-text2.can; environment-source f7 environment.can->environment2.can; input-roots f8 1->0; input-text-roots f9 1->0; environment-roots f10 1->0; assert-needle f11 supplied-completion->supplied-failure; assert-stdin-ignored f12 'must not be read'->'must be read'. env[28]: env-value-unicode f0 HE->h-e-acute-only; env-empty f1 ''->x; env-hostile-value f2 must-not-execute.ts->other.ts; env-ok-exit f3 0->1; env-ok-stderr-empty f4 true->false; missing-identity f5 credentials_missing->invalid_name; invalid-identity f6 invalid_name->credentials_missing; invalid-lower f7 lower->LOWER; invalid-equals f8 A=B->A-B; invalid-empty-name f9 ''->x; env-error-exit f10 1->0; env-error-stdout-empty f11 true->false; hostile-bun-options f12 must-not-execute.ts->other.ts; stdin-limit f13 16->15; sample-bom-text f14 FEFF+HE->HE; sample-width f15 16->15; sample-binary-length f16 4->3; overflow-width f17 17->16; overflow-identity f18 limit_exceeded->read_failed; utf8-identity f19 invalid_data->limit_exceeded; negative-limit f20 -1->0; large-limit f21 1048576->1048575; large-roundtrip f22 true->false; mutation-from f23 'sample: 16 =>'-'sample: 15 =>'; mutation-to f24 'sample: -1 =>'-'sample: 0 =>'; tsc-strict f25 --strict->--noStrict; tsc-entry f26 entry.ts->main.ts; tsc-optional f27 true->false. run[18]: run-exit f0 0->1; env-stderr-empty f1 true->false; input-text-stderr-empty f2 true->false; stderr-mirror-input f3 true->false; stdout-value f4 HE->h-e-acute-only; stdout-empty f5 ''->x; stdout-hostile f6 must-not-execute.ts->other.ts; input-sample-count f7 4->3; input-text-sample-count f8 3->2; roundtrip-equal f9 true->false; fault-exit f10 1->0; fault-stdout-empty f11 true->false; build-exit f12 0->1; large-stdout-length f13 1048576->1048575; large-stderr-length f14 1048576->1048575; sandbox-profile f15 deny-network-profile->allow-only; offline-path f16 PATH=/nonexistent->PATH=/usr/bin; offline-ok f17 true->false. Zero dead seeds; zero multi-field diffs.",
+   "Missing evidence: short counts (root 0/1, subtests 2/3, samples 3/4 and 2/3, stdin 15/16, width 15/16, binary 3/4, overflow 16/17, large 1048575/1048576) and drifted texts (other staged path, renamed sources, LOWER/A-B names, swapped error identities, BOM-less sample, truncated sandbox profile, /usr/bin PATH, inlined mutations, main.ts entry) each refuse at their count/text gate rather than passing vacuously.",
+   "Controls are authored as Can assert roots and typecheck (0-error cancheck); live execution of the asserts needs P23 + an execution leg, so no execution credit is claimed here."
+  ],
+  "retained_facets": [
+   "Original environment lookup preserves Unicode, empty value and hostile BUN_OPTIONS as data (protects 1; io_env_test.go L56 cmd env, L80-81 lookup legs; environment.can): VALUE pins h+U+00E9+U+1F600 byte-exact, EMPTY pins '', BUN_OPTIONS pins --preload=/must-not-execute.ts as data; all exit 0 with empty stderr; the full hostile entry pinned verbatim as ignored-by-execution.",
+   "Missing/invalid names fail with allocated errors (protects 2; io_env_test.go L85-86): MISSING pins the http::credentials_missing needle; lower, A=B and empty name pinned verbatim with the env::invalid_name needle; all exit 1 with empty stdout.",
+   "Bounds/fixture mutation remain consistent (protects 3; io_env_test.go L91-126; input.can/input-text.can): stdin limit 16 with empty/BOM-unicode/16-wide samples (+4-byte binary for input); 17-byte overflow pins io::limit_exceeded; input-text byte-255 pins codec::invalid_data; the (16)->(-1) mutation rewrites 'sample: 16 =>' to 'sample: -1 =>' consistently (run verifies first, L113-114) and still fails limit_exceeded; the 1048576 mutation roundtrips 1MiB exit 0 with awaited drain.",
+   "Assertions, live run and strict emission (protects 4; io_env_test.go L76/L128-142): per-subtest assert leg pins exit 0, empty diagnostics, the supplied-completion needle and the ignored 'must not be read' stdin probe; per-subtest build pins exit 0; optional CAN_TSC leg pins --strict over entry.ts gated iff CAN_TSC is set (recorded blocked, never waived).",
+   "Production process shape (observes; io_env_test.go L49/L56/L76-143): ok path exits 0 with three verbatim stdouts (Unicode value, empty, hostile value) and roundtrip byte-equality; stderr empty on env/input-text ok paths, mirroring stdin bytes on input ok path; fault legs exit 1 with empty stdout; 1MiB drain pins 1048576-byte stdout+stderr; invocation pins the deny-network profile and PATH=/nonexistent verbatim.",
+   "Observes: Can assert report (assert-green/report-passed/assert-needle), process stdout/stderr/status under hostile environment (all run-shape pins), optional tsc (tsc-strict/tsc-entry/tsc-optional). Per CORE-014/019/040 precedent the non-silent stdouts are pinned verbatim with source lines recorded as an adaptation, never as silent.",
+   "Variants: VALUE, EMPTY, BUN_OPTIONS, MISSING, lower, A=B and empty name (all pinned); per-fixture subtests input/input-text/environment (subtest-count + per-source + per-function roots pins). Environment: requires can-bun-archive + macos-sandbox-exec with CAN_TSC optional; 300000ms timeout mirroring the Go 5-minute ctx (L24).",
+   "Delegated oracles: none (coverage-map delegated_oracles empty; no DELEGATE entry referenced)."
+  ],
+  "unrun_or_blocked": [
+   "Live execution of the new Can asserts (canlc assert/run over the staged input/environment projects): BLOCKED - CAN_BUN_ARCHIVE unset in this session (probe recorded above); accept gates P23/QF1 unmet, so no execution credit claimed or attempted; no bundles, no live assert, no R/N qualification.",
+   "Staged sandboxed runs (assert legs, env lookups, roundtrips, overflow/UTF-8/negative-limit faults, 1MiB drain, per-subtest builds via sandbox-exec): BLOCKED - archive unset; all 59 pins are static Can expectations only.",
+   "Optional strict tsc emission over entry.ts: BLOCKED/CONDITIONAL - CAN_TSC unset; pinned as tsc-strict/tsc-entry/tsc-optional static references only, never waived.",
+   "Environment-gated legs (CAN_BUN_ARCHIVE execution, macOS sandbox-exec runs): BLOCKED/CONDITIONAL - archive unset; pinned as requires can-bun-archive + macos-sandbox-exec on every descriptor, never waived; the present /usr/bin/sandbox-exec host tool alone authorizes no live run.",
+   "Mandatory offline checks with R + new suite/artifact S/A binding (suite_snapshot_acceptance): DEFERRED to P23 - R bundle not built/used here; identities identified below, not bound.",
+   "tests/native-can project cancheck delta from this slice: none - slice lives outside the src/ source root (M32 precedent); live-tree run shows only the 2 pre-existing reducer warnings with zero core-028/m09core028 mentions."
+  ]
+ },
+ "deletion_policy": "No shared old file is deleted by this slice. tests/integration/io_env_test.go stays intact per its delete_when gates (every protected behavior, observation, variant, negative control and required environment reproduced with independent qualification evidence and callers rewired first); retirement_eligible=false; retirement is a later integrator decision. Nothing proposed for deletion.",
+ "executor": "worker M09-C028",
+ "identities": {
+  "artifact": "N/A: no built executable promoted; no live run, so no artifact identity to bind (P23 scope).",
+  "candidate": "N/A: no candidate executed; Can asserts are static/type-level only (provisional until P23, like P15-P17).",
+  "host_profile": "Darwin arm64; go1.27.1 darwin/arm64 (observed via uname/go version this session).",
+  "observer": "go run ./compiler check --json output (accepted flag + diagnostic counts/files/lines/codes) recorded verbatim in commands above.",
+  "owner": "N/A as an N artifact; this slice exercises no N admission path.",
+  "reference": "R-seed scope identified per docs/implementation/native-can-tests-plan-2026-09-30/reference-seed.md (R-core/P26 and suite acceptance/P23 unfinished). No R bundle built or used in this session; mandatory R checks deferred to P23.",
+  "suite": "3 standalone Can packages under the owned prefix (m09core028roots, m09core028env, m09core028run); uses [text] only; self-contained local shapes mirroring spec:: equivalents; S identity binding deferred to P23 (no execution credit)."
+ },
+ "limitations": [
+  "Static-only verification: parse + 0-error cancheck (standalone) + non-vacuous negative control + live-tree attribution + authored (unexecuted) Can assert controls + programmatic dead-seed diff + byte-truth audit. Assert bodies are unaudited by execution; P23 qualification + an execution leg must bind before any execution credit.",
+  "Slice packages avoid uses [spec] (outside the src/ source root, M32 precedent); at P23 the local test_case/check/evidence shapes map onto spec:: equivalents.",
+  "Slice follows the H023 provides shape on purpose: provides includes the shape types (context/check/evidence/observation/failed/test_case) because cancheck rejects exported signatures over private types.",
+  "Slices were emitted by a deterministic owned generator script from compact check specs (guaranteeing assert/match-arm/vector consistency); the script lived in owned /tmp scratch, was verified through the same gates as hand-written sources, and was removed at cleanup.",
+  "Count/text pins mirror the checked-in sources verbatim (1 root per stage + 3 subtests with per-function 1/1/1, src/main.can, the three source names, supplied-completion, 'must not be read', h+U+00E9+U+1F600 with verbatim U+FEFF BOM sample, hostile BUN_OPTIONS value+entry, the four error needles, lower/A=B/empty names, 16/17/-1/1048576 limits, the sample-row mutation pair, --strict/entry.ts, exits 0/1, the deny-network profile, PATH=/nonexistent); if the Go test or fixtures ever change them, these pins move with it at migration-update time.",
+  "Roots-green adaptation (documented): the Go assert leg pins exit 0, empty stderr and the supplied-completion needle but no per-root count (L76), so root-count/subtest-count plus the per-function *-roots pins record the static assert inventory for P23 qualification rather than an observed per-root report; fixture when-table sample rows are excluded as non-roots per the CORE-014 seal_size precedent.",
+  "Run-shape adaptation (documented, non-silent entry per the accepted CORE-014/019/040 precedent): the env entry emits the looked-up value on stdout by design (L81) and the input entries echo stdin bytes (L101), so the three stdouts are pinned verbatim with source lines and silence pins land where silence holds (env/input-text stderr empty, fault stdout empty). No build-stdout/build-stderr check is authored because Go pins only build exit 0 (L129); the 1MiB drain pins lengths (1048576+1048576) rather than the megabyte payload; input has a stderr-mirror pin instead of stderr-empty (L98-100).",
+  "Exit codes are observed evidence only: the bool/int checks pin the Go predicates (exits 0/1, passed flags, empty-stream facts, byte-equality shape) without over-pinning runner internals or full-output equality.",
+  "Environment-gated legs (CAN_BUN_ARCHIVE execution, macOS sandbox-exec runs, optional CAN_TSC) are recorded blocked/conditional with probes above, never waived; the present /usr/bin/sandbox-exec host tool alone authorizes no live run.",
+  "M09-C020/C027 run concurrently per the row card: no sibling-worker file was read for content, written, or staged by this worker; the owned m09 directory holds the landed core-008 triple plus the concurrent core-020/027/028 triples."
+ ],
+ "resource_and_cleanup_receipts": [
+  "No live runs, no R-seed use, no bundles built, no tsc run, no network, no persistent caches (default GOCACHE only; no temp cache created).",
+  "No repo writes outside the owned prefix + this evidence file; shared old files untouched; tests/integration/ untouched; nothing staged, nothing committed, nothing pushed.",
+  "/tmp/m09c028check (probe project, diff-verified identical) removed after gates with its check captures; /tmp/m09c028neg (negative control) and its captures removed after firing at gate c; /tmp/m09c028-live.json/.err (live-tree output) removed; /tmp/m09c028scratch (generator + dead-seed scripts + parse probe) removed; ls confirms none remain. Integrator-owned /tmp/muse-m09c028-prompt.md left untouched.",
+  "No EMFILE or infrastructure failure in this session; all gates ran to completion."
+ ],
+ "retirement_eligible": false,
+ "reviewer_disposition": "Integrator accepted 2026-10-01: worker gates independently reproduced (parse, staged accepted:true, neg 29 exact-match, counts 13+28+18=59 confirmed, attribution clean, no dead seeds). No execution credit (P23/QF1 unmet); retirement_eligible=false, old harness retained.",
+ "row_or_file_slice": "CORE-028",
+ "status": "complete",
+ "task_id": "M09",
+ "writing_owner": "migration-history"
+}

@@ -1,0 +1,251 @@
+package m09core028roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M09 CORE-028 "bundled input/environment: roots green, three-fixture inventory".
+/// Source: tests/integration/io_env_test.go symbol
+/// TestCurrentBundledInputEnvironment (L15-146).
+/// Related fixtures: compiler/testdata/current/cli/input.can,
+/// input-text.can and environment.can (read at L71, staged one at a time
+/// as src/main.can at L75 across the L69 subtests).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): static assert inventory of the staged project as
+/// the green baseline: exactly 1 root per stage (main alone in each of the
+/// three fixtures) with the assert leg green (exit 0, empty diagnostics,
+/// supplied-completion report) and the unread-stdin probe ignored.
+/// ADAPTATION (recorded, with source lines): the Go assert leg (L76) pins
+/// exit 0, empty stderr and the supplied-completion needle but no per-root
+/// count, so root-count/subtest-count plus the per-function *-roots pins
+/// record the static assert inventory for P23 qualification; no execution
+/// is claimed here (accept_after P23/QF1 unmet).
+/// Facet map (io_env_test.go legs plus fixture arms): assert-green pins
+/// the assert exit (L76: exit 0 with empty diagnostics over the staged
+/// fixture); report-passed pins the passing report; root-count pins the
+/// per-stage total (L75: one src/main.can staged at a time, main = 1);
+/// subtest-count pins the three subtests (L69: input, input-text,
+/// environment); fixture-name grounds the pins in the staged path (L75:
+/// src/main.can); input-source/input-text-source/environment-source pin
+/// the cycled fixture files (L69/L71); input-roots pins input.can main
+/// (fixture L9: sample [] => ok, 1 root; the L13/L18/L22 when-table rows
+/// are not assert roots, matching the CORE-014 seal_size precedent and
+/// declaration.Assertions roots); input-text-roots pins input-text.can
+/// main (fixture L9: sample [] => ok, 1 root); environment-roots pins
+/// environment.can main (fixture L9: sample ["VALUE"] => ok, 1 root);
+/// assert-needle pins "supplied-completion" (L76); assert-stdin-ignored
+/// pins the "must not be read" stdin probe the assert leg ignores (L76).
+/// Env/input semantics live in core-028-env-semantics.can; the production
+/// process shape lives in core-028-run-shape.can.
+/// Variants: none in this file (default only); the env names, stdin
+/// samples, mutations and strict-emission legs live in env-semantics.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec, CAN_TSC optional;
+/// requires can-bun-archive, macos-sandbox-exec. Logical gates
+/// SUITE/WORK/PROC/N1 and C/R/N/S/A identities bind at P23; no live run
+/// now. Descriptor timeout 300000ms mirrors the Go 5-minute ctx (L24).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QF1 unmet).
+/// Case cli/input-env-roots checks: assert-green, report-passed,
+/// root-count, subtest-count, fixture-name, input-source,
+/// input-text-source, environment-source, input-roots, input-text-roots,
+/// environment-roots, assert-needle, assert-stdin-ignored.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int root_count
+    int subtest_count
+    str fixture_name
+    str input_source
+    str input_text_source
+    str environment_source
+    int input_roots
+    int input_text_roots
+    int environment_roots
+    str assert_needle
+    str assert_stdin_ignored
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("cli/input-env-roots", "default", "", "offline"), "assert-green" => ok "case cli/input-env-roots variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("cli/input-env-roots", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case cli/input-env-roots variant default root assert-green run offline")
+        different: false, true, context("cli/input-env-roots", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("cli/input-env-roots", "default", "", "offline"), "root-count" => ok evidence("root-count", "1", "1", true, "case cli/input-env-roots variant default root root-count run offline")
+        different: 0, 1, context("cli/input-env-roots", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "src/main.can", "src/main.can", context("cli/input-env-roots", "default", "", "offline"), "fixture-name" => ok evidence("fixture-name", "src/main.can", "src/main.can", true, "case cli/input-env-roots variant default root fixture-name run offline")
+        different: "src/other.can", "src/main.can", context("cli/input-env-roots", "default", "", "offline"), "fixture-name" => failed{"fixture-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 1, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-completion", "must not be read")
+        seed_assert_green_drift: "seed-assert-green-drift" => ok observation(false, true, 1, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-completion", "must not be read")
+        seed_report_passed_drift: "seed-report-passed-drift" => ok observation(true, false, 1, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-completion", "must not be read")
+        seed_root_count_drift: "seed-root-count-drift" => ok observation(true, true, 0, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-completion", "must not be read")
+        seed_subtest_count_drift: "seed-subtest-count-drift" => ok observation(true, true, 1, 2, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-completion", "must not be read")
+        seed_fixture_name_drift: "seed-fixture-name-drift" => ok observation(true, true, 1, 3, "src/other.can", "input.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-completion", "must not be read")
+        seed_input_source_drift: "seed-input-source-drift" => ok observation(true, true, 1, 3, "src/main.can", "input2.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-completion", "must not be read")
+        seed_input_text_source_drift: "seed-input-text-source-drift" => ok observation(true, true, 1, 3, "src/main.can", "input.can", "input-text2.can", "environment.can", 1, 1, 1, "supplied-completion", "must not be read")
+        seed_environment_source_drift: "seed-environment-source-drift" => ok observation(true, true, 1, 3, "src/main.can", "input.can", "input-text.can", "environment2.can", 1, 1, 1, "supplied-completion", "must not be read")
+        seed_input_roots_drift: "seed-input-roots-drift" => ok observation(true, true, 1, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 0, 1, 1, "supplied-completion", "must not be read")
+        seed_input_text_roots_drift: "seed-input-text-roots-drift" => ok observation(true, true, 1, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 0, 1, "supplied-completion", "must not be read")
+        seed_environment_roots_drift: "seed-environment-roots-drift" => ok observation(true, true, 1, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 1, 0, "supplied-completion", "must not be read")
+        seed_assert_needle_drift: "seed-assert-needle-drift" => ok observation(true, true, 1, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-failure", "must not be read")
+        seed_assert_stdin_ignored_drift: "seed-assert-stdin-ignored-drift" => ok observation(true, true, 1, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-completion", "must be read")
+    match variant_id
+        "seed-assert-green-drift" => ok observation(false, true, 1, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-completion", "must not be read")
+        "seed-report-passed-drift" => ok observation(true, false, 1, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-completion", "must not be read")
+        "seed-root-count-drift" => ok observation(true, true, 0, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-completion", "must not be read")
+        "seed-subtest-count-drift" => ok observation(true, true, 1, 2, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-completion", "must not be read")
+        "seed-fixture-name-drift" => ok observation(true, true, 1, 3, "src/other.can", "input.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-completion", "must not be read")
+        "seed-input-source-drift" => ok observation(true, true, 1, 3, "src/main.can", "input2.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-completion", "must not be read")
+        "seed-input-text-source-drift" => ok observation(true, true, 1, 3, "src/main.can", "input.can", "input-text2.can", "environment.can", 1, 1, 1, "supplied-completion", "must not be read")
+        "seed-environment-source-drift" => ok observation(true, true, 1, 3, "src/main.can", "input.can", "input-text.can", "environment2.can", 1, 1, 1, "supplied-completion", "must not be read")
+        "seed-input-roots-drift" => ok observation(true, true, 1, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 0, 1, 1, "supplied-completion", "must not be read")
+        "seed-input-text-roots-drift" => ok observation(true, true, 1, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 0, 1, "supplied-completion", "must not be read")
+        "seed-environment-roots-drift" => ok observation(true, true, 1, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 1, 0, "supplied-completion", "must not be read")
+        "seed-assert-needle-drift" => ok observation(true, true, 1, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-failure", "must not be read")
+        "seed-assert-stdin-ignored-drift" => ok observation(true, true, 1, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-completion", "must be read")
+        _ => ok observation(true, true, 1, 3, "src/main.can", "input.can", "input-text.can", "environment.can", 1, 1, 1, "supplied-completion", "must not be read")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m09_028: "m09-028" => ok [check("assert-green", "staged fixtures assert green (exit 0, empty diagnostics)"), check("report-passed", "assert report passes with supplied-completion"), check("root-count", "each stage carries exactly 1 root (main alone)"), check("subtest-count", "three per-fixture subtests (input, input-text, environment)"), check("fixture-name", "staged path is src/main.can in every subtest"), check("input-source", "first subtest stages input.can"), check("input-text-source", "second subtest stages input-text.can"), check("environment-source", "third subtest stages environment.can"), check("input-roots", "input.can main contributes 1 root (sample [] => ok)"), check("input-text-roots", "input-text.can main contributes 1 root (sample [] => ok)"), check("environment-roots", "environment.can main contributes 1 root (sample [\"VALUE\"] => ok)"), check("assert-needle", "assert stdout carries supplied-completion"), check("assert-stdin-ignored", "assert ignores the unread-stdin probe")]
+        other: "nope" => ok []
+    match scope is "m09-028"
+        false => ok []
+        true => ok [check("assert-green", "staged fixtures assert green (exit 0, empty diagnostics)"), check("report-passed", "assert report passes with supplied-completion"), check("root-count", "each stage carries exactly 1 root (main alone)"), check("subtest-count", "three per-fixture subtests (input, input-text, environment)"), check("fixture-name", "staged path is src/main.can in every subtest"), check("input-source", "first subtest stages input.can"), check("input-text-source", "second subtest stages input-text.can"), check("environment-source", "third subtest stages environment.can"), check("input-roots", "input.can main contributes 1 root (sample [] => ok)"), check("input-text-roots", "input-text.can main contributes 1 root (sample [] => ok)"), check("environment-roots", "environment.can main contributes 1 root (sample [\"VALUE\"] => ok)"), check("assert-needle", "assert stdout carries supplied-completion"), check("assert-stdin-ignored", "assert ignores the unread-stdin probe")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "cli/input-env-roots" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "1"), expected_check("subtest-count", "3"), expected_check("fixture-name", "src/main.can"), expected_check("input-source", "input.can"), expected_check("input-text-source", "input-text.can"), expected_check("environment-source", "environment.can"), expected_check("input-roots", "1"), expected_check("input-text-roots", "1"), expected_check("environment-roots", "1"), expected_check("assert-needle", "supplied-completion"), expected_check("assert-stdin-ignored", "must not be read")]
+        unknown: "nope" => ok []
+    match case is "cli/input-env-roots"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "1"), expected_check("subtest-count", "3"), expected_check("fixture-name", "src/main.can"), expected_check("input-source", "input.can"), expected_check("input-text-source", "input-text.can"), expected_check("environment-source", "environment.can"), expected_check("input-roots", "1"), expected_check("input-text-roots", "1"), expected_check("environment-roots", "1"), expected_check("assert-needle", "supplied-completion"), expected_check("assert-stdin-ignored", "must not be read")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("cli/input-env-roots", "default", "", "offline") => ok
+        seed_assert_green_drift: context("cli/input-env-roots", "seed-assert-green-drift", "", "offline") => failed{"assert-green"}
+        seed_report_passed_drift: context("cli/input-env-roots", "seed-report-passed-drift", "", "offline") => failed{"report-passed"}
+        seed_root_count_drift: context("cli/input-env-roots", "seed-root-count-drift", "", "offline") => failed{"root-count"}
+        seed_subtest_count_drift: context("cli/input-env-roots", "seed-subtest-count-drift", "", "offline") => failed{"subtest-count"}
+        seed_fixture_name_drift: context("cli/input-env-roots", "seed-fixture-name-drift", "", "offline") => failed{"fixture-name"}
+        seed_input_source_drift: context("cli/input-env-roots", "seed-input-source-drift", "", "offline") => failed{"input-source"}
+        seed_input_text_source_drift: context("cli/input-env-roots", "seed-input-text-source-drift", "", "offline") => failed{"input-text-source"}
+        seed_environment_source_drift: context("cli/input-env-roots", "seed-environment-source-drift", "", "offline") => failed{"environment-source"}
+        seed_input_roots_drift: context("cli/input-env-roots", "seed-input-roots-drift", "", "offline") => failed{"input-roots"}
+        seed_input_text_roots_drift: context("cli/input-env-roots", "seed-input-text-roots-drift", "", "offline") => failed{"input-text-roots"}
+        seed_environment_roots_drift: context("cli/input-env-roots", "seed-environment-roots-drift", "", "offline") => failed{"environment-roots"}
+        seed_assert_needle_drift: context("cli/input-env-roots", "seed-assert-needle-drift", "", "offline") => failed{"assert-needle"}
+        seed_assert_stdin_ignored_drift: context("cli/input-env-roots", "seed-assert-stdin-ignored-drift", "", "offline") => failed{"assert-stdin-ignored"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence assert_green_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence report_passed_evidence => match call require_int(got.root_count, 1, c, "root-count")
+                    failed
+                    ok evidence root_count_evidence => match call require_int(got.subtest_count, 3, c, "subtest-count")
+                        failed
+                        ok evidence subtest_count_evidence => match call require_text(got.fixture_name, "src/main.can", c, "fixture-name")
+                            failed
+                            ok evidence fixture_name_evidence => match call require_text(got.input_source, "input.can", c, "input-source")
+                                failed
+                                ok evidence input_source_evidence => match call require_text(got.input_text_source, "input-text.can", c, "input-text-source")
+                                    failed
+                                    ok evidence input_text_source_evidence => match call require_text(got.environment_source, "environment.can", c, "environment-source")
+                                        failed
+                                        ok evidence environment_source_evidence => match call require_int(got.input_roots, 1, c, "input-roots")
+                                            failed
+                                            ok evidence input_roots_evidence => match call require_int(got.input_text_roots, 1, c, "input-text-roots")
+                                                failed
+                                                ok evidence input_text_roots_evidence => match call require_int(got.environment_roots, 1, c, "environment-roots")
+                                                    failed
+                                                    ok evidence environment_roots_evidence => match call require_text(got.assert_needle, "supplied-completion", c, "assert-needle")
+                                                        failed
+                                                        ok evidence assert_needle_evidence => match call require_text(got.assert_stdin_ignored, "must not be read", c, "assert-stdin-ignored")
+                                                            failed
+                                                            ok evidence assert_stdin_ignored_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m09_028: "m09-028" => ok test_case("cli/input-env-roots", ["cli", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("subtest-count"), check_ref("fixture-name"), check_ref("input-source"), check_ref("input-text-source"), check_ref("environment-source"), check_ref("input-roots"), check_ref("input-text-roots"), check_ref("environment-roots"), check_ref("assert-needle"), check_ref("assert-stdin-ignored")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m09-028"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("cli/input-env-roots", ["cli", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("subtest-count"), check_ref("fixture-name"), check_ref("input-source"), check_ref("input-text-source"), check_ref("environment-source"), check_ref("input-roots"), check_ref("input-text-roots"), check_ref("environment-roots"), check_ref("assert-needle"), check_ref("assert-stdin-ignored")], callable case_body)

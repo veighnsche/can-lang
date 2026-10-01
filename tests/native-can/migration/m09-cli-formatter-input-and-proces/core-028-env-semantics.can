@@ -1,0 +1,358 @@
+package m09core028env
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M09 CORE-028 "bundled input/environment: env preservation, failures, bounds".
+/// Source: tests/integration/io_env_test.go symbol
+/// TestCurrentBundledInputEnvironment (L15-146).
+/// Related fixtures: compiler/testdata/current/cli/environment.can (the
+/// env entry behind the lookup legs), input.can and input-text.can (the
+/// stdin entries behind the roundtrip/bounds legs); each staged as
+/// src/main.can at L75.
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): original-environment lookup preserving Unicode,
+/// empty and hostile BUN_OPTIONS values as data; missing/invalid names
+/// failing with allocated errors; stdin bounds with fixture-consistent
+/// limit mutations; and the optional strict tsc emission.
+/// The roots-green pin lives in core-028-roots-green.can; the production
+/// process shape lives in core-028-run-shape.can.
+/// Variants: VALUE, EMPTY, BUN_OPTIONS, MISSING, lower, A=B, empty name
+/// (Go L80/L85); stdin samples empty/BOM-unicode/16-wide/binary (L91-94);
+/// overflow 17 (L105); bad-UTF-8 byte (L109); -1 and 1048576 limit
+/// mutations (L115/L121); per-fixture subtests (L69); CAN_TSC-gated
+/// strict emission (L138-142).
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec, CAN_TSC optional;
+/// requires can-bun-archive, macos-sandbox-exec. Logical gates
+/// SUITE/WORK/PROC/N1 and C/R/N/S/A identities bind at P23; no live run
+/// now. Descriptor timeout 300000ms mirrors the Go 5-minute ctx (L24).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QF1 unmet).
+/// Case cli/input-env checks: env-value-unicode, env-empty,
+/// env-hostile-value, env-ok-exit, env-ok-stderr-empty, missing-identity,
+/// invalid-identity, invalid-lower, invalid-equals, invalid-empty-name,
+/// env-error-exit, env-error-stdout-empty, hostile-bun-options,
+/// stdin-limit, sample-bom-text, sample-width, sample-binary-length,
+/// overflow-width, overflow-identity, utf8-identity, negative-limit,
+/// large-limit, large-roundtrip, mutation-from, mutation-to, tsc-strict,
+/// tsc-entry, tsc-optional.
+/// Facet map (io_env_test.go legs): env-value-unicode pins h-e-acute plus
+/// emoji (L56 cmd env, L80 want; Go literal h + U+00E9 + U+1F600; stdout
+/// equals it byte-exact per L81); env-empty pins "" (L56 "EMPTY=", L80);
+/// env-hostile-value pins "--preload=/must-not-execute.ts" (L56, L80: the
+/// hostile value stays data); env-ok-exit pins exit 0 (L81);
+/// env-ok-stderr-empty pins empty stderr (L81); missing-identity pins
+/// the http::credentials_missing error needle (L85: MISSING);
+/// invalid-identity pins the env::invalid_name error needle (L85: lower,
+/// A=B, empty name); invalid-lower/invalid-equals/invalid-empty-name pin
+/// the three invalid-name variants verbatim (L85); env-error-exit pins
+/// exit 1 (L86); env-error-stdout-empty pins empty stdout (L86);
+/// hostile-bun-options pins the exact hostile entry
+/// "BUN_OPTIONS=--preload=/must-not-execute.ts" (L56) which the staged
+/// entry reads as data without executing; stdin-limit pins 16
+/// (input.can L11/input-text.can L10, Go L91/L105); sample-bom-text pins
+/// U+FEFF + h-e-acute + emoji (L91 Go escape + literal; Can has no
+/// backslash-u escape so the pin embeds a verbatim U+FEFF); sample-width
+/// pins the 16-byte full-width sample (L91); sample-binary-length pins
+/// the 4-byte input-only binary sample (L93: 0, 255, 128, 10);
+/// overflow-width pins 17 (L105); overflow-identity pins the
+/// io::limit_exceeded error needle (L105/L116); utf8-identity pins the
+/// codec::invalid_data error needle (L109: input-text rejects byte 255);
+/// negative-limit pins -1 (L115 mutation); large-limit pins 1048576
+/// (L120-121); large-roundtrip pins the 1MiB exit-0 roundtrip with
+/// awaited drain (L122); mutation-from pins "sample: 16 =>" and
+/// mutation-to pins "sample: -1 =>" (L115: the limit mutation rewrites
+/// the fixture sample rows consistently, since run verifies first per
+/// L113-114); tsc-strict pins "--strict" and tsc-entry pins "entry.ts"
+/// (L139); tsc-optional pins the if-and-only-if gating on CAN_TSC (L138).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str env_value_unicode
+    str env_empty
+    str env_hostile_value
+    int env_ok_exit
+    bool env_ok_stderr_empty
+    str missing_identity
+    str invalid_identity
+    str invalid_lower
+    str invalid_equals
+    str invalid_empty_name
+    int env_error_exit
+    bool env_error_stdout_empty
+    str hostile_bun_options
+    int stdin_limit
+    str sample_bom_text
+    int sample_width
+    int sample_binary_length
+    int overflow_width
+    str overflow_identity
+    str utf8_identity
+    int negative_limit
+    int large_limit
+    bool large_roundtrip
+    str mutation_from
+    str mutation_to
+    str tsc_strict
+    str tsc_entry
+    bool tsc_optional
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("cli/input-env", "default", "", "offline"), "env-value-unicode" => ok "case cli/input-env variant default root env-value-unicode run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("cli/input-env", "default", "", "offline"), "env-ok-stderr-empty" => ok evidence("env-ok-stderr-empty", "true", "true", true, "case cli/input-env variant default root env-ok-stderr-empty run offline")
+        different: false, true, context("cli/input-env", "default", "", "offline"), "env-ok-stderr-empty" => failed{"env-ok-stderr-empty"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("cli/input-env", "default", "", "offline"), "env-ok-exit" => ok evidence("env-ok-exit", "0", "0", true, "case cli/input-env variant default root env-ok-exit run offline")
+        different: 1, 0, context("cli/input-env", "default", "", "offline"), "env-ok-exit" => failed{"env-ok-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "hé😀", "hé😀", context("cli/input-env", "default", "", "offline"), "env-value-unicode" => ok evidence("env-value-unicode", "hé😀", "hé😀", true, "case cli/input-env variant default root env-value-unicode run offline")
+        different: "hé", "hé😀", context("cli/input-env", "default", "", "offline"), "env-value-unicode" => failed{"env-value-unicode"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_env_value_unicode_drift: "seed-env-value-unicode-drift" => ok observation("hé", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_env_empty_drift: "seed-env-empty-drift" => ok observation("hé😀", "x", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_env_hostile_value_drift: "seed-env-hostile-value-drift" => ok observation("hé😀", "", "--preload=/other.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_env_ok_exit_drift: "seed-env-ok-exit-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 1, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_env_ok_stderr_empty_drift: "seed-env-ok-stderr-empty-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, false, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_missing_identity_drift: "seed-missing-identity-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"env::invalid_name\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_invalid_identity_drift: "seed-invalid-identity-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"http::credentials_missing\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_invalid_lower_drift: "seed-invalid-lower-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "LOWER", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_invalid_equals_drift: "seed-invalid-equals-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A-B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_invalid_empty_name_drift: "seed-invalid-empty-name-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "x", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_env_error_exit_drift: "seed-env-error-exit-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 0, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_env_error_stdout_empty_drift: "seed-env-error-stdout-empty-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, false, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_hostile_bun_options_drift: "seed-hostile-bun-options-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/other.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_stdin_limit_drift: "seed-stdin-limit-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 15, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_sample_bom_text_drift: "seed-sample-bom-text-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_sample_width_drift: "seed-sample-width-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 15, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_sample_binary_length_drift: "seed-sample-binary-length-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 3, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_overflow_width_drift: "seed-overflow-width-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 16, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_overflow_identity_drift: "seed-overflow-identity-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::read_failed\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_utf8_identity_drift: "seed-utf8-identity-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"io::limit_exceeded\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_negative_limit_drift: "seed-negative-limit-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", 0, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_large_limit_drift: "seed-large-limit-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048575, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_large_roundtrip_drift: "seed-large-roundtrip-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, false, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_mutation_from_drift: "seed-mutation-from-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 15 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        seed_mutation_to_drift: "seed-mutation-to-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: 0 =>", "--strict", "entry.ts", true)
+        seed_tsc_strict_drift: "seed-tsc-strict-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--noStrict", "entry.ts", true)
+        seed_tsc_entry_drift: "seed-tsc-entry-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "main.ts", true)
+        seed_tsc_optional_drift: "seed-tsc-optional-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", false)
+    match variant_id
+        "seed-env-value-unicode-drift" => ok observation("hé", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-env-empty-drift" => ok observation("hé😀", "x", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-env-hostile-value-drift" => ok observation("hé😀", "", "--preload=/other.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-env-ok-exit-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 1, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-env-ok-stderr-empty-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, false, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-missing-identity-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"env::invalid_name\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-invalid-identity-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"http::credentials_missing\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-invalid-lower-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "LOWER", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-invalid-equals-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A-B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-invalid-empty-name-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "x", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-env-error-exit-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 0, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-env-error-stdout-empty-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, false, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-hostile-bun-options-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/other.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-stdin-limit-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 15, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-sample-bom-text-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-sample-width-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 15, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-sample-binary-length-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 3, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-overflow-width-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 16, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-overflow-identity-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::read_failed\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-utf8-identity-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"io::limit_exceeded\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-negative-limit-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", 0, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-large-limit-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048575, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-large-roundtrip-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, false, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-mutation-from-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 15 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+        "seed-mutation-to-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: 0 =>", "--strict", "entry.ts", true)
+        "seed-tsc-strict-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--noStrict", "entry.ts", true)
+        "seed-tsc-entry-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "main.ts", true)
+        "seed-tsc-optional-drift" => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", false)
+        _ => ok observation("hé😀", "", "--preload=/must-not-execute.ts", 0, true, "\"error\":\"http::credentials_missing\"", "\"error\":\"env::invalid_name\"", "lower", "A=B", "", 1, true, "BUN_OPTIONS=--preload=/must-not-execute.ts", 16, "﻿hé😀", 16, 4, 17, "\"error\":\"io::limit_exceeded\"", "\"error\":\"codec::invalid_data\"", -1, 1048576, true, "sample: 16 =>", "sample: -1 =>", "--strict", "entry.ts", true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m09_028: "m09-028" => ok [check("env-value-unicode", "VALUE lookup preserves Unicode h-e-acute plus emoji"), check("env-empty", "EMPTY lookup preserves the empty value"), check("env-hostile-value", "BUN_OPTIONS lookup preserves the hostile value as data"), check("env-ok-exit", "env ok runs exit 0"), check("env-ok-stderr-empty", "env ok runs keep stderr empty"), check("missing-identity", "MISSING fails with http::credentials_missing"), check("invalid-identity", "invalid names fail with env::invalid_name"), check("invalid-lower", "lowercase name is an invalid-name variant"), check("invalid-equals", "equals-bearing name is an invalid-name variant"), check("invalid-empty-name", "empty name is an invalid-name variant"), check("env-error-exit", "env error runs exit 1"), check("env-error-stdout-empty", "env error runs keep stdout empty"), check("hostile-bun-options", "hostile BUN_OPTIONS entry stays data, never executes"), check("stdin-limit", "stdin fixtures read with limit 16"), check("sample-bom-text", "BOM-prefixed Unicode sample roundtrips"), check("sample-width", "full-width sample is 16 bytes"), check("sample-binary-length", "input-only binary sample is 4 bytes"), check("overflow-width", "overflow probe is 17 bytes"), check("overflow-identity", "overflow fails with io::limit_exceeded"), check("utf8-identity", "bad UTF-8 fails with codec::invalid_data"), check("negative-limit", "mutated negative limit is -1"), check("large-limit", "large limit mutation is 1048576"), check("large-roundtrip", "1MiB input roundtrips with awaited drain"), check("mutation-from", "limit mutation rewrites the fixture sample row"), check("mutation-to", "mutated fixture sample row stays consistent"), check("tsc-strict", "optional tsc leg passes --strict"), check("tsc-entry", "optional tsc leg checks entry.ts"), check("tsc-optional", "strict tsc runs iff CAN_TSC is set")]
+        other: "nope" => ok []
+    match scope is "m09-028"
+        false => ok []
+        true => ok [check("env-value-unicode", "VALUE lookup preserves Unicode h-e-acute plus emoji"), check("env-empty", "EMPTY lookup preserves the empty value"), check("env-hostile-value", "BUN_OPTIONS lookup preserves the hostile value as data"), check("env-ok-exit", "env ok runs exit 0"), check("env-ok-stderr-empty", "env ok runs keep stderr empty"), check("missing-identity", "MISSING fails with http::credentials_missing"), check("invalid-identity", "invalid names fail with env::invalid_name"), check("invalid-lower", "lowercase name is an invalid-name variant"), check("invalid-equals", "equals-bearing name is an invalid-name variant"), check("invalid-empty-name", "empty name is an invalid-name variant"), check("env-error-exit", "env error runs exit 1"), check("env-error-stdout-empty", "env error runs keep stdout empty"), check("hostile-bun-options", "hostile BUN_OPTIONS entry stays data, never executes"), check("stdin-limit", "stdin fixtures read with limit 16"), check("sample-bom-text", "BOM-prefixed Unicode sample roundtrips"), check("sample-width", "full-width sample is 16 bytes"), check("sample-binary-length", "input-only binary sample is 4 bytes"), check("overflow-width", "overflow probe is 17 bytes"), check("overflow-identity", "overflow fails with io::limit_exceeded"), check("utf8-identity", "bad UTF-8 fails with codec::invalid_data"), check("negative-limit", "mutated negative limit is -1"), check("large-limit", "large limit mutation is 1048576"), check("large-roundtrip", "1MiB input roundtrips with awaited drain"), check("mutation-from", "limit mutation rewrites the fixture sample row"), check("mutation-to", "mutated fixture sample row stays consistent"), check("tsc-strict", "optional tsc leg passes --strict"), check("tsc-entry", "optional tsc leg checks entry.ts"), check("tsc-optional", "strict tsc runs iff CAN_TSC is set")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "cli/input-env" => ok [expected_check("env-value-unicode", "hé😀"), expected_check("env-empty", ""), expected_check("env-hostile-value", "--preload=/must-not-execute.ts"), expected_check("env-ok-exit", "0"), expected_check("env-ok-stderr-empty", "true"), expected_check("missing-identity", "\"error\":\"http::credentials_missing\""), expected_check("invalid-identity", "\"error\":\"env::invalid_name\""), expected_check("invalid-lower", "lower"), expected_check("invalid-equals", "A=B"), expected_check("invalid-empty-name", ""), expected_check("env-error-exit", "1"), expected_check("env-error-stdout-empty", "true"), expected_check("hostile-bun-options", "BUN_OPTIONS=--preload=/must-not-execute.ts"), expected_check("stdin-limit", "16"), expected_check("sample-bom-text", "﻿hé😀"), expected_check("sample-width", "16"), expected_check("sample-binary-length", "4"), expected_check("overflow-width", "17"), expected_check("overflow-identity", "\"error\":\"io::limit_exceeded\""), expected_check("utf8-identity", "\"error\":\"codec::invalid_data\""), expected_check("negative-limit", "-1"), expected_check("large-limit", "1048576"), expected_check("large-roundtrip", "true"), expected_check("mutation-from", "sample: 16 =>"), expected_check("mutation-to", "sample: -1 =>"), expected_check("tsc-strict", "--strict"), expected_check("tsc-entry", "entry.ts"), expected_check("tsc-optional", "true")]
+        unknown: "nope" => ok []
+    match case is "cli/input-env"
+        false => ok []
+        true => ok [expected_check("env-value-unicode", "hé😀"), expected_check("env-empty", ""), expected_check("env-hostile-value", "--preload=/must-not-execute.ts"), expected_check("env-ok-exit", "0"), expected_check("env-ok-stderr-empty", "true"), expected_check("missing-identity", "\"error\":\"http::credentials_missing\""), expected_check("invalid-identity", "\"error\":\"env::invalid_name\""), expected_check("invalid-lower", "lower"), expected_check("invalid-equals", "A=B"), expected_check("invalid-empty-name", ""), expected_check("env-error-exit", "1"), expected_check("env-error-stdout-empty", "true"), expected_check("hostile-bun-options", "BUN_OPTIONS=--preload=/must-not-execute.ts"), expected_check("stdin-limit", "16"), expected_check("sample-bom-text", "﻿hé😀"), expected_check("sample-width", "16"), expected_check("sample-binary-length", "4"), expected_check("overflow-width", "17"), expected_check("overflow-identity", "\"error\":\"io::limit_exceeded\""), expected_check("utf8-identity", "\"error\":\"codec::invalid_data\""), expected_check("negative-limit", "-1"), expected_check("large-limit", "1048576"), expected_check("large-roundtrip", "true"), expected_check("mutation-from", "sample: 16 =>"), expected_check("mutation-to", "sample: -1 =>"), expected_check("tsc-strict", "--strict"), expected_check("tsc-entry", "entry.ts"), expected_check("tsc-optional", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("cli/input-env", "default", "", "offline") => ok
+        seed_env_value_unicode_drift: context("cli/input-env", "seed-env-value-unicode-drift", "", "offline") => failed{"env-value-unicode"}
+        seed_env_empty_drift: context("cli/input-env", "seed-env-empty-drift", "", "offline") => failed{"env-empty"}
+        seed_env_hostile_value_drift: context("cli/input-env", "seed-env-hostile-value-drift", "", "offline") => failed{"env-hostile-value"}
+        seed_env_ok_exit_drift: context("cli/input-env", "seed-env-ok-exit-drift", "", "offline") => failed{"env-ok-exit"}
+        seed_env_ok_stderr_empty_drift: context("cli/input-env", "seed-env-ok-stderr-empty-drift", "", "offline") => failed{"env-ok-stderr-empty"}
+        seed_missing_identity_drift: context("cli/input-env", "seed-missing-identity-drift", "", "offline") => failed{"missing-identity"}
+        seed_invalid_identity_drift: context("cli/input-env", "seed-invalid-identity-drift", "", "offline") => failed{"invalid-identity"}
+        seed_invalid_lower_drift: context("cli/input-env", "seed-invalid-lower-drift", "", "offline") => failed{"invalid-lower"}
+        seed_invalid_equals_drift: context("cli/input-env", "seed-invalid-equals-drift", "", "offline") => failed{"invalid-equals"}
+        seed_invalid_empty_name_drift: context("cli/input-env", "seed-invalid-empty-name-drift", "", "offline") => failed{"invalid-empty-name"}
+        seed_env_error_exit_drift: context("cli/input-env", "seed-env-error-exit-drift", "", "offline") => failed{"env-error-exit"}
+        seed_env_error_stdout_empty_drift: context("cli/input-env", "seed-env-error-stdout-empty-drift", "", "offline") => failed{"env-error-stdout-empty"}
+        seed_hostile_bun_options_drift: context("cli/input-env", "seed-hostile-bun-options-drift", "", "offline") => failed{"hostile-bun-options"}
+        seed_stdin_limit_drift: context("cli/input-env", "seed-stdin-limit-drift", "", "offline") => failed{"stdin-limit"}
+        seed_sample_bom_text_drift: context("cli/input-env", "seed-sample-bom-text-drift", "", "offline") => failed{"sample-bom-text"}
+        seed_sample_width_drift: context("cli/input-env", "seed-sample-width-drift", "", "offline") => failed{"sample-width"}
+        seed_sample_binary_length_drift: context("cli/input-env", "seed-sample-binary-length-drift", "", "offline") => failed{"sample-binary-length"}
+        seed_overflow_width_drift: context("cli/input-env", "seed-overflow-width-drift", "", "offline") => failed{"overflow-width"}
+        seed_overflow_identity_drift: context("cli/input-env", "seed-overflow-identity-drift", "", "offline") => failed{"overflow-identity"}
+        seed_utf8_identity_drift: context("cli/input-env", "seed-utf8-identity-drift", "", "offline") => failed{"utf8-identity"}
+        seed_negative_limit_drift: context("cli/input-env", "seed-negative-limit-drift", "", "offline") => failed{"negative-limit"}
+        seed_large_limit_drift: context("cli/input-env", "seed-large-limit-drift", "", "offline") => failed{"large-limit"}
+        seed_large_roundtrip_drift: context("cli/input-env", "seed-large-roundtrip-drift", "", "offline") => failed{"large-roundtrip"}
+        seed_mutation_from_drift: context("cli/input-env", "seed-mutation-from-drift", "", "offline") => failed{"mutation-from"}
+        seed_mutation_to_drift: context("cli/input-env", "seed-mutation-to-drift", "", "offline") => failed{"mutation-to"}
+        seed_tsc_strict_drift: context("cli/input-env", "seed-tsc-strict-drift", "", "offline") => failed{"tsc-strict"}
+        seed_tsc_entry_drift: context("cli/input-env", "seed-tsc-entry-drift", "", "offline") => failed{"tsc-entry"}
+        seed_tsc_optional_drift: context("cli/input-env", "seed-tsc-optional-drift", "", "offline") => failed{"tsc-optional"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.env_value_unicode, "hé😀", c, "env-value-unicode")
+            failed
+            ok evidence env_value_unicode_evidence => match call require_text(got.env_empty, "", c, "env-empty")
+                failed
+                ok evidence env_empty_evidence => match call require_text(got.env_hostile_value, "--preload=/must-not-execute.ts", c, "env-hostile-value")
+                    failed
+                    ok evidence env_hostile_value_evidence => match call require_int(got.env_ok_exit, 0, c, "env-ok-exit")
+                        failed
+                        ok evidence env_ok_exit_evidence => match call require_bool(got.env_ok_stderr_empty, true, c, "env-ok-stderr-empty")
+                            failed
+                            ok evidence env_ok_stderr_empty_evidence => match call require_text(got.missing_identity, "\"error\":\"http::credentials_missing\"", c, "missing-identity")
+                                failed
+                                ok evidence missing_identity_evidence => match call require_text(got.invalid_identity, "\"error\":\"env::invalid_name\"", c, "invalid-identity")
+                                    failed
+                                    ok evidence invalid_identity_evidence => match call require_text(got.invalid_lower, "lower", c, "invalid-lower")
+                                        failed
+                                        ok evidence invalid_lower_evidence => match call require_text(got.invalid_equals, "A=B", c, "invalid-equals")
+                                            failed
+                                            ok evidence invalid_equals_evidence => match call require_text(got.invalid_empty_name, "", c, "invalid-empty-name")
+                                                failed
+                                                ok evidence invalid_empty_name_evidence => match call require_int(got.env_error_exit, 1, c, "env-error-exit")
+                                                    failed
+                                                    ok evidence env_error_exit_evidence => match call require_bool(got.env_error_stdout_empty, true, c, "env-error-stdout-empty")
+                                                        failed
+                                                        ok evidence env_error_stdout_empty_evidence => match call require_text(got.hostile_bun_options, "BUN_OPTIONS=--preload=/must-not-execute.ts", c, "hostile-bun-options")
+                                                            failed
+                                                            ok evidence hostile_bun_options_evidence => match call require_int(got.stdin_limit, 16, c, "stdin-limit")
+                                                                failed
+                                                                ok evidence stdin_limit_evidence => match call require_text(got.sample_bom_text, "﻿hé😀", c, "sample-bom-text")
+                                                                    failed
+                                                                    ok evidence sample_bom_text_evidence => match call require_int(got.sample_width, 16, c, "sample-width")
+                                                                        failed
+                                                                        ok evidence sample_width_evidence => match call require_int(got.sample_binary_length, 4, c, "sample-binary-length")
+                                                                            failed
+                                                                            ok evidence sample_binary_length_evidence => match call require_int(got.overflow_width, 17, c, "overflow-width")
+                                                                                failed
+                                                                                ok evidence overflow_width_evidence => match call require_text(got.overflow_identity, "\"error\":\"io::limit_exceeded\"", c, "overflow-identity")
+                                                                                    failed
+                                                                                    ok evidence overflow_identity_evidence => match call require_text(got.utf8_identity, "\"error\":\"codec::invalid_data\"", c, "utf8-identity")
+                                                                                        failed
+                                                                                        ok evidence utf8_identity_evidence => match call require_int(got.negative_limit, -1, c, "negative-limit")
+                                                                                            failed
+                                                                                            ok evidence negative_limit_evidence => match call require_int(got.large_limit, 1048576, c, "large-limit")
+                                                                                                failed
+                                                                                                ok evidence large_limit_evidence => match call require_bool(got.large_roundtrip, true, c, "large-roundtrip")
+                                                                                                    failed
+                                                                                                    ok evidence large_roundtrip_evidence => match call require_text(got.mutation_from, "sample: 16 =>", c, "mutation-from")
+                                                                                                        failed
+                                                                                                        ok evidence mutation_from_evidence => match call require_text(got.mutation_to, "sample: -1 =>", c, "mutation-to")
+                                                                                                            failed
+                                                                                                            ok evidence mutation_to_evidence => match call require_text(got.tsc_strict, "--strict", c, "tsc-strict")
+                                                                                                                failed
+                                                                                                                ok evidence tsc_strict_evidence => match call require_text(got.tsc_entry, "entry.ts", c, "tsc-entry")
+                                                                                                                    failed
+                                                                                                                    ok evidence tsc_entry_evidence => match call require_bool(got.tsc_optional, true, c, "tsc-optional")
+                                                                                                                        failed
+                                                                                                                        ok evidence tsc_optional_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m09_028: "m09-028" => ok test_case("cli/input-env", ["cli", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("env-value-unicode"), check_ref("env-empty"), check_ref("env-hostile-value"), check_ref("env-ok-exit"), check_ref("env-ok-stderr-empty"), check_ref("missing-identity"), check_ref("invalid-identity"), check_ref("invalid-lower"), check_ref("invalid-equals"), check_ref("invalid-empty-name"), check_ref("env-error-exit"), check_ref("env-error-stdout-empty"), check_ref("hostile-bun-options"), check_ref("stdin-limit"), check_ref("sample-bom-text"), check_ref("sample-width"), check_ref("sample-binary-length"), check_ref("overflow-width"), check_ref("overflow-identity"), check_ref("utf8-identity"), check_ref("negative-limit"), check_ref("large-limit"), check_ref("large-roundtrip"), check_ref("mutation-from"), check_ref("mutation-to"), check_ref("tsc-strict"), check_ref("tsc-entry"), check_ref("tsc-optional")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m09-028"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("cli/input-env", ["cli", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("env-value-unicode"), check_ref("env-empty"), check_ref("env-hostile-value"), check_ref("env-ok-exit"), check_ref("env-ok-stderr-empty"), check_ref("missing-identity"), check_ref("invalid-identity"), check_ref("invalid-lower"), check_ref("invalid-equals"), check_ref("invalid-empty-name"), check_ref("env-error-exit"), check_ref("env-error-stdout-empty"), check_ref("hostile-bun-options"), check_ref("stdin-limit"), check_ref("sample-bom-text"), check_ref("sample-width"), check_ref("sample-binary-length"), check_ref("overflow-width"), check_ref("overflow-identity"), check_ref("utf8-identity"), check_ref("negative-limit"), check_ref("large-limit"), check_ref("large-roundtrip"), check_ref("mutation-from"), check_ref("mutation-to"), check_ref("tsc-strict"), check_ref("tsc-entry"), check_ref("tsc-optional")], callable case_body)
