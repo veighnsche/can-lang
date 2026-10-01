@@ -1,0 +1,211 @@
+package m02core005capture
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M02 CORE-005 "bundled callables: captured root context, relay legs".
+/// Source: tests/integration/callables_test.go symbol
+/// TestCurrentBundledCallables.
+/// Related fixtures: the inline boundary project (callables_test.go
+/// L81-103: package boundary, fn write with the io::stdout_write boundary,
+/// fn guarded capturing callable write and relaying it).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): invoking a captured callable retains the selected
+/// assertion root context (guarded sample under
+/// can.project.root/boundary::guarded); with relay the selected assert
+/// exits 1 with empty stderr; without relay the same selection exits 0
+/// with empty stderr and passed true, proving merely constructing a
+/// callable reference does not execute its target.
+/// The 11-root captures pin and the silent production run live in
+/// core-005-roots-green.can; the missing-fixture report without payload
+/// leak lives in core-005-io-boundary.can.
+/// Variants: selected guarded callable with relay and without relay.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23).
+/// Case bundled/capture-semantics checks: relay-exit, relay-quiet,
+/// root-retained, selected-root, no-relay-exit, no-relay-quiet,
+/// no-relay-passed, no-construct-exec.
+/// Facet map (callables_test.go legs): relay-exit/relay-quiet pin the
+/// relay leg (L105-108: exit 1, empty stderr); root-retained pins the
+/// retained selected root context (L106-108: the captured callback reports
+/// under the selected guarded sample root instead of losing root
+/// context); selected-root pins the selection target
+/// (can.project.root/boundary::guarded sample); no-relay-exit/
+/// no-relay-quiet/no-relay-passed pin the no-relay leg (L109-113: exit 0,
+/// empty stderr, stdout carries "passed":true); no-construct-exec pins the
+/// no-execute-on-construct facet (L109-113: replacing the relay with ok
+/// passes, so constructing the reference ran nothing).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int relay_exit
+    bool relay_quiet
+    bool root_retained
+    str selected_root
+    int no_relay_exit
+    bool no_relay_quiet
+    bool no_relay_passed
+    bool no_construct_exec
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/capture-semantics", "default", "", "offline"), "relay-exit" => ok "case bundled/capture-semantics variant default root relay-exit run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/capture-semantics", "default", "", "offline"), "relay-quiet" => ok evidence("relay-quiet", "true", "true", true, "case bundled/capture-semantics variant default root relay-quiet run offline")
+        different: false, true, context("bundled/capture-semantics", "default", "", "offline"), "relay-quiet" => failed{"relay-quiet"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("bundled/capture-semantics", "default", "", "offline"), "relay-exit" => ok evidence("relay-exit", "1", "1", true, "case bundled/capture-semantics variant default root relay-exit run offline")
+        different: 0, 1, context("bundled/capture-semantics", "default", "", "offline"), "relay-exit" => failed{"relay-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "can.project.root/boundary::guarded", "can.project.root/boundary::guarded", context("bundled/capture-semantics", "default", "", "offline"), "selected-root" => ok evidence("selected-root", "can.project.root/boundary::guarded", "can.project.root/boundary::guarded", true, "case bundled/capture-semantics variant default root selected-root run offline")
+        different: "can.project.root/boundary::write", "can.project.root/boundary::guarded", context("bundled/capture-semantics", "default", "", "offline"), "selected-root" => failed{"selected-root"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(1, true, true, "can.project.root/boundary::guarded", 0, true, true, true)
+        seed_relay_green: "seed-relay-green" => ok observation(0, true, true, "can.project.root/boundary::guarded", 0, true, true, true)
+        seed_relay_noisy: "seed-relay-noisy" => ok observation(1, false, true, "can.project.root/boundary::guarded", 0, true, true, true)
+        seed_context_lost: "seed-context-lost" => ok observation(1, true, false, "can.project.root/boundary::guarded", 0, true, true, true)
+        seed_target_drift: "seed-target-drift" => ok observation(1, true, true, "can.project.root/boundary::write", 0, true, true, true)
+        seed_no_relay_red: "seed-no-relay-red" => ok observation(1, true, true, "can.project.root/boundary::guarded", 1, true, true, true)
+        seed_no_relay_noisy: "seed-no-relay-noisy" => ok observation(1, true, true, "can.project.root/boundary::guarded", 0, false, true, true)
+        seed_no_relay_unpassed: "seed-no-relay-unpassed" => ok observation(1, true, true, "can.project.root/boundary::guarded", 0, true, false, true)
+        seed_construct_exec: "seed-construct-exec" => ok observation(1, true, true, "can.project.root/boundary::guarded", 0, true, true, false)
+    match variant_id
+        "seed-relay-green" => ok observation(0, true, true, "can.project.root/boundary::guarded", 0, true, true, true)
+        "seed-relay-noisy" => ok observation(1, false, true, "can.project.root/boundary::guarded", 0, true, true, true)
+        "seed-context-lost" => ok observation(1, true, false, "can.project.root/boundary::guarded", 0, true, true, true)
+        "seed-target-drift" => ok observation(1, true, true, "can.project.root/boundary::write", 0, true, true, true)
+        "seed-no-relay-red" => ok observation(1, true, true, "can.project.root/boundary::guarded", 1, true, true, true)
+        "seed-no-relay-noisy" => ok observation(1, true, true, "can.project.root/boundary::guarded", 0, false, true, true)
+        "seed-no-relay-unpassed" => ok observation(1, true, true, "can.project.root/boundary::guarded", 0, true, false, true)
+        "seed-construct-exec" => ok observation(1, true, true, "can.project.root/boundary::guarded", 0, true, true, false)
+        _ => ok observation(1, true, true, "can.project.root/boundary::guarded", 0, true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m02_005: "m02-005" => ok [check("relay-exit", "selected guarded assert with relay exits 1"), check("relay-quiet", "relay leg keeps stderr empty"), check("root-retained", "captured invocation retains the selected root context"), check("selected-root", "selection pins can.project.root/boundary::guarded sample"), check("no-relay-exit", "guarded assert without relay exits 0"), check("no-relay-quiet", "no-relay leg keeps stderr empty"), check("no-relay-passed", "no-relay stdout carries passed true"), check("no-construct-exec", "constructing a callable reference executes nothing")]
+        other: "nope" => ok []
+    match scope is "m02-005"
+        false => ok []
+        true => ok [check("relay-exit", "selected guarded assert with relay exits 1"), check("relay-quiet", "relay leg keeps stderr empty"), check("root-retained", "captured invocation retains the selected root context"), check("selected-root", "selection pins can.project.root/boundary::guarded sample"), check("no-relay-exit", "guarded assert without relay exits 0"), check("no-relay-quiet", "no-relay leg keeps stderr empty"), check("no-relay-passed", "no-relay stdout carries passed true"), check("no-construct-exec", "constructing a callable reference executes nothing")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/capture-semantics" => ok [expected_check("relay-exit", "1"), expected_check("relay-quiet", "true"), expected_check("root-retained", "true"), expected_check("selected-root", "can.project.root/boundary::guarded"), expected_check("no-relay-exit", "0"), expected_check("no-relay-quiet", "true"), expected_check("no-relay-passed", "true"), expected_check("no-construct-exec", "true")]
+        unknown: "nope" => ok []
+    match case is "bundled/capture-semantics"
+        false => ok []
+        true => ok [expected_check("relay-exit", "1"), expected_check("relay-quiet", "true"), expected_check("root-retained", "true"), expected_check("selected-root", "can.project.root/boundary::guarded"), expected_check("no-relay-exit", "0"), expected_check("no-relay-quiet", "true"), expected_check("no-relay-passed", "true"), expected_check("no-construct-exec", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/capture-semantics", "default", "", "offline") => ok
+        seed_relay_green: context("bundled/capture-semantics", "seed-relay-green", "", "offline") => failed{"relay-exit"}
+        seed_relay_noisy: context("bundled/capture-semantics", "seed-relay-noisy", "", "offline") => failed{"relay-quiet"}
+        seed_context_lost: context("bundled/capture-semantics", "seed-context-lost", "", "offline") => failed{"root-retained"}
+        seed_target_drift: context("bundled/capture-semantics", "seed-target-drift", "", "offline") => failed{"selected-root"}
+        seed_no_relay_red: context("bundled/capture-semantics", "seed-no-relay-red", "", "offline") => failed{"no-relay-exit"}
+        seed_no_relay_noisy: context("bundled/capture-semantics", "seed-no-relay-noisy", "", "offline") => failed{"no-relay-quiet"}
+        seed_no_relay_unpassed: context("bundled/capture-semantics", "seed-no-relay-unpassed", "", "offline") => failed{"no-relay-passed"}
+        seed_construct_exec: context("bundled/capture-semantics", "seed-construct-exec", "", "offline") => failed{"no-construct-exec"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.relay_exit, 1, c, "relay-exit")
+            failed
+            ok evidence relay_evidence => match call require_bool(got.relay_quiet, true, c, "relay-quiet")
+                failed
+                ok evidence quiet_evidence => match call require_bool(got.root_retained, true, c, "root-retained")
+                    failed
+                    ok evidence retained_evidence => match call require_text(got.selected_root, "can.project.root/boundary::guarded", c, "selected-root")
+                        failed
+                        ok evidence selected_evidence => match call require_int(got.no_relay_exit, 0, c, "no-relay-exit")
+                            failed
+                            ok evidence norelay_evidence => match call require_bool(got.no_relay_quiet, true, c, "no-relay-quiet")
+                                failed
+                                ok evidence noquiet_evidence => match call require_bool(got.no_relay_passed, true, c, "no-relay-passed")
+                                    failed
+                                    ok evidence passed_evidence => match call require_bool(got.no_construct_exec, true, c, "no-construct-exec")
+                                        failed
+                                        ok evidence construct_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m02_005: "m02-005" => ok test_case("bundled/capture-semantics", ["callables", "m02"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("relay-exit"), check_ref("relay-quiet"), check_ref("root-retained"), check_ref("selected-root"), check_ref("no-relay-exit"), check_ref("no-relay-quiet"), check_ref("no-relay-passed"), check_ref("no-construct-exec")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m02-005"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/capture-semantics", ["callables", "m02"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("relay-exit"), check_ref("relay-quiet"), check_ref("root-retained"), check_ref("selected-root"), check_ref("no-relay-exit"), check_ref("no-relay-quiet"), check_ref("no-relay-passed"), check_ref("no-construct-exec")], callable case_body)
