@@ -1,0 +1,188 @@
+package m03core009run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M03 CORE-009 "bundled codec: silent production run shape".
+/// Source: tests/integration/codec_test.go symbol
+/// TestCurrentBundledCodec.
+/// Related fixtures: compiler/testdata/current/codec/roundtrip.can
+/// (fn main L44-58 with the sample root L49: [] => ok).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): the production run leg exits 0 with empty stdout
+/// and empty stderr (codec_test.go L76-79), grounding the entry sample in
+/// main ([] => ok).
+/// The 10-root pin lives in core-009-roots-green.can; encode/decode
+/// preservation facets live in core-009-codec-preservation.can.
+/// Variants: roundtrip.can fixture.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23).
+/// Case bundled/codec-run-shape checks: run-exit, run-stdout-empty,
+/// run-stderr-empty, run-silent, entry-sample, entry-ok.
+/// Facet map (codec_test.go legs): run-exit/run-stdout-empty/
+/// run-stderr-empty pin the run leg (L76-79: exit 0, empty stdout, empty
+/// stderr); run-silent pins production silence as one predicate;
+/// entry-sample/entry-ok ground the entry in main (roundtrip.can L49: []
+/// => ok, the sample the production entry executes).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int run_exit
+    bool run_stdout_empty
+    bool run_stderr_empty
+    bool run_silent
+    str entry_sample
+    bool entry_ok
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/codec-run-shape", "default", "", "offline"), "run-exit" => ok "case bundled/codec-run-shape variant default root run-exit run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/codec-run-shape", "default", "", "offline"), "run-silent" => ok evidence("run-silent", "true", "true", true, "case bundled/codec-run-shape variant default root run-silent run offline")
+        different: false, true, context("bundled/codec-run-shape", "default", "", "offline"), "run-silent" => failed{"run-silent"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("bundled/codec-run-shape", "default", "", "offline"), "run-exit" => ok evidence("run-exit", "0", "0", true, "case bundled/codec-run-shape variant default root run-exit run offline")
+        different: 1, 0, context("bundled/codec-run-shape", "default", "", "offline"), "run-exit" => failed{"run-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "[]", "[]", context("bundled/codec-run-shape", "default", "", "offline"), "entry-sample" => ok evidence("entry-sample", "[]", "[]", true, "case bundled/codec-run-shape variant default root entry-sample run offline")
+        different: "[1]", "[]", context("bundled/codec-run-shape", "default", "", "offline"), "entry-sample" => failed{"entry-sample"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(0, true, true, true, "[]", true)
+        seed_run_red: "seed-run-red" => ok observation(1, true, true, true, "[]", true)
+        seed_run_stdout: "seed-run-stdout" => ok observation(0, false, true, true, "[]", true)
+        seed_run_diag: "seed-run-diag" => ok observation(0, true, false, true, "[]", true)
+        seed_run_noisy: "seed-run-noisy" => ok observation(0, true, true, false, "[]", true)
+        seed_entry_drift: "seed-entry-drift" => ok observation(0, true, true, true, "[1]", true)
+        seed_entry_red: "seed-entry-red" => ok observation(0, true, true, true, "[]", false)
+    match variant_id
+        "seed-run-red" => ok observation(1, true, true, true, "[]", true)
+        "seed-run-stdout" => ok observation(0, false, true, true, "[]", true)
+        "seed-run-diag" => ok observation(0, true, false, true, "[]", true)
+        "seed-run-noisy" => ok observation(0, true, true, false, "[]", true)
+        "seed-entry-drift" => ok observation(0, true, true, true, "[1]", true)
+        "seed-entry-red" => ok observation(0, true, true, true, "[]", false)
+        _ => ok observation(0, true, true, true, "[]", true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m03_009: "m03-009" => ok [check("run-exit", "production run exits 0"), check("run-stdout-empty", "production run keeps stdout empty"), check("run-stderr-empty", "production run keeps stderr empty"), check("run-silent", "production run is silent"), check("entry-sample", "production entry grounds the main [] sample"), check("entry-ok", "production entry sample yields ok")]
+        other: "nope" => ok []
+    match scope is "m03-009"
+        false => ok []
+        true => ok [check("run-exit", "production run exits 0"), check("run-stdout-empty", "production run keeps stdout empty"), check("run-stderr-empty", "production run keeps stderr empty"), check("run-silent", "production run is silent"), check("entry-sample", "production entry grounds the main [] sample"), check("entry-ok", "production entry sample yields ok")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/codec-run-shape" => ok [expected_check("run-exit", "0"), expected_check("run-stdout-empty", "true"), expected_check("run-stderr-empty", "true"), expected_check("run-silent", "true"), expected_check("entry-sample", "[]"), expected_check("entry-ok", "true")]
+        unknown: "nope" => ok []
+    match case is "bundled/codec-run-shape"
+        false => ok []
+        true => ok [expected_check("run-exit", "0"), expected_check("run-stdout-empty", "true"), expected_check("run-stderr-empty", "true"), expected_check("run-silent", "true"), expected_check("entry-sample", "[]"), expected_check("entry-ok", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/codec-run-shape", "default", "", "offline") => ok
+        seed_run_red: context("bundled/codec-run-shape", "seed-run-red", "", "offline") => failed{"run-exit"}
+        seed_run_stdout: context("bundled/codec-run-shape", "seed-run-stdout", "", "offline") => failed{"run-stdout-empty"}
+        seed_run_diag: context("bundled/codec-run-shape", "seed-run-diag", "", "offline") => failed{"run-stderr-empty"}
+        seed_run_noisy: context("bundled/codec-run-shape", "seed-run-noisy", "", "offline") => failed{"run-silent"}
+        seed_entry_drift: context("bundled/codec-run-shape", "seed-entry-drift", "", "offline") => failed{"entry-sample"}
+        seed_entry_red: context("bundled/codec-run-shape", "seed-entry-red", "", "offline") => failed{"entry-ok"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.run_exit, 0, c, "run-exit")
+            failed
+            ok evidence exit_evidence => match call require_bool(got.run_stdout_empty, true, c, "run-stdout-empty")
+                failed
+                ok evidence stdout_evidence => match call require_bool(got.run_stderr_empty, true, c, "run-stderr-empty")
+                    failed
+                    ok evidence stderr_evidence => match call require_bool(got.run_silent, true, c, "run-silent")
+                        failed
+                        ok evidence silent_evidence => match call require_text(got.entry_sample, "[]", c, "entry-sample")
+                            failed
+                            ok evidence entry_evidence => match call require_bool(got.entry_ok, true, c, "entry-ok")
+                                failed
+                                ok evidence ok_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m03_009: "m03-009" => ok test_case("bundled/codec-run-shape", ["codec", "m03"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("run-exit"), check_ref("run-stdout-empty"), check_ref("run-stderr-empty"), check_ref("run-silent"), check_ref("entry-sample"), check_ref("entry-ok")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m03-009"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/codec-run-shape", ["codec", "m03"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("run-exit"), check_ref("run-stdout-empty"), check_ref("run-stdout-empty"), check_ref("run-stderr-empty"), check_ref("run-silent"), check_ref("entry-sample"), check_ref("entry-ok")], callable case_body)

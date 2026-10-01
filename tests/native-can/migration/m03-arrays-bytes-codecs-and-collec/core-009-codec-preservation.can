@@ -1,0 +1,238 @@
+package m03core009codec
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M03 CORE-009 "bundled codec: encode/decode preservation".
+/// Source: tests/integration/codec_test.go symbol
+/// TestCurrentBundledCodec.
+/// Related fixtures: compiler/testdata/current/codec/roundtrip.can
+/// (roundtrip L7-17, decode_integer L18-31, via_callable L32-43,
+/// encode_option L59-69, decode_option L70-81).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): production execution preserves encoding/decoding
+/// behavior: exact big-int and unicode receipt roundtrip, scaled integer
+/// decoding, fractional and quoted rejections with verbatim reasons,
+/// callable decode path, option encode/decode, and private-name rejection
+/// with verbatim reason.
+/// The 10-root pin lives in core-009-roots-green.can; the production run
+/// output/status shape lives in core-009-run-shape.can.
+/// Variants: roundtrip.can fixture.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23).
+/// Case bundled/codec-preservation checks: bigint-roundtrip,
+/// unicode-roundtrip, scaled-integer, fractional-rejected,
+/// fractional-reason, quoted-rejected, quoted-reason, callable-decode,
+/// option-encode, option-decode, private-name-rejected, private-reason.
+/// Facet map (roundtrip.can roots): bigint-roundtrip pins the exact root
+/// (L12: receipt 9007199254740993 roundtrips exactly);
+/// unicode-roundtrip pins the unicode payload (L12: the description with
+/// the accented e and emoji survives); scaled-integer pins the scaled root
+/// (L24: "1.25e2" => ok 125); fractional-rejected/fractional-reason pin
+/// the fractional root (L25: "1.25" => invalid_data reason
+/// "integer_token"); quoted-rejected/quoted-reason pin the quoted root
+/// (L26: '"42"' => invalid_data reason "type"); callable-decode pins the
+/// callable root (L37: decode through callable decode_json<int>);
+/// option-encode pins the option encode root (L64: 42 => ok option some
+/// JSON); option-decode pins the option decode root (L75: option some JSON
+/// => ok some 42); private-name-rejected/private-reason pin the
+/// private-name root (L76: can.std.option tag => invalid_data reason
+/// "variant_tag").
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool bigint_roundtrip
+    bool unicode_roundtrip
+    bool scaled_integer
+    bool fractional_rejected
+    str fractional_reason
+    bool quoted_rejected
+    str quoted_reason
+    bool callable_decode
+    bool option_encode
+    bool option_decode
+    bool private_rejected
+    str private_reason
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/codec-preservation", "default", "", "offline"), "bigint-roundtrip" => ok "case bundled/codec-preservation variant default root bigint-roundtrip run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/codec-preservation", "default", "", "offline"), "bigint-roundtrip" => ok evidence("bigint-roundtrip", "true", "true", true, "case bundled/codec-preservation variant default root bigint-roundtrip run offline")
+        different: false, true, context("bundled/codec-preservation", "default", "", "offline"), "bigint-roundtrip" => failed{"bigint-roundtrip"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 10, 10, context("bundled/codec-preservation", "default", "", "offline"), "root-count" => ok evidence("root-count", "10", "10", true, "case bundled/codec-preservation variant default root root-count run offline")
+        different: 9, 10, context("bundled/codec-preservation", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "integer_token", "integer_token", context("bundled/codec-preservation", "default", "", "offline"), "fractional-reason" => ok evidence("fractional-reason", "integer_token", "integer_token", true, "case bundled/codec-preservation variant default root fractional-reason run offline")
+        different: "type", "integer_token", context("bundled/codec-preservation", "default", "", "offline"), "fractional-reason" => failed{"fractional-reason"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, true, true, "integer_token", true, "type", true, true, true, true, "variant_tag")
+        seed_bigint_loss: "seed-bigint-loss" => ok observation(false, true, true, true, "integer_token", true, "type", true, true, true, true, "variant_tag")
+        seed_unicode_loss: "seed-unicode-loss" => ok observation(true, false, true, true, "integer_token", true, "type", true, true, true, true, "variant_tag")
+        seed_scaled_red: "seed-scaled-red" => ok observation(true, true, false, true, "integer_token", true, "type", true, true, true, true, "variant_tag")
+        seed_fractional_accepted: "seed-fractional-accepted" => ok observation(true, true, true, false, "integer_token", true, "type", true, true, true, true, "variant_tag")
+        seed_fractional_drift: "seed-fractional-drift" => ok observation(true, true, true, true, "type", true, "type", true, true, true, true, "variant_tag")
+        seed_quoted_accepted: "seed-quoted-accepted" => ok observation(true, true, true, true, "integer_token", false, "type", true, true, true, true, "variant_tag")
+        seed_quoted_drift: "seed-quoted-drift" => ok observation(true, true, true, true, "integer_token", true, "integer_token", true, true, true, true, "variant_tag")
+        seed_callable_red: "seed-callable-red" => ok observation(true, true, true, true, "integer_token", true, "type", false, true, true, true, "variant_tag")
+        seed_option_encode_red: "seed-option-encode-red" => ok observation(true, true, true, true, "integer_token", true, "type", true, false, true, true, "variant_tag")
+        seed_option_decode_red: "seed-option-decode-red" => ok observation(true, true, true, true, "integer_token", true, "type", true, true, false, true, "variant_tag")
+        seed_private_accepted: "seed-private-accepted" => ok observation(true, true, true, true, "integer_token", true, "type", true, true, true, false, "variant_tag")
+        seed_private_drift: "seed-private-drift" => ok observation(true, true, true, true, "integer_token", true, "type", true, true, true, true, "type")
+    match variant_id
+        "seed-bigint-loss" => ok observation(false, true, true, true, "integer_token", true, "type", true, true, true, true, "variant_tag")
+        "seed-unicode-loss" => ok observation(true, false, true, true, "integer_token", true, "type", true, true, true, true, "variant_tag")
+        "seed-scaled-red" => ok observation(true, true, false, true, "integer_token", true, "type", true, true, true, true, "variant_tag")
+        "seed-fractional-accepted" => ok observation(true, true, true, false, "integer_token", true, "type", true, true, true, true, "variant_tag")
+        "seed-fractional-drift" => ok observation(true, true, true, true, "type", true, "type", true, true, true, true, "variant_tag")
+        "seed-quoted-accepted" => ok observation(true, true, true, true, "integer_token", false, "type", true, true, true, true, "variant_tag")
+        "seed-quoted-drift" => ok observation(true, true, true, true, "integer_token", true, "integer_token", true, true, true, true, "variant_tag")
+        "seed-callable-red" => ok observation(true, true, true, true, "integer_token", true, "type", false, true, true, true, "variant_tag")
+        "seed-option-encode-red" => ok observation(true, true, true, true, "integer_token", true, "type", true, false, true, true, "variant_tag")
+        "seed-option-decode-red" => ok observation(true, true, true, true, "integer_token", true, "type", true, true, false, true, "variant_tag")
+        "seed-private-accepted" => ok observation(true, true, true, true, "integer_token", true, "type", true, true, true, false, "variant_tag")
+        "seed-private-drift" => ok observation(true, true, true, true, "integer_token", true, "type", true, true, true, true, "type")
+        _ => ok observation(true, true, true, true, "integer_token", true, "type", true, true, true, true, "variant_tag")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m03_009: "m03-009" => ok [check("bigint-roundtrip", "receipt amount 9007199254740993 roundtrips exactly"), check("unicode-roundtrip", "unicode description payload survives the roundtrip"), check("scaled-integer", "scaled 1.25e2 decodes to 125"), check("fractional-rejected", "fractional 1.25 is rejected as invalid data"), check("fractional-reason", "fractional rejection pins integer_token"), check("quoted-rejected", "quoted 42 is rejected as invalid data"), check("quoted-reason", "quoted rejection pins type"), check("callable-decode", "callable decode_json path decodes the big integer"), check("option-encode", "option some value encodes to its JSON shape"), check("option-decode", "option some JSON decodes back to some 42"), check("private-name-rejected", "private can.std.option tag is rejected as invalid data"), check("private-reason", "private-name rejection pins variant_tag")]
+        other: "nope" => ok []
+    match scope is "m03-009"
+        false => ok []
+        true => ok [check("bigint-roundtrip", "receipt amount 9007199254740993 roundtrips exactly"), check("unicode-roundtrip", "unicode description payload survives the roundtrip"), check("scaled-integer", "scaled 1.25e2 decodes to 125"), check("fractional-rejected", "fractional 1.25 is rejected as invalid data"), check("fractional-reason", "fractional rejection pins integer_token"), check("quoted-rejected", "quoted 42 is rejected as invalid data"), check("quoted-reason", "quoted rejection pins type"), check("callable-decode", "callable decode_json path decodes the big integer"), check("option-encode", "option some value encodes to its JSON shape"), check("option-decode", "option some JSON decodes back to some 42"), check("private-name-rejected", "private can.std.option tag is rejected as invalid data"), check("private-reason", "private-name rejection pins variant_tag")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/codec-preservation" => ok [expected_check("bigint-roundtrip", "true"), expected_check("unicode-roundtrip", "true"), expected_check("scaled-integer", "true"), expected_check("fractional-rejected", "true"), expected_check("fractional-reason", "integer_token"), expected_check("quoted-rejected", "true"), expected_check("quoted-reason", "type"), expected_check("callable-decode", "true"), expected_check("option-encode", "true"), expected_check("option-decode", "true"), expected_check("private-name-rejected", "true"), expected_check("private-reason", "variant_tag")]
+        unknown: "nope" => ok []
+    match case is "bundled/codec-preservation"
+        false => ok []
+        true => ok [expected_check("bigint-roundtrip", "true"), expected_check("unicode-roundtrip", "true"), expected_check("scaled-integer", "true"), expected_check("fractional-rejected", "true"), expected_check("fractional-reason", "integer_token"), expected_check("quoted-rejected", "true"), expected_check("quoted-reason", "type"), expected_check("callable-decode", "true"), expected_check("option-encode", "true"), expected_check("option-decode", "true"), expected_check("private-name-rejected", "true"), expected_check("private-reason", "variant_tag")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/codec-preservation", "default", "", "offline") => ok
+        seed_bigint_loss: context("bundled/codec-preservation", "seed-bigint-loss", "", "offline") => failed{"bigint-roundtrip"}
+        seed_unicode_loss: context("bundled/codec-preservation", "seed-unicode-loss", "", "offline") => failed{"unicode-roundtrip"}
+        seed_scaled_red: context("bundled/codec-preservation", "seed-scaled-red", "", "offline") => failed{"scaled-integer"}
+        seed_fractional_accepted: context("bundled/codec-preservation", "seed-fractional-accepted", "", "offline") => failed{"fractional-rejected"}
+        seed_fractional_drift: context("bundled/codec-preservation", "seed-fractional-drift", "", "offline") => failed{"fractional-reason"}
+        seed_quoted_accepted: context("bundled/codec-preservation", "seed-quoted-accepted", "", "offline") => failed{"quoted-rejected"}
+        seed_quoted_drift: context("bundled/codec-preservation", "seed-quoted-drift", "", "offline") => failed{"quoted-reason"}
+        seed_callable_red: context("bundled/codec-preservation", "seed-callable-red", "", "offline") => failed{"callable-decode"}
+        seed_option_encode_red: context("bundled/codec-preservation", "seed-option-encode-red", "", "offline") => failed{"option-encode"}
+        seed_option_decode_red: context("bundled/codec-preservation", "seed-option-decode-red", "", "offline") => failed{"option-decode"}
+        seed_private_accepted: context("bundled/codec-preservation", "seed-private-accepted", "", "offline") => failed{"private-name-rejected"}
+        seed_private_drift: context("bundled/codec-preservation", "seed-private-drift", "", "offline") => failed{"private-reason"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.bigint_roundtrip, true, c, "bigint-roundtrip")
+            failed
+            ok evidence bigint_evidence => match call require_bool(got.unicode_roundtrip, true, c, "unicode-roundtrip")
+                failed
+                ok evidence unicode_evidence => match call require_bool(got.scaled_integer, true, c, "scaled-integer")
+                    failed
+                    ok evidence scaled_evidence => match call require_bool(got.fractional_rejected, true, c, "fractional-rejected")
+                        failed
+                        ok evidence fractional_evidence => match call require_text(got.fractional_reason, "integer_token", c, "fractional-reason")
+                            failed
+                            ok evidence fractional_reason_evidence => match call require_bool(got.quoted_rejected, true, c, "quoted-rejected")
+                                failed
+                                ok evidence quoted_evidence => match call require_text(got.quoted_reason, "type", c, "quoted-reason")
+                                    failed
+                                    ok evidence quoted_reason_evidence => match call require_bool(got.callable_decode, true, c, "callable-decode")
+                                        failed
+                                        ok evidence callable_evidence => match call require_bool(got.option_encode, true, c, "option-encode")
+                                            failed
+                                            ok evidence option_encode_evidence => match call require_bool(got.option_decode, true, c, "option-decode")
+                                                failed
+                                                ok evidence option_decode_evidence => match call require_bool(got.private_rejected, true, c, "private-name-rejected")
+                                                    failed
+                                                    ok evidence private_evidence => match call require_text(got.private_reason, "variant_tag", c, "private-reason")
+                                                        failed
+                                                        ok evidence private_reason_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m03_009: "m03-009" => ok test_case("bundled/codec-preservation", ["codec", "m03"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("bigint-roundtrip"), check_ref("unicode-roundtrip"), check_ref("scaled-integer"), check_ref("fractional-rejected"), check_ref("fractional-reason"), check_ref("quoted-rejected"), check_ref("quoted-reason"), check_ref("callable-decode"), check_ref("option-encode"), check_ref("option-decode"), check_ref("private-name-rejected"), check_ref("private-reason")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m03-009"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/codec-preservation", ["codec", "m03"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("bigint-roundtrip"), check_ref("unicode-roundtrip"), check_ref("scaled-integer"), check_ref("fractional-rejected"), check_ref("fractional-reason"), check_ref("quoted-rejected"), check_ref("quoted-reason"), check_ref("callable-decode"), check_ref("option-encode"), check_ref("option-decode"), check_ref("private-name-rejected"), check_ref("private-reason")], callable case_body)
