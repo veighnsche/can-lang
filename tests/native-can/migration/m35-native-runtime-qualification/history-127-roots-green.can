@@ -1,0 +1,269 @@
+package m35history127roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M35 HISTORY-127 "qualified native APIs and
+/// behaviors" invocation roots.
+/// Source: tests/conformance/native.test.ts
+/// symbol "qualified native APIs and
+/// behaviors" (L9-11): imports plus the
+/// expect/await/qualify/failures/toEqual
+/// chain.
+/// Disposition: migrate (same row pact as the
+/// base slice; this file owns the import and
+/// invocation spellings).
+/// Protects (this file): the five import
+/// lines (L1-5) with two module bytes plus
+/// the L10 invocation chain spellings and
+/// tallies.
+/// ADAPTATION (recorded, with source lines):
+/// path pins hold import bytes; root pins
+/// hold ident spellings; call pins hold call
+/// spellings; count pins hold ints tallied
+/// from L1-5 and L9-11.
+/// manifest-path pins
+/// ../../distribution/target.json (L2);
+/// native-module pins ./native (L3);
+/// bun-test-module pins bun:test (L1);
+/// qualify-fn pins qualify (L3 plus L10);
+/// manifest-root pins manifest (L2 plus L10);
+/// actual-root pins actual (L7 plus L10);
+/// failures-root pins failures (L10);
+/// toequal-fn pins toEqual (L10); expect-fn
+/// pins expect (L1 plus L10); import-count
+/// pins int (5) from L1-5; qualify-arg-count
+/// pins int (2) from L10; span-await-count
+/// pins int (1) from L9-11; span-expect-count
+/// pins int (1) from L9-11.
+/// Facet map (import then chain order):
+/// manifest-path, native-module,
+/// bun-test-module, qualify-fn,
+/// manifest-root, actual-root, failures-root,
+/// toequal-fn, expect-fn, import-count,
+/// qualify-arg-count, span-await-count,
+/// span-expect-count.
+/// The identity literal lives in
+/// history-127-base-semantics.can; the report
+/// shape plus list tallies live in
+/// history-127-run-shape.can.
+/// Variants: none (row lists zero variants;
+/// default plus seeded drifts only).
+/// Environment: pinned Bun runtime/native host
+/// (row lists one gate; binds at QN1/QN2; no
+/// live run now).
+/// Logical gates N1/N2 bind at QN1/QN2; no
+/// live run now.
+/// Timeout 120000ms is the offline default
+/// bound (no bun timeout in this row; binds
+/// at P23 like the M31 no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23/QN1/QN2
+/// accept gates unmet).
+/// Case history/native-qualification-roots
+/// checks: manifest-path, native-module,
+/// bun-test-module, qualify-fn,
+/// manifest-root, actual-root, failures-root,
+/// toequal-fn, expect-fn, import-count,
+/// qualify-arg-count, span-await-count,
+/// span-expect-count.
+/// Shared old files untouched; retirement is a
+/// later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str manifest_path
+    str native_module
+    str bun_test_module
+    str qualify_fn
+    str manifest_root
+    str actual_root
+    str failures_root
+    str toequal_fn
+    str expect_fn
+    int import_count
+    int qualify_arg_count
+    int span_await_count
+    int span_expect_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/native-qualification-roots", "default", "", "offline"), "manifest-path" => ok "case history/native-qualification-roots variant default root manifest-path run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/native-qualification-roots", "default", "", "offline"), "manifest-path" => ok evidence("manifest-path", "true", "true", true, "case history/native-qualification-roots variant default root manifest-path run offline")
+        different: false, true, context("history/native-qualification-roots", "default", "", "offline"), "manifest-path" => failed{"manifest-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 5, 5, context("history/native-qualification-roots", "default", "", "offline"), "import-count" => ok evidence("import-count", "5", "5", true, "case history/native-qualification-roots variant default root import-count run offline")
+        different: 4, 5, context("history/native-qualification-roots", "default", "", "offline"), "import-count" => failed{"import-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "../../distribution/target.json", "../../distribution/target.json", context("history/native-qualification-roots", "default", "", "offline"), "manifest-path" => ok evidence("manifest-path", "../../distribution/target.json", "../../distribution/target.json", true, "case history/native-qualification-roots variant default root manifest-path run offline")
+        different: "../../distribution/target.json_2", "../../distribution/target.json", context("history/native-qualification-roots", "default", "", "offline"), "manifest-path" => failed{"manifest-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual", "expect", 5, 2, 1, 1)
+        seed_manifest_path: "seed-manifest-path-drift" => ok observation("../../distribution/target.json_2", "./native", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual", "expect", 5, 2, 1, 1)
+        seed_native_module: "seed-native-module-drift" => ok observation("../../distribution/target.json", "./native_2", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual", "expect", 5, 2, 1, 1)
+        seed_bun_test_module: "seed-bun-test-module-drift" => ok observation("../../distribution/target.json", "./native", "bun:test_2", "qualify", "manifest", "actual", "failures", "toEqual", "expect", 5, 2, 1, 1)
+        seed_qualify_fn: "seed-qualify-fn-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify_2", "manifest", "actual", "failures", "toEqual", "expect", 5, 2, 1, 1)
+        seed_manifest_root: "seed-manifest-root-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest_2", "actual", "failures", "toEqual", "expect", 5, 2, 1, 1)
+        seed_actual_root: "seed-actual-root-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual_2", "failures", "toEqual", "expect", 5, 2, 1, 1)
+        seed_failures_root: "seed-failures-root-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual", "failures_2", "toEqual", "expect", 5, 2, 1, 1)
+        seed_toequal_fn: "seed-toequal-fn-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual_2", "expect", 5, 2, 1, 1)
+        seed_expect_fn: "seed-expect-fn-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual", "expect_2", 5, 2, 1, 1)
+        seed_import_count: "seed-import-count-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual", "expect", 4, 2, 1, 1)
+        seed_qualify_arg_count: "seed-qualify-arg-count-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual", "expect", 5, 1, 1, 1)
+        seed_span_await_count: "seed-span-await-count-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual", "expect", 5, 2, 0, 1)
+        seed_span_expect_count: "seed-span-expect-count-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual", "expect", 5, 2, 1, 0)
+    match variant_id
+        "seed-manifest-path-drift" => ok observation("../../distribution/target.json_2", "./native", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual", "expect", 5, 2, 1, 1)
+        "seed-native-module-drift" => ok observation("../../distribution/target.json", "./native_2", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual", "expect", 5, 2, 1, 1)
+        "seed-bun-test-module-drift" => ok observation("../../distribution/target.json", "./native", "bun:test_2", "qualify", "manifest", "actual", "failures", "toEqual", "expect", 5, 2, 1, 1)
+        "seed-qualify-fn-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify_2", "manifest", "actual", "failures", "toEqual", "expect", 5, 2, 1, 1)
+        "seed-manifest-root-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest_2", "actual", "failures", "toEqual", "expect", 5, 2, 1, 1)
+        "seed-actual-root-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual_2", "failures", "toEqual", "expect", 5, 2, 1, 1)
+        "seed-failures-root-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual", "failures_2", "toEqual", "expect", 5, 2, 1, 1)
+        "seed-toequal-fn-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual_2", "expect", 5, 2, 1, 1)
+        "seed-expect-fn-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual", "expect_2", 5, 2, 1, 1)
+        "seed-import-count-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual", "expect", 4, 2, 1, 1)
+        "seed-qualify-arg-count-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual", "expect", 5, 1, 1, 1)
+        "seed-span-await-count-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual", "expect", 5, 2, 0, 1)
+        "seed-span-expect-count-drift" => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual", "expect", 5, 2, 1, 0)
+        _ => ok observation("../../distribution/target.json", "./native", "bun:test", "qualify", "manifest", "actual", "failures", "toEqual", "expect", 5, 2, 1, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m35_h127: "m35-h127" => ok [check("manifest-path", "manifest import keeps its bytes"), check("native-module", "native module keeps its bytes"), check("bun-test-module", "bun module keeps its bytes"), check("qualify-fn", "qualify call keeps its spelling"), check("manifest-root", "manifest root keeps its spelling"), check("actual-root", "actual root keeps its spelling"), check("failures-root", "failures root keeps its spelling"), check("toequal-fn", "toEqual call keeps its spelling"), check("expect-fn", "expect call keeps its spelling"), check("import-count", "five imports exist"), check("qualify-arg-count", "two qualify args exist"), check("span-await-count", "one await sits in span"), check("span-expect-count", "one expect sits in span")]
+        other: "nope" => ok []
+    match scope is "m35-h127"
+        false => ok []
+        true => ok [check("manifest-path", "manifest import keeps its bytes"), check("native-module", "native module keeps its bytes"), check("bun-test-module", "bun module keeps its bytes"), check("qualify-fn", "qualify call keeps its spelling"), check("manifest-root", "manifest root keeps its spelling"), check("actual-root", "actual root keeps its spelling"), check("failures-root", "failures root keeps its spelling"), check("toequal-fn", "toEqual call keeps its spelling"), check("expect-fn", "expect call keeps its spelling"), check("import-count", "five imports exist"), check("qualify-arg-count", "two qualify args exist"), check("span-await-count", "one await sits in span"), check("span-expect-count", "one expect sits in span")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/native-qualification-roots" => ok [expected_check("manifest-path", "../../distribution/target.json"), expected_check("native-module", "./native"), expected_check("bun-test-module", "bun:test"), expected_check("qualify-fn", "qualify"), expected_check("manifest-root", "manifest"), expected_check("actual-root", "actual"), expected_check("failures-root", "failures"), expected_check("toequal-fn", "toEqual"), expected_check("expect-fn", "expect"), expected_check("import-count", "5"), expected_check("qualify-arg-count", "2"), expected_check("span-await-count", "1"), expected_check("span-expect-count", "1")]
+        unknown: "nope" => ok []
+    match case is "history/native-qualification-roots"
+        false => ok []
+        true => ok [expected_check("manifest-path", "../../distribution/target.json"), expected_check("native-module", "./native"), expected_check("bun-test-module", "bun:test"), expected_check("qualify-fn", "qualify"), expected_check("manifest-root", "manifest"), expected_check("actual-root", "actual"), expected_check("failures-root", "failures"), expected_check("toequal-fn", "toEqual"), expected_check("expect-fn", "expect"), expected_check("import-count", "5"), expected_check("qualify-arg-count", "2"), expected_check("span-await-count", "1"), expected_check("span-expect-count", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/native-qualification-roots", "default", "", "offline") => ok
+        seed_manifest_path: context("history/native-qualification-roots", "seed-manifest-path-drift", "", "offline") => failed{"manifest-path"}
+        seed_native_module: context("history/native-qualification-roots", "seed-native-module-drift", "", "offline") => failed{"native-module"}
+        seed_bun_test_module: context("history/native-qualification-roots", "seed-bun-test-module-drift", "", "offline") => failed{"bun-test-module"}
+        seed_qualify_fn: context("history/native-qualification-roots", "seed-qualify-fn-drift", "", "offline") => failed{"qualify-fn"}
+        seed_manifest_root: context("history/native-qualification-roots", "seed-manifest-root-drift", "", "offline") => failed{"manifest-root"}
+        seed_actual_root: context("history/native-qualification-roots", "seed-actual-root-drift", "", "offline") => failed{"actual-root"}
+        seed_failures_root: context("history/native-qualification-roots", "seed-failures-root-drift", "", "offline") => failed{"failures-root"}
+        seed_toequal_fn: context("history/native-qualification-roots", "seed-toequal-fn-drift", "", "offline") => failed{"toequal-fn"}
+        seed_expect_fn: context("history/native-qualification-roots", "seed-expect-fn-drift", "", "offline") => failed{"expect-fn"}
+        seed_import_count: context("history/native-qualification-roots", "seed-import-count-drift", "", "offline") => failed{"import-count"}
+        seed_qualify_arg_count: context("history/native-qualification-roots", "seed-qualify-arg-count-drift", "", "offline") => failed{"qualify-arg-count"}
+        seed_span_await_count: context("history/native-qualification-roots", "seed-span-await-count-drift", "", "offline") => failed{"span-await-count"}
+        seed_span_expect_count: context("history/native-qualification-roots", "seed-span-expect-count-drift", "", "offline") => failed{"span-expect-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.manifest_path, "../../distribution/target.json", c, "manifest-path")
+            failed
+            ok evidence manifest_path_evidence => match call require_text(got.native_module, "./native", c, "native-module")
+                failed
+                ok evidence native_module_evidence => match call require_text(got.bun_test_module, "bun:test", c, "bun-test-module")
+                    failed
+                    ok evidence bun_test_module_evidence => match call require_text(got.qualify_fn, "qualify", c, "qualify-fn")
+                        failed
+                        ok evidence qualify_fn_evidence => match call require_text(got.manifest_root, "manifest", c, "manifest-root")
+                            failed
+                            ok evidence manifest_root_evidence => match call require_text(got.actual_root, "actual", c, "actual-root")
+                                failed
+                                ok evidence actual_root_evidence => match call require_text(got.failures_root, "failures", c, "failures-root")
+                                    failed
+                                    ok evidence failures_root_evidence => match call require_text(got.toequal_fn, "toEqual", c, "toequal-fn")
+                                        failed
+                                        ok evidence toequal_fn_evidence => match call require_text(got.expect_fn, "expect", c, "expect-fn")
+                                            failed
+                                            ok evidence expect_fn_evidence => match call require_int(got.import_count, 5, c, "import-count")
+                                                failed
+                                                ok evidence import_count_evidence => match call require_int(got.qualify_arg_count, 2, c, "qualify-arg-count")
+                                                    failed
+                                                    ok evidence qualify_arg_count_evidence => match call require_int(got.span_await_count, 1, c, "span-await-count")
+                                                        failed
+                                                        ok evidence span_await_count_evidence => match call require_int(got.span_expect_count, 1, c, "span-expect-count")
+                                                            failed
+                                                            ok evidence span_expect_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m35_h127: "m35-h127" => ok test_case("history/native-qualification-roots", ["history", "m35"], [], 120000, [check_ref("manifest-path"), check_ref("native-module"), check_ref("bun-test-module"), check_ref("qualify-fn"), check_ref("manifest-root"), check_ref("actual-root"), check_ref("failures-root"), check_ref("toequal-fn"), check_ref("expect-fn"), check_ref("import-count"), check_ref("qualify-arg-count"), check_ref("span-await-count"), check_ref("span-expect-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m35-h127"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/native-qualification-roots", ["history", "m35"], [], 120000, [check_ref("manifest-path"), check_ref("native-module"), check_ref("bun-test-module"), check_ref("qualify-fn"), check_ref("manifest-root"), check_ref("actual-root"), check_ref("failures-root"), check_ref("toequal-fn"), check_ref("expect-fn"), check_ref("import-count"), check_ref("qualify-arg-count"), check_ref("span-await-count"), check_ref("span-expect-count")], callable case_body)
