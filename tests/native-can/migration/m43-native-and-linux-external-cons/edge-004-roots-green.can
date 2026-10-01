@@ -1,0 +1,345 @@
+package m43edge004roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+///M43 EDGE-004 "native PostgreSQL
+///roundtrip"
+///migrate row pact.
+///Source:
+///distribution/linux/smoke/pg-driver.ts
+///symbol "native PostgreSQL roundtrip"
+///(L18-26): pinned version gate plus
+///create plus insert plus select plus
+///drops plus row wants.
+///Disposition: migrate (this row owns
+///Can scenarios as reviewable Can
+///facts; no caller file changes here;
+///pg-driver.ts stays until the
+///integrator rewires it after each
+///linked row plus gate has accepted
+///proof).
+///Protects (this file): direct native
+///create/insert/select/drop, PostgreSQL
+///version, row count/content and pool
+///closure, statements leg: version gate
+///plus roundtrip statements plus row
+///wants.
+///ADAPTATION (noted, plus source
+///lines): stmt pins hold full statement
+///bytes; want pins hold refused-drift
+///bytes; name pins hold table plus
+///column spellings; count pins hold
+///ints tallied from L21 plus L22 plus
+///L23 plus L24 plus L25 plus L26.
+///show-stmt pins SHOW server_version
+///(L18); version-field pins
+///server_version (L18 plus L19 twice);
+///prefix-check pins startsWith (L20);
+///major-want pins 17. (L20);
+///version-guard pins requires
+///PostgreSQL 17, saw plus one blank
+///(L20); drop-probe pins DROP TABLE IF
+///EXISTS t19_smoke (L21); create-prefix
+///pins CREATE TABLE t19_smoke (id
+///BIGINT PRIMARY KEY, body plus blank
+///(L22); not-null-suffix pins blank
+///plus NOT NULL plus close-paren (L22);
+///four column-type bytes between the
+///prefix plus the suffix stay unpinned
+///(SRIL vocab cannot spell them);
+///table-name pins t19_smoke (L21 plus
+///L22 plus L23 plus L24 plus L26);
+///insert-stmt pins INSERT INTO
+///t19_smoke (id, body) VALUES (7,
+///'remember') (L23); select-stmt pins
+///SELECT id, body FROM t19_smoke WHERE
+///id = 7 (L24); id-body-pair pins id,
+///body (L23 plus L24); body-want pins
+///remember (L23 plus L25); missing-word
+///pins roundtrip row missing (L25);
+///drop-stmt pins DROP TABLE t19_smoke
+///(L26); id-want pins 7 (L23 plus L24);
+///row-count-want pins 1 (L25);
+///drop-count pins 2 (L21 plus L26);
+///table-mention-count pins 5 (L21 plus
+///L22 plus L23 plus L24 plus L26).
+///Facet map (pin order): show-stmt,
+///version-field, prefix-check,
+///major-want, version-guard,
+///drop-probe, create-prefix,
+///not-null-suffix, table-name,
+///insert-stmt, select-stmt,
+///id-body-pair, body-want,
+///missing-word, drop-stmt, id-want,
+///row-count-want, drop-count,
+///table-mention-count.
+///The header plus env leg lives in
+///edge-004-base-semantics.can; the
+///report plus closure leg lives in
+///edge-004-run-shape.can.
+///Variants: none (row lists zero
+///variants).
+///Environment: zero gates; bind at P23
+///plus QD1; no live run now.
+///Logical gates SUITE plus DB bind at
+///P23 plus QD1; no live run now.
+///Timeout 120000ms is the offline
+///default bound (binds at P23 like the
+///M31 no-run rows).
+///Delegated oracles: none.
+///Execution credit: NOT claimed (P23
+///plus QD1 accept gates unmet).
+///Intended live report: none yet
+///(migrate owns fresh scenarios; binds
+///at P23 plus QD1).
+///Migration stays open; pg-driver.ts
+///plus postgres.sh plus the Go caller
+///intact; no call retired.
+///Shared old files intact; retirement
+///is a later integrator choice; Z03
+///owns activation; Z02 owns retirement.
+///Case edge/pg-roundtrip-statements
+///checks: show-stmt, version-field,
+///prefix-check, major-want,
+///version-guard, drop-probe,
+///create-prefix, not-null-suffix,
+///table-name, insert-stmt, select-stmt,
+///id-body-pair, body-want,
+///missing-word, drop-stmt, id-want,
+///row-count-want, drop-count,
+///table-mention-count.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str show_stmt
+    str version_field
+    str prefix_check
+    str major_want
+    str version_guard
+    str drop_probe
+    str create_prefix
+    str not_null_suffix
+    str table_name
+    str insert_stmt
+    str select_stmt
+    str id_body_pair
+    str body_want
+    str missing_word
+    str drop_stmt
+    int id_want
+    int row_count_want
+    int drop_count
+    int table_mention_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("edge/pg-roundtrip-statements", "default", "", "offline"), "show-stmt" => ok "case edge/pg-roundtrip-statements variant default root show-stmt run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("edge/pg-roundtrip-statements", "default", "", "offline"), "show-stmt" => ok evidence("show-stmt", "true", "true", true, "case edge/pg-roundtrip-statements variant default root show-stmt run offline")
+        different: false, true, context("edge/pg-roundtrip-statements", "default", "", "offline"), "show-stmt" => failed{"show-stmt"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 7, 7, context("edge/pg-roundtrip-statements", "default", "", "offline"), "id-want" => ok evidence("id-want", "7", "7", true, "case edge/pg-roundtrip-statements variant default root id-want run offline")
+        different: 6, 7, context("edge/pg-roundtrip-statements", "default", "", "offline"), "id-want" => failed{"id-want"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "SHOW server_version", "SHOW server_version", context("edge/pg-roundtrip-statements", "default", "", "offline"), "show-stmt" => ok evidence("show-stmt", "SHOW server_version", "SHOW server_version", true, "case edge/pg-roundtrip-statements variant default root show-stmt run offline")
+        different: "SHOW server_version_2", "SHOW server_version", context("edge/pg-roundtrip-statements", "default", "", "offline"), "show-stmt" => failed{"show-stmt"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        seed_show_stmt: "seed-show-stmt-drift" => ok observation("SHOW server_version_2", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        seed_version_field: "seed-version-field-drift" => ok observation("SHOW server_version", "server_version_2", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        seed_prefix_check: "seed-prefix-check-drift" => ok observation("SHOW server_version", "server_version", "startsWith_2", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        seed_major_want: "seed-major-want-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17._2", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        seed_version_guard: "seed-version-guard-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw _2", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        seed_drop_probe: "seed-drop-probe-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke_2", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        seed_create_prefix: "seed-create-prefix-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body _2", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        seed_not_null_suffix: "seed-not-null-suffix-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)_2", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        seed_table_name: "seed-table-name-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke_2", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        seed_insert_stmt: "seed-insert-stmt-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')_2", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        seed_select_stmt: "seed-select-stmt-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7_2", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        seed_id_body_pair: "seed-id-body-pair-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body_2", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        seed_body_want: "seed-body-want-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember_2", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        seed_missing_word: "seed-missing-word-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing_2", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        seed_drop_stmt: "seed-drop-stmt-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke_2", 7, 1, 2, 5)
+        seed_id_want: "seed-id-want-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 6, 1, 2, 5)
+        seed_row_count_want: "seed-row-count-want-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 0, 2, 5)
+        seed_drop_count: "seed-drop-count-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 1, 5)
+        seed_table_mention_count: "seed-table-mention-count-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 4)
+    match variant_id
+        "seed-show-stmt-drift" => ok observation("SHOW server_version_2", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        "seed-version-field-drift" => ok observation("SHOW server_version", "server_version_2", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        "seed-prefix-check-drift" => ok observation("SHOW server_version", "server_version", "startsWith_2", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        "seed-major-want-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17._2", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        "seed-version-guard-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw _2", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        "seed-drop-probe-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke_2", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        "seed-create-prefix-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body _2", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        "seed-not-null-suffix-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)_2", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        "seed-table-name-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke_2", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        "seed-insert-stmt-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')_2", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        "seed-select-stmt-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7_2", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        "seed-id-body-pair-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body_2", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        "seed-body-want-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember_2", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        "seed-missing-word-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing_2", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+        "seed-drop-stmt-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke_2", 7, 1, 2, 5)
+        "seed-id-want-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 6, 1, 2, 5)
+        "seed-row-count-want-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 0, 2, 5)
+        "seed-drop-count-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 1, 5)
+        "seed-table-mention-count-drift" => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 4)
+        _ => ok observation("SHOW server_version", "server_version", "startsWith", "17.", "requires PostgreSQL 17, saw ", "DROP TABLE IF EXISTS t19_smoke", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", " NOT NULL)", "t19_smoke", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", "SELECT id, body FROM t19_smoke WHERE id = 7", "id, body", "remember", "roundtrip row missing", "DROP TABLE t19_smoke", 7, 1, 2, 5)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        edge_scope: "m43-e004" => ok [check("show-stmt", "show statement keeps its bytes"), check("version-field", "version field keeps its bytes"), check("prefix-check", "prefix check keeps its spelling"), check("major-want", "major want keeps its bytes"), check("version-guard", "version guard keeps its bytes"), check("drop-probe", "drop probe keeps its bytes"), check("create-prefix", "create prefix keeps its bytes"), check("not-null-suffix", "not null suffix keeps its bytes"), check("table-name", "table name keeps its spelling"), check("insert-stmt", "insert statement keeps its bytes"), check("select-stmt", "select statement keeps its bytes"), check("id-body-pair", "id body pair keeps its bytes"), check("body-want", "body want keeps its bytes"), check("missing-word", "missing word keeps its bytes"), check("drop-stmt", "drop statement keeps its bytes"), check("id-want", "seed id pins seven"), check("row-count-want", "row count wants one"), check("drop-count", "two drops exist"), check("table-mention-count", "five table mentions exist")]
+        other: "nope" => ok []
+    match scope is "m43-e004"
+        false => ok []
+        true => ok [check("show-stmt", "show statement keeps its bytes"), check("version-field", "version field keeps its bytes"), check("prefix-check", "prefix check keeps its spelling"), check("major-want", "major want keeps its bytes"), check("version-guard", "version guard keeps its bytes"), check("drop-probe", "drop probe keeps its bytes"), check("create-prefix", "create prefix keeps its bytes"), check("not-null-suffix", "not null suffix keeps its bytes"), check("table-name", "table name keeps its spelling"), check("insert-stmt", "insert statement keeps its bytes"), check("select-stmt", "select statement keeps its bytes"), check("id-body-pair", "id body pair keeps its bytes"), check("body-want", "body want keeps its bytes"), check("missing-word", "missing word keeps its bytes"), check("drop-stmt", "drop statement keeps its bytes"), check("id-want", "seed id pins seven"), check("row-count-want", "row count wants one"), check("drop-count", "two drops exist"), check("table-mention-count", "five table mentions exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "edge/pg-roundtrip-statements" => ok [expected_check("show-stmt", "SHOW server_version"), expected_check("version-field", "server_version"), expected_check("prefix-check", "startsWith"), expected_check("major-want", "17."), expected_check("version-guard", "requires PostgreSQL 17, saw "), expected_check("drop-probe", "DROP TABLE IF EXISTS t19_smoke"), expected_check("create-prefix", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body "), expected_check("not-null-suffix", " NOT NULL)"), expected_check("table-name", "t19_smoke"), expected_check("insert-stmt", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')"), expected_check("select-stmt", "SELECT id, body FROM t19_smoke WHERE id = 7"), expected_check("id-body-pair", "id, body"), expected_check("body-want", "remember"), expected_check("missing-word", "roundtrip row missing"), expected_check("drop-stmt", "DROP TABLE t19_smoke"), expected_check("id-want", "7"), expected_check("row-count-want", "1"), expected_check("drop-count", "2"), expected_check("table-mention-count", "5")]
+        unknown: "nope" => ok []
+    match case is "edge/pg-roundtrip-statements"
+        false => ok []
+        true => ok [expected_check("show-stmt", "SHOW server_version"), expected_check("version-field", "server_version"), expected_check("prefix-check", "startsWith"), expected_check("major-want", "17."), expected_check("version-guard", "requires PostgreSQL 17, saw "), expected_check("drop-probe", "DROP TABLE IF EXISTS t19_smoke"), expected_check("create-prefix", "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body "), expected_check("not-null-suffix", " NOT NULL)"), expected_check("table-name", "t19_smoke"), expected_check("insert-stmt", "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')"), expected_check("select-stmt", "SELECT id, body FROM t19_smoke WHERE id = 7"), expected_check("id-body-pair", "id, body"), expected_check("body-want", "remember"), expected_check("missing-word", "roundtrip row missing"), expected_check("drop-stmt", "DROP TABLE t19_smoke"), expected_check("id-want", "7"), expected_check("row-count-want", "1"), expected_check("drop-count", "2"), expected_check("table-mention-count", "5")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("edge/pg-roundtrip-statements", "default", "", "offline") => ok
+        seed_show_stmt: context("edge/pg-roundtrip-statements", "seed-show-stmt-drift", "", "offline") => failed{"show-stmt"}
+        seed_version_field: context("edge/pg-roundtrip-statements", "seed-version-field-drift", "", "offline") => failed{"version-field"}
+        seed_prefix_check: context("edge/pg-roundtrip-statements", "seed-prefix-check-drift", "", "offline") => failed{"prefix-check"}
+        seed_major_want: context("edge/pg-roundtrip-statements", "seed-major-want-drift", "", "offline") => failed{"major-want"}
+        seed_version_guard: context("edge/pg-roundtrip-statements", "seed-version-guard-drift", "", "offline") => failed{"version-guard"}
+        seed_drop_probe: context("edge/pg-roundtrip-statements", "seed-drop-probe-drift", "", "offline") => failed{"drop-probe"}
+        seed_create_prefix: context("edge/pg-roundtrip-statements", "seed-create-prefix-drift", "", "offline") => failed{"create-prefix"}
+        seed_not_null_suffix: context("edge/pg-roundtrip-statements", "seed-not-null-suffix-drift", "", "offline") => failed{"not-null-suffix"}
+        seed_table_name: context("edge/pg-roundtrip-statements", "seed-table-name-drift", "", "offline") => failed{"table-name"}
+        seed_insert_stmt: context("edge/pg-roundtrip-statements", "seed-insert-stmt-drift", "", "offline") => failed{"insert-stmt"}
+        seed_select_stmt: context("edge/pg-roundtrip-statements", "seed-select-stmt-drift", "", "offline") => failed{"select-stmt"}
+        seed_id_body_pair: context("edge/pg-roundtrip-statements", "seed-id-body-pair-drift", "", "offline") => failed{"id-body-pair"}
+        seed_body_want: context("edge/pg-roundtrip-statements", "seed-body-want-drift", "", "offline") => failed{"body-want"}
+        seed_missing_word: context("edge/pg-roundtrip-statements", "seed-missing-word-drift", "", "offline") => failed{"missing-word"}
+        seed_drop_stmt: context("edge/pg-roundtrip-statements", "seed-drop-stmt-drift", "", "offline") => failed{"drop-stmt"}
+        seed_id_want: context("edge/pg-roundtrip-statements", "seed-id-want-drift", "", "offline") => failed{"id-want"}
+        seed_row_count_want: context("edge/pg-roundtrip-statements", "seed-row-count-want-drift", "", "offline") => failed{"row-count-want"}
+        seed_drop_count: context("edge/pg-roundtrip-statements", "seed-drop-count-drift", "", "offline") => failed{"drop-count"}
+        seed_table_mention_count: context("edge/pg-roundtrip-statements", "seed-table-mention-count-drift", "", "offline") => failed{"table-mention-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.show_stmt, "SHOW server_version", c, "show-stmt")
+            failed
+            ok evidence show_stmt_evidence => match call require_text(got.version_field, "server_version", c, "version-field")
+                failed
+                ok evidence version_field_evidence => match call require_text(got.prefix_check, "startsWith", c, "prefix-check")
+                    failed
+                    ok evidence prefix_check_evidence => match call require_text(got.major_want, "17.", c, "major-want")
+                        failed
+                        ok evidence major_want_evidence => match call require_text(got.version_guard, "requires PostgreSQL 17, saw ", c, "version-guard")
+                            failed
+                            ok evidence version_guard_evidence => match call require_text(got.drop_probe, "DROP TABLE IF EXISTS t19_smoke", c, "drop-probe")
+                                failed
+                                ok evidence drop_probe_evidence => match call require_text(got.create_prefix, "CREATE TABLE t19_smoke (id BIGINT PRIMARY KEY, body ", c, "create-prefix")
+                                    failed
+                                    ok evidence create_prefix_evidence => match call require_text(got.not_null_suffix, " NOT NULL)", c, "not-null-suffix")
+                                        failed
+                                        ok evidence not_null_suffix_evidence => match call require_text(got.table_name, "t19_smoke", c, "table-name")
+                                            failed
+                                            ok evidence table_name_evidence => match call require_text(got.insert_stmt, "INSERT INTO t19_smoke (id, body) VALUES (7, 'remember')", c, "insert-stmt")
+                                                failed
+                                                ok evidence insert_stmt_evidence => match call require_text(got.select_stmt, "SELECT id, body FROM t19_smoke WHERE id = 7", c, "select-stmt")
+                                                    failed
+                                                    ok evidence select_stmt_evidence => match call require_text(got.id_body_pair, "id, body", c, "id-body-pair")
+                                                        failed
+                                                        ok evidence id_body_pair_evidence => match call require_text(got.body_want, "remember", c, "body-want")
+                                                            failed
+                                                            ok evidence body_want_evidence => match call require_text(got.missing_word, "roundtrip row missing", c, "missing-word")
+                                                                failed
+                                                                ok evidence missing_word_evidence => match call require_text(got.drop_stmt, "DROP TABLE t19_smoke", c, "drop-stmt")
+                                                                    failed
+                                                                    ok evidence drop_stmt_evidence => match call require_int(got.id_want, 7, c, "id-want")
+                                                                        failed
+                                                                        ok evidence id_want_evidence => match call require_int(got.row_count_want, 1, c, "row-count-want")
+                                                                            failed
+                                                                            ok evidence row_count_want_evidence => match call require_int(got.drop_count, 2, c, "drop-count")
+                                                                                failed
+                                                                                ok evidence drop_count_evidence => match call require_int(got.table_mention_count, 5, c, "table-mention-count")
+                                                                                    failed
+                                                                                    ok evidence table_mention_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        edge_scope: "m43-e004" => ok test_case("edge/pg-roundtrip-statements", ["edge", "m43"], [], 120000, [check_ref("show-stmt"), check_ref("version-field"), check_ref("prefix-check"), check_ref("major-want"), check_ref("version-guard"), check_ref("drop-probe"), check_ref("create-prefix"), check_ref("not-null-suffix"), check_ref("table-name"), check_ref("insert-stmt"), check_ref("select-stmt"), check_ref("id-body-pair"), check_ref("body-want"), check_ref("missing-word"), check_ref("drop-stmt"), check_ref("id-want"), check_ref("row-count-want"), check_ref("drop-count"), check_ref("table-mention-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m43-e004"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("edge/pg-roundtrip-statements", ["edge", "m43"], [], 120000, [check_ref("show-stmt"), check_ref("version-field"), check_ref("prefix-check"), check_ref("major-want"), check_ref("version-guard"), check_ref("drop-probe"), check_ref("create-prefix"), check_ref("not-null-suffix"), check_ref("table-name"), check_ref("insert-stmt"), check_ref("select-stmt"), check_ref("id-body-pair"), check_ref("body-want"), check_ref("missing-word"), check_ref("drop-stmt"), check_ref("id-want"), check_ref("row-count-want"), check_ref("drop-count"), check_ref("table-mention-count")], callable case_body)

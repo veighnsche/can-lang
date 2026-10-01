@@ -1,0 +1,337 @@
+package m43edge004base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+///M43 EDGE-004 "native PostgreSQL
+///roundtrip"
+///migrate row pact.
+///Source:
+///distribution/linux/smoke/pg-driver.ts
+///symbol "native PostgreSQL roundtrip"
+///(L1-16): pinned header plus import
+///plus helper plus env plus pool
+///creation.
+///Disposition: migrate (this row owns
+///Can scenarios as reviewable Can
+///facts; no caller file changes here;
+///pg-driver.ts stays until the
+///integrator rewires it after each
+///linked row plus gate has accepted
+///proof).
+///Protects (this file): direct native
+///create/insert/select/drop, PostgreSQL
+///version, row count/content and pool
+///closure, envelope leg: header plus
+///import plus helper plus env plus pool
+///creation.
+///ADAPTATION (noted, plus source
+///lines): name pins hold import plus
+///helper spellings; word pins hold
+///header plus guard bytes; count pins
+///hold ints tallied from L1 plus L2
+///plus L3 plus L4 plus L5 plus L14 plus
+///L15 plus L18 plus L21 plus L22 plus
+///L23 plus L24 plus L26.
+///driver-tag pins T19 (L1);
+///product-name pins PostgreSQL (L1 plus
+///L20); roundtrip-verbs pins
+///create/insert/select/drop (L1);
+///env-source pins DATABASE_URL (L2 plus
+///L14 plus L15); bun-env pins Bun.env
+///(L14); import-word pins import (L6);
+///sql-name pins { SQL } (L6); bun-name
+///pins bun (L6); helper-name pins
+///staticTemplate (L8 plus L18 plus L21
+///plus L22 plus L23 plus L24 plus L26);
+///template-word pins
+///TemplateStringsArray (L8 plus L10);
+///freeze-word pins Object.freeze (L10
+///twice); new-pool pins new SQL (L16);
+///guard-word pins required (L15);
+///disposable-word pins disposable (L4);
+///sidecar-word pins sidecar (L2);
+///image-pin pins postgres:17 (L4);
+///header-comment-count pins 5 (L1 plus
+///L2 plus L3 plus L4 plus L5);
+///env-name-count pins 3 (L2 plus L14
+///plus L15); sql-call-count pins 6 (L18
+///plus L21 plus L22 plus L23 plus L24
+///plus L26).
+///Facet map (pin order): driver-tag,
+///product-name, roundtrip-verbs,
+///env-source, bun-env, import-word,
+///sql-name, bun-name, helper-name,
+///template-word, freeze-word, new-pool,
+///guard-word, disposable-word,
+///sidecar-word, image-pin,
+///header-comment-count, env-name-count,
+///sql-call-count.
+///The roundtrip statements leg lives in
+///edge-004-roots-green.can; the report
+///plus closure leg lives in
+///edge-004-run-shape.can.
+///Variants: none (row lists zero
+///variants).
+///Environment: zero gates; bind at P23
+///plus QD1; no live run now.
+///Logical gates SUITE plus DB bind at
+///P23 plus QD1; no live run now.
+///Timeout 120000ms is the offline
+///default bound (binds at P23 like the
+///M31 no-run rows).
+///Delegated oracles: none.
+///Execution credit: NOT claimed (P23
+///plus QD1 accept gates unmet).
+///Intended live report: none yet
+///(migrate owns fresh scenarios; binds
+///at P23 plus QD1).
+///Migration stays open; pg-driver.ts
+///plus postgres.sh plus the Go caller
+///intact; no call retired.
+///Shared old files intact; retirement
+///is a later integrator choice; Z03
+///owns activation; Z02 owns retirement.
+///Case edge/pg-driver-envelope checks:
+///driver-tag, product-name,
+///roundtrip-verbs, env-source, bun-env,
+///import-word, sql-name, bun-name,
+///helper-name, template-word,
+///freeze-word, new-pool, guard-word,
+///disposable-word, sidecar-word,
+///image-pin, header-comment-count,
+///env-name-count, sql-call-count.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str driver_tag
+    str product_name
+    str roundtrip_verbs
+    str env_source
+    str bun_env
+    str import_word
+    str sql_name
+    str bun_name
+    str helper_name
+    str template_word
+    str freeze_word
+    str new_pool
+    str guard_word
+    str disposable_word
+    str sidecar_word
+    str image_pin
+    int header_comment_count
+    int env_name_count
+    int sql_call_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("edge/pg-driver-envelope", "default", "", "offline"), "driver-tag" => ok "case edge/pg-driver-envelope variant default root driver-tag run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("edge/pg-driver-envelope", "default", "", "offline"), "driver-tag" => ok evidence("driver-tag", "true", "true", true, "case edge/pg-driver-envelope variant default root driver-tag run offline")
+        different: false, true, context("edge/pg-driver-envelope", "default", "", "offline"), "driver-tag" => failed{"driver-tag"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 5, 5, context("edge/pg-driver-envelope", "default", "", "offline"), "header-comment-count" => ok evidence("header-comment-count", "5", "5", true, "case edge/pg-driver-envelope variant default root header-comment-count run offline")
+        different: 4, 5, context("edge/pg-driver-envelope", "default", "", "offline"), "header-comment-count" => failed{"header-comment-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "T19", "T19", context("edge/pg-driver-envelope", "default", "", "offline"), "driver-tag" => ok evidence("driver-tag", "T19", "T19", true, "case edge/pg-driver-envelope variant default root driver-tag run offline")
+        different: "T19_2", "T19", context("edge/pg-driver-envelope", "default", "", "offline"), "driver-tag" => failed{"driver-tag"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        seed_driver_tag: "seed-driver-tag-drift" => ok observation("T19_2", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        seed_product_name: "seed-product-name-drift" => ok observation("T19", "PostgreSQL_2", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        seed_roundtrip_verbs: "seed-roundtrip-verbs-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop_2", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        seed_env_source: "seed-env-source-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL_2", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        seed_bun_env: "seed-bun-env-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env_2", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        seed_import_word: "seed-import-word-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import_2", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        seed_sql_name: "seed-sql-name-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }_2", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        seed_bun_name: "seed-bun-name-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun_2", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        seed_helper_name: "seed-helper-name-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate_2", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        seed_template_word: "seed-template-word-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray_2", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        seed_freeze_word: "seed-freeze-word-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze_2", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        seed_new_pool: "seed-new-pool-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL_2", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        seed_guard_word: "seed-guard-word-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required_2", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        seed_disposable_word: "seed-disposable-word-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable_2", "sidecar", "postgres:17", 5, 3, 6)
+        seed_sidecar_word: "seed-sidecar-word-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar_2", "postgres:17", 5, 3, 6)
+        seed_image_pin: "seed-image-pin-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17_2", 5, 3, 6)
+        seed_header_comment_count: "seed-header-comment-count-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 4, 3, 6)
+        seed_env_name_count: "seed-env-name-count-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 2, 6)
+        seed_sql_call_count: "seed-sql-call-count-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 5)
+    match variant_id
+        "seed-driver-tag-drift" => ok observation("T19_2", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        "seed-product-name-drift" => ok observation("T19", "PostgreSQL_2", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        "seed-roundtrip-verbs-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop_2", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        "seed-env-source-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL_2", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        "seed-bun-env-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env_2", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        "seed-import-word-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import_2", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        "seed-sql-name-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }_2", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        "seed-bun-name-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun_2", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        "seed-helper-name-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate_2", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        "seed-template-word-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray_2", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        "seed-freeze-word-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze_2", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        "seed-new-pool-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL_2", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        "seed-guard-word-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required_2", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+        "seed-disposable-word-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable_2", "sidecar", "postgres:17", 5, 3, 6)
+        "seed-sidecar-word-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar_2", "postgres:17", 5, 3, 6)
+        "seed-image-pin-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17_2", 5, 3, 6)
+        "seed-header-comment-count-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 4, 3, 6)
+        "seed-env-name-count-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 2, 6)
+        "seed-sql-call-count-drift" => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 5)
+        _ => ok observation("T19", "PostgreSQL", "create/insert/select/drop", "DATABASE_URL", "Bun.env", "import", "{ SQL }", "bun", "staticTemplate", "TemplateStringsArray", "Object.freeze", "new SQL", "required", "disposable", "sidecar", "postgres:17", 5, 3, 6)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        edge_scope: "m43-e004" => ok [check("driver-tag", "driver tag keeps its bytes"), check("product-name", "product name keeps its spelling"), check("roundtrip-verbs", "roundtrip verbs keep their bytes"), check("env-source", "env source keeps its spelling"), check("bun-env", "bun env keeps its spelling"), check("import-word", "import word keeps its bytes"), check("sql-name", "sql name keeps its spelling"), check("bun-name", "bun name keeps its spelling"), check("helper-name", "helper name keeps its spelling"), check("template-word", "template word keeps its spelling"), check("freeze-word", "freeze word keeps its spelling"), check("new-pool", "new pool keeps its bytes"), check("guard-word", "guard word keeps its bytes"), check("disposable-word", "disposable word keeps its bytes"), check("sidecar-word", "sidecar word keeps its bytes"), check("image-pin", "image pin keeps its bytes"), check("header-comment-count", "five header comments exist"), check("env-name-count", "three env names exist"), check("sql-call-count", "six sql calls exist")]
+        other: "nope" => ok []
+    match scope is "m43-e004"
+        false => ok []
+        true => ok [check("driver-tag", "driver tag keeps its bytes"), check("product-name", "product name keeps its spelling"), check("roundtrip-verbs", "roundtrip verbs keep their bytes"), check("env-source", "env source keeps its spelling"), check("bun-env", "bun env keeps its spelling"), check("import-word", "import word keeps its bytes"), check("sql-name", "sql name keeps its spelling"), check("bun-name", "bun name keeps its spelling"), check("helper-name", "helper name keeps its spelling"), check("template-word", "template word keeps its spelling"), check("freeze-word", "freeze word keeps its spelling"), check("new-pool", "new pool keeps its bytes"), check("guard-word", "guard word keeps its bytes"), check("disposable-word", "disposable word keeps its bytes"), check("sidecar-word", "sidecar word keeps its bytes"), check("image-pin", "image pin keeps its bytes"), check("header-comment-count", "five header comments exist"), check("env-name-count", "three env names exist"), check("sql-call-count", "six sql calls exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "edge/pg-driver-envelope" => ok [expected_check("driver-tag", "T19"), expected_check("product-name", "PostgreSQL"), expected_check("roundtrip-verbs", "create/insert/select/drop"), expected_check("env-source", "DATABASE_URL"), expected_check("bun-env", "Bun.env"), expected_check("import-word", "import"), expected_check("sql-name", "{ SQL }"), expected_check("bun-name", "bun"), expected_check("helper-name", "staticTemplate"), expected_check("template-word", "TemplateStringsArray"), expected_check("freeze-word", "Object.freeze"), expected_check("new-pool", "new SQL"), expected_check("guard-word", "required"), expected_check("disposable-word", "disposable"), expected_check("sidecar-word", "sidecar"), expected_check("image-pin", "postgres:17"), expected_check("header-comment-count", "5"), expected_check("env-name-count", "3"), expected_check("sql-call-count", "6")]
+        unknown: "nope" => ok []
+    match case is "edge/pg-driver-envelope"
+        false => ok []
+        true => ok [expected_check("driver-tag", "T19"), expected_check("product-name", "PostgreSQL"), expected_check("roundtrip-verbs", "create/insert/select/drop"), expected_check("env-source", "DATABASE_URL"), expected_check("bun-env", "Bun.env"), expected_check("import-word", "import"), expected_check("sql-name", "{ SQL }"), expected_check("bun-name", "bun"), expected_check("helper-name", "staticTemplate"), expected_check("template-word", "TemplateStringsArray"), expected_check("freeze-word", "Object.freeze"), expected_check("new-pool", "new SQL"), expected_check("guard-word", "required"), expected_check("disposable-word", "disposable"), expected_check("sidecar-word", "sidecar"), expected_check("image-pin", "postgres:17"), expected_check("header-comment-count", "5"), expected_check("env-name-count", "3"), expected_check("sql-call-count", "6")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("edge/pg-driver-envelope", "default", "", "offline") => ok
+        seed_driver_tag: context("edge/pg-driver-envelope", "seed-driver-tag-drift", "", "offline") => failed{"driver-tag"}
+        seed_product_name: context("edge/pg-driver-envelope", "seed-product-name-drift", "", "offline") => failed{"product-name"}
+        seed_roundtrip_verbs: context("edge/pg-driver-envelope", "seed-roundtrip-verbs-drift", "", "offline") => failed{"roundtrip-verbs"}
+        seed_env_source: context("edge/pg-driver-envelope", "seed-env-source-drift", "", "offline") => failed{"env-source"}
+        seed_bun_env: context("edge/pg-driver-envelope", "seed-bun-env-drift", "", "offline") => failed{"bun-env"}
+        seed_import_word: context("edge/pg-driver-envelope", "seed-import-word-drift", "", "offline") => failed{"import-word"}
+        seed_sql_name: context("edge/pg-driver-envelope", "seed-sql-name-drift", "", "offline") => failed{"sql-name"}
+        seed_bun_name: context("edge/pg-driver-envelope", "seed-bun-name-drift", "", "offline") => failed{"bun-name"}
+        seed_helper_name: context("edge/pg-driver-envelope", "seed-helper-name-drift", "", "offline") => failed{"helper-name"}
+        seed_template_word: context("edge/pg-driver-envelope", "seed-template-word-drift", "", "offline") => failed{"template-word"}
+        seed_freeze_word: context("edge/pg-driver-envelope", "seed-freeze-word-drift", "", "offline") => failed{"freeze-word"}
+        seed_new_pool: context("edge/pg-driver-envelope", "seed-new-pool-drift", "", "offline") => failed{"new-pool"}
+        seed_guard_word: context("edge/pg-driver-envelope", "seed-guard-word-drift", "", "offline") => failed{"guard-word"}
+        seed_disposable_word: context("edge/pg-driver-envelope", "seed-disposable-word-drift", "", "offline") => failed{"disposable-word"}
+        seed_sidecar_word: context("edge/pg-driver-envelope", "seed-sidecar-word-drift", "", "offline") => failed{"sidecar-word"}
+        seed_image_pin: context("edge/pg-driver-envelope", "seed-image-pin-drift", "", "offline") => failed{"image-pin"}
+        seed_header_comment_count: context("edge/pg-driver-envelope", "seed-header-comment-count-drift", "", "offline") => failed{"header-comment-count"}
+        seed_env_name_count: context("edge/pg-driver-envelope", "seed-env-name-count-drift", "", "offline") => failed{"env-name-count"}
+        seed_sql_call_count: context("edge/pg-driver-envelope", "seed-sql-call-count-drift", "", "offline") => failed{"sql-call-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.driver_tag, "T19", c, "driver-tag")
+            failed
+            ok evidence driver_tag_evidence => match call require_text(got.product_name, "PostgreSQL", c, "product-name")
+                failed
+                ok evidence product_name_evidence => match call require_text(got.roundtrip_verbs, "create/insert/select/drop", c, "roundtrip-verbs")
+                    failed
+                    ok evidence roundtrip_verbs_evidence => match call require_text(got.env_source, "DATABASE_URL", c, "env-source")
+                        failed
+                        ok evidence env_source_evidence => match call require_text(got.bun_env, "Bun.env", c, "bun-env")
+                            failed
+                            ok evidence bun_env_evidence => match call require_text(got.import_word, "import", c, "import-word")
+                                failed
+                                ok evidence import_word_evidence => match call require_text(got.sql_name, "{ SQL }", c, "sql-name")
+                                    failed
+                                    ok evidence sql_name_evidence => match call require_text(got.bun_name, "bun", c, "bun-name")
+                                        failed
+                                        ok evidence bun_name_evidence => match call require_text(got.helper_name, "staticTemplate", c, "helper-name")
+                                            failed
+                                            ok evidence helper_name_evidence => match call require_text(got.template_word, "TemplateStringsArray", c, "template-word")
+                                                failed
+                                                ok evidence template_word_evidence => match call require_text(got.freeze_word, "Object.freeze", c, "freeze-word")
+                                                    failed
+                                                    ok evidence freeze_word_evidence => match call require_text(got.new_pool, "new SQL", c, "new-pool")
+                                                        failed
+                                                        ok evidence new_pool_evidence => match call require_text(got.guard_word, "required", c, "guard-word")
+                                                            failed
+                                                            ok evidence guard_word_evidence => match call require_text(got.disposable_word, "disposable", c, "disposable-word")
+                                                                failed
+                                                                ok evidence disposable_word_evidence => match call require_text(got.sidecar_word, "sidecar", c, "sidecar-word")
+                                                                    failed
+                                                                    ok evidence sidecar_word_evidence => match call require_text(got.image_pin, "postgres:17", c, "image-pin")
+                                                                        failed
+                                                                        ok evidence image_pin_evidence => match call require_int(got.header_comment_count, 5, c, "header-comment-count")
+                                                                            failed
+                                                                            ok evidence header_comment_count_evidence => match call require_int(got.env_name_count, 3, c, "env-name-count")
+                                                                                failed
+                                                                                ok evidence env_name_count_evidence => match call require_int(got.sql_call_count, 6, c, "sql-call-count")
+                                                                                    failed
+                                                                                    ok evidence sql_call_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        edge_scope: "m43-e004" => ok test_case("edge/pg-driver-envelope", ["edge", "m43"], [], 120000, [check_ref("driver-tag"), check_ref("product-name"), check_ref("roundtrip-verbs"), check_ref("env-source"), check_ref("bun-env"), check_ref("import-word"), check_ref("sql-name"), check_ref("bun-name"), check_ref("helper-name"), check_ref("template-word"), check_ref("freeze-word"), check_ref("new-pool"), check_ref("guard-word"), check_ref("disposable-word"), check_ref("sidecar-word"), check_ref("image-pin"), check_ref("header-comment-count"), check_ref("env-name-count"), check_ref("sql-call-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m43-e004"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("edge/pg-driver-envelope", ["edge", "m43"], [], 120000, [check_ref("driver-tag"), check_ref("product-name"), check_ref("roundtrip-verbs"), check_ref("env-source"), check_ref("bun-env"), check_ref("import-word"), check_ref("sql-name"), check_ref("bun-name"), check_ref("helper-name"), check_ref("template-word"), check_ref("freeze-word"), check_ref("new-pool"), check_ref("guard-word"), check_ref("disposable-word"), check_ref("sidecar-word"), check_ref("image-pin"), check_ref("header-comment-count"), check_ref("env-name-count"), check_ref("sql-call-count")], callable case_body)
