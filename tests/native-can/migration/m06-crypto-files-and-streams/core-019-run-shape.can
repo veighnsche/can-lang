@@ -1,0 +1,207 @@
+package m06core019run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M06 CORE-019 "bundled files: run shape, live-data process split".
+/// Source: tests/integration/files_test.go symbol
+/// TestCurrentBundledFiles (L64-199).
+/// Related source: the live run helper (L104-122: sandboxed canlc with
+/// PATH=/nonexistent) driving the staged live program (template L18-62)
+/// with the work directory argument (L145).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): production process shape of the live file run.
+/// Unlike rows with a silent entry, files main emits live-data by design
+/// (Go L146; template L55-61 stdout_write of 9 bytes), so the silence
+/// pins land where silence holds: exit 0 with empty stderr. The staged
+/// layout, sandbox profile and offline environment complete the shape.
+/// The roots-green pin lives in core-019-roots-green.can; file semantics,
+/// the 15-case suite, live-tree pins, the three rejections and the native
+/// lowerings live in core-019-files-semantics.can.
+/// Variants: live file tree run only (Go L123-151); no fault path exists
+/// in this row.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/WORK/PROC/N1
+/// and C/R/N/S/A identities bind at P23; no live run now. Descriptor
+/// timeout 180000ms mirrors the Go 3-minute ctx (L70).
+/// Delegated oracles: DELEGATE-012 (runtime/test/files.test.ts,
+/// read-only record; 15 declarations; not executed here).
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case files/bundled-run checks: run-exit, run-stdout,
+/// run-stderr-empty, sandbox-profile, offline-ok, stage-errors,
+/// offline-env.
+/// Facet map (files_test.go legs): run-exit pins exit 0 (L145-147:
+/// status 0 or the test fatals); run-stdout pins live-data (L146: out
+/// is live-data; template L55-61: stdout_write of the 9-byte message);
+/// run-stderr-empty pins empty stderr (L146: diag must be "");
+/// sandbox-profile pins the invocation shape (L77/L106: "(version 1)(allow
+/// default)(deny network*)" verbatim); offline-ok pins the offline
+/// behavior (L134-137/L145-147: the sandboxed deny-network assert and run
+/// with PATH=/nonexistent succeed); stage-errors pins the registry file
+/// (L99-100: can.errors.json with empty active/retired); offline-env pins
+/// the cleared environment (L79/L110: PATH=/nonexistent; HOME set).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int run_exit
+    str run_stdout
+    bool run_stderr_empty
+    str sandbox_profile
+    bool offline_ok
+    str stage_errors
+    str offline_env
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("files/bundled-run", "default", "", "offline"), "run-exit" => ok "case files/bundled-run variant default root run-exit run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("files/bundled-run", "default", "", "offline"), "run-stderr-empty" => ok evidence("run-stderr-empty", "true", "true", true, "case files/bundled-run variant default root run-stderr-empty run offline")
+        different: false, true, context("files/bundled-run", "default", "", "offline"), "run-stderr-empty" => failed{"run-stderr-empty"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("files/bundled-run", "default", "", "offline"), "run-exit" => ok evidence("run-exit", "0", "0", true, "case files/bundled-run variant default root run-exit run offline")
+        different: 1, 0, context("files/bundled-run", "default", "", "offline"), "run-exit" => failed{"run-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "live-data", "live-data", context("files/bundled-run", "default", "", "offline"), "run-stdout" => ok evidence("run-stdout", "live-data", "live-data", true, "case files/bundled-run variant default root run-stdout run offline")
+        different: "stale-data", "live-data", context("files/bundled-run", "default", "", "offline"), "run-stdout" => failed{"run-stdout"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(0, "live-data", true, "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        seed_run_red: "seed-run-red" => ok observation(1, "live-data", true, "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        seed_stdout_drift: "seed-stdout-drift" => ok observation(0, "stale-data", true, "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        seed_stderr_noisy: "seed-stderr-noisy" => ok observation(0, "live-data", false, "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        seed_profile_drift: "seed-profile-drift" => ok observation(0, "live-data", true, "(version 1)(allow default)", true, "can.errors.json", "PATH=/nonexistent")
+        seed_offline_fail: "seed-offline-fail" => ok observation(0, "live-data", true, "(version 1)(allow default)(deny network*)", false, "can.errors.json", "PATH=/nonexistent")
+        seed_errors_drift: "seed-errors-drift" => ok observation(0, "live-data", true, "(version 1)(allow default)(deny network*)", true, "can.project.json", "PATH=/nonexistent")
+        seed_env_drift: "seed-env-drift" => ok observation(0, "live-data", true, "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/usr/bin")
+    match variant_id
+        "seed-run-red" => ok observation(1, "live-data", true, "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        "seed-stdout-drift" => ok observation(0, "stale-data", true, "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        "seed-stderr-noisy" => ok observation(0, "live-data", false, "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        "seed-profile-drift" => ok observation(0, "live-data", true, "(version 1)(allow default)", true, "can.errors.json", "PATH=/nonexistent")
+        "seed-offline-fail" => ok observation(0, "live-data", true, "(version 1)(allow default)(deny network*)", false, "can.errors.json", "PATH=/nonexistent")
+        "seed-errors-drift" => ok observation(0, "live-data", true, "(version 1)(allow default)(deny network*)", true, "can.project.json", "PATH=/nonexistent")
+        "seed-env-drift" => ok observation(0, "live-data", true, "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/usr/bin")
+        _ => ok observation(0, "live-data", true, "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m06_019: "m06-019" => ok [check("run-exit", "live run exits 0"), check("run-stdout", "live run prints live-data by design"), check("run-stderr-empty", "live run keeps stderr empty"), check("sandbox-profile", "invocations pin the deny-network sandbox profile"), check("offline-ok", "offline sandboxed assert/run succeeds"), check("stage-errors", "staged project pins the error registry filename"), check("offline-env", "sandboxed invocations clear PATH")]
+        other: "nope" => ok []
+    match scope is "m06-019"
+        false => ok []
+        true => ok [check("run-exit", "live run exits 0"), check("run-stdout", "live run prints live-data by design"), check("run-stderr-empty", "live run keeps stderr empty"), check("sandbox-profile", "invocations pin the deny-network sandbox profile"), check("offline-ok", "offline sandboxed assert/run succeeds"), check("stage-errors", "staged project pins the error registry filename"), check("offline-env", "sandboxed invocations clear PATH")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "files/bundled-run" => ok [expected_check("run-exit", "0"), expected_check("run-stdout", "live-data"), expected_check("run-stderr-empty", "true"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("offline-ok", "true"), expected_check("stage-errors", "can.errors.json"), expected_check("offline-env", "PATH=/nonexistent")]
+        unknown: "nope" => ok []
+    match case is "files/bundled-run"
+        false => ok []
+        true => ok [expected_check("run-exit", "0"), expected_check("run-stdout", "live-data"), expected_check("run-stderr-empty", "true"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("offline-ok", "true"), expected_check("stage-errors", "can.errors.json"), expected_check("offline-env", "PATH=/nonexistent")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("files/bundled-run", "default", "", "offline") => ok
+        seed_run_red: context("files/bundled-run", "seed-run-red", "", "offline") => failed{"run-exit"}
+        seed_stdout_drift: context("files/bundled-run", "seed-stdout-drift", "", "offline") => failed{"run-stdout"}
+        seed_stderr_noisy: context("files/bundled-run", "seed-stderr-noisy", "", "offline") => failed{"run-stderr-empty"}
+        seed_profile_drift: context("files/bundled-run", "seed-profile-drift", "", "offline") => failed{"sandbox-profile"}
+        seed_offline_fail: context("files/bundled-run", "seed-offline-fail", "", "offline") => failed{"offline-ok"}
+        seed_errors_drift: context("files/bundled-run", "seed-errors-drift", "", "offline") => failed{"stage-errors"}
+        seed_env_drift: context("files/bundled-run", "seed-env-drift", "", "offline") => failed{"offline-env"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.run_exit, 0, c, "run-exit")
+            failed
+            ok evidence run_stdout_evidence => match call require_text(got.run_stdout, "live-data", c, "run-stdout")
+                failed
+                ok evidence run_stderr_empty_evidence => match call require_bool(got.run_stderr_empty, true, c, "run-stderr-empty")
+                    failed
+                    ok evidence sandbox_profile_evidence => match call require_text(got.sandbox_profile, "(version 1)(allow default)(deny network*)", c, "sandbox-profile")
+                        failed
+                        ok evidence offline_ok_evidence => match call require_bool(got.offline_ok, true, c, "offline-ok")
+                            failed
+                            ok evidence stage_errors_evidence => match call require_text(got.stage_errors, "can.errors.json", c, "stage-errors")
+                                failed
+                                ok evidence offline_env_evidence => match call require_text(got.offline_env, "PATH=/nonexistent", c, "offline-env")
+                                    failed
+                                    ok evidence offline_env_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m06_019: "m06-019" => ok test_case("files/bundled-run", ["files", "m06"], ["can-bun-archive", "macos-sandbox-exec"], 180000, [check_ref("run-exit"), check_ref("run-stdout"), check_ref("run-stderr-empty"), check_ref("sandbox-profile"), check_ref("offline-ok"), check_ref("stage-errors"), check_ref("offline-env")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m06-019"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("files/bundled-run", ["files", "m06"], ["can-bun-archive", "macos-sandbox-exec"], 180000, [check_ref("run-exit"), check_ref("run-stdout"), check_ref("run-stderr-empty"), check_ref("sandbox-profile"), check_ref("offline-ok"), check_ref("stage-errors"), check_ref("offline-env")], callable case_body)
