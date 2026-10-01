@@ -1,0 +1,29 @@
+package test_descriptor_delivery
+    provides []
+    uses [descriptor, option, test]
+fn int descriptor_roundtrip
+    emits {test::invalid_grant, test::stale_handle, descriptor::descriptor_fault}
+    given
+        str grant
+    asserts
+        probe: "ng1-0123456789abcdef0123456789abcdef" => ok 0
+    match chain
+        call test::grant_admit(grant) as test::owner owner
+        call descriptor::launch_child(owner, "op-1", descriptor::spec("/bin/echo", ["hi"], [descriptor::env_entry("LANG", "C")], false, false, "/tmp")) as descriptor::launch launch
+        call descriptor::collect_status(owner, launch, 1000, 2000)
+        call descriptor::read_facts(owner, launch) as descriptor::facts facts
+        call descriptor::wait_child(owner, launch, 1000) as descriptor::exit gone
+        call descriptor::expected_ack(owner, launch) as int[] ack
+        call descriptor::kill_child(owner, launch)
+        call descriptor::release_launch(owner, launch) as descriptor::report done
+        test::invalid_grant
+        test::stale_handle
+        descriptor::descriptor_fault
+        ok => ok 0
+fn void main
+    emits {}
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok
