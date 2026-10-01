@@ -1,0 +1,462 @@
+package worker
+    provides [launch, source_bound, output_bound, channels, native_facts, worker_done, worker_crashed, worker_timed_out, worker_rejected, worker_outcome, launch_ok, launch_rejected, launch_outcome, identity_ok, identity_rejected, identity_outcome, launch_key, launch_context, validate_launch, source_bound_for, output_bound_for, describe_channels, source_fits, output_fits, check_report_identity, outcome_of, verdict_of]
+    uses [reducer, spec, text]
+
+/// Fresh-worker policy for one (case, variant, attempt) launch (P19). Ordinary
+/// Can owns launch validation, identity rendering and binding, channel
+/// bounds, native-fact mapping and per-worker verdicts; the Go handoff owns
+/// only the mechanics (spawn one Bun worker per launch, enforce the
+/// deadline, move bounded bytes). A crash, timeout or malformed turn is
+/// never a pass and never behavior evidence: crashes and timeouts reduce to
+/// explicit incomplete verdicts, and only a bound report from a clean exit
+/// reaches the shared reducer. Static checks here are provisional until
+/// P26/P23, like the P15 skeleton.
+
+/// One fresh-worker launch: the (case, variant, attempt) identity plus the
+/// run, the staged generation the worker executes against, and the worker
+/// deadline in milliseconds. The Go handoff spawns one Bun worker per
+/// launch and echoes this identity back on the output channel.
+record launch
+    str case_id
+    str variant_id
+    int attempt
+    str run_id
+    str generation
+    int timeout_ms
+/// Bound on the source (controller -> worker) channel: the maximum inbound
+/// byte count the worker reads. Reads past this bound fail closed.
+record source_bound
+    int max_bytes
+/// Bound on the output (worker -> controller) channel: the maximum outbound
+/// byte count and check-row count the controller accepts. Separate from the
+/// source bound; the two directions never share bound state.
+record output_bound
+    int max_bytes
+    int max_rows
+/// The paired channel bounds for one launch: source and output bounds side
+/// by side for the handoff, never a shared mutable channel.
+record channels
+    source_bound source
+    output_bound output
+/// Native-reported worker facts from the Go handoff: whether the worker
+/// process exited, its exit code and signal, whether the deadline fired,
+/// whether a report arrived on the output channel, any handoff-level error
+/// ("" when none, e.g. "spawn-failed"), and the deadline in milliseconds.
+record native_facts
+    bool exited
+    int exit_code
+    str signal
+    bool timed_out
+    bool report_present
+    str handoff_error
+    int deadline_ms
+/// A clean worker completion: the echoed launch identity plus the report
+/// the worker produced. The report still needs identity binding and
+/// reduction before it can join any aggregate.
+record worker_done
+    launch identity
+    reducer::unit_report report
+/// A crashed worker: the launch plus the machine cause ("exit:<code>",
+/// "signal:<name>", a handoff error, or "vanished"). Never carries a
+/// report, even when bytes arrived before the crash.
+record worker_crashed
+    launch identity
+    str cause
+/// A timed-out worker: the launch plus the fired deadline. The report, if
+/// any arrived, is discarded: a late report is not evidence.
+record worker_timed_out
+    launch identity
+    int deadline_ms
+/// A malformed worker turn: the launch plus the identifying diagnostic. A
+/// clean exit without a report lands here, never in worker_done.
+record worker_rejected
+    launch identity
+    spec::diagnostic problem
+/// Worker outcome: exactly one of done, crashed, timed out or rejected.
+variant worker_outcome
+    worker_done
+    worker_crashed
+    worker_timed_out
+    worker_rejected
+/// An accepted launch: the validated worker identity.
+record launch_ok
+    launch identity
+/// A rejected launch: one diagnostic per detected problem.
+record launch_rejected
+    spec::diagnostic[] problems
+/// Launch validation outcome.
+variant launch_outcome
+    launch_ok
+    launch_rejected
+/// A bound report: the launch the report is bound to.
+record identity_ok
+    launch bound
+/// A drifted report: the identifying diagnostic naming the first drifted
+/// field ("case:<exp>:<got>", "variant:...", "run:..." or "attempt:...").
+record identity_rejected
+    spec::diagnostic problem
+/// Report identity-binding outcome.
+variant identity_outcome
+    identity_ok
+    identity_rejected
+/// Canonical launch identity rendering: "case <c> variant <v> attempt <n>
+/// run <r> generation <g>". The controller and the worker share this one
+/// renderer; the Go handoff echoes it byte-for-byte, and the join compares
+/// whole strings, so any drifted field moves the key.
+fn str launch_key
+    emits {}
+    given
+        launch identity
+    asserts
+        sample: launch("process/nonzero-result", "default", 0, "run-1", "gen-7", 15000) => ok "case process/nonzero-result variant default attempt 0 run run-1 generation gen-7"
+        retry: launch("a", "v", 2, "r", "g1", 1000) => ok "case a variant v attempt 2 run r generation g1"
+    ok call text::join(["case", identity.case_id, "variant", identity.variant_id, "attempt", call text::from_int(identity.attempt), "run", identity.run_id, "generation", identity.generation], " ")
+/// Worker assertion context for a launch: case/variant/run from the
+/// identity, no workspace, so diagnostics carry exact selectors.
+fn spec::context launch_context
+    emits {}
+    given
+        launch identity
+    asserts
+        sample: launch("process/nonzero-result", "default", 0, "run-1", "gen-7", 15000) => ok spec::context("process/nonzero-result", "default", "", "run-1")
+    ok call spec::context_for(identity.case_id, identity.variant_id, "", identity.run_id)
+/// The launch names a different case than the descriptor it claims: the
+/// worker would execute the wrong case, so the launch cannot validate.
+fn spec::diagnostic[] case_problems
+    emits {}
+    given
+        launch identity
+        spec::test_case descriptor
+        spec::context c
+    asserts
+        same: launch("a", "v", 0, "r", "g", 1000), spec::test_case("a", [], [], 1000, [], callable spec::nonzero_result), spec::context("a", "v", "", "r") => ok []
+        drift: launch("z", "v", 0, "r", "g", 1000), spec::test_case("a", [], [], 1000, [], callable spec::nonzero_result), spec::context("z", "v", "", "r") => ok [spec::diagnostic("worker::validate_launch", "case z variant v root launch run r", "case-mismatch", "z")]
+    match identity.case_id is descriptor.id
+        true => ok []
+        false => ok [spec::diagnostic("worker::validate_launch", call spec::reproduction_selector(c, "launch"), "case-mismatch", identity.case_id)]
+/// An empty variant cannot bind a matrix leg: the launch is unroutable.
+fn spec::diagnostic[] variant_problems
+    emits {}
+    given
+        launch identity
+        spec::context c
+    asserts
+        present: launch("a", "v", 0, "r", "g", 1000), spec::context("a", "v", "", "r") => ok []
+        missing: launch("a", "", 0, "r", "g", 1000), spec::context("a", "", "", "r") => ok [spec::diagnostic("worker::validate_launch", "case a variant  root launch run r", "missing-variant", "variant")]
+    match identity.variant_id is ""
+        false => ok []
+        true => ok [spec::diagnostic("worker::validate_launch", call spec::reproduction_selector(c, "launch"), "missing-variant", "variant")]
+/// An empty run cannot scope evidence: the report would join no run.
+fn spec::diagnostic[] run_problems
+    emits {}
+    given
+        launch identity
+        spec::context c
+    asserts
+        present: launch("a", "v", 0, "r", "g", 1000), spec::context("a", "v", "", "r") => ok []
+        missing: launch("a", "v", 0, "", "g", 1000), spec::context("a", "v", "", "") => ok [spec::diagnostic("worker::validate_launch", "case a variant v root launch run ", "missing-run", "run")]
+    match identity.run_id is ""
+        false => ok []
+        true => ok [spec::diagnostic("worker::validate_launch", call spec::reproduction_selector(c, "launch"), "missing-run", "run")]
+/// An empty generation names no staged lease: the worker would execute
+/// against an unstaged tree, so the launch cannot validate.
+fn spec::diagnostic[] generation_problems
+    emits {}
+    given
+        launch identity
+        spec::context c
+    asserts
+        present: launch("a", "v", 0, "r", "g", 1000), spec::context("a", "v", "", "r") => ok []
+        missing: launch("a", "v", 0, "r", "", 1000), spec::context("a", "v", "", "r") => ok [spec::diagnostic("worker::validate_launch", "case a variant v root launch run r", "missing-generation", "generation")]
+    match identity.generation is ""
+        false => ok []
+        true => ok [spec::diagnostic("worker::validate_launch", call spec::reproduction_selector(c, "launch"), "missing-generation", "generation")]
+/// A negative attempt is unplannable: attempts run 0, 1, 2 without gaps.
+fn spec::diagnostic[] attempt_problems
+    emits {}
+    given
+        launch identity
+        spec::context c
+    asserts
+        first: launch("a", "v", 0, "r", "g", 1000), spec::context("a", "v", "", "r") => ok []
+        retry: launch("a", "v", 3, "r", "g", 1000), spec::context("a", "v", "", "r") => ok []
+        negative: launch("a", "v", -1, "r", "g", 1000), spec::context("a", "v", "", "r") => ok [spec::diagnostic("worker::validate_launch", "case a variant v root launch run r", "bad-attempt", "-1")]
+    match identity.attempt >= 0
+        true => ok []
+        false => ok [spec::diagnostic("worker::validate_launch", call spec::reproduction_selector(c, "launch"), "bad-attempt", call text::from_int(identity.attempt))]
+/// The worker deadline must fit inside the descriptor deadline: at least
+/// 1ms and at most the case timeout. An overlong worker would outlive the
+/// case budget; a nonpositive deadline can never fire.
+fn spec::diagnostic[] timeout_problems
+    emits {}
+    given
+        launch identity
+        spec::test_case descriptor
+        spec::context c
+    asserts
+        exact: launch("a", "v", 0, "r", "g", 1000), spec::test_case("a", [], [], 1000, [], callable spec::nonzero_result), spec::context("a", "v", "", "r") => ok []
+        shorter: launch("a", "v", 0, "r", "g", 500), spec::test_case("a", [], [], 1000, [], callable spec::nonzero_result), spec::context("a", "v", "", "r") => ok []
+        over: launch("a", "v", 0, "r", "g", 1001), spec::test_case("a", [], [], 1000, [], callable spec::nonzero_result), spec::context("a", "v", "", "r") => ok [spec::diagnostic("worker::validate_launch", "case a variant v root launch run r", "bad-timeout", "1001:1000")]
+        zero: launch("a", "v", 0, "r", "g", 0), spec::test_case("a", [], [], 1000, [], callable spec::nonzero_result), spec::context("a", "v", "", "r") => ok [spec::diagnostic("worker::validate_launch", "case a variant v root launch run r", "bad-timeout", "0:1000")]
+    match identity.timeout_ms >= 1
+        false => ok [spec::diagnostic("worker::validate_launch", call spec::reproduction_selector(c, "launch"), "bad-timeout", call text::join([call text::from_int(identity.timeout_ms), call text::from_int(descriptor.timeout_ms)], ":"))]
+        true => match identity.timeout_ms <= descriptor.timeout_ms
+            true => ok []
+            false => ok [spec::diagnostic("worker::validate_launch", call spec::reproduction_selector(c, "launch"), "bad-timeout", call text::join([call text::from_int(identity.timeout_ms), call text::from_int(descriptor.timeout_ms)], ":"))]
+/// Validate one worker launch against its descriptor: the launch must name
+/// the descriptor case, carry a routable variant/run/generation, a
+/// non-negative attempt, and a deadline inside the case budget. Every
+/// problem is reported, not just the first; only a clean launch validates.
+fn launch_outcome validate_launch
+    emits {}
+    given
+        launch identity
+        spec::test_case descriptor
+    asserts
+        clean: launch("process/nonzero-result", "default", 0, "run-1", "gen-7", 15000), spec::test_case("process/nonzero-result", ["process"], ["posix-false"], 15000, [spec::check_ref("exit-code")], callable spec::nonzero_result) => ok launch_ok(launch("process/nonzero-result", "default", 0, "run-1", "gen-7", 15000))
+        case_drift: launch("z", "default", 0, "run-1", "gen-7", 15000), spec::test_case("process/nonzero-result", ["process"], ["posix-false"], 15000, [spec::check_ref("exit-code")], callable spec::nonzero_result) => ok launch_rejected([spec::diagnostic("worker::validate_launch", "case z variant default root launch run run-1", "case-mismatch", "z")])
+        missing_variant: launch("process/nonzero-result", "", 0, "run-1", "gen-7", 15000), spec::test_case("process/nonzero-result", ["process"], ["posix-false"], 15000, [spec::check_ref("exit-code")], callable spec::nonzero_result) => ok launch_rejected([spec::diagnostic("worker::validate_launch", "case process/nonzero-result variant  root launch run run-1", "missing-variant", "variant")])
+        missing_run: launch("process/nonzero-result", "default", 0, "", "gen-7", 15000), spec::test_case("process/nonzero-result", ["process"], ["posix-false"], 15000, [spec::check_ref("exit-code")], callable spec::nonzero_result) => ok launch_rejected([spec::diagnostic("worker::validate_launch", "case process/nonzero-result variant default root launch run ", "missing-run", "run")])
+        missing_generation: launch("process/nonzero-result", "default", 0, "run-1", "", 15000), spec::test_case("process/nonzero-result", ["process"], ["posix-false"], 15000, [spec::check_ref("exit-code")], callable spec::nonzero_result) => ok launch_rejected([spec::diagnostic("worker::validate_launch", "case process/nonzero-result variant default root launch run run-1", "missing-generation", "generation")])
+        bad_attempt: launch("process/nonzero-result", "default", -1, "run-1", "gen-7", 15000), spec::test_case("process/nonzero-result", ["process"], ["posix-false"], 15000, [spec::check_ref("exit-code")], callable spec::nonzero_result) => ok launch_rejected([spec::diagnostic("worker::validate_launch", "case process/nonzero-result variant default root launch run run-1", "bad-attempt", "-1")])
+        bad_timeout: launch("process/nonzero-result", "default", 0, "run-1", "gen-7", 15001), spec::test_case("process/nonzero-result", ["process"], ["posix-false"], 15000, [spec::check_ref("exit-code")], callable spec::nonzero_result) => ok launch_rejected([spec::diagnostic("worker::validate_launch", "case process/nonzero-result variant default root launch run run-1", "bad-timeout", "15001:15000")])
+        several: launch("z", "", -1, "", "", 0), spec::test_case("process/nonzero-result", ["process"], ["posix-false"], 15000, [spec::check_ref("exit-code")], callable spec::nonzero_result) => ok launch_rejected([spec::diagnostic("worker::validate_launch", "case z variant  root launch run ", "case-mismatch", "z"), spec::diagnostic("worker::validate_launch", "case z variant  root launch run ", "missing-variant", "variant"), spec::diagnostic("worker::validate_launch", "case z variant  root launch run ", "missing-run", "run"), spec::diagnostic("worker::validate_launch", "case z variant  root launch run ", "missing-generation", "generation"), spec::diagnostic("worker::validate_launch", "case z variant  root launch run ", "bad-attempt", "-1"), spec::diagnostic("worker::validate_launch", "case z variant  root launch run ", "bad-timeout", "0:15000")])
+    match call launch_context(identity)
+        ok spec::context c => match call case_problems(identity, descriptor, c)
+            ok spec::diagnostic[] p1 => match call variant_problems(identity, c)
+                ok spec::diagnostic[] p2 => match call run_problems(identity, c)
+                    ok spec::diagnostic[] p3 => match call generation_problems(identity, c)
+                        ok spec::diagnostic[] p4 => match call attempt_problems(identity, c)
+                            ok spec::diagnostic[] p5 => match call timeout_problems(identity, descriptor, c)
+                                ok spec::diagnostic[] p6 => match call p1.concat(call p2.concat(call p3.concat(call p4.concat(call p5.concat(p6)))))
+                                    ok spec::diagnostic[] all => match all.length is 0
+                                        true => ok launch_ok(identity)
+                                        false => ok launch_rejected(all)
+/// The source-direction bound for a named channel: the "source" channel
+/// reads at most 65536 bytes per launch; any other name binds to zero, so
+/// an unknown channel transfers nothing.
+fn source_bound source_bound_for
+    emits {}
+    given
+        str channel
+    asserts
+        source: "source" => ok source_bound(65536)
+        other: "output" => ok source_bound(0)
+        empty: "" => ok source_bound(0)
+    match channel
+        "source" => ok source_bound(65536)
+        _ => ok source_bound(0)
+/// The output-direction bound for a named channel: the "output" channel
+/// accepts at most 65536 bytes and 64 check rows per launch; any other
+/// name binds to zero rows and zero bytes.
+fn output_bound output_bound_for
+    emits {}
+    given
+        str channel
+    asserts
+        output: "output" => ok output_bound(65536, 64)
+        other: "source" => ok output_bound(0, 0)
+        empty: "" => ok output_bound(0, 0)
+    match channel
+        "output" => ok output_bound(65536, 64)
+        _ => ok output_bound(0, 0)
+/// Render a paired channel bound for handoff review: source bytes beside
+/// output bytes and rows. The pair is data for the Go handoff; reads in
+/// each direction still consult only their own bound.
+fn str describe_channels
+    emits {}
+    given
+        channels pair
+    asserts
+        sample: channels(source_bound(65536), output_bound(65536, 64)) => ok "source:65536 output:65536:64"
+        closed: channels(source_bound(0), output_bound(0, 0)) => ok "source:0 output:0:0"
+    ok call text::join([call text::join(["source", call text::from_int(pair.source.max_bytes)], ":"), call text::join(["output", call text::from_int(pair.output.max_bytes), call text::from_int(pair.output.max_rows)], ":")], " ")
+/// Whether an inbound byte count fits the source bound: non-negative and
+/// within max. Negative lengths fail closed.
+fn bool source_fits
+    emits {}
+    given
+        int bytes_len
+        source_bound bound
+    asserts
+        fits: 100, source_bound(65536) => ok true
+        exact: 65536, source_bound(65536) => ok true
+        over: 65537, source_bound(65536) => ok false
+        negative: -1, source_bound(65536) => ok false
+        zero_bound_empty: 0, source_bound(0) => ok true
+        zero_bound_closed: 1, source_bound(0) => ok false
+    match bytes_len >= 0
+        false => ok false
+        true => ok bytes_len <= bound.max_bytes
+/// Whether an outbound row/byte count fits the output bound: both
+/// non-negative and within their maxima. Either direction over fails the
+/// whole receive; negative counts fail closed.
+fn bool output_fits
+    emits {}
+    given
+        int rows_len
+        int bytes_len
+        output_bound bound
+    asserts
+        fits: 4, 100, output_bound(65536, 64) => ok true
+        exact: 64, 65536, output_bound(65536, 64) => ok true
+        rows_over: 65, 100, output_bound(65536, 64) => ok false
+        bytes_over: 4, 65537, output_bound(65536, 64) => ok false
+        negative_rows: -1, 100, output_bound(65536, 64) => ok false
+        negative_bytes: 4, -1, output_bound(65536, 64) => ok false
+        zero_bound_closed: 0, 1, output_bound(0, 0) => ok false
+    match rows_len >= 0
+        false => ok false
+        true => match bytes_len >= 0
+            false => ok false
+            true => match rows_len <= bound.max_rows
+                false => ok false
+                true => ok bytes_len <= bound.max_bytes
+/// The report names a different case than the launch it arrived on: the
+/// report is misrouted or forged, never evidence for this launch.
+fn spec::diagnostic[] report_case_drift
+    emits {}
+    given
+        launch identity
+        reducer::unit_report report
+        spec::context c
+    asserts
+        same: launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []), spec::context("a", "v", "", "r") => ok []
+        drift: launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "z", "v", "r", 0, "completed", "matched", "ok", "", true, []), spec::context("a", "v", "", "r") => ok [spec::diagnostic("worker::check_report_identity", "case a variant v root bind run r", "identity-drift", "case:a:z")]
+    match report.case_id is identity.case_id
+        true => ok []
+        false => ok [spec::diagnostic("worker::check_report_identity", call spec::reproduction_selector(c, "bind"), "identity-drift", call text::join(["case", identity.case_id, report.case_id], ":"))]
+/// The report names a different variant than the launch it arrived on.
+fn spec::diagnostic[] report_variant_drift
+    emits {}
+    given
+        launch identity
+        reducer::unit_report report
+        spec::context c
+    asserts
+        same: launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []), spec::context("a", "v", "", "r") => ok []
+        drift: launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "a", "w", "r", 0, "completed", "matched", "ok", "", true, []), spec::context("a", "v", "", "r") => ok [spec::diagnostic("worker::check_report_identity", "case a variant v root bind run r", "identity-drift", "variant:v:w")]
+    match report.variant_id is identity.variant_id
+        true => ok []
+        false => ok [spec::diagnostic("worker::check_report_identity", call spec::reproduction_selector(c, "bind"), "identity-drift", call text::join(["variant", identity.variant_id, report.variant_id], ":"))]
+/// The report names a different run than the launch it arrived on: the
+/// report belongs to another run and cannot join this one.
+fn spec::diagnostic[] report_run_drift
+    emits {}
+    given
+        launch identity
+        reducer::unit_report report
+        spec::context c
+    asserts
+        same: launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []), spec::context("a", "v", "", "r") => ok []
+        drift: launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "a", "v", "s", 0, "completed", "matched", "ok", "", true, []), spec::context("a", "v", "", "r") => ok [spec::diagnostic("worker::check_report_identity", "case a variant v root bind run r", "identity-drift", "run:r:s")]
+    match report.run_id is identity.run_id
+        true => ok []
+        false => ok [spec::diagnostic("worker::check_report_identity", call spec::reproduction_selector(c, "bind"), "identity-drift", call text::join(["run", identity.run_id, report.run_id], ":"))]
+/// The report names a different attempt than the launch it arrived on: a
+/// replayed or misrouted report from a sibling attempt.
+fn spec::diagnostic[] report_attempt_drift
+    emits {}
+    given
+        launch identity
+        reducer::unit_report report
+        spec::context c
+    asserts
+        same: launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []), spec::context("a", "v", "", "r") => ok []
+        drift: launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "a", "v", "r", 1, "completed", "matched", "ok", "", true, []), spec::context("a", "v", "", "r") => ok [spec::diagnostic("worker::check_report_identity", "case a variant v root bind run r", "identity-drift", "attempt:0:1")]
+    match report.attempt is identity.attempt
+        true => ok []
+        false => ok [spec::diagnostic("worker::check_report_identity", call spec::reproduction_selector(c, "bind"), "identity-drift", call text::join(["attempt", call text::from_int(identity.attempt), call text::from_int(report.attempt)], ":"))]
+/// Bind one report to its launch: case, variant, run and attempt must echo
+/// the launch exactly. The first drifted field rejects the report; only a
+/// fully bound report can reduce against the plan.
+fn identity_outcome check_report_identity
+    emits {}
+    given
+        launch identity
+        reducer::unit_report report
+    asserts
+        bound: launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []) => ok identity_ok(launch("a", "v", 0, "r", "g", 1000))
+        case_drift: launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "z", "v", "r", 0, "completed", "matched", "ok", "", true, []) => ok identity_rejected(spec::diagnostic("worker::check_report_identity", "case a variant v root bind run r", "identity-drift", "case:a:z"))
+        variant_drift: launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "a", "w", "r", 0, "completed", "matched", "ok", "", true, []) => ok identity_rejected(spec::diagnostic("worker::check_report_identity", "case a variant v root bind run r", "identity-drift", "variant:v:w"))
+        run_drift: launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "a", "v", "s", 0, "completed", "matched", "ok", "", true, []) => ok identity_rejected(spec::diagnostic("worker::check_report_identity", "case a variant v root bind run r", "identity-drift", "run:r:s"))
+        attempt_drift: launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "a", "v", "r", 1, "completed", "matched", "ok", "", true, []) => ok identity_rejected(spec::diagnostic("worker::check_report_identity", "case a variant v root bind run r", "identity-drift", "attempt:0:1"))
+        first_wins: launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "z", "v", "r", 1, "completed", "matched", "ok", "", true, []) => ok identity_rejected(spec::diagnostic("worker::check_report_identity", "case a variant v root bind run r", "identity-drift", "case:a:z"))
+    match call launch_context(identity)
+        ok spec::context c => match call report_case_drift(identity, report, c)
+            ok spec::diagnostic[] d1 => match call report_variant_drift(identity, report, c)
+                ok spec::diagnostic[] d2 => match call report_run_drift(identity, report, c)
+                    ok spec::diagnostic[] d3 => match call report_attempt_drift(identity, report, c)
+                        ok spec::diagnostic[] d4 => match d1.length is 0
+                            false => ok identity_rejected(d1[0])
+                            true => match d2.length is 0
+                                false => ok identity_rejected(d2[0])
+                                true => match d3.length is 0
+                                    false => ok identity_rejected(d3[0])
+                                    true => match d4.length is 0
+                                        false => ok identity_rejected(d4[0])
+                                        true => ok identity_ok(identity)
+/// Map native worker facts to a worker outcome. Precedence is fail-closed:
+/// a fired deadline wins over every other fact (even a clean exit with a
+/// report in hand), a handoff error wins over exit state, a missing exit
+/// without a deadline is a vanished worker, a signal or nonzero code is a
+/// crash, and a clean exit without a report is rejected. Only a clean exit
+/// with a report present completes; the report itself still needs binding
+/// and reduction before it can join any aggregate.
+fn worker_outcome outcome_of
+    emits {}
+    given
+        launch identity
+        native_facts facts
+        reducer::unit_report report
+    asserts
+        clean_done: launch("a", "v", 0, "r", "g", 1000), native_facts(true, 0, "", false, true, "", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []) => ok worker_done(launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []))
+        timeout_discards_report: launch("a", "v", 0, "r", "g", 1000), native_facts(true, 0, "", true, true, "", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []) => ok worker_timed_out(launch("a", "v", 0, "r", "g", 1000), 1000)
+        timeout_without_report: launch("a", "v", 0, "r", "g", 1000), native_facts(false, 0, "", true, false, "", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []) => ok worker_timed_out(launch("a", "v", 0, "r", "g", 1000), 1000)
+        spawn_failed: launch("a", "v", 0, "r", "g", 1000), native_facts(false, 0, "", false, false, "spawn-failed", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []) => ok worker_crashed(launch("a", "v", 0, "r", "g", 1000), "spawn-failed")
+        spawn_beats_exit: launch("a", "v", 0, "r", "g", 1000), native_facts(true, 0, "", false, true, "collect-failed", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []) => ok worker_crashed(launch("a", "v", 0, "r", "g", 1000), "collect-failed")
+        vanished: launch("a", "v", 0, "r", "g", 1000), native_facts(false, 0, "", false, false, "", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []) => ok worker_crashed(launch("a", "v", 0, "r", "g", 1000), "vanished")
+        signaled: launch("a", "v", 0, "r", "g", 1000), native_facts(true, 0, "SIGKILL", false, true, "", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []) => ok worker_crashed(launch("a", "v", 0, "r", "g", 1000), "signal:SIGKILL")
+        nonzero_exit: launch("a", "v", 0, "r", "g", 1000), native_facts(true, 1, "", false, true, "", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []) => ok worker_crashed(launch("a", "v", 0, "r", "g", 1000), "exit:1")
+        missing_report: launch("a", "v", 0, "r", "g", 1000), native_facts(true, 0, "", false, false, "", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, []) => ok worker_rejected(launch("a", "v", 0, "r", "g", 1000), spec::diagnostic("worker::outcome_of", "case a variant v root collect run r", "missing-report", "0"))
+    match facts.timed_out
+        true => ok worker_timed_out(identity, facts.deadline_ms)
+        false => match facts.handoff_error is ""
+            false => ok worker_crashed(identity, facts.handoff_error)
+            true => match facts.exited
+                false => ok worker_crashed(identity, "vanished")
+                true => match facts.signal is ""
+                    false => ok worker_crashed(identity, call text::join(["signal", facts.signal], ":"))
+                    true => match facts.exit_code is 0
+                        false => ok worker_crashed(identity, call text::join(["exit", call text::from_int(facts.exit_code)], ":"))
+                        true => match facts.report_present
+                            false => ok worker_rejected(identity, spec::diagnostic("worker::outcome_of", call spec::reproduction_selector(call launch_context(identity), "collect"), "missing-report", call text::from_int(identity.attempt)))
+                            true => ok worker_done(identity, report)
+/// Reduce one worker outcome to a verdict. A done worker binds its report
+/// to the echoed identity and reduces it through the shared reducer; a
+/// drifted report rejects. A crash or timeout is incomplete evidence with
+/// an explicit worker-crash/worker-timeout detail, never a pass and never
+/// a behavior verdict. A rejected turn carries its diagnostic through as a
+/// rejection.
+fn reducer::reduced verdict_of
+    emits {}
+    given
+        worker_outcome outcome
+        spec::check_ref[] required
+        reducer::scope limits
+    asserts
+        done_clean: worker_done(launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "matched", "ok", "", true, [reducer::check_row(0, "a", "1", "1", true)])), [spec::check_ref("a")], reducer::scope("full", "full-roots") => ok reducer::reduced_ok(1)
+        done_behavior_failed: worker_done(launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "a", "v", "r", 0, "completed", "mismatched", "ok", "", true, [reducer::check_row(0, "b", "2", "3", false)])), [spec::check_ref("b"), spec::check_ref("c")], reducer::scope("full", "full-roots") => ok reducer::reduced_failed("b", "", "", ["c"])
+        done_drift: worker_done(launch("a", "v", 0, "r", "g", 1000), reducer::unit_report("1", "z", "v", "r", 0, "completed", "matched", "ok", "", true, [])), [spec::check_ref("a")], reducer::scope("full", "full-roots") => ok reducer::reduced_rejected([spec::diagnostic("worker::check_report_identity", "case a variant v root bind run r", "identity-drift", "case:a:z")])
+        crash: worker_crashed(launch("a", "v", 1, "r", "g", 1000), "exit:1"), [spec::check_ref("a")], reducer::scope("full", "full-roots") => ok reducer::reduced_incomplete("worker-crash:1:exit:1")
+        timeout: worker_timed_out(launch("a", "v", 2, "r", "g", 1000), 1000), [spec::check_ref("a")], reducer::scope("full", "full-roots") => ok reducer::reduced_incomplete("worker-timeout:2:1000")
+        rejected: worker_rejected(launch("a", "v", 0, "r", "g", 1000), spec::diagnostic("worker::outcome_of", "case a variant v root collect run r", "missing-report", "0")), [spec::check_ref("a")], reducer::scope("full", "full-roots") => ok reducer::reduced_rejected([spec::diagnostic("worker::outcome_of", "case a variant v root collect run r", "missing-report", "0")])
+    match outcome
+        worker_done => match call check_report_identity(outcome.identity, outcome.report)
+            ok identity_outcome bound => match bound
+                identity_ok => match call reducer::reduce_unit(outcome.report, required, limits, outcome.identity.case_id, outcome.identity.variant_id, outcome.identity.run_id)
+                    ok reducer::reduced verdict => ok verdict
+                identity_rejected => ok reducer::reduced_rejected([bound.problem])
+        worker_crashed => ok reducer::reduced_incomplete(call text::join(["worker-crash", call text::from_int(outcome.identity.attempt), outcome.cause], ":"))
+        worker_timed_out => ok reducer::reduced_incomplete(call text::join(["worker-timeout", call text::from_int(outcome.identity.attempt), call text::from_int(outcome.deadline_ms)], ":"))
+        worker_rejected => ok reducer::reduced_rejected([outcome.problem])
