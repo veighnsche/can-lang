@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: cf60a44ad7dfb420612b4ebadcaae789914acd6a4601d87ee11dcc2d9d861e43.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 70a4a60392bcb5f745782f0b37c75754e1af7fb819a1e56510805adabd4fc1eb.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -57,6 +57,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - descriptor → can.std.descriptor@1
 - c → can.std.c@1
 - late → can.std.late@1
+- db → can.std.db@1
 
 ## Types
 
@@ -266,6 +267,25 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | late::reconcile_facts | record |  | str participant, int admitted, int late, int[] dropped, int next_seq | true |
 | late::outcome_facts | record |  | str outcome, str reason, option::value&lt;str&gt; worker_terminal, option::value&lt;str&gt; observer_terminal, bool worker_dead | true |
 | late::counters | record |  | int participants, int admitted, int late, int dropped, int terminals, int leases, int releases, int observations, int rejected | true |
+| db::cell | variant |  | db::number_cell, db::text_cell, db::bytes_cell, db::null_cell | false |
+| db::number_cell | record |  | str lexeme | true |
+| db::text_cell | record |  | str text | true |
+| db::bytes_cell | record |  | bytes::buffer data | true |
+| db::null_cell | record |  |  | true |
+| db::seed_row | record |  | db::cell[] cells | true |
+| db::namespace_receipt | record |  | str namespace, str owner, str handle, str handle_digest, int tables | true |
+| db::connection_facts | record |  | str connection, str namespace, str owner, str handle_digest, bool pinned, bool conversation_open | true |
+| db::row_facts | record |  | int seq, db::cell[] cells, str digest | true |
+| db::read_facts | record |  | str connection, str namespace, str table, db::row_facts[] rows, int row_count, str digest | true |
+| db::seed_facts | record |  | str table, int rows | true |
+| db::conversation_facts | record |  | str conversation | true |
+| db::row_comparison | record |  | bool match, int[] mismatches | true |
+| db::compile_facts | record |  | str compile, str fixture, str statement_digest, str[] schema | true |
+| db::returning_row_facts | record |  | int seq, db::cell[] cells, str digest | true |
+| db::returning_payload_facts | record |  | str compile, int row_count, db::returning_row_facts[] rows, str digest | true |
+| db::final_rows_facts | record |  | str compile, int row_count, db::returning_row_facts[] rows, str digest | true |
+| db::returning_comparison | record |  | bool match, int[] mismatches | true |
+| db::returning_credit_verdict | record |  | bool credit_c, str reason | true |
 
 ## Domain errors
 
@@ -398,6 +418,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | http_peer::http_fault | can.std.http_peer@1::http_fault |  | str kind, str reason |
 | descriptor::descriptor_fault | can.std.descriptor@1::descriptor_fault |  | str kind, str reason |
 | late::late_fault | can.std.late@1::late_fault |  | str kind, str reason |
+| db::db_fault | can.std.db@1::db_fault |  | str layer, str code |
 
 ## Operations
 
@@ -786,6 +807,26 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | late::kill_worker | test::owner owner → late::outcome_facts | {test::stale_handle} |  | Object.freeze | Mark the worker dead; worker admissions/terminals/leases close and the outcome stays incomplete (K06 killWorker). | supplied | NT-I03 / NT-I03 |
 | late::read_outcome | test::owner owner → late::outcome_facts | {test::stale_handle} |  | Object.freeze | Report complete only when both terminals are witnessed, else incomplete with a named reason (K06 outcome). | supplied | NT-I03 / NT-I03 |
 | late::read_counters | test::owner owner → late::counters | {test::stale_handle} |  | Object.freeze | Report the nine service counters (K06 counters). | supplied | NT-I03 / NT-I03 |
+| db::open_namespace | test::owner owner, str namespace → db::namespace_receipt | {test::stale_handle, db::db_fault} |  | Map.prototype.set, crypto.randomBytes | Open an owned namespace handle (K22 openNamespace); reopening joins the same handle. | supplied | NT-I13 / NT-I13 |
+| db::receipt | test::owner owner, str namespace → db::namespace_receipt | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read a namespace receipt carrying the digest only (K22 receipt). | supplied | NT-I13 / NT-I13 |
+| db::close_namespace | test::owner owner, str namespace → void | {test::stale_handle, db::db_fault} |  | Map.prototype.delete | Close an owned namespace (K22 closeNamespace); void result. | supplied | NT-I13 / NT-I13 |
+| db::seed | test::owner owner, str namespace, str table, db::seed_row[] rows → db::seed_facts | {test::stale_handle, db::db_fault} |  | Array.prototype.map, Uint8Array.from | Seed exact typed cells into a table (K22 seed); ragged rows reject row-arity with nothing stored. | supplied | NT-I13 / NT-I13 |
+| db::pin_connection | test::owner owner, str namespace, str connection → db::connection_facts | {test::stale_handle, db::db_fault} |  | Map.prototype.set, crypto.randomBytes | Pin one identity-bound raw connection per conversation (K22 pinConnection). | supplied | NT-I13 / NT-I13 |
+| db::connection_token_for_test | test::owner owner, str namespace, str connection → str | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Reveal the raw connection token for test driving (K22 connectionTokenForTest). | supplied | NT-I13 / NT-I13 |
+| db::unpin_connection | test::owner owner, str namespace, str connection, str token → void | {test::stale_handle, db::db_fault} |  | Map.prototype.delete | Release a pinned connection by token (K22 unpinConnection); void result. | supplied | NT-I13 / NT-I13 |
+| db::begin_read | test::owner owner, str namespace, str connection, str token, str table → db::conversation_facts | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Open a single read conversation on a table (K22 beginRead). | supplied | NT-I13 / NT-I13 |
+| db::fetch | test::owner owner, str namespace, str connection, str token, str table → db::read_facts | {test::stale_handle, db::db_fault} |  | Array.prototype.map, crypto.createHash, Uint8Array.from | Read exact rows with per-row digests; bytes cross as copies (K22 fetch). | supplied | NT-I13 / NT-I13 |
+| db::end_read | test::owner owner, str namespace, str connection, str token → void | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Close the read conversation (K22 endRead); void result. | supplied | NT-I13 / NT-I13 |
+| db::compare_row | test::owner owner, db::cell[] stored, db::cell[] claimed → db::row_comparison | {test::stale_handle} |  | Array.prototype.every | Compare claimed cells tag-for-tag against stored cells (K22 compareRow); never throws. | supplied | NT-I13 / NT-I13 |
+| db::record_compile | test::owner owner, str fixture, str statement, str[] schema → db::compile_facts | {test::stale_handle, db::db_fault} |  | crypto.createHash, Map.prototype.set | Record a compiled statement with schema pin (K23 recordCompile). | supplied | NT-I13 / NT-I13 |
+| db::compile_record | test::owner owner, str compile → db::compile_facts | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read a compile record (K23 compileRecord). | supplied | NT-I13 / NT-I13 |
+| db::record_returning | test::owner owner, str compile, db::seed_row[] rows → db::returning_payload_facts | {test::stale_handle, db::db_fault} |  | Array.prototype.map, crypto.createHash | Record the RETURNING payload rows (K23 recordReturning). | supplied | NT-I13 / NT-I13 |
+| db::payload_facts | test::owner owner, str compile → db::returning_payload_facts | {test::stale_handle, db::db_fault} |  | Map.prototype.get, Array.prototype.map | Re-read RETURNING payload facts (K23 payloadFacts). | supplied | NT-I13 / NT-I13 |
+| db::record_final_rows | test::owner owner, str compile, db::seed_row[] rows → db::final_rows_facts | {test::stale_handle, db::db_fault} |  | Array.prototype.map, crypto.createHash | Record final table rows beside the payload (K23 recordFinalRows). | supplied | NT-I13 / NT-I13 |
+| db::final_facts | test::owner owner, str compile → db::final_rows_facts | {test::stale_handle, db::db_fault} |  | Map.prototype.get, Array.prototype.map | Re-read final-row facts (K23 finalFacts). | supplied | NT-I13 / NT-I13 |
+| db::compare_payload_to_final | test::owner owner, db::returning_payload_facts payload, db::final_rows_facts final → db::returning_comparison | {test::stale_handle, db::db_fault} |  | Array.prototype.every | Compare payload rows against final rows of one compile (K23 comparePayloadToFinal). | supplied | NT-I13 / NT-I13 |
+| db::compare_claimed_row | test::owner owner, db::cell[] stored, db::cell[] claimed → db::returning_comparison | {test::stale_handle} |  | Array.prototype.every | Compare claimed cells against stored payload or final cells (K23 compareClaimedRow); never throws. | supplied | NT-I13 / NT-I13 |
+| db::credit_verdict | test::owner owner → db::returning_credit_verdict | {test::stale_handle} |  | Object.freeze | Report the constant never-credit-C verdict (K23 creditVerdict). | supplied | NT-I13 / NT-I13 |
 
 ## Native declaration profiles
 

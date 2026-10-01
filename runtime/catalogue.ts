@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "cf60a44ad7dfb420612b4ebadcaae789914acd6a4601d87ee11dcc2d9d861e43";
+export const catalogueSHA256 = "70a4a60392bcb5f745782f0b37c75754e1af7fb819a1e56510805adabd4fc1eb";
 export const catalogue = freeze({
  "schemaVersion": 1,
  "revision": 1,
@@ -188,6 +188,10 @@ export const catalogue = freeze({
   {
    "name": "late",
    "identity": "can.std.late@1"
+  },
+  {
+   "name": "db",
+   "identity": "can.std.db@1"
   }
  ],
  "prelude": [
@@ -4595,6 +4599,411 @@ export const catalogue = freeze({
    "leaves": [],
    "projections": [],
    "constructible": true
+  },
+  {
+   "name": "db::cell",
+   "identity": "can.std.db@1::cell",
+   "kind": "variant",
+   "parameters": [],
+   "fields": [],
+   "leaves": [
+    "db::number_cell",
+    "db::text_cell",
+    "db::bytes_cell",
+    "db::null_cell"
+   ],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "db::number_cell",
+   "identity": "can.std.db@1::number_cell",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "lexeme",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::text_cell",
+   "identity": "can.std.db@1::text_cell",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "text",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::bytes_cell",
+   "identity": "can.std.db@1::bytes_cell",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "data",
+     "type": "bytes::buffer"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::null_cell",
+   "identity": "can.std.db@1::null_cell",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::seed_row",
+   "identity": "can.std.db@1::seed_row",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "cells",
+     "type": "db::cell[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::namespace_receipt",
+   "identity": "can.std.db@1::namespace_receipt",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "namespace",
+     "type": "str"
+    },
+    {
+     "name": "owner",
+     "type": "str"
+    },
+    {
+     "name": "handle",
+     "type": "str"
+    },
+    {
+     "name": "handle_digest",
+     "type": "str"
+    },
+    {
+     "name": "tables",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::connection_facts",
+   "identity": "can.std.db@1::connection_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "connection",
+     "type": "str"
+    },
+    {
+     "name": "namespace",
+     "type": "str"
+    },
+    {
+     "name": "owner",
+     "type": "str"
+    },
+    {
+     "name": "handle_digest",
+     "type": "str"
+    },
+    {
+     "name": "pinned",
+     "type": "bool"
+    },
+    {
+     "name": "conversation_open",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::row_facts",
+   "identity": "can.std.db@1::row_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "seq",
+     "type": "int"
+    },
+    {
+     "name": "cells",
+     "type": "db::cell[]"
+    },
+    {
+     "name": "digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::read_facts",
+   "identity": "can.std.db@1::read_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "connection",
+     "type": "str"
+    },
+    {
+     "name": "namespace",
+     "type": "str"
+    },
+    {
+     "name": "table",
+     "type": "str"
+    },
+    {
+     "name": "rows",
+     "type": "db::row_facts[]"
+    },
+    {
+     "name": "row_count",
+     "type": "int"
+    },
+    {
+     "name": "digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::seed_facts",
+   "identity": "can.std.db@1::seed_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "table",
+     "type": "str"
+    },
+    {
+     "name": "rows",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::conversation_facts",
+   "identity": "can.std.db@1::conversation_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "conversation",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::row_comparison",
+   "identity": "can.std.db@1::row_comparison",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "match",
+     "type": "bool"
+    },
+    {
+     "name": "mismatches",
+     "type": "int[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::compile_facts",
+   "identity": "can.std.db@1::compile_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "compile",
+     "type": "str"
+    },
+    {
+     "name": "fixture",
+     "type": "str"
+    },
+    {
+     "name": "statement_digest",
+     "type": "str"
+    },
+    {
+     "name": "schema",
+     "type": "str[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::returning_row_facts",
+   "identity": "can.std.db@1::returning_row_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "seq",
+     "type": "int"
+    },
+    {
+     "name": "cells",
+     "type": "db::cell[]"
+    },
+    {
+     "name": "digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::returning_payload_facts",
+   "identity": "can.std.db@1::returning_payload_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "compile",
+     "type": "str"
+    },
+    {
+     "name": "row_count",
+     "type": "int"
+    },
+    {
+     "name": "rows",
+     "type": "db::returning_row_facts[]"
+    },
+    {
+     "name": "digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::final_rows_facts",
+   "identity": "can.std.db@1::final_rows_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "compile",
+     "type": "str"
+    },
+    {
+     "name": "row_count",
+     "type": "int"
+    },
+    {
+     "name": "rows",
+     "type": "db::returning_row_facts[]"
+    },
+    {
+     "name": "digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::returning_comparison",
+   "identity": "can.std.db@1::returning_comparison",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "match",
+     "type": "bool"
+    },
+    {
+     "name": "mismatches",
+     "type": "int[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::returning_credit_verdict",
+   "identity": "can.std.db@1::returning_credit_verdict",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "credit_c",
+     "type": "bool"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
   }
  ],
  "errors": [
@@ -6071,6 +6480,21 @@ export const catalogue = freeze({
     },
     {
      "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "db::db_fault",
+   "identity": "can.std.db@1::db_fault",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "layer",
+     "type": "str"
+    },
+    {
+     "name": "code",
      "type": "str"
     }
    ]
@@ -19979,6 +20403,813 @@ export const catalogue = freeze({
    "refs": [
     "NT-I03"
    ]
+  },
+  {
+   "name": "db::open_namespace",
+   "identity": "can.std.db@1::open_namespace",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "namespace",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::namespace_receipt",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.set",
+     "crypto.randomBytes"
+    ],
+    "adapter": "Open an owned namespace handle (K22 openNamespace); reopening joins the same handle.",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::receipt",
+   "identity": "can.std.db@1::receipt",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "namespace",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::namespace_receipt",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read a namespace receipt carrying the digest only (K22 receipt).",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::close_namespace",
+   "identity": "can.std.db@1::close_namespace",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "namespace",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.delete"
+    ],
+    "adapter": "Close an owned namespace (K22 closeNamespace); void result.",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::seed",
+   "identity": "can.std.db@1::seed",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "namespace",
+     "type": "str"
+    },
+    {
+     "name": "table",
+     "type": "str"
+    },
+    {
+     "name": "rows",
+     "type": "db::seed_row[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::seed_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.map",
+     "Uint8Array.from"
+    ],
+    "adapter": "Seed exact typed cells into a table (K22 seed); ragged rows reject row-arity with nothing stored.",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::pin_connection",
+   "identity": "can.std.db@1::pin_connection",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "namespace",
+     "type": "str"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::connection_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.set",
+     "crypto.randomBytes"
+    ],
+    "adapter": "Pin one identity-bound raw connection per conversation (K22 pinConnection).",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::connection_token_for_test",
+   "identity": "can.std.db@1::connection_token_for_test",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "namespace",
+     "type": "str"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Reveal the raw connection token for test driving (K22 connectionTokenForTest).",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::unpin_connection",
+   "identity": "can.std.db@1::unpin_connection",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "namespace",
+     "type": "str"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.delete"
+    ],
+    "adapter": "Release a pinned connection by token (K22 unpinConnection); void result.",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::begin_read",
+   "identity": "can.std.db@1::begin_read",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "namespace",
+     "type": "str"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    },
+    {
+     "name": "table",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::conversation_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Open a single read conversation on a table (K22 beginRead).",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::fetch",
+   "identity": "can.std.db@1::fetch",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "namespace",
+     "type": "str"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    },
+    {
+     "name": "table",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::read_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.map",
+     "crypto.createHash",
+     "Uint8Array.from"
+    ],
+    "adapter": "Read exact rows with per-row digests; bytes cross as copies (K22 fetch).",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::end_read",
+   "identity": "can.std.db@1::end_read",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "namespace",
+     "type": "str"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Close the read conversation (K22 endRead); void result.",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::compare_row",
+   "identity": "can.std.db@1::compare_row",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "stored",
+     "type": "db::cell[]"
+    },
+    {
+     "name": "claimed",
+     "type": "db::cell[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::row_comparison",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.every"
+    ],
+    "adapter": "Compare claimed cells tag-for-tag against stored cells (K22 compareRow); never throws.",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::record_compile",
+   "identity": "can.std.db@1::record_compile",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "fixture",
+     "type": "str"
+    },
+    {
+     "name": "statement",
+     "type": "str"
+    },
+    {
+     "name": "schema",
+     "type": "str[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::compile_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "crypto.createHash",
+     "Map.prototype.set"
+    ],
+    "adapter": "Record a compiled statement with schema pin (K23 recordCompile).",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::compile_record",
+   "identity": "can.std.db@1::compile_record",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "compile",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::compile_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read a compile record (K23 compileRecord).",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::record_returning",
+   "identity": "can.std.db@1::record_returning",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "compile",
+     "type": "str"
+    },
+    {
+     "name": "rows",
+     "type": "db::seed_row[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::returning_payload_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.map",
+     "crypto.createHash"
+    ],
+    "adapter": "Record the RETURNING payload rows (K23 recordReturning).",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::payload_facts",
+   "identity": "can.std.db@1::payload_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "compile",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::returning_payload_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "Array.prototype.map"
+    ],
+    "adapter": "Re-read RETURNING payload facts (K23 payloadFacts).",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::record_final_rows",
+   "identity": "can.std.db@1::record_final_rows",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "compile",
+     "type": "str"
+    },
+    {
+     "name": "rows",
+     "type": "db::seed_row[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::final_rows_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.map",
+     "crypto.createHash"
+    ],
+    "adapter": "Record final table rows beside the payload (K23 recordFinalRows).",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::final_facts",
+   "identity": "can.std.db@1::final_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "compile",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::final_rows_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "Array.prototype.map"
+    ],
+    "adapter": "Re-read final-row facts (K23 finalFacts).",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::compare_payload_to_final",
+   "identity": "can.std.db@1::compare_payload_to_final",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "payload",
+     "type": "db::returning_payload_facts"
+    },
+    {
+     "name": "final",
+     "type": "db::final_rows_facts"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::returning_comparison",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.every"
+    ],
+    "adapter": "Compare payload rows against final rows of one compile (K23 comparePayloadToFinal).",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::compare_claimed_row",
+   "identity": "can.std.db@1::compare_claimed_row",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "stored",
+     "type": "db::cell[]"
+    },
+    {
+     "name": "claimed",
+     "type": "db::cell[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::returning_comparison",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.every"
+    ],
+    "adapter": "Compare claimed cells against stored payload or final cells (K23 compareClaimedRow); never throws.",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
+  },
+  {
+   "name": "db::credit_verdict",
+   "identity": "can.std.db@1::credit_verdict",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::returning_credit_verdict",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Object.freeze"
+    ],
+    "adapter": "Report the constant never-credit-C verdict (K23 creditVerdict).",
+    "task": "NT-I13"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I13"
+   ]
   }
  ],
  "nativeDeclarations": [
@@ -26345,6 +27576,573 @@ export const catalogueTypeShapes = freeze([
     "leaves": []
   },
   {
+    "name": "db::cell",
+    "identity": "can.std.db@1::cell",
+    "kind": "variant",
+    "parameters": [],
+    "fields": [],
+    "leaves": [
+      {
+        "name": "db::number_cell",
+        "arguments": null
+      },
+      {
+        "name": "db::text_cell",
+        "arguments": null
+      },
+      {
+        "name": "db::bytes_cell",
+        "arguments": null
+      },
+      {
+        "name": "db::null_cell",
+        "arguments": null
+      }
+    ]
+  },
+  {
+    "name": "db::number_cell",
+    "identity": "can.std.db@1::number_cell",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "lexeme",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::text_cell",
+    "identity": "can.std.db@1::text_cell",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "text",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::bytes_cell",
+    "identity": "can.std.db@1::bytes_cell",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "data",
+        "type": {
+          "name": "bytes::buffer",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::null_cell",
+    "identity": "can.std.db@1::null_cell",
+    "kind": "record",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "db::seed_row",
+    "identity": "can.std.db@1::seed_row",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "cells",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "db::cell",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::namespace_receipt",
+    "identity": "can.std.db@1::namespace_receipt",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "namespace",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "owner",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "handle",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "handle_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "tables",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::connection_facts",
+    "identity": "can.std.db@1::connection_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "connection",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "namespace",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "owner",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "handle_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "pinned",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "conversation_open",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::row_facts",
+    "identity": "can.std.db@1::row_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "seq",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "cells",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "db::cell",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::read_facts",
+    "identity": "can.std.db@1::read_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "connection",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "namespace",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "table",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "rows",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "db::row_facts",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "row_count",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::seed_facts",
+    "identity": "can.std.db@1::seed_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "table",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "rows",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::conversation_facts",
+    "identity": "can.std.db@1::conversation_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "conversation",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::row_comparison",
+    "identity": "can.std.db@1::row_comparison",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "match",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "mismatches",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::compile_facts",
+    "identity": "can.std.db@1::compile_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "compile",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "fixture",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "statement_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "schema",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::returning_row_facts",
+    "identity": "can.std.db@1::returning_row_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "seq",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "cells",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "db::cell",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::returning_payload_facts",
+    "identity": "can.std.db@1::returning_payload_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "compile",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "row_count",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "rows",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "db::returning_row_facts",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::final_rows_facts",
+    "identity": "can.std.db@1::final_rows_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "compile",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "row_count",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "rows",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "db::returning_row_facts",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::returning_comparison",
+    "identity": "can.std.db@1::returning_comparison",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "match",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "mismatches",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::returning_credit_verdict",
+    "identity": "can.std.db@1::returning_credit_verdict",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "credit_c",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
     "name": "all_failed",
     "identity": "can.prelude@1::all_failed",
     "kind": "error",
@@ -28521,6 +30319,29 @@ export const catalogueTypeShapes = freeze([
       },
       {
         "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::db_fault",
+    "identity": "can.std.db@1::db_fault",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "layer",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "code",
         "type": {
           "name": "str",
           "arguments": null
