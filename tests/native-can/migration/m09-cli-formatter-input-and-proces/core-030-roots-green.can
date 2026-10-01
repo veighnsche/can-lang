@@ -1,0 +1,226 @@
+package m09core030roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M09 CORE-030 "markdown render: roots green, nine assert roots".
+/// Source: tests/integration/markdown_test.go symbol
+/// TestCurrentMarkdownRender (L34-126).
+/// Related fixture: compiler/testdata/current/markdown/main.can (read at
+/// L47, staged as src/main.can at L55); every count pin below grounds an
+/// assert arm in that fixture (emit 1, raw 2, page 2, served 1, main 3;
+/// total 9).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): canlc assert green with a passed report carrying
+/// exactly 9 roots, grounded per function in the markdown fixture.
+/// ADAPTATION (recorded, with source lines): TestCurrentMarkdownRender
+/// drives the assert leg at L60-63 (status 0 and empty diagnostics or the
+/// test fatals) but, unlike the crypto row, carries no explicit report
+/// passed/len legs, so report-passed pins the passed report entailed by
+/// that green assert and root-count pins the 9 fixture assert arms as the
+/// P23 qualification baseline; no execution is claimed here (accept_after
+/// P23 unmet).
+/// Live render outputs, usage text and the negative mutations live in
+/// core-030-markdown-semantics.can; the production process shape lives in
+/// core-030-run-shape.can.
+/// Variants: none in this file (default only); heading, raw script, the
+/// three usage legs and the two negative source mutations live in the
+/// markdown-semantics file.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/WORK/PROC/N1
+/// and C/R/N/S/A identities bind at P23; no live run now. Descriptor
+/// timeout 360000ms mirrors the Go 6-minute ctx (L41).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case markdown/render-roots checks: assert-green, report-passed,
+/// root-count, fixture-name, emit-roots, raw-roots, page-roots,
+/// served-roots, main-roots.
+/// Facet map (markdown_test.go legs plus fixture arms): assert-green pins
+/// the assert leg (L60-63: status 0 and empty diagnostics or the test
+/// fatals); report-passed pins the passed report entailed by that green
+/// assert (no explicit Go leg; P23 baseline); root-count pins the nine
+/// roots (1 + 2 + 2 + 1 + 3 across the fixture asserts blocks);
+/// fixture-name grounds the pins in the staged fixture (L47: markdown
+/// main.can; L55: src/main.can); emit-roots pins emit (fixture L9:
+/// sample "hi" => ok 2, 1 root); raw-roots pins raw (fixture L25-26:
+/// sample/hostile, 2 roots); page-roots pins page (fixture L33-34:
+/// sample/bad_link, 2 roots); served-roots pins served (fixture L39:
+/// sample => ok true, 1 root); main-roots pins main (fixture L53-55:
+/// empty/badop/arity => ok, 3 roots).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int root_count
+    str fixture_name
+    int emit_roots
+    int raw_roots
+    int page_roots
+    int served_roots
+    int main_roots
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("markdown/render-roots", "default", "", "offline"), "assert-green" => ok "case markdown/render-roots variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("markdown/render-roots", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case markdown/render-roots variant default root assert-green run offline")
+        different: false, true, context("markdown/render-roots", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 9, 9, context("markdown/render-roots", "default", "", "offline"), "root-count" => ok evidence("root-count", "9", "9", true, "case markdown/render-roots variant default root root-count run offline")
+        different: 8, 9, context("markdown/render-roots", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "main.can", "main.can", context("markdown/render-roots", "default", "", "offline"), "fixture-name" => ok evidence("fixture-name", "main.can", "main.can", true, "case markdown/render-roots variant default root fixture-name run offline")
+        different: "render.can", "main.can", context("markdown/render-roots", "default", "", "offline"), "fixture-name" => failed{"fixture-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 9, "main.can", 1, 2, 2, 1, 3)
+        seed_assert_red: "seed-assert-red" => ok observation(false, true, 9, "main.can", 1, 2, 2, 1, 3)
+        seed_report_red: "seed-report-red" => ok observation(true, false, 9, "main.can", 1, 2, 2, 1, 3)
+        seed_root_short: "seed-root-short" => ok observation(true, true, 8, "main.can", 1, 2, 2, 1, 3)
+        seed_fixture_drift: "seed-fixture-drift" => ok observation(true, true, 9, "render.can", 1, 2, 2, 1, 3)
+        seed_emit_loss: "seed-emit-loss" => ok observation(true, true, 9, "main.can", 0, 2, 2, 1, 3)
+        seed_raw_short: "seed-raw-short" => ok observation(true, true, 9, "main.can", 1, 1, 2, 1, 3)
+        seed_page_short: "seed-page-short" => ok observation(true, true, 9, "main.can", 1, 2, 1, 1, 3)
+        seed_served_loss: "seed-served-loss" => ok observation(true, true, 9, "main.can", 1, 2, 2, 0, 3)
+        seed_main_short: "seed-main-short" => ok observation(true, true, 9, "main.can", 1, 2, 2, 1, 2)
+    match variant_id
+        "seed-assert-red" => ok observation(false, true, 9, "main.can", 1, 2, 2, 1, 3)
+        "seed-report-red" => ok observation(true, false, 9, "main.can", 1, 2, 2, 1, 3)
+        "seed-root-short" => ok observation(true, true, 8, "main.can", 1, 2, 2, 1, 3)
+        "seed-fixture-drift" => ok observation(true, true, 9, "render.can", 1, 2, 2, 1, 3)
+        "seed-emit-loss" => ok observation(true, true, 9, "main.can", 0, 2, 2, 1, 3)
+        "seed-raw-short" => ok observation(true, true, 9, "main.can", 1, 1, 2, 1, 3)
+        "seed-page-short" => ok observation(true, true, 9, "main.can", 1, 2, 1, 1, 3)
+        "seed-served-loss" => ok observation(true, true, 9, "main.can", 1, 2, 2, 0, 3)
+        "seed-main-short" => ok observation(true, true, 9, "main.can", 1, 2, 2, 1, 2)
+        _ => ok observation(true, true, 9, "main.can", 1, 2, 2, 1, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m09_030: "m09-030" => ok [check("assert-green", "canlc assert exits 0 with empty diagnostics"), check("report-passed", "assert report passes over the staged fixture"), check("root-count", "assert report carries exactly 9 roots"), check("fixture-name", "root pins ground the staged main.can fixture"), check("emit-roots", "emit contributes 1 root (sample => ok 2)"), check("raw-roots", "raw contributes 2 roots (sample/hostile)"), check("page-roots", "page contributes 2 roots (sample/bad_link)"), check("served-roots", "served contributes 1 root (sample => ok true)"), check("main-roots", "main contributes 3 roots (empty/badop/arity => ok)")]
+        other: "nope" => ok []
+    match scope is "m09-030"
+        false => ok []
+        true => ok [check("assert-green", "canlc assert exits 0 with empty diagnostics"), check("report-passed", "assert report passes over the staged fixture"), check("root-count", "assert report carries exactly 9 roots"), check("fixture-name", "root pins ground the staged main.can fixture"), check("emit-roots", "emit contributes 1 root (sample => ok 2)"), check("raw-roots", "raw contributes 2 roots (sample/hostile)"), check("page-roots", "page contributes 2 roots (sample/bad_link)"), check("served-roots", "served contributes 1 root (sample => ok true)"), check("main-roots", "main contributes 3 roots (empty/badop/arity => ok)")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "markdown/render-roots" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "9"), expected_check("fixture-name", "main.can"), expected_check("emit-roots", "1"), expected_check("raw-roots", "2"), expected_check("page-roots", "2"), expected_check("served-roots", "1"), expected_check("main-roots", "3")]
+        unknown: "nope" => ok []
+    match case is "markdown/render-roots"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "9"), expected_check("fixture-name", "main.can"), expected_check("emit-roots", "1"), expected_check("raw-roots", "2"), expected_check("page-roots", "2"), expected_check("served-roots", "1"), expected_check("main-roots", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("markdown/render-roots", "default", "", "offline") => ok
+        seed_assert_red: context("markdown/render-roots", "seed-assert-red", "", "offline") => failed{"assert-green"}
+        seed_report_red: context("markdown/render-roots", "seed-report-red", "", "offline") => failed{"report-passed"}
+        seed_root_short: context("markdown/render-roots", "seed-root-short", "", "offline") => failed{"root-count"}
+        seed_fixture_drift: context("markdown/render-roots", "seed-fixture-drift", "", "offline") => failed{"fixture-name"}
+        seed_emit_loss: context("markdown/render-roots", "seed-emit-loss", "", "offline") => failed{"emit-roots"}
+        seed_raw_short: context("markdown/render-roots", "seed-raw-short", "", "offline") => failed{"raw-roots"}
+        seed_page_short: context("markdown/render-roots", "seed-page-short", "", "offline") => failed{"page-roots"}
+        seed_served_loss: context("markdown/render-roots", "seed-served-loss", "", "offline") => failed{"served-roots"}
+        seed_main_short: context("markdown/render-roots", "seed-main-short", "", "offline") => failed{"main-roots"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence assert_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence passed_evidence => match call require_int(got.root_count, 9, c, "root-count")
+                    failed
+                    ok evidence count_evidence => match call require_text(got.fixture_name, "main.can", c, "fixture-name")
+                        failed
+                        ok evidence fixture_evidence => match call require_int(got.emit_roots, 1, c, "emit-roots")
+                            failed
+                            ok evidence emit_evidence => match call require_int(got.raw_roots, 2, c, "raw-roots")
+                                failed
+                                ok evidence raw_evidence => match call require_int(got.page_roots, 2, c, "page-roots")
+                                    failed
+                                    ok evidence page_evidence => match call require_int(got.served_roots, 1, c, "served-roots")
+                                        failed
+                                        ok evidence served_evidence => match call require_int(got.main_roots, 3, c, "main-roots")
+                                            failed
+                                            ok evidence main_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m09_030: "m09-030" => ok test_case("markdown/render-roots", ["markdown", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 360000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("emit-roots"), check_ref("raw-roots"), check_ref("page-roots"), check_ref("served-roots"), check_ref("main-roots")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m09-030"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("markdown/render-roots", ["markdown", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 360000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("emit-roots"), check_ref("raw-roots"), check_ref("page-roots"), check_ref("served-roots"), check_ref("main-roots")], callable case_body)

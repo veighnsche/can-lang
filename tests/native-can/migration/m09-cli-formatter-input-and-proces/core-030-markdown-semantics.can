@@ -1,0 +1,228 @@
+package m09core030markdown
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M09 CORE-030 "markdown render: live outputs, usage, rejects".
+/// Source: tests/integration/markdown_test.go symbol
+/// TestCurrentMarkdownRender (L34-126).
+/// Related fixture: compiler/testdata/current/markdown/main.can (read at
+/// L47, staged as src/main.can at L55); the live-output pins ground the
+/// raw dispatch (L63-68), the usage arms (L59-62, L69-76) and the assert
+/// vectors (raw L25-26), while the mutation sites ground the served
+/// chain call (L41) and the page emits header (L28-29).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): live native render outputs (heading, raw HTML
+/// preserved verbatim), the exact usage line for the nil/bogus/arity
+/// legs, and the two negative source mutations (text HTML bound as
+/// html::safe, omitted html::invalid_url emits) with their mutation
+/// sites and rejection diagnostics.
+/// The roots-green pin lives in core-030-roots-green.can; the production
+/// process shape lives in core-030-run-shape.can.
+/// Variants: heading, raw script input, nil/bogus/incomplete usage (Go
+/// L99-103); two negative source mutations (Go L104-111, rejected at
+/// build per L121-124).
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/WORK/PROC/N1
+/// and C/R/N/S/A identities bind at P23; no live run now. Descriptor
+/// timeout 360000ms mirrors the Go 6-minute ctx (L41).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case markdown/render checks: heading, raw-html, usage-nil,
+/// usage-bogus, usage-arity, unsafe-reject, emits-reject,
+/// mutation-unsafe-site, mutation-emits-site.
+/// Facet map (markdown_test.go legs): heading pins the heading output
+/// (L99: "<h1>Hi</h1>\n"; fixture L25 raw sample); raw-html pins raw
+/// preservation (L100: "<script>alert(1)</script>\n" verbatim; fixture
+/// L26 hostile); usage-nil pins the nil leg (L101: "usage: md html
+/// <source>" with no trailing newline; fixture L73-76); usage-bogus
+/// pins the unknown-op leg (L102: same usage line; fixture L69-72);
+/// usage-arity pins the incomplete leg (L103: same usage line; fixture
+/// L59-62); unsafe-reject pins the text-HTML diagnostic (L109/L122:
+/// "chain binding type mismatch"); emits-reject pins the missing-emits
+/// diagnostic (L110/L122: "undeclared escaping domain error
+/// html::invalid_url"); mutation-unsafe-site pins the first mutation
+/// site (fixture L41; Go L109 find needle
+/// call markdown::render_safe("# Hello") as html::safe sheet);
+/// mutation-emits-site pins the second mutation site (fixture L28-29;
+/// Go L110 find needle "fn html::safe page\n    emits
+/// {markdown::over_limit, html::invalid_url}"). The replacement-missed
+/// guards (L113-115) and the nonzero-status plus needle legs (L121-124)
+/// need a built bundle and stay blocked, never waived.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str heading
+    str raw_html
+    str usage_nil
+    str usage_bogus
+    str usage_arity
+    str unsafe_reject
+    str emits_reject
+    str mutation_unsafe_site
+    str mutation_emits_site
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("markdown/render", "default", "", "offline"), "heading" => ok "case markdown/render variant default root heading run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("markdown/render", "default", "", "offline"), "heading" => ok evidence("heading", "true", "true", true, "case markdown/render variant default root heading run offline")
+        different: false, true, context("markdown/render", "default", "", "offline"), "heading" => failed{"heading"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 9, 9, context("markdown/render", "default", "", "offline"), "heading" => ok evidence("heading", "9", "9", true, "case markdown/render variant default root heading run offline")
+        different: 8, 9, context("markdown/render", "default", "", "offline"), "heading" => failed{"heading"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "<h1>Hi</h1>\n", "<h1>Hi</h1>\n", context("markdown/render", "default", "", "offline"), "heading" => ok evidence("heading", "<h1>Hi</h1>\n", "<h1>Hi</h1>\n", true, "case markdown/render variant default root heading run offline")
+        different: "<h1>Hi</h1>", "<h1>Hi</h1>\n", context("markdown/render", "default", "", "offline"), "heading" => failed{"heading"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", "usage: md html <source>", "usage: md html <source>", "chain binding type mismatch", "undeclared escaping domain error html::invalid_url", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+        seed_heading_drift: "seed-heading-drift" => ok observation("<h1>Hi</h1>", "<script>alert(1)</script>\n", "usage: md html <source>", "usage: md html <source>", "usage: md html <source>", "chain binding type mismatch", "undeclared escaping domain error html::invalid_url", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+        seed_rawhtml_escape: "seed-rawhtml-escape" => ok observation("<h1>Hi</h1>\n", "&lt;script&gt;alert(1)&lt;/script&gt;\n", "usage: md html <source>", "usage: md html <source>", "usage: md html <source>", "chain binding type mismatch", "undeclared escaping domain error html::invalid_url", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+        seed_usage_nil_drift: "seed-usage-nil-drift" => ok observation("<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html", "usage: md html <source>", "usage: md html <source>", "chain binding type mismatch", "undeclared escaping domain error html::invalid_url", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+        seed_usage_bogus_drift: "seed-usage-bogus-drift" => ok observation("<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", "usage: md", "usage: md html <source>", "chain binding type mismatch", "undeclared escaping domain error html::invalid_url", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+        seed_usage_arity_drift: "seed-usage-arity-drift" => ok observation("<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", "usage: md html <source>", "usage:", "chain binding type mismatch", "undeclared escaping domain error html::invalid_url", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+        seed_unsafe_admitted: "seed-unsafe-admitted" => ok observation("<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", "usage: md html <source>", "usage: md html <source>", "undeclared escaping domain error html::invalid_url", "undeclared escaping domain error html::invalid_url", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+        seed_emits_admitted: "seed-emits-admitted" => ok observation("<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", "usage: md html <source>", "usage: md html <source>", "chain binding type mismatch", "chain binding type mismatch", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+        seed_unsafe_site_drift: "seed-unsafe-site-drift" => ok observation("<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", "usage: md html <source>", "usage: md html <source>", "chain binding type mismatch", "undeclared escaping domain error html::invalid_url", "call markdown::render_text_html(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+        seed_emits_site_drift: "seed-emits-site-drift" => ok observation("<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", "usage: md html <source>", "usage: md html <source>", "chain binding type mismatch", "undeclared escaping domain error html::invalid_url", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit}")
+    match variant_id
+        "seed-heading-drift" => ok observation("<h1>Hi</h1>", "<script>alert(1)</script>\n", "usage: md html <source>", "usage: md html <source>", "usage: md html <source>", "chain binding type mismatch", "undeclared escaping domain error html::invalid_url", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+        "seed-rawhtml-escape" => ok observation("<h1>Hi</h1>\n", "&lt;script&gt;alert(1)&lt;/script&gt;\n", "usage: md html <source>", "usage: md html <source>", "usage: md html <source>", "chain binding type mismatch", "undeclared escaping domain error html::invalid_url", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+        "seed-usage-nil-drift" => ok observation("<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html", "usage: md html <source>", "usage: md html <source>", "chain binding type mismatch", "undeclared escaping domain error html::invalid_url", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+        "seed-usage-bogus-drift" => ok observation("<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", "usage: md", "usage: md html <source>", "chain binding type mismatch", "undeclared escaping domain error html::invalid_url", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+        "seed-usage-arity-drift" => ok observation("<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", "usage: md html <source>", "usage:", "chain binding type mismatch", "undeclared escaping domain error html::invalid_url", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+        "seed-unsafe-admitted" => ok observation("<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", "usage: md html <source>", "usage: md html <source>", "undeclared escaping domain error html::invalid_url", "undeclared escaping domain error html::invalid_url", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+        "seed-emits-admitted" => ok observation("<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", "usage: md html <source>", "usage: md html <source>", "chain binding type mismatch", "chain binding type mismatch", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+        "seed-unsafe-site-drift" => ok observation("<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", "usage: md html <source>", "usage: md html <source>", "chain binding type mismatch", "undeclared escaping domain error html::invalid_url", "call markdown::render_text_html(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+        "seed-emits-site-drift" => ok observation("<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", "usage: md html <source>", "usage: md html <source>", "chain binding type mismatch", "undeclared escaping domain error html::invalid_url", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit}")
+        _ => ok observation("<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", "usage: md html <source>", "usage: md html <source>", "chain binding type mismatch", "undeclared escaping domain error html::invalid_url", "call markdown::render_safe(\"# Hello\") as html::safe sheet", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m09_030: "m09-030" => ok [check("heading", "live html of # Hi prints the h1 element"), check("raw-html", "live html preserves the raw script element"), check("usage-nil", "no argv prints the usage line"), check("usage-bogus", "bogus op prints the usage line"), check("usage-arity", "bare html prints the usage line"), check("unsafe-reject", "text HTML bound as html::safe rejects"), check("emits-reject", "omitted html::invalid_url emits rejects"), check("mutation-unsafe-site", "unsafe mutation site pins the served chain call"), check("mutation-emits-site", "emits mutation site pins the page header")]
+        other: "nope" => ok []
+    match scope is "m09-030"
+        false => ok []
+        true => ok [check("heading", "live html of # Hi prints the h1 element"), check("raw-html", "live html preserves the raw script element"), check("usage-nil", "no argv prints the usage line"), check("usage-bogus", "bogus op prints the usage line"), check("usage-arity", "bare html prints the usage line"), check("unsafe-reject", "text HTML bound as html::safe rejects"), check("emits-reject", "omitted html::invalid_url emits rejects"), check("mutation-unsafe-site", "unsafe mutation site pins the served chain call"), check("mutation-emits-site", "emits mutation site pins the page header")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "markdown/render" => ok [expected_check("heading", "<h1>Hi</h1>\n"), expected_check("raw-html", "<script>alert(1)</script>\n"), expected_check("usage-nil", "usage: md html <source>"), expected_check("usage-bogus", "usage: md html <source>"), expected_check("usage-arity", "usage: md html <source>"), expected_check("unsafe-reject", "chain binding type mismatch"), expected_check("emits-reject", "undeclared escaping domain error html::invalid_url"), expected_check("mutation-unsafe-site", "call markdown::render_safe(\"# Hello\") as html::safe sheet"), expected_check("mutation-emits-site", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")]
+        unknown: "nope" => ok []
+    match case is "markdown/render"
+        false => ok []
+        true => ok [expected_check("heading", "<h1>Hi</h1>\n"), expected_check("raw-html", "<script>alert(1)</script>\n"), expected_check("usage-nil", "usage: md html <source>"), expected_check("usage-bogus", "usage: md html <source>"), expected_check("usage-arity", "usage: md html <source>"), expected_check("unsafe-reject", "chain binding type mismatch"), expected_check("emits-reject", "undeclared escaping domain error html::invalid_url"), expected_check("mutation-unsafe-site", "call markdown::render_safe(\"# Hello\") as html::safe sheet"), expected_check("mutation-emits-site", "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("markdown/render", "default", "", "offline") => ok
+        seed_heading_drift: context("markdown/render", "seed-heading-drift", "", "offline") => failed{"heading"}
+        seed_rawhtml_escape: context("markdown/render", "seed-rawhtml-escape", "", "offline") => failed{"raw-html"}
+        seed_usage_nil_drift: context("markdown/render", "seed-usage-nil-drift", "", "offline") => failed{"usage-nil"}
+        seed_usage_bogus_drift: context("markdown/render", "seed-usage-bogus-drift", "", "offline") => failed{"usage-bogus"}
+        seed_usage_arity_drift: context("markdown/render", "seed-usage-arity-drift", "", "offline") => failed{"usage-arity"}
+        seed_unsafe_admitted: context("markdown/render", "seed-unsafe-admitted", "", "offline") => failed{"unsafe-reject"}
+        seed_emits_admitted: context("markdown/render", "seed-emits-admitted", "", "offline") => failed{"emits-reject"}
+        seed_unsafe_site_drift: context("markdown/render", "seed-unsafe-site-drift", "", "offline") => failed{"mutation-unsafe-site"}
+        seed_emits_site_drift: context("markdown/render", "seed-emits-site-drift", "", "offline") => failed{"mutation-emits-site"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.heading, "<h1>Hi</h1>\n", c, "heading")
+            failed
+            ok evidence heading_evidence => match call require_text(got.raw_html, "<script>alert(1)</script>\n", c, "raw-html")
+                failed
+                ok evidence rawhtml_evidence => match call require_text(got.usage_nil, "usage: md html <source>", c, "usage-nil")
+                    failed
+                    ok evidence nil_evidence => match call require_text(got.usage_bogus, "usage: md html <source>", c, "usage-bogus")
+                        failed
+                        ok evidence bogus_evidence => match call require_text(got.usage_arity, "usage: md html <source>", c, "usage-arity")
+                            failed
+                            ok evidence arity_evidence => match call require_text(got.unsafe_reject, "chain binding type mismatch", c, "unsafe-reject")
+                                failed
+                                ok evidence unsafe_evidence => match call require_text(got.emits_reject, "undeclared escaping domain error html::invalid_url", c, "emits-reject")
+                                    failed
+                                    ok evidence emits_evidence => match call require_text(got.mutation_unsafe_site, "call markdown::render_safe(\"# Hello\") as html::safe sheet", c, "mutation-unsafe-site")
+                                        failed
+                                        ok evidence unsafe_site_evidence => match call require_text(got.mutation_emits_site, "fn html::safe page\n    emits {markdown::over_limit, html::invalid_url}", c, "mutation-emits-site")
+                                            failed
+                                            ok evidence emits_site_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m09_030: "m09-030" => ok test_case("markdown/render", ["markdown", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 360000, [check_ref("heading"), check_ref("raw-html"), check_ref("usage-nil"), check_ref("usage-bogus"), check_ref("usage-arity"), check_ref("unsafe-reject"), check_ref("emits-reject"), check_ref("mutation-unsafe-site"), check_ref("mutation-emits-site")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m09-030"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("markdown/render", ["markdown", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 360000, [check_ref("heading"), check_ref("raw-html"), check_ref("usage-nil"), check_ref("usage-bogus"), check_ref("usage-arity"), check_ref("unsafe-reject"), check_ref("emits-reject"), check_ref("mutation-unsafe-site"), check_ref("mutation-emits-site")], callable case_body)

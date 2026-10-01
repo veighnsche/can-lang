@@ -1,0 +1,237 @@
+package m09core030run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M09 CORE-030 "markdown render: run shape, render/usage process split".
+/// Source: tests/integration/markdown_test.go symbol
+/// TestCurrentMarkdownRender (L34-126).
+/// Related fixture: compiler/testdata/current/markdown/main.can main
+/// dispatch (L56-76); the live run helper (L69-91) executes the built
+/// entry.ts directly with an empty fd-3 environment snapshot (L65-79)
+/// while assert/build go through the sandboxed canlcOffline helper
+/// (tests/integration/applications_test.go L99-117).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): production process shape of the live markdown
+/// CLI. Unlike rows with a silent entry, md main emits render or usage
+/// output by design (the markdown-semantics file pins every stdout), so
+/// the three distinct stdouts are pinned verbatim here and the silence
+/// pin lands where silence holds: exit 0 with empty stderr on the ok
+/// path. The entry also loads silently under the empty fd-3 snapshot.
+/// ADAPTATION (recorded, with source lines): the five ok() legs (L99-103)
+/// collapse to three distinct stdout values (L99 heading, L100 raw HTML,
+/// L101-103 shared usage line), pinned as heading-stdout, rawhtml-stdout
+/// and usage-stdout; no fault path exists in this row and no CAN_TSC leg
+/// exists (unlike the crypto row), so no fault/tsc pins are authored.
+/// The roots-green pin lives in core-030-roots-green.can; render
+/// semantics, usage legs, the two rejections and the mutation sites live
+/// in core-030-markdown-semantics.can.
+/// Variants: ok path only (heading, raw script, nil/bogus/arity usage);
+/// no fault path exists in this row.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/WORK/PROC/N1
+/// and C/R/N/S/A identities bind at P23; no live run now. Descriptor
+/// timeout 360000ms mirrors the Go 6-minute ctx (L41).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case markdown/render-run checks: run-exit, heading-stdout,
+/// rawhtml-stdout, usage-stdout, run-stderr-empty, snapshot-empty,
+/// sandbox-profile, offline-ok, stage-errors, offline-env.
+/// Facet map (markdown_test.go legs): run-exit pins exit 0 on the ok
+/// path (L92-98: status 0 or ok() fatals); heading-stdout pins the
+/// heading stdout (L99: "<h1>Hi</h1>\n"); rawhtml-stdout pins the raw
+/// HTML stdout (L100: "<script>alert(1)</script>\n" verbatim);
+/// usage-stdout pins the shared usage stdout (L101-103: "usage: md html
+/// <source>" with no trailing newline); run-stderr-empty pins empty
+/// stderr on the ok path (L92-98: diag must be ""); snapshot-empty pins
+/// the empty fd-3 snapshot (L66: snapshot.json holds "{}"; L79: passed
+/// as fd 3); sandbox-profile pins the offline invocation shape
+/// (applications_test.go L101: "(version 1)(allow default)(deny
+/// network*)" verbatim); offline-ok pins the offline behavior (L60/L64:
+/// the sandboxed deny-network assert/build with PATH=/nonexistent
+/// succeed); stage-errors pins the registry file (L30:
+/// can.errors.json with empty active/retired); offline-env pins the
+/// cleared environment (L78: PATH=/nonexistent; HOME set).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int run_exit
+    str heading_stdout
+    str rawhtml_stdout
+    str usage_stdout
+    bool run_stderr_empty
+    str snapshot_empty
+    str sandbox_profile
+    bool offline_ok
+    str stage_errors
+    str offline_env
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("markdown/render-run", "default", "", "offline"), "run-exit" => ok "case markdown/render-run variant default root run-exit run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("markdown/render-run", "default", "", "offline"), "run-stderr-empty" => ok evidence("run-stderr-empty", "true", "true", true, "case markdown/render-run variant default root run-stderr-empty run offline")
+        different: false, true, context("markdown/render-run", "default", "", "offline"), "run-stderr-empty" => failed{"run-stderr-empty"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("markdown/render-run", "default", "", "offline"), "run-exit" => ok evidence("run-exit", "0", "0", true, "case markdown/render-run variant default root run-exit run offline")
+        different: 1, 0, context("markdown/render-run", "default", "", "offline"), "run-exit" => failed{"run-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "<h1>Hi</h1>\n", "<h1>Hi</h1>\n", context("markdown/render-run", "default", "", "offline"), "heading-stdout" => ok evidence("heading-stdout", "<h1>Hi</h1>\n", "<h1>Hi</h1>\n", true, "case markdown/render-run variant default root heading-stdout run offline")
+        different: "<h1>Hi</h1>", "<h1>Hi</h1>\n", context("markdown/render-run", "default", "", "offline"), "heading-stdout" => failed{"heading-stdout"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(0, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", true, "{}", "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        seed_run_red: "seed-run-red" => ok observation(1, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", true, "{}", "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        seed_heading_drift: "seed-heading-drift" => ok observation(0, "<h1>Hi</h1>", "<script>alert(1)</script>\n", "usage: md html <source>", true, "{}", "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        seed_rawhtml_escape: "seed-rawhtml-escape" => ok observation(0, "<h1>Hi</h1>\n", "&lt;script&gt;alert(1)&lt;/script&gt;\n", "usage: md html <source>", true, "{}", "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        seed_usage_drift: "seed-usage-drift" => ok observation(0, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html", true, "{}", "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        seed_stderr_noisy: "seed-stderr-noisy" => ok observation(0, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", false, "{}", "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        seed_snapshot_drift: "seed-snapshot-drift" => ok observation(0, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", true, "[]", "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        seed_profile_drift: "seed-profile-drift" => ok observation(0, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", true, "{}", "(version 1)(allow default)", true, "can.errors.json", "PATH=/nonexistent")
+        seed_offline_fail: "seed-offline-fail" => ok observation(0, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", true, "{}", "(version 1)(allow default)(deny network*)", false, "can.errors.json", "PATH=/nonexistent")
+        seed_errors_drift: "seed-errors-drift" => ok observation(0, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", true, "{}", "(version 1)(allow default)(deny network*)", true, "can.project.json", "PATH=/nonexistent")
+        seed_env_drift: "seed-env-drift" => ok observation(0, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", true, "{}", "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/usr/bin")
+    match variant_id
+        "seed-run-red" => ok observation(1, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", true, "{}", "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        "seed-heading-drift" => ok observation(0, "<h1>Hi</h1>", "<script>alert(1)</script>\n", "usage: md html <source>", true, "{}", "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        "seed-rawhtml-escape" => ok observation(0, "<h1>Hi</h1>\n", "&lt;script&gt;alert(1)&lt;/script&gt;\n", "usage: md html <source>", true, "{}", "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        "seed-usage-drift" => ok observation(0, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html", true, "{}", "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        "seed-stderr-noisy" => ok observation(0, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", false, "{}", "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        "seed-snapshot-drift" => ok observation(0, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", true, "[]", "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+        "seed-profile-drift" => ok observation(0, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", true, "{}", "(version 1)(allow default)", true, "can.errors.json", "PATH=/nonexistent")
+        "seed-offline-fail" => ok observation(0, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", true, "{}", "(version 1)(allow default)(deny network*)", false, "can.errors.json", "PATH=/nonexistent")
+        "seed-errors-drift" => ok observation(0, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", true, "{}", "(version 1)(allow default)(deny network*)", true, "can.project.json", "PATH=/nonexistent")
+        "seed-env-drift" => ok observation(0, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", true, "{}", "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/usr/bin")
+        _ => ok observation(0, "<h1>Hi</h1>\n", "<script>alert(1)</script>\n", "usage: md html <source>", true, "{}", "(version 1)(allow default)(deny network*)", true, "can.errors.json", "PATH=/nonexistent")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m09_030: "m09-030" => ok [check("run-exit", "live run exits 0 on the ok path"), check("heading-stdout", "live heading run prints the h1 element"), check("rawhtml-stdout", "live raw run preserves the script element"), check("usage-stdout", "live usage legs print the usage line"), check("run-stderr-empty", "live run keeps stderr empty"), check("snapshot-empty", "entries consume the empty fd-3 snapshot"), check("sandbox-profile", "assert/build invocations pin the deny-network sandbox profile"), check("offline-ok", "offline sandboxed assert/build succeeds"), check("stage-errors", "staged project pins the error registry filename"), check("offline-env", "sandboxed invocations clear PATH")]
+        other: "nope" => ok []
+    match scope is "m09-030"
+        false => ok []
+        true => ok [check("run-exit", "live run exits 0 on the ok path"), check("heading-stdout", "live heading run prints the h1 element"), check("rawhtml-stdout", "live raw run preserves the script element"), check("usage-stdout", "live usage legs print the usage line"), check("run-stderr-empty", "live run keeps stderr empty"), check("snapshot-empty", "entries consume the empty fd-3 snapshot"), check("sandbox-profile", "assert/build invocations pin the deny-network sandbox profile"), check("offline-ok", "offline sandboxed assert/build succeeds"), check("stage-errors", "staged project pins the error registry filename"), check("offline-env", "sandboxed invocations clear PATH")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "markdown/render-run" => ok [expected_check("run-exit", "0"), expected_check("heading-stdout", "<h1>Hi</h1>\n"), expected_check("rawhtml-stdout", "<script>alert(1)</script>\n"), expected_check("usage-stdout", "usage: md html <source>"), expected_check("run-stderr-empty", "true"), expected_check("snapshot-empty", "{}"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("offline-ok", "true"), expected_check("stage-errors", "can.errors.json"), expected_check("offline-env", "PATH=/nonexistent")]
+        unknown: "nope" => ok []
+    match case is "markdown/render-run"
+        false => ok []
+        true => ok [expected_check("run-exit", "0"), expected_check("heading-stdout", "<h1>Hi</h1>\n"), expected_check("rawhtml-stdout", "<script>alert(1)</script>\n"), expected_check("usage-stdout", "usage: md html <source>"), expected_check("run-stderr-empty", "true"), expected_check("snapshot-empty", "{}"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("offline-ok", "true"), expected_check("stage-errors", "can.errors.json"), expected_check("offline-env", "PATH=/nonexistent")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("markdown/render-run", "default", "", "offline") => ok
+        seed_run_red: context("markdown/render-run", "seed-run-red", "", "offline") => failed{"run-exit"}
+        seed_heading_drift: context("markdown/render-run", "seed-heading-drift", "", "offline") => failed{"heading-stdout"}
+        seed_rawhtml_escape: context("markdown/render-run", "seed-rawhtml-escape", "", "offline") => failed{"rawhtml-stdout"}
+        seed_usage_drift: context("markdown/render-run", "seed-usage-drift", "", "offline") => failed{"usage-stdout"}
+        seed_stderr_noisy: context("markdown/render-run", "seed-stderr-noisy", "", "offline") => failed{"run-stderr-empty"}
+        seed_snapshot_drift: context("markdown/render-run", "seed-snapshot-drift", "", "offline") => failed{"snapshot-empty"}
+        seed_profile_drift: context("markdown/render-run", "seed-profile-drift", "", "offline") => failed{"sandbox-profile"}
+        seed_offline_fail: context("markdown/render-run", "seed-offline-fail", "", "offline") => failed{"offline-ok"}
+        seed_errors_drift: context("markdown/render-run", "seed-errors-drift", "", "offline") => failed{"stage-errors"}
+        seed_env_drift: context("markdown/render-run", "seed-env-drift", "", "offline") => failed{"offline-env"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.run_exit, 0, c, "run-exit")
+            failed
+            ok evidence exit_evidence => match call require_text(got.heading_stdout, "<h1>Hi</h1>\n", c, "heading-stdout")
+                failed
+                ok evidence heading_evidence => match call require_text(got.rawhtml_stdout, "<script>alert(1)</script>\n", c, "rawhtml-stdout")
+                    failed
+                    ok evidence rawhtml_evidence => match call require_text(got.usage_stdout, "usage: md html <source>", c, "usage-stdout")
+                        failed
+                        ok evidence usage_evidence => match call require_bool(got.run_stderr_empty, true, c, "run-stderr-empty")
+                            failed
+                            ok evidence stderr_evidence => match call require_text(got.snapshot_empty, "{}", c, "snapshot-empty")
+                                failed
+                                ok evidence snapshot_evidence => match call require_text(got.sandbox_profile, "(version 1)(allow default)(deny network*)", c, "sandbox-profile")
+                                    failed
+                                    ok evidence profile_evidence => match call require_bool(got.offline_ok, true, c, "offline-ok")
+                                        failed
+                                        ok evidence offline_evidence => match call require_text(got.stage_errors, "can.errors.json", c, "stage-errors")
+                                            failed
+                                            ok evidence errors_evidence => match call require_text(got.offline_env, "PATH=/nonexistent", c, "offline-env")
+                                                failed
+                                                ok evidence env_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m09_030: "m09-030" => ok test_case("markdown/render-run", ["markdown", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 360000, [check_ref("run-exit"), check_ref("heading-stdout"), check_ref("rawhtml-stdout"), check_ref("usage-stdout"), check_ref("run-stderr-empty"), check_ref("snapshot-empty"), check_ref("sandbox-profile"), check_ref("offline-ok"), check_ref("stage-errors"), check_ref("offline-env")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m09-030"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("markdown/render-run", ["markdown", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 360000, [check_ref("run-exit"), check_ref("heading-stdout"), check_ref("rawhtml-stdout"), check_ref("usage-stdout"), check_ref("run-stderr-empty"), check_ref("snapshot-empty"), check_ref("sandbox-profile"), check_ref("offline-ok"), check_ref("stage-errors"), check_ref("offline-env")], callable case_body)
