@@ -1,0 +1,174 @@
+package m27history023factory
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M27 HISTORY-023 "owner-setup green: private factory boundary + trap probes".
+/// Source: tests/failure-conventions/owner_test.go symbol TestOwnerSetupGreen.
+/// Related fixtures: tests/failure-conventions/owner-setup/src/handler/handler.can.
+/// Disposition: RETAIN. The extracted owner-accepting helper tier_for is tested
+/// through the private fallible fixture_id factory; trap kind/message probes
+/// pin the failure surface of unexpected factory rejection.
+/// Protects (this file): handler provides exactly
+/// [tier_view, tier_for, handle_tier] with fixture_id private; tier_for takes
+/// ids::user_id (never raw input) and its asserts route through fixture_id;
+/// the invalid arm relays fixture_id(1 / 0) so rejection faults through the
+/// arithmetic trap before any call; trap kind "arithmetic"; trap message
+/// "arithmetic: integer division by zero"; trap operation "binary".
+/// Per-root green flags live in history-023-roots-green.can; report shape and
+/// provenance live in history-023-report-provenance.can.
+/// Variants: positive owner project only. Tainted frames (024), forged-owner
+/// rejection (025), sneak-package factory call (026) and guided repair (027)
+/// are later rows: this file pins the static boundary, not their rejections.
+/// In particular the "handler::fixture_id is private" sneak rejection belongs
+/// to HISTORY-026; here factory-private records only the provides-list fact.
+/// Environment: CONV_BUNDLE or CAN_BUN_ARCHIVE; requires
+/// conv-bundle-or-can-bun-archive. Logical gates SUITE/DIAG/FAULT and C/R/N/S/A
+/// identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case owner-setup/factory-boundary checks: provides-exact, factory-private,
+/// helper-owner-typed, trap-armed, trap-kind, trap-message, trap-op.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool provides_exact
+    bool factory_private
+    bool helper_owner_typed
+    bool trap_armed
+    str trap_kind
+    str trap_message
+    str trap_op
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("owner-setup/factory-boundary", "default", "", "offline"), "provides-exact" => ok "case owner-setup/factory-boundary variant default root provides-exact run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("owner-setup/factory-boundary", "default", "", "offline"), "factory-private" => ok evidence("factory-private", "true", "true", true, "case owner-setup/factory-boundary variant default root factory-private run offline")
+        different: false, true, context("owner-setup/factory-boundary", "default", "", "offline"), "factory-private" => failed{"factory-private"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "arithmetic", "arithmetic", context("owner-setup/factory-boundary", "default", "", "offline"), "trap-kind" => ok evidence("trap-kind", "arithmetic", "arithmetic", true, "case owner-setup/factory-boundary variant default root trap-kind run offline")
+        different: "no-fault", "arithmetic", context("owner-setup/factory-boundary", "default", "", "offline"), "trap-kind" => failed{"trap-kind"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, true, true, "arithmetic", "arithmetic: integer division by zero", "binary")
+        seed_provides_leak: "seed-provides-leak" => ok observation(false, false, true, true, "arithmetic", "arithmetic: integer division by zero", "binary")
+        seed_raw_helper: "seed-raw-helper" => ok observation(true, true, false, true, "arithmetic", "arithmetic: integer division by zero", "binary")
+        seed_trap_disarmed: "seed-trap-disarmed" => ok observation(true, true, true, false, "no-fault", "no-fault", "call")
+        seed_trap_kind_drift: "seed-trap-kind-drift" => ok observation(true, true, true, true, "no-fault", "arithmetic: integer division by zero", "binary")
+        seed_message_missing: "seed-message-missing" => ok observation(true, true, true, true, "arithmetic", "", "binary")
+    match variant_id
+        "seed-provides-leak" => ok observation(false, false, true, true, "arithmetic", "arithmetic: integer division by zero", "binary")
+        "seed-raw-helper" => ok observation(true, true, false, true, "arithmetic", "arithmetic: integer division by zero", "binary")
+        "seed-trap-disarmed" => ok observation(true, true, true, false, "no-fault", "no-fault", "call")
+        "seed-trap-kind-drift" => ok observation(true, true, true, true, "no-fault", "arithmetic: integer division by zero", "binary")
+        "seed-message-missing" => ok observation(true, true, true, true, "arithmetic", "", "binary")
+        _ => ok observation(true, true, true, true, "arithmetic", "arithmetic: integer division by zero", "binary")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m27_023: "m27-023" => ok [check("provides-exact", "handler provides exactly tier_view, tier_for, handle_tier"), check("factory-private", "fixture_id is absent from handler provides"), check("helper-owner-typed", "tier_for takes ids::user_id, never raw input"), check("trap-armed", "invalid arm relays fixture_id(1 / 0) through the trap"), check("trap-kind", "trap kind probe pins arithmetic"), check("trap-message", "trap message probe pins the division template"), check("trap-op", "trap faults at a binary division operation")]
+        other: "nope" => ok []
+    match scope is "m27-023"
+        false => ok []
+        true => ok [check("provides-exact", "handler provides exactly tier_view, tier_for, handle_tier"), check("factory-private", "fixture_id is absent from handler provides"), check("helper-owner-typed", "tier_for takes ids::user_id, never raw input"), check("trap-armed", "invalid arm relays fixture_id(1 / 0) through the trap"), check("trap-kind", "trap kind probe pins arithmetic"), check("trap-message", "trap message probe pins the division template"), check("trap-op", "trap faults at a binary division operation")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "owner-setup/factory-boundary" => ok [expected_check("provides-exact", "true"), expected_check("factory-private", "true"), expected_check("helper-owner-typed", "true"), expected_check("trap-armed", "true"), expected_check("trap-kind", "arithmetic"), expected_check("trap-message", "arithmetic: integer division by zero"), expected_check("trap-op", "binary")]
+        unknown: "nope" => ok []
+    match case is "owner-setup/factory-boundary"
+        false => ok []
+        true => ok [expected_check("provides-exact", "true"), expected_check("factory-private", "true"), expected_check("helper-owner-typed", "true"), expected_check("trap-armed", "true"), expected_check("trap-kind", "arithmetic"), expected_check("trap-message", "arithmetic: integer division by zero"), expected_check("trap-op", "binary")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("owner-setup/factory-boundary", "default", "", "offline") => ok
+        seed_provides_leak: context("owner-setup/factory-boundary", "seed-provides-leak", "", "offline") => failed{"provides-exact"}
+        seed_raw_helper: context("owner-setup/factory-boundary", "seed-raw-helper", "", "offline") => failed{"helper-owner-typed"}
+        seed_trap_disarmed: context("owner-setup/factory-boundary", "seed-trap-disarmed", "", "offline") => failed{"trap-armed"}
+        seed_trap_kind_drift: context("owner-setup/factory-boundary", "seed-trap-kind-drift", "", "offline") => failed{"trap-kind"}
+        seed_message_missing: context("owner-setup/factory-boundary", "seed-message-missing", "", "offline") => failed{"trap-message"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.provides_exact, true, c, "provides-exact")
+            failed
+            ok evidence provides_evidence => match call require_bool(got.factory_private, true, c, "factory-private")
+                failed
+                ok evidence privacy_evidence => match call require_bool(got.helper_owner_typed, true, c, "helper-owner-typed")
+                    failed
+                    ok evidence helper_evidence => match call require_bool(got.trap_armed, true, c, "trap-armed")
+                        failed
+                        ok evidence armed_evidence => match call require_text(got.trap_kind, "arithmetic", c, "trap-kind")
+                            failed
+                            ok evidence kind_evidence => match call require_text(got.trap_message, "arithmetic: integer division by zero", c, "trap-message")
+                                failed
+                                ok evidence message_evidence => match call require_text(got.trap_op, "binary", c, "trap-op")
+                                    failed
+                                    ok evidence op_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m27_023: "m27-023" => ok test_case("owner-setup/factory-boundary", ["owner", "m27"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("provides-exact"), check_ref("factory-private"), check_ref("helper-owner-typed"), check_ref("trap-armed"), check_ref("trap-kind"), check_ref("trap-message"), check_ref("trap-op")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m27-023"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("owner-setup/factory-boundary", ["owner", "m27"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("provides-exact"), check_ref("factory-private"), check_ref("helper-owner-typed"), check_ref("trap-armed"), check_ref("trap-kind"), check_ref("trap-message"), check_ref("trap-op")], callable case_body)
