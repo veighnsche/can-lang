@@ -1,0 +1,209 @@
+package m07core048run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M07 CORE-048 "bundled wrappers: TFT production run shape".
+/// Source: tests/integration/wrap_test.go symbol TestCurrentBundledWrappers.
+/// Related fixture: compiler/testdata/current/wrap/main.can main entry
+/// (L120-141); the live run helper (L83-102) executes the sandboxed binary
+/// under the deny-network profile plus a localhost-only allowance for run.
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): production process shape of the live wrapper
+/// entry. ADAPTATION (documented, CORE-014/019/040 precedent): unlike rows
+/// with a silent entry, the wrap live main prints "TFT" by design (Go
+/// L142 pins out "TFT": the likelihood relays emit T/F/T through report
+/// while the judge batch resolves), so this row has no silent (exit 0,
+/// empty stdout, empty stderr) production path; the stdout text pin lands
+/// here as run-stdout "TFT" and the silence pin lands where silence holds
+/// (run-stderr-empty). No run-stdout-empty pin is authored because it
+/// would contradict the Go live-output assertion. The sandbox profile,
+/// the run-only network allowance and the credential env plumbing pin the
+/// invocation contract.
+/// The 13-root green pin lives in core-048-roots-green.can; wrapper
+/// policy semantics, recovery paths and the strict-ts leg live in
+/// core-048-wrappers-semantics.can.
+/// Variants: none live in this file beyond the green 404 run path itself;
+/// the 429-busy/503-broken/success/missing-local-key variants belong to
+/// the wrappers-semantics file, and the optional CAN_TSC strict
+/// generated-TypeScript leg (L186-205) is env-gated there and recorded
+/// blocked, never waived.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. CAN_I17_TOKEN is harness-supplied
+/// (Go L90: "test-only"), not an external gate. Logical gates
+/// SUITE/DIAG/FAULT and C/R/N/S/A identities bind at P23/QHTTP/QN1; no
+/// live run now. Descriptor timeout 120000ms mirrors the Go 2-minute ctx
+/// (L27).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QHTTP/QN1 unmet).
+/// Case bundled/wrap-run checks: run-exit, run-stdout, run-stderr-empty,
+/// sandbox-profile, network-allowance, credential-env.
+/// Facet map (wrap_test.go legs): run-exit pins exit 0 on the green 404
+/// run (L141-144: status 0 or "wrapper execution" fatals); run-stdout
+/// pins the live relay output (L142: out must be "TFT" verbatim);
+/// run-stderr-empty pins empty stderr on the green run (L142: diag must
+/// be ""); sandbox-profile pins the deny-network base profile (L85:
+/// "(version 1)(allow default)(deny network*)" verbatim);
+/// network-allowance pins the run-only localhost allowance (L85: "(allow
+/// network-outbound (remote ip "localhost:*"))" verbatim);
+/// credential-env pins the credential plumbing (L90: CAN_I17_TOKEN set in
+/// the run environment).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int run_exit
+    str run_stdout
+    bool run_stderr_empty
+    str sandbox_profile
+    str network_allowance
+    str credential_env
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/wrap-run", "default", "", "offline"), "run-exit" => ok "case bundled/wrap-run variant default root run-exit run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/wrap-run", "default", "", "offline"), "run-stderr-empty" => ok evidence("run-stderr-empty", "true", "true", true, "case bundled/wrap-run variant default root run-stderr-empty run offline")
+        different: false, true, context("bundled/wrap-run", "default", "", "offline"), "run-stderr-empty" => failed{"run-stderr-empty"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("bundled/wrap-run", "default", "", "offline"), "run-exit" => ok evidence("run-exit", "0", "0", true, "case bundled/wrap-run variant default root run-exit run offline")
+        different: 1, 0, context("bundled/wrap-run", "default", "", "offline"), "run-exit" => failed{"run-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "TFT", "TFT", context("bundled/wrap-run", "default", "", "offline"), "run-stdout" => ok evidence("run-stdout", "TFT", "TFT", true, "case bundled/wrap-run variant default root run-stdout run offline")
+        different: "TF", "TFT", context("bundled/wrap-run", "default", "", "offline"), "run-stdout" => failed{"run-stdout"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(0, "TFT", true, "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I17_TOKEN")
+        seed_run_red: "seed-run-red" => ok observation(1, "TFT", true, "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I17_TOKEN")
+        seed_stdout_drift: "seed-stdout-drift" => ok observation(0, "TF", true, "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I17_TOKEN")
+        seed_stderr_noisy: "seed-stderr-noisy" => ok observation(0, "TFT", false, "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I17_TOKEN")
+        seed_profile_drift: "seed-profile-drift" => ok observation(0, "TFT", true, "(version 1)(allow default)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I17_TOKEN")
+        seed_allowance_drift: "seed-allowance-drift" => ok observation(0, "TFT", true, "(version 1)(allow default)(deny network*)", "(allow network-outbound)", "CAN_I17_TOKEN")
+        seed_env_drift: "seed-env-drift" => ok observation(0, "TFT", true, "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_TOKEN")
+    match variant_id
+        "seed-run-red" => ok observation(1, "TFT", true, "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I17_TOKEN")
+        "seed-stdout-drift" => ok observation(0, "TF", true, "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I17_TOKEN")
+        "seed-stderr-noisy" => ok observation(0, "TFT", false, "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I17_TOKEN")
+        "seed-profile-drift" => ok observation(0, "TFT", true, "(version 1)(allow default)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I17_TOKEN")
+        "seed-allowance-drift" => ok observation(0, "TFT", true, "(version 1)(allow default)(deny network*)", "(allow network-outbound)", "CAN_I17_TOKEN")
+        "seed-env-drift" => ok observation(0, "TFT", true, "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_TOKEN")
+        _ => ok observation(0, "TFT", true, "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I17_TOKEN")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m07_048: "m07-048" => ok [check("run-exit", "green run exits 0"), check("run-stdout", "green run prints TFT"), check("run-stderr-empty", "green run keeps stderr empty"), check("sandbox-profile", "invocation pins the deny-network sandbox profile"), check("network-allowance", "run pins the localhost-only network allowance"), check("credential-env", "run environment carries CAN_I17_TOKEN")]
+        other: "nope" => ok []
+    match scope is "m07-048"
+        false => ok []
+        true => ok [check("run-exit", "green run exits 0"), check("run-stdout", "green run prints TFT"), check("run-stderr-empty", "green run keeps stderr empty"), check("sandbox-profile", "invocation pins the deny-network sandbox profile"), check("network-allowance", "run pins the localhost-only network allowance"), check("credential-env", "run environment carries CAN_I17_TOKEN")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/wrap-run" => ok [expected_check("run-exit", "0"), expected_check("run-stdout", "TFT"), expected_check("run-stderr-empty", "true"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("network-allowance", "(allow network-outbound (remote ip \"localhost:*\"))"), expected_check("credential-env", "CAN_I17_TOKEN")]
+        unknown: "nope" => ok []
+    match case is "bundled/wrap-run"
+        false => ok []
+        true => ok [expected_check("run-exit", "0"), expected_check("run-stdout", "TFT"), expected_check("run-stderr-empty", "true"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("network-allowance", "(allow network-outbound (remote ip \"localhost:*\"))"), expected_check("credential-env", "CAN_I17_TOKEN")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/wrap-run", "default", "", "offline") => ok
+        seed_run_red: context("bundled/wrap-run", "seed-run-red", "", "offline") => failed{"run-exit"}
+        seed_stdout_drift: context("bundled/wrap-run", "seed-stdout-drift", "", "offline") => failed{"run-stdout"}
+        seed_stderr_noisy: context("bundled/wrap-run", "seed-stderr-noisy", "", "offline") => failed{"run-stderr-empty"}
+        seed_profile_drift: context("bundled/wrap-run", "seed-profile-drift", "", "offline") => failed{"sandbox-profile"}
+        seed_allowance_drift: context("bundled/wrap-run", "seed-allowance-drift", "", "offline") => failed{"network-allowance"}
+        seed_env_drift: context("bundled/wrap-run", "seed-env-drift", "", "offline") => failed{"credential-env"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.run_exit, 0, c, "run-exit")
+            failed
+            ok evidence exit_evidence => match call require_text(got.run_stdout, "TFT", c, "run-stdout")
+                failed
+                ok evidence stdout_evidence => match call require_bool(got.run_stderr_empty, true, c, "run-stderr-empty")
+                    failed
+                    ok evidence stderr_evidence => match call require_text(got.sandbox_profile, "(version 1)(allow default)(deny network*)", c, "sandbox-profile")
+                        failed
+                        ok evidence profile_evidence => match call require_text(got.network_allowance, "(allow network-outbound (remote ip \"localhost:*\"))", c, "network-allowance")
+                            failed
+                            ok evidence allowance_evidence => match call require_text(got.credential_env, "CAN_I17_TOKEN", c, "credential-env")
+                                failed
+                                ok evidence env_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m07_048: "m07-048" => ok test_case("bundled/wrap-run", ["wrap", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("run-exit"), check_ref("run-stdout"), check_ref("run-stderr-empty"), check_ref("sandbox-profile"), check_ref("network-allowance"), check_ref("credential-env")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m07-048"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/wrap-run", ["wrap", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("run-exit"), check_ref("run-stdout"), check_ref("run-stderr-empty"), check_ref("sandbox-profile"), check_ref("network-allowance"), check_ref("credential-env")], callable case_body)

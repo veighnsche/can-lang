@@ -1,0 +1,293 @@
+package m07core048wrappers
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M07 CORE-048 "bundled wrappers: policy preservation, recovery, error identity".
+/// Source: tests/integration/wrap_test.go symbol TestCurrentBundledWrappers.
+/// Related fixture: compiler/testdata/current/wrap/main.can plus the raw
+/// offline fixtures under compiler/testdata/current/wrap/fixtures
+/// (load.json for load, load_timeout.json for settled, assess.json for
+/// assess) and the httptest double (Go L36-65: /load modes at L40-53,
+/// /systemone judge protocol at L54-61).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): nested wrapper/recovery policies preserving the
+/// selected fixture rows and error identity; the assert-report evidence
+/// labels with no live-quality claim and no live requests; the 404
+/// grandchild recovery with exactly one load and one judge request; the
+/// 429-busy delegation and 503-broken renormalization escaping as one
+/// normalized infrastructure failure; the successful-load bypass reaching
+/// the checks failure; the wrong emitted local key failing verification;
+/// the judge protocol; and the strict-ts leg.
+/// The 13-root green pin lives in core-048-roots-green.can; the TFT
+/// production process shape lives in core-048-run-shape.can.
+/// Variants: 404 (missing/default), 429 busy, 503 broken, success (ok),
+/// missing local key (Go L141-184); the optional CAN_TSC strict
+/// generated-TypeScript leg (L186-205) is env-gated and recorded
+/// blocked, never waived.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. CAN_I17_TOKEN is harness-supplied
+/// (Go L90: "test-only"), not an external gate. Logical gates
+/// SUITE/DIAG/FAULT and C/R/N/S/A identities bind at P23/QHTTP/QN1; no
+/// live run now. Descriptor timeout 120000ms mirrors the Go 2-minute ctx
+/// (L27).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QHTTP/QN1 unmet).
+/// Case bundled/wrap-semantics checks: report-labels, no-live-quality,
+/// assert-silence, cached-policy, settled-policy, guarded-policy,
+/// recover-404, error-identity, busy-429, broken-503, load-bypass,
+/// bypass-identity, wrong-key, judge-protocol, strict-ts, load-count.
+/// Facet map (wrap_test.go legs): report-labels pins the assert-report
+/// evidence (L125-129: policy-fixture, raw-provider-fixture, real-can,
+/// supplied-completion or the test fatals); no-live-quality pins the
+/// offline claim (L130-132: "live-quality" must be absent);
+/// assert-silence pins the assertion silence (L133-137: loads 0 and
+/// batches 0 or "assertions issued live requests" fatals); cached-policy
+/// pins the child policy (fixture L23-26: native 404 yields receipt(0),
+/// every other status inherits; rows L19-22 absent/busy);
+/// settled-policy pins the grandchild policy (fixture L36-40: native 404
+/// yields receipt(0), 429 inherits, every other status renormalizes to
+/// http::request_failed; rows L30-35 gone/slow/stalled);
+/// guarded-policy pins the assess wrapper (fixture L92-97: native 404
+/// yields 0.0 and any other status inherits, emitted invalid_answer
+/// yields 0.0; rows L88-91 absorbed/missing); recover-404 pins the 404
+/// path (L139-149: the default mode recovers through the grandchild with
+/// the judge batch succeeding; loads 1 and batches 1, each underlying
+/// operation exactly once); error-identity pins the normalized failure
+/// (L158: diag carries "can.error.v2:can.std.http@1::request_failed"
+/// verbatim); busy-429 pins the busy path (L151-160: 429 delegates
+/// grandchild to child to default and escapes normalized); broken-503
+/// pins the broken path (L151-160: 503 renormalizes at the grandchild
+/// and escapes normalized); load-bypass pins the success path (L162-170:
+/// the ok mode bypasses policy untouched so count 7 reaches the receipt
+/// assertion instead of any handler); bypass-identity pins the bypass
+/// failure (L168: diag carries "checks::failed" and
+/// ""identity":"can.error.v2:can.std.checks@1::failed"" verbatim);
+/// wrong-key pins the coverage mutation (L172-184: dropping the absorbed
+/// row that selects the emitted local key fails the build with
+/// "selecting local"); judge-protocol pins the batch request (L57-61:
+/// POST with a nonempty Authorization, Content-Type application/json and
+/// "model":"jev-latest" in the body; the batch resolves resolved-model);
+/// strict-ts pins the optional leg (L186-205: strict tsc over emitted
+/// dist TypeScript via CAN_BUN runs if and only if CAN_TSC is set);
+/// load-count pins the served count (L53/L162-163: {"count":7} reaches
+/// the receipt assertion on the bypass path).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str report_labels
+    bool no_live_quality
+    bool assert_silence
+    str cached_policy
+    str settled_policy
+    str guarded_policy
+    bool recover_404
+    str error_identity
+    bool busy_429
+    bool broken_503
+    bool load_bypass
+    str bypass_identity
+    str wrong_key
+    str judge_protocol
+    bool strict_ts
+    int load_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/wrap-semantics", "default", "", "offline"), "report-labels" => ok "case bundled/wrap-semantics variant default root report-labels run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/wrap-semantics", "default", "", "offline"), "no-live-quality" => ok evidence("no-live-quality", "true", "true", true, "case bundled/wrap-semantics variant default root no-live-quality run offline")
+        different: false, true, context("bundled/wrap-semantics", "default", "", "offline"), "no-live-quality" => failed{"no-live-quality"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 7, 7, context("bundled/wrap-semantics", "default", "", "offline"), "load-count" => ok evidence("load-count", "7", "7", true, "case bundled/wrap-semantics variant default root load-count run offline")
+        different: 6, 7, context("bundled/wrap-semantics", "default", "", "offline"), "load-count" => failed{"load-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "selecting local", "selecting local", context("bundled/wrap-semantics", "default", "", "offline"), "wrong-key" => ok evidence("wrong-key", "selecting local", "selecting local", true, "case bundled/wrap-semantics variant default root wrong-key run offline")
+        different: "ok", "selecting local", context("bundled/wrap-semantics", "default", "", "offline"), "wrong-key" => failed{"wrong-key"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        seed_labels_loss: "seed-labels-loss" => ok observation("policy-fixture|raw-provider-fixture|real-can", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        seed_live_quality: "seed-live-quality" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", false, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        seed_assert_live: "seed-assert-live" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, false, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        seed_cached_drift: "seed-cached-drift" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>inherit|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        seed_settled_drift: "seed-settled-drift" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>receipt(0)|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        seed_guarded_drift: "seed-guarded-drift" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>inherit|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        seed_recover_fail: "seed-recover-fail" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", false, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        seed_identity_drift: "seed-identity-drift" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::status_error", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        seed_busy_green: "seed-busy-green" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", false, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        seed_broken_green: "seed-broken-green" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, false, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        seed_bypass_handled: "seed-bypass-handled" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, false, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        seed_bypass_identity_drift: "seed-bypass-identity-drift" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.http@1::request_failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        seed_key_admitted: "seed-key-admitted" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "ok", "POST|authorization|application/json|jev-latest", true, 7)
+        seed_judge_drift: "seed-judge-drift" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "GET|authorization|application/json|jev-latest", true, 7)
+        seed_tsc_unconditional: "seed-tsc-unconditional" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", false, 7)
+        seed_count_drift: "seed-count-drift" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 6)
+    match variant_id
+        "seed-labels-loss" => ok observation("policy-fixture|raw-provider-fixture|real-can", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        "seed-live-quality" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", false, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        "seed-assert-live" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, false, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        "seed-cached-drift" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>inherit|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        "seed-settled-drift" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>receipt(0)|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        "seed-guarded-drift" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>inherit|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        "seed-recover-fail" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", false, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        "seed-identity-drift" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::status_error", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        "seed-busy-green" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", false, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        "seed-broken-green" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, false, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        "seed-bypass-handled" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, false, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        "seed-bypass-identity-drift" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.http@1::request_failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+        "seed-key-admitted" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "ok", "POST|authorization|application/json|jev-latest", true, 7)
+        "seed-judge-drift" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "GET|authorization|application/json|jev-latest", true, 7)
+        "seed-tsc-unconditional" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", false, 7)
+        "seed-count-drift" => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 6)
+        _ => ok observation("policy-fixture|raw-provider-fixture|real-can|supplied-completion", true, true, "404=>receipt(0)|inherit", "404=>receipt(0)|429=>inherit|else=>request_failed", "404=>0.0|invalid_answer=>0.0", true, "can.error.v2:can.std.http@1::request_failed", true, true, true, "can.error.v2:can.std.checks@1::failed", "selecting local", "POST|authorization|application/json|jev-latest", true, 7)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m07_048: "m07-048" => ok [check("report-labels", "assert report carries the four evidence labels"), check("no-live-quality", "offline run claims no live quality"), check("assert-silence", "assertions issue no live load or judge requests"), check("cached-policy", "cached recovers native 404 to receipt(0) and inherits the rest"), check("settled-policy", "settled recovers native 404, inherits 429, renormalizes the rest"), check("guarded-policy", "guarded recovers native 404 and emitted invalid_answer to 0.0"), check("recover-404", "404 mode recovers through the grandchild with one load and one judge request"), check("error-identity", "busy and broken runs fail with the normalized request_failed identity"), check("busy-429", "429 delegates grandchild to child to default"), check("broken-503", "503 renormalizes at the grandchild"), check("load-bypass", "successful load bypasses policy untouched to the receipt assertion"), check("bypass-identity", "bypass run fails with the checks failed identity"), check("wrong-key", "dropping the emitted-local-key row fails verification"), check("judge-protocol", "judge batch pins POST, auth, json media and jev-latest"), check("strict-ts", "strict tsc leg runs only when CAN_TSC is set with CAN_BUN"), check("load-count", "served load count pins exact 7")]
+        other: "nope" => ok []
+    match scope is "m07-048"
+        false => ok []
+        true => ok [check("report-labels", "assert report carries the four evidence labels"), check("no-live-quality", "offline run claims no live quality"), check("assert-silence", "assertions issue no live load or judge requests"), check("cached-policy", "cached recovers native 404 to receipt(0) and inherits the rest"), check("settled-policy", "settled recovers native 404, inherits 429, renormalizes the rest"), check("guarded-policy", "guarded recovers native 404 and emitted invalid_answer to 0.0"), check("recover-404", "404 mode recovers through the grandchild with one load and one judge request"), check("error-identity", "busy and broken runs fail with the normalized request_failed identity"), check("busy-429", "429 delegates grandchild to child to default"), check("broken-503", "503 renormalizes at the grandchild"), check("load-bypass", "successful load bypasses policy untouched to the receipt assertion"), check("bypass-identity", "bypass run fails with the checks failed identity"), check("wrong-key", "dropping the emitted-local-key row fails verification"), check("judge-protocol", "judge batch pins POST, auth, json media and jev-latest"), check("strict-ts", "strict tsc leg runs only when CAN_TSC is set with CAN_BUN"), check("load-count", "served load count pins exact 7")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/wrap-semantics" => ok [expected_check("report-labels", "policy-fixture|raw-provider-fixture|real-can|supplied-completion"), expected_check("no-live-quality", "true"), expected_check("assert-silence", "true"), expected_check("cached-policy", "404=>receipt(0)|inherit"), expected_check("settled-policy", "404=>receipt(0)|429=>inherit|else=>request_failed"), expected_check("guarded-policy", "404=>0.0|invalid_answer=>0.0"), expected_check("recover-404", "true"), expected_check("error-identity", "can.error.v2:can.std.http@1::request_failed"), expected_check("busy-429", "true"), expected_check("broken-503", "true"), expected_check("load-bypass", "true"), expected_check("bypass-identity", "can.error.v2:can.std.checks@1::failed"), expected_check("wrong-key", "selecting local"), expected_check("judge-protocol", "POST|authorization|application/json|jev-latest"), expected_check("strict-ts", "true"), expected_check("load-count", "7")]
+        unknown: "nope" => ok []
+    match case is "bundled/wrap-semantics"
+        false => ok []
+        true => ok [expected_check("report-labels", "policy-fixture|raw-provider-fixture|real-can|supplied-completion"), expected_check("no-live-quality", "true"), expected_check("assert-silence", "true"), expected_check("cached-policy", "404=>receipt(0)|inherit"), expected_check("settled-policy", "404=>receipt(0)|429=>inherit|else=>request_failed"), expected_check("guarded-policy", "404=>0.0|invalid_answer=>0.0"), expected_check("recover-404", "true"), expected_check("error-identity", "can.error.v2:can.std.http@1::request_failed"), expected_check("busy-429", "true"), expected_check("broken-503", "true"), expected_check("load-bypass", "true"), expected_check("bypass-identity", "can.error.v2:can.std.checks@1::failed"), expected_check("wrong-key", "selecting local"), expected_check("judge-protocol", "POST|authorization|application/json|jev-latest"), expected_check("strict-ts", "true"), expected_check("load-count", "7")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/wrap-semantics", "default", "", "offline") => ok
+        seed_labels_loss: context("bundled/wrap-semantics", "seed-labels-loss", "", "offline") => failed{"report-labels"}
+        seed_live_quality: context("bundled/wrap-semantics", "seed-live-quality", "", "offline") => failed{"no-live-quality"}
+        seed_assert_live: context("bundled/wrap-semantics", "seed-assert-live", "", "offline") => failed{"assert-silence"}
+        seed_cached_drift: context("bundled/wrap-semantics", "seed-cached-drift", "", "offline") => failed{"cached-policy"}
+        seed_settled_drift: context("bundled/wrap-semantics", "seed-settled-drift", "", "offline") => failed{"settled-policy"}
+        seed_guarded_drift: context("bundled/wrap-semantics", "seed-guarded-drift", "", "offline") => failed{"guarded-policy"}
+        seed_recover_fail: context("bundled/wrap-semantics", "seed-recover-fail", "", "offline") => failed{"recover-404"}
+        seed_identity_drift: context("bundled/wrap-semantics", "seed-identity-drift", "", "offline") => failed{"error-identity"}
+        seed_busy_green: context("bundled/wrap-semantics", "seed-busy-green", "", "offline") => failed{"busy-429"}
+        seed_broken_green: context("bundled/wrap-semantics", "seed-broken-green", "", "offline") => failed{"broken-503"}
+        seed_bypass_handled: context("bundled/wrap-semantics", "seed-bypass-handled", "", "offline") => failed{"load-bypass"}
+        seed_bypass_identity_drift: context("bundled/wrap-semantics", "seed-bypass-identity-drift", "", "offline") => failed{"bypass-identity"}
+        seed_key_admitted: context("bundled/wrap-semantics", "seed-key-admitted", "", "offline") => failed{"wrong-key"}
+        seed_judge_drift: context("bundled/wrap-semantics", "seed-judge-drift", "", "offline") => failed{"judge-protocol"}
+        seed_tsc_unconditional: context("bundled/wrap-semantics", "seed-tsc-unconditional", "", "offline") => failed{"strict-ts"}
+        seed_count_drift: context("bundled/wrap-semantics", "seed-count-drift", "", "offline") => failed{"load-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.report_labels, "policy-fixture|raw-provider-fixture|real-can|supplied-completion", c, "report-labels")
+            failed
+            ok evidence labels_evidence => match call require_bool(got.no_live_quality, true, c, "no-live-quality")
+                failed
+                ok evidence quality_evidence => match call require_bool(got.assert_silence, true, c, "assert-silence")
+                    failed
+                    ok evidence silence_evidence => match call require_text(got.cached_policy, "404=>receipt(0)|inherit", c, "cached-policy")
+                        failed
+                        ok evidence cached_evidence => match call require_text(got.settled_policy, "404=>receipt(0)|429=>inherit|else=>request_failed", c, "settled-policy")
+                            failed
+                            ok evidence settled_evidence => match call require_text(got.guarded_policy, "404=>0.0|invalid_answer=>0.0", c, "guarded-policy")
+                                failed
+                                ok evidence guarded_evidence => match call require_bool(got.recover_404, true, c, "recover-404")
+                                    failed
+                                    ok evidence recover_evidence => match call require_text(got.error_identity, "can.error.v2:can.std.http@1::request_failed", c, "error-identity")
+                                        failed
+                                        ok evidence identity_evidence => match call require_bool(got.busy_429, true, c, "busy-429")
+                                            failed
+                                            ok evidence busy_evidence => match call require_bool(got.broken_503, true, c, "broken-503")
+                                                failed
+                                                ok evidence broken_evidence => match call require_bool(got.load_bypass, true, c, "load-bypass")
+                                                    failed
+                                                    ok evidence bypass_evidence => match call require_text(got.bypass_identity, "can.error.v2:can.std.checks@1::failed", c, "bypass-identity")
+                                                        failed
+                                                        ok evidence bypass_identity_evidence => match call require_text(got.wrong_key, "selecting local", c, "wrong-key")
+                                                            failed
+                                                            ok evidence key_evidence => match call require_text(got.judge_protocol, "POST|authorization|application/json|jev-latest", c, "judge-protocol")
+                                                                failed
+                                                                ok evidence judge_evidence => match call require_bool(got.strict_ts, true, c, "strict-ts")
+                                                                    failed
+                                                                    ok evidence tsc_evidence => match call require_int(got.load_count, 7, c, "load-count")
+                                                                        failed
+                                                                        ok evidence count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m07_048: "m07-048" => ok test_case("bundled/wrap-semantics", ["wrap", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("report-labels"), check_ref("no-live-quality"), check_ref("assert-silence"), check_ref("cached-policy"), check_ref("settled-policy"), check_ref("guarded-policy"), check_ref("recover-404"), check_ref("error-identity"), check_ref("busy-429"), check_ref("broken-503"), check_ref("load-bypass"), check_ref("bypass-identity"), check_ref("wrong-key"), check_ref("judge-protocol"), check_ref("strict-ts"), check_ref("load-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m07-048"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/wrap-semantics", ["wrap", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("report-labels"), check_ref("no-live-quality"), check_ref("assert-silence"), check_ref("cached-policy"), check_ref("settled-policy"), check_ref("guarded-policy"), check_ref("recover-404"), check_ref("error-identity"), check_ref("busy-429"), check_ref("broken-503"), check_ref("load-bypass"), check_ref("bypass-identity"), check_ref("wrong-key"), check_ref("judge-protocol"), check_ref("strict-ts"), check_ref("load-count")], callable case_body)
