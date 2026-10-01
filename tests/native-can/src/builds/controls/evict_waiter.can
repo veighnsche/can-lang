@@ -1,0 +1,60 @@
+package controls
+    provides [evict_sequence, waiter_pair, decide_evict_twice, decide_waiter_pair]
+    uses [builds, spec]
+
+/// Eviction and waiter scenario compositions (P27 reuse-controls). Ordinary
+/// Can composes the sealed builds policy over a follow-up state: eviction
+/// answers before and after leases drain or the asker moves into the owning
+/// run, and two waiter answers over one producer key — the cancelled
+/// waiter detaches while the producer still publishes for the others.
+/// Composition never re-decides: every step calls builds::decide_evict or
+/// builds::decide_waiter, and the roots pin the exact composed outcomes.
+/// Static checks here are provisional until P26/P23, like the key-policy
+/// slice.
+
+/// Two eviction answers in scenario order: the first ask and the ask after
+/// leases drain or the asker moves into the owning run.
+record evict_sequence
+    builds::evict_decision first
+    builds::evict_decision second
+/// Two waiter answers over one producer key: the cancelled waiter and one
+/// unaffected waiter decided independently from the same fill.
+record waiter_pair
+    builds::waiter_outcome cancelled
+    builds::waiter_outcome other
+/// Decide eviction twice over one stored build: once for the opening ask,
+/// once for the follow-up ask. Both steps run the sealed decide_evict
+/// policy; the scenario roots pin the exact composed outcomes.
+fn evict_sequence decide_evict_twice
+    emits {}
+    given
+        builds::stored_build stored
+        builds::evict_ask first_ask
+        builds::evict_ask second_ask
+        spec::context c
+    asserts
+        leased_refuses_then_unleased_allows: builds::stored_build(builds::cache_key("can-build-v1:k"), builds::key_inputs("sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "quick"), "b1", "run-1"), builds::evict_ask("run-1", 2), builds::evict_ask("run-1", 0), spec::context("builds/controls", "default", "", "offline") => ok evict_sequence(builds::evict_refused(spec::diagnostic("builds::decide_evict", "case builds/controls variant default root evict run offline", "leased-eviction", "2")), builds::evict_ok(builds::cache_key("can-build-v1:k")))
+        single_lease_refuses_then_drains: builds::stored_build(builds::cache_key("can-build-v1:k"), builds::key_inputs("sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "quick"), "b1", "run-1"), builds::evict_ask("run-1", 1), builds::evict_ask("run-1", 0), spec::context("builds/controls", "default", "", "offline") => ok evict_sequence(builds::evict_refused(spec::diagnostic("builds::decide_evict", "case builds/controls variant default root evict run offline", "leased-eviction", "1")), builds::evict_ok(builds::cache_key("can-build-v1:k")))
+        cross_run_refuses_then_same_run_allows: builds::stored_build(builds::cache_key("can-build-v1:k"), builds::key_inputs("sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "quick"), "b1", "run-1"), builds::evict_ask("run-2", 0), builds::evict_ask("run-1", 0), spec::context("builds/controls", "default", "", "offline") => ok evict_sequence(builds::evict_refused(spec::diagnostic("builds::decide_evict", "case builds/controls variant default root evict run offline", "cross-run", "run-2")), builds::evict_ok(builds::cache_key("can-build-v1:k")))
+        cross_run_beats_leased: builds::stored_build(builds::cache_key("can-build-v1:k"), builds::key_inputs("sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "quick"), "b1", "run-1"), builds::evict_ask("run-2", 3), builds::evict_ask("run-1", 3), spec::context("builds/controls", "default", "", "offline") => ok evict_sequence(builds::evict_refused(spec::diagnostic("builds::decide_evict", "case builds/controls variant default root evict run offline", "cross-run", "run-2")), builds::evict_refused(spec::diagnostic("builds::decide_evict", "case builds/controls variant default root evict run offline", "leased-eviction", "3")))
+    match call builds::decide_evict(stored, first_ask, c)
+        ok builds::evict_decision first => match call builds::decide_evict(stored, second_ask, c)
+            ok builds::evict_decision second => ok evict_sequence(first, second)
+/// Decide one waiter pair over a single producer key: the cancelled waiter
+/// and one unaffected waiter. Both steps run the sealed decide_waiter
+/// policy; the scenario roots pin the exact composed outcomes, including a
+/// cancelled waiter detaching while the producer publishes for the others.
+fn waiter_pair decide_waiter_pair
+    emits {}
+    given
+        builds::cache_key key
+        builds::waiter_state cancelled_state
+        builds::waiter_state other_state
+        spec::context c
+    asserts
+        cancelled_detaches_while_other_joins: builds::cache_key("can-build-v1:k"), builds::waiter_state(true, true, true), builds::waiter_state(true, true, false), spec::context("builds/controls", "default", "", "offline") => ok waiter_pair(builds::waiter_detached(builds::cache_key("can-build-v1:k")), builds::waiter_join(builds::cache_key("can-build-v1:k")))
+        cancelled_detaches_while_other_waits: builds::cache_key("can-build-v1:k"), builds::waiter_state(false, false, true), builds::waiter_state(false, false, false), spec::context("builds/controls", "default", "", "offline") => ok waiter_pair(builds::waiter_detached(builds::cache_key("can-build-v1:k")), builds::waiter_wait(builds::cache_key("can-build-v1:k")))
+        cancelled_detaches_while_other_fails: builds::cache_key("can-build-v1:k"), builds::waiter_state(true, false, true), builds::waiter_state(true, false, false), spec::context("builds/controls", "default", "", "offline") => ok waiter_pair(builds::waiter_detached(builds::cache_key("can-build-v1:k")), builds::waiter_failed(spec::diagnostic("builds::decide_waiter", "case builds/controls variant default root waiter run offline", "fill-failed", "can-build-v1:k")))
+    match call builds::decide_waiter(key, cancelled_state, c)
+        ok builds::waiter_outcome cancelled => match call builds::decide_waiter(key, other_state, c)
+            ok builds::waiter_outcome other => ok waiter_pair(cancelled, other)
