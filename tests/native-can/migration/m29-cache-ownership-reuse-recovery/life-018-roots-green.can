@@ -1,0 +1,273 @@
+package m29life018roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 LIFE-018 "Verify clean: roots green".
+/// Source: tests/integration/harness_cache_test.go static
+/// baseline for TestHarnessVerifyClean (L86-92) plus call
+/// shapes (L88-90) and tests/integration/harness_test.go
+/// verify baseline (L319-341).
+/// Disposition: migrate (this row ports
+/// TestHarnessVerifyClean to ordinary Can functions; the old Go
+/// harness stays until the integrator retires it after every
+/// linked row, variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the static baseline as the green root:
+/// the test symbol plus param shape, the two file names plus
+/// bodies plus map shape, the entry name, the bundle plus
+/// verify plus hash plus parallel plus fatalf spellings, the
+/// manifest name, and the verify param.
+/// ADAPTATION (recorded, with source lines): first-file pins
+/// the bin/canlc inner bytes as str (L88); second-file pins
+/// the runtime/bun inner bytes (L88); bodies pin launcher
+/// plus runtime inner bytes (L88); map-shape pins the full
+/// map literal spelling (L88); entry-name pins entry (L88);
+/// bundle-call pins writeFakeBundle (L88); verify-call pins
+/// harnessVerify(entry) with parens plus arg (L89);
+/// manifest-name pins manifest.json (L320); hash-call pins
+/// distribution.Hash(data) with parens plus arg (L336);
+/// parallel-call pins t.Parallel() with parens (L87);
+/// fatalf-call pins t.Fatalf (L90); verify-param pins entry
+/// string (L319).
+/// Facet map (static baseline): test-name pins
+/// TestHarnessVerifyClean (L86); test-param pins t *testing.T
+/// (L86); first-file pins bin/canlc (L88); second-file pins
+/// runtime/bun (L88); first-body pins launcher (L88);
+/// second-body pins runtime (L88); map-shape pins
+/// map[string]string plus both entries (L88); entry-name
+/// pins entry (L88); bundle-call pins writeFakeBundle (L88);
+/// verify-call pins harnessVerify(entry) (L89);
+/// manifest-name pins manifest.json (L320); hash-call pins
+/// distribution.Hash(data) (L336); parallel-call pins
+/// t.Parallel() (L87); fatalf-call pins t.Fatalf (L90);
+/// verify-param pins entry string (L319).
+/// The verdict pins live in life-018-cache-semantics.can;
+/// the run shape plus diagnostics live in
+/// life-018-run-shape.can.
+/// Variants: clean/pristine (the single passing path in Go
+/// order).
+/// Environment: none (no gates; requires []).
+/// Logical gates SUITE/WORK/FILES/FAULT/NATIVE bind at P23;
+/// no live run now. Accept gate P23 is unmet. Timeout
+/// 120000ms is the offline default bound (no Go timeout in
+/// this row; binds at P23 like the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case life/verify-clean-roots checks: test-name,
+/// test-param, first-file, second-file, first-body,
+/// second-body, map-shape, entry-name, bundle-call,
+/// verify-call, manifest-name, hash-call, parallel-call,
+/// fatalf-call, verify-param.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str test_name
+    str test_param
+    str first_file
+    str second_file
+    str first_body
+    str second_body
+    str map_shape
+    str entry_name
+    str bundle_call
+    str verify_call
+    str manifest_name
+    str hash_call
+    str parallel_call
+    str fatalf_call
+    str verify_param
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/verify-clean-roots", "default", "", "offline"), "test-name" => ok "case life/verify-clean-roots variant default root test-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/verify-clean-roots", "default", "", "offline"), "test-name" => ok evidence("test-name", "true", "true", true, "case life/verify-clean-roots variant default root test-name run offline")
+        different: false, true, context("life/verify-clean-roots", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("life/verify-clean-roots", "default", "", "offline"), "test-name" => ok evidence("test-name", "1", "1", true, "case life/verify-clean-roots variant default root test-name run offline")
+        different: 2, 1, context("life/verify-clean-roots", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "TestHarnessVerifyClean", "TestHarnessVerifyClean", context("life/verify-clean-roots", "default", "", "offline"), "test-name" => ok evidence("test-name", "TestHarnessVerifyClean", "TestHarnessVerifyClean", true, "case life/verify-clean-roots variant default root test-name run offline")
+        different: "TestHarnessVerifyClean_2", "TestHarnessVerifyClean", context("life/verify-clean-roots", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        seed_test_name: "seed-test-name-drift" => ok observation("TestHarnessVerifyClean_2", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        seed_test_param: "seed-test-param-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T_2", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        seed_first_file: "seed-first-file-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc_2", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        seed_second_file: "seed-second-file-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun_2", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        seed_first_body: "seed-first-body-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher_2", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        seed_second_body: "seed-second-body-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime_2", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        seed_map_shape: "seed-map-shape-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}_2", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        seed_entry_name: "seed-entry-name-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry_2", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        seed_bundle_call: "seed-bundle-call-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle_2", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        seed_verify_call: "seed-verify-call-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)_2", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        seed_manifest_name: "seed-manifest-name-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json_2", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        seed_hash_call: "seed-hash-call-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)_2", "t.Parallel()", "t.Fatalf", "entry string")
+        seed_parallel_call: "seed-parallel-call-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()_2", "t.Fatalf", "entry string")
+        seed_fatalf_call: "seed-fatalf-call-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf_2", "entry string")
+        seed_verify_param: "seed-verify-param-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string_2")
+    match variant_id
+        "seed-test-name-drift" => ok observation("TestHarnessVerifyClean_2", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        "seed-test-param-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T_2", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        "seed-first-file-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc_2", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        "seed-second-file-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun_2", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        "seed-first-body-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher_2", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        "seed-second-body-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime_2", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        "seed-map-shape-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}_2", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        "seed-entry-name-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry_2", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        "seed-bundle-call-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle_2", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        "seed-verify-call-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)_2", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        "seed-manifest-name-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json_2", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+        "seed-hash-call-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)_2", "t.Parallel()", "t.Fatalf", "entry string")
+        "seed-parallel-call-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()_2", "t.Fatalf", "entry string")
+        "seed-fatalf-call-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf_2", "entry string")
+        "seed-verify-param-drift" => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string_2")
+        _ => ok observation("TestHarnessVerifyClean", "t *testing.T", "bin/canlc", "runtime/bun", "launcher", "runtime", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", "entry", "writeFakeBundle", "harnessVerify(entry)", "manifest.json", "distribution.Hash(data)", "t.Parallel()", "t.Fatalf", "entry string")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l018: "m29-l018" => ok [check("test-name", "clean test symbol is pinned"), check("test-param", "test param spelling is pinned"), check("first-file", "first file literal is pinned"), check("second-file", "second file literal is pinned"), check("first-body", "first body literal is pinned"), check("second-body", "second body literal is pinned"), check("map-shape", "file map literal is pinned"), check("entry-name", "entry leg keeps its Go name"), check("bundle-call", "bundle helper name is pinned"), check("verify-call", "verify call spelling is pinned"), check("manifest-name", "manifest name is pinned"), check("hash-call", "hash call spelling is pinned"), check("parallel-call", "test pins the Parallel gate"), check("fatalf-call", "refusal pins the Fatalf call"), check("verify-param", "verify param spelling is pinned")]
+        other: "nope" => ok []
+    match scope is "m29-l018"
+        false => ok []
+        true => ok [check("test-name", "clean test symbol is pinned"), check("test-param", "test param spelling is pinned"), check("first-file", "first file literal is pinned"), check("second-file", "second file literal is pinned"), check("first-body", "first body literal is pinned"), check("second-body", "second body literal is pinned"), check("map-shape", "file map literal is pinned"), check("entry-name", "entry leg keeps its Go name"), check("bundle-call", "bundle helper name is pinned"), check("verify-call", "verify call spelling is pinned"), check("manifest-name", "manifest name is pinned"), check("hash-call", "hash call spelling is pinned"), check("parallel-call", "test pins the Parallel gate"), check("fatalf-call", "refusal pins the Fatalf call"), check("verify-param", "verify param spelling is pinned")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/verify-clean-roots" => ok [expected_check("test-name", "TestHarnessVerifyClean"), expected_check("test-param", "t *testing.T"), expected_check("first-file", "bin/canlc"), expected_check("second-file", "runtime/bun"), expected_check("first-body", "launcher"), expected_check("second-body", "runtime"), expected_check("map-shape", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}"), expected_check("entry-name", "entry"), expected_check("bundle-call", "writeFakeBundle"), expected_check("verify-call", "harnessVerify(entry)"), expected_check("manifest-name", "manifest.json"), expected_check("hash-call", "distribution.Hash(data)"), expected_check("parallel-call", "t.Parallel()"), expected_check("fatalf-call", "t.Fatalf"), expected_check("verify-param", "entry string")]
+        unknown: "nope" => ok []
+    match case is "life/verify-clean-roots"
+        false => ok []
+        true => ok [expected_check("test-name", "TestHarnessVerifyClean"), expected_check("test-param", "t *testing.T"), expected_check("first-file", "bin/canlc"), expected_check("second-file", "runtime/bun"), expected_check("first-body", "launcher"), expected_check("second-body", "runtime"), expected_check("map-shape", "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}"), expected_check("entry-name", "entry"), expected_check("bundle-call", "writeFakeBundle"), expected_check("verify-call", "harnessVerify(entry)"), expected_check("manifest-name", "manifest.json"), expected_check("hash-call", "distribution.Hash(data)"), expected_check("parallel-call", "t.Parallel()"), expected_check("fatalf-call", "t.Fatalf"), expected_check("verify-param", "entry string")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/verify-clean-roots", "default", "", "offline") => ok
+        seed_test_name: context("life/verify-clean-roots", "seed-test-name-drift", "", "offline") => failed{"test-name"}
+        seed_test_param: context("life/verify-clean-roots", "seed-test-param-drift", "", "offline") => failed{"test-param"}
+        seed_first_file: context("life/verify-clean-roots", "seed-first-file-drift", "", "offline") => failed{"first-file"}
+        seed_second_file: context("life/verify-clean-roots", "seed-second-file-drift", "", "offline") => failed{"second-file"}
+        seed_first_body: context("life/verify-clean-roots", "seed-first-body-drift", "", "offline") => failed{"first-body"}
+        seed_second_body: context("life/verify-clean-roots", "seed-second-body-drift", "", "offline") => failed{"second-body"}
+        seed_map_shape: context("life/verify-clean-roots", "seed-map-shape-drift", "", "offline") => failed{"map-shape"}
+        seed_entry_name: context("life/verify-clean-roots", "seed-entry-name-drift", "", "offline") => failed{"entry-name"}
+        seed_bundle_call: context("life/verify-clean-roots", "seed-bundle-call-drift", "", "offline") => failed{"bundle-call"}
+        seed_verify_call: context("life/verify-clean-roots", "seed-verify-call-drift", "", "offline") => failed{"verify-call"}
+        seed_manifest_name: context("life/verify-clean-roots", "seed-manifest-name-drift", "", "offline") => failed{"manifest-name"}
+        seed_hash_call: context("life/verify-clean-roots", "seed-hash-call-drift", "", "offline") => failed{"hash-call"}
+        seed_parallel_call: context("life/verify-clean-roots", "seed-parallel-call-drift", "", "offline") => failed{"parallel-call"}
+        seed_fatalf_call: context("life/verify-clean-roots", "seed-fatalf-call-drift", "", "offline") => failed{"fatalf-call"}
+        seed_verify_param: context("life/verify-clean-roots", "seed-verify-param-drift", "", "offline") => failed{"verify-param"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.test_name, "TestHarnessVerifyClean", c, "test-name")
+            failed
+            ok evidence test_name_evidence => match call require_text(got.test_param, "t *testing.T", c, "test-param")
+                failed
+                ok evidence test_param_evidence => match call require_text(got.first_file, "bin/canlc", c, "first-file")
+                    failed
+                    ok evidence first_file_evidence => match call require_text(got.second_file, "runtime/bun", c, "second-file")
+                        failed
+                        ok evidence second_file_evidence => match call require_text(got.first_body, "launcher", c, "first-body")
+                            failed
+                            ok evidence first_body_evidence => match call require_text(got.second_body, "runtime", c, "second-body")
+                                failed
+                                ok evidence second_body_evidence => match call require_text(got.map_shape, "map[string]string{\"bin/canlc\": \"launcher\", \"runtime/bun\": \"runtime\"}", c, "map-shape")
+                                    failed
+                                    ok evidence map_shape_evidence => match call require_text(got.entry_name, "entry", c, "entry-name")
+                                        failed
+                                        ok evidence entry_name_evidence => match call require_text(got.bundle_call, "writeFakeBundle", c, "bundle-call")
+                                            failed
+                                            ok evidence bundle_call_evidence => match call require_text(got.verify_call, "harnessVerify(entry)", c, "verify-call")
+                                                failed
+                                                ok evidence verify_call_evidence => match call require_text(got.manifest_name, "manifest.json", c, "manifest-name")
+                                                    failed
+                                                    ok evidence manifest_name_evidence => match call require_text(got.hash_call, "distribution.Hash(data)", c, "hash-call")
+                                                        failed
+                                                        ok evidence hash_call_evidence => match call require_text(got.parallel_call, "t.Parallel()", c, "parallel-call")
+                                                            failed
+                                                            ok evidence parallel_call_evidence => match call require_text(got.fatalf_call, "t.Fatalf", c, "fatalf-call")
+                                                                failed
+                                                                ok evidence fatalf_call_evidence => match call require_text(got.verify_param, "entry string", c, "verify-param")
+                                                                    failed
+                                                                    ok evidence verify_param_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l018: "m29-l018" => ok test_case("life/verify-clean-roots", ["life", "m29"], [], 120000, [check_ref("test-name"), check_ref("test-param"), check_ref("first-file"), check_ref("second-file"), check_ref("first-body"), check_ref("second-body"), check_ref("map-shape"), check_ref("entry-name"), check_ref("bundle-call"), check_ref("verify-call"), check_ref("manifest-name"), check_ref("hash-call"), check_ref("parallel-call"), check_ref("fatalf-call"), check_ref("verify-param")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-l018"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/verify-clean-roots", ["life", "m29"], [], 120000, [check_ref("test-name"), check_ref("test-param"), check_ref("first-file"), check_ref("second-file"), check_ref("first-body"), check_ref("second-body"), check_ref("map-shape"), check_ref("entry-name"), check_ref("bundle-call"), check_ref("verify-call"), check_ref("manifest-name"), check_ref("hash-call"), check_ref("parallel-call"), check_ref("fatalf-call"), check_ref("verify-param")], callable case_body)

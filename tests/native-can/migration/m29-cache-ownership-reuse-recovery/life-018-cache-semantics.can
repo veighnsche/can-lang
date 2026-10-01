@@ -1,0 +1,271 @@
+package m29life018cache
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 LIFE-018 "Verify clean: cache semantics".
+/// Source: tests/integration/harness_cache_test.go symbol
+/// TestHarnessVerifyClean (L86-92) plus
+/// tests/integration/harness_test.go helper harnessVerify
+/// (L319-341).
+/// Disposition: migrate (this row ports
+/// TestHarnessVerifyClean to ordinary Can functions; the old Go
+/// harness stays until the integrator retires it after every
+/// linked row, variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the clean verdicts in Go order:
+/// the two listed file names, the two seed bodies, the helper
+/// name, the file plus guard plus call plus refusal counts,
+/// plus the listed, hash-match, manifest-ok, verify-ok,
+/// err-nil and refusal-fired verdicts.
+/// ADAPTATION (recorded, with source lines): file names pin
+/// the Go map keys (bin/canlc plus runtime/bun, L88);
+/// bodies pin the map values (launcher plus runtime, L88);
+/// file-count pins int (2) from the two map entries (L88);
+/// manifest-guard-count pins int (3) from the three or-joined
+/// legs (L328); verify-call-count pins int (1) from the single
+/// harnessVerify call (L89); refusal-count pins int (1) from
+/// the single Fatalf site (L90); verdicts pin bools from the
+/// pristine path (L88-90) and the passing verify (L319-341);
+/// refusal-fired pins false since the clean path never
+/// reaches the Fatalf (L90).
+/// Facet map (Go verdict legs): first-file-name pins
+/// bin/canlc (L88); second-file-name pins runtime/bun (L88);
+/// first-file-body pins launcher (L88); second-file-body
+/// pins runtime (L88); helper-name pins harnessVerify (L89);
+/// file-count pins 2 (L88); manifest-guard-count pins 3
+/// (L328); verify-call-count pins 1 (L89); refusal-count
+/// pins 1 (L90); files-listed pins true (L88);
+/// hash-match pins true (L336); manifest-ok pins true
+/// (L328); verify-ok pins true (L340); err-nil pins true
+/// (L89); refusal-fired pins false (L90).
+/// The roots-green pin lives in life-018-roots-green.can;
+/// the run shape plus diagnostics live in
+/// life-018-run-shape.can.
+/// Variants: clean/pristine (the single passing path in Go
+/// order).
+/// Environment: none (no gates; requires []).
+/// Logical gates SUITE/WORK/FILES/FAULT/NATIVE bind at P23;
+/// no live run now. Accept gate P23 is unmet. Timeout
+/// 120000ms is the offline default bound (no Go timeout in
+/// this row; binds at P23 like the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case life/verify-clean-semantics checks: first-file-name,
+/// second-file-name, first-file-body, second-file-body,
+/// helper-name, file-count, manifest-guard-count,
+/// verify-call-count, refusal-count, files-listed,
+/// hash-match, manifest-ok, verify-ok, err-nil,
+/// refusal-fired.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str first_file_name
+    str second_file_name
+    str first_file_body
+    str second_file_body
+    str helper_name
+    int file_count
+    int manifest_guard_count
+    int verify_call_count
+    int refusal_count
+    bool files_listed
+    bool hash_match
+    bool manifest_ok
+    bool verify_ok
+    bool err_nil
+    bool refusal_fired
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/verify-clean-semantics", "default", "", "offline"), "first-file-name" => ok "case life/verify-clean-semantics variant default root first-file-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/verify-clean-semantics", "default", "", "offline"), "files-listed" => ok evidence("files-listed", "true", "true", true, "case life/verify-clean-semantics variant default root files-listed run offline")
+        different: false, true, context("life/verify-clean-semantics", "default", "", "offline"), "files-listed" => failed{"files-listed"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("life/verify-clean-semantics", "default", "", "offline"), "file-count" => ok evidence("file-count", "2", "2", true, "case life/verify-clean-semantics variant default root file-count run offline")
+        different: 1, 2, context("life/verify-clean-semantics", "default", "", "offline"), "file-count" => failed{"file-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "bin/canlc", "bin/canlc", context("life/verify-clean-semantics", "default", "", "offline"), "first-file-name" => ok evidence("first-file-name", "bin/canlc", "bin/canlc", true, "case life/verify-clean-semantics variant default root first-file-name run offline")
+        different: "bin/canlc_2", "bin/canlc", context("life/verify-clean-semantics", "default", "", "offline"), "first-file-name" => failed{"first-file-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, true, true, true, true, true, false)
+        seed_first_file_name: "seed-first-file-name-drift" => ok observation("bin/canlc_2", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, true, true, true, true, true, false)
+        seed_second_file_name: "seed-second-file-name-drift" => ok observation("bin/canlc", "runtime/bun_2", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, true, true, true, true, true, false)
+        seed_first_file_body: "seed-first-file-body-drift" => ok observation("bin/canlc", "runtime/bun", "launcher_2", "runtime", "harnessVerify", 2, 3, 1, 1, true, true, true, true, true, false)
+        seed_second_file_body: "seed-second-file-body-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime_2", "harnessVerify", 2, 3, 1, 1, true, true, true, true, true, false)
+        seed_helper_name: "seed-helper-name-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify_2", 2, 3, 1, 1, true, true, true, true, true, false)
+        seed_file_count: "seed-file-count-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 1, 3, 1, 1, true, true, true, true, true, false)
+        seed_manifest_guard_count: "seed-manifest-guard-count-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 2, 1, 1, true, true, true, true, true, false)
+        seed_verify_call_count: "seed-verify-call-count-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 2, 1, true, true, true, true, true, false)
+        seed_refusal_count: "seed-refusal-count-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 2, true, true, true, true, true, false)
+        seed_files_listed: "seed-files-listed-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, false, true, true, true, true, false)
+        seed_hash_match: "seed-hash-match-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, true, false, true, true, true, false)
+        seed_manifest_ok: "seed-manifest-ok-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, true, true, false, true, true, false)
+        seed_verify_ok: "seed-verify-ok-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, true, true, true, false, true, false)
+        seed_err_nil: "seed-err-nil-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, true, true, true, true, false, false)
+        seed_refusal_fired: "seed-refusal-fired-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, true, true, true, true, true, true)
+    match variant_id
+        "seed-first-file-name-drift" => ok observation("bin/canlc_2", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, true, true, true, true, true, false)
+        "seed-second-file-name-drift" => ok observation("bin/canlc", "runtime/bun_2", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, true, true, true, true, true, false)
+        "seed-first-file-body-drift" => ok observation("bin/canlc", "runtime/bun", "launcher_2", "runtime", "harnessVerify", 2, 3, 1, 1, true, true, true, true, true, false)
+        "seed-second-file-body-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime_2", "harnessVerify", 2, 3, 1, 1, true, true, true, true, true, false)
+        "seed-helper-name-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify_2", 2, 3, 1, 1, true, true, true, true, true, false)
+        "seed-file-count-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 1, 3, 1, 1, true, true, true, true, true, false)
+        "seed-manifest-guard-count-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 2, 1, 1, true, true, true, true, true, false)
+        "seed-verify-call-count-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 2, 1, true, true, true, true, true, false)
+        "seed-refusal-count-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 2, true, true, true, true, true, false)
+        "seed-files-listed-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, false, true, true, true, true, false)
+        "seed-hash-match-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, true, false, true, true, true, false)
+        "seed-manifest-ok-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, true, true, false, true, true, false)
+        "seed-verify-ok-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, true, true, true, false, true, false)
+        "seed-err-nil-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, true, true, true, true, false, false)
+        "seed-refusal-fired-drift" => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, true, true, true, true, true, true)
+        _ => ok observation("bin/canlc", "runtime/bun", "launcher", "runtime", "harnessVerify", 2, 3, 1, 1, true, true, true, true, true, false)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l018: "m29-l018" => ok [check("first-file-name", "first manifest leg pins its file name"), check("second-file-name", "second manifest leg pins its file name"), check("first-file-body", "first manifest leg pins its seed body"), check("second-file-body", "second manifest leg pins its seed body"), check("helper-name", "verify helper is named harnessVerify"), check("file-count", "two files are listed in order"), check("manifest-guard-count", "manifest gate has three legs"), check("verify-call-count", "one verify call runs the gate"), check("refusal-count", "one refusal guards the gate"), check("files-listed", "both files land in the manifest"), check("hash-match", "pristine bytes compare equal"), check("manifest-ok", "manifest gate passes on clean bytes"), check("verify-ok", "verify returns nil on clean entry"), check("err-nil", "err stays nil on the clean path"), check("refusal-fired", "refusal stays silent on clean entry")]
+        other: "nope" => ok []
+    match scope is "m29-l018"
+        false => ok []
+        true => ok [check("first-file-name", "first manifest leg pins its file name"), check("second-file-name", "second manifest leg pins its file name"), check("first-file-body", "first manifest leg pins its seed body"), check("second-file-body", "second manifest leg pins its seed body"), check("helper-name", "verify helper is named harnessVerify"), check("file-count", "two files are listed in order"), check("manifest-guard-count", "manifest gate has three legs"), check("verify-call-count", "one verify call runs the gate"), check("refusal-count", "one refusal guards the gate"), check("files-listed", "both files land in the manifest"), check("hash-match", "pristine bytes compare equal"), check("manifest-ok", "manifest gate passes on clean bytes"), check("verify-ok", "verify returns nil on clean entry"), check("err-nil", "err stays nil on the clean path"), check("refusal-fired", "refusal stays silent on clean entry")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/verify-clean-semantics" => ok [expected_check("first-file-name", "bin/canlc"), expected_check("second-file-name", "runtime/bun"), expected_check("first-file-body", "launcher"), expected_check("second-file-body", "runtime"), expected_check("helper-name", "harnessVerify"), expected_check("file-count", "2"), expected_check("manifest-guard-count", "3"), expected_check("verify-call-count", "1"), expected_check("refusal-count", "1"), expected_check("files-listed", "true"), expected_check("hash-match", "true"), expected_check("manifest-ok", "true"), expected_check("verify-ok", "true"), expected_check("err-nil", "true"), expected_check("refusal-fired", "false")]
+        unknown: "nope" => ok []
+    match case is "life/verify-clean-semantics"
+        false => ok []
+        true => ok [expected_check("first-file-name", "bin/canlc"), expected_check("second-file-name", "runtime/bun"), expected_check("first-file-body", "launcher"), expected_check("second-file-body", "runtime"), expected_check("helper-name", "harnessVerify"), expected_check("file-count", "2"), expected_check("manifest-guard-count", "3"), expected_check("verify-call-count", "1"), expected_check("refusal-count", "1"), expected_check("files-listed", "true"), expected_check("hash-match", "true"), expected_check("manifest-ok", "true"), expected_check("verify-ok", "true"), expected_check("err-nil", "true"), expected_check("refusal-fired", "false")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/verify-clean-semantics", "default", "", "offline") => ok
+        seed_first_file_name: context("life/verify-clean-semantics", "seed-first-file-name-drift", "", "offline") => failed{"first-file-name"}
+        seed_second_file_name: context("life/verify-clean-semantics", "seed-second-file-name-drift", "", "offline") => failed{"second-file-name"}
+        seed_first_file_body: context("life/verify-clean-semantics", "seed-first-file-body-drift", "", "offline") => failed{"first-file-body"}
+        seed_second_file_body: context("life/verify-clean-semantics", "seed-second-file-body-drift", "", "offline") => failed{"second-file-body"}
+        seed_helper_name: context("life/verify-clean-semantics", "seed-helper-name-drift", "", "offline") => failed{"helper-name"}
+        seed_file_count: context("life/verify-clean-semantics", "seed-file-count-drift", "", "offline") => failed{"file-count"}
+        seed_manifest_guard_count: context("life/verify-clean-semantics", "seed-manifest-guard-count-drift", "", "offline") => failed{"manifest-guard-count"}
+        seed_verify_call_count: context("life/verify-clean-semantics", "seed-verify-call-count-drift", "", "offline") => failed{"verify-call-count"}
+        seed_refusal_count: context("life/verify-clean-semantics", "seed-refusal-count-drift", "", "offline") => failed{"refusal-count"}
+        seed_files_listed: context("life/verify-clean-semantics", "seed-files-listed-drift", "", "offline") => failed{"files-listed"}
+        seed_hash_match: context("life/verify-clean-semantics", "seed-hash-match-drift", "", "offline") => failed{"hash-match"}
+        seed_manifest_ok: context("life/verify-clean-semantics", "seed-manifest-ok-drift", "", "offline") => failed{"manifest-ok"}
+        seed_verify_ok: context("life/verify-clean-semantics", "seed-verify-ok-drift", "", "offline") => failed{"verify-ok"}
+        seed_err_nil: context("life/verify-clean-semantics", "seed-err-nil-drift", "", "offline") => failed{"err-nil"}
+        seed_refusal_fired: context("life/verify-clean-semantics", "seed-refusal-fired-drift", "", "offline") => failed{"refusal-fired"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.first_file_name, "bin/canlc", c, "first-file-name")
+            failed
+            ok evidence first_file_name_evidence => match call require_text(got.second_file_name, "runtime/bun", c, "second-file-name")
+                failed
+                ok evidence second_file_name_evidence => match call require_text(got.first_file_body, "launcher", c, "first-file-body")
+                    failed
+                    ok evidence first_file_body_evidence => match call require_text(got.second_file_body, "runtime", c, "second-file-body")
+                        failed
+                        ok evidence second_file_body_evidence => match call require_text(got.helper_name, "harnessVerify", c, "helper-name")
+                            failed
+                            ok evidence helper_name_evidence => match call require_int(got.file_count, 2, c, "file-count")
+                                failed
+                                ok evidence file_count_evidence => match call require_int(got.manifest_guard_count, 3, c, "manifest-guard-count")
+                                    failed
+                                    ok evidence manifest_guard_count_evidence => match call require_int(got.verify_call_count, 1, c, "verify-call-count")
+                                        failed
+                                        ok evidence verify_call_count_evidence => match call require_int(got.refusal_count, 1, c, "refusal-count")
+                                            failed
+                                            ok evidence refusal_count_evidence => match call require_bool(got.files_listed, true, c, "files-listed")
+                                                failed
+                                                ok evidence files_listed_evidence => match call require_bool(got.hash_match, true, c, "hash-match")
+                                                    failed
+                                                    ok evidence hash_match_evidence => match call require_bool(got.manifest_ok, true, c, "manifest-ok")
+                                                        failed
+                                                        ok evidence manifest_ok_evidence => match call require_bool(got.verify_ok, true, c, "verify-ok")
+                                                            failed
+                                                            ok evidence verify_ok_evidence => match call require_bool(got.err_nil, true, c, "err-nil")
+                                                                failed
+                                                                ok evidence err_nil_evidence => match call require_bool(got.refusal_fired, false, c, "refusal-fired")
+                                                                    failed
+                                                                    ok evidence refusal_fired_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l018: "m29-l018" => ok test_case("life/verify-clean-semantics", ["life", "m29"], [], 120000, [check_ref("first-file-name"), check_ref("second-file-name"), check_ref("first-file-body"), check_ref("second-file-body"), check_ref("helper-name"), check_ref("file-count"), check_ref("manifest-guard-count"), check_ref("verify-call-count"), check_ref("refusal-count"), check_ref("files-listed"), check_ref("hash-match"), check_ref("manifest-ok"), check_ref("verify-ok"), check_ref("err-nil"), check_ref("refusal-fired")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-l018"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/verify-clean-semantics", ["life", "m29"], [], 120000, [check_ref("first-file-name"), check_ref("second-file-name"), check_ref("first-file-body"), check_ref("second-file-body"), check_ref("helper-name"), check_ref("file-count"), check_ref("manifest-guard-count"), check_ref("verify-call-count"), check_ref("refusal-count"), check_ref("files-listed"), check_ref("hash-match"), check_ref("manifest-ok"), check_ref("verify-ok"), check_ref("err-nil"), check_ref("refusal-fired")], callable case_body)
