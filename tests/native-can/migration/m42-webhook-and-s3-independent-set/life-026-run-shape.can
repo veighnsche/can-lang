@@ -1,0 +1,311 @@
+package m42life026run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M42 LIFE-026 s3 driver run
+/// shape.
+/// Source: tests/integration/
+/// testdata/s3/s3-driver.ts run
+/// frame (L4-22): client build, env
+/// guard, argv split, usage plus
+/// missing refusals, plus exit code.
+/// Disposition: replace_support (this
+/// row owns setup as reviewable Can
+/// facts; s3-driver.ts plus
+/// payload.bin stay until every s3
+/// scenario uses Can setup).
+/// Protects (this file): driver run
+/// shape holding the two facets:
+/// file name, usage note, missing
+/// note, client name plus home, five
+/// env names, argv word, arg names,
+/// plus index and tally pins.
+/// ADAPTATION (recorded, with source
+/// lines): driver-file-name pins the
+/// file name (L3); usage-note pins
+/// the usage line (L13);
+/// missing-note pins the missing
+/// head (L18); client-name pins
+/// S3Client (L22); client-source
+/// pins bun (L4); endpoint-env-name
+/// pins the endpoint name (L6);
+/// region-env-name pins the region
+/// name (L7); bucket-env-name pins
+/// the bucket name (L8);
+/// access-env-name pins the access
+/// name (L9); secret-env-name pins
+/// the hidden name (L10);
+/// argv-word pins process.argv (L11);
+/// command-arg-name pins command
+/// (L11); payload-arg-name pins
+/// payloadPath (L11);
+/// prefix-arg-name pins prefix
+/// (L11); argv-index pins int (2)
+/// from L11; usage-exit-code pins
+/// int (2) from L14; env-name-count
+/// pins int (5) from L16;
+/// driver-arg-count pins int (3)
+/// from L11.
+/// Facet map (leg order):
+/// driver-file-name, usage-note,
+/// missing-note, client-name,
+/// client-source, endpoint-env-name,
+/// region-env-name, bucket-env-name,
+/// access-env-name, secret-env-name,
+/// argv-word, command-arg-name,
+/// payload-arg-name, prefix-arg-name,
+/// argv-index, usage-exit-code,
+/// env-name-count, driver-arg-count.
+/// The seed legs live in
+/// life-026-base-semantics.can; the
+/// report legs live in
+/// life-026-roots-green.can.
+/// Variants: none.
+/// Environment: none (no live run
+/// now; binds at P23 plus QStore).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// plus QStore accept gates unmet).
+/// Case life/s3-driver-shape
+/// checks: driver-file-name,
+/// usage-note, missing-note,
+/// client-name, client-source,
+/// endpoint-env-name,
+/// region-env-name, bucket-env-name,
+/// access-env-name, secret-env-name,
+/// argv-word, command-arg-name,
+/// payload-arg-name, prefix-arg-name,
+/// argv-index, usage-exit-code,
+/// env-name-count, driver-arg-count.
+/// Shared old files untouched;
+/// retirement is a later integrator
+/// decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str driver_file_name
+    str usage_note
+    str missing_note
+    str client_name
+    str client_source
+    str endpoint_env_name
+    str region_env_name
+    str bucket_env_name
+    str access_env_name
+    str secret_env_name
+    str argv_word
+    str command_arg_name
+    str payload_arg_name
+    str prefix_arg_name
+    int argv_index
+    int usage_exit_code
+    int env_name_count
+    int driver_arg_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/s3-driver-shape", "default", "", "offline"), "driver-file-name" => ok "case life/s3-driver-shape variant default root driver-file-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/s3-driver-shape", "default", "", "offline"), "driver-file-name" => ok evidence("driver-file-name", "true", "true", true, "case life/s3-driver-shape variant default root driver-file-name run offline")
+        different: false, true, context("life/s3-driver-shape", "default", "", "offline"), "driver-file-name" => failed{"driver-file-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("life/s3-driver-shape", "default", "", "offline"), "argv-index" => ok evidence("argv-index", "2", "2", true, "case life/s3-driver-shape variant default root argv-index run offline")
+        different: 1, 2, context("life/s3-driver-shape", "default", "", "offline"), "argv-index" => failed{"argv-index"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "s3-driver.ts", "s3-driver.ts", context("life/s3-driver-shape", "default", "", "offline"), "driver-file-name" => ok evidence("driver-file-name", "s3-driver.ts", "s3-driver.ts", true, "case life/s3-driver-shape variant default root driver-file-name run offline")
+        different: "s3-driver.ts_2", "s3-driver.ts", context("life/s3-driver-shape", "default", "", "offline"), "driver-file-name" => failed{"driver-file-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        seed_driver_file_name: "seed-driver-file-name-drift" => ok observation("s3-driver.ts_2", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        seed_usage_note: "seed-usage-note-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>_2", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        seed_missing_note: "seed-missing-note-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing _2", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        seed_client_name: "seed-client-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client_2", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        seed_client_source: "seed-client-source-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun_2", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        seed_endpoint_env_name: "seed-endpoint-env-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT_2", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        seed_region_env_name: "seed-region-env-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION_2", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        seed_bucket_env_name: "seed-bucket-env-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET_2", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        seed_access_env_name: "seed-access-env-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY_2", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        seed_secret_env_name: "seed-secret-env-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY_2", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        seed_argv_word: "seed-argv-word-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv_2", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        seed_command_arg_name: "seed-command-arg-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command_2", "payloadPath", "prefix", 2, 2, 5, 3)
+        seed_payload_arg_name: "seed-payload-arg-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath_2", "prefix", 2, 2, 5, 3)
+        seed_prefix_arg_name: "seed-prefix-arg-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix_2", 2, 2, 5, 3)
+        seed_argv_index: "seed-argv-index-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 1, 2, 5, 3)
+        seed_usage_exit_code: "seed-usage-exit-code-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 1, 5, 3)
+        seed_env_name_count: "seed-env-name-count-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 4, 3)
+        seed_driver_arg_count: "seed-driver-arg-count-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 2)
+    match variant_id
+        "seed-driver-file-name-drift" => ok observation("s3-driver.ts_2", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        "seed-usage-note-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>_2", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        "seed-missing-note-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing _2", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        "seed-client-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client_2", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        "seed-client-source-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun_2", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        "seed-endpoint-env-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT_2", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        "seed-region-env-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION_2", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        "seed-bucket-env-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET_2", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        "seed-access-env-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY_2", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        "seed-secret-env-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY_2", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        "seed-argv-word-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv_2", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+        "seed-command-arg-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command_2", "payloadPath", "prefix", 2, 2, 5, 3)
+        "seed-payload-arg-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath_2", "prefix", 2, 2, 5, 3)
+        "seed-prefix-arg-name-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix_2", 2, 2, 5, 3)
+        "seed-argv-index-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 1, 2, 5, 3)
+        "seed-usage-exit-code-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 1, 5, 3)
+        "seed-env-name-count-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 4, 3)
+        "seed-driver-arg-count-drift" => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 2)
+        _ => ok observation("s3-driver.ts", "usage: s3-driver.ts setup <payloadPath> <prefix>", "missing ", "S3Client", "bun", "CAN_TEST_S3_ENDPOINT", "CAN_TEST_S3_REGION", "CAN_TEST_S3_BUCKET", "CAN_TEST_S3_ACCESS_KEY", "CAN_TEST_S3_SECRET_KEY", "process.argv", "command", "payloadPath", "prefix", 2, 2, 5, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m42_l026: "m42-l026" => ok [check("driver-file-name", "driver keeps its file name"), check("usage-note", "driver keeps its usage note"), check("missing-note", "driver keeps its missing note"), check("client-name", "driver keeps its client name"), check("client-source", "driver keeps its client home"), check("endpoint-env-name", "driver keeps its endpoint name"), check("region-env-name", "driver keeps its region name"), check("bucket-env-name", "driver keeps its bucket name"), check("access-env-name", "driver keeps its access name"), check("secret-env-name", "driver keeps its hidden name"), check("argv-word", "driver keeps its argv word"), check("command-arg-name", "driver keeps its command name"), check("payload-arg-name", "driver keeps its payload name"), check("prefix-arg-name", "driver keeps its prefix name"), check("argv-index", "argv starts at index two"), check("usage-exit-code", "misuse exits with two"), check("env-name-count", "driver wants five env names"), check("driver-arg-count", "driver takes three args")]
+        other: "nope" => ok []
+    match scope is "m42-l026"
+        false => ok []
+        true => ok [check("driver-file-name", "driver keeps its file name"), check("usage-note", "driver keeps its usage note"), check("missing-note", "driver keeps its missing note"), check("client-name", "driver keeps its client name"), check("client-source", "driver keeps its client home"), check("endpoint-env-name", "driver keeps its endpoint name"), check("region-env-name", "driver keeps its region name"), check("bucket-env-name", "driver keeps its bucket name"), check("access-env-name", "driver keeps its access name"), check("secret-env-name", "driver keeps its hidden name"), check("argv-word", "driver keeps its argv word"), check("command-arg-name", "driver keeps its command name"), check("payload-arg-name", "driver keeps its payload name"), check("prefix-arg-name", "driver keeps its prefix name"), check("argv-index", "argv starts at index two"), check("usage-exit-code", "misuse exits with two"), check("env-name-count", "driver wants five env names"), check("driver-arg-count", "driver takes three args")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/s3-driver-shape" => ok [expected_check("driver-file-name", "s3-driver.ts"), expected_check("usage-note", "usage: s3-driver.ts setup <payloadPath> <prefix>"), expected_check("missing-note", "missing "), expected_check("client-name", "S3Client"), expected_check("client-source", "bun"), expected_check("endpoint-env-name", "CAN_TEST_S3_ENDPOINT"), expected_check("region-env-name", "CAN_TEST_S3_REGION"), expected_check("bucket-env-name", "CAN_TEST_S3_BUCKET"), expected_check("access-env-name", "CAN_TEST_S3_ACCESS_KEY"), expected_check("secret-env-name", "CAN_TEST_S3_SECRET_KEY"), expected_check("argv-word", "process.argv"), expected_check("command-arg-name", "command"), expected_check("payload-arg-name", "payloadPath"), expected_check("prefix-arg-name", "prefix"), expected_check("argv-index", "2"), expected_check("usage-exit-code", "2"), expected_check("env-name-count", "5"), expected_check("driver-arg-count", "3")]
+        unknown: "nope" => ok []
+    match case is "life/s3-driver-shape"
+        false => ok []
+        true => ok [expected_check("driver-file-name", "s3-driver.ts"), expected_check("usage-note", "usage: s3-driver.ts setup <payloadPath> <prefix>"), expected_check("missing-note", "missing "), expected_check("client-name", "S3Client"), expected_check("client-source", "bun"), expected_check("endpoint-env-name", "CAN_TEST_S3_ENDPOINT"), expected_check("region-env-name", "CAN_TEST_S3_REGION"), expected_check("bucket-env-name", "CAN_TEST_S3_BUCKET"), expected_check("access-env-name", "CAN_TEST_S3_ACCESS_KEY"), expected_check("secret-env-name", "CAN_TEST_S3_SECRET_KEY"), expected_check("argv-word", "process.argv"), expected_check("command-arg-name", "command"), expected_check("payload-arg-name", "payloadPath"), expected_check("prefix-arg-name", "prefix"), expected_check("argv-index", "2"), expected_check("usage-exit-code", "2"), expected_check("env-name-count", "5"), expected_check("driver-arg-count", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/s3-driver-shape", "default", "", "offline") => ok
+        seed_driver_file_name: context("life/s3-driver-shape", "seed-driver-file-name-drift", "", "offline") => failed{"driver-file-name"}
+        seed_usage_note: context("life/s3-driver-shape", "seed-usage-note-drift", "", "offline") => failed{"usage-note"}
+        seed_missing_note: context("life/s3-driver-shape", "seed-missing-note-drift", "", "offline") => failed{"missing-note"}
+        seed_client_name: context("life/s3-driver-shape", "seed-client-name-drift", "", "offline") => failed{"client-name"}
+        seed_client_source: context("life/s3-driver-shape", "seed-client-source-drift", "", "offline") => failed{"client-source"}
+        seed_endpoint_env_name: context("life/s3-driver-shape", "seed-endpoint-env-name-drift", "", "offline") => failed{"endpoint-env-name"}
+        seed_region_env_name: context("life/s3-driver-shape", "seed-region-env-name-drift", "", "offline") => failed{"region-env-name"}
+        seed_bucket_env_name: context("life/s3-driver-shape", "seed-bucket-env-name-drift", "", "offline") => failed{"bucket-env-name"}
+        seed_access_env_name: context("life/s3-driver-shape", "seed-access-env-name-drift", "", "offline") => failed{"access-env-name"}
+        seed_secret_env_name: context("life/s3-driver-shape", "seed-secret-env-name-drift", "", "offline") => failed{"secret-env-name"}
+        seed_argv_word: context("life/s3-driver-shape", "seed-argv-word-drift", "", "offline") => failed{"argv-word"}
+        seed_command_arg_name: context("life/s3-driver-shape", "seed-command-arg-name-drift", "", "offline") => failed{"command-arg-name"}
+        seed_payload_arg_name: context("life/s3-driver-shape", "seed-payload-arg-name-drift", "", "offline") => failed{"payload-arg-name"}
+        seed_prefix_arg_name: context("life/s3-driver-shape", "seed-prefix-arg-name-drift", "", "offline") => failed{"prefix-arg-name"}
+        seed_argv_index: context("life/s3-driver-shape", "seed-argv-index-drift", "", "offline") => failed{"argv-index"}
+        seed_usage_exit_code: context("life/s3-driver-shape", "seed-usage-exit-code-drift", "", "offline") => failed{"usage-exit-code"}
+        seed_env_name_count: context("life/s3-driver-shape", "seed-env-name-count-drift", "", "offline") => failed{"env-name-count"}
+        seed_driver_arg_count: context("life/s3-driver-shape", "seed-driver-arg-count-drift", "", "offline") => failed{"driver-arg-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.driver_file_name, "s3-driver.ts", c, "driver-file-name")
+            failed
+            ok evidence driver_file_name_evidence => match call require_text(got.usage_note, "usage: s3-driver.ts setup <payloadPath> <prefix>", c, "usage-note")
+                failed
+                ok evidence usage_note_evidence => match call require_text(got.missing_note, "missing ", c, "missing-note")
+                    failed
+                    ok evidence missing_note_evidence => match call require_text(got.client_name, "S3Client", c, "client-name")
+                        failed
+                        ok evidence client_name_evidence => match call require_text(got.client_source, "bun", c, "client-source")
+                            failed
+                            ok evidence client_source_evidence => match call require_text(got.endpoint_env_name, "CAN_TEST_S3_ENDPOINT", c, "endpoint-env-name")
+                                failed
+                                ok evidence endpoint_env_name_evidence => match call require_text(got.region_env_name, "CAN_TEST_S3_REGION", c, "region-env-name")
+                                    failed
+                                    ok evidence region_env_name_evidence => match call require_text(got.bucket_env_name, "CAN_TEST_S3_BUCKET", c, "bucket-env-name")
+                                        failed
+                                        ok evidence bucket_env_name_evidence => match call require_text(got.access_env_name, "CAN_TEST_S3_ACCESS_KEY", c, "access-env-name")
+                                            failed
+                                            ok evidence access_env_name_evidence => match call require_text(got.secret_env_name, "CAN_TEST_S3_SECRET_KEY", c, "secret-env-name")
+                                                failed
+                                                ok evidence secret_env_name_evidence => match call require_text(got.argv_word, "process.argv", c, "argv-word")
+                                                    failed
+                                                    ok evidence argv_word_evidence => match call require_text(got.command_arg_name, "command", c, "command-arg-name")
+                                                        failed
+                                                        ok evidence command_arg_name_evidence => match call require_text(got.payload_arg_name, "payloadPath", c, "payload-arg-name")
+                                                            failed
+                                                            ok evidence payload_arg_name_evidence => match call require_text(got.prefix_arg_name, "prefix", c, "prefix-arg-name")
+                                                                failed
+                                                                ok evidence prefix_arg_name_evidence => match call require_int(got.argv_index, 2, c, "argv-index")
+                                                                    failed
+                                                                    ok evidence argv_index_evidence => match call require_int(got.usage_exit_code, 2, c, "usage-exit-code")
+                                                                        failed
+                                                                        ok evidence usage_exit_code_evidence => match call require_int(got.env_name_count, 5, c, "env-name-count")
+                                                                            failed
+                                                                            ok evidence env_name_count_evidence => match call require_int(got.driver_arg_count, 3, c, "driver-arg-count")
+                                                                                failed
+                                                                                ok evidence driver_arg_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m42_l026: "m42-l026" => ok test_case("life/s3-driver-shape", ["life", "m42"], [], 120000, [check_ref("driver-file-name"), check_ref("usage-note"), check_ref("missing-note"), check_ref("client-name"), check_ref("client-source"), check_ref("endpoint-env-name"), check_ref("region-env-name"), check_ref("bucket-env-name"), check_ref("access-env-name"), check_ref("secret-env-name"), check_ref("argv-word"), check_ref("command-arg-name"), check_ref("payload-arg-name"), check_ref("prefix-arg-name"), check_ref("argv-index"), check_ref("usage-exit-code"), check_ref("env-name-count"), check_ref("driver-arg-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m42-l026"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/s3-driver-shape", ["life", "m42"], [], 120000, [check_ref("driver-file-name"), check_ref("usage-note"), check_ref("missing-note"), check_ref("client-name"), check_ref("client-source"), check_ref("endpoint-env-name"), check_ref("region-env-name"), check_ref("bucket-env-name"), check_ref("access-env-name"), check_ref("secret-env-name"), check_ref("argv-word"), check_ref("command-arg-name"), check_ref("payload-arg-name"), check_ref("prefix-arg-name"), check_ref("argv-index"), check_ref("usage-exit-code"), check_ref("env-name-count"), check_ref("driver-arg-count")], callable case_body)
