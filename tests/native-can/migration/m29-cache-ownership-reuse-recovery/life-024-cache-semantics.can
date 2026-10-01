@@ -1,0 +1,294 @@
+package m29life024cache
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 LIFE-024 "TestMain: cache semantics".
+/// Source: tests/integration/harness_test.go symbol
+/// TestMain (L149-151) plus runSuite (L153-161),
+/// harnessRoot (L164-172), harnessKey (L177-220),
+/// harnessFill (L224-251), harnessWaitForEntry
+/// (L255-267), harnessReapStaleLock (L271-279),
+/// harnessBuild (L283-305), harnessEntryComplete
+/// (L308-314) plus harnessVerify (L319-341).
+/// Disposition: replace_support (this row ports the
+/// TestMain suite-cache contract to ordinary Can
+/// functions; the old Go harness stays until the
+/// integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the suite-cache verdicts in
+/// Go order: the five diagnostic wordings, the two
+/// comparison spellings, the fill deadline, the heavy
+/// default, plus the single-cache, key-memoized,
+/// atomic-publish, cleanup-after-fail,
+/// cleanup-overrides and stale-reaped verdicts.
+/// ADAPTATION (recorded, with source lines):
+/// create-wording pins the Errorf format inner bytes
+/// (L108); remove-wording pins the Fprintf format
+/// inner bytes before the newline escape (L156);
+/// fill-wording pins the Errorf format inner bytes
+/// (L248); manifest-wording pins the Errorf format
+/// inner bytes (L329); verify-wording pins the Errorf
+/// format inner bytes (L337); verify-compare pins the
+/// hash comparison (L336), never a re-hash;
+/// marker-compare pins the marker comparison (L313);
+/// fill-deadline pins the Add arg inner bytes (L232);
+/// heavy-default pins int (3) from the default return
+/// (L79); single-cache pins true since once.Do builds
+/// one cache (L165); key-memoized pins true since the
+/// memo hit returns the stored key (L183-185);
+/// atomic-publish pins true since Rename publishes the
+/// staged dir (L294); cleanup-after-fail pins true
+/// since the defer runs after failed runs (L19, L154);
+/// cleanup-overrides pins true since the defer assigns
+/// code 1 over success (L155-158); stale-reaped pins
+/// true since the age guard removes old locks
+/// (L276-277).
+/// Facet map (Go verdict legs): create-wording pins
+/// the root-failure wording (L108); remove-wording
+/// pins the close-failure wording (L156); fill-wording
+/// pins the fill-wait wording (L248); manifest-wording
+/// pins the bad-manifest wording (L329); verify-wording
+/// pins the file-verify wording (L337); verify-compare
+/// pins Hash(data) not-equal want (L336);
+/// marker-compare pins TrimSpace(raw) equal key (L313);
+/// fill-deadline pins the 30m leg (L232);
+/// heavy-default pins 3 (L79); single-cache pins true
+/// (L165); key-memoized pins true (L183);
+/// atomic-publish pins true (L294); cleanup-after-fail
+/// pins true (L19, L154); cleanup-overrides pins true
+/// (L157); stale-reaped pins true (L276).
+/// The roots-green pin lives in life-024-roots-green.can;
+/// the run shape plus diagnostics live in
+/// life-024-run-shape.can.
+/// Variants: none (row lists zero variants; the single
+/// passing path in Go order).
+/// Environment: CAN_TEST_CACHE parent plus
+/// CAN_TEST_HEAVY_SLOTS override (row lists 1 gate;
+/// requires [] offline; binds at P23).
+/// Logical gates SUITE/WORK/FILES/BUILD/CHILD/PROC/CLOCK
+/// bind at P23; no live run now. Accept gate P23 is
+/// unmet. Timeout 120000ms is the offline default bound
+/// (no Go test timeout in this row; binds at P23 like
+/// the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case life/testmain-cache-semantics checks:
+/// create-wording, remove-wording, fill-wording,
+/// manifest-wording, verify-wording, verify-compare,
+/// marker-compare, fill-deadline, heavy-default,
+/// single-cache, key-memoized, atomic-publish,
+/// cleanup-after-fail, cleanup-overrides, stale-reaped.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str create_wording
+    str remove_wording
+    str fill_wording
+    str manifest_wording
+    str verify_wording
+    str verify_compare
+    str marker_compare
+    str fill_deadline
+    int heavy_default
+    bool single_cache
+    bool key_memoized
+    bool atomic_publish
+    bool cleanup_after_fail
+    bool cleanup_overrides
+    bool stale_reaped
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/testmain-cache-semantics", "default", "", "offline"), "create-wording" => ok "case life/testmain-cache-semantics variant default root create-wording run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/testmain-cache-semantics", "default", "", "offline"), "single-cache" => ok evidence("single-cache", "true", "true", true, "case life/testmain-cache-semantics variant default root single-cache run offline")
+        different: false, true, context("life/testmain-cache-semantics", "default", "", "offline"), "single-cache" => failed{"single-cache"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("life/testmain-cache-semantics", "default", "", "offline"), "heavy-default" => ok evidence("heavy-default", "3", "3", true, "case life/testmain-cache-semantics variant default root heavy-default run offline")
+        different: 2, 3, context("life/testmain-cache-semantics", "default", "", "offline"), "heavy-default" => failed{"heavy-default"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "create suite bundle cache: %w", "create suite bundle cache: %w", context("life/testmain-cache-semantics", "default", "", "offline"), "create-wording" => ok evidence("create-wording", "create suite bundle cache: %w", "create suite bundle cache: %w", true, "case life/testmain-cache-semantics variant default root create-wording run offline")
+        different: "create suite bundle cache: %w_2", "create suite bundle cache: %w", context("life/testmain-cache-semantics", "default", "", "offline"), "create-wording" => failed{"create-wording"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, true, true)
+        seed_create_wording: "seed-create-wording-drift" => ok observation("create suite bundle cache: %w_2", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, true, true)
+        seed_remove_wording: "seed-remove-wording-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v_2", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, true, true)
+        seed_fill_wording: "seed-fill-wording-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w_2", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, true, true)
+        seed_manifest_wording: "seed-manifest-wording-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s_2", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, true, true)
+        seed_verify_wording: "seed-verify-wording-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification_2", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, true, true)
+        seed_verify_compare: "seed-verify-compare-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want_2", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, true, true)
+        seed_marker_compare: "seed-marker-compare-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key_2", "30 * time.Minute", 3, true, true, true, true, true, true)
+        seed_fill_deadline: "seed-fill-deadline-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute_2", 3, true, true, true, true, true, true)
+        seed_heavy_default: "seed-heavy-default-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 2, true, true, true, true, true, true)
+        seed_single_cache: "seed-single-cache-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, false, true, true, true, true, true)
+        seed_key_memoized: "seed-key-memoized-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, false, true, true, true, true)
+        seed_atomic_publish: "seed-atomic-publish-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, false, true, true, true)
+        seed_cleanup_after_fail: "seed-cleanup-after-fail-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, false, true, true)
+        seed_cleanup_overrides: "seed-cleanup-overrides-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, false, true)
+        seed_stale_reaped: "seed-stale-reaped-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, true, false)
+    match variant_id
+        "seed-create-wording-drift" => ok observation("create suite bundle cache: %w_2", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, true, true)
+        "seed-remove-wording-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v_2", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, true, true)
+        "seed-fill-wording-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w_2", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, true, true)
+        "seed-manifest-wording-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s_2", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, true, true)
+        "seed-verify-wording-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification_2", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, true, true)
+        "seed-verify-compare-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want_2", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, true, true)
+        "seed-marker-compare-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key_2", "30 * time.Minute", 3, true, true, true, true, true, true)
+        "seed-fill-deadline-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute_2", 3, true, true, true, true, true, true)
+        "seed-heavy-default-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 2, true, true, true, true, true, true)
+        "seed-single-cache-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, false, true, true, true, true, true)
+        "seed-key-memoized-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, false, true, true, true, true)
+        "seed-atomic-publish-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, false, true, true, true)
+        "seed-cleanup-after-fail-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, false, true, true)
+        "seed-cleanup-overrides-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, false, true)
+        "seed-stale-reaped-drift" => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, true, false)
+        _ => ok observation("create suite bundle cache: %w", "remove suite bundle cache: %v", "harness cache fill wait: %w", "unexpected bundle manifest in %s", "cached bundle file %s failed verification", "distribution.Hash(data) != want", "strings.TrimSpace(string(raw)) == key", "30 * time.Minute", 3, true, true, true, true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l024: "m29-l024" => ok [check("create-wording", "create diagnostic wording is pinned"), check("remove-wording", "remove diagnostic wording is pinned"), check("fill-wording", "fill-wait diagnostic wording is pinned"), check("manifest-wording", "manifest refusal wording is pinned"), check("verify-wording", "verify refusal wording is pinned"), check("verify-compare", "hash comparison spelling is pinned"), check("marker-compare", "marker comparison spelling is pinned"), check("fill-deadline", "fill deadline pins the 30m leg"), check("heavy-default", "heavy default pins three slots"), check("single-cache", "one leased cache per suite run"), check("key-memoized", "input key hashes once per pair"), check("atomic-publish", "rename publishes staged builds"), check("cleanup-after-fail", "cleanup runs after failed runs"), check("cleanup-overrides", "cleanup error overrides exit"), check("stale-reaped", "stale locks are reaped by age")]
+        other: "nope" => ok []
+    match scope is "m29-l024"
+        false => ok []
+        true => ok [check("create-wording", "create diagnostic wording is pinned"), check("remove-wording", "remove diagnostic wording is pinned"), check("fill-wording", "fill-wait diagnostic wording is pinned"), check("manifest-wording", "manifest refusal wording is pinned"), check("verify-wording", "verify refusal wording is pinned"), check("verify-compare", "hash comparison spelling is pinned"), check("marker-compare", "marker comparison spelling is pinned"), check("fill-deadline", "fill deadline pins the 30m leg"), check("heavy-default", "heavy default pins three slots"), check("single-cache", "one leased cache per suite run"), check("key-memoized", "input key hashes once per pair"), check("atomic-publish", "rename publishes staged builds"), check("cleanup-after-fail", "cleanup runs after failed runs"), check("cleanup-overrides", "cleanup error overrides exit"), check("stale-reaped", "stale locks are reaped by age")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/testmain-cache-semantics" => ok [expected_check("create-wording", "create suite bundle cache: %w"), expected_check("remove-wording", "remove suite bundle cache: %v"), expected_check("fill-wording", "harness cache fill wait: %w"), expected_check("manifest-wording", "unexpected bundle manifest in %s"), expected_check("verify-wording", "cached bundle file %s failed verification"), expected_check("verify-compare", "distribution.Hash(data) != want"), expected_check("marker-compare", "strings.TrimSpace(string(raw)) == key"), expected_check("fill-deadline", "30 * time.Minute"), expected_check("heavy-default", "3"), expected_check("single-cache", "true"), expected_check("key-memoized", "true"), expected_check("atomic-publish", "true"), expected_check("cleanup-after-fail", "true"), expected_check("cleanup-overrides", "true"), expected_check("stale-reaped", "true")]
+        unknown: "nope" => ok []
+    match case is "life/testmain-cache-semantics"
+        false => ok []
+        true => ok [expected_check("create-wording", "create suite bundle cache: %w"), expected_check("remove-wording", "remove suite bundle cache: %v"), expected_check("fill-wording", "harness cache fill wait: %w"), expected_check("manifest-wording", "unexpected bundle manifest in %s"), expected_check("verify-wording", "cached bundle file %s failed verification"), expected_check("verify-compare", "distribution.Hash(data) != want"), expected_check("marker-compare", "strings.TrimSpace(string(raw)) == key"), expected_check("fill-deadline", "30 * time.Minute"), expected_check("heavy-default", "3"), expected_check("single-cache", "true"), expected_check("key-memoized", "true"), expected_check("atomic-publish", "true"), expected_check("cleanup-after-fail", "true"), expected_check("cleanup-overrides", "true"), expected_check("stale-reaped", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/testmain-cache-semantics", "default", "", "offline") => ok
+        seed_create_wording: context("life/testmain-cache-semantics", "seed-create-wording-drift", "", "offline") => failed{"create-wording"}
+        seed_remove_wording: context("life/testmain-cache-semantics", "seed-remove-wording-drift", "", "offline") => failed{"remove-wording"}
+        seed_fill_wording: context("life/testmain-cache-semantics", "seed-fill-wording-drift", "", "offline") => failed{"fill-wording"}
+        seed_manifest_wording: context("life/testmain-cache-semantics", "seed-manifest-wording-drift", "", "offline") => failed{"manifest-wording"}
+        seed_verify_wording: context("life/testmain-cache-semantics", "seed-verify-wording-drift", "", "offline") => failed{"verify-wording"}
+        seed_verify_compare: context("life/testmain-cache-semantics", "seed-verify-compare-drift", "", "offline") => failed{"verify-compare"}
+        seed_marker_compare: context("life/testmain-cache-semantics", "seed-marker-compare-drift", "", "offline") => failed{"marker-compare"}
+        seed_fill_deadline: context("life/testmain-cache-semantics", "seed-fill-deadline-drift", "", "offline") => failed{"fill-deadline"}
+        seed_heavy_default: context("life/testmain-cache-semantics", "seed-heavy-default-drift", "", "offline") => failed{"heavy-default"}
+        seed_single_cache: context("life/testmain-cache-semantics", "seed-single-cache-drift", "", "offline") => failed{"single-cache"}
+        seed_key_memoized: context("life/testmain-cache-semantics", "seed-key-memoized-drift", "", "offline") => failed{"key-memoized"}
+        seed_atomic_publish: context("life/testmain-cache-semantics", "seed-atomic-publish-drift", "", "offline") => failed{"atomic-publish"}
+        seed_cleanup_after_fail: context("life/testmain-cache-semantics", "seed-cleanup-after-fail-drift", "", "offline") => failed{"cleanup-after-fail"}
+        seed_cleanup_overrides: context("life/testmain-cache-semantics", "seed-cleanup-overrides-drift", "", "offline") => failed{"cleanup-overrides"}
+        seed_stale_reaped: context("life/testmain-cache-semantics", "seed-stale-reaped-drift", "", "offline") => failed{"stale-reaped"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.create_wording, "create suite bundle cache: %w", c, "create-wording")
+            failed
+            ok evidence create_wording_evidence => match call require_text(got.remove_wording, "remove suite bundle cache: %v", c, "remove-wording")
+                failed
+                ok evidence remove_wording_evidence => match call require_text(got.fill_wording, "harness cache fill wait: %w", c, "fill-wording")
+                    failed
+                    ok evidence fill_wording_evidence => match call require_text(got.manifest_wording, "unexpected bundle manifest in %s", c, "manifest-wording")
+                        failed
+                        ok evidence manifest_wording_evidence => match call require_text(got.verify_wording, "cached bundle file %s failed verification", c, "verify-wording")
+                            failed
+                            ok evidence verify_wording_evidence => match call require_text(got.verify_compare, "distribution.Hash(data) != want", c, "verify-compare")
+                                failed
+                                ok evidence verify_compare_evidence => match call require_text(got.marker_compare, "strings.TrimSpace(string(raw)) == key", c, "marker-compare")
+                                    failed
+                                    ok evidence marker_compare_evidence => match call require_text(got.fill_deadline, "30 * time.Minute", c, "fill-deadline")
+                                        failed
+                                        ok evidence fill_deadline_evidence => match call require_int(got.heavy_default, 3, c, "heavy-default")
+                                            failed
+                                            ok evidence heavy_default_evidence => match call require_bool(got.single_cache, true, c, "single-cache")
+                                                failed
+                                                ok evidence single_cache_evidence => match call require_bool(got.key_memoized, true, c, "key-memoized")
+                                                    failed
+                                                    ok evidence key_memoized_evidence => match call require_bool(got.atomic_publish, true, c, "atomic-publish")
+                                                        failed
+                                                        ok evidence atomic_publish_evidence => match call require_bool(got.cleanup_after_fail, true, c, "cleanup-after-fail")
+                                                            failed
+                                                            ok evidence cleanup_after_fail_evidence => match call require_bool(got.cleanup_overrides, true, c, "cleanup-overrides")
+                                                                failed
+                                                                ok evidence cleanup_overrides_evidence => match call require_bool(got.stale_reaped, true, c, "stale-reaped")
+                                                                    failed
+                                                                    ok evidence stale_reaped_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l024: "m29-l024" => ok test_case("life/testmain-cache-semantics", ["life", "m29"], [], 120000, [check_ref("create-wording"), check_ref("remove-wording"), check_ref("fill-wording"), check_ref("manifest-wording"), check_ref("verify-wording"), check_ref("verify-compare"), check_ref("marker-compare"), check_ref("fill-deadline"), check_ref("heavy-default"), check_ref("single-cache"), check_ref("key-memoized"), check_ref("atomic-publish"), check_ref("cleanup-after-fail"), check_ref("cleanup-overrides"), check_ref("stale-reaped")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-l024"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/testmain-cache-semantics", ["life", "m29"], [], 120000, [check_ref("create-wording"), check_ref("remove-wording"), check_ref("fill-wording"), check_ref("manifest-wording"), check_ref("verify-wording"), check_ref("verify-compare"), check_ref("marker-compare"), check_ref("fill-deadline"), check_ref("heavy-default"), check_ref("single-cache"), check_ref("key-memoized"), check_ref("atomic-publish"), check_ref("cleanup-after-fail"), check_ref("cleanup-overrides"), check_ref("stale-reaped")], callable case_body)
