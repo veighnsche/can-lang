@@ -1,0 +1,13 @@
+{
+ "endpoint": "https://api.typesafe.ai/v1/systemone",
+ "startedAt": "2026-10-01T13:56:32.524Z",
+ "finishedAt": "2026-10-01T13:56:32.524Z",
+ "httpStatus": 200,
+ "requestSha256": "727ef04bb71f7848777169605b44c425f2d63382ce37d8016166cc465ccacff7",
+ "responseSha256": "105c54745a73f967868ec878ce07ededb6132d0e6dec11650573384ba07a5f9e",
+ "usage": {
+  "input_tokens": 2092,
+  "output_tokens": 62
+ },
+ "note": "First send attempt 422'd (missing type discriminator + misplaced state); requests reshaped to the I01-jev wire format (top-level state, per-question type=choice) and resent; these files are the reshaped requests and their 200 responses."
+}

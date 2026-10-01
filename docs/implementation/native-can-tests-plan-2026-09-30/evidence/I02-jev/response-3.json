@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"c_ingress_merge_shape":{"type":"choice","choice":"split_seam_can_witness_host","confidence":0.72,"probabilities":{"inert_facts_only":0.02,"full_n_service":0.17,"split_seam_can_witness_host":0.81}}},"usage":{"input_tokens":2092,"output_tokens":62}}

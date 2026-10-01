@@ -1,0 +1,20 @@
+{
+ "pairs": {
+  "1-vs-2": {
+   "criteria": "all-3-differ",
+   "instructions": "differ",
+   "state": "differ"
+  },
+  "1-vs-3": {
+   "criteria": "all-3-differ",
+   "instructions": "differ",
+   "state": "differ"
+  },
+  "2-vs-3": {
+   "criteria": "all-3-differ",
+   "instructions": "differ",
+   "state": "differ"
+  }
+ },
+ "structural": "model/question-id/option-keys identical; 37 technical identifiers present in all three requests (3 file paths, 12 function/method names, 2 supervisor paths, 6 const/limit names, 5 vocabulary words, NT-I02, QN2, P14, text::regex_match+groups, slices/i02, catalogue.json, capabilities/i02, cartifact, IMPORT_PATTERN)"
+}
