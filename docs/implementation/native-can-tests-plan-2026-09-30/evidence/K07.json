@@ -1,1 +1,222 @@
-{"acceptance":{"checks":"13/13 bun admission-check.ts, independently re-run; 10/10 Go tests pass","go_tests":"worker-owned observer_test.go (owned dir): 10 honest end-to-end tests, all pass, no skips","independent_probe":"no-observer for never-opened/interrupted; clean->uiSeen:false; seen->uiSeen:true; 4 forbidden + unknown kinds + tampered digest + open tick all forbidden-proof","judge":"only verified closed gapless attestation judges; all non-observer kinds refuse before verdict; tampered digests never verify","launch_gate":"admission-first no-observer for never-opened/closed/lost/interrupted; live binding attests with opaque lookup-verified tokens","mechanism":"per-tick observe through disposal, driver death noted not sealing, gap/unknown keys, durable single-shot corrections surviving disposal, interruption/loss semantics, unknown-scope handling","owner_race":"13/13 packages green with -race (incl. new browser_observer)","runtime_gates":"lint:fix 0/0, format clean, check:runtime exit 0 repo-wide"},"controls":{"live_hosts":"none; local/bounded in-memory controls only; stdlib-only Go (no os/exec/env); no sampling in either mirror (grep-verified comments-only)"},"integrator_fixes":{"validation_order":"TS publishCorrection validated `after` after auth while Go + TS observe() validate vocab first; moved checkObservedState up (no precedence pins; 13/13 still green). Cross-mirror error precedence now agrees."},"integrator_notes":{"digest_agreement":"interval/tick/correction/disposal/verdict digests byte-identical across mirrors (probed sha256:5573958c... agree). Scope digests differ by design (string owner vs N/T identity).","judge_binding":"the judge verifies internal consistency (digest recompute + closed + gapless), not live-record binding; callers must supply observer-issued facts. Fabricated clean intervals would verify. Flagged for QB0/QB1 wiring.","limits_code":"checkLimits failures use unknown-effect/interval (closed-vocab forced reuse, deterministic + pinned). Accepted.","reobserve_semantics":"open-tick re-observe overwrites last-wins silently (no journal); accepted \u2014 observer is trusted, tests script it.","seal_refusal":"verified by code read: gap scan precedes all mutation; cap-wedged launches exit via corrections + disposal (message directs)."},"review":{"locking":"Go single mutex, no nesting; self-contained, no cross-package calls","read":"admission.ts 1153 + observer.go 1299 fully; TS density 83 asserts + 52 negatives; 2 Go tests spot-read honest"},"status":"blocked","task_id":"K07","commits":["3be3357acf792b112206281ffcb1c185b65acdc3"],"planning_audit":{"date":"2026-10-01","method":"Read-only history, task contract and targeted source inspection; recorded checks were not rerun.","recorded_commits_before_audit":null,"commit_provenance":"Each primary SHA is reachable from audit HEAD and touches declared owned paths; supporting P14 process fix is a P10 integration handoff.","historical_status":"complete","current_status":"blocked","qualification_credit_added":false,"reason":"The required actual independent host-effect observer and durable publication are absent. observer.go uses scripted in-memory facts with no host observation channel; local mirror controls do not finish this mechanism.","pending_prerequisites":["P12"],"record_limit":"Historical prose controls retained verbatim; exact commands/deadlines not reconstructable and not invented."}}
+{
+  "acceptance_prerequisite_receipts": [],
+  "campaign": {
+    "append_only_index": null,
+    "attempt_id": null,
+    "id": null,
+    "job_registered_before_execution": null,
+    "manifest": null
+  },
+  "changed_paths": [
+    "tools/native-test-owner/host/browser_observer/observer.go",
+    "tools/native-test-owner/host/browser_observer/observer_test.go",
+    "tools/native-test-owner/host/browser_observer/channel.go",
+    "tools/native-test-owner/host/browser_observer/channel_test.go",
+    "tools/native-test-owner/host/browser_observer/child.go",
+    "tools/native-test-owner/host/browser_observer/child_test.go",
+    "tools/native-test-owner/host/browser_observer/journal.go",
+    "tools/native-test-owner/host/browser_observer/journal_test.go",
+    "tools/native-test-owner/host/browser_observer/process.go",
+    "tools/native-test-owner/host/browser_observer/process_test.go",
+    "docs/implementation/native-can-tests-plan-2026-09-30/evidence/K07.json"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "gofmt -l tools/native-test-owner/host/browser_observer/",
+      "deadline": "60s",
+      "result": "clean, no output (exit 0)"
+    },
+    {
+      "command": "go vet ./tools/native-test-owner/host/browser_observer/",
+      "deadline": "120s",
+      "result": "clean (exit 0)"
+    },
+    {
+      "command": "go test -count=1 -timeout 120s ./tools/native-test-owner/host/browser_observer/",
+      "deadline": "180s",
+      "result": "ok 0.3-0.6s; 28/28 PASS (11 engine + 1 loss-regression + 4 wire + 6 journal + 6 process incl. subtests)"
+    },
+    {
+      "command": "go test -count=1 -race -timeout 180s ./tools/native-test-owner/host/browser_observer/",
+      "deadline": "300s",
+      "result": "ok 4.5s; 28/28 PASS, no data races"
+    },
+    {
+      "command": "go test -count=2 -timeout 120s ./tools/native-test-owner/host/browser_observer/",
+      "deadline": "180s",
+      "result": "ok 0.6s; repeat green"
+    },
+    {
+      "command": "bun tools/runtime/test-services/browser-driver/admission-check.ts",
+      "deadline": "120s",
+      "result": "13/13 pass (TS mirror untouched; regression probe only)"
+    },
+    {
+      "command": "pgrep -f 'browser_observer\\.test' | wc -l after suite + 2s settle",
+      "deadline": "60s",
+      "result": "0 leftover child processes"
+    },
+    {
+      "command": "integrator re-run: gofmt + vet + go test + -race + verbose + bun admission-check.ts",
+      "deadline": "300s",
+      "result": "all green (see reviewer_disposition)"
+    }
+  ],
+  "commits": [
+    "763ce13009ef60459f97c528d910f6bec4a8c86a"
+  ],
+  "controls": {
+    "missing_evidence": [
+      {
+        "check": "live host-UI sensor (window/icon/notification/focus hooks on a qualified host profile)",
+        "result": "not run; waits for the qualified profile + Q task. Bounded controls feed pipe-delivered sensor bytes from a stub."
+      },
+      {
+        "check": "QB0 actual browser launch, host effects, and service-death qualification",
+        "result": "not run; mechanism slice only, no integrated credit."
+      },
+      {
+        "check": "TS admission.ts lost-flag parity (fully-observed-then-lost seals clean in TS, unknown in Go)",
+        "result": "divergence flagged for the admission-adapter slice; adapter files untouched per slice ownership."
+      }
+    ],
+    "positive": [
+      {
+        "check": "observer child boots as owner-direct sibling of driver; attestation + opaque token over the real channel",
+        "result": "pass (TestObserverChannelRoundTrip); distinct pids; digests re-verified with DigestInterval; clean no-UI verdict"
+      },
+      {
+        "check": "observation survives real driver SIGKILL mid-interval; late effect observed through disposal",
+        "result": "pass (TestObservationSurvivesDriverDeath); verdict UISeen=true, DriverDeathNoted, 8 journal lines"
+      },
+      {
+        "check": "observer SIGKILL makes the interval unknown; acknowledged prefix replays; unknown seal",
+        "result": "pass (TestObserverLossMakesIntervalUnknown); dead handle refuses observer-lost; 4 entries replayed, not truncated"
+      },
+      {
+        "check": "acknowledged correction survives observer SIGKILL with no graceful shutdown",
+        "result": "pass (TestDurableCorrectionSurvivesObserverCrash); c1 gap->absent durable; replay deterministic"
+      },
+      {
+        "check": "missing observer blocks launch (no binary / unbindable child / dead handle)",
+        "result": "pass (TestMissingObserverProcessBlocksLaunch); no attestation without a live bound child"
+      },
+      {
+        "check": "interruption suspends the channeled observer; unknown-scope channels reject without effect",
+        "result": "pass (TestWireNegativesOverChannel); interrupted interval unknown; forged token forged-token"
+      },
+      {
+        "check": "journal truncation, corruption, seq gap, unappliable entry stop replay honestly; stale files refused",
+        "result": "pass (journal suite); prefix facts preserved; bad headers refuse"
+      },
+      {
+        "check": "strict wire framing: unknown fields/ops, oversize lines, torn frames reject",
+        "result": "pass (channel suite); corrupt wire errors fail closed as observer-lost"
+      },
+      {
+        "check": "existing 11 engine tests still pass (admission, tokens, gaps, corrections, disposal, judge)",
+        "result": "pass; contract preserved"
+      }
+    ],
+    "seeded_defect": [
+      {
+        "check": "corrupt wire frame mid-stream",
+        "result": "child exits 3 (fail-closed), owner reads EOF; interval replays empty prefix and seals unknown (TestCorruptWireFrameFailsClosed)"
+      },
+      {
+        "check": "forged launch token over the wire",
+        "result": "forged-token on sample and seal; handle wedged by design (TestWireNegativesOverChannel)"
+      },
+      {
+        "check": "torn/c corrupt journal tail, seq gap, unknown op/field, unappliable entry",
+        "result": "replay stops, Truncated=true, prefix intact (TestJournalTruncationIsHonest, TestJournalCorruptionStopsReplay)"
+      },
+      {
+        "check": "loss with fully observed ticks (engine bug found in line-by-line verification)",
+        "result": "regression test added; lost flag forces unknown seal (TestLossWithFullyObservedTicksSealsUnknown)"
+      }
+    ]
+  },
+  "correction_registry_head": null,
+  "coverage": {
+    "case_check_ids": [
+      "scope-receipt-binds-owned-grant (engine, preserved)",
+      "missing-observer-blocks-launch (engine + process)",
+      "forbidden-proofs-rejected (engine, preserved)",
+      "observer-attestation-judges-ui-effects (engine + channel round-trip + driver-death + loss)",
+      "launch-tokens-opaque-and-verified (engine + wire forged-token)",
+      "interval-observations-through-disposal (engine + channel + driver-death survival)",
+      "unknown-gap-keys (engine + durable correction across crash)",
+      "durable-correction-publication (fsync journal + SIGKILL replay)",
+      "interruption-and-loss (engine + wire interrupt/resume + SIGKILL loss)",
+      "unknown-scope-handling (engine + wire negatives)",
+      "corrupt-wire-frame-fails-closed (child exit 3, EOF, unknown seal)"
+    ],
+    "retained_facets": [
+      "opaque minted tokens verified by lookup; digest-only facts",
+      "admission-first gate: never-opened/closed/lost/interrupted/foreign refuse no-observer",
+      "gap/unknown keys; single-shot corrections journaled in order, durable across crash",
+      "interval through confirmed disposal; dead driver noted, never sealing",
+      "interruption suspends; loss forces unknown even for fully observed ticks",
+      "no headless/HOME/flags/process-sample proof: only verified closed gapless attestation judges"
+    ],
+    "unrun_or_blocked": [
+      "live host-dependent controls (qualified profile + Q task)",
+      "QB0 integrated launch/host-effect/service-death qualification",
+      "TS admission.ts lost-flag parity (adapter slice)"
+    ],
+    "variants_and_environments": [
+      "darwin arm64, go1.27.1, real fork/exec + SIGKILL + pipes + fsync files in t.TempDir",
+      "owner grant bound to the real test pid; child + driver spawned as siblings by the owner"
+    ]
+  },
+  "executor": "k07-browser-observer (Muse Spark)",
+  "identities": {
+    "artifact": null,
+    "candidate": null,
+    "host_profile": "darwin arm64 local bootstrap only; no qualified host profile claimed",
+    "observer": "browser_observer child process (re-execed test binary, CAN_BROWSER_OBSERVER_CHILD=1); sibling of the driver stub, never its descendant",
+    "owner": "N/T owner = test process (grant Owner{PID: real test pid, StartToken: proc-start-1})",
+    "reference": null,
+    "suite": "bounded local controls only; real processes/signals/pipes/files; no fixture binaries, no network, no live browser"
+  },
+  "limitations": [
+    "Sensor content in bounded controls is pipe-delivered stub bytes, not live host-UI hooks; the qualified host profile wires the real sensor to the same Sample intake (QB0/QB1).",
+    "Observer/driver children are re-execed test binaries (P12 pattern); production spawns the owner-built observer binary via the same ChildSpec/env contract.",
+    "TS admission.ts is intentionally untouched (adapter slice owns it after the receipt-contract seal); Go lost-flag behavior is the newer contract and TS parity is flagged, not fixed.",
+    "InterruptScope/SealDisposal capacity wedges exit via corrections + disposal as before; behavior preserved from the verified engine.",
+    "Round trips carry no deadline: a wedged child would stall Close/Kill behind the in-flight request mutex. Accepted for the mechanism slice (the child always answers or exits; engine ops are bounded in-memory); production supervision may add deadlines."
+  ],
+  "local_control_slice_status": "complete",
+  "parent_task_id": "K07",
+  "path_reservation": {
+    "exact_paths": [
+      "tools/native-test-owner/host/browser_observer/"
+    ],
+    "handoff_from": null,
+    "released_at": null,
+    "writer": "k07-browser-observer"
+  },
+  "promotion_status": "accepted",
+  "relevance_decision": null,
+  "resource_and_cleanup_receipts": [
+    "every spawned child reaped: t.Cleanup Kill+Wait on driver stubs, Close (shutdown+reap) on observer handles",
+    "post-suite pgrep for browser_observer.test: 0 processes",
+    "journals in t.TempDir (auto-removed); /tmp sweep shows no test litter",
+    "bounded: no sleeps; all synchronization over pipes/Wait; suite -timeout 120s, race 180s"
+  ],
+  "retirement_commit": null,
+  "retirement_eligible": false,
+  "reviewer_disposition": "integrator accepted independent-observer slice in 763ce130: read channel/journal/process/child sources in full plus the observer.go diff; verified tick-0 construction invariant, no-sampling (only the forbidden-proof vocabulary), strict wire/journal framing, and fsync-before-ack; independently re-ran gofmt (clean), vet (clean), package tests (ok), -race (ok, no data races), verbose (33 pass, 0 fail/skip), and the TS admission mirror (13/13, untouched). Integrator fix: Close on a dead child now closes stdin exactly once (fd leak). Parent K07 stays active: admission-adapter slice (TS lost-flag parity) is next per lane plan.",
+  "row_or_file_slice": "lane-plan K07 observer slice: tools/native-test-owner/host/browser_observer/observer.go + observer_test.go, extended with channel/journal/process files inside the same owned dir",
+  "slice_id": "independent-observer",
+  "source_slice_status": "complete",
+  "start_prerequisite_receipts": [
+    "P01 complete",
+    "P12 complete (evidence/P12.json: admission floor + finite capability limits; flock arbitration)"
+  ],
+  "status": "active",
+  "task_id": "K07",
+  "writing_owner": "browser",
+  "acceptance_rule": "Slice receipts never complete a parent or override task/row start_after, accept_after, conditional or actual-facet gates."
+}
