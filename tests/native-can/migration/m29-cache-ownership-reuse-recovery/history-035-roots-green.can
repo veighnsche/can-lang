@@ -1,0 +1,327 @@
+package m29history035roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 HISTORY-035 "Cache recovery: roots green".
+/// Source: tests/support/tempcache/cache.go consts (L21-30)
+/// plus owner shape (L32-36); test helper candidate plus
+/// deadPID (tests/support/tempcache/cache_test.go L13-38).
+/// Disposition: migrate (this row ports
+/// TestRecoveryRequiresInactivityAndPreservesForeignPaths to
+/// ordinary Can functions; the old Go harness stays until the
+/// integrator retires it after every linked row, variant,
+/// environment and control has accepted evidence).
+/// Protects (this file): the static recovery baseline as the
+/// green root: the cache prefix, marker and lease names, the
+/// owner schema tag, the hour wait plus sixteen-entry scan
+/// bound, the dead PID value, the owner JSON keys plus Go
+/// field names, and the candidate helper call spellings
+/// (mint, encode, base, join, modes, aging, live PID).
+/// ADAPTATION (recorded, with source lines): recovery-age
+/// pins the time.Hour spelling as str (no int literal at
+/// cache.go L29); modes pin the 0600 spellings structurally
+/// as str (test L23/L26); age-factor pins int (2) from -2
+/// times recoveryAge (L30); join-call pins one spelling for
+/// all seven Join sites; live-pid-call pins os.Getpid() with
+/// parens as the call spelling (L74).
+/// Facet map (static baseline): prefix pins can-suite-cache-
+/// (cache.go L21); marker-name pins .can-test-owner.json
+/// (L22); lease-name pins .can-test-lease (L23); schema pins
+/// can.test-suite-cache/1 (L24); recovery-age pins time.Hour
+/// (L29); recovery-limit pins 16 (L30); dead-pid pins
+/// 999999999 (test L38); owner keys pin schema/name/pid
+/// (cache.go L33-35); mkdir-call pins os.MkdirTemp (test
+/// L15); marshal-call pins json.Marshal (L19); base-call
+/// pins filepath.Base (L19); join-call pins filepath.Join
+/// (L23); marker-mode pins 0600 (L23); lease-mode pins 0600
+/// (L26); age-factor pins 2 (L30); chtimes-call pins
+/// os.Chtimes (L31); live-pid-call pins os.Getpid() (L74);
+/// helper-name pins candidate (L13); dead-pid-name pins
+/// deadPID (L38); owner fields pin Schema/Name/PID (cache.go
+/// L33-35).
+/// The verdict pins live in history-035-cache-semantics.can;
+/// the run shape plus diagnostics live in
+/// history-035-run-shape.can.
+/// Variants: abandoned/fresh/live/locked/foreign/symlink (all
+/// in Go order).
+/// Environment: none (no gates; requires []).
+/// Logical gates SUITE/WORK/FILES/FAULT/NATIVE bind at P23;
+/// no live run now. Accept gate P23 is unmet. Timeout
+/// 120000ms is the offline default bound (no Go timeout in
+/// this row; binds at P23 like the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/cache-roots checks: prefix, marker-name,
+/// lease-name, schema, recovery-age, recovery-limit,
+/// dead-pid, owner-schema-key, owner-name-key, owner-pid-key,
+/// mkdir-call, marshal-call, base-call, join-call,
+/// marker-mode, lease-mode, age-factor, chtimes-call,
+/// live-pid-call, helper-name, dead-pid-name,
+/// owner-schema-field, owner-name-field, owner-pid-field.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str prefix
+    str marker_name
+    str lease_name
+    str schema
+    str recovery_age
+    int recovery_limit
+    int dead_pid
+    str owner_schema_key
+    str owner_name_key
+    str owner_pid_key
+    str mkdir_call
+    str marshal_call
+    str base_call
+    str join_call
+    str marker_mode
+    str lease_mode
+    int age_factor
+    str chtimes_call
+    str live_pid_call
+    str helper_name
+    str dead_pid_name
+    str owner_schema_field
+    str owner_name_field
+    str owner_pid_field
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/cache-roots", "default", "", "offline"), "prefix" => ok "case history/cache-roots variant default root prefix run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/cache-roots", "default", "", "offline"), "prefix" => ok evidence("prefix", "true", "true", true, "case history/cache-roots variant default root prefix run offline")
+        different: false, true, context("history/cache-roots", "default", "", "offline"), "prefix" => failed{"prefix"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 16, 16, context("history/cache-roots", "default", "", "offline"), "recovery-limit" => ok evidence("recovery-limit", "16", "16", true, "case history/cache-roots variant default root recovery-limit run offline")
+        different: 15, 16, context("history/cache-roots", "default", "", "offline"), "recovery-limit" => failed{"recovery-limit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "can-suite-cache-", "can-suite-cache-", context("history/cache-roots", "default", "", "offline"), "prefix" => ok evidence("prefix", "can-suite-cache-", "can-suite-cache-", true, "case history/cache-roots variant default root prefix run offline")
+        different: "can-suite-cache-_2", "can-suite-cache-", context("history/cache-roots", "default", "", "offline"), "prefix" => failed{"prefix"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_prefix: "seed-prefix-drift" => ok observation("can-suite-cache-_2", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_marker_name: "seed-marker-name-drift" => ok observation("can-suite-cache-", ".can-test-owner.json_2", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_lease_name: "seed-lease-name-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease_2", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_schema: "seed-schema-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1_2", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_recovery_age: "seed-recovery-age-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour_2", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_recovery_limit: "seed-recovery-limit-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 15, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_dead_pid: "seed-dead-pid-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999998, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_owner_schema_key: "seed-owner-schema-key-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema_2", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_owner_name_key: "seed-owner-name-key-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name_2", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_owner_pid_key: "seed-owner-pid-key-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid_2", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_mkdir_call: "seed-mkdir-call-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp_2", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_marshal_call: "seed-marshal-call-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal_2", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_base_call: "seed-base-call-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base_2", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_join_call: "seed-join-call-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join_2", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_marker_mode: "seed-marker-mode-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600_2", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_lease_mode: "seed-lease-mode-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600_2", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_age_factor: "seed-age-factor-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 1, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_chtimes_call: "seed-chtimes-call-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes_2", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_live_pid_call: "seed-live-pid-call-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()_2", "candidate", "deadPID", "Schema", "Name", "PID")
+        seed_helper_name: "seed-helper-name-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate_2", "deadPID", "Schema", "Name", "PID")
+        seed_dead_pid_name: "seed-dead-pid-name-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID_2", "Schema", "Name", "PID")
+        seed_owner_schema_field: "seed-owner-schema-field-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema_2", "Name", "PID")
+        seed_owner_name_field: "seed-owner-name-field-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name_2", "PID")
+        seed_owner_pid_field: "seed-owner-pid-field-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID_2")
+    match variant_id
+        "seed-prefix-drift" => ok observation("can-suite-cache-_2", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-marker-name-drift" => ok observation("can-suite-cache-", ".can-test-owner.json_2", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-lease-name-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease_2", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-schema-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1_2", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-recovery-age-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour_2", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-recovery-limit-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 15, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-dead-pid-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999998, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-owner-schema-key-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema_2", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-owner-name-key-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name_2", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-owner-pid-key-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid_2", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-mkdir-call-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp_2", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-marshal-call-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal_2", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-base-call-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base_2", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-join-call-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join_2", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-marker-mode-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600_2", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-lease-mode-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600_2", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-age-factor-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 1, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-chtimes-call-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes_2", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-live-pid-call-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()_2", "candidate", "deadPID", "Schema", "Name", "PID")
+        "seed-helper-name-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate_2", "deadPID", "Schema", "Name", "PID")
+        "seed-dead-pid-name-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID_2", "Schema", "Name", "PID")
+        "seed-owner-schema-field-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema_2", "Name", "PID")
+        "seed-owner-name-field-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name_2", "PID")
+        "seed-owner-pid-field-drift" => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID_2")
+        _ => ok observation("can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "time.Hour", 16, 999999999, "schema", "name", "pid", "os.MkdirTemp", "json.Marshal", "filepath.Base", "filepath.Join", "0600", "0600", 2, "os.Chtimes", "os.Getpid()", "candidate", "deadPID", "Schema", "Name", "PID")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h035: "m29-h035" => ok [check("prefix", "cache dir spelling is pinned"), check("marker-name", "owner marker name is pinned"), check("lease-name", "lease name is pinned"), check("schema", "owner schema tag is pinned"), check("recovery-age", "recovery waits one hour"), check("recovery-limit", "recovery scans sixteen entries"), check("dead-pid", "dead PID spells nine digits"), check("owner-schema-key", "owner JSON keeps schema key"), check("owner-name-key", "owner JSON keeps name key"), check("owner-pid-key", "owner JSON keeps pid key"), check("mkdir-call", "helper mints dirs with MkdirTemp"), check("marshal-call", "helper encodes owner with Marshal"), check("base-call", "owner name pins the base call"), check("join-call", "paths join with filepath Join"), check("marker-mode", "marker lands owner-only"), check("lease-mode", "lease lands owner-only"), check("age-factor", "aging doubles the wait"), check("chtimes-call", "aging pins the Chtimes call"), check("live-pid-call", "live leg pins the live PID call"), check("helper-name", "setup helper is named candidate"), check("dead-pid-name", "dead PID const is named deadPID"), check("owner-schema-field", "owner struct keeps Schema"), check("owner-name-field", "owner struct keeps Name"), check("owner-pid-field", "owner struct keeps PID")]
+        other: "nope" => ok []
+    match scope is "m29-h035"
+        false => ok []
+        true => ok [check("prefix", "cache dir spelling is pinned"), check("marker-name", "owner marker name is pinned"), check("lease-name", "lease name is pinned"), check("schema", "owner schema tag is pinned"), check("recovery-age", "recovery waits one hour"), check("recovery-limit", "recovery scans sixteen entries"), check("dead-pid", "dead PID spells nine digits"), check("owner-schema-key", "owner JSON keeps schema key"), check("owner-name-key", "owner JSON keeps name key"), check("owner-pid-key", "owner JSON keeps pid key"), check("mkdir-call", "helper mints dirs with MkdirTemp"), check("marshal-call", "helper encodes owner with Marshal"), check("base-call", "owner name pins the base call"), check("join-call", "paths join with filepath Join"), check("marker-mode", "marker lands owner-only"), check("lease-mode", "lease lands owner-only"), check("age-factor", "aging doubles the wait"), check("chtimes-call", "aging pins the Chtimes call"), check("live-pid-call", "live leg pins the live PID call"), check("helper-name", "setup helper is named candidate"), check("dead-pid-name", "dead PID const is named deadPID"), check("owner-schema-field", "owner struct keeps Schema"), check("owner-name-field", "owner struct keeps Name"), check("owner-pid-field", "owner struct keeps PID")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/cache-roots" => ok [expected_check("prefix", "can-suite-cache-"), expected_check("marker-name", ".can-test-owner.json"), expected_check("lease-name", ".can-test-lease"), expected_check("schema", "can.test-suite-cache/1"), expected_check("recovery-age", "time.Hour"), expected_check("recovery-limit", "16"), expected_check("dead-pid", "999999999"), expected_check("owner-schema-key", "schema"), expected_check("owner-name-key", "name"), expected_check("owner-pid-key", "pid"), expected_check("mkdir-call", "os.MkdirTemp"), expected_check("marshal-call", "json.Marshal"), expected_check("base-call", "filepath.Base"), expected_check("join-call", "filepath.Join"), expected_check("marker-mode", "0600"), expected_check("lease-mode", "0600"), expected_check("age-factor", "2"), expected_check("chtimes-call", "os.Chtimes"), expected_check("live-pid-call", "os.Getpid()"), expected_check("helper-name", "candidate"), expected_check("dead-pid-name", "deadPID"), expected_check("owner-schema-field", "Schema"), expected_check("owner-name-field", "Name"), expected_check("owner-pid-field", "PID")]
+        unknown: "nope" => ok []
+    match case is "history/cache-roots"
+        false => ok []
+        true => ok [expected_check("prefix", "can-suite-cache-"), expected_check("marker-name", ".can-test-owner.json"), expected_check("lease-name", ".can-test-lease"), expected_check("schema", "can.test-suite-cache/1"), expected_check("recovery-age", "time.Hour"), expected_check("recovery-limit", "16"), expected_check("dead-pid", "999999999"), expected_check("owner-schema-key", "schema"), expected_check("owner-name-key", "name"), expected_check("owner-pid-key", "pid"), expected_check("mkdir-call", "os.MkdirTemp"), expected_check("marshal-call", "json.Marshal"), expected_check("base-call", "filepath.Base"), expected_check("join-call", "filepath.Join"), expected_check("marker-mode", "0600"), expected_check("lease-mode", "0600"), expected_check("age-factor", "2"), expected_check("chtimes-call", "os.Chtimes"), expected_check("live-pid-call", "os.Getpid()"), expected_check("helper-name", "candidate"), expected_check("dead-pid-name", "deadPID"), expected_check("owner-schema-field", "Schema"), expected_check("owner-name-field", "Name"), expected_check("owner-pid-field", "PID")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/cache-roots", "default", "", "offline") => ok
+        seed_prefix: context("history/cache-roots", "seed-prefix-drift", "", "offline") => failed{"prefix"}
+        seed_marker_name: context("history/cache-roots", "seed-marker-name-drift", "", "offline") => failed{"marker-name"}
+        seed_lease_name: context("history/cache-roots", "seed-lease-name-drift", "", "offline") => failed{"lease-name"}
+        seed_schema: context("history/cache-roots", "seed-schema-drift", "", "offline") => failed{"schema"}
+        seed_recovery_age: context("history/cache-roots", "seed-recovery-age-drift", "", "offline") => failed{"recovery-age"}
+        seed_recovery_limit: context("history/cache-roots", "seed-recovery-limit-drift", "", "offline") => failed{"recovery-limit"}
+        seed_dead_pid: context("history/cache-roots", "seed-dead-pid-drift", "", "offline") => failed{"dead-pid"}
+        seed_owner_schema_key: context("history/cache-roots", "seed-owner-schema-key-drift", "", "offline") => failed{"owner-schema-key"}
+        seed_owner_name_key: context("history/cache-roots", "seed-owner-name-key-drift", "", "offline") => failed{"owner-name-key"}
+        seed_owner_pid_key: context("history/cache-roots", "seed-owner-pid-key-drift", "", "offline") => failed{"owner-pid-key"}
+        seed_mkdir_call: context("history/cache-roots", "seed-mkdir-call-drift", "", "offline") => failed{"mkdir-call"}
+        seed_marshal_call: context("history/cache-roots", "seed-marshal-call-drift", "", "offline") => failed{"marshal-call"}
+        seed_base_call: context("history/cache-roots", "seed-base-call-drift", "", "offline") => failed{"base-call"}
+        seed_join_call: context("history/cache-roots", "seed-join-call-drift", "", "offline") => failed{"join-call"}
+        seed_marker_mode: context("history/cache-roots", "seed-marker-mode-drift", "", "offline") => failed{"marker-mode"}
+        seed_lease_mode: context("history/cache-roots", "seed-lease-mode-drift", "", "offline") => failed{"lease-mode"}
+        seed_age_factor: context("history/cache-roots", "seed-age-factor-drift", "", "offline") => failed{"age-factor"}
+        seed_chtimes_call: context("history/cache-roots", "seed-chtimes-call-drift", "", "offline") => failed{"chtimes-call"}
+        seed_live_pid_call: context("history/cache-roots", "seed-live-pid-call-drift", "", "offline") => failed{"live-pid-call"}
+        seed_helper_name: context("history/cache-roots", "seed-helper-name-drift", "", "offline") => failed{"helper-name"}
+        seed_dead_pid_name: context("history/cache-roots", "seed-dead-pid-name-drift", "", "offline") => failed{"dead-pid-name"}
+        seed_owner_schema_field: context("history/cache-roots", "seed-owner-schema-field-drift", "", "offline") => failed{"owner-schema-field"}
+        seed_owner_name_field: context("history/cache-roots", "seed-owner-name-field-drift", "", "offline") => failed{"owner-name-field"}
+        seed_owner_pid_field: context("history/cache-roots", "seed-owner-pid-field-drift", "", "offline") => failed{"owner-pid-field"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.prefix, "can-suite-cache-", c, "prefix")
+            failed
+            ok evidence prefix_evidence => match call require_text(got.marker_name, ".can-test-owner.json", c, "marker-name")
+                failed
+                ok evidence marker_name_evidence => match call require_text(got.lease_name, ".can-test-lease", c, "lease-name")
+                    failed
+                    ok evidence lease_name_evidence => match call require_text(got.schema, "can.test-suite-cache/1", c, "schema")
+                        failed
+                        ok evidence schema_evidence => match call require_text(got.recovery_age, "time.Hour", c, "recovery-age")
+                            failed
+                            ok evidence recovery_age_evidence => match call require_int(got.recovery_limit, 16, c, "recovery-limit")
+                                failed
+                                ok evidence recovery_limit_evidence => match call require_int(got.dead_pid, 999999999, c, "dead-pid")
+                                    failed
+                                    ok evidence dead_pid_evidence => match call require_text(got.owner_schema_key, "schema", c, "owner-schema-key")
+                                        failed
+                                        ok evidence owner_schema_key_evidence => match call require_text(got.owner_name_key, "name", c, "owner-name-key")
+                                            failed
+                                            ok evidence owner_name_key_evidence => match call require_text(got.owner_pid_key, "pid", c, "owner-pid-key")
+                                                failed
+                                                ok evidence owner_pid_key_evidence => match call require_text(got.mkdir_call, "os.MkdirTemp", c, "mkdir-call")
+                                                    failed
+                                                    ok evidence mkdir_call_evidence => match call require_text(got.marshal_call, "json.Marshal", c, "marshal-call")
+                                                        failed
+                                                        ok evidence marshal_call_evidence => match call require_text(got.base_call, "filepath.Base", c, "base-call")
+                                                            failed
+                                                            ok evidence base_call_evidence => match call require_text(got.join_call, "filepath.Join", c, "join-call")
+                                                                failed
+                                                                ok evidence join_call_evidence => match call require_text(got.marker_mode, "0600", c, "marker-mode")
+                                                                    failed
+                                                                    ok evidence marker_mode_evidence => match call require_text(got.lease_mode, "0600", c, "lease-mode")
+                                                                        failed
+                                                                        ok evidence lease_mode_evidence => match call require_int(got.age_factor, 2, c, "age-factor")
+                                                                            failed
+                                                                            ok evidence age_factor_evidence => match call require_text(got.chtimes_call, "os.Chtimes", c, "chtimes-call")
+                                                                                failed
+                                                                                ok evidence chtimes_call_evidence => match call require_text(got.live_pid_call, "os.Getpid()", c, "live-pid-call")
+                                                                                    failed
+                                                                                    ok evidence live_pid_call_evidence => match call require_text(got.helper_name, "candidate", c, "helper-name")
+                                                                                        failed
+                                                                                        ok evidence helper_name_evidence => match call require_text(got.dead_pid_name, "deadPID", c, "dead-pid-name")
+                                                                                            failed
+                                                                                            ok evidence dead_pid_name_evidence => match call require_text(got.owner_schema_field, "Schema", c, "owner-schema-field")
+                                                                                                failed
+                                                                                                ok evidence owner_schema_field_evidence => match call require_text(got.owner_name_field, "Name", c, "owner-name-field")
+                                                                                                    failed
+                                                                                                    ok evidence owner_name_field_evidence => match call require_text(got.owner_pid_field, "PID", c, "owner-pid-field")
+                                                                                                        failed
+                                                                                                        ok evidence owner_pid_field_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h035: "m29-h035" => ok test_case("history/cache-roots", ["history", "m29"], [], 120000, [check_ref("prefix"), check_ref("marker-name"), check_ref("lease-name"), check_ref("schema"), check_ref("recovery-age"), check_ref("recovery-limit"), check_ref("dead-pid"), check_ref("owner-schema-key"), check_ref("owner-name-key"), check_ref("owner-pid-key"), check_ref("mkdir-call"), check_ref("marshal-call"), check_ref("base-call"), check_ref("join-call"), check_ref("marker-mode"), check_ref("lease-mode"), check_ref("age-factor"), check_ref("chtimes-call"), check_ref("live-pid-call"), check_ref("helper-name"), check_ref("dead-pid-name"), check_ref("owner-schema-field"), check_ref("owner-name-field"), check_ref("owner-pid-field")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-h035"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/cache-roots", ["history", "m29"], [], 120000, [check_ref("prefix"), check_ref("marker-name"), check_ref("lease-name"), check_ref("schema"), check_ref("recovery-age"), check_ref("recovery-limit"), check_ref("dead-pid"), check_ref("owner-schema-key"), check_ref("owner-name-key"), check_ref("owner-pid-key"), check_ref("mkdir-call"), check_ref("marshal-call"), check_ref("base-call"), check_ref("join-call"), check_ref("marker-mode"), check_ref("lease-mode"), check_ref("age-factor"), check_ref("chtimes-call"), check_ref("live-pid-call"), check_ref("helper-name"), check_ref("dead-pid-name"), check_ref("owner-schema-field"), check_ref("owner-name-field"), check_ref("owner-pid-field")], callable case_body)

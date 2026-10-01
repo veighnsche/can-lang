@@ -1,0 +1,287 @@
+package m29history035cache
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 HISTORY-035 "Cache recovery: verdict semantics".
+/// Source: tests/support/tempcache/cache_test.go symbol
+/// TestRecoveryRequiresInactivityAndPreservesForeignPaths
+/// (L67-109); helper candidate (L13-36); deadPID (L38).
+/// Disposition: migrate (this row ports
+/// TestRecoveryRequiresInactivityAndPreservesForeignPaths to
+/// ordinary Can functions; the old Go harness stays until the
+/// integrator retires it after every linked row, variant,
+/// environment and control has accepted evidence).
+/// Protects (this file): the six candidate legs in Go order:
+/// the abandoned old dead unlocked owned cache is removed
+/// while the fresh, live, locked, foreign-marker and symlink
+/// paths are kept; plus the one-candidate and five-kept
+/// counts, the old/new age flags, and the six-variant count.
+/// ADAPTATION (recorded, with source lines): leg names pin
+/// the Go local spellings (abandoned L72, fresh L73, live L74,
+/// locked L75, foreign L84, linked L88); candidate-count pins
+/// int (1) from the len guard (L93); protected-count pins int
+/// (5) from the keep loop slice (L104); removed/kept verdicts
+/// pin bools from the Stat/IsNotExist gone guard (L101) and
+/// the Lstat keep guard (L105); age flags pin bools from the
+/// old args (L72-75); variant-count pins int (6) from the
+/// coverage variants
+/// (abandoned/fresh/live/locked/foreign/symlink).
+/// Facet map (Go verdict legs): abandoned-name pins abandoned
+/// (L72); fresh-name pins fresh (L73); live-name pins live
+/// (L74); locked-name pins locked (L75); foreign-name pins
+/// foreign (L84); linked-name pins linked (L88);
+/// candidate-count pins 1 (L93); protected-count pins 5
+/// (L104); abandoned-removed pins true (L101-103); fresh-kept,
+/// live-kept, locked-kept, foreign-kept and linked-kept pin
+/// true (L104-108); abandoned-old pins true (L72); fresh-old
+/// pins false (L73); live-old pins true (L74); variant-count
+/// pins 6 (coverage variants).
+/// The roots-green pin lives in history-035-roots-green.can;
+/// the run shape plus diagnostics live in
+/// history-035-run-shape.can.
+/// Variants: abandoned/fresh/live/locked/foreign/symlink (all
+/// in Go order).
+/// Environment: none (no gates; requires []).
+/// Logical gates SUITE/WORK/FILES/FAULT/NATIVE bind at P23;
+/// no live run now. Accept gate P23 is unmet. Timeout
+/// 120000ms is the offline default bound (no Go timeout in
+/// this row; binds at P23 like the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/cache-semantics checks: abandoned-name,
+/// fresh-name, live-name, locked-name, foreign-name,
+/// linked-name, candidate-count, protected-count,
+/// abandoned-removed, fresh-kept, live-kept, locked-kept,
+/// foreign-kept, linked-kept, abandoned-old, fresh-old,
+/// live-old, variant-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str abandoned_name
+    str fresh_name
+    str live_name
+    str locked_name
+    str foreign_name
+    str linked_name
+    int candidate_count
+    int protected_count
+    bool abandoned_removed
+    bool fresh_kept
+    bool live_kept
+    bool locked_kept
+    bool foreign_kept
+    bool linked_kept
+    bool abandoned_old
+    bool fresh_old
+    bool live_old
+    int variant_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/cache-semantics", "default", "", "offline"), "abandoned-name" => ok "case history/cache-semantics variant default root abandoned-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/cache-semantics", "default", "", "offline"), "abandoned-removed" => ok evidence("abandoned-removed", "true", "true", true, "case history/cache-semantics variant default root abandoned-removed run offline")
+        different: false, true, context("history/cache-semantics", "default", "", "offline"), "abandoned-removed" => failed{"abandoned-removed"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("history/cache-semantics", "default", "", "offline"), "candidate-count" => ok evidence("candidate-count", "1", "1", true, "case history/cache-semantics variant default root candidate-count run offline")
+        different: 2, 1, context("history/cache-semantics", "default", "", "offline"), "candidate-count" => failed{"candidate-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "abandoned", "abandoned", context("history/cache-semantics", "default", "", "offline"), "abandoned-name" => ok evidence("abandoned-name", "abandoned", "abandoned", true, "case history/cache-semantics variant default root abandoned-name run offline")
+        different: "abandoned_2", "abandoned", context("history/cache-semantics", "default", "", "offline"), "abandoned-name" => failed{"abandoned-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, true, true, false, true, 6)
+        seed_abandoned_name: "seed-abandoned-name-drift" => ok observation("abandoned_2", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, true, true, false, true, 6)
+        seed_fresh_name: "seed-fresh-name-drift" => ok observation("abandoned", "fresh_2", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, true, true, false, true, 6)
+        seed_live_name: "seed-live-name-drift" => ok observation("abandoned", "fresh", "live_2", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, true, true, false, true, 6)
+        seed_locked_name: "seed-locked-name-drift" => ok observation("abandoned", "fresh", "live", "locked_2", "foreign", "linked", 1, 5, true, true, true, true, true, true, true, false, true, 6)
+        seed_foreign_name: "seed-foreign-name-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign_2", "linked", 1, 5, true, true, true, true, true, true, true, false, true, 6)
+        seed_linked_name: "seed-linked-name-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked_2", 1, 5, true, true, true, true, true, true, true, false, true, 6)
+        seed_candidate_count: "seed-candidate-count-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 2, 5, true, true, true, true, true, true, true, false, true, 6)
+        seed_protected_count: "seed-protected-count-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 4, true, true, true, true, true, true, true, false, true, 6)
+        seed_abandoned_removed: "seed-abandoned-removed-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, false, true, true, true, true, true, true, false, true, 6)
+        seed_fresh_kept: "seed-fresh-kept-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, false, true, true, true, true, true, false, true, 6)
+        seed_live_kept: "seed-live-kept-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, false, true, true, true, true, false, true, 6)
+        seed_locked_kept: "seed-locked-kept-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, false, true, true, true, false, true, 6)
+        seed_foreign_kept: "seed-foreign-kept-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, false, true, true, false, true, 6)
+        seed_linked_kept: "seed-linked-kept-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, false, true, false, true, 6)
+        seed_abandoned_old: "seed-abandoned-old-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, true, false, false, true, 6)
+        seed_fresh_old: "seed-fresh-old-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, true, true, true, true, 6)
+        seed_live_old: "seed-live-old-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, true, true, false, false, 6)
+        seed_variant_count: "seed-variant-count-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, true, true, false, true, 5)
+    match variant_id
+        "seed-abandoned-name-drift" => ok observation("abandoned_2", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, true, true, false, true, 6)
+        "seed-fresh-name-drift" => ok observation("abandoned", "fresh_2", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, true, true, false, true, 6)
+        "seed-live-name-drift" => ok observation("abandoned", "fresh", "live_2", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, true, true, false, true, 6)
+        "seed-locked-name-drift" => ok observation("abandoned", "fresh", "live", "locked_2", "foreign", "linked", 1, 5, true, true, true, true, true, true, true, false, true, 6)
+        "seed-foreign-name-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign_2", "linked", 1, 5, true, true, true, true, true, true, true, false, true, 6)
+        "seed-linked-name-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked_2", 1, 5, true, true, true, true, true, true, true, false, true, 6)
+        "seed-candidate-count-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 2, 5, true, true, true, true, true, true, true, false, true, 6)
+        "seed-protected-count-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 4, true, true, true, true, true, true, true, false, true, 6)
+        "seed-abandoned-removed-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, false, true, true, true, true, true, true, false, true, 6)
+        "seed-fresh-kept-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, false, true, true, true, true, true, false, true, 6)
+        "seed-live-kept-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, false, true, true, true, true, false, true, 6)
+        "seed-locked-kept-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, false, true, true, true, false, true, 6)
+        "seed-foreign-kept-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, false, true, true, false, true, 6)
+        "seed-linked-kept-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, false, true, false, true, 6)
+        "seed-abandoned-old-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, true, false, false, true, 6)
+        "seed-fresh-old-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, true, true, true, true, 6)
+        "seed-live-old-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, true, true, false, false, 6)
+        "seed-variant-count-drift" => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, true, true, false, true, 5)
+        _ => ok observation("abandoned", "fresh", "live", "locked", "foreign", "linked", 1, 5, true, true, true, true, true, true, true, false, true, 6)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h035: "m29-h035" => ok [check("abandoned-name", "abandoned leg keeps its Go name"), check("fresh-name", "fresh leg keeps its Go name"), check("live-name", "live leg keeps its Go name"), check("locked-name", "locked leg keeps its Go name"), check("foreign-name", "foreign leg keeps its Go name"), check("linked-name", "symlink leg keeps its Go name"), check("candidate-count", "exactly one path reaches the liveness gate"), check("protected-count", "five paths face the keep guard"), check("abandoned-removed", "old dead unlocked owned cache is removed"), check("fresh-kept", "fresh cache is kept"), check("live-kept", "live-owner cache is kept"), check("locked-kept", "locked cache is kept"), check("foreign-kept", "foreign-marker cache is kept"), check("linked-kept", "symlink path is kept"), check("abandoned-old", "abandoned leg is aged old"), check("fresh-old", "fresh leg stays new"), check("live-old", "live leg is aged old"), check("variant-count", "six legs run in order")]
+        other: "nope" => ok []
+    match scope is "m29-h035"
+        false => ok []
+        true => ok [check("abandoned-name", "abandoned leg keeps its Go name"), check("fresh-name", "fresh leg keeps its Go name"), check("live-name", "live leg keeps its Go name"), check("locked-name", "locked leg keeps its Go name"), check("foreign-name", "foreign leg keeps its Go name"), check("linked-name", "symlink leg keeps its Go name"), check("candidate-count", "exactly one path reaches the liveness gate"), check("protected-count", "five paths face the keep guard"), check("abandoned-removed", "old dead unlocked owned cache is removed"), check("fresh-kept", "fresh cache is kept"), check("live-kept", "live-owner cache is kept"), check("locked-kept", "locked cache is kept"), check("foreign-kept", "foreign-marker cache is kept"), check("linked-kept", "symlink path is kept"), check("abandoned-old", "abandoned leg is aged old"), check("fresh-old", "fresh leg stays new"), check("live-old", "live leg is aged old"), check("variant-count", "six legs run in order")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/cache-semantics" => ok [expected_check("abandoned-name", "abandoned"), expected_check("fresh-name", "fresh"), expected_check("live-name", "live"), expected_check("locked-name", "locked"), expected_check("foreign-name", "foreign"), expected_check("linked-name", "linked"), expected_check("candidate-count", "1"), expected_check("protected-count", "5"), expected_check("abandoned-removed", "true"), expected_check("fresh-kept", "true"), expected_check("live-kept", "true"), expected_check("locked-kept", "true"), expected_check("foreign-kept", "true"), expected_check("linked-kept", "true"), expected_check("abandoned-old", "true"), expected_check("fresh-old", "false"), expected_check("live-old", "true"), expected_check("variant-count", "6")]
+        unknown: "nope" => ok []
+    match case is "history/cache-semantics"
+        false => ok []
+        true => ok [expected_check("abandoned-name", "abandoned"), expected_check("fresh-name", "fresh"), expected_check("live-name", "live"), expected_check("locked-name", "locked"), expected_check("foreign-name", "foreign"), expected_check("linked-name", "linked"), expected_check("candidate-count", "1"), expected_check("protected-count", "5"), expected_check("abandoned-removed", "true"), expected_check("fresh-kept", "true"), expected_check("live-kept", "true"), expected_check("locked-kept", "true"), expected_check("foreign-kept", "true"), expected_check("linked-kept", "true"), expected_check("abandoned-old", "true"), expected_check("fresh-old", "false"), expected_check("live-old", "true"), expected_check("variant-count", "6")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/cache-semantics", "default", "", "offline") => ok
+        seed_abandoned_name: context("history/cache-semantics", "seed-abandoned-name-drift", "", "offline") => failed{"abandoned-name"}
+        seed_fresh_name: context("history/cache-semantics", "seed-fresh-name-drift", "", "offline") => failed{"fresh-name"}
+        seed_live_name: context("history/cache-semantics", "seed-live-name-drift", "", "offline") => failed{"live-name"}
+        seed_locked_name: context("history/cache-semantics", "seed-locked-name-drift", "", "offline") => failed{"locked-name"}
+        seed_foreign_name: context("history/cache-semantics", "seed-foreign-name-drift", "", "offline") => failed{"foreign-name"}
+        seed_linked_name: context("history/cache-semantics", "seed-linked-name-drift", "", "offline") => failed{"linked-name"}
+        seed_candidate_count: context("history/cache-semantics", "seed-candidate-count-drift", "", "offline") => failed{"candidate-count"}
+        seed_protected_count: context("history/cache-semantics", "seed-protected-count-drift", "", "offline") => failed{"protected-count"}
+        seed_abandoned_removed: context("history/cache-semantics", "seed-abandoned-removed-drift", "", "offline") => failed{"abandoned-removed"}
+        seed_fresh_kept: context("history/cache-semantics", "seed-fresh-kept-drift", "", "offline") => failed{"fresh-kept"}
+        seed_live_kept: context("history/cache-semantics", "seed-live-kept-drift", "", "offline") => failed{"live-kept"}
+        seed_locked_kept: context("history/cache-semantics", "seed-locked-kept-drift", "", "offline") => failed{"locked-kept"}
+        seed_foreign_kept: context("history/cache-semantics", "seed-foreign-kept-drift", "", "offline") => failed{"foreign-kept"}
+        seed_linked_kept: context("history/cache-semantics", "seed-linked-kept-drift", "", "offline") => failed{"linked-kept"}
+        seed_abandoned_old: context("history/cache-semantics", "seed-abandoned-old-drift", "", "offline") => failed{"abandoned-old"}
+        seed_fresh_old: context("history/cache-semantics", "seed-fresh-old-drift", "", "offline") => failed{"fresh-old"}
+        seed_live_old: context("history/cache-semantics", "seed-live-old-drift", "", "offline") => failed{"live-old"}
+        seed_variant_count: context("history/cache-semantics", "seed-variant-count-drift", "", "offline") => failed{"variant-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.abandoned_name, "abandoned", c, "abandoned-name")
+            failed
+            ok evidence abandoned_name_evidence => match call require_text(got.fresh_name, "fresh", c, "fresh-name")
+                failed
+                ok evidence fresh_name_evidence => match call require_text(got.live_name, "live", c, "live-name")
+                    failed
+                    ok evidence live_name_evidence => match call require_text(got.locked_name, "locked", c, "locked-name")
+                        failed
+                        ok evidence locked_name_evidence => match call require_text(got.foreign_name, "foreign", c, "foreign-name")
+                            failed
+                            ok evidence foreign_name_evidence => match call require_text(got.linked_name, "linked", c, "linked-name")
+                                failed
+                                ok evidence linked_name_evidence => match call require_int(got.candidate_count, 1, c, "candidate-count")
+                                    failed
+                                    ok evidence candidate_count_evidence => match call require_int(got.protected_count, 5, c, "protected-count")
+                                        failed
+                                        ok evidence protected_count_evidence => match call require_bool(got.abandoned_removed, true, c, "abandoned-removed")
+                                            failed
+                                            ok evidence abandoned_removed_evidence => match call require_bool(got.fresh_kept, true, c, "fresh-kept")
+                                                failed
+                                                ok evidence fresh_kept_evidence => match call require_bool(got.live_kept, true, c, "live-kept")
+                                                    failed
+                                                    ok evidence live_kept_evidence => match call require_bool(got.locked_kept, true, c, "locked-kept")
+                                                        failed
+                                                        ok evidence locked_kept_evidence => match call require_bool(got.foreign_kept, true, c, "foreign-kept")
+                                                            failed
+                                                            ok evidence foreign_kept_evidence => match call require_bool(got.linked_kept, true, c, "linked-kept")
+                                                                failed
+                                                                ok evidence linked_kept_evidence => match call require_bool(got.abandoned_old, true, c, "abandoned-old")
+                                                                    failed
+                                                                    ok evidence abandoned_old_evidence => match call require_bool(got.fresh_old, false, c, "fresh-old")
+                                                                        failed
+                                                                        ok evidence fresh_old_evidence => match call require_bool(got.live_old, true, c, "live-old")
+                                                                            failed
+                                                                            ok evidence live_old_evidence => match call require_int(got.variant_count, 6, c, "variant-count")
+                                                                                failed
+                                                                                ok evidence variant_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h035: "m29-h035" => ok test_case("history/cache-semantics", ["history", "m29"], [], 120000, [check_ref("abandoned-name"), check_ref("fresh-name"), check_ref("live-name"), check_ref("locked-name"), check_ref("foreign-name"), check_ref("linked-name"), check_ref("candidate-count"), check_ref("protected-count"), check_ref("abandoned-removed"), check_ref("fresh-kept"), check_ref("live-kept"), check_ref("locked-kept"), check_ref("foreign-kept"), check_ref("linked-kept"), check_ref("abandoned-old"), check_ref("fresh-old"), check_ref("live-old"), check_ref("variant-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-h035"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/cache-semantics", ["history", "m29"], [], 120000, [check_ref("abandoned-name"), check_ref("fresh-name"), check_ref("live-name"), check_ref("locked-name"), check_ref("foreign-name"), check_ref("linked-name"), check_ref("candidate-count"), check_ref("protected-count"), check_ref("abandoned-removed"), check_ref("fresh-kept"), check_ref("live-kept"), check_ref("locked-kept"), check_ref("foreign-kept"), check_ref("linked-kept"), check_ref("abandoned-old"), check_ref("fresh-old"), check_ref("live-old"), check_ref("variant-count")], callable case_body)

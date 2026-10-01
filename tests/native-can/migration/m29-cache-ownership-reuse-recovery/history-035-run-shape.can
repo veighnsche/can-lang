@@ -1,0 +1,348 @@
+package m29history035run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 HISTORY-035 "Cache recovery: run shape".
+/// Source: tests/support/tempcache/cache_test.go symbol
+/// TestRecoveryRequiresInactivityAndPreservesForeignPaths
+/// (L67-109): dead gate (L68-69); lock setup (L76-83);
+/// foreign overwrite (L84-87); symlink leg (L88-91); check
+/// closure (L92-97); recovery run (L98-100); gone guard
+/// (L101-103); keep guard (L104-108).
+/// Disposition: migrate (this row ports
+/// TestRecoveryRequiresInactivityAndPreservesForeignPaths to
+/// ordinary Can functions; the old Go harness stays until the
+/// integrator retires it after every linked row, variant,
+/// environment and control has accepted evidence).
+/// Protects (this file): the live run shape: the dead-owner
+/// gate (Kill/ESRCH/errors.Is plus refusal), the parent
+/// setup, the lock setup (OpenFile flag plus zero perm, held
+/// fd, exclusive no-block Flock), the foreign marker bytes,
+/// the symlink suffix plus call, the check closure (name,
+/// one-path guard, abandoned-first guard, refusal), the
+/// recover call plus clock, and the gone/keep guards (Stat,
+/// IsNotExist, Lstat plus both refusals).
+/// ADAPTATION (recorded, with source lines): open-perm pins
+/// int (0) from the OpenFile perm arg (L76); foreign-bytes
+/// pins the backquote JSON inner bytes (L85); symlink-suffix
+/// pins the symlink literal after prefix plus (L88);
+/// flock-fd pins the int(file.Fd()) spelling (L81);
+/// parent-setup pins t.TempDir() with parens (L71); guards
+/// pin the full comparison spellings (L93).
+/// Facet map (launch plus diagnostics): dead-gate-call pins
+/// syscall.Kill (L68); dead-gate-want pins syscall.ESRCH
+/// (L68); dead-gate-wrap pins errors.Is (L68); fatal-dead-pid
+/// pins the dead PID refusal (L69); parent-setup pins
+/// t.TempDir() (L71); open-call pins os.OpenFile (L76);
+/// open-flag pins os.O_RDWR (L76); open-perm pins 0 (L76);
+/// flock-call pins syscall.Flock (L81); flock-ex pins
+/// syscall.LOCK_EX (L81); flock-nb pins syscall.LOCK_NB
+/// (L81); flock-fd pins int(file.Fd()) (L81); foreign-bytes
+/// pins the foreign JSON (L85); symlink-suffix pins symlink
+/// (L88); symlink-call pins os.Symlink (L89); check-name pins
+/// check (L92); check-len-guard pins len(paths) != 1 (L93);
+/// check-first-guard pins paths[0] != abandoned (L93);
+/// fatal-unsafe pins the unsafe refusal (L94); recover-call
+/// pins recoverAbandoned (L98); now-call pins time.Now()
+/// (L98); stat-call pins os.Stat (L101); not-exist-call pins
+/// os.IsNotExist (L101); fatal-retained pins the retained
+/// refusal (L102); lstat-call pins os.Lstat (L105);
+/// fatal-protected pins the removed refusal (L106).
+/// The verdict pins live in history-035-cache-semantics.can;
+/// the roots-green pin lives in history-035-roots-green.can.
+/// Variants: abandoned/fresh/live/locked/foreign/symlink (all
+/// in Go order).
+/// Environment: none (no gates; requires []).
+/// Logical gates SUITE/WORK/FILES/FAULT/NATIVE bind at P23;
+/// no live run now. Accept gate P23 is unmet. Timeout
+/// 120000ms is the offline default bound (no Go timeout in
+/// this row; binds at P23 like the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/cache-run checks: dead-gate-call,
+/// dead-gate-want, dead-gate-wrap, fatal-dead-pid,
+/// parent-setup, open-call, open-flag, open-perm, flock-call,
+/// flock-ex, flock-nb, flock-fd, foreign-bytes,
+/// symlink-suffix, symlink-call, check-name, check-len-guard,
+/// check-first-guard, fatal-unsafe, recover-call, now-call,
+/// stat-call, not-exist-call, fatal-retained, lstat-call,
+/// fatal-protected.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str dead_gate_call
+    str dead_gate_want
+    str dead_gate_wrap
+    str fatal_dead_pid
+    str parent_setup
+    str open_call
+    str open_flag
+    int open_perm
+    str flock_call
+    str flock_ex
+    str flock_nb
+    str flock_fd
+    str foreign_bytes
+    str symlink_suffix
+    str symlink_call
+    str check_name
+    str check_len_guard
+    str check_first_guard
+    str fatal_unsafe
+    str recover_call
+    str now_call
+    str stat_call
+    str not_exist_call
+    str fatal_retained
+    str lstat_call
+    str fatal_protected
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/cache-run", "default", "", "offline"), "dead-gate-call" => ok "case history/cache-run variant default root dead-gate-call run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/cache-run", "default", "", "offline"), "dead-gate-call" => ok evidence("dead-gate-call", "true", "true", true, "case history/cache-run variant default root dead-gate-call run offline")
+        different: false, true, context("history/cache-run", "default", "", "offline"), "dead-gate-call" => failed{"dead-gate-call"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("history/cache-run", "default", "", "offline"), "open-perm" => ok evidence("open-perm", "0", "0", true, "case history/cache-run variant default root open-perm run offline")
+        different: 1, 0, context("history/cache-run", "default", "", "offline"), "open-perm" => failed{"open-perm"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "syscall.Kill", "syscall.Kill", context("history/cache-run", "default", "", "offline"), "dead-gate-call" => ok evidence("dead-gate-call", "syscall.Kill", "syscall.Kill", true, "case history/cache-run variant default root dead-gate-call run offline")
+        different: "syscall.Kill_2", "syscall.Kill", context("history/cache-run", "default", "", "offline"), "dead-gate-call" => failed{"dead-gate-call"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_dead_gate_call: "seed-dead-gate-call-drift" => ok observation("syscall.Kill_2", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_dead_gate_want: "seed-dead-gate-want-drift" => ok observation("syscall.Kill", "syscall.ESRCH_2", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_dead_gate_wrap: "seed-dead-gate-wrap-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is_2", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_fatal_dead_pid: "seed-fatal-dead-pid-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent_2", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_parent_setup: "seed-parent-setup-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()_2", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_open_call: "seed-open-call-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile_2", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_open_flag: "seed-open-flag-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR_2", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_open_perm: "seed-open-perm-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 1, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_flock_call: "seed-flock-call-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock_2", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_flock_ex: "seed-flock-ex-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX_2", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_flock_nb: "seed-flock-nb-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB_2", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_flock_fd: "seed-flock-fd-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())_2", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_foreign_bytes: "seed-foreign-bytes-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}_2", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_symlink_suffix: "seed-symlink-suffix-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink_2", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_symlink_call: "seed-symlink-call-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink_2", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_check_name: "seed-check-name-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check_2", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_check_len_guard: "seed-check-len-guard-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1_2", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_check_first_guard: "seed-check-first-guard-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned_2", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_fatal_unsafe: "seed-fatal-unsafe-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v_2", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_recover_call: "seed-recover-call-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned_2", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_now_call: "seed-now-call-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()_2", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_stat_call: "seed-stat-call-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat_2", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_not_exist_call: "seed-not-exist-call-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist_2", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        seed_fatal_retained: "seed-fatal-retained-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v_2", "os.Lstat", "protected path removed %s: %v")
+        seed_lstat_call: "seed-lstat-call-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat_2", "protected path removed %s: %v")
+        seed_fatal_protected: "seed-fatal-protected-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v_2")
+    match variant_id
+        "seed-dead-gate-call-drift" => ok observation("syscall.Kill_2", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-dead-gate-want-drift" => ok observation("syscall.Kill", "syscall.ESRCH_2", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-dead-gate-wrap-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is_2", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-fatal-dead-pid-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent_2", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-parent-setup-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()_2", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-open-call-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile_2", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-open-flag-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR_2", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-open-perm-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 1, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-flock-call-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock_2", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-flock-ex-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX_2", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-flock-nb-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB_2", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-flock-fd-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())_2", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-foreign-bytes-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}_2", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-symlink-suffix-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink_2", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-symlink-call-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink_2", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-check-name-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check_2", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-check-len-guard-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1_2", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-check-first-guard-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned_2", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-fatal-unsafe-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v_2", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-recover-call-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned_2", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-now-call-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()_2", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-stat-call-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat_2", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-not-exist-call-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist_2", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+        "seed-fatal-retained-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v_2", "os.Lstat", "protected path removed %s: %v")
+        "seed-lstat-call-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat_2", "protected path removed %s: %v")
+        "seed-fatal-protected-drift" => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v_2")
+        _ => ok observation("syscall.Kill", "syscall.ESRCH", "errors.Is", "test dead PID is not absent", "t.TempDir()", "os.OpenFile", "os.O_RDWR", 0, "syscall.Flock", "syscall.LOCK_EX", "syscall.LOCK_NB", "int(file.Fd())", "{\"schema\":\"foreign\"}", "symlink", "os.Symlink", "check", "len(paths) != 1", "paths[0] != abandoned", "unsafe recovery candidates: %v", "recoverAbandoned", "time.Now()", "os.Stat", "os.IsNotExist", "abandoned cache retained: %v", "os.Lstat", "protected path removed %s: %v")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h035: "m29-h035" => ok [check("dead-gate-call", "dead gate pins the Kill call"), check("dead-gate-want", "dead gate wants ESRCH"), check("dead-gate-wrap", "dead gate wraps with errors Is"), check("fatal-dead-pid", "dead PID refusal wording is pinned"), check("parent-setup", "parent pins the TempDir call"), check("open-call", "lock setup pins the OpenFile call"), check("open-flag", "lock setup pins read-write mode"), check("open-perm", "lock setup pins zero perm"), check("flock-call", "lock pins the Flock call"), check("flock-ex", "lock pins exclusive mode"), check("flock-nb", "lock pins no-block mode"), check("flock-fd", "lock pins the held fd"), check("foreign-bytes", "foreign marker bytes are pinned"), check("symlink-suffix", "link name pins the symlink suffix"), check("symlink-call", "link pins the Symlink call"), check("check-name", "liveness gate is named check"), check("check-len-guard", "gate wants exactly one path"), check("check-first-guard", "gate wants the abandoned path"), check("fatal-unsafe", "unsafe gate refusal is pinned"), check("recover-call", "run pins the recover call"), check("now-call", "run pins the clock call"), check("stat-call", "gone guard pins the Stat call"), check("not-exist-call", "gone guard pins the IsNotExist call"), check("fatal-retained", "retained refusal wording is pinned"), check("lstat-call", "keep guard pins the Lstat call"), check("fatal-protected", "removed refusal wording is pinned")]
+        other: "nope" => ok []
+    match scope is "m29-h035"
+        false => ok []
+        true => ok [check("dead-gate-call", "dead gate pins the Kill call"), check("dead-gate-want", "dead gate wants ESRCH"), check("dead-gate-wrap", "dead gate wraps with errors Is"), check("fatal-dead-pid", "dead PID refusal wording is pinned"), check("parent-setup", "parent pins the TempDir call"), check("open-call", "lock setup pins the OpenFile call"), check("open-flag", "lock setup pins read-write mode"), check("open-perm", "lock setup pins zero perm"), check("flock-call", "lock pins the Flock call"), check("flock-ex", "lock pins exclusive mode"), check("flock-nb", "lock pins no-block mode"), check("flock-fd", "lock pins the held fd"), check("foreign-bytes", "foreign marker bytes are pinned"), check("symlink-suffix", "link name pins the symlink suffix"), check("symlink-call", "link pins the Symlink call"), check("check-name", "liveness gate is named check"), check("check-len-guard", "gate wants exactly one path"), check("check-first-guard", "gate wants the abandoned path"), check("fatal-unsafe", "unsafe gate refusal is pinned"), check("recover-call", "run pins the recover call"), check("now-call", "run pins the clock call"), check("stat-call", "gone guard pins the Stat call"), check("not-exist-call", "gone guard pins the IsNotExist call"), check("fatal-retained", "retained refusal wording is pinned"), check("lstat-call", "keep guard pins the Lstat call"), check("fatal-protected", "removed refusal wording is pinned")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/cache-run" => ok [expected_check("dead-gate-call", "syscall.Kill"), expected_check("dead-gate-want", "syscall.ESRCH"), expected_check("dead-gate-wrap", "errors.Is"), expected_check("fatal-dead-pid", "test dead PID is not absent"), expected_check("parent-setup", "t.TempDir()"), expected_check("open-call", "os.OpenFile"), expected_check("open-flag", "os.O_RDWR"), expected_check("open-perm", "0"), expected_check("flock-call", "syscall.Flock"), expected_check("flock-ex", "syscall.LOCK_EX"), expected_check("flock-nb", "syscall.LOCK_NB"), expected_check("flock-fd", "int(file.Fd())"), expected_check("foreign-bytes", "{\"schema\":\"foreign\"}"), expected_check("symlink-suffix", "symlink"), expected_check("symlink-call", "os.Symlink"), expected_check("check-name", "check"), expected_check("check-len-guard", "len(paths) != 1"), expected_check("check-first-guard", "paths[0] != abandoned"), expected_check("fatal-unsafe", "unsafe recovery candidates: %v"), expected_check("recover-call", "recoverAbandoned"), expected_check("now-call", "time.Now()"), expected_check("stat-call", "os.Stat"), expected_check("not-exist-call", "os.IsNotExist"), expected_check("fatal-retained", "abandoned cache retained: %v"), expected_check("lstat-call", "os.Lstat"), expected_check("fatal-protected", "protected path removed %s: %v")]
+        unknown: "nope" => ok []
+    match case is "history/cache-run"
+        false => ok []
+        true => ok [expected_check("dead-gate-call", "syscall.Kill"), expected_check("dead-gate-want", "syscall.ESRCH"), expected_check("dead-gate-wrap", "errors.Is"), expected_check("fatal-dead-pid", "test dead PID is not absent"), expected_check("parent-setup", "t.TempDir()"), expected_check("open-call", "os.OpenFile"), expected_check("open-flag", "os.O_RDWR"), expected_check("open-perm", "0"), expected_check("flock-call", "syscall.Flock"), expected_check("flock-ex", "syscall.LOCK_EX"), expected_check("flock-nb", "syscall.LOCK_NB"), expected_check("flock-fd", "int(file.Fd())"), expected_check("foreign-bytes", "{\"schema\":\"foreign\"}"), expected_check("symlink-suffix", "symlink"), expected_check("symlink-call", "os.Symlink"), expected_check("check-name", "check"), expected_check("check-len-guard", "len(paths) != 1"), expected_check("check-first-guard", "paths[0] != abandoned"), expected_check("fatal-unsafe", "unsafe recovery candidates: %v"), expected_check("recover-call", "recoverAbandoned"), expected_check("now-call", "time.Now()"), expected_check("stat-call", "os.Stat"), expected_check("not-exist-call", "os.IsNotExist"), expected_check("fatal-retained", "abandoned cache retained: %v"), expected_check("lstat-call", "os.Lstat"), expected_check("fatal-protected", "protected path removed %s: %v")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/cache-run", "default", "", "offline") => ok
+        seed_dead_gate_call: context("history/cache-run", "seed-dead-gate-call-drift", "", "offline") => failed{"dead-gate-call"}
+        seed_dead_gate_want: context("history/cache-run", "seed-dead-gate-want-drift", "", "offline") => failed{"dead-gate-want"}
+        seed_dead_gate_wrap: context("history/cache-run", "seed-dead-gate-wrap-drift", "", "offline") => failed{"dead-gate-wrap"}
+        seed_fatal_dead_pid: context("history/cache-run", "seed-fatal-dead-pid-drift", "", "offline") => failed{"fatal-dead-pid"}
+        seed_parent_setup: context("history/cache-run", "seed-parent-setup-drift", "", "offline") => failed{"parent-setup"}
+        seed_open_call: context("history/cache-run", "seed-open-call-drift", "", "offline") => failed{"open-call"}
+        seed_open_flag: context("history/cache-run", "seed-open-flag-drift", "", "offline") => failed{"open-flag"}
+        seed_open_perm: context("history/cache-run", "seed-open-perm-drift", "", "offline") => failed{"open-perm"}
+        seed_flock_call: context("history/cache-run", "seed-flock-call-drift", "", "offline") => failed{"flock-call"}
+        seed_flock_ex: context("history/cache-run", "seed-flock-ex-drift", "", "offline") => failed{"flock-ex"}
+        seed_flock_nb: context("history/cache-run", "seed-flock-nb-drift", "", "offline") => failed{"flock-nb"}
+        seed_flock_fd: context("history/cache-run", "seed-flock-fd-drift", "", "offline") => failed{"flock-fd"}
+        seed_foreign_bytes: context("history/cache-run", "seed-foreign-bytes-drift", "", "offline") => failed{"foreign-bytes"}
+        seed_symlink_suffix: context("history/cache-run", "seed-symlink-suffix-drift", "", "offline") => failed{"symlink-suffix"}
+        seed_symlink_call: context("history/cache-run", "seed-symlink-call-drift", "", "offline") => failed{"symlink-call"}
+        seed_check_name: context("history/cache-run", "seed-check-name-drift", "", "offline") => failed{"check-name"}
+        seed_check_len_guard: context("history/cache-run", "seed-check-len-guard-drift", "", "offline") => failed{"check-len-guard"}
+        seed_check_first_guard: context("history/cache-run", "seed-check-first-guard-drift", "", "offline") => failed{"check-first-guard"}
+        seed_fatal_unsafe: context("history/cache-run", "seed-fatal-unsafe-drift", "", "offline") => failed{"fatal-unsafe"}
+        seed_recover_call: context("history/cache-run", "seed-recover-call-drift", "", "offline") => failed{"recover-call"}
+        seed_now_call: context("history/cache-run", "seed-now-call-drift", "", "offline") => failed{"now-call"}
+        seed_stat_call: context("history/cache-run", "seed-stat-call-drift", "", "offline") => failed{"stat-call"}
+        seed_not_exist_call: context("history/cache-run", "seed-not-exist-call-drift", "", "offline") => failed{"not-exist-call"}
+        seed_fatal_retained: context("history/cache-run", "seed-fatal-retained-drift", "", "offline") => failed{"fatal-retained"}
+        seed_lstat_call: context("history/cache-run", "seed-lstat-call-drift", "", "offline") => failed{"lstat-call"}
+        seed_fatal_protected: context("history/cache-run", "seed-fatal-protected-drift", "", "offline") => failed{"fatal-protected"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.dead_gate_call, "syscall.Kill", c, "dead-gate-call")
+            failed
+            ok evidence dead_gate_call_evidence => match call require_text(got.dead_gate_want, "syscall.ESRCH", c, "dead-gate-want")
+                failed
+                ok evidence dead_gate_want_evidence => match call require_text(got.dead_gate_wrap, "errors.Is", c, "dead-gate-wrap")
+                    failed
+                    ok evidence dead_gate_wrap_evidence => match call require_text(got.fatal_dead_pid, "test dead PID is not absent", c, "fatal-dead-pid")
+                        failed
+                        ok evidence fatal_dead_pid_evidence => match call require_text(got.parent_setup, "t.TempDir()", c, "parent-setup")
+                            failed
+                            ok evidence parent_setup_evidence => match call require_text(got.open_call, "os.OpenFile", c, "open-call")
+                                failed
+                                ok evidence open_call_evidence => match call require_text(got.open_flag, "os.O_RDWR", c, "open-flag")
+                                    failed
+                                    ok evidence open_flag_evidence => match call require_int(got.open_perm, 0, c, "open-perm")
+                                        failed
+                                        ok evidence open_perm_evidence => match call require_text(got.flock_call, "syscall.Flock", c, "flock-call")
+                                            failed
+                                            ok evidence flock_call_evidence => match call require_text(got.flock_ex, "syscall.LOCK_EX", c, "flock-ex")
+                                                failed
+                                                ok evidence flock_ex_evidence => match call require_text(got.flock_nb, "syscall.LOCK_NB", c, "flock-nb")
+                                                    failed
+                                                    ok evidence flock_nb_evidence => match call require_text(got.flock_fd, "int(file.Fd())", c, "flock-fd")
+                                                        failed
+                                                        ok evidence flock_fd_evidence => match call require_text(got.foreign_bytes, "{\"schema\":\"foreign\"}", c, "foreign-bytes")
+                                                            failed
+                                                            ok evidence foreign_bytes_evidence => match call require_text(got.symlink_suffix, "symlink", c, "symlink-suffix")
+                                                                failed
+                                                                ok evidence symlink_suffix_evidence => match call require_text(got.symlink_call, "os.Symlink", c, "symlink-call")
+                                                                    failed
+                                                                    ok evidence symlink_call_evidence => match call require_text(got.check_name, "check", c, "check-name")
+                                                                        failed
+                                                                        ok evidence check_name_evidence => match call require_text(got.check_len_guard, "len(paths) != 1", c, "check-len-guard")
+                                                                            failed
+                                                                            ok evidence check_len_guard_evidence => match call require_text(got.check_first_guard, "paths[0] != abandoned", c, "check-first-guard")
+                                                                                failed
+                                                                                ok evidence check_first_guard_evidence => match call require_text(got.fatal_unsafe, "unsafe recovery candidates: %v", c, "fatal-unsafe")
+                                                                                    failed
+                                                                                    ok evidence fatal_unsafe_evidence => match call require_text(got.recover_call, "recoverAbandoned", c, "recover-call")
+                                                                                        failed
+                                                                                        ok evidence recover_call_evidence => match call require_text(got.now_call, "time.Now()", c, "now-call")
+                                                                                            failed
+                                                                                            ok evidence now_call_evidence => match call require_text(got.stat_call, "os.Stat", c, "stat-call")
+                                                                                                failed
+                                                                                                ok evidence stat_call_evidence => match call require_text(got.not_exist_call, "os.IsNotExist", c, "not-exist-call")
+                                                                                                    failed
+                                                                                                    ok evidence not_exist_call_evidence => match call require_text(got.fatal_retained, "abandoned cache retained: %v", c, "fatal-retained")
+                                                                                                        failed
+                                                                                                        ok evidence fatal_retained_evidence => match call require_text(got.lstat_call, "os.Lstat", c, "lstat-call")
+                                                                                                            failed
+                                                                                                            ok evidence lstat_call_evidence => match call require_text(got.fatal_protected, "protected path removed %s: %v", c, "fatal-protected")
+                                                                                                                failed
+                                                                                                                ok evidence fatal_protected_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h035: "m29-h035" => ok test_case("history/cache-run", ["history", "m29"], [], 120000, [check_ref("dead-gate-call"), check_ref("dead-gate-want"), check_ref("dead-gate-wrap"), check_ref("fatal-dead-pid"), check_ref("parent-setup"), check_ref("open-call"), check_ref("open-flag"), check_ref("open-perm"), check_ref("flock-call"), check_ref("flock-ex"), check_ref("flock-nb"), check_ref("flock-fd"), check_ref("foreign-bytes"), check_ref("symlink-suffix"), check_ref("symlink-call"), check_ref("check-name"), check_ref("check-len-guard"), check_ref("check-first-guard"), check_ref("fatal-unsafe"), check_ref("recover-call"), check_ref("now-call"), check_ref("stat-call"), check_ref("not-exist-call"), check_ref("fatal-retained"), check_ref("lstat-call"), check_ref("fatal-protected")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-h035"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/cache-run", ["history", "m29"], [], 120000, [check_ref("dead-gate-call"), check_ref("dead-gate-want"), check_ref("dead-gate-wrap"), check_ref("fatal-dead-pid"), check_ref("parent-setup"), check_ref("open-call"), check_ref("open-flag"), check_ref("open-perm"), check_ref("flock-call"), check_ref("flock-ex"), check_ref("flock-nb"), check_ref("flock-fd"), check_ref("foreign-bytes"), check_ref("symlink-suffix"), check_ref("symlink-call"), check_ref("check-name"), check_ref("check-len-guard"), check_ref("check-first-guard"), check_ref("fatal-unsafe"), check_ref("recover-call"), check_ref("now-call"), check_ref("stat-call"), check_ref("not-exist-call"), check_ref("fatal-retained"), check_ref("lstat-call"), check_ref("fatal-protected")], callable case_body)
