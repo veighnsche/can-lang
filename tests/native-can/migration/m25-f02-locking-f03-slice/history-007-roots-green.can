@@ -1,0 +1,293 @@
+package m25history007roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M25 HISTORY-007 "F02 live probe: roots green, report inventory".
+/// Source: tests/integration/sql_f02_test.go symbol
+/// TestF02LiveLockingAndReturning (L21-159); env gates (L22-29);
+/// redaction (L30-40); live context (L42); driver path (L44);
+/// report struct (L55-96); version gate (L103-105).
+/// Disposition: migrate (this row ports TestF02LiveLockingAndReturning
+/// to ordinary Can functions; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): the static live baseline as the green root:
+/// both PostgreSQL/bun gates plus skip messages, the redaction
+/// markers, the live context, the source-root hop, the driver path,
+/// the optional MySQL gate, the report error/version keys, the
+/// PostgreSQL 17 prefix, and the six report section keys.
+/// ADAPTATION (recorded, with source lines): the context timeout
+/// pins int minutes (4) from 4*time.Minute (L42); the redaction
+/// markers pin the structural dummy values (L31/L35), never a
+/// secret; the section keys pin the L77/L82/L87/L90/L94/L95 json
+/// tags.
+/// Facet map (legs): env-postgres-url pins CAN_TEST_POSTGRES_URL
+/// (L22); skip-postgres-url pins the disposable-database skip
+/// (L24); bun-tool pins bun (L26); skip-bun pins the missing-bun
+/// skip (L28); redact-url/redact-password pin the dummy markers
+/// (L31/L35); ctx-timeout-min pins 4 (L42); source-root-rel pins
+/// ../.. (L41); driver-path pins f02-live-driver.ts (L44);
+/// env-mysql-url pins CAN_TEST_MYSQL_URL (L48);
+/// report-error-key/report-version-key pin error/serverVersion
+/// (L56-57); version-prefix pins PostgreSQL 17. (L103);
+/// locking-key/cost-key/ambiguity-key/returning-oracle-key/
+/// keyed-key/mysql-key pin the report sections
+/// (L77/L82/L87/L90/L94/L95). Driver internals belong to
+/// HISTORY-012 (f02-live-driver.ts), not this row.
+/// Locking semantics live in history-007-lock-semantics.can; the
+/// invocation plus identity/cost/mysql shape lives in
+/// history-007-run-shape.can.
+/// Variants: none in this file (default only); PG locking modes
+/// live in lock-semantics; writer/RETURNING/MySQL/timing legs
+/// live in run-shape.
+/// Environment: CAN_TEST_POSTGRES_URL plus bun on PATH gates;
+/// requires can-test-postgres-url and bun; CAN_TEST_MYSQL_URL is
+/// optional (mysql-optional leg only).
+/// Logical gates SUITE/CAN/DB/WORK and C/R/N/S/A identities bind at
+/// P23; no live run now. Accept gates P23/QD1/QD2 are unmet.
+/// Descriptor timeout 240000ms mirrors the Go 4-minute ctx (L42).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QD1/QD2 unmet).
+/// Case history/f02-roots checks: env-postgres-url,
+/// skip-postgres-url, bun-tool, skip-bun, redact-url,
+/// redact-password, ctx-timeout-min, source-root-rel, driver-path,
+/// env-mysql-url, report-error-key, report-version-key,
+/// version-prefix, locking-key, cost-key, ambiguity-key,
+/// returning-oracle-key, keyed-key, mysql-key.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str env_postgres_url
+    str skip_postgres_url
+    str bun_tool
+    str skip_bun
+    str redact_url
+    str redact_password
+    int ctx_timeout_min
+    str source_root_rel
+    str driver_path
+    str env_mysql_url
+    str report_error_key
+    str report_version_key
+    str version_prefix
+    str locking_key
+    str cost_key
+    str ambiguity_key
+    str returning_oracle_key
+    str keyed_key
+    str mysql_key
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/f02-roots", "default", "", "offline"), "env-postgres-url" => ok "case history/f02-roots variant default root env-postgres-url run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/f02-roots", "default", "", "offline"), "env-postgres-url" => ok evidence("env-postgres-url", "true", "true", true, "case history/f02-roots variant default root env-postgres-url run offline")
+        different: false, true, context("history/f02-roots", "default", "", "offline"), "env-postgres-url" => failed{"env-postgres-url"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("history/f02-roots", "default", "", "offline"), "ctx-timeout-min" => ok evidence("ctx-timeout-min", "4", "4", true, "case history/f02-roots variant default root ctx-timeout-min run offline")
+        different: 5, 4, context("history/f02-roots", "default", "", "offline"), "ctx-timeout-min" => failed{"ctx-timeout-min"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "CAN_TEST_POSTGRES_URL", "CAN_TEST_POSTGRES_URL", context("history/f02-roots", "default", "", "offline"), "env-postgres-url" => ok evidence("env-postgres-url", "CAN_TEST_POSTGRES_URL", "CAN_TEST_POSTGRES_URL", true, "case history/f02-roots variant default root env-postgres-url run offline")
+        different: "CAN_TEST_POSTGRES_URL_2", "CAN_TEST_POSTGRES_URL", context("history/f02-roots", "default", "", "offline"), "env-postgres-url" => failed{"env-postgres-url"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        seed_env_postgres_url: "seed-env-postgres-url-drift" => ok observation("CAN_TEST_POSTGRES_URL_2", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        seed_skip_postgres_url: "seed-skip-postgres-url-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live check", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        seed_bun_tool: "seed-bun-tool-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun2", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        seed_skip_bun: "seed-skip-bun-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live check", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        seed_redact_url: "seed-redact-url-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url-2>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        seed_redact_password: "seed-redact-password-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password-2>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        seed_ctx_timeout_min: "seed-ctx-timeout-min-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 5, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        seed_source_root_rel: "seed-source-root-rel-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        seed_driver_path: "seed-driver-path-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver2.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        seed_env_mysql_url: "seed-env-mysql-url-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL_2", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        seed_report_error_key: "seed-report-error-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error_2", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        seed_report_version_key: "seed-report-version-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "server_version", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        seed_version_prefix: "seed-version-prefix-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 16.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        seed_locking_key: "seed-locking-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking_2", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        seed_cost_key: "seed-cost-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost_2", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        seed_ambiguity_key: "seed-ambiguity-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity_2", "returning_oracle", "keyed_control", "mysql")
+        seed_returning_oracle_key: "seed-returning-oracle-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle_2", "keyed_control", "mysql")
+        seed_keyed_key: "seed-keyed-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control_2", "mysql")
+        seed_mysql_key: "seed-mysql-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql_2")
+    match variant_id
+        "seed-env-postgres-url-drift" => ok observation("CAN_TEST_POSTGRES_URL_2", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        "seed-skip-postgres-url-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live check", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        "seed-bun-tool-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun2", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        "seed-skip-bun-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live check", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        "seed-redact-url-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url-2>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        "seed-redact-password-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password-2>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        "seed-ctx-timeout-min-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 5, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        "seed-source-root-rel-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        "seed-driver-path-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver2.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        "seed-env-mysql-url-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL_2", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        "seed-report-error-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error_2", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        "seed-report-version-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "server_version", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        "seed-version-prefix-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 16.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        "seed-locking-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking_2", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        "seed-cost-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost_2", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+        "seed-ambiguity-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity_2", "returning_oracle", "keyed_control", "mysql")
+        "seed-returning-oracle-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle_2", "keyed_control", "mysql")
+        "seed-keyed-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control_2", "mysql")
+        "seed-mysql-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql_2")
+        _ => ok observation("CAN_TEST_POSTGRES_URL", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", "bun", "bun is not on PATH for the F02 live probe", "<redacted-url>", "<redacted-password>", 4, "../..", "tests/integration/testdata/sql/f02-live-driver.ts", "CAN_TEST_MYSQL_URL", "error", "serverVersion", "PostgreSQL 17.", "locking", "cost", "ambiguity", "returning_oracle", "keyed_control", "mysql")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m25_h007: "m25-h007" => ok [check("env-postgres-url", "gate reads CAN_TEST_POSTGRES_URL"), check("skip-postgres-url", "skip names the disposable PostgreSQL probe"), check("bun-tool", "gate looks up bun on PATH"), check("skip-bun", "skip names the missing bun probe"), check("redact-url", "redaction masks the raw URL"), check("redact-password", "redaction masks the URL password"), check("ctx-timeout-min", "context spans 4 minutes"), check("source-root-rel", "source root resolves two levels up"), check("driver-path", "driver path names f02-live-driver.ts"), check("env-mysql-url", "optional leg reads CAN_TEST_MYSQL_URL"), check("report-error-key", "report carries the error key"), check("report-version-key", "report carries the serverVersion key"), check("version-prefix", "live database is PostgreSQL 17"), check("locking-key", "report carries the locking section"), check("cost-key", "report carries the cost section"), check("ambiguity-key", "report carries the ambiguity section"), check("returning-oracle-key", "report carries the returning_oracle section"), check("keyed-key", "report carries the keyed_control section"), check("mysql-key", "report carries the mysql section")]
+        other: "nope" => ok []
+    match scope is "m25-h007"
+        false => ok []
+        true => ok [check("env-postgres-url", "gate reads CAN_TEST_POSTGRES_URL"), check("skip-postgres-url", "skip names the disposable PostgreSQL probe"), check("bun-tool", "gate looks up bun on PATH"), check("skip-bun", "skip names the missing bun probe"), check("redact-url", "redaction masks the raw URL"), check("redact-password", "redaction masks the URL password"), check("ctx-timeout-min", "context spans 4 minutes"), check("source-root-rel", "source root resolves two levels up"), check("driver-path", "driver path names f02-live-driver.ts"), check("env-mysql-url", "optional leg reads CAN_TEST_MYSQL_URL"), check("report-error-key", "report carries the error key"), check("report-version-key", "report carries the serverVersion key"), check("version-prefix", "live database is PostgreSQL 17"), check("locking-key", "report carries the locking section"), check("cost-key", "report carries the cost section"), check("ambiguity-key", "report carries the ambiguity section"), check("returning-oracle-key", "report carries the returning_oracle section"), check("keyed-key", "report carries the keyed_control section"), check("mysql-key", "report carries the mysql section")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/f02-roots" => ok [expected_check("env-postgres-url", "CAN_TEST_POSTGRES_URL"), expected_check("skip-postgres-url", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe"), expected_check("bun-tool", "bun"), expected_check("skip-bun", "bun is not on PATH for the F02 live probe"), expected_check("redact-url", "<redacted-url>"), expected_check("redact-password", "<redacted-password>"), expected_check("ctx-timeout-min", "4"), expected_check("source-root-rel", "../.."), expected_check("driver-path", "tests/integration/testdata/sql/f02-live-driver.ts"), expected_check("env-mysql-url", "CAN_TEST_MYSQL_URL"), expected_check("report-error-key", "error"), expected_check("report-version-key", "serverVersion"), expected_check("version-prefix", "PostgreSQL 17."), expected_check("locking-key", "locking"), expected_check("cost-key", "cost"), expected_check("ambiguity-key", "ambiguity"), expected_check("returning-oracle-key", "returning_oracle"), expected_check("keyed-key", "keyed_control"), expected_check("mysql-key", "mysql")]
+        unknown: "nope" => ok []
+    match case is "history/f02-roots"
+        false => ok []
+        true => ok [expected_check("env-postgres-url", "CAN_TEST_POSTGRES_URL"), expected_check("skip-postgres-url", "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe"), expected_check("bun-tool", "bun"), expected_check("skip-bun", "bun is not on PATH for the F02 live probe"), expected_check("redact-url", "<redacted-url>"), expected_check("redact-password", "<redacted-password>"), expected_check("ctx-timeout-min", "4"), expected_check("source-root-rel", "../.."), expected_check("driver-path", "tests/integration/testdata/sql/f02-live-driver.ts"), expected_check("env-mysql-url", "CAN_TEST_MYSQL_URL"), expected_check("report-error-key", "error"), expected_check("report-version-key", "serverVersion"), expected_check("version-prefix", "PostgreSQL 17."), expected_check("locking-key", "locking"), expected_check("cost-key", "cost"), expected_check("ambiguity-key", "ambiguity"), expected_check("returning-oracle-key", "returning_oracle"), expected_check("keyed-key", "keyed_control"), expected_check("mysql-key", "mysql")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/f02-roots", "default", "", "offline") => ok
+        seed_env_postgres_url: context("history/f02-roots", "seed-env-postgres-url-drift", "", "offline") => failed{"env-postgres-url"}
+        seed_skip_postgres_url: context("history/f02-roots", "seed-skip-postgres-url-drift", "", "offline") => failed{"skip-postgres-url"}
+        seed_bun_tool: context("history/f02-roots", "seed-bun-tool-drift", "", "offline") => failed{"bun-tool"}
+        seed_skip_bun: context("history/f02-roots", "seed-skip-bun-drift", "", "offline") => failed{"skip-bun"}
+        seed_redact_url: context("history/f02-roots", "seed-redact-url-drift", "", "offline") => failed{"redact-url"}
+        seed_redact_password: context("history/f02-roots", "seed-redact-password-drift", "", "offline") => failed{"redact-password"}
+        seed_ctx_timeout_min: context("history/f02-roots", "seed-ctx-timeout-min-drift", "", "offline") => failed{"ctx-timeout-min"}
+        seed_source_root_rel: context("history/f02-roots", "seed-source-root-rel-drift", "", "offline") => failed{"source-root-rel"}
+        seed_driver_path: context("history/f02-roots", "seed-driver-path-drift", "", "offline") => failed{"driver-path"}
+        seed_env_mysql_url: context("history/f02-roots", "seed-env-mysql-url-drift", "", "offline") => failed{"env-mysql-url"}
+        seed_report_error_key: context("history/f02-roots", "seed-report-error-key-drift", "", "offline") => failed{"report-error-key"}
+        seed_report_version_key: context("history/f02-roots", "seed-report-version-key-drift", "", "offline") => failed{"report-version-key"}
+        seed_version_prefix: context("history/f02-roots", "seed-version-prefix-drift", "", "offline") => failed{"version-prefix"}
+        seed_locking_key: context("history/f02-roots", "seed-locking-key-drift", "", "offline") => failed{"locking-key"}
+        seed_cost_key: context("history/f02-roots", "seed-cost-key-drift", "", "offline") => failed{"cost-key"}
+        seed_ambiguity_key: context("history/f02-roots", "seed-ambiguity-key-drift", "", "offline") => failed{"ambiguity-key"}
+        seed_returning_oracle_key: context("history/f02-roots", "seed-returning-oracle-key-drift", "", "offline") => failed{"returning-oracle-key"}
+        seed_keyed_key: context("history/f02-roots", "seed-keyed-key-drift", "", "offline") => failed{"keyed-key"}
+        seed_mysql_key: context("history/f02-roots", "seed-mysql-key-drift", "", "offline") => failed{"mysql-key"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.env_postgres_url, "CAN_TEST_POSTGRES_URL", c, "env-postgres-url")
+            failed
+            ok evidence env_postgres_url_evidence => match call require_text(got.skip_postgres_url, "set CAN_TEST_POSTGRES_URL to a disposable PostgreSQL for the F02 live probe", c, "skip-postgres-url")
+                failed
+                ok evidence skip_postgres_url_evidence => match call require_text(got.bun_tool, "bun", c, "bun-tool")
+                    failed
+                    ok evidence bun_tool_evidence => match call require_text(got.skip_bun, "bun is not on PATH for the F02 live probe", c, "skip-bun")
+                        failed
+                        ok evidence skip_bun_evidence => match call require_text(got.redact_url, "<redacted-url>", c, "redact-url")
+                            failed
+                            ok evidence redact_url_evidence => match call require_text(got.redact_password, "<redacted-password>", c, "redact-password")
+                                failed
+                                ok evidence redact_password_evidence => match call require_int(got.ctx_timeout_min, 4, c, "ctx-timeout-min")
+                                    failed
+                                    ok evidence ctx_timeout_min_evidence => match call require_text(got.source_root_rel, "../..", c, "source-root-rel")
+                                        failed
+                                        ok evidence source_root_rel_evidence => match call require_text(got.driver_path, "tests/integration/testdata/sql/f02-live-driver.ts", c, "driver-path")
+                                            failed
+                                            ok evidence driver_path_evidence => match call require_text(got.env_mysql_url, "CAN_TEST_MYSQL_URL", c, "env-mysql-url")
+                                                failed
+                                                ok evidence env_mysql_url_evidence => match call require_text(got.report_error_key, "error", c, "report-error-key")
+                                                    failed
+                                                    ok evidence report_error_key_evidence => match call require_text(got.report_version_key, "serverVersion", c, "report-version-key")
+                                                        failed
+                                                        ok evidence report_version_key_evidence => match call require_text(got.version_prefix, "PostgreSQL 17.", c, "version-prefix")
+                                                            failed
+                                                            ok evidence version_prefix_evidence => match call require_text(got.locking_key, "locking", c, "locking-key")
+                                                                failed
+                                                                ok evidence locking_key_evidence => match call require_text(got.cost_key, "cost", c, "cost-key")
+                                                                    failed
+                                                                    ok evidence cost_key_evidence => match call require_text(got.ambiguity_key, "ambiguity", c, "ambiguity-key")
+                                                                        failed
+                                                                        ok evidence ambiguity_key_evidence => match call require_text(got.returning_oracle_key, "returning_oracle", c, "returning-oracle-key")
+                                                                            failed
+                                                                            ok evidence returning_oracle_key_evidence => match call require_text(got.keyed_key, "keyed_control", c, "keyed-key")
+                                                                                failed
+                                                                                ok evidence keyed_key_evidence => match call require_text(got.mysql_key, "mysql", c, "mysql-key")
+                                                                                    failed
+                                                                                    ok evidence mysql_key_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m25_h007: "m25-h007" => ok test_case("history/f02-roots", ["history", "m25"], ["can-test-postgres-url", "bun"], 240000, [check_ref("env-postgres-url"), check_ref("skip-postgres-url"), check_ref("bun-tool"), check_ref("skip-bun"), check_ref("redact-url"), check_ref("redact-password"), check_ref("ctx-timeout-min"), check_ref("source-root-rel"), check_ref("driver-path"), check_ref("env-mysql-url"), check_ref("report-error-key"), check_ref("report-version-key"), check_ref("version-prefix"), check_ref("locking-key"), check_ref("cost-key"), check_ref("ambiguity-key"), check_ref("returning-oracle-key"), check_ref("keyed-key"), check_ref("mysql-key")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m25-h007"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/f02-roots", ["history", "m25"], ["can-test-postgres-url", "bun"], 240000, [check_ref("env-postgres-url"), check_ref("skip-postgres-url"), check_ref("bun-tool"), check_ref("skip-bun"), check_ref("redact-url"), check_ref("redact-password"), check_ref("ctx-timeout-min"), check_ref("source-root-rel"), check_ref("driver-path"), check_ref("env-mysql-url"), check_ref("report-error-key"), check_ref("report-version-key"), check_ref("version-prefix"), check_ref("locking-key"), check_ref("cost-key"), check_ref("ambiguity-key"), check_ref("returning-oracle-key"), check_ref("keyed-key"), check_ref("mysql-key")], callable case_body)
