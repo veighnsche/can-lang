@@ -125,7 +125,8 @@
     "test::invalid_name",
     "http_peer::peer_fault",
     "http_peer::http_fault",
-    "descriptor::descriptor_fault"
+    "descriptor::descriptor_fault",
+    "late::late_fault"
   ],
   "retired": []
 }

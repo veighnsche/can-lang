@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: c6fc7d1e0e6f07950fc511781142b07fd9d7dac8fb036cd331d1d70509b86fe1.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 5b4d08f9a5274f60488d51d4649ec34e759997ebbb338a43fa48f9dbb5a47241.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -56,6 +56,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - native → can.std.native@1
 - descriptor → can.std.descriptor@1
 - c → can.std.c@1
+- late → can.std.late@1
 
 ## Types
 
@@ -254,6 +255,17 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | c::witness_counters | record |  | int artifacts, int invocations, int completions, int observations, int rejected | true |
 | c::executable_observation | record |  | str artifact, str adapter_export, str adapter_binding, str artifact_digest, str invocation, str completion, str binding, int exit_code, int report_lines | true |
 | c::case_observation | record |  | str artifact, str adapter_export, str adapter_binding, str artifact_digest, str invocation, str completion, str binding, bool passed, option::value&lt;str&gt; reason | true |
+| late::select_facts | record |  | str identity, bool joined | true |
+| late::enroll_facts | record |  | str participant, str identity | true |
+| late::gate_facts | record |  | str participant, int gate_seq, bool joined | true |
+| late::event_facts | record |  | str participant, str identity, str kind, int seq, bool late, int[] dropped | true |
+| late::terminal_facts | record |  | str participant, str identity, str terminal, str binding | true |
+| late::observation_facts | record |  | str participant, str identity, str kind, int seq, bool late, option::value&lt;str&gt; terminal, option::value&lt;str&gt; binding | true |
+| late::lease_facts | record |  | str lease, str holder, str identity, int seq, bool released | true |
+| late::release_facts | record |  | str lease, str holder, str identity, str terminal, str binding | true |
+| late::reconcile_facts | record |  | str participant, int admitted, int late, int[] dropped, int next_seq | true |
+| late::outcome_facts | record |  | str outcome, str reason, option::value&lt;str&gt; worker_terminal, option::value&lt;str&gt; observer_terminal, bool worker_dead | true |
+| late::counters | record |  | int participants, int admitted, int late, int dropped, int terminals, int leases, int releases, int observations, int rejected | true |
 
 ## Domain errors
 
@@ -385,6 +397,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | http_peer::peer_fault | can.std.http_peer@1::peer_fault |  | str kind, str reason |
 | http_peer::http_fault | can.std.http_peer@1::http_fault |  | str kind, str reason |
 | descriptor::descriptor_fault | can.std.descriptor@1::descriptor_fault |  | str kind, str reason |
+| late::late_fault | can.std.late@1::late_fault |  | str kind, str reason |
 
 ## Operations
 

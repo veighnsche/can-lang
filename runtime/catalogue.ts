@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "c6fc7d1e0e6f07950fc511781142b07fd9d7dac8fb036cd331d1d70509b86fe1";
+export const catalogueSHA256 = "5b4d08f9a5274f60488d51d4649ec34e759997ebbb338a43fa48f9dbb5a47241";
 export const catalogue = freeze({
  "schemaVersion": 1,
  "revision": 1,
@@ -184,6 +184,10 @@ export const catalogue = freeze({
   {
    "name": "c",
    "identity": "can.std.c@1"
+  },
+  {
+   "name": "late",
+   "identity": "can.std.late@1"
   }
  ],
  "prelude": [
@@ -4258,6 +4262,339 @@ export const catalogue = freeze({
    "leaves": [],
    "projections": [],
    "constructible": true
+  },
+  {
+   "name": "late::select_facts",
+   "identity": "can.std.late@1::select_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "identity",
+     "type": "str"
+    },
+    {
+     "name": "joined",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "late::enroll_facts",
+   "identity": "can.std.late@1::enroll_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "participant",
+     "type": "str"
+    },
+    {
+     "name": "identity",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "late::gate_facts",
+   "identity": "can.std.late@1::gate_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "participant",
+     "type": "str"
+    },
+    {
+     "name": "gate_seq",
+     "type": "int"
+    },
+    {
+     "name": "joined",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "late::event_facts",
+   "identity": "can.std.late@1::event_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "participant",
+     "type": "str"
+    },
+    {
+     "name": "identity",
+     "type": "str"
+    },
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "seq",
+     "type": "int"
+    },
+    {
+     "name": "late",
+     "type": "bool"
+    },
+    {
+     "name": "dropped",
+     "type": "int[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "late::terminal_facts",
+   "identity": "can.std.late@1::terminal_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "participant",
+     "type": "str"
+    },
+    {
+     "name": "identity",
+     "type": "str"
+    },
+    {
+     "name": "terminal",
+     "type": "str"
+    },
+    {
+     "name": "binding",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "late::observation_facts",
+   "identity": "can.std.late@1::observation_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "participant",
+     "type": "str"
+    },
+    {
+     "name": "identity",
+     "type": "str"
+    },
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "seq",
+     "type": "int"
+    },
+    {
+     "name": "late",
+     "type": "bool"
+    },
+    {
+     "name": "terminal",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "binding",
+     "type": "option::value<str>"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "late::lease_facts",
+   "identity": "can.std.late@1::lease_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "lease",
+     "type": "str"
+    },
+    {
+     "name": "holder",
+     "type": "str"
+    },
+    {
+     "name": "identity",
+     "type": "str"
+    },
+    {
+     "name": "seq",
+     "type": "int"
+    },
+    {
+     "name": "released",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "late::release_facts",
+   "identity": "can.std.late@1::release_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "lease",
+     "type": "str"
+    },
+    {
+     "name": "holder",
+     "type": "str"
+    },
+    {
+     "name": "identity",
+     "type": "str"
+    },
+    {
+     "name": "terminal",
+     "type": "str"
+    },
+    {
+     "name": "binding",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "late::reconcile_facts",
+   "identity": "can.std.late@1::reconcile_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "participant",
+     "type": "str"
+    },
+    {
+     "name": "admitted",
+     "type": "int"
+    },
+    {
+     "name": "late",
+     "type": "int"
+    },
+    {
+     "name": "dropped",
+     "type": "int[]"
+    },
+    {
+     "name": "next_seq",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "late::outcome_facts",
+   "identity": "can.std.late@1::outcome_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "outcome",
+     "type": "str"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    },
+    {
+     "name": "worker_terminal",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "observer_terminal",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "worker_dead",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "late::counters",
+   "identity": "can.std.late@1::counters",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "participants",
+     "type": "int"
+    },
+    {
+     "name": "admitted",
+     "type": "int"
+    },
+    {
+     "name": "late",
+     "type": "int"
+    },
+    {
+     "name": "dropped",
+     "type": "int"
+    },
+    {
+     "name": "terminals",
+     "type": "int"
+    },
+    {
+     "name": "leases",
+     "type": "int"
+    },
+    {
+     "name": "releases",
+     "type": "int"
+    },
+    {
+     "name": "observations",
+     "type": "int"
+    },
+    {
+     "name": "rejected",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
   }
  ],
  "errors": [
@@ -5711,6 +6048,21 @@ export const catalogue = freeze({
   {
    "name": "descriptor::descriptor_fault",
    "identity": "can.std.descriptor@1::descriptor_fault",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "late::late_fault",
+   "identity": "can.std.late@1::late_fault",
    "parameters": [],
    "fields": [
     {
@@ -25001,6 +25353,506 @@ export const catalogueTypeShapes = freeze([
     "leaves": []
   },
   {
+    "name": "late::select_facts",
+    "identity": "can.std.late@1::select_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "identity",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "joined",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "late::enroll_facts",
+    "identity": "can.std.late@1::enroll_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "participant",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "identity",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "late::gate_facts",
+    "identity": "can.std.late@1::gate_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "participant",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "gate_seq",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "joined",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "late::event_facts",
+    "identity": "can.std.late@1::event_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "participant",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "identity",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "kind",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "seq",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "late",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "dropped",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "late::terminal_facts",
+    "identity": "can.std.late@1::terminal_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "participant",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "identity",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "terminal",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "binding",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "late::observation_facts",
+    "identity": "can.std.late@1::observation_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "participant",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "identity",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "kind",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "seq",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "late",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "terminal",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "binding",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "late::lease_facts",
+    "identity": "can.std.late@1::lease_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "lease",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "holder",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "identity",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "seq",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "released",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "late::release_facts",
+    "identity": "can.std.late@1::release_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "lease",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "holder",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "identity",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "terminal",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "binding",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "late::reconcile_facts",
+    "identity": "can.std.late@1::reconcile_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "participant",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "admitted",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "late",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "dropped",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "next_seq",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "late::outcome_facts",
+    "identity": "can.std.late@1::outcome_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "outcome",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "worker_terminal",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "observer_terminal",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "worker_dead",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "late::counters",
+    "identity": "can.std.late@1::counters",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "participants",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "admitted",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "late",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "dropped",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "terminals",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "leases",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "releases",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "observations",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "rejected",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
     "name": "all_failed",
     "identity": "can.prelude@1::all_failed",
     "kind": "error",
@@ -27142,6 +27994,29 @@ export const catalogueTypeShapes = freeze([
   {
     "name": "descriptor::descriptor_fault",
     "identity": "can.std.descriptor@1::descriptor_fault",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "kind",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "late::late_fault",
+    "identity": "can.std.late@1::late_fault",
     "kind": "error",
     "parameters": [],
     "fields": [
