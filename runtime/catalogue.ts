@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "9febac7056fc33f85bbf7283d0ebcc653e5564da47083e492086f343da1460db";
+export const catalogueSHA256 = "98c73c14dc32ca56660bda5d35e59119403b1a895ab36f802099c5a21d90fc7c";
 export const catalogue = freeze({
  "schemaVersion": 1,
  "revision": 1,
@@ -17601,6 +17601,413 @@ export const catalogue = freeze({
    "assertion": "real",
    "refs": [
     "NT-I04"
+   ]
+  },
+  {
+   "name": "native::open",
+   "identity": "can.std.native@1::open",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "runtime",
+     "type": "str"
+    },
+    {
+     "name": "observer",
+     "type": "str"
+    },
+    {
+     "name": "scope",
+     "type": "str"
+    },
+    {
+     "name": "limits",
+     "type": "native::limits"
+    }
+   ],
+   "staticInputs": [],
+   "result": "native::session",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "N-owner isolated subject/observation session; reports supported catalogue. Never silently substitutes the reference runtime. (services K02: schema.ts, session.ts)",
+    "task": "NT-I01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "N1"
+   ]
+  },
+  {
+   "name": "native::describe",
+   "identity": "can.std.native@1::describe",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "session",
+     "type": "native::session"
+    },
+    {
+     "name": "api",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "native::descriptor_or_unknown",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "N-owner effect-free presence/descriptor metadata for one registered API. (services K02)",
+    "task": "NT-I01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "N1"
+   ]
+  },
+  {
+   "name": "native::make",
+   "identity": "can.std.native@1::make",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "session",
+     "type": "native::session"
+    },
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "payload",
+     "type": "native::inert_literal"
+    }
+   ],
+   "staticInputs": [],
+   "result": "native::value_handle",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "N-owner raw-value construction behind a handle; construction facts only. (services K02: session.ts)",
+    "task": "NT-I01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "N1"
+   ]
+  },
+  {
+   "name": "native::invoke",
+   "identity": "can.std.native@1::invoke",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "session",
+     "type": "native::session"
+    },
+    {
+     "name": "operation",
+     "type": "str"
+    },
+    {
+     "name": "receiver",
+     "type": "option::value<native::value_handle>"
+    },
+    {
+     "name": "arguments",
+     "type": "native::value_handle[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "native::handle_or_pending_action",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "N-owner single registered typed-operation dispatch against receiver/argument handles. (services K02)",
+    "task": "NT-I01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "N1",
+    "N2"
+   ]
+  },
+  {
+   "name": "native::settle",
+   "identity": "can.std.native@1::settle",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "action",
+     "type": "native::pending_action"
+    },
+    {
+     "name": "deadline",
+     "type": "native::deadline"
+    }
+   ],
+   "staticInputs": [],
+   "result": "native::settlement_or_pending",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "N-owner pending-action poll; deadline expiry leaves it pending. (services K02)",
+    "task": "NT-I01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "N1"
+   ]
+  },
+  {
+   "name": "native::observe",
+   "identity": "can.std.native@1::observe",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "session",
+     "type": "native::session"
+    },
+    {
+     "name": "handles",
+     "type": "native::value_handle[]"
+    },
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "bounds",
+     "type": "native::observe_bounds"
+    }
+   ],
+   "staticInputs": [],
+   "result": "native::inert_facts",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "N-owner inert-facts read (bits, lexemes, identity, counters) from handles. (services K03: observe.ts)",
+    "task": "NT-I01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "N1"
+   ]
+  },
+  {
+   "name": "native::allocate_gate",
+   "identity": "can.std.native@1::allocate_gate",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "session",
+     "type": "native::session"
+    },
+    {
+     "name": "gate",
+     "type": "native::gate_spec"
+    },
+    {
+     "name": "action",
+     "type": "native::bounded_action_ref"
+    }
+   ],
+   "staticInputs": [],
+   "result": "native::gate",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "N-owner one-time gate allocation for async continuations. (services K06; merge-defined shapes)",
+    "task": "NT-I01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "N3"
+   ]
+  },
+  {
+   "name": "native::release",
+   "identity": "can.std.native@1::release",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "gate",
+     "type": "native::gate"
+    }
+   ],
+   "staticInputs": [],
+   "result": "native::release_facts",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "N-owner exactly-once gate release; repeats join the first release. (services K06; merge-defined shapes)",
+    "task": "NT-I01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "N3"
+   ]
+  },
+  {
+   "name": "native::install_fault",
+   "identity": "can.std.native@1::install_fault",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "session",
+     "type": "native::session"
+    },
+    {
+     "name": "target",
+     "type": "str"
+    },
+    {
+     "name": "mode",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "native::fault",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "N-owner reviewed-fault install on a fresh session only. (services K06; merge-defined shapes)",
+    "task": "NT-I01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "N1",
+    "N3"
+   ]
+  },
+  {
+   "name": "native::restore",
+   "identity": "can.std.native@1::restore",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "fault",
+     "type": "native::fault"
+    }
+   ],
+   "staticInputs": [],
+   "result": "native::restore_outcome",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "N-owner fault removal with timing/outcome report. (services K06; merge-defined shapes)",
+    "task": "NT-I01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "N1",
+    "N3"
+   ]
+  },
+  {
+   "name": "native::close",
+   "identity": "can.std.native@1::close",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "session",
+     "type": "native::session"
+    },
+    {
+     "name": "deadline",
+     "type": "native::deadline"
+    }
+   ],
+   "staticInputs": [],
+   "result": "native::close_receipt",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "N-owner session close: stop admission, settle/cancel work, destroy handles, return receipt. (services K02: schema-handles.ts)",
+    "task": "NT-I01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "N1",
+    "N2",
+    "N3"
    ]
   }
  ],

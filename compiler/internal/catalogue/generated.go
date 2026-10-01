@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "9febac7056fc33f85bbf7283d0ebcc653e5564da47083e492086f343da1460db"
+const GeneratedSourceSHA256 = "98c73c14dc32ca56660bda5d35e59119403b1a895ab36f802099c5a21d90fc7c"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -766,3 +766,14 @@ const OpHttpPeerReissue = "http_peer::reissue"
 const OpHttpPeerCloseRequest = "http_peer::close_request"
 const OpHttpPeerReadRequestFacts = "http_peer::read_request_facts"
 const OpHttpPeerReadResponseFacts = "http_peer::read_response_facts"
+const OpNativeOpen = "native::open"
+const OpNativeDescribe = "native::describe"
+const OpNativeMake = "native::make"
+const OpNativeInvoke = "native::invoke"
+const OpNativeSettle = "native::settle"
+const OpNativeObserve = "native::observe"
+const OpNativeAllocateGate = "native::allocate_gate"
+const OpNativeRelease = "native::release"
+const OpNativeInstallFault = "native::install_fault"
+const OpNativeRestore = "native::restore"
+const OpNativeClose = "native::close"

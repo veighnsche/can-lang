@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 9febac7056fc33f85bbf7283d0ebcc653e5564da47083e492086f343da1460db.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 98c73c14dc32ca56660bda5d35e59119403b1a895ab36f802099c5a21d90fc7c.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -712,6 +712,17 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | http_peer::close_request | test::owner owner, http_peer::request request → http_peer::request_close_receipt | {test::stale_handle, test::closed_handle, http_peer::http_fault} |  | Map, domain.create | http test adapter (runtime/test-support/slices/i04/http.ts) | real | NT-I04 / NT-I04 |
 | http_peer::read_request_facts | test::owner owner, http_peer::request request → http_peer::request_facts | {test::stale_handle, http_peer::http_fault} |  | Map, domain.create | http test adapter (runtime/test-support/slices/i04/http.ts) | real | NT-I04 / NT-I04 |
 | http_peer::read_response_facts | test::owner owner, http_peer::request request → option::value&lt;http_peer::response_facts&gt; | {test::stale_handle, http_peer::http_fault} |  | Map, domain.create | http test adapter (runtime/test-support/slices/i04/http.ts) | real | NT-I04 / NT-I04 |
+| native::open | str runtime, str observer, str scope, native::limits limits → native::session | {} |  | JSON.stringify, JSON.parse | N-owner isolated subject/observation session; reports supported catalogue. Never silently substitutes the reference runtime. (services K02: schema.ts, session.ts) | supplied | NT-I01 / N1 |
+| native::describe | native::session session, str api → native::descriptor_or_unknown | {} |  | JSON.stringify, JSON.parse | N-owner effect-free presence/descriptor metadata for one registered API. (services K02) | supplied | NT-I01 / N1 |
+| native::make | native::session session, str kind, native::inert_literal payload → native::value_handle | {} |  | JSON.stringify, JSON.parse | N-owner raw-value construction behind a handle; construction facts only. (services K02: session.ts) | supplied | NT-I01 / N1 |
+| native::invoke | native::session session, str operation, option::value&lt;native::value_handle&gt; receiver, native::value_handle[] arguments → native::handle_or_pending_action | {} |  | JSON.stringify, JSON.parse | N-owner single registered typed-operation dispatch against receiver/argument handles. (services K02) | supplied | NT-I01 / N1,N2 |
+| native::settle | native::pending_action action, native::deadline deadline → native::settlement_or_pending | {} |  | JSON.stringify, JSON.parse | N-owner pending-action poll; deadline expiry leaves it pending. (services K02) | supplied | NT-I01 / N1 |
+| native::observe | native::session session, native::value_handle[] handles, str kind, native::observe_bounds bounds → native::inert_facts | {} |  | JSON.stringify, JSON.parse | N-owner inert-facts read (bits, lexemes, identity, counters) from handles. (services K03: observe.ts) | supplied | NT-I01 / N1 |
+| native::allocate_gate | native::session session, native::gate_spec gate, native::bounded_action_ref action → native::gate | {} |  | JSON.stringify, JSON.parse | N-owner one-time gate allocation for async continuations. (services K06; merge-defined shapes) | supplied | NT-I01 / N3 |
+| native::release | native::gate gate → native::release_facts | {} |  | JSON.stringify, JSON.parse | N-owner exactly-once gate release; repeats join the first release. (services K06; merge-defined shapes) | supplied | NT-I01 / N3 |
+| native::install_fault | native::session session, str target, str mode → native::fault | {} |  | JSON.stringify, JSON.parse | N-owner reviewed-fault install on a fresh session only. (services K06; merge-defined shapes) | supplied | NT-I01 / N1,N3 |
+| native::restore | native::fault fault → native::restore_outcome | {} |  | JSON.stringify, JSON.parse | N-owner fault removal with timing/outcome report. (services K06; merge-defined shapes) | supplied | NT-I01 / N1,N3 |
+| native::close | native::session session, native::deadline deadline → native::close_receipt | {} |  | JSON.stringify, JSON.parse | N-owner session close: stop admission, settle/cancel work, destroy handles, return receipt. (services K02: schema-handles.ts) | supplied | NT-I01 / N1,N2,N3 |
 
 ## Native declaration profiles
 
