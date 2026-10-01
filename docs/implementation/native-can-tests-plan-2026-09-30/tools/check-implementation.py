@@ -1,8 +1,8 @@
-"""Implementation-mode structural checks; complements frozen validate_plan.py.
+"""Implementation-mode structural checks; complements validate_plan.py.
 
-validate_plan.py asserts planning-time invariants (every status == 'planned',
-no implementation executed). Once P00 flips statuses, that script fails by
-design at its status assertion. This script re-runs every structural check
+validate_plan.py (repaired 2026-10-01 per review.md) accepts the four
+defined statuses, checks complete-task evidence/commit provenance, and
+writes validation.json. This script re-runs every structural check
 that stays valid during implementation:
 
 - task record completeness, dependency resolution, acyclicity

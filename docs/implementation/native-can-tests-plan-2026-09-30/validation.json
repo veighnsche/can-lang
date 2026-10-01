@@ -1,14 +1,8 @@
 {
-  "validated_utc": "2026-10-01T00:07:08.888497+00:00",
-  "scope": "2026-10-01 planning audit of existing implementation records; not runtime qualification",
-  "audited_head": "37e1e06d8b52567a8e6dd8ce9d68bbe93e441559",
+  "validated_utc": "2026-10-01T00:23:22.706193+00:00",
+  "scope": "static plan/ledger validation during implementation; no qualification",
+  "audited_head": "63e3e98389a2c30538f546b75b795502fbce95e8",
   "task_count": 143,
-  "status_counts": {
-    "complete": 25,
-    "active": 4,
-    "blocked": 21,
-    "planned": 93
-  },
   "task_counts": {
     "P": 30,
     "K": 26,
@@ -17,24 +11,32 @@
     "M": 45,
     "Z": 6
   },
+  "status_counts": {
+    "complete": 25,
+    "active": 4,
+    "blocked": 21,
+    "planned": 93
+  },
   "unique_ids": true,
   "master_equals_source_views": true,
   "all_prerequisites_resolved": true,
   "acyclic_completion_graph": true,
-  "self_or_reverse_dependency_conflicts": 0,
+  "complete_tasks_evidence_verified": 25,
+  "complete_task_commits_reachable_and_owned": true,
+  "complete_prerequisites_satisfied": true,
   "ledger_rows_exactly_once": 292,
   "distinct_migration_prefixes": 45,
   "unchanged_tracked_test_files": 224,
   "unchanged_delegated_oracle_suites": 30,
   "external_caller_records": 16,
   "local_links_checked": 410,
-  "integrated_gates_qualified": 0,
+  "all_14_integrated_gates": "unrun; explicit tasks exist",
   "validator_results": [
     {
       "command": "python3 tools/check-implementation.py",
       "exit_code": 0,
       "summary": {
-        "checked_utc": "2026-10-01T00:07:08.842924+00:00",
+        "checked_utc": "2026-10-01T00:23:22.693395+00:00",
         "scope": "implementation-mode structural checks only; no qualification",
         "task_count": 143,
         "status_counts": {
@@ -51,12 +53,10 @@
     },
     {
       "command": "python3 validate_plan.py",
-      "exit_code": 1,
-      "error": "Traceback (most recent call last):\n  File \"/Users/vince/Projects/can-lang/docs/implementation/native-can-tests-plan-2026-09-30/validate_plan.py\", line 28, in <module>\n    require(t['status'] == 'planned', 'planning record falsely credits implementation: ' + t['id'])\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/vince/Projects/can-lang/docs/implementation/native-can-tests-plan-2026-09-30/validate_plan.py\", line 18, in require\n    raise ValueError(message)\nValueError: planning record falsely credits implementation: P01",
-      "disposition": "Frozen all-planned premise; unchanged pending user authorization for documentation-validator fix. See review.md."
+      "exit_code": 0
     }
   ],
-  "both_requested_validators_pass": false,
+  "both_requested_validators_pass": true,
   "audit_round": {
     "implementation_executed": false,
     "tests_or_builds_executed": false,
@@ -67,5 +67,5 @@
     "temporary_workspaces_allocated": 0,
     "cleanup_failures": []
   },
-  "evidence_limit": "Historical acceptance commands were audited from saved records and targeted source inspection, not rerun. Preserved local receipts do not override invalidated prerequisites or missing real adapters."
+  "evidence_limit": "Static ledger validation only. Complete-task evidence files and commit provenance are checked for presence and reachability, not re-executed or requalified."
 }
