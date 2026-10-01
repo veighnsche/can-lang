@@ -1,0 +1,246 @@
+package m09core034run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M09 CORE-034 "bundled process: run shape, emit/fault split".
+/// Source: tests/integration/process_test.go symbol
+/// TestCurrentBundledProcess (L48-178).
+/// Related fixtures: the inline processLiveProgram (L16-46) staged as
+/// src/main.can at L87, plus the three rejection fixtures (L132-143).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): production process shape of the staged live
+/// entry. Unlike rows with a silent entry, the live entry emits the
+/// child output on stdout by design (Go L128 pins live-proc newline), so
+/// the non-silent stdout is pinned verbatim here and the silence pins
+/// land where silence holds: empty stderr on the run path, nonzero exit
+/// on the rejection path.
+/// ADAPTATION (recorded, with source lines): per the accepted
+/// CORE-014/019/040 precedent, the non-silent run stdout is pinned
+/// verbatim with the source line recorded (L128). The build leg pins
+/// only the lowering scan outcome (L173-177) because Go pins no build
+/// exit or stream; the six lowering needles themselves live in
+/// process-semantics.
+/// The roots-green pin lives in core-034-roots-green.can; stdio, limits,
+/// kill, rejections and lowerings live in core-034-process-semantics.can.
+/// Variants: ok path (assert green, live run), fault path (three
+/// rejections exit nonzero), build path (lowering scan).
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/WORK/PROC/N1
+/// and C/R/N/S/A identities bind at P23; no live run now. Descriptor
+/// timeout 180000ms mirrors the Go 3-minute ctx (L54).
+/// Delegated oracles: DELEGATE-017 (runtime/test/process.test.ts, 13
+/// declarations; recorded read-only, not executed; old pass-count
+/// spellings need current-contract relevance review per the delegate
+/// delete_when).
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case cli/process-run checks: run-exit, run-stdout, run-stderr-empty,
+/// reject-exit-nonzero, sandbox-profile, offline-path, qualified-path,
+/// bun-no-env-file, bun-no-macros, bun-no-install, bun-config,
+/// lowered-all.
+/// Facet map (process_test.go legs): run-exit pins exit 0 (L128);
+/// run-stdout pins live-proc newline verbatim (L128); run-stderr-empty
+/// pins empty stderr (L128); reject-exit-nonzero pins the nonzero
+/// rejection exits (L146); sandbox-profile pins the invocation shape
+/// (L61/L92: the deny-network profile verbatim); offline-path pins the
+/// cleared environment (L96: PATH=/nonexistent verbatim);
+/// qualified-path pins the staged-suite PATH (L65: PATH=/usr/bin:/bin
+/// verbatim); bun-no-env-file, bun-no-macros and bun-no-install pin the
+/// hermetic bun flags (L61); bun-config pins tools/runtime/bunfig.toml
+/// (L61); lowered-all pins the six-needle lowering scan green (L173-177).
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int run_exit
+    str run_stdout
+    bool run_stderr_empty
+    bool reject_exit_nonzero
+    str sandbox_profile
+    str offline_path
+    str qualified_path
+    str bun_no_env_file
+    str bun_no_macros
+    str bun_no_install
+    str bun_config
+    bool lowered_all
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("cli/process-run", "default", "", "offline"), "run-exit" => ok "case cli/process-run variant default root run-exit run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("cli/process-run", "default", "", "offline"), "run-stderr-empty" => ok evidence("run-stderr-empty", "true", "true", true, "case cli/process-run variant default root run-stderr-empty run offline")
+        different: false, true, context("cli/process-run", "default", "", "offline"), "run-stderr-empty" => failed{"run-stderr-empty"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("cli/process-run", "default", "", "offline"), "run-exit" => ok evidence("run-exit", "0", "0", true, "case cli/process-run variant default root run-exit run offline")
+        different: 1, 0, context("cli/process-run", "default", "", "offline"), "run-exit" => failed{"run-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "live-proc\n", "live-proc\n", context("cli/process-run", "default", "", "offline"), "run-stdout" => ok evidence("run-stdout", "live-proc\n", "live-proc\n", true, "case cli/process-run variant default root run-stdout run offline")
+        different: "live-proc", "live-proc\n", context("cli/process-run", "default", "", "offline"), "run-stdout" => failed{"run-stdout"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        seed_run_exit: "seed-run-exit-drift" => ok observation(1, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        seed_run_stdout: "seed-run-stdout-drift" => ok observation(0, "live-proc", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        seed_run_stderr_empty: "seed-run-stderr-empty-drift" => ok observation(0, "live-proc\n", false, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        seed_reject_exit_nonzero: "seed-reject-exit-nonzero-drift" => ok observation(0, "live-proc\n", true, false, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        seed_sandbox_profile: "seed-sandbox-profile-drift" => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        seed_offline_path: "seed-offline-path-drift" => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/usr/bin", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        seed_qualified_path: "seed-qualified-path-drift" => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        seed_bun_no_env_file: "seed-bun-no-env-file-drift" => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        seed_bun_no_macros: "seed-bun-no-macros-drift" => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        seed_bun_no_install: "seed-bun-no-install-drift" => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--install", "tools/runtime/bunfig.toml", true)
+        seed_bun_config: "seed-bun-config-drift" => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/other.toml", true)
+        seed_lowered_all: "seed-lowered-all-drift" => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", false)
+    match variant_id
+        "seed-run-exit-drift" => ok observation(1, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        "seed-run-stdout-drift" => ok observation(0, "live-proc", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        "seed-run-stderr-empty-drift" => ok observation(0, "live-proc\n", false, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        "seed-reject-exit-nonzero-drift" => ok observation(0, "live-proc\n", true, false, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        "seed-sandbox-profile-drift" => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        "seed-offline-path-drift" => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/usr/bin", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        "seed-qualified-path-drift" => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        "seed-bun-no-env-file-drift" => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        "seed-bun-no-macros-drift" => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--macros", "--no-install", "tools/runtime/bunfig.toml", true)
+        "seed-bun-no-install-drift" => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--install", "tools/runtime/bunfig.toml", true)
+        "seed-bun-config-drift" => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/other.toml", true)
+        "seed-lowered-all-drift" => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", false)
+        _ => ok observation(0, "live-proc\n", true, true, "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", "PATH=/usr/bin:/bin", "--no-env-file", "--no-macros", "--no-install", "tools/runtime/bunfig.toml", true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m09_034: "m09-034" => ok [check("run-exit", "live run exits 0"), check("run-stdout", "live run prints live-proc newline"), check("run-stderr-empty", "live run keeps stderr empty"), check("reject-exit-nonzero", "rejection asserts exit nonzero"), check("sandbox-profile", "invocation pins the deny-network profile"), check("offline-path", "invocation clears PATH to /nonexistent"), check("qualified-path", "staged suite keeps system PATH"), check("bun-no-env-file", "staged suite passes --no-env-file"), check("bun-no-macros", "staged suite passes --no-macros"), check("bun-no-install", "staged suite passes --no-install"), check("bun-config", "staged suite pins the runtime bunfig"), check("lowered-all", "build output carries every native lowering")]
+        other: "nope" => ok []
+    match scope is "m09-034"
+        false => ok []
+        true => ok [check("run-exit", "live run exits 0"), check("run-stdout", "live run prints live-proc newline"), check("run-stderr-empty", "live run keeps stderr empty"), check("reject-exit-nonzero", "rejection asserts exit nonzero"), check("sandbox-profile", "invocation pins the deny-network profile"), check("offline-path", "invocation clears PATH to /nonexistent"), check("qualified-path", "staged suite keeps system PATH"), check("bun-no-env-file", "staged suite passes --no-env-file"), check("bun-no-macros", "staged suite passes --no-macros"), check("bun-no-install", "staged suite passes --no-install"), check("bun-config", "staged suite pins the runtime bunfig"), check("lowered-all", "build output carries every native lowering")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "cli/process-run" => ok [expected_check("run-exit", "0"), expected_check("run-stdout", "live-proc\n"), expected_check("run-stderr-empty", "true"), expected_check("reject-exit-nonzero", "true"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("offline-path", "PATH=/nonexistent"), expected_check("qualified-path", "PATH=/usr/bin:/bin"), expected_check("bun-no-env-file", "--no-env-file"), expected_check("bun-no-macros", "--no-macros"), expected_check("bun-no-install", "--no-install"), expected_check("bun-config", "tools/runtime/bunfig.toml"), expected_check("lowered-all", "true")]
+        unknown: "nope" => ok []
+    match case is "cli/process-run"
+        false => ok []
+        true => ok [expected_check("run-exit", "0"), expected_check("run-stdout", "live-proc\n"), expected_check("run-stderr-empty", "true"), expected_check("reject-exit-nonzero", "true"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("offline-path", "PATH=/nonexistent"), expected_check("qualified-path", "PATH=/usr/bin:/bin"), expected_check("bun-no-env-file", "--no-env-file"), expected_check("bun-no-macros", "--no-macros"), expected_check("bun-no-install", "--no-install"), expected_check("bun-config", "tools/runtime/bunfig.toml"), expected_check("lowered-all", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("cli/process-run", "default", "", "offline") => ok
+        seed_run_exit: context("cli/process-run", "seed-run-exit-drift", "", "offline") => failed{"run-exit"}
+        seed_run_stdout: context("cli/process-run", "seed-run-stdout-drift", "", "offline") => failed{"run-stdout"}
+        seed_run_stderr_empty: context("cli/process-run", "seed-run-stderr-empty-drift", "", "offline") => failed{"run-stderr-empty"}
+        seed_reject_exit_nonzero: context("cli/process-run", "seed-reject-exit-nonzero-drift", "", "offline") => failed{"reject-exit-nonzero"}
+        seed_sandbox_profile: context("cli/process-run", "seed-sandbox-profile-drift", "", "offline") => failed{"sandbox-profile"}
+        seed_offline_path: context("cli/process-run", "seed-offline-path-drift", "", "offline") => failed{"offline-path"}
+        seed_qualified_path: context("cli/process-run", "seed-qualified-path-drift", "", "offline") => failed{"qualified-path"}
+        seed_bun_no_env_file: context("cli/process-run", "seed-bun-no-env-file-drift", "", "offline") => failed{"bun-no-env-file"}
+        seed_bun_no_macros: context("cli/process-run", "seed-bun-no-macros-drift", "", "offline") => failed{"bun-no-macros"}
+        seed_bun_no_install: context("cli/process-run", "seed-bun-no-install-drift", "", "offline") => failed{"bun-no-install"}
+        seed_bun_config: context("cli/process-run", "seed-bun-config-drift", "", "offline") => failed{"bun-config"}
+        seed_lowered_all: context("cli/process-run", "seed-lowered-all-drift", "", "offline") => failed{"lowered-all"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.run_exit, 0, c, "run-exit")
+            failed
+            ok evidence run_exit_evidence => match call require_text(got.run_stdout, "live-proc\n", c, "run-stdout")
+                failed
+                ok evidence run_stdout_evidence => match call require_bool(got.run_stderr_empty, true, c, "run-stderr-empty")
+                    failed
+                    ok evidence run_stderr_empty_evidence => match call require_bool(got.reject_exit_nonzero, true, c, "reject-exit-nonzero")
+                        failed
+                        ok evidence reject_exit_nonzero_evidence => match call require_text(got.sandbox_profile, "(version 1)(allow default)(deny network*)", c, "sandbox-profile")
+                            failed
+                            ok evidence sandbox_profile_evidence => match call require_text(got.offline_path, "PATH=/nonexistent", c, "offline-path")
+                                failed
+                                ok evidence offline_path_evidence => match call require_text(got.qualified_path, "PATH=/usr/bin:/bin", c, "qualified-path")
+                                    failed
+                                    ok evidence qualified_path_evidence => match call require_text(got.bun_no_env_file, "--no-env-file", c, "bun-no-env-file")
+                                        failed
+                                        ok evidence bun_no_env_file_evidence => match call require_text(got.bun_no_macros, "--no-macros", c, "bun-no-macros")
+                                            failed
+                                            ok evidence bun_no_macros_evidence => match call require_text(got.bun_no_install, "--no-install", c, "bun-no-install")
+                                                failed
+                                                ok evidence bun_no_install_evidence => match call require_text(got.bun_config, "tools/runtime/bunfig.toml", c, "bun-config")
+                                                    failed
+                                                    ok evidence bun_config_evidence => match call require_bool(got.lowered_all, true, c, "lowered-all")
+                                                        failed
+                                                        ok evidence lowered_all_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m09_034: "m09-034" => ok test_case("cli/process-run", ["cli", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 180000, [check_ref("run-exit"), check_ref("run-stdout"), check_ref("run-stderr-empty"), check_ref("reject-exit-nonzero"), check_ref("sandbox-profile"), check_ref("offline-path"), check_ref("qualified-path"), check_ref("bun-no-env-file"), check_ref("bun-no-macros"), check_ref("bun-no-install"), check_ref("bun-config"), check_ref("lowered-all")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m09-034"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("cli/process-run", ["cli", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 180000, [check_ref("run-exit"), check_ref("run-stdout"), check_ref("run-stderr-empty"), check_ref("reject-exit-nonzero"), check_ref("sandbox-profile"), check_ref("offline-path"), check_ref("qualified-path"), check_ref("bun-no-env-file"), check_ref("bun-no-macros"), check_ref("bun-no-install"), check_ref("bun-config"), check_ref("lowered-all")], callable case_body)

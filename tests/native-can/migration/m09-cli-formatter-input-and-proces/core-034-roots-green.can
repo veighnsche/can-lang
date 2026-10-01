@@ -1,0 +1,221 @@
+package m09core034roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M09 CORE-034 "bundled process: roots green, staged inventory".
+/// Source: tests/integration/process_test.go symbol
+/// TestCurrentBundledProcess (L48-178); live fixture processLiveProgram
+/// (L16-46) staged as src/main.can (L87); three rejection fixtures
+/// (L132-143) staged the same way.
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): static assert inventory of the staged live
+/// program as the green baseline: the assert leg green (exit 0, empty
+/// diagnostics), the passing report, exactly 1 root (sample), the staged
+/// path, the live package and per-function roots, plus the count of
+/// staged rejection programs.
+/// ADAPTATION (recorded, with source lines): the Go assert leg (L115)
+/// pins exit 0, empty stderr and a 1-assertion passing report (L123) but
+/// no per-function count, so main-roots plus the assertion-name pin
+/// record the static assert inventory for P23 qualification (fixture L24:
+/// sample [] => ok is the single root; the L29 when-table row is not an
+/// assert root, matching the CORE-014 seal_size precedent and
+/// declaration.Assertions roots); no execution is claimed here
+/// (accept_after P23 unmet).
+/// Facet map (process_test.go legs plus fixture arms): assert-green pins
+/// the assert exit (L115-118: exit 0 with empty diagnostics over the
+/// staged live program); report-passed pins the passing report (L123);
+/// root-count pins the report total (L123: len 1); fixture-name pins the
+/// staged path (L87: src/main.can); live-package pins process_live (L16);
+/// main-roots pins main (fixture L24: sample [] => ok, 1 root);
+/// assertion-name pins sample (L24/L29); reject-count pins the three
+/// rejection fixtures (L132-143: wrong-type, unhandled-error,
+/// unknown-operation).
+/// Process semantics live in core-034-process-semantics.can; the
+/// production run shape lives in core-034-run-shape.can.
+/// Variants: none in this file (default only); the 13 runtime cases,
+/// live options, rejections and lowerings live in process-semantics.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/WORK/PROC/N1
+/// and C/R/N/S/A identities bind at P23; no live run now. Descriptor
+/// timeout 180000ms mirrors the Go 3-minute ctx (L54).
+/// Delegated oracles: DELEGATE-017 (runtime/test/process.test.ts, 13
+/// declarations; recorded read-only, not executed; old pass-count
+/// spellings need current-contract relevance review per the delegate
+/// delete_when).
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case cli/process-roots checks: assert-green, report-passed,
+/// root-count, fixture-name, live-package, main-roots, assertion-name,
+/// reject-count.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int root_count
+    str fixture_name
+    str live_package
+    int main_roots
+    str assertion_name
+    int reject_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("cli/process-roots", "default", "", "offline"), "assert-green" => ok "case cli/process-roots variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("cli/process-roots", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case cli/process-roots variant default root assert-green run offline")
+        different: false, true, context("cli/process-roots", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("cli/process-roots", "default", "", "offline"), "root-count" => ok evidence("root-count", "1", "1", true, "case cli/process-roots variant default root root-count run offline")
+        different: 0, 1, context("cli/process-roots", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "src/main.can", "src/main.can", context("cli/process-roots", "default", "", "offline"), "fixture-name" => ok evidence("fixture-name", "src/main.can", "src/main.can", true, "case cli/process-roots variant default root fixture-name run offline")
+        different: "src/other.can", "src/main.can", context("cli/process-roots", "default", "", "offline"), "fixture-name" => failed{"fixture-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 1, "src/main.can", "process_live", 1, "sample", 3)
+        seed_assert_green: "seed-assert-green-drift" => ok observation(false, true, 1, "src/main.can", "process_live", 1, "sample", 3)
+        seed_report_passed: "seed-report-passed-drift" => ok observation(true, false, 1, "src/main.can", "process_live", 1, "sample", 3)
+        seed_root_count: "seed-root-count-drift" => ok observation(true, true, 0, "src/main.can", "process_live", 1, "sample", 3)
+        seed_fixture_name: "seed-fixture-name-drift" => ok observation(true, true, 1, "src/other.can", "process_live", 1, "sample", 3)
+        seed_live_package: "seed-live-package-drift" => ok observation(true, true, 1, "src/main.can", "process_dead", 1, "sample", 3)
+        seed_main_roots: "seed-main-roots-drift" => ok observation(true, true, 1, "src/main.can", "process_live", 0, "sample", 3)
+        seed_assertion_name: "seed-assertion-name-drift" => ok observation(true, true, 1, "src/main.can", "process_live", 1, "other", 3)
+        seed_reject_count: "seed-reject-count-drift" => ok observation(true, true, 1, "src/main.can", "process_live", 1, "sample", 2)
+    match variant_id
+        "seed-assert-green-drift" => ok observation(false, true, 1, "src/main.can", "process_live", 1, "sample", 3)
+        "seed-report-passed-drift" => ok observation(true, false, 1, "src/main.can", "process_live", 1, "sample", 3)
+        "seed-root-count-drift" => ok observation(true, true, 0, "src/main.can", "process_live", 1, "sample", 3)
+        "seed-fixture-name-drift" => ok observation(true, true, 1, "src/other.can", "process_live", 1, "sample", 3)
+        "seed-live-package-drift" => ok observation(true, true, 1, "src/main.can", "process_dead", 1, "sample", 3)
+        "seed-main-roots-drift" => ok observation(true, true, 1, "src/main.can", "process_live", 0, "sample", 3)
+        "seed-assertion-name-drift" => ok observation(true, true, 1, "src/main.can", "process_live", 1, "other", 3)
+        "seed-reject-count-drift" => ok observation(true, true, 1, "src/main.can", "process_live", 1, "sample", 2)
+        _ => ok observation(true, true, 1, "src/main.can", "process_live", 1, "sample", 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m09_034: "m09-034" => ok [check("assert-green", "staged live program asserts green (exit 0, empty diagnostics)"), check("report-passed", "assert report passes with one root"), check("root-count", "live assert report carries exactly 1 root (sample)"), check("fixture-name", "live program stages as src/main.can"), check("live-package", "live fixture package is process_live"), check("main-roots", "fn main contributes 1 root (sample [] => ok)"), check("assertion-name", "live assert root is named sample"), check("reject-count", "three rejection programs staged alongside the live entry")]
+        other: "nope" => ok []
+    match scope is "m09-034"
+        false => ok []
+        true => ok [check("assert-green", "staged live program asserts green (exit 0, empty diagnostics)"), check("report-passed", "assert report passes with one root"), check("root-count", "live assert report carries exactly 1 root (sample)"), check("fixture-name", "live program stages as src/main.can"), check("live-package", "live fixture package is process_live"), check("main-roots", "fn main contributes 1 root (sample [] => ok)"), check("assertion-name", "live assert root is named sample"), check("reject-count", "three rejection programs staged alongside the live entry")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "cli/process-roots" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "1"), expected_check("fixture-name", "src/main.can"), expected_check("live-package", "process_live"), expected_check("main-roots", "1"), expected_check("assertion-name", "sample"), expected_check("reject-count", "3")]
+        unknown: "nope" => ok []
+    match case is "cli/process-roots"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "1"), expected_check("fixture-name", "src/main.can"), expected_check("live-package", "process_live"), expected_check("main-roots", "1"), expected_check("assertion-name", "sample"), expected_check("reject-count", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("cli/process-roots", "default", "", "offline") => ok
+        seed_assert_green: context("cli/process-roots", "seed-assert-green-drift", "", "offline") => failed{"assert-green"}
+        seed_report_passed: context("cli/process-roots", "seed-report-passed-drift", "", "offline") => failed{"report-passed"}
+        seed_root_count: context("cli/process-roots", "seed-root-count-drift", "", "offline") => failed{"root-count"}
+        seed_fixture_name: context("cli/process-roots", "seed-fixture-name-drift", "", "offline") => failed{"fixture-name"}
+        seed_live_package: context("cli/process-roots", "seed-live-package-drift", "", "offline") => failed{"live-package"}
+        seed_main_roots: context("cli/process-roots", "seed-main-roots-drift", "", "offline") => failed{"main-roots"}
+        seed_assertion_name: context("cli/process-roots", "seed-assertion-name-drift", "", "offline") => failed{"assertion-name"}
+        seed_reject_count: context("cli/process-roots", "seed-reject-count-drift", "", "offline") => failed{"reject-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence assert_green_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence report_passed_evidence => match call require_int(got.root_count, 1, c, "root-count")
+                    failed
+                    ok evidence root_count_evidence => match call require_text(got.fixture_name, "src/main.can", c, "fixture-name")
+                        failed
+                        ok evidence fixture_name_evidence => match call require_text(got.live_package, "process_live", c, "live-package")
+                            failed
+                            ok evidence live_package_evidence => match call require_int(got.main_roots, 1, c, "main-roots")
+                                failed
+                                ok evidence main_roots_evidence => match call require_text(got.assertion_name, "sample", c, "assertion-name")
+                                    failed
+                                    ok evidence assertion_name_evidence => match call require_int(got.reject_count, 3, c, "reject-count")
+                                        failed
+                                        ok evidence reject_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m09_034: "m09-034" => ok test_case("cli/process-roots", ["cli", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 180000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("live-package"), check_ref("main-roots"), check_ref("assertion-name"), check_ref("reject-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m09-034"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("cli/process-roots", ["cli", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 180000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("live-package"), check_ref("main-roots"), check_ref("assertion-name"), check_ref("reject-count")], callable case_body)
