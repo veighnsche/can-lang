@@ -1,0 +1,394 @@
+package m40life009roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M40 LIFE-009 TestGate4FaultMatrix
+/// webhook plus stream legs.
+/// Source: tests/integration/
+/// gate4_fault_test.go symbol
+/// TestGate4FaultMatrix (L261-526):
+/// the trickled delivery plus SIGTERM
+/// restart plus stream funnel pins.
+/// Disposition: migrate (same row pact
+/// as the base slice; this file owns
+/// the webhook plus stream legs only).
+/// Protects (this file): facet three
+/// (trickled signed delivery accepted
+/// once; SIGTERM drain and restart keep
+/// duplicate and new-delivery shape)
+/// and facet four (native stream
+/// read-plus-close succeeds; missing
+/// input fails with a diagnostic).
+/// ADAPTATION (recorded, with source
+/// lines): seal pins hold the provider
+/// and carrier seal bytes; body pins
+/// hold raw JSON bytes; path pins hold
+/// route and file names; event pins
+/// hold delivery names; settled pins
+/// hold leg notes; count pins hold ints
+/// tallied from guards and call sites.
+/// webhook-secret pins
+/// whsec-gate4-fault-matrix (L399);
+/// carrier-secret pins
+/// carrier-gate4-fault-matrix (L401);
+/// webhook-snapshot pins
+/// snapshot-webhook (L400); slow-body
+/// pins the slow delivery bytes
+/// (L406); provider-path pins
+/// /webhooks/provider (L407);
+/// signature-header pins
+/// X-Provider-Signature (L411);
+/// accepted-body pins the accepted
+/// bytes (L419); duplicate-body pins
+/// the duplicate bytes (L433);
+/// after-body pins the new delivery
+/// bytes (L436); webhook-settled pins
+/// the settled note (L449);
+/// stream-lines pins the three line
+/// bytes (L458); stream-counted pins 3
+/// (L462); stream-settled pins the
+/// settled note (L475); event-name
+/// pins invoice.paid (L406);
+/// subscription-name pins sub-9 (L406);
+/// webhook-db pins hook.sqlite (L391);
+/// stream-file pins lines.txt (L457);
+/// missing-file pins missing.txt
+/// (L465); webhook-schema pins
+/// schema.sql (L392); webhook-port pins
+/// int (18612) from L57; webhook-tables
+/// pins int (5) from L396; trickle-chunk
+/// pins int (8) from L407;
+/// trickle-delay-ms pins int (100) from
+/// L407; ledger-rows pins int (2) from
+/// L441; outbox-rows pins int (2) from
+/// L441; webhook-status pins int (200)
+/// from L419.
+/// Facet map (leg order): webhook-secret,
+/// carrier-secret, webhook-snapshot,
+/// slow-body, provider-path,
+/// signature-header, accepted-body,
+/// duplicate-body, after-body,
+/// webhook-settled, stream-lines,
+/// stream-counted, stream-settled,
+/// event-name, subscription-name,
+/// webhook-db, stream-file,
+/// missing-file, webhook-schema,
+/// webhook-port, webhook-tables,
+/// trickle-chunk, trickle-delay-ms,
+/// ledger-rows, outbox-rows,
+/// webhook-status.
+/// The identity plus invoice legs live
+/// in life-009-base-semantics.can; the
+/// suite plus run shape lives in
+/// life-009-run-shape.can.
+/// Variants: disconnect, trickle,
+/// terminate and stream legs; default
+/// plus seeded drifts only here.
+/// Environment: CAN_BUN_ARCHIVE plus
+/// loopback ports plus disposable
+/// SQLite (row lists two gates; bind at
+/// P23; no live run now).
+/// Logical gates FAULT plus DB bind at
+/// P23; no live run now.
+/// Timeout 120000ms is the offline
+/// default bound (binds at P23 like
+/// the M31 no-run rows).
+/// Delegated oracles: none in this
+/// file (six live in the run slice).
+/// Execution credit: NOT claimed (P23
+/// accept gate unmet).
+/// Case life/fault-matrix-roots
+/// checks: webhook-secret,
+/// carrier-secret, webhook-snapshot,
+/// slow-body, provider-path,
+/// signature-header, accepted-body,
+/// duplicate-body, after-body,
+/// webhook-settled, stream-lines,
+/// stream-counted, stream-settled,
+/// event-name, subscription-name,
+/// webhook-db, stream-file,
+/// missing-file, webhook-schema,
+/// webhook-port, webhook-tables,
+/// trickle-chunk, trickle-delay-ms,
+/// ledger-rows, outbox-rows,
+/// webhook-status.
+/// Shared old files untouched;
+/// retirement is a later integrator
+/// decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str webhook_secret
+    str carrier_secret
+    str webhook_snapshot
+    str slow_body
+    str provider_path
+    str signature_header
+    str accepted_body
+    str duplicate_body
+    str after_body
+    str webhook_settled
+    str stream_lines
+    str stream_counted
+    str stream_settled
+    str event_name
+    str subscription_name
+    str webhook_db
+    str stream_file
+    str missing_file
+    str webhook_schema
+    int webhook_port
+    int webhook_tables
+    int trickle_chunk
+    int trickle_delay_ms
+    int ledger_rows
+    int outbox_rows
+    int webhook_status
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/fault-matrix-roots", "default", "", "offline"), "webhook-secret" => ok "case life/fault-matrix-roots variant default root webhook-secret run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/fault-matrix-roots", "default", "", "offline"), "webhook-secret" => ok evidence("webhook-secret", "true", "true", true, "case life/fault-matrix-roots variant default root webhook-secret run offline")
+        different: false, true, context("life/fault-matrix-roots", "default", "", "offline"), "webhook-secret" => failed{"webhook-secret"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 18612, 18612, context("life/fault-matrix-roots", "default", "", "offline"), "webhook-port" => ok evidence("webhook-port", "18612", "18612", true, "case life/fault-matrix-roots variant default root webhook-port run offline")
+        different: 18611, 18612, context("life/fault-matrix-roots", "default", "", "offline"), "webhook-port" => failed{"webhook-port"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "whsec-gate4-fault-matrix", "whsec-gate4-fault-matrix", context("life/fault-matrix-roots", "default", "", "offline"), "webhook-secret" => ok evidence("webhook-secret", "whsec-gate4-fault-matrix", "whsec-gate4-fault-matrix", true, "case life/fault-matrix-roots variant default root webhook-secret run offline")
+        different: "whsec-gate4-fault-matrix_2", "whsec-gate4-fault-matrix", context("life/fault-matrix-roots", "default", "", "offline"), "webhook-secret" => failed{"webhook-secret"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_webhook_secret: "seed-webhook-secret-drift" => ok observation("whsec-gate4-fault-matrix_2", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_carrier_secret: "seed-carrier-secret-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix_2", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_webhook_snapshot: "seed-webhook-snapshot-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook_2", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_slow_body: "seed-slow-body-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}_2", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_provider_path: "seed-provider-path-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider_2", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_signature_header: "seed-signature-header-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature_2", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_accepted_body: "seed-accepted-body-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}_2", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_duplicate_body: "seed-duplicate-body-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}_2", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_after_body: "seed-after-body-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}_2", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_webhook_settled: "seed-webhook-settled-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work_2", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_stream_lines: "seed-stream-lines-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n_2", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_stream_counted: "seed-stream-counted-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3_2", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_stream_settled: "seed-stream-settled-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite_2", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_event_name: "seed-event-name-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid_2", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_subscription_name: "seed-subscription-name-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9_2", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_webhook_db: "seed-webhook-db-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite_2", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_stream_file: "seed-stream-file-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt_2", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_missing_file: "seed-missing-file-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt_2", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        seed_webhook_schema: "seed-webhook-schema-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql_2", 18612, 5, 8, 100, 2, 2, 200)
+        seed_webhook_port: "seed-webhook-port-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18611, 5, 8, 100, 2, 2, 200)
+        seed_webhook_tables: "seed-webhook-tables-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 4, 8, 100, 2, 2, 200)
+        seed_trickle_chunk: "seed-trickle-chunk-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 7, 100, 2, 2, 200)
+        seed_trickle_delay_ms: "seed-trickle-delay-ms-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 99, 2, 2, 200)
+        seed_ledger_rows: "seed-ledger-rows-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 1, 2, 200)
+        seed_outbox_rows: "seed-outbox-rows-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 1, 200)
+        seed_webhook_status: "seed-webhook-status-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 199)
+    match variant_id
+        "seed-webhook-secret-drift" => ok observation("whsec-gate4-fault-matrix_2", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-carrier-secret-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix_2", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-webhook-snapshot-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook_2", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-slow-body-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}_2", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-provider-path-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider_2", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-signature-header-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature_2", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-accepted-body-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}_2", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-duplicate-body-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}_2", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-after-body-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}_2", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-webhook-settled-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work_2", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-stream-lines-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n_2", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-stream-counted-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3_2", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-stream-settled-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite_2", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-event-name-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid_2", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-subscription-name-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9_2", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-webhook-db-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite_2", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-stream-file-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt_2", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-missing-file-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt_2", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-webhook-schema-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql_2", 18612, 5, 8, 100, 2, 2, 200)
+        "seed-webhook-port-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18611, 5, 8, 100, 2, 2, 200)
+        "seed-webhook-tables-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 4, 8, 100, 2, 2, 200)
+        "seed-trickle-chunk-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 7, 100, 2, 2, 200)
+        "seed-trickle-delay-ms-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 99, 2, 2, 200)
+        "seed-ledger-rows-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 1, 2, 200)
+        "seed-outbox-rows-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 1, 200)
+        "seed-webhook-status-drift" => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 199)
+        _ => ok observation("whsec-gate4-fault-matrix", "carrier-gate4-fault-matrix", "snapshot-webhook", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "/webhooks/provider", "X-Provider-Signature", "{\"status\":\"accepted\"}", "{\"status\":\"duplicate\"}", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", "a\nb\nc\n", "3", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", "invoice.paid", "sub-9", "hook.sqlite", "lines.txt", "missing.txt", "schema.sql", 18612, 5, 8, 100, 2, 2, 200)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m40_l009: "m40-l009" => ok [check("webhook-secret", "slow leg keeps its provider seal"), check("carrier-secret", "slow leg keeps its carrier seal"), check("webhook-snapshot", "slow leg keeps its snapshot name"), check("slow-body", "slow leg keeps its delivery bytes"), check("provider-path", "slow leg keeps its path"), check("signature-header", "slow leg keeps its seal header"), check("accepted-body", "slow leg keeps its accepted bytes"), check("duplicate-body", "restart keeps its duplicate bytes"), check("after-body", "restart keeps its new delivery bytes"), check("webhook-settled", "slow leg keeps its settled note"), check("stream-lines", "stream leg keeps its line bytes"), check("stream-counted", "stream leg keeps its count"), check("stream-settled", "stream leg keeps its settled note"), check("event-name", "delivery keeps its event"), check("subscription-name", "delivery keeps its subscription"), check("webhook-db", "slow leg keeps its db name"), check("stream-file", "stream leg keeps its file name"), check("missing-file", "missing leg keeps its file name"), check("webhook-schema", "slow leg keeps its schema name"), check("webhook-port", "slow leg keeps its port"), check("webhook-tables", "setup keeps five tables"), check("trickle-chunk", "trickle keeps its chunk"), check("trickle-delay-ms", "trickle keeps its delay"), check("ledger-rows", "restart keeps two ledger rows"), check("outbox-rows", "restart keeps two outbox rows"), check("webhook-status", "delivery keeps 200")]
+        other: "nope" => ok []
+    match scope is "m40-l009"
+        false => ok []
+        true => ok [check("webhook-secret", "slow leg keeps its provider seal"), check("carrier-secret", "slow leg keeps its carrier seal"), check("webhook-snapshot", "slow leg keeps its snapshot name"), check("slow-body", "slow leg keeps its delivery bytes"), check("provider-path", "slow leg keeps its path"), check("signature-header", "slow leg keeps its seal header"), check("accepted-body", "slow leg keeps its accepted bytes"), check("duplicate-body", "restart keeps its duplicate bytes"), check("after-body", "restart keeps its new delivery bytes"), check("webhook-settled", "slow leg keeps its settled note"), check("stream-lines", "stream leg keeps its line bytes"), check("stream-counted", "stream leg keeps its count"), check("stream-settled", "stream leg keeps its settled note"), check("event-name", "delivery keeps its event"), check("subscription-name", "delivery keeps its subscription"), check("webhook-db", "slow leg keeps its db name"), check("stream-file", "stream leg keeps its file name"), check("missing-file", "missing leg keeps its file name"), check("webhook-schema", "slow leg keeps its schema name"), check("webhook-port", "slow leg keeps its port"), check("webhook-tables", "setup keeps five tables"), check("trickle-chunk", "trickle keeps its chunk"), check("trickle-delay-ms", "trickle keeps its delay"), check("ledger-rows", "restart keeps two ledger rows"), check("outbox-rows", "restart keeps two outbox rows"), check("webhook-status", "delivery keeps 200")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/fault-matrix-roots" => ok [expected_check("webhook-secret", "whsec-gate4-fault-matrix"), expected_check("carrier-secret", "carrier-gate4-fault-matrix"), expected_check("webhook-snapshot", "snapshot-webhook"), expected_check("slow-body", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}"), expected_check("provider-path", "/webhooks/provider"), expected_check("signature-header", "X-Provider-Signature"), expected_check("accepted-body", "{\"status\":\"accepted\"}"), expected_check("duplicate-body", "{\"status\":\"duplicate\"}"), expected_check("after-body", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}"), expected_check("webhook-settled", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work"), expected_check("stream-lines", "a\nb\nc\n"), expected_check("stream-counted", "3"), expected_check("stream-settled", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite"), expected_check("event-name", "invoice.paid"), expected_check("subscription-name", "sub-9"), expected_check("webhook-db", "hook.sqlite"), expected_check("stream-file", "lines.txt"), expected_check("missing-file", "missing.txt"), expected_check("webhook-schema", "schema.sql"), expected_check("webhook-port", "18612"), expected_check("webhook-tables", "5"), expected_check("trickle-chunk", "8"), expected_check("trickle-delay-ms", "100"), expected_check("ledger-rows", "2"), expected_check("outbox-rows", "2"), expected_check("webhook-status", "200")]
+        unknown: "nope" => ok []
+    match case is "life/fault-matrix-roots"
+        false => ok []
+        true => ok [expected_check("webhook-secret", "whsec-gate4-fault-matrix"), expected_check("carrier-secret", "carrier-gate4-fault-matrix"), expected_check("webhook-snapshot", "snapshot-webhook"), expected_check("slow-body", "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}"), expected_check("provider-path", "/webhooks/provider"), expected_check("signature-header", "X-Provider-Signature"), expected_check("accepted-body", "{\"status\":\"accepted\"}"), expected_check("duplicate-body", "{\"status\":\"duplicate\"}"), expected_check("after-body", "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}"), expected_check("webhook-settled", "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work"), expected_check("stream-lines", "a\nb\nc\n"), expected_check("stream-counted", "3"), expected_check("stream-settled", "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite"), expected_check("event-name", "invoice.paid"), expected_check("subscription-name", "sub-9"), expected_check("webhook-db", "hook.sqlite"), expected_check("stream-file", "lines.txt"), expected_check("missing-file", "missing.txt"), expected_check("webhook-schema", "schema.sql"), expected_check("webhook-port", "18612"), expected_check("webhook-tables", "5"), expected_check("trickle-chunk", "8"), expected_check("trickle-delay-ms", "100"), expected_check("ledger-rows", "2"), expected_check("outbox-rows", "2"), expected_check("webhook-status", "200")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/fault-matrix-roots", "default", "", "offline") => ok
+        seed_webhook_secret: context("life/fault-matrix-roots", "seed-webhook-secret-drift", "", "offline") => failed{"webhook-secret"}
+        seed_carrier_secret: context("life/fault-matrix-roots", "seed-carrier-secret-drift", "", "offline") => failed{"carrier-secret"}
+        seed_webhook_snapshot: context("life/fault-matrix-roots", "seed-webhook-snapshot-drift", "", "offline") => failed{"webhook-snapshot"}
+        seed_slow_body: context("life/fault-matrix-roots", "seed-slow-body-drift", "", "offline") => failed{"slow-body"}
+        seed_provider_path: context("life/fault-matrix-roots", "seed-provider-path-drift", "", "offline") => failed{"provider-path"}
+        seed_signature_header: context("life/fault-matrix-roots", "seed-signature-header-drift", "", "offline") => failed{"signature-header"}
+        seed_accepted_body: context("life/fault-matrix-roots", "seed-accepted-body-drift", "", "offline") => failed{"accepted-body"}
+        seed_duplicate_body: context("life/fault-matrix-roots", "seed-duplicate-body-drift", "", "offline") => failed{"duplicate-body"}
+        seed_after_body: context("life/fault-matrix-roots", "seed-after-body-drift", "", "offline") => failed{"after-body"}
+        seed_webhook_settled: context("life/fault-matrix-roots", "seed-webhook-settled-drift", "", "offline") => failed{"webhook-settled"}
+        seed_stream_lines: context("life/fault-matrix-roots", "seed-stream-lines-drift", "", "offline") => failed{"stream-lines"}
+        seed_stream_counted: context("life/fault-matrix-roots", "seed-stream-counted-drift", "", "offline") => failed{"stream-counted"}
+        seed_stream_settled: context("life/fault-matrix-roots", "seed-stream-settled-drift", "", "offline") => failed{"stream-settled"}
+        seed_event_name: context("life/fault-matrix-roots", "seed-event-name-drift", "", "offline") => failed{"event-name"}
+        seed_subscription_name: context("life/fault-matrix-roots", "seed-subscription-name-drift", "", "offline") => failed{"subscription-name"}
+        seed_webhook_db: context("life/fault-matrix-roots", "seed-webhook-db-drift", "", "offline") => failed{"webhook-db"}
+        seed_stream_file: context("life/fault-matrix-roots", "seed-stream-file-drift", "", "offline") => failed{"stream-file"}
+        seed_missing_file: context("life/fault-matrix-roots", "seed-missing-file-drift", "", "offline") => failed{"missing-file"}
+        seed_webhook_schema: context("life/fault-matrix-roots", "seed-webhook-schema-drift", "", "offline") => failed{"webhook-schema"}
+        seed_webhook_port: context("life/fault-matrix-roots", "seed-webhook-port-drift", "", "offline") => failed{"webhook-port"}
+        seed_webhook_tables: context("life/fault-matrix-roots", "seed-webhook-tables-drift", "", "offline") => failed{"webhook-tables"}
+        seed_trickle_chunk: context("life/fault-matrix-roots", "seed-trickle-chunk-drift", "", "offline") => failed{"trickle-chunk"}
+        seed_trickle_delay_ms: context("life/fault-matrix-roots", "seed-trickle-delay-ms-drift", "", "offline") => failed{"trickle-delay-ms"}
+        seed_ledger_rows: context("life/fault-matrix-roots", "seed-ledger-rows-drift", "", "offline") => failed{"ledger-rows"}
+        seed_outbox_rows: context("life/fault-matrix-roots", "seed-outbox-rows-drift", "", "offline") => failed{"outbox-rows"}
+        seed_webhook_status: context("life/fault-matrix-roots", "seed-webhook-status-drift", "", "offline") => failed{"webhook-status"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.webhook_secret, "whsec-gate4-fault-matrix", c, "webhook-secret")
+            failed
+            ok evidence webhook_secret_evidence => match call require_text(got.carrier_secret, "carrier-gate4-fault-matrix", c, "carrier-secret")
+                failed
+                ok evidence carrier_secret_evidence => match call require_text(got.webhook_snapshot, "snapshot-webhook", c, "webhook-snapshot")
+                    failed
+                    ok evidence webhook_snapshot_evidence => match call require_text(got.slow_body, "{\"delivery_id\":\"del-g4-slow\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", c, "slow-body")
+                        failed
+                        ok evidence slow_body_evidence => match call require_text(got.provider_path, "/webhooks/provider", c, "provider-path")
+                            failed
+                            ok evidence provider_path_evidence => match call require_text(got.signature_header, "X-Provider-Signature", c, "signature-header")
+                                failed
+                                ok evidence signature_header_evidence => match call require_text(got.accepted_body, "{\"status\":\"accepted\"}", c, "accepted-body")
+                                    failed
+                                    ok evidence accepted_body_evidence => match call require_text(got.duplicate_body, "{\"status\":\"duplicate\"}", c, "duplicate-body")
+                                        failed
+                                        ok evidence duplicate_body_evidence => match call require_text(got.after_body, "{\"delivery_id\":\"del-g4-after\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", c, "after-body")
+                                            failed
+                                            ok evidence after_body_evidence => match call require_text(got.webhook_settled, "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work", c, "webhook-settled")
+                                                failed
+                                                ok evidence webhook_settled_evidence => match call require_text(got.stream_lines, "a\nb\nc\n", c, "stream-lines")
+                                                    failed
+                                                    ok evidence stream_lines_evidence => match call require_text(got.stream_counted, "3", c, "stream-counted")
+                                                        failed
+                                                        ok evidence stream_counted_evidence => match call require_text(got.stream_settled, "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite", c, "stream-settled")
+                                                            failed
+                                                            ok evidence stream_settled_evidence => match call require_text(got.event_name, "invoice.paid", c, "event-name")
+                                                                failed
+                                                                ok evidence event_name_evidence => match call require_text(got.subscription_name, "sub-9", c, "subscription-name")
+                                                                    failed
+                                                                    ok evidence subscription_name_evidence => match call require_text(got.webhook_db, "hook.sqlite", c, "webhook-db")
+                                                                        failed
+                                                                        ok evidence webhook_db_evidence => match call require_text(got.stream_file, "lines.txt", c, "stream-file")
+                                                                            failed
+                                                                            ok evidence stream_file_evidence => match call require_text(got.missing_file, "missing.txt", c, "missing-file")
+                                                                                failed
+                                                                                ok evidence missing_file_evidence => match call require_text(got.webhook_schema, "schema.sql", c, "webhook-schema")
+                                                                                    failed
+                                                                                    ok evidence webhook_schema_evidence => match call require_int(got.webhook_port, 18612, c, "webhook-port")
+                                                                                        failed
+                                                                                        ok evidence webhook_port_evidence => match call require_int(got.webhook_tables, 5, c, "webhook-tables")
+                                                                                            failed
+                                                                                            ok evidence webhook_tables_evidence => match call require_int(got.trickle_chunk, 8, c, "trickle-chunk")
+                                                                                                failed
+                                                                                                ok evidence trickle_chunk_evidence => match call require_int(got.trickle_delay_ms, 100, c, "trickle-delay-ms")
+                                                                                                    failed
+                                                                                                    ok evidence trickle_delay_ms_evidence => match call require_int(got.ledger_rows, 2, c, "ledger-rows")
+                                                                                                        failed
+                                                                                                        ok evidence ledger_rows_evidence => match call require_int(got.outbox_rows, 2, c, "outbox-rows")
+                                                                                                            failed
+                                                                                                            ok evidence outbox_rows_evidence => match call require_int(got.webhook_status, 200, c, "webhook-status")
+                                                                                                                failed
+                                                                                                                ok evidence webhook_status_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m40_l009: "m40-l009" => ok test_case("life/fault-matrix-roots", ["life", "m40"], [], 120000, [check_ref("webhook-secret"), check_ref("carrier-secret"), check_ref("webhook-snapshot"), check_ref("slow-body"), check_ref("provider-path"), check_ref("signature-header"), check_ref("accepted-body"), check_ref("duplicate-body"), check_ref("after-body"), check_ref("webhook-settled"), check_ref("stream-lines"), check_ref("stream-counted"), check_ref("stream-settled"), check_ref("event-name"), check_ref("subscription-name"), check_ref("webhook-db"), check_ref("stream-file"), check_ref("missing-file"), check_ref("webhook-schema"), check_ref("webhook-port"), check_ref("webhook-tables"), check_ref("trickle-chunk"), check_ref("trickle-delay-ms"), check_ref("ledger-rows"), check_ref("outbox-rows"), check_ref("webhook-status")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m40-l009"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/fault-matrix-roots", ["life", "m40"], [], 120000, [check_ref("webhook-secret"), check_ref("carrier-secret"), check_ref("webhook-snapshot"), check_ref("slow-body"), check_ref("provider-path"), check_ref("signature-header"), check_ref("accepted-body"), check_ref("duplicate-body"), check_ref("after-body"), check_ref("webhook-settled"), check_ref("stream-lines"), check_ref("stream-counted"), check_ref("stream-settled"), check_ref("event-name"), check_ref("subscription-name"), check_ref("webhook-db"), check_ref("stream-file"), check_ref("missing-file"), check_ref("webhook-schema"), check_ref("webhook-port"), check_ref("webhook-tables"), check_ref("trickle-chunk"), check_ref("trickle-delay-ms"), check_ref("ledger-rows"), check_ref("outbox-rows"), check_ref("webhook-status")], callable case_body)

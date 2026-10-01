@@ -1,0 +1,423 @@
+package m40life009base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M40 LIFE-009 TestGate4FaultMatrix
+/// identity plus invoice legs.
+/// Source: tests/integration/
+/// gate4_fault_test.go symbol
+/// TestGate4FaultMatrix (L261-526):
+/// the host bind plus the client
+/// disconnect leg pins.
+/// Disposition: migrate (this row owns
+/// the fault matrix as reviewable Can
+/// facts; the old go check stays until
+/// the integrator retires it after
+/// every linked row, variant,
+/// environment and control has accepted
+/// evidence).
+/// Protects (this file): facet one
+/// (installed Linux artifact versus
+/// staged development identity plus
+/// build determinism and no stray
+/// output) and facet two (complete-body
+/// disconnect commits once, identical
+/// replay succeeds, changed replay
+/// conflicts).
+/// ADAPTATION (recorded, with source
+/// lines): mode pins hold toolchain
+/// names; bun pins hold the pinned
+/// revision pair; platform pins hold the
+/// per-host pairs; path pins hold route
+/// and snapshot names; body pins hold
+/// raw JSON bytes; case pins hold grid
+/// case names; scope pins hold replay
+/// scope; count pins hold ints tallied
+/// from guards and call sites.
+/// mode-installed pins installed
+/// release (L273); mode-staged pins
+/// staged bundle (L271); bun-version
+/// pins 1.4.2 (L188); bun-revision pins
+/// the forty hex digit identity
+/// (L188); platform-darwin pins darwin
+/// (L191); arch-arm64 pins arm64
+/// (L191); platform-linux pins linux
+/// (L193); arch-x64 pins x64 (L193);
+/// save-path pins the save route
+/// (L318); save-body pins the save
+/// bytes (L319); op-id pins
+/// op-gate4-disc (L319); cookie-header
+/// pins the session cookie (L320);
+/// changed-body pins the changed bytes
+/// (L355); replay-case pins
+/// invoice_contract::grid_saved (L351);
+/// conflict-case pins
+/// invoice_contract::grid_conflict
+/// (L360); conflict-message pins stale
+/// revision (L360); invoice-title pins
+/// the saved title bytes (L339);
+/// invoice-settled pins the settled
+/// note (L373); actor-alice pins alice
+/// (L341); tenant-id pins 1 (L341);
+/// invoice-id pins 7 (L341);
+/// invoice-snapshot pins
+/// snapshot-gate4-invoice (L315);
+/// invoice-port pins int (18611) from
+/// L56; replay-status pins int (200)
+/// from L348; conflict-status pins int
+/// (409) from L357; replay-rows pins
+/// int (1) from L344; poll-timeout-s
+/// pins int (20) from L321;
+/// poll-interval-ms pins int (250) from
+/// L336; abandon-dial-s pins int (10)
+/// from L212.
+/// Facet map (leg order): mode-installed,
+/// mode-staged, bun-version,
+/// bun-revision, platform-darwin,
+/// arch-arm64, platform-linux, arch-x64,
+/// save-path, save-body, op-id,
+/// cookie-header, changed-body,
+/// replay-case, conflict-case,
+/// conflict-message, invoice-title,
+/// invoice-settled, actor-alice,
+/// tenant-id, invoice-id,
+/// invoice-snapshot, invoice-port,
+/// replay-status, conflict-status,
+/// replay-rows, poll-timeout-s,
+/// poll-interval-ms, abandon-dial-s.
+/// The webhook plus stream legs live in
+/// life-009-roots-green.can; the suite
+/// plus run shape lives in
+/// life-009-run-shape.can.
+/// Variants: installed release on
+/// linux/amd64, staged bundle on other
+/// hosts; default plus seeded drifts
+/// only here.
+/// Environment: CAN_BUN_ARCHIVE plus a
+/// staged bundle or installed release
+/// (row lists two gates; bind at P23;
+/// no live run now).
+/// Logical gates ARCHIVE plus FAULT
+/// bind at P23; no live run now.
+/// Timeout 120000ms is the offline
+/// default bound (the live thirty
+/// minute hold is pinned in the run
+/// slice; binds at P23 like the M31
+/// no-run rows).
+/// Delegated oracles: none in this
+/// file (six live in the run slice).
+/// Execution credit: NOT claimed (P23
+/// accept gate unmet).
+/// Case life/fault-matrix-base
+/// checks: mode-installed,
+/// mode-staged, bun-version,
+/// bun-revision, platform-darwin,
+/// arch-arm64, platform-linux, arch-x64,
+/// save-path, save-body, op-id,
+/// cookie-header, changed-body,
+/// replay-case, conflict-case,
+/// conflict-message, invoice-title,
+/// invoice-settled, actor-alice,
+/// tenant-id, invoice-id,
+/// invoice-snapshot, invoice-port,
+/// replay-status, conflict-status,
+/// replay-rows, poll-timeout-s,
+/// poll-interval-ms, abandon-dial-s.
+/// Shared old files untouched;
+/// retirement is a later integrator
+/// decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str mode_installed
+    str mode_staged
+    str bun_version
+    str bun_revision
+    str platform_darwin
+    str arch_arm64
+    str platform_linux
+    str arch_x64
+    str save_path
+    str save_body
+    str op_id
+    str cookie_header
+    str changed_body
+    str replay_case
+    str conflict_case
+    str conflict_message
+    str invoice_title
+    str invoice_settled
+    str actor_alice
+    str tenant_id
+    str invoice_id
+    str invoice_snapshot
+    int invoice_port
+    int replay_status
+    int conflict_status
+    int replay_rows
+    int poll_timeout_s
+    int poll_interval_ms
+    int abandon_dial_s
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/fault-matrix-base", "default", "", "offline"), "mode-installed" => ok "case life/fault-matrix-base variant default root mode-installed run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/fault-matrix-base", "default", "", "offline"), "mode-installed" => ok evidence("mode-installed", "true", "true", true, "case life/fault-matrix-base variant default root mode-installed run offline")
+        different: false, true, context("life/fault-matrix-base", "default", "", "offline"), "mode-installed" => failed{"mode-installed"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 18611, 18611, context("life/fault-matrix-base", "default", "", "offline"), "invoice-port" => ok evidence("invoice-port", "18611", "18611", true, "case life/fault-matrix-base variant default root invoice-port run offline")
+        different: 18610, 18611, context("life/fault-matrix-base", "default", "", "offline"), "invoice-port" => failed{"invoice-port"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "installed release", "installed release", context("life/fault-matrix-base", "default", "", "offline"), "mode-installed" => ok evidence("mode-installed", "installed release", "installed release", true, "case life/fault-matrix-base variant default root mode-installed run offline")
+        different: "installed release_2", "installed release", context("life/fault-matrix-base", "default", "", "offline"), "mode-installed" => failed{"mode-installed"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_mode_installed: "seed-mode-installed-drift" => ok observation("installed release_2", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_mode_staged: "seed-mode-staged-drift" => ok observation("installed release", "staged bundle_2", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_bun_version: "seed-bun-version-drift" => ok observation("installed release", "staged bundle", "1.4.2_2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_bun_revision: "seed-bun-revision-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99_2", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_platform_darwin: "seed-platform-darwin-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin_2", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_arch_arm64: "seed-arch-arm64-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64_2", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_platform_linux: "seed-platform-linux-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux_2", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_arch_x64: "seed-arch-x64-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64_2", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_save_path: "seed-save-path-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7_2", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_save_body: "seed-save-body-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}_2", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_op_id: "seed-op-id-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc_2", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_cookie_header: "seed-cookie-header-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice_2", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_changed_body: "seed-changed-body-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}_2", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_replay_case: "seed-replay-case-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved_2", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_conflict_case: "seed-conflict-case-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict_2", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_conflict_message: "seed-conflict-message-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision_2", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_invoice_title: "seed-invoice-title-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"_2", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_invoice_settled: "seed-invoice-settled-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts_2", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_actor_alice: "seed-actor-alice-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice_2", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_tenant_id: "seed-tenant-id-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1_2", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_invoice_id: "seed-invoice-id-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7_2", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        seed_invoice_snapshot: "seed-invoice-snapshot-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice_2", 18611, 200, 409, 1, 20, 250, 10)
+        seed_invoice_port: "seed-invoice-port-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18610, 200, 409, 1, 20, 250, 10)
+        seed_replay_status: "seed-replay-status-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 199, 409, 1, 20, 250, 10)
+        seed_conflict_status: "seed-conflict-status-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 408, 1, 20, 250, 10)
+        seed_replay_rows: "seed-replay-rows-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 0, 20, 250, 10)
+        seed_poll_timeout_s: "seed-poll-timeout-s-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 19, 250, 10)
+        seed_poll_interval_ms: "seed-poll-interval-ms-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 249, 10)
+        seed_abandon_dial_s: "seed-abandon-dial-s-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 9)
+    match variant_id
+        "seed-mode-installed-drift" => ok observation("installed release_2", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-mode-staged-drift" => ok observation("installed release", "staged bundle_2", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-bun-version-drift" => ok observation("installed release", "staged bundle", "1.4.2_2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-bun-revision-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99_2", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-platform-darwin-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin_2", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-arch-arm64-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64_2", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-platform-linux-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux_2", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-arch-x64-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64_2", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-save-path-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7_2", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-save-body-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}_2", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-op-id-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc_2", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-cookie-header-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice_2", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-changed-body-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}_2", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-replay-case-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved_2", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-conflict-case-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict_2", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-conflict-message-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision_2", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-invoice-title-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"_2", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-invoice-settled-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts_2", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-actor-alice-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice_2", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-tenant-id-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1_2", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-invoice-id-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7_2", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-invoice-snapshot-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice_2", 18611, 200, 409, 1, 20, 250, 10)
+        "seed-invoice-port-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18610, 200, 409, 1, 20, 250, 10)
+        "seed-replay-status-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 199, 409, 1, 20, 250, 10)
+        "seed-conflict-status-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 408, 1, 20, 250, 10)
+        "seed-replay-rows-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 0, 20, 250, 10)
+        "seed-poll-timeout-s-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 19, 250, 10)
+        "seed-poll-interval-ms-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 249, 10)
+        "seed-abandon-dial-s-drift" => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 9)
+        _ => ok observation("installed release", "staged bundle", "1.4.2", "744846f844374847c902b5e7fd59b4342a51ef99", "darwin", "arm64", "linux", "x64", "/api/tenants/1/invoices/7", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "op-gate4-disc", "Cookie: session=tok-alice", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", "invoice_contract::grid_saved", "invoice_contract::grid_conflict", "stale revision", "Acme <em>&\" 'coop'\"", "abandoned handler committed one effect; identical replay replays, changed content conflicts", "alice", "1", "7", "snapshot-gate4-invoice", 18611, 200, 409, 1, 20, 250, 10)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m40_l009: "m40-l009" => ok [check("mode-installed", "installed mode keeps its name"), check("mode-staged", "staged mode keeps its name"), check("bun-version", "host bind keeps its bun"), check("bun-revision", "host bind keeps its revision"), check("platform-darwin", "host bind keeps darwin"), check("arch-arm64", "host bind keeps arm64"), check("platform-linux", "host bind keeps linux"), check("arch-x64", "host bind keeps x64"), check("save-path", "disconnect leg keeps its path"), check("save-body", "disconnect leg keeps its save bytes"), check("op-id", "disconnect leg keeps its operation"), check("cookie-header", "disconnect leg keeps its cookie"), check("changed-body", "conflict leg keeps its changed bytes"), check("replay-case", "replay keeps its saved case"), check("conflict-case", "conflict keeps its case"), check("conflict-message", "conflict keeps its message"), check("invoice-title", "saved row keeps its title"), check("invoice-settled", "disconnect leg keeps its settled note"), check("actor-alice", "replay scope keeps its actor"), check("tenant-id", "replay scope keeps its tenant"), check("invoice-id", "replay scope keeps its invoice"), check("invoice-snapshot", "served app keeps its snapshot name"), check("invoice-port", "invoice leg keeps its port"), check("replay-status", "identical replay keeps 200"), check("conflict-status", "changed replay keeps 409"), check("replay-rows", "disconnect leg keeps one replay row"), check("poll-timeout-s", "commit poll keeps its bound"), check("poll-interval-ms", "commit poll keeps its step"), check("abandon-dial-s", "abandon dial keeps its bound")]
+        other: "nope" => ok []
+    match scope is "m40-l009"
+        false => ok []
+        true => ok [check("mode-installed", "installed mode keeps its name"), check("mode-staged", "staged mode keeps its name"), check("bun-version", "host bind keeps its bun"), check("bun-revision", "host bind keeps its revision"), check("platform-darwin", "host bind keeps darwin"), check("arch-arm64", "host bind keeps arm64"), check("platform-linux", "host bind keeps linux"), check("arch-x64", "host bind keeps x64"), check("save-path", "disconnect leg keeps its path"), check("save-body", "disconnect leg keeps its save bytes"), check("op-id", "disconnect leg keeps its operation"), check("cookie-header", "disconnect leg keeps its cookie"), check("changed-body", "conflict leg keeps its changed bytes"), check("replay-case", "replay keeps its saved case"), check("conflict-case", "conflict keeps its case"), check("conflict-message", "conflict keeps its message"), check("invoice-title", "saved row keeps its title"), check("invoice-settled", "disconnect leg keeps its settled note"), check("actor-alice", "replay scope keeps its actor"), check("tenant-id", "replay scope keeps its tenant"), check("invoice-id", "replay scope keeps its invoice"), check("invoice-snapshot", "served app keeps its snapshot name"), check("invoice-port", "invoice leg keeps its port"), check("replay-status", "identical replay keeps 200"), check("conflict-status", "changed replay keeps 409"), check("replay-rows", "disconnect leg keeps one replay row"), check("poll-timeout-s", "commit poll keeps its bound"), check("poll-interval-ms", "commit poll keeps its step"), check("abandon-dial-s", "abandon dial keeps its bound")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/fault-matrix-base" => ok [expected_check("mode-installed", "installed release"), expected_check("mode-staged", "staged bundle"), expected_check("bun-version", "1.4.2"), expected_check("bun-revision", "744846f844374847c902b5e7fd59b4342a51ef99"), expected_check("platform-darwin", "darwin"), expected_check("arch-arm64", "arm64"), expected_check("platform-linux", "linux"), expected_check("arch-x64", "x64"), expected_check("save-path", "/api/tenants/1/invoices/7"), expected_check("save-body", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}"), expected_check("op-id", "op-gate4-disc"), expected_check("cookie-header", "Cookie: session=tok-alice"), expected_check("changed-body", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}"), expected_check("replay-case", "invoice_contract::grid_saved"), expected_check("conflict-case", "invoice_contract::grid_conflict"), expected_check("conflict-message", "stale revision"), expected_check("invoice-title", "Acme <em>&\" 'coop'\""), expected_check("invoice-settled", "abandoned handler committed one effect; identical replay replays, changed content conflicts"), expected_check("actor-alice", "alice"), expected_check("tenant-id", "1"), expected_check("invoice-id", "7"), expected_check("invoice-snapshot", "snapshot-gate4-invoice"), expected_check("invoice-port", "18611"), expected_check("replay-status", "200"), expected_check("conflict-status", "409"), expected_check("replay-rows", "1"), expected_check("poll-timeout-s", "20"), expected_check("poll-interval-ms", "250"), expected_check("abandon-dial-s", "10")]
+        unknown: "nope" => ok []
+    match case is "life/fault-matrix-base"
+        false => ok []
+        true => ok [expected_check("mode-installed", "installed release"), expected_check("mode-staged", "staged bundle"), expected_check("bun-version", "1.4.2"), expected_check("bun-revision", "744846f844374847c902b5e7fd59b4342a51ef99"), expected_check("platform-darwin", "darwin"), expected_check("arch-arm64", "arm64"), expected_check("platform-linux", "linux"), expected_check("arch-x64", "x64"), expected_check("save-path", "/api/tenants/1/invoices/7"), expected_check("save-body", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}"), expected_check("op-id", "op-gate4-disc"), expected_check("cookie-header", "Cookie: session=tok-alice"), expected_check("changed-body", "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}"), expected_check("replay-case", "invoice_contract::grid_saved"), expected_check("conflict-case", "invoice_contract::grid_conflict"), expected_check("conflict-message", "stale revision"), expected_check("invoice-title", "Acme <em>&\" 'coop'\""), expected_check("invoice-settled", "abandoned handler committed one effect; identical replay replays, changed content conflicts"), expected_check("actor-alice", "alice"), expected_check("tenant-id", "1"), expected_check("invoice-id", "7"), expected_check("invoice-snapshot", "snapshot-gate4-invoice"), expected_check("invoice-port", "18611"), expected_check("replay-status", "200"), expected_check("conflict-status", "409"), expected_check("replay-rows", "1"), expected_check("poll-timeout-s", "20"), expected_check("poll-interval-ms", "250"), expected_check("abandon-dial-s", "10")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/fault-matrix-base", "default", "", "offline") => ok
+        seed_mode_installed: context("life/fault-matrix-base", "seed-mode-installed-drift", "", "offline") => failed{"mode-installed"}
+        seed_mode_staged: context("life/fault-matrix-base", "seed-mode-staged-drift", "", "offline") => failed{"mode-staged"}
+        seed_bun_version: context("life/fault-matrix-base", "seed-bun-version-drift", "", "offline") => failed{"bun-version"}
+        seed_bun_revision: context("life/fault-matrix-base", "seed-bun-revision-drift", "", "offline") => failed{"bun-revision"}
+        seed_platform_darwin: context("life/fault-matrix-base", "seed-platform-darwin-drift", "", "offline") => failed{"platform-darwin"}
+        seed_arch_arm64: context("life/fault-matrix-base", "seed-arch-arm64-drift", "", "offline") => failed{"arch-arm64"}
+        seed_platform_linux: context("life/fault-matrix-base", "seed-platform-linux-drift", "", "offline") => failed{"platform-linux"}
+        seed_arch_x64: context("life/fault-matrix-base", "seed-arch-x64-drift", "", "offline") => failed{"arch-x64"}
+        seed_save_path: context("life/fault-matrix-base", "seed-save-path-drift", "", "offline") => failed{"save-path"}
+        seed_save_body: context("life/fault-matrix-base", "seed-save-body-drift", "", "offline") => failed{"save-body"}
+        seed_op_id: context("life/fault-matrix-base", "seed-op-id-drift", "", "offline") => failed{"op-id"}
+        seed_cookie_header: context("life/fault-matrix-base", "seed-cookie-header-drift", "", "offline") => failed{"cookie-header"}
+        seed_changed_body: context("life/fault-matrix-base", "seed-changed-body-drift", "", "offline") => failed{"changed-body"}
+        seed_replay_case: context("life/fault-matrix-base", "seed-replay-case-drift", "", "offline") => failed{"replay-case"}
+        seed_conflict_case: context("life/fault-matrix-base", "seed-conflict-case-drift", "", "offline") => failed{"conflict-case"}
+        seed_conflict_message: context("life/fault-matrix-base", "seed-conflict-message-drift", "", "offline") => failed{"conflict-message"}
+        seed_invoice_title: context("life/fault-matrix-base", "seed-invoice-title-drift", "", "offline") => failed{"invoice-title"}
+        seed_invoice_settled: context("life/fault-matrix-base", "seed-invoice-settled-drift", "", "offline") => failed{"invoice-settled"}
+        seed_actor_alice: context("life/fault-matrix-base", "seed-actor-alice-drift", "", "offline") => failed{"actor-alice"}
+        seed_tenant_id: context("life/fault-matrix-base", "seed-tenant-id-drift", "", "offline") => failed{"tenant-id"}
+        seed_invoice_id: context("life/fault-matrix-base", "seed-invoice-id-drift", "", "offline") => failed{"invoice-id"}
+        seed_invoice_snapshot: context("life/fault-matrix-base", "seed-invoice-snapshot-drift", "", "offline") => failed{"invoice-snapshot"}
+        seed_invoice_port: context("life/fault-matrix-base", "seed-invoice-port-drift", "", "offline") => failed{"invoice-port"}
+        seed_replay_status: context("life/fault-matrix-base", "seed-replay-status-drift", "", "offline") => failed{"replay-status"}
+        seed_conflict_status: context("life/fault-matrix-base", "seed-conflict-status-drift", "", "offline") => failed{"conflict-status"}
+        seed_replay_rows: context("life/fault-matrix-base", "seed-replay-rows-drift", "", "offline") => failed{"replay-rows"}
+        seed_poll_timeout_s: context("life/fault-matrix-base", "seed-poll-timeout-s-drift", "", "offline") => failed{"poll-timeout-s"}
+        seed_poll_interval_ms: context("life/fault-matrix-base", "seed-poll-interval-ms-drift", "", "offline") => failed{"poll-interval-ms"}
+        seed_abandon_dial_s: context("life/fault-matrix-base", "seed-abandon-dial-s-drift", "", "offline") => failed{"abandon-dial-s"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.mode_installed, "installed release", c, "mode-installed")
+            failed
+            ok evidence mode_installed_evidence => match call require_text(got.mode_staged, "staged bundle", c, "mode-staged")
+                failed
+                ok evidence mode_staged_evidence => match call require_text(got.bun_version, "1.4.2", c, "bun-version")
+                    failed
+                    ok evidence bun_version_evidence => match call require_text(got.bun_revision, "744846f844374847c902b5e7fd59b4342a51ef99", c, "bun-revision")
+                        failed
+                        ok evidence bun_revision_evidence => match call require_text(got.platform_darwin, "darwin", c, "platform-darwin")
+                            failed
+                            ok evidence platform_darwin_evidence => match call require_text(got.arch_arm64, "arm64", c, "arch-arm64")
+                                failed
+                                ok evidence arch_arm64_evidence => match call require_text(got.platform_linux, "linux", c, "platform-linux")
+                                    failed
+                                    ok evidence platform_linux_evidence => match call require_text(got.arch_x64, "x64", c, "arch-x64")
+                                        failed
+                                        ok evidence arch_x64_evidence => match call require_text(got.save_path, "/api/tenants/1/invoices/7", c, "save-path")
+                                            failed
+                                            ok evidence save_path_evidence => match call require_text(got.save_body, "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", c, "save-body")
+                                                failed
+                                                ok evidence save_body_evidence => match call require_text(got.op_id, "op-gate4-disc", c, "op-id")
+                                                    failed
+                                                    ok evidence op_id_evidence => match call require_text(got.cookie_header, "Cookie: session=tok-alice", c, "cookie-header")
+                                                        failed
+                                                        ok evidence cookie_header_evidence => match call require_text(got.changed_body, "{\"operation_id\":\"op-gate4-disc\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"changed\",\"quantity\":\"4\",\"price\":\"9.99\"}]}", c, "changed-body")
+                                                            failed
+                                                            ok evidence changed_body_evidence => match call require_text(got.replay_case, "invoice_contract::grid_saved", c, "replay-case")
+                                                                failed
+                                                                ok evidence replay_case_evidence => match call require_text(got.conflict_case, "invoice_contract::grid_conflict", c, "conflict-case")
+                                                                    failed
+                                                                    ok evidence conflict_case_evidence => match call require_text(got.conflict_message, "stale revision", c, "conflict-message")
+                                                                        failed
+                                                                        ok evidence conflict_message_evidence => match call require_text(got.invoice_title, "Acme <em>&\" 'coop'\"", c, "invoice-title")
+                                                                            failed
+                                                                            ok evidence invoice_title_evidence => match call require_text(got.invoice_settled, "abandoned handler committed one effect; identical replay replays, changed content conflicts", c, "invoice-settled")
+                                                                                failed
+                                                                                ok evidence invoice_settled_evidence => match call require_text(got.actor_alice, "alice", c, "actor-alice")
+                                                                                    failed
+                                                                                    ok evidence actor_alice_evidence => match call require_text(got.tenant_id, "1", c, "tenant-id")
+                                                                                        failed
+                                                                                        ok evidence tenant_id_evidence => match call require_text(got.invoice_id, "7", c, "invoice-id")
+                                                                                            failed
+                                                                                            ok evidence invoice_id_evidence => match call require_text(got.invoice_snapshot, "snapshot-gate4-invoice", c, "invoice-snapshot")
+                                                                                                failed
+                                                                                                ok evidence invoice_snapshot_evidence => match call require_int(got.invoice_port, 18611, c, "invoice-port")
+                                                                                                    failed
+                                                                                                    ok evidence invoice_port_evidence => match call require_int(got.replay_status, 200, c, "replay-status")
+                                                                                                        failed
+                                                                                                        ok evidence replay_status_evidence => match call require_int(got.conflict_status, 409, c, "conflict-status")
+                                                                                                            failed
+                                                                                                            ok evidence conflict_status_evidence => match call require_int(got.replay_rows, 1, c, "replay-rows")
+                                                                                                                failed
+                                                                                                                ok evidence replay_rows_evidence => match call require_int(got.poll_timeout_s, 20, c, "poll-timeout-s")
+                                                                                                                    failed
+                                                                                                                    ok evidence poll_timeout_s_evidence => match call require_int(got.poll_interval_ms, 250, c, "poll-interval-ms")
+                                                                                                                        failed
+                                                                                                                        ok evidence poll_interval_ms_evidence => match call require_int(got.abandon_dial_s, 10, c, "abandon-dial-s")
+                                                                                                                            failed
+                                                                                                                            ok evidence abandon_dial_s_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m40_l009: "m40-l009" => ok test_case("life/fault-matrix-base", ["life", "m40"], [], 120000, [check_ref("mode-installed"), check_ref("mode-staged"), check_ref("bun-version"), check_ref("bun-revision"), check_ref("platform-darwin"), check_ref("arch-arm64"), check_ref("platform-linux"), check_ref("arch-x64"), check_ref("save-path"), check_ref("save-body"), check_ref("op-id"), check_ref("cookie-header"), check_ref("changed-body"), check_ref("replay-case"), check_ref("conflict-case"), check_ref("conflict-message"), check_ref("invoice-title"), check_ref("invoice-settled"), check_ref("actor-alice"), check_ref("tenant-id"), check_ref("invoice-id"), check_ref("invoice-snapshot"), check_ref("invoice-port"), check_ref("replay-status"), check_ref("conflict-status"), check_ref("replay-rows"), check_ref("poll-timeout-s"), check_ref("poll-interval-ms"), check_ref("abandon-dial-s")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m40-l009"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/fault-matrix-base", ["life", "m40"], [], 120000, [check_ref("mode-installed"), check_ref("mode-staged"), check_ref("bun-version"), check_ref("bun-revision"), check_ref("platform-darwin"), check_ref("arch-arm64"), check_ref("platform-linux"), check_ref("arch-x64"), check_ref("save-path"), check_ref("save-body"), check_ref("op-id"), check_ref("cookie-header"), check_ref("changed-body"), check_ref("replay-case"), check_ref("conflict-case"), check_ref("conflict-message"), check_ref("invoice-title"), check_ref("invoice-settled"), check_ref("actor-alice"), check_ref("tenant-id"), check_ref("invoice-id"), check_ref("invoice-snapshot"), check_ref("invoice-port"), check_ref("replay-status"), check_ref("conflict-status"), check_ref("replay-rows"), check_ref("poll-timeout-s"), check_ref("poll-interval-ms"), check_ref("abandon-dial-s")], callable case_body)
