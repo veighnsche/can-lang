@@ -1,0 +1,226 @@
+package m10core037roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M10 CORE-037 "install root refusals: roots green, root inventory".
+/// Source: tests/integration/release_test.go symbol
+/// TestInstallRootRefusals (L360-378); distribution entry points in
+/// distribution/update.go (L15) and distribution/install.go (L91);
+/// install-root layout in distribution/install.go (L68/L96).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): static root inventory as the green baseline: the
+/// two variant root names, the two deliberately absent input basenames,
+/// the selection link and versions directory, the two distribution entry
+/// points, the symlink-built link root, and the two-variant count.
+/// ADAPTATION (recorded, with source lines): the Go test stages no Can
+/// assert leg, so this file records the static naming inventory the
+/// refusal path requires (Go L366-377, install.go L68-116) for P23
+/// qualification rather than an observed assert report; no execution is
+/// claimed here (accept_after P23 unmet).
+/// Facet map (release_test.go legs plus distribution roots):
+/// link-root-name pins link-root (Go L366); empty-root-name pins
+/// empty-root (Go L375); absent-archive pins absent.zip (Go L371);
+/// absent-record pins absent.sha256 (Go L371); selected-link pins current
+/// (install.go L96); versions-dir pins versions (install.go L68);
+/// update-entry pins distribution.Update (Go L371); selection-entry pins
+/// distribution.Selection (Go L375); link-is-symlink pins the
+/// Symlink-built fixture (Go L366-369); variant-count pins 2 (Go L366-377).
+/// Root semantics live in core-037-root-semantics.can; the production run
+/// shape lives in core-037-run-shape.can.
+/// Variants: none in this file (default only); refusal behaviors live in
+/// root-semantics.
+/// Environment: CAN_BUN_ARCHIVE presence only; requires can-bun-archive.
+/// Unlike TestReleaseInstallUpdate (L34) this symbol sets no darwin/arm64
+/// gate. Logical gates SUITE/BUILD/ARCHIVE/ENV and C/R/N/S/A identities
+/// bind at P23; no live run now. Descriptor timeout 60000ms is the harness
+/// floor; Go L365 uses context.Background with no deadline.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case dist/install-root-roots checks: link-root-name, empty-root-name,
+/// absent-archive, absent-record, selected-link, versions-dir,
+/// update-entry, selection-entry, link-is-symlink, variant-count.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str link_root_name
+    str empty_root_name
+    str absent_archive
+    str absent_record
+    str selected_link
+    str versions_dir
+    str update_entry
+    str selection_entry
+    bool link_is_symlink
+    int variant_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("dist/install-root-roots", "default", "", "offline"), "link-root-name" => ok "case dist/install-root-roots variant default root link-root-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("dist/install-root-roots", "default", "", "offline"), "link-is-symlink" => ok evidence("link-is-symlink", "true", "true", true, "case dist/install-root-roots variant default root link-is-symlink run offline")
+        different: false, true, context("dist/install-root-roots", "default", "", "offline"), "link-is-symlink" => failed{"link-is-symlink"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("dist/install-root-roots", "default", "", "offline"), "variant-count" => ok evidence("variant-count", "2", "2", true, "case dist/install-root-roots variant default root variant-count run offline")
+        different: 1, 2, context("dist/install-root-roots", "default", "", "offline"), "variant-count" => failed{"variant-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "link-root", "link-root", context("dist/install-root-roots", "default", "", "offline"), "link-root-name" => ok evidence("link-root-name", "link-root", "link-root", true, "case dist/install-root-roots variant default root link-root-name run offline")
+        different: "dir-root", "link-root", context("dist/install-root-roots", "default", "", "offline"), "link-root-name" => failed{"link-root-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("link-root", "empty-root", "absent.zip", "absent.sha256", "current", "versions", "distribution.Update", "distribution.Selection", true, 2)
+        seed_link_root_name: "seed-link-root-name-drift" => ok observation("dir-root", "empty-root", "absent.zip", "absent.sha256", "current", "versions", "distribution.Update", "distribution.Selection", true, 2)
+        seed_empty_root_name: "seed-empty-root-name-drift" => ok observation("link-root", "full-root", "absent.zip", "absent.sha256", "current", "versions", "distribution.Update", "distribution.Selection", true, 2)
+        seed_absent_archive: "seed-absent-archive-drift" => ok observation("link-root", "empty-root", "absent.tgz", "absent.sha256", "current", "versions", "distribution.Update", "distribution.Selection", true, 2)
+        seed_absent_record: "seed-absent-record-drift" => ok observation("link-root", "empty-root", "absent.zip", "absent.sha1", "current", "versions", "distribution.Update", "distribution.Selection", true, 2)
+        seed_selected_link: "seed-selected-link-drift" => ok observation("link-root", "empty-root", "absent.zip", "absent.sha256", "latest", "versions", "distribution.Update", "distribution.Selection", true, 2)
+        seed_versions_dir: "seed-versions-dir-drift" => ok observation("link-root", "empty-root", "absent.zip", "absent.sha256", "current", "releases", "distribution.Update", "distribution.Selection", true, 2)
+        seed_update_entry: "seed-update-entry-drift" => ok observation("link-root", "empty-root", "absent.zip", "absent.sha256", "current", "versions", "distribution.Install", "distribution.Selection", true, 2)
+        seed_selection_entry: "seed-selection-entry-drift" => ok observation("link-root", "empty-root", "absent.zip", "absent.sha256", "current", "versions", "distribution.Update", "distribution.Release", true, 2)
+        seed_link_is_symlink: "seed-link-is-symlink-drift" => ok observation("link-root", "empty-root", "absent.zip", "absent.sha256", "current", "versions", "distribution.Update", "distribution.Selection", false, 2)
+        seed_variant_count: "seed-variant-count-drift" => ok observation("link-root", "empty-root", "absent.zip", "absent.sha256", "current", "versions", "distribution.Update", "distribution.Selection", true, 1)
+    match variant_id
+        "seed-link-root-name-drift" => ok observation("dir-root", "empty-root", "absent.zip", "absent.sha256", "current", "versions", "distribution.Update", "distribution.Selection", true, 2)
+        "seed-empty-root-name-drift" => ok observation("link-root", "full-root", "absent.zip", "absent.sha256", "current", "versions", "distribution.Update", "distribution.Selection", true, 2)
+        "seed-absent-archive-drift" => ok observation("link-root", "empty-root", "absent.tgz", "absent.sha256", "current", "versions", "distribution.Update", "distribution.Selection", true, 2)
+        "seed-absent-record-drift" => ok observation("link-root", "empty-root", "absent.zip", "absent.sha1", "current", "versions", "distribution.Update", "distribution.Selection", true, 2)
+        "seed-selected-link-drift" => ok observation("link-root", "empty-root", "absent.zip", "absent.sha256", "latest", "versions", "distribution.Update", "distribution.Selection", true, 2)
+        "seed-versions-dir-drift" => ok observation("link-root", "empty-root", "absent.zip", "absent.sha256", "current", "releases", "distribution.Update", "distribution.Selection", true, 2)
+        "seed-update-entry-drift" => ok observation("link-root", "empty-root", "absent.zip", "absent.sha256", "current", "versions", "distribution.Install", "distribution.Selection", true, 2)
+        "seed-selection-entry-drift" => ok observation("link-root", "empty-root", "absent.zip", "absent.sha256", "current", "versions", "distribution.Update", "distribution.Release", true, 2)
+        "seed-link-is-symlink-drift" => ok observation("link-root", "empty-root", "absent.zip", "absent.sha256", "current", "versions", "distribution.Update", "distribution.Selection", false, 2)
+        "seed-variant-count-drift" => ok observation("link-root", "empty-root", "absent.zip", "absent.sha256", "current", "versions", "distribution.Update", "distribution.Selection", true, 1)
+        _ => ok observation("link-root", "empty-root", "absent.zip", "absent.sha256", "current", "versions", "distribution.Update", "distribution.Selection", true, 2)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m10_037: "m10-037" => ok [check("link-root-name", "symlink variant root is named link-root"), check("empty-root-name", "absent variant root is named empty-root"), check("absent-archive", "refusal archive input is absent.zip"), check("absent-record", "refusal record input is absent.sha256"), check("selected-link", "selection link is named current"), check("versions-dir", "install versions live under versions"), check("update-entry", "refusal leg calls distribution.Update"), check("selection-entry", "empty leg calls distribution.Selection"), check("link-is-symlink", "link-root fixture is created as a symlink"), check("variant-count", "row covers two root variants")]
+        other: "nope" => ok []
+    match scope is "m10-037"
+        false => ok []
+        true => ok [check("link-root-name", "symlink variant root is named link-root"), check("empty-root-name", "absent variant root is named empty-root"), check("absent-archive", "refusal archive input is absent.zip"), check("absent-record", "refusal record input is absent.sha256"), check("selected-link", "selection link is named current"), check("versions-dir", "install versions live under versions"), check("update-entry", "refusal leg calls distribution.Update"), check("selection-entry", "empty leg calls distribution.Selection"), check("link-is-symlink", "link-root fixture is created as a symlink"), check("variant-count", "row covers two root variants")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "dist/install-root-roots" => ok [expected_check("link-root-name", "link-root"), expected_check("empty-root-name", "empty-root"), expected_check("absent-archive", "absent.zip"), expected_check("absent-record", "absent.sha256"), expected_check("selected-link", "current"), expected_check("versions-dir", "versions"), expected_check("update-entry", "distribution.Update"), expected_check("selection-entry", "distribution.Selection"), expected_check("link-is-symlink", "true"), expected_check("variant-count", "2")]
+        unknown: "nope" => ok []
+    match case is "dist/install-root-roots"
+        false => ok []
+        true => ok [expected_check("link-root-name", "link-root"), expected_check("empty-root-name", "empty-root"), expected_check("absent-archive", "absent.zip"), expected_check("absent-record", "absent.sha256"), expected_check("selected-link", "current"), expected_check("versions-dir", "versions"), expected_check("update-entry", "distribution.Update"), expected_check("selection-entry", "distribution.Selection"), expected_check("link-is-symlink", "true"), expected_check("variant-count", "2")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("dist/install-root-roots", "default", "", "offline") => ok
+        seed_link_root_name: context("dist/install-root-roots", "seed-link-root-name-drift", "", "offline") => failed{"link-root-name"}
+        seed_empty_root_name: context("dist/install-root-roots", "seed-empty-root-name-drift", "", "offline") => failed{"empty-root-name"}
+        seed_absent_archive: context("dist/install-root-roots", "seed-absent-archive-drift", "", "offline") => failed{"absent-archive"}
+        seed_absent_record: context("dist/install-root-roots", "seed-absent-record-drift", "", "offline") => failed{"absent-record"}
+        seed_selected_link: context("dist/install-root-roots", "seed-selected-link-drift", "", "offline") => failed{"selected-link"}
+        seed_versions_dir: context("dist/install-root-roots", "seed-versions-dir-drift", "", "offline") => failed{"versions-dir"}
+        seed_update_entry: context("dist/install-root-roots", "seed-update-entry-drift", "", "offline") => failed{"update-entry"}
+        seed_selection_entry: context("dist/install-root-roots", "seed-selection-entry-drift", "", "offline") => failed{"selection-entry"}
+        seed_link_is_symlink: context("dist/install-root-roots", "seed-link-is-symlink-drift", "", "offline") => failed{"link-is-symlink"}
+        seed_variant_count: context("dist/install-root-roots", "seed-variant-count-drift", "", "offline") => failed{"variant-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.link_root_name, "link-root", c, "link-root-name")
+            failed
+            ok evidence link_root_name_evidence => match call require_text(got.empty_root_name, "empty-root", c, "empty-root-name")
+                failed
+                ok evidence empty_root_name_evidence => match call require_text(got.absent_archive, "absent.zip", c, "absent-archive")
+                    failed
+                    ok evidence absent_archive_evidence => match call require_text(got.absent_record, "absent.sha256", c, "absent-record")
+                        failed
+                        ok evidence absent_record_evidence => match call require_text(got.selected_link, "current", c, "selected-link")
+                            failed
+                            ok evidence selected_link_evidence => match call require_text(got.versions_dir, "versions", c, "versions-dir")
+                                failed
+                                ok evidence versions_dir_evidence => match call require_text(got.update_entry, "distribution.Update", c, "update-entry")
+                                    failed
+                                    ok evidence update_entry_evidence => match call require_text(got.selection_entry, "distribution.Selection", c, "selection-entry")
+                                        failed
+                                        ok evidence selection_entry_evidence => match call require_bool(got.link_is_symlink, true, c, "link-is-symlink")
+                                            failed
+                                            ok evidence link_is_symlink_evidence => match call require_int(got.variant_count, 2, c, "variant-count")
+                                                failed
+                                                ok evidence variant_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m10_037: "m10-037" => ok test_case("dist/install-root-roots", ["dist", "m10"], ["can-bun-archive"], 60000, [check_ref("link-root-name"), check_ref("empty-root-name"), check_ref("absent-archive"), check_ref("absent-record"), check_ref("selected-link"), check_ref("versions-dir"), check_ref("update-entry"), check_ref("selection-entry"), check_ref("link-is-symlink"), check_ref("variant-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m10-037"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("dist/install-root-roots", ["dist", "m10"], ["can-bun-archive"], 60000, [check_ref("link-root-name"), check_ref("empty-root-name"), check_ref("absent-archive"), check_ref("absent-record"), check_ref("selected-link"), check_ref("versions-dir"), check_ref("update-entry"), check_ref("selection-entry"), check_ref("link-is-symlink"), check_ref("variant-count")], callable case_body)
