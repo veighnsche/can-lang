@@ -1,0 +1,273 @@
+package m07core018roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M07 CORE-018 "bundled fetch: 20 assert roots green".
+/// Source: tests/integration/fetch_test.go symbol TestCurrentBundledFetch.
+/// Related fixture: compiler/testdata/current/fetch/main.can (read at L219,
+/// staged pristine as src/main.can at L233; the header-default mutation at
+/// L225-228 applies only to the run path, never the assert leg).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): canlc assert green with a passed report carrying
+/// exactly 20 roots: 8 native fetch roots plus the null-exchange
+/// pretransport row, 8 selective-recovery consumer rows, and the extract,
+/// main and referenced ordinary roots (Go L212-214), grounded per function
+/// in main.can.
+/// Live fetch semantics (methods, query, headers, auth, bodies, bigint,
+/// error modes, envelope, invalid-header ordering) live in
+/// core-018-fetch-semantics.can; the silent production process shape lives
+/// in core-018-run-shape.can.
+/// Variants: none in this file (default only); the header-default restage
+/// (Go L26-81), error modes (L258-266), invalid-header (L271-287) and
+/// strict-tsc (L290-309) variants belong to the sibling files.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. CAN_I26_TOKEN is harness-supplied
+/// (Go L99/L198), not an external gate. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23/QHTTP; no live run now. Descriptor
+/// timeout 300000ms mirrors the Go 5-minute ctx (L90).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QHTTP unmet).
+/// Case bundled/fetch-roots checks: assert-green, report-passed,
+/// root-count, fixture-name, load-json-roots, envelope-roots,
+/// send-text-roots, send-json-roots, send-bytes-roots, head-roots,
+/// delete-roots, options-roots, recovery-roots, extract-roots, main-roots,
+/// referenced-roots.
+/// Facet map (fetch_test.go legs): assert-green pins the assert leg
+/// (L234-237: status 0 and empty diagnostics or the test fatals);
+/// report-passed pins the report leg (L239: passed true); root-count pins
+/// the twenty roots (L239: len assertions is 20; L212-214: 8 native plus
+/// 1 null-exchange plus 8 recovery plus 3 ordinary); fixture-name grounds
+/// the pins in the staged fixture (L219: main.can; L233: src/main.can);
+/// load-json-roots pins load_json (fixture L14 decoded plus L16
+/// unauthenticated, 2 roots); envelope-roots pins load_envelope (fixture
+/// L28 delivered, 1 root); send-text-roots pins send_text (fixture L36
+/// echo, 1 root); send-json-roots pins send_json (fixture L45 stored,
+/// 1 root); send-bytes-roots pins send_bytes (fixture L56 roundtrip,
+/// 1 root); head-roots pins head_text (fixture L63 probed, 1 root);
+/// delete-roots pins delete_text (fixture L69 removed, 1 root);
+/// options-roots pins options_text (fixture L75 allowed, 1 root);
+/// recovery-roots pins load_or_default (fixture L158-165: recovered,
+/// status, timeout, transport, invalid, credential, limit, codec, 8 roots);
+/// extract-roots pins extract (fixture L153 first, 1 root); main-roots
+/// pins main (fixture L83 sample, 1 root); referenced-roots pins
+/// referenced (fixture L140 sample, 1 root).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int root_count
+    str fixture_name
+    int load_json_roots
+    int envelope_roots
+    int send_text_roots
+    int send_json_roots
+    int send_bytes_roots
+    int head_roots
+    int delete_roots
+    int options_roots
+    int recovery_roots
+    int extract_roots
+    int main_roots
+    int referenced_roots
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/fetch-roots", "default", "", "offline"), "assert-green" => ok "case bundled/fetch-roots variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/fetch-roots", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case bundled/fetch-roots variant default root assert-green run offline")
+        different: false, true, context("bundled/fetch-roots", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 20, 20, context("bundled/fetch-roots", "default", "", "offline"), "root-count" => ok evidence("root-count", "20", "20", true, "case bundled/fetch-roots variant default root root-count run offline")
+        different: 19, 20, context("bundled/fetch-roots", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "main.can", "main.can", context("bundled/fetch-roots", "default", "", "offline"), "fixture-name" => ok evidence("fixture-name", "main.can", "main.can", true, "case bundled/fetch-roots variant default root fixture-name run offline")
+        different: "other.can", "main.can", context("bundled/fetch-roots", "default", "", "offline"), "fixture-name" => failed{"fixture-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 1, 1, 1, 1, 8, 1, 1, 1)
+        seed_assert_red: "seed-assert-red" => ok observation(false, true, 20, "main.can", 2, 1, 1, 1, 1, 1, 1, 1, 8, 1, 1, 1)
+        seed_report_red: "seed-report-red" => ok observation(true, false, 20, "main.can", 2, 1, 1, 1, 1, 1, 1, 1, 8, 1, 1, 1)
+        seed_root_short: "seed-root-short" => ok observation(true, true, 19, "main.can", 2, 1, 1, 1, 1, 1, 1, 1, 8, 1, 1, 1)
+        seed_fixture_drift: "seed-fixture-drift" => ok observation(true, true, 20, "other.can", 2, 1, 1, 1, 1, 1, 1, 1, 8, 1, 1, 1)
+        seed_load_json_short: "seed-load-json-short" => ok observation(true, true, 20, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 8, 1, 1, 1)
+        seed_envelope_loss: "seed-envelope-loss" => ok observation(true, true, 20, "main.can", 2, 0, 1, 1, 1, 1, 1, 1, 8, 1, 1, 1)
+        seed_send_text_loss: "seed-send-text-loss" => ok observation(true, true, 20, "main.can", 2, 1, 0, 1, 1, 1, 1, 1, 8, 1, 1, 1)
+        seed_send_json_loss: "seed-send-json-loss" => ok observation(true, true, 20, "main.can", 2, 1, 1, 0, 1, 1, 1, 1, 8, 1, 1, 1)
+        seed_send_bytes_loss: "seed-send-bytes-loss" => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 0, 1, 1, 1, 8, 1, 1, 1)
+        seed_head_loss: "seed-head-loss" => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 1, 0, 1, 1, 8, 1, 1, 1)
+        seed_delete_loss: "seed-delete-loss" => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 1, 1, 0, 1, 8, 1, 1, 1)
+        seed_options_loss: "seed-options-loss" => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 1, 1, 1, 0, 8, 1, 1, 1)
+        seed_recovery_short: "seed-recovery-short" => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 1, 1, 1, 1, 7, 1, 1, 1)
+        seed_extract_loss: "seed-extract-loss" => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 1, 1, 1, 1, 8, 0, 1, 1)
+        seed_main_loss: "seed-main-loss" => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 1, 1, 1, 1, 8, 1, 0, 1)
+        seed_referenced_loss: "seed-referenced-loss" => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 1, 1, 1, 1, 8, 1, 1, 0)
+    match variant_id
+        "seed-assert-red" => ok observation(false, true, 20, "main.can", 2, 1, 1, 1, 1, 1, 1, 1, 8, 1, 1, 1)
+        "seed-report-red" => ok observation(true, false, 20, "main.can", 2, 1, 1, 1, 1, 1, 1, 1, 8, 1, 1, 1)
+        "seed-root-short" => ok observation(true, true, 19, "main.can", 2, 1, 1, 1, 1, 1, 1, 1, 8, 1, 1, 1)
+        "seed-fixture-drift" => ok observation(true, true, 20, "other.can", 2, 1, 1, 1, 1, 1, 1, 1, 8, 1, 1, 1)
+        "seed-load-json-short" => ok observation(true, true, 20, "main.can", 1, 1, 1, 1, 1, 1, 1, 1, 8, 1, 1, 1)
+        "seed-envelope-loss" => ok observation(true, true, 20, "main.can", 2, 0, 1, 1, 1, 1, 1, 1, 8, 1, 1, 1)
+        "seed-send-text-loss" => ok observation(true, true, 20, "main.can", 2, 1, 0, 1, 1, 1, 1, 1, 8, 1, 1, 1)
+        "seed-send-json-loss" => ok observation(true, true, 20, "main.can", 2, 1, 1, 0, 1, 1, 1, 1, 8, 1, 1, 1)
+        "seed-send-bytes-loss" => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 0, 1, 1, 1, 8, 1, 1, 1)
+        "seed-head-loss" => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 1, 0, 1, 1, 8, 1, 1, 1)
+        "seed-delete-loss" => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 1, 1, 0, 1, 8, 1, 1, 1)
+        "seed-options-loss" => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 1, 1, 1, 0, 8, 1, 1, 1)
+        "seed-recovery-short" => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 1, 1, 1, 1, 7, 1, 1, 1)
+        "seed-extract-loss" => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 1, 1, 1, 1, 8, 0, 1, 1)
+        "seed-main-loss" => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 1, 1, 1, 1, 8, 1, 0, 1)
+        "seed-referenced-loss" => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 1, 1, 1, 1, 8, 1, 1, 0)
+        _ => ok observation(true, true, 20, "main.can", 2, 1, 1, 1, 1, 1, 1, 1, 8, 1, 1, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m07_018: "m07-018" => ok [check("assert-green", "canlc assert exits 0 with empty diagnostics"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 20 roots"), check("fixture-name", "root pins ground the staged main.can fixture"), check("load-json-roots", "load_json contributes 2 roots (decoded plus unauthenticated)"), check("envelope-roots", "load_envelope contributes 1 root (delivered)"), check("send-text-roots", "send_text contributes 1 root (echo)"), check("send-json-roots", "send_json contributes 1 root (stored)"), check("send-bytes-roots", "send_bytes contributes 1 root (roundtrip)"), check("head-roots", "head_text contributes 1 root (probed)"), check("delete-roots", "delete_text contributes 1 root (removed)"), check("options-roots", "options_text contributes 1 root (allowed)"), check("recovery-roots", "load_or_default contributes 8 selective-recovery roots"), check("extract-roots", "extract contributes 1 root (first)"), check("main-roots", "main contributes 1 root (sample)"), check("referenced-roots", "referenced contributes 1 root (sample)")]
+        other: "nope" => ok []
+    match scope is "m07-018"
+        false => ok []
+        true => ok [check("assert-green", "canlc assert exits 0 with empty diagnostics"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 20 roots"), check("fixture-name", "root pins ground the staged main.can fixture"), check("load-json-roots", "load_json contributes 2 roots (decoded plus unauthenticated)"), check("envelope-roots", "load_envelope contributes 1 root (delivered)"), check("send-text-roots", "send_text contributes 1 root (echo)"), check("send-json-roots", "send_json contributes 1 root (stored)"), check("send-bytes-roots", "send_bytes contributes 1 root (roundtrip)"), check("head-roots", "head_text contributes 1 root (probed)"), check("delete-roots", "delete_text contributes 1 root (removed)"), check("options-roots", "options_text contributes 1 root (allowed)"), check("recovery-roots", "load_or_default contributes 8 selective-recovery roots"), check("extract-roots", "extract contributes 1 root (first)"), check("main-roots", "main contributes 1 root (sample)"), check("referenced-roots", "referenced contributes 1 root (sample)")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/fetch-roots" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "20"), expected_check("fixture-name", "main.can"), expected_check("load-json-roots", "2"), expected_check("envelope-roots", "1"), expected_check("send-text-roots", "1"), expected_check("send-json-roots", "1"), expected_check("send-bytes-roots", "1"), expected_check("head-roots", "1"), expected_check("delete-roots", "1"), expected_check("options-roots", "1"), expected_check("recovery-roots", "8"), expected_check("extract-roots", "1"), expected_check("main-roots", "1"), expected_check("referenced-roots", "1")]
+        unknown: "nope" => ok []
+    match case is "bundled/fetch-roots"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "20"), expected_check("fixture-name", "main.can"), expected_check("load-json-roots", "2"), expected_check("envelope-roots", "1"), expected_check("send-text-roots", "1"), expected_check("send-json-roots", "1"), expected_check("send-bytes-roots", "1"), expected_check("head-roots", "1"), expected_check("delete-roots", "1"), expected_check("options-roots", "1"), expected_check("recovery-roots", "8"), expected_check("extract-roots", "1"), expected_check("main-roots", "1"), expected_check("referenced-roots", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/fetch-roots", "default", "", "offline") => ok
+        seed_assert_red: context("bundled/fetch-roots", "seed-assert-red", "", "offline") => failed{"assert-green"}
+        seed_report_red: context("bundled/fetch-roots", "seed-report-red", "", "offline") => failed{"report-passed"}
+        seed_root_short: context("bundled/fetch-roots", "seed-root-short", "", "offline") => failed{"root-count"}
+        seed_fixture_drift: context("bundled/fetch-roots", "seed-fixture-drift", "", "offline") => failed{"fixture-name"}
+        seed_load_json_short: context("bundled/fetch-roots", "seed-load-json-short", "", "offline") => failed{"load-json-roots"}
+        seed_envelope_loss: context("bundled/fetch-roots", "seed-envelope-loss", "", "offline") => failed{"envelope-roots"}
+        seed_send_text_loss: context("bundled/fetch-roots", "seed-send-text-loss", "", "offline") => failed{"send-text-roots"}
+        seed_send_json_loss: context("bundled/fetch-roots", "seed-send-json-loss", "", "offline") => failed{"send-json-roots"}
+        seed_send_bytes_loss: context("bundled/fetch-roots", "seed-send-bytes-loss", "", "offline") => failed{"send-bytes-roots"}
+        seed_head_loss: context("bundled/fetch-roots", "seed-head-loss", "", "offline") => failed{"head-roots"}
+        seed_delete_loss: context("bundled/fetch-roots", "seed-delete-loss", "", "offline") => failed{"delete-roots"}
+        seed_options_loss: context("bundled/fetch-roots", "seed-options-loss", "", "offline") => failed{"options-roots"}
+        seed_recovery_short: context("bundled/fetch-roots", "seed-recovery-short", "", "offline") => failed{"recovery-roots"}
+        seed_extract_loss: context("bundled/fetch-roots", "seed-extract-loss", "", "offline") => failed{"extract-roots"}
+        seed_main_loss: context("bundled/fetch-roots", "seed-main-loss", "", "offline") => failed{"main-roots"}
+        seed_referenced_loss: context("bundled/fetch-roots", "seed-referenced-loss", "", "offline") => failed{"referenced-roots"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence assert_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence passed_evidence => match call require_int(got.root_count, 20, c, "root-count")
+                    failed
+                    ok evidence count_evidence => match call require_text(got.fixture_name, "main.can", c, "fixture-name")
+                        failed
+                        ok evidence fixture_evidence => match call require_int(got.load_json_roots, 2, c, "load-json-roots")
+                            failed
+                            ok evidence load_json_evidence => match call require_int(got.envelope_roots, 1, c, "envelope-roots")
+                                failed
+                                ok evidence envelope_evidence => match call require_int(got.send_text_roots, 1, c, "send-text-roots")
+                                    failed
+                                    ok evidence send_text_evidence => match call require_int(got.send_json_roots, 1, c, "send-json-roots")
+                                        failed
+                                        ok evidence send_json_evidence => match call require_int(got.send_bytes_roots, 1, c, "send-bytes-roots")
+                                            failed
+                                            ok evidence send_bytes_evidence => match call require_int(got.head_roots, 1, c, "head-roots")
+                                                failed
+                                                ok evidence head_evidence => match call require_int(got.delete_roots, 1, c, "delete-roots")
+                                                    failed
+                                                    ok evidence delete_evidence => match call require_int(got.options_roots, 1, c, "options-roots")
+                                                        failed
+                                                        ok evidence options_evidence => match call require_int(got.recovery_roots, 8, c, "recovery-roots")
+                                                            failed
+                                                            ok evidence recovery_evidence => match call require_int(got.extract_roots, 1, c, "extract-roots")
+                                                                failed
+                                                                ok evidence extract_evidence => match call require_int(got.main_roots, 1, c, "main-roots")
+                                                                    failed
+                                                                    ok evidence main_evidence => match call require_int(got.referenced_roots, 1, c, "referenced-roots")
+                                                                        failed
+                                                                        ok evidence referenced_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m07_018: "m07-018" => ok test_case("bundled/fetch-roots", ["fetch", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("load-json-roots"), check_ref("envelope-roots"), check_ref("send-text-roots"), check_ref("send-json-roots"), check_ref("send-bytes-roots"), check_ref("head-roots"), check_ref("delete-roots"), check_ref("options-roots"), check_ref("recovery-roots"), check_ref("extract-roots"), check_ref("main-roots"), check_ref("referenced-roots")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m07-018"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/fetch-roots", ["fetch", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("load-json-roots"), check_ref("envelope-roots"), check_ref("send-text-roots"), check_ref("send-json-roots"), check_ref("send-bytes-roots"), check_ref("head-roots"), check_ref("delete-roots"), check_ref("options-roots"), check_ref("recovery-roots"), check_ref("extract-roots"), check_ref("main-roots"), check_ref("referenced-roots")], callable case_body)
