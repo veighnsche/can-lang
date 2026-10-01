@@ -1,0 +1,327 @@
+package m30history046run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-046 "T26 comparison: run shape".
+/// Source: tests/baseline/
+/// t26_product_guide_test.go symbol
+/// TestT26AgentComparisonReportConsistent
+/// (L150-207): registry leg (L154-155); report leg
+/// (L159-160); trials leg (L162-163); significance
+/// leg (L165-166); per-case legs (L169-180); omit
+/// leg (L181-185); count leg (L186-187); deferral
+/// leg (L189-190); slot legs (L193-203); prose leg
+/// (L204-205).
+/// Disposition: consolidate (this row ports
+/// TestT26AgentComparisonReportConsistent to
+/// ordinary Can functions; the old Go harness stays
+/// until the integrator retires it after every
+/// linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the live run shape: the
+/// test name, the thirteen refusal wordings in Go
+/// order, the Fatal plus Error calls, and the
+/// fatal/error/diagnostic counts.
+/// ADAPTATION (recorded, with source lines):
+/// test-name pins TestT26AgentComparisonReportConsistent
+/// (L150); fatal-registry-task pins the registry
+/// inner bytes (L155); fatal-report-task pins the
+/// report inner bytes (L160); fatal-report-trials
+/// pins the trials inner bytes (L163);
+/// fatal-significance pins the significance inner
+/// bytes (L166); error-case-trials pins the case
+/// trials inner bytes (L172); error-case-tokens pins
+/// the case tokens inner bytes (L175);
+/// error-case-disposition pins the no-disposition
+/// inner bytes (L178); error-omit-case pins the omit
+/// inner bytes (L183); error-case-count pins the
+/// count inner bytes (L187); error-no-deferred pins
+/// the no-deferral inner bytes (L190);
+/// error-slot-missing pins the missing inner bytes
+/// (L197); error-slot-deferral pins the deferral
+/// inner bytes (L201); error-prose-missing pins the
+/// prose inner bytes (L205); fatal-call pins
+/// t.Fatalf (L155); error-call pins t.Error (L172);
+/// fatal-count pins int (4) from the four legs
+/// (L155/L160/L163/L166); error-count pins int (9)
+/// from the nine legs
+/// (L172/L175/L178/L183/L187/L190/L197/L201/L205);
+/// diagnostic-count pins int (13) as four plus nine.
+/// Facet map (launch plus diagnostics): test-name
+/// pins the test (L150); fatal-registry-task pins
+/// registry plus quoted got (L155); fatal-report-task
+/// pins report plus quoted got (L160);
+/// fatal-report-trials pins trials plus got (L163);
+/// fatal-significance pins significance plus quoted
+/// got (L166); error-case-trials pins case plus
+/// quoted got (L172); error-case-tokens pins case
+/// plus count (L175); error-case-disposition pins
+/// case (L178); error-omit-case pins the id (L183);
+/// error-case-count pins both lens (L187);
+/// error-no-deferred pins no deferral (L190);
+/// error-slot-missing pins slot plus err (L197);
+/// error-slot-deferral pins slot (L201);
+/// error-prose-missing pins err (L205); fatal-call
+/// pins t.Fatalf (L155); error-call pins t.Error
+/// (L172); fatal-count pins 4; error-count pins 9;
+/// diagnostic-count pins 13.
+/// The base facts live in
+/// history-046-base-semantics.can; the roots-green pin
+/// lives in history-046-roots-green.can.
+/// Variants: none (row lists zero variants; default
+/// plus seeded drifts only).
+/// Environment: none (no gates; requires []).
+/// Logical gates WORK/BUILD/CHILD/CLOCK bind at P23;
+/// no live run now. Accept gate P23 is unmet. Timeout
+/// 120000ms is the offline default bound (no Go
+/// timeout in this row; binds at P23 like the M11
+/// no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23
+/// unmet).
+/// Case history/t26-report-run checks: test-name,
+/// fatal-registry-task, fatal-report-task,
+/// fatal-report-trials, fatal-significance,
+/// error-case-trials, error-case-tokens,
+/// error-case-disposition, error-omit-case,
+/// error-case-count, error-no-deferred,
+/// error-slot-missing, error-slot-deferral,
+/// error-prose-missing, fatal-call, error-call,
+/// fatal-count, error-count, diagnostic-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str test_name
+    str fatal_registry_task
+    str fatal_report_task
+    str fatal_report_trials
+    str fatal_significance
+    str error_case_trials
+    str error_case_tokens
+    str error_case_disposition
+    str error_omit_case
+    str error_case_count
+    str error_no_deferred
+    str error_slot_missing
+    str error_slot_deferral
+    str error_prose_missing
+    str fatal_call
+    str error_call
+    int fatal_count
+    int error_count
+    int diagnostic_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/t26-report-run", "default", "", "offline"), "test-name" => ok "case history/t26-report-run variant default root test-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/t26-report-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "true", "true", true, "case history/t26-report-run variant default root test-name run offline")
+        different: false, true, context("history/t26-report-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("history/t26-report-run", "default", "", "offline"), "fatal-count" => ok evidence("fatal-count", "4", "4", true, "case history/t26-report-run variant default root fatal-count run offline")
+        different: 3, 4, context("history/t26-report-run", "default", "", "offline"), "fatal-count" => failed{"fatal-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "TestT26AgentComparisonReportConsistent", "TestT26AgentComparisonReportConsistent", context("history/t26-report-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "TestT26AgentComparisonReportConsistent", "TestT26AgentComparisonReportConsistent", true, "case history/t26-report-run variant default root test-name run offline")
+        different: "TestT26AgentComparisonReportConsistent_2", "TestT26AgentComparisonReportConsistent", context("history/t26-report-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        seed_test_name: "seed-test-name-drift" => ok observation("TestT26AgentComparisonReportConsistent_2", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        seed_fatal_registry_task: "seed-fatal-registry-task-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)_2", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        seed_fatal_report_task: "seed-fatal-report-task-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26_2", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        seed_fatal_report_trials: "seed-fatal-report-trials-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts_2", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        seed_fatal_significance: "seed-fatal-significance-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q_2", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        seed_error_case_trials: "seed-error-case-trials-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run_2", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        seed_error_case_tokens: "seed-error-case-tokens-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials_2", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        seed_error_case_disposition: "seed-error-case-disposition-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition_2", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        seed_error_omit_case: "seed-error-omit-case-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s_2", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        seed_error_case_count: "seed-error-case-count-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d_2", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        seed_error_no_deferred: "seed-error-no-deferred-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates_2", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        seed_error_slot_missing: "seed-error-slot-missing-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v_2", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        seed_error_slot_deferral: "seed-error-slot-deferral-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral_2", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        seed_error_prose_missing: "seed-error-prose-missing-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v_2", "t.Fatalf", "t.Error", 4, 9, 13)
+        seed_fatal_call: "seed-fatal-call-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf_2", "t.Error", 4, 9, 13)
+        seed_error_call: "seed-error-call-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error_2", 4, 9, 13)
+        seed_fatal_count: "seed-fatal-count-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 3, 9, 13)
+        seed_error_count: "seed-error-count-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 8, 13)
+        seed_diagnostic_count: "seed-diagnostic-count-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 12)
+    match variant_id
+        "seed-test-name-drift" => ok observation("TestT26AgentComparisonReportConsistent_2", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        "seed-fatal-registry-task-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)_2", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        "seed-fatal-report-task-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26_2", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        "seed-fatal-report-trials-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts_2", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        "seed-fatal-significance-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q_2", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        "seed-error-case-trials-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run_2", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        "seed-error-case-tokens-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials_2", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        "seed-error-case-disposition-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition_2", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        "seed-error-omit-case-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s_2", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        "seed-error-case-count-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d_2", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        "seed-error-no-deferred-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates_2", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        "seed-error-slot-missing-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v_2", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        "seed-error-slot-deferral-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral_2", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+        "seed-error-prose-missing-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v_2", "t.Fatalf", "t.Error", 4, 9, 13)
+        "seed-fatal-call-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf_2", "t.Error", 4, 9, 13)
+        "seed-error-call-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error_2", 4, 9, 13)
+        "seed-fatal-count-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 3, 9, 13)
+        "seed-error-count-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 8, 13)
+        "seed-diagnostic-count-drift" => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 12)
+        _ => ok observation("TestT26AgentComparisonReportConsistent", "registry task = %q, want T01 (T26 must not revise it)", "report task = %q, want T26", "report trials = %+v, want not-run with 0 attempts", "report must state that no significance is claimed: %q", "case %s trials = %q, want not-run", "case %s reports tokens %d without trials", "case %s has no disposition", "report omits registered case %s", "report covers %d cases, registry has %d", "report names no deferred candidates", "candidate slot missing %s: %v", "candidate slot %s does not record the deferral", "prose comparison report missing: %v", "t.Fatalf", "t.Error", 4, 9, 13)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h046: "m30-h046" => ok [check("test-name", "run pins the test name"), check("fatal-registry-task", "registry leg refusal wording is pinned"), check("fatal-report-task", "report leg refusal wording is pinned"), check("fatal-report-trials", "trials leg refusal wording is pinned"), check("fatal-significance", "significance leg refusal wording is pinned"), check("error-case-trials", "case trials refusal wording is pinned"), check("error-case-tokens", "case tokens refusal wording is pinned"), check("error-case-disposition", "case disposition refusal wording is pinned"), check("error-omit-case", "omit leg refusal wording is pinned"), check("error-case-count", "count leg refusal wording is pinned"), check("error-no-deferred", "deferral leg refusal wording is pinned"), check("error-slot-missing", "slot leg refusal wording is pinned"), check("error-slot-deferral", "deferral-record refusal wording is pinned"), check("error-prose-missing", "prose leg refusal wording is pinned"), check("fatal-call", "refusals pin t.Fatalf"), check("error-call", "refusals pin t.Error"), check("fatal-count", "four legs refuse fatal"), check("error-count", "nine legs refuse error"), check("diagnostic-count", "thirteen wordings are pinned")]
+        other: "nope" => ok []
+    match scope is "m30-h046"
+        false => ok []
+        true => ok [check("test-name", "run pins the test name"), check("fatal-registry-task", "registry leg refusal wording is pinned"), check("fatal-report-task", "report leg refusal wording is pinned"), check("fatal-report-trials", "trials leg refusal wording is pinned"), check("fatal-significance", "significance leg refusal wording is pinned"), check("error-case-trials", "case trials refusal wording is pinned"), check("error-case-tokens", "case tokens refusal wording is pinned"), check("error-case-disposition", "case disposition refusal wording is pinned"), check("error-omit-case", "omit leg refusal wording is pinned"), check("error-case-count", "count leg refusal wording is pinned"), check("error-no-deferred", "deferral leg refusal wording is pinned"), check("error-slot-missing", "slot leg refusal wording is pinned"), check("error-slot-deferral", "deferral-record refusal wording is pinned"), check("error-prose-missing", "prose leg refusal wording is pinned"), check("fatal-call", "refusals pin t.Fatalf"), check("error-call", "refusals pin t.Error"), check("fatal-count", "four legs refuse fatal"), check("error-count", "nine legs refuse error"), check("diagnostic-count", "thirteen wordings are pinned")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/t26-report-run" => ok [expected_check("test-name", "TestT26AgentComparisonReportConsistent"), expected_check("fatal-registry-task", "registry task = %q, want T01 (T26 must not revise it)"), expected_check("fatal-report-task", "report task = %q, want T26"), expected_check("fatal-report-trials", "report trials = %+v, want not-run with 0 attempts"), expected_check("fatal-significance", "report must state that no significance is claimed: %q"), expected_check("error-case-trials", "case %s trials = %q, want not-run"), expected_check("error-case-tokens", "case %s reports tokens %d without trials"), expected_check("error-case-disposition", "case %s has no disposition"), expected_check("error-omit-case", "report omits registered case %s"), expected_check("error-case-count", "report covers %d cases, registry has %d"), expected_check("error-no-deferred", "report names no deferred candidates"), expected_check("error-slot-missing", "candidate slot missing %s: %v"), expected_check("error-slot-deferral", "candidate slot %s does not record the deferral"), expected_check("error-prose-missing", "prose comparison report missing: %v"), expected_check("fatal-call", "t.Fatalf"), expected_check("error-call", "t.Error"), expected_check("fatal-count", "4"), expected_check("error-count", "9"), expected_check("diagnostic-count", "13")]
+        unknown: "nope" => ok []
+    match case is "history/t26-report-run"
+        false => ok []
+        true => ok [expected_check("test-name", "TestT26AgentComparisonReportConsistent"), expected_check("fatal-registry-task", "registry task = %q, want T01 (T26 must not revise it)"), expected_check("fatal-report-task", "report task = %q, want T26"), expected_check("fatal-report-trials", "report trials = %+v, want not-run with 0 attempts"), expected_check("fatal-significance", "report must state that no significance is claimed: %q"), expected_check("error-case-trials", "case %s trials = %q, want not-run"), expected_check("error-case-tokens", "case %s reports tokens %d without trials"), expected_check("error-case-disposition", "case %s has no disposition"), expected_check("error-omit-case", "report omits registered case %s"), expected_check("error-case-count", "report covers %d cases, registry has %d"), expected_check("error-no-deferred", "report names no deferred candidates"), expected_check("error-slot-missing", "candidate slot missing %s: %v"), expected_check("error-slot-deferral", "candidate slot %s does not record the deferral"), expected_check("error-prose-missing", "prose comparison report missing: %v"), expected_check("fatal-call", "t.Fatalf"), expected_check("error-call", "t.Error"), expected_check("fatal-count", "4"), expected_check("error-count", "9"), expected_check("diagnostic-count", "13")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/t26-report-run", "default", "", "offline") => ok
+        seed_test_name: context("history/t26-report-run", "seed-test-name-drift", "", "offline") => failed{"test-name"}
+        seed_fatal_registry_task: context("history/t26-report-run", "seed-fatal-registry-task-drift", "", "offline") => failed{"fatal-registry-task"}
+        seed_fatal_report_task: context("history/t26-report-run", "seed-fatal-report-task-drift", "", "offline") => failed{"fatal-report-task"}
+        seed_fatal_report_trials: context("history/t26-report-run", "seed-fatal-report-trials-drift", "", "offline") => failed{"fatal-report-trials"}
+        seed_fatal_significance: context("history/t26-report-run", "seed-fatal-significance-drift", "", "offline") => failed{"fatal-significance"}
+        seed_error_case_trials: context("history/t26-report-run", "seed-error-case-trials-drift", "", "offline") => failed{"error-case-trials"}
+        seed_error_case_tokens: context("history/t26-report-run", "seed-error-case-tokens-drift", "", "offline") => failed{"error-case-tokens"}
+        seed_error_case_disposition: context("history/t26-report-run", "seed-error-case-disposition-drift", "", "offline") => failed{"error-case-disposition"}
+        seed_error_omit_case: context("history/t26-report-run", "seed-error-omit-case-drift", "", "offline") => failed{"error-omit-case"}
+        seed_error_case_count: context("history/t26-report-run", "seed-error-case-count-drift", "", "offline") => failed{"error-case-count"}
+        seed_error_no_deferred: context("history/t26-report-run", "seed-error-no-deferred-drift", "", "offline") => failed{"error-no-deferred"}
+        seed_error_slot_missing: context("history/t26-report-run", "seed-error-slot-missing-drift", "", "offline") => failed{"error-slot-missing"}
+        seed_error_slot_deferral: context("history/t26-report-run", "seed-error-slot-deferral-drift", "", "offline") => failed{"error-slot-deferral"}
+        seed_error_prose_missing: context("history/t26-report-run", "seed-error-prose-missing-drift", "", "offline") => failed{"error-prose-missing"}
+        seed_fatal_call: context("history/t26-report-run", "seed-fatal-call-drift", "", "offline") => failed{"fatal-call"}
+        seed_error_call: context("history/t26-report-run", "seed-error-call-drift", "", "offline") => failed{"error-call"}
+        seed_fatal_count: context("history/t26-report-run", "seed-fatal-count-drift", "", "offline") => failed{"fatal-count"}
+        seed_error_count: context("history/t26-report-run", "seed-error-count-drift", "", "offline") => failed{"error-count"}
+        seed_diagnostic_count: context("history/t26-report-run", "seed-diagnostic-count-drift", "", "offline") => failed{"diagnostic-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.test_name, "TestT26AgentComparisonReportConsistent", c, "test-name")
+            failed
+            ok evidence test_name_evidence => match call require_text(got.fatal_registry_task, "registry task = %q, want T01 (T26 must not revise it)", c, "fatal-registry-task")
+                failed
+                ok evidence fatal_registry_task_evidence => match call require_text(got.fatal_report_task, "report task = %q, want T26", c, "fatal-report-task")
+                    failed
+                    ok evidence fatal_report_task_evidence => match call require_text(got.fatal_report_trials, "report trials = %+v, want not-run with 0 attempts", c, "fatal-report-trials")
+                        failed
+                        ok evidence fatal_report_trials_evidence => match call require_text(got.fatal_significance, "report must state that no significance is claimed: %q", c, "fatal-significance")
+                            failed
+                            ok evidence fatal_significance_evidence => match call require_text(got.error_case_trials, "case %s trials = %q, want not-run", c, "error-case-trials")
+                                failed
+                                ok evidence error_case_trials_evidence => match call require_text(got.error_case_tokens, "case %s reports tokens %d without trials", c, "error-case-tokens")
+                                    failed
+                                    ok evidence error_case_tokens_evidence => match call require_text(got.error_case_disposition, "case %s has no disposition", c, "error-case-disposition")
+                                        failed
+                                        ok evidence error_case_disposition_evidence => match call require_text(got.error_omit_case, "report omits registered case %s", c, "error-omit-case")
+                                            failed
+                                            ok evidence error_omit_case_evidence => match call require_text(got.error_case_count, "report covers %d cases, registry has %d", c, "error-case-count")
+                                                failed
+                                                ok evidence error_case_count_evidence => match call require_text(got.error_no_deferred, "report names no deferred candidates", c, "error-no-deferred")
+                                                    failed
+                                                    ok evidence error_no_deferred_evidence => match call require_text(got.error_slot_missing, "candidate slot missing %s: %v", c, "error-slot-missing")
+                                                        failed
+                                                        ok evidence error_slot_missing_evidence => match call require_text(got.error_slot_deferral, "candidate slot %s does not record the deferral", c, "error-slot-deferral")
+                                                            failed
+                                                            ok evidence error_slot_deferral_evidence => match call require_text(got.error_prose_missing, "prose comparison report missing: %v", c, "error-prose-missing")
+                                                                failed
+                                                                ok evidence error_prose_missing_evidence => match call require_text(got.fatal_call, "t.Fatalf", c, "fatal-call")
+                                                                    failed
+                                                                    ok evidence fatal_call_evidence => match call require_text(got.error_call, "t.Error", c, "error-call")
+                                                                        failed
+                                                                        ok evidence error_call_evidence => match call require_int(got.fatal_count, 4, c, "fatal-count")
+                                                                            failed
+                                                                            ok evidence fatal_count_evidence => match call require_int(got.error_count, 9, c, "error-count")
+                                                                                failed
+                                                                                ok evidence error_count_evidence => match call require_int(got.diagnostic_count, 13, c, "diagnostic-count")
+                                                                                    failed
+                                                                                    ok evidence diagnostic_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h046: "m30-h046" => ok test_case("history/t26-report-run", ["history", "m30"], [], 120000, [check_ref("test-name"), check_ref("fatal-registry-task"), check_ref("fatal-report-task"), check_ref("fatal-report-trials"), check_ref("fatal-significance"), check_ref("error-case-trials"), check_ref("error-case-tokens"), check_ref("error-case-disposition"), check_ref("error-omit-case"), check_ref("error-case-count"), check_ref("error-no-deferred"), check_ref("error-slot-missing"), check_ref("error-slot-deferral"), check_ref("error-prose-missing"), check_ref("fatal-call"), check_ref("error-call"), check_ref("fatal-count"), check_ref("error-count"), check_ref("diagnostic-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h046"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/t26-report-run", ["history", "m30"], [], 120000, [check_ref("test-name"), check_ref("fatal-registry-task"), check_ref("fatal-report-task"), check_ref("fatal-report-trials"), check_ref("fatal-significance"), check_ref("error-case-trials"), check_ref("error-case-tokens"), check_ref("error-case-disposition"), check_ref("error-omit-case"), check_ref("error-case-count"), check_ref("error-no-deferred"), check_ref("error-slot-missing"), check_ref("error-slot-deferral"), check_ref("error-prose-missing"), check_ref("fatal-call"), check_ref("error-call"), check_ref("fatal-count"), check_ref("error-count"), check_ref("diagnostic-count")], callable case_body)
