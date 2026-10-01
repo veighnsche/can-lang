@@ -9232,7 +9232,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Preserve installed/development identity, exact HMAC webhook bytes and two-process companion report/receipt semantics; defer authorized measurement legs. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-019, DELEGATE-020; shared delegate references: DELEGATE-009, DELEGATE-016, DELEGATE-026, DELEGATE-028.",
       "commit": "test(native-can): add gate4-installed-artifact-webho cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "No shared old file is deleted by this slice. The integrator may retire one only after all linked rows, delegated oracles, required variants/environments, controls, cleanup receipts and callers have complete accepted evidence.",
       "delegated_oracles_owned": [
         "DELEGATE-019",
