@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: e525ba1ab7aa8e8ac8b59a5175fc610c7bf31718806979a6f5681e0dab0d75aa.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 92f8ac9ef660c5f459f3bd81603f4241a3bba537335fb102b0b88bc9d3a98b6a.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -303,6 +303,17 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | db::replay_sentinel_facts | record |  | str attempt, str read, int row_count, db::sentinel_row_facts[] rows, str digest | true |
 | db::sentinel_comparison | record |  | bool match, int[] mismatches | true |
 | db::settlement_agreement | record |  | bool agree, str reason | true |
+| db::dispatched_work | record |  | db::dispatch_record facts, str token | true |
+| db::dispatch_record | record |  | str work, str engine, str namespace, str statement_digest, str handle_digest | true |
+| db::deadline_record | record |  | str work, str engine, int deadline_ms, str digest | true |
+| db::driver_settlement_facts | record |  | str work, str engine, str outcome, str server_effect, str digest | true |
+| db::server_ack_facts | record |  | str work, str engine, str effect, str digest | true |
+| db::cancel_grant | record |  | db::cancel_grant_facts facts, str grant | true |
+| db::cancel_grant_facts | record |  | str engine, str grant_digest | true |
+| db::cancel_record | record |  | str work, str engine, str proves, str digest | true |
+| db::fence_record | record |  | str work, str engine, str settles, str ack_digest | true |
+| db::lease_record | record |  | str work, str engine, str namespace, str handle_digest, bool retained | true |
+| db::deadline_release_record | record |  | str work, str engine, bool released, str ack_digest | true |
 
 ## Domain errors
 
@@ -870,6 +881,23 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | db::sentinel_present_in_fresh | test::owner owner, str attempt, db::fresh_sentinel_facts read → bool | {test::stale_handle, db::db_fault} |  | Array.prototype.some | Probe whether the sentinel row is present in a fresh read (K25 sentinelPresentIn). | supplied | NT-I15 / NT-I15 |
 | db::sentinel_present_in_replay | test::owner owner, str attempt, db::replay_sentinel_facts read → bool | {test::stale_handle, db::db_fault} |  | Array.prototype.some | Probe whether the sentinel row is present in a replay read (K25 sentinelPresentIn). | supplied | NT-I15 / NT-I15 |
 | db::settlement_agrees_with_reads | test::owner owner, str attempt → db::settlement_agreement | {test::stale_handle, db::db_fault} |  | Array.prototype.some | Verdict whether terminal settlement agrees with both reads (K25 settlementAgreesWithReads). | supplied | NT-I15 / NT-I15 |
+| db::dispatch | test::owner owner, str work, str statement, str engine → db::dispatched_work | {test::stale_handle, db::db_fault} |  | Map.prototype.set, crypto.randomBytes | Dispatch one SQL work item; the statement is named by digest only (K26 dispatch). | supplied | NT-I16 / NT-I16 |
+| db::dispatch_facts | test::owner owner, str work → db::dispatch_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read dispatch facts (K26 dispatchFacts). | supplied | NT-I16 / NT-I16 |
+| db::observe_deadline | test::owner owner, str work, str token, int deadline_ms → db::deadline_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Observe the visible deadline tick for one work item (K26 observeDeadline). | supplied | NT-I16 / NT-I16 |
+| db::deadline_facts | test::owner owner, str work → db::deadline_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read deadline facts (K26 deadlineFacts). | supplied | NT-I16 / NT-I16 |
+| db::record_driver_settlement | test::owner owner, str work, str token, str outcome → db::driver_settlement_facts | {test::stale_handle, db::db_fault} |  | Map.prototype.get, crypto.createHash | Record what the driver saw when the deadline passed, server unresolved (K26 recordDriverSettlement). | supplied | NT-I16 / NT-I16 |
+| db::driver_facts | test::owner owner, str work → db::driver_settlement_facts | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read driver settlement facts (K26 driverFacts). | supplied | NT-I16 / NT-I16 |
+| db::record_server_ack | test::owner owner, str work, str token, str effect → db::server_ack_facts | {test::stale_handle, db::db_fault} |  | Map.prototype.get, crypto.createHash | Record the server acknowledgment proving server effect (K26 recordServerAck). | supplied | NT-I16 / NT-I16 |
+| db::server_facts | test::owner owner, str work → db::server_ack_facts | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read server acknowledgment facts (K26 serverFacts). | supplied | NT-I16 / NT-I16 |
+| db::acquire_cancel_grant | test::owner owner, str engine → db::cancel_grant | {test::stale_handle, db::db_fault} |  | Map.prototype.set, crypto.randomBytes | Acquire an engine-specific cancel grant; capability is per-engine (K26 acquireCancelGrant). | supplied | NT-I16 / NT-I16 |
+| db::request_cancel | test::owner owner, str work, str token, str grant → db::cancel_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Request cancellation backed by a capable grant; recorded cancels prove nothing (K26 requestCancel). | supplied | NT-I16 / NT-I16 |
+| db::cancel_facts | test::owner owner, str work → db::cancel_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read cancel facts (K26 cancelFacts). | supplied | NT-I16 / NT-I16 |
+| db::quiesce_engine | test::owner owner, str engine → str[] | {test::stale_handle, db::db_fault} |  | Set.prototype.add, Array.prototype.sort | Quiesce an engine; returns the sorted live work labels (K26 quiesceEngine). | supplied | NT-I16 / NT-I16 |
+| db::fence | test::owner owner, str work, str token → db::fence_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get, crypto.createHash | Fence one work item; a fence surveys and settles nothing (K26 fence). | supplied | NT-I16 / NT-I16 |
+| db::fence_facts | test::owner owner, str work → db::fence_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read fence facts (K26 fenceFacts). | supplied | NT-I16 / NT-I16 |
+| db::lease_facts | test::owner owner, str work → db::lease_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read the retained-lease survey for one work item (K26 leaseFacts). | supplied | NT-I16 / NT-I16 |
+| db::deadline_release | test::owner owner, str work, str token → db::deadline_release_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get, crypto.createHash | Release a work item after driver settlement plus known server effect (K26 release). | supplied | NT-I16 / NT-I16 |
+| db::deadline_release_ack | test::owner owner, str work → db::deadline_release_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read the deadline release acknowledgment (K26 releaseAck). | supplied | NT-I16 / NT-I16 |
 
 ## Native declaration profiles
 

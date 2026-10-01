@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "e525ba1ab7aa8e8ac8b59a5175fc610c7bf31718806979a6f5681e0dab0d75aa";
+export const catalogueSHA256 = "92f8ac9ef660c5f459f3bd81603f4241a3bba537335fb102b0b88bc9d3a98b6a";
 export const catalogue = freeze({
  "schemaVersion": 1,
  "revision": 1,
@@ -5441,6 +5441,291 @@ export const catalogue = freeze({
     },
     {
      "name": "reason",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::dispatched_work",
+   "identity": "can.std.db@1::dispatched_work",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "facts",
+     "type": "db::dispatch_record"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::dispatch_record",
+   "identity": "can.std.db@1::dispatch_record",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "work",
+     "type": "str"
+    },
+    {
+     "name": "engine",
+     "type": "str"
+    },
+    {
+     "name": "namespace",
+     "type": "str"
+    },
+    {
+     "name": "statement_digest",
+     "type": "str"
+    },
+    {
+     "name": "handle_digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::deadline_record",
+   "identity": "can.std.db@1::deadline_record",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "work",
+     "type": "str"
+    },
+    {
+     "name": "engine",
+     "type": "str"
+    },
+    {
+     "name": "deadline_ms",
+     "type": "int"
+    },
+    {
+     "name": "digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::driver_settlement_facts",
+   "identity": "can.std.db@1::driver_settlement_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "work",
+     "type": "str"
+    },
+    {
+     "name": "engine",
+     "type": "str"
+    },
+    {
+     "name": "outcome",
+     "type": "str"
+    },
+    {
+     "name": "server_effect",
+     "type": "str"
+    },
+    {
+     "name": "digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::server_ack_facts",
+   "identity": "can.std.db@1::server_ack_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "work",
+     "type": "str"
+    },
+    {
+     "name": "engine",
+     "type": "str"
+    },
+    {
+     "name": "effect",
+     "type": "str"
+    },
+    {
+     "name": "digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::cancel_grant",
+   "identity": "can.std.db@1::cancel_grant",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "facts",
+     "type": "db::cancel_grant_facts"
+    },
+    {
+     "name": "grant",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::cancel_grant_facts",
+   "identity": "can.std.db@1::cancel_grant_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "engine",
+     "type": "str"
+    },
+    {
+     "name": "grant_digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::cancel_record",
+   "identity": "can.std.db@1::cancel_record",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "work",
+     "type": "str"
+    },
+    {
+     "name": "engine",
+     "type": "str"
+    },
+    {
+     "name": "proves",
+     "type": "str"
+    },
+    {
+     "name": "digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::fence_record",
+   "identity": "can.std.db@1::fence_record",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "work",
+     "type": "str"
+    },
+    {
+     "name": "engine",
+     "type": "str"
+    },
+    {
+     "name": "settles",
+     "type": "str"
+    },
+    {
+     "name": "ack_digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::lease_record",
+   "identity": "can.std.db@1::lease_record",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "work",
+     "type": "str"
+    },
+    {
+     "name": "engine",
+     "type": "str"
+    },
+    {
+     "name": "namespace",
+     "type": "str"
+    },
+    {
+     "name": "handle_digest",
+     "type": "str"
+    },
+    {
+     "name": "retained",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::deadline_release_record",
+   "identity": "can.std.db@1::deadline_release_record",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "work",
+     "type": "str"
+    },
+    {
+     "name": "engine",
+     "type": "str"
+    },
+    {
+     "name": "released",
+     "type": "bool"
+    },
+    {
+     "name": "ack_digest",
      "type": "str"
     }
    ],
@@ -22674,6 +22959,673 @@ export const catalogue = freeze({
    "refs": [
     "NT-I15"
    ]
+  },
+  {
+   "name": "db::dispatch",
+   "identity": "can.std.db@1::dispatch",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "work",
+     "type": "str"
+    },
+    {
+     "name": "statement",
+     "type": "str"
+    },
+    {
+     "name": "engine",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::dispatched_work",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.set",
+     "crypto.randomBytes"
+    ],
+    "adapter": "Dispatch one SQL work item; the statement is named by digest only (K26 dispatch).",
+    "task": "NT-I16"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I16"
+   ]
+  },
+  {
+   "name": "db::dispatch_facts",
+   "identity": "can.std.db@1::dispatch_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "work",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::dispatch_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read dispatch facts (K26 dispatchFacts).",
+    "task": "NT-I16"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I16"
+   ]
+  },
+  {
+   "name": "db::observe_deadline",
+   "identity": "can.std.db@1::observe_deadline",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "work",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    },
+    {
+     "name": "deadline_ms",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::deadline_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Observe the visible deadline tick for one work item (K26 observeDeadline).",
+    "task": "NT-I16"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I16"
+   ]
+  },
+  {
+   "name": "db::deadline_facts",
+   "identity": "can.std.db@1::deadline_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "work",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::deadline_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read deadline facts (K26 deadlineFacts).",
+    "task": "NT-I16"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I16"
+   ]
+  },
+  {
+   "name": "db::record_driver_settlement",
+   "identity": "can.std.db@1::record_driver_settlement",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "work",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    },
+    {
+     "name": "outcome",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::driver_settlement_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "crypto.createHash"
+    ],
+    "adapter": "Record what the driver saw when the deadline passed, server unresolved (K26 recordDriverSettlement).",
+    "task": "NT-I16"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I16"
+   ]
+  },
+  {
+   "name": "db::driver_facts",
+   "identity": "can.std.db@1::driver_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "work",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::driver_settlement_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read driver settlement facts (K26 driverFacts).",
+    "task": "NT-I16"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I16"
+   ]
+  },
+  {
+   "name": "db::record_server_ack",
+   "identity": "can.std.db@1::record_server_ack",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "work",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    },
+    {
+     "name": "effect",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::server_ack_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "crypto.createHash"
+    ],
+    "adapter": "Record the server acknowledgment proving server effect (K26 recordServerAck).",
+    "task": "NT-I16"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I16"
+   ]
+  },
+  {
+   "name": "db::server_facts",
+   "identity": "can.std.db@1::server_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "work",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::server_ack_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read server acknowledgment facts (K26 serverFacts).",
+    "task": "NT-I16"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I16"
+   ]
+  },
+  {
+   "name": "db::acquire_cancel_grant",
+   "identity": "can.std.db@1::acquire_cancel_grant",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "engine",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::cancel_grant",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.set",
+     "crypto.randomBytes"
+    ],
+    "adapter": "Acquire an engine-specific cancel grant; capability is per-engine (K26 acquireCancelGrant).",
+    "task": "NT-I16"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I16"
+   ]
+  },
+  {
+   "name": "db::request_cancel",
+   "identity": "can.std.db@1::request_cancel",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "work",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    },
+    {
+     "name": "grant",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::cancel_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Request cancellation backed by a capable grant; recorded cancels prove nothing (K26 requestCancel).",
+    "task": "NT-I16"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I16"
+   ]
+  },
+  {
+   "name": "db::cancel_facts",
+   "identity": "can.std.db@1::cancel_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "work",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::cancel_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read cancel facts (K26 cancelFacts).",
+    "task": "NT-I16"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I16"
+   ]
+  },
+  {
+   "name": "db::quiesce_engine",
+   "identity": "can.std.db@1::quiesce_engine",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "engine",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str[]",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Set.prototype.add",
+     "Array.prototype.sort"
+    ],
+    "adapter": "Quiesce an engine; returns the sorted live work labels (K26 quiesceEngine).",
+    "task": "NT-I16"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I16"
+   ]
+  },
+  {
+   "name": "db::fence",
+   "identity": "can.std.db@1::fence",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "work",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::fence_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "crypto.createHash"
+    ],
+    "adapter": "Fence one work item; a fence surveys and settles nothing (K26 fence).",
+    "task": "NT-I16"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I16"
+   ]
+  },
+  {
+   "name": "db::fence_facts",
+   "identity": "can.std.db@1::fence_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "work",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::fence_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read fence facts (K26 fenceFacts).",
+    "task": "NT-I16"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I16"
+   ]
+  },
+  {
+   "name": "db::lease_facts",
+   "identity": "can.std.db@1::lease_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "work",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::lease_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read the retained-lease survey for one work item (K26 leaseFacts).",
+    "task": "NT-I16"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I16"
+   ]
+  },
+  {
+   "name": "db::deadline_release",
+   "identity": "can.std.db@1::deadline_release",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "work",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::deadline_release_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "crypto.createHash"
+    ],
+    "adapter": "Release a work item after driver settlement plus known server effect (K26 release).",
+    "task": "NT-I16"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I16"
+   ]
+  },
+  {
+   "name": "db::deadline_release_ack",
+   "identity": "can.std.db@1::deadline_release_ack",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "work",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::deadline_release_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read the deadline release acknowledgment (K26 releaseAck).",
+    "task": "NT-I16"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I16"
+   ]
   }
  ],
  "nativeDeclarations": [
@@ -30234,6 +31186,392 @@ export const catalogueTypeShapes = freeze([
       },
       {
         "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::dispatched_work",
+    "identity": "can.std.db@1::dispatched_work",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "facts",
+        "type": {
+          "name": "db::dispatch_record",
+          "arguments": null
+        }
+      },
+      {
+        "name": "token",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::dispatch_record",
+    "identity": "can.std.db@1::dispatch_record",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "work",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "engine",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "namespace",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "statement_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "handle_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::deadline_record",
+    "identity": "can.std.db@1::deadline_record",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "work",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "engine",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "deadline_ms",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::driver_settlement_facts",
+    "identity": "can.std.db@1::driver_settlement_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "work",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "engine",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "outcome",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "server_effect",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::server_ack_facts",
+    "identity": "can.std.db@1::server_ack_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "work",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "engine",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "effect",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::cancel_grant",
+    "identity": "can.std.db@1::cancel_grant",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "facts",
+        "type": {
+          "name": "db::cancel_grant_facts",
+          "arguments": null
+        }
+      },
+      {
+        "name": "grant",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::cancel_grant_facts",
+    "identity": "can.std.db@1::cancel_grant_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "engine",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "grant_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::cancel_record",
+    "identity": "can.std.db@1::cancel_record",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "work",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "engine",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "proves",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::fence_record",
+    "identity": "can.std.db@1::fence_record",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "work",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "engine",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "settles",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "ack_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::lease_record",
+    "identity": "can.std.db@1::lease_record",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "work",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "engine",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "namespace",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "handle_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "retained",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "db::deadline_release_record",
+    "identity": "can.std.db@1::deadline_release_record",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "work",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "engine",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "released",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "ack_digest",
         "type": {
           "name": "str",
           "arguments": null
