@@ -1,1 +1,114 @@
-{"acceptance":{"bounded_pending":"queue-length + byte-cap backpressure, whole-event rejection, payload/connection caps","checks":"11/11 bun websocket-check.ts, independently re-run","close_facts":"local_close/remote_close independent; terminal only when both closed, either order; drops counted on completing receipt + facts","dropped_events":"queued-at-terminal counted in dropped_events/dropped_bytes; post-terminal poll rejects; zero-drop negative","forged_remote_close":"second delivery rejects, post-terminal rejects, post-remote-close events reject; single genuine observation kept","independent_probe":"empty poll -> null event; remote-first order terminal+drops(1/3); forged+post-terminal reject","no_spontaneous_input":"poll returns only delivered frames; remote close exists only after explicit delivery","opcode_payload":"4 opcodes, empty payload legal, bad-opcode/payload negatives","runtime_gates":"check:runtime repo-wide green (lint+format:check+tsc)"},"controls":{"local_only":"in-memory node:assert, small-constant loops; facts-inert pinned","network":"none: no sockets/timers; responses move via explicit typed calls"},"prior_checks":"peer 14/14, http 17/17, core 12/12, all native-values pass (re-run during review)","review":{"aliasing":"deliver copies caller array, poll shifts then copies again; no K22-class hole (code-read)","read":"websocket.ts 557 lines fully; check density 77 assert-ish calls"},"status":"blocked","task_id":"K21","commits":["7d25b5a9185b666d4667acd5fe7d4836be5c3f0a"],"planning_audit":{"date":"2026-10-01","method":"Read-only history, task contract and targeted source inspection; recorded checks were not rerun.","recorded_commits_before_audit":null,"commit_provenance":"Each primary SHA is reachable from audit HEAD and touches declared owned paths; supporting P14 process fix is a P10 integration handoff.","historical_status":"complete","current_status":"blocked","qualification_credit_added":false,"reason":"Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.","pending_prerequisites":["K20"],"record_limit":"Historical prose controls retained verbatim; exact commands/deadlines not reconstructable and not invented."}}
+{
+ "acceptance": {
+  "bounded_pending": "queue-length + byte-cap backpressure, whole-event rejection, payload/connection caps",
+  "checks": "11/11 bun websocket-check.ts, independently re-run",
+  "close_facts": "local_close/remote_close independent; terminal only when both closed, either order; drops counted on completing receipt + facts",
+  "dropped_events": "queued-at-terminal counted in dropped_events/dropped_bytes; post-terminal poll rejects; zero-drop negative",
+  "forged_remote_close": "second delivery rejects, post-terminal rejects, post-remote-close events reject; single genuine observation kept",
+  "independent_probe": "empty poll -> null event; remote-first order terminal+drops(1/3); forged+post-terminal reject",
+  "no_spontaneous_input": "poll returns only delivered frames; remote close exists only after explicit delivery",
+  "opcode_payload": "4 opcodes, empty payload legal, bad-opcode/payload negatives",
+  "runtime_gates": "check:runtime repo-wide green (lint+format:check+tsc)"
+ },
+ "commits": [
+  "7d25b5a9185b666d4667acd5fe7d4836be5c3f0a"
+ ],
+ "controls": {
+  "local_only": "in-memory node:assert, small-constant loops; facts-inert pinned",
+  "network": "none: no sockets/timers; responses move via explicit typed calls"
+ },
+ "planning_audit": {
+  "current_status": "blocked",
+  "date": "2026-10-01",
+  "historical_status": "complete",
+  "method": "Read-only history, task contract and targeted source inspection; recorded checks were not rerun.",
+  "pending_prerequisites": [
+   "K20"
+  ],
+  "qualification_credit_added": false,
+  "reason": "Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.",
+  "record_limit": "Historical prose controls retained verbatim; exact commands/deadlines not reconstructable and not invented.",
+  "recorded_commits_before_audit": null,
+  "commit_provenance": "Each primary SHA is reachable from audit HEAD and touches declared owned paths; supporting P14 process fix is a P10 integration handoff."
+ },
+ "prior_checks": "peer 14/14, http 17/17, core 12/12, all native-values pass (re-run during review)",
+ "review": {
+  "aliasing": "deliver copies caller array, poll shifts then copies again; no K22-class hole (code-read)",
+  "read": "websocket.ts 557 lines fully; check density 77 assert-ish calls"
+ },
+ "revalidation_2026_10_01": {
+  "commands_with_deadlines_and_results": [
+   {
+    "command": "timeout 150 bun tools/runtime/test-services/http-peer/websocket-check.ts",
+    "deadline": "160s",
+    "result": "11/11 pass: connect-and-admission, send-opcode-payload, event-deliver-poll, close-local-first, close-remote-first, dropped-events, forged-remote-close, bounded-pending-work, wrong-owner-and-unknown, caps-and-limits, facts-inert"
+   },
+   {
+    "command": "timeout 150 bun tools/runtime/test-services/http-peer/peer-check.ts",
+    "deadline": "160s",
+    "result": "14/14 pass (K20 receipt reconciliation, read-only): declare-and-listen, dial-accept-pair, no-implicit-retry, retry-counted-and-capped, retries-disabled-by-bounds, write-read-roundtrip, eof-explicit, half-close-rules, backpressure, wrong-owner-and-unknown, accept-empty-and-stale, cleanup-receipts, caps-and-limits, facts-inert"
+   },
+   {
+    "command": "timeout 150 bun tools/runtime/test-services/http-peer/http-check.ts",
+    "deadline": "160s",
+    "result": "17/17 pass (K20 receipt reconciliation, read-only): declare-and-request, repeated-headers-ordered, header-value-rules, header-truncation-explicit, upload-body-and-get-rule, upload-truncation-explicit, upload-length-mismatch, no-implicit-redirect, redirect-incomplete, no-implicit-retry, reissue-counted-capped, response-body-accepted-vs-consumed, response-length-mismatch, response-limits, wrong-owner-closed-unknown, caps-and-limits, facts-inert"
+   },
+   {
+    "command": "timeout 60 bun /tmp/k21-probe.ts",
+    "deadline": "70s",
+    "result": "independent probe green: empty_poll_null true, drops [1,3] on remote-first terminal, forged rejected, 5/5 post-terminal ops closed-handle"
+   },
+   {
+    "command": "grep -nE 'WebSocket|Bun.serve|fetch(|setTimeout|setInterval|queueMicrotask|addEventListener|process.on|spawn|exec' tools/runtime/test-services/http-peer/websocket.ts tools/runtime/test-services/http-peer/websocket-check.ts",
+    "deadline": "60s",
+    "result": "matches are class-name/comment mentions of WebSocket only; no sockets, timers, fetch, listeners, or process spawn"
+   },
+   {
+    "command": "timeout 120 bun run lint:runtime",
+    "deadline": "130s",
+    "result": "0 warnings, 0 errors on 354 files"
+   },
+   {
+    "command": "timeout 120 bun run format:check:runtime",
+    "deadline": "130s",
+    "result": "all matched files use the correct format (353 files)"
+   },
+   {
+    "command": "timeout 170 bun run typecheck:runtime",
+    "deadline": "180s",
+    "result": "clean repo-wide (tsc -p tsconfig.runtime.json, exit 0)"
+   }
+  ],
+  "controls_delta": "all historical controls re-pass unchanged, no source change: connect/send/event/close typed paths; opcode+payload rules; distinct local/remote close facts both orders; dropped-events accounting; forged remote-close detection; bounded pending work (queue+byte caps, whole-event rejection); wrong-owner/unknown/close-code/reason negatives; limits validation; facts-inert. Pending prerequisite K20 now complete (14/14 + 17/17, no source change); audit hold lifted.",
+  "controls": {
+   "missing_evidence": [
+    "no remote close claimable without explicit deliverRemoteClose (forged-remote-close check)",
+    "empty poll proves nothing about absence; only facts over delivered events do"
+   ],
+   "positive": [
+    "11/11 websocket-check driver (in-memory node:assert, small constants)",
+    "remote-first terminal + drops(1/3) independent probe",
+    "K20 peer 14/14 + http 17/17 reconciliation vs current receipts"
+   ],
+   "seeded_defect": [
+    "zero-drop negative reports exact zeros (dropped-events check)",
+    "forged second remote close + post-terminal injections reject (forged-remote-close check + probe 5/5 closed-handle)",
+    "bad-opcode/payload/limits/owner/close-code/reason negatives hold without state effect"
+   ]
+  },
+  "coverage": "websocket.ts + websocket-check.ts fully exercised by the 11-check driver; peer.ts/http.ts imports (checkDeclaredSet, checkOwner, checkPositiveInt, HttpPeerError) verified live via driver + K20 receipt re-runs",
+  "executor": "k21 revalidation worker (reconcile-first); no active writer conflict",
+  "limitations": [
+   "local/bootstrap controls only; no live hosts/networks; no integrated credit (QWS holds Can credit)"
+  ],
+  "mechanism_changed": false,
+  "provenance": "mechanism + driver unchanged since 7d25b5a9 (reachable; touches both owned source paths); revalidation is gate re-execution + K20 receipt reconciliation only",
+  "resource_and_cleanup_receipts": [
+   "no temp state in repo: no files created, no sockets (in-memory drivers), no services; nothing to clean",
+   "throwaway probe at /tmp/k21-probe.ts only (outside deliverable, kept for re-run)"
+  ],
+  "integrator_acceptance": "integrator accepted 2026-10-01: only K21.json modified (no source changes). Independently re-ran: websocket-check 11/11, peer 14/14 + http 17/17 neighbors, check:runtime clean, no-socket/timer/spawn grep clean. Ran the worker's /tmp/k21-probe.ts once (output matched the claim exactly) then removed it \u2014 worker cleanup failure, corrected. Historical keys byte-identical except status; provenance 7d25b5a9 reachable and touches both owned paths. Audit hold lifted (K20 complete)."
+ },
+ "status": "complete",
+ "task_id": "K21"
+}
