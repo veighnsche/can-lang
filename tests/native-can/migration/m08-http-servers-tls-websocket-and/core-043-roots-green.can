@@ -1,0 +1,237 @@
+package m08core043roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M08 CORE-043 "tls health: roots green, five assert roots".
+/// Source: tests/integration/tls_test.go symbol
+/// TestCurrentBundledTLS (L17-191).
+/// Related fixture: compiler/testdata/current/http/tls.can (read at
+/// L46, staged as src/main.can at L50); every count pin below grounds an
+/// assert arm in that fixture (health 1, table 1, tls_material 1,
+/// boot_tls 1, main 1; total 5).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): canlc assert green with a passed report carrying
+/// exactly 5 roots, grounded per function in the tls.can fixture,
+/// with supplied-completion and real-can evidence present.
+/// The live lifecycle, chain generation and strict emission live in
+/// core-043-tls-semantics.can; the production process shape lives in
+/// core-043-run-shape.can.
+/// Variants: none in this file (default only); lifecycle variants
+/// (healthy trusted request, untrusted request, cert/chain lifecycle)
+/// live in the tls-semantics file.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. openssl gates the fresh-chain
+/// leg and CAN_TSC gates the optional strict tsc leg (both pinned in
+/// the tls-semantics file). Logical gates SUITE/WORK/PROC and C/R/N/S/A
+/// identities bind at P23; no live run now. Descriptor timeout 120000ms
+/// mirrors the Go 2-minute ctx (L24).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QHTTP unmet).
+/// Case tls/tls-roots checks: assert-green, report-passed,
+/// root-count, fixture-name, supplied-evidence, real-evidence,
+/// health-roots, table-roots, material-roots, boot-roots, main-roots.
+/// Facet map (tls_test.go legs): assert-green pins the assert
+/// leg (L70-73: status 0 and empty diagnostics or the test fatals);
+/// report-passed pins the report leg (L75: passed true); root-count pins
+/// the five roots (L75: len assertions is 5); fixture-name grounds
+/// the pins in the staged fixture (L46: tls.can; L50: src/main.can);
+/// supplied-evidence pins supplied completion evidence (L78:
+/// supplied-completion; fixture L53-54: boot_tls stands in via
+/// when-sample); real-evidence pins real native evidence (L78:
+/// real-can; fixture L24-31: tls_material sample runs the real
+/// bytes::from_utf8 and http::make_tls_config natives); health-roots
+/// pins health (fixture L8-9: sample, 1 root); table-roots pins table
+/// (fixture L13-14: sample, 1); material-roots pins tls_material
+/// (fixture L24-25: sample, 1); boot-roots pins boot_tls (fixture
+/// L38-39: sample, 1); main-roots pins main (fixture L61-62: sample,
+/// 1).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int root_count
+    str fixture_name
+    bool supplied_evidence
+    bool real_evidence
+    int health_roots
+    int table_roots
+    int material_roots
+    int boot_roots
+    int main_roots
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("tls/tls-roots", "default", "", "offline"), "assert-green" => ok "case tls/tls-roots variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("tls/tls-roots", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case tls/tls-roots variant default root assert-green run offline")
+        different: false, true, context("tls/tls-roots", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 5, 5, context("tls/tls-roots", "default", "", "offline"), "root-count" => ok evidence("root-count", "5", "5", true, "case tls/tls-roots variant default root root-count run offline")
+        different: 4, 5, context("tls/tls-roots", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "tls.can", "tls.can", context("tls/tls-roots", "default", "", "offline"), "fixture-name" => ok evidence("fixture-name", "tls.can", "tls.can", true, "case tls/tls-roots variant default root fixture-name run offline")
+        different: "http.can", "tls.can", context("tls/tls-roots", "default", "", "offline"), "fixture-name" => failed{"fixture-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 5, "tls.can", true, true, 1, 1, 1, 1, 1)
+        seed_assert_red: "seed-assert-red" => ok observation(false, true, 5, "tls.can", true, true, 1, 1, 1, 1, 1)
+        seed_report_red: "seed-report-red" => ok observation(true, false, 5, "tls.can", true, true, 1, 1, 1, 1, 1)
+        seed_root_short: "seed-root-short" => ok observation(true, true, 4, "tls.can", true, true, 1, 1, 1, 1, 1)
+        seed_fixture_drift: "seed-fixture-drift" => ok observation(true, true, 5, "http.can", true, true, 1, 1, 1, 1, 1)
+        seed_supplied_loss: "seed-supplied-loss" => ok observation(true, true, 5, "tls.can", false, true, 1, 1, 1, 1, 1)
+        seed_real_loss: "seed-real-loss" => ok observation(true, true, 5, "tls.can", true, false, 1, 1, 1, 1, 1)
+        seed_health_loss: "seed-health-loss" => ok observation(true, true, 5, "tls.can", true, true, 0, 1, 1, 1, 1)
+        seed_table_loss: "seed-table-loss" => ok observation(true, true, 5, "tls.can", true, true, 1, 0, 1, 1, 1)
+        seed_material_loss: "seed-material-loss" => ok observation(true, true, 5, "tls.can", true, true, 1, 1, 0, 1, 1)
+        seed_boot_loss: "seed-boot-loss" => ok observation(true, true, 5, "tls.can", true, true, 1, 1, 1, 0, 1)
+        seed_main_loss: "seed-main-loss" => ok observation(true, true, 5, "tls.can", true, true, 1, 1, 1, 1, 0)
+    match variant_id
+        "seed-assert-red" => ok observation(false, true, 5, "tls.can", true, true, 1, 1, 1, 1, 1)
+        "seed-report-red" => ok observation(true, false, 5, "tls.can", true, true, 1, 1, 1, 1, 1)
+        "seed-root-short" => ok observation(true, true, 4, "tls.can", true, true, 1, 1, 1, 1, 1)
+        "seed-fixture-drift" => ok observation(true, true, 5, "http.can", true, true, 1, 1, 1, 1, 1)
+        "seed-supplied-loss" => ok observation(true, true, 5, "tls.can", false, true, 1, 1, 1, 1, 1)
+        "seed-real-loss" => ok observation(true, true, 5, "tls.can", true, false, 1, 1, 1, 1, 1)
+        "seed-health-loss" => ok observation(true, true, 5, "tls.can", true, true, 0, 1, 1, 1, 1)
+        "seed-table-loss" => ok observation(true, true, 5, "tls.can", true, true, 1, 0, 1, 1, 1)
+        "seed-material-loss" => ok observation(true, true, 5, "tls.can", true, true, 1, 1, 0, 1, 1)
+        "seed-boot-loss" => ok observation(true, true, 5, "tls.can", true, true, 1, 1, 1, 0, 1)
+        "seed-main-loss" => ok observation(true, true, 5, "tls.can", true, true, 1, 1, 1, 1, 0)
+        _ => ok observation(true, true, 5, "tls.can", true, true, 1, 1, 1, 1, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m08_043: "m08-043" => ok [check("assert-green", "canlc assert exits 0 with empty diagnostics"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 5 roots"), check("fixture-name", "root pins ground the staged tls.can fixture"), check("supplied-evidence", "report carries supplied-completion evidence"), check("real-evidence", "report carries real-can evidence"), check("health-roots", "health contributes 1 root (sample)"), check("table-roots", "table contributes 1 root (sample)"), check("material-roots", "tls_material contributes 1 root (sample)"), check("boot-roots", "boot_tls contributes 1 root (sample)"), check("main-roots", "main contributes 1 root (sample)")]
+        other: "nope" => ok []
+    match scope is "m08-043"
+        false => ok []
+        true => ok [check("assert-green", "canlc assert exits 0 with empty diagnostics"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 5 roots"), check("fixture-name", "root pins ground the staged tls.can fixture"), check("supplied-evidence", "report carries supplied-completion evidence"), check("real-evidence", "report carries real-can evidence"), check("health-roots", "health contributes 1 root (sample)"), check("table-roots", "table contributes 1 root (sample)"), check("material-roots", "tls_material contributes 1 root (sample)"), check("boot-roots", "boot_tls contributes 1 root (sample)"), check("main-roots", "main contributes 1 root (sample)")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "tls/tls-roots" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "5"), expected_check("fixture-name", "tls.can"), expected_check("supplied-evidence", "true"), expected_check("real-evidence", "true"), expected_check("health-roots", "1"), expected_check("table-roots", "1"), expected_check("material-roots", "1"), expected_check("boot-roots", "1"), expected_check("main-roots", "1")]
+        unknown: "nope" => ok []
+    match case is "tls/tls-roots"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "5"), expected_check("fixture-name", "tls.can"), expected_check("supplied-evidence", "true"), expected_check("real-evidence", "true"), expected_check("health-roots", "1"), expected_check("table-roots", "1"), expected_check("material-roots", "1"), expected_check("boot-roots", "1"), expected_check("main-roots", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("tls/tls-roots", "default", "", "offline") => ok
+        seed_assert_red: context("tls/tls-roots", "seed-assert-red", "", "offline") => failed{"assert-green"}
+        seed_report_red: context("tls/tls-roots", "seed-report-red", "", "offline") => failed{"report-passed"}
+        seed_root_short: context("tls/tls-roots", "seed-root-short", "", "offline") => failed{"root-count"}
+        seed_fixture_drift: context("tls/tls-roots", "seed-fixture-drift", "", "offline") => failed{"fixture-name"}
+        seed_supplied_loss: context("tls/tls-roots", "seed-supplied-loss", "", "offline") => failed{"supplied-evidence"}
+        seed_real_loss: context("tls/tls-roots", "seed-real-loss", "", "offline") => failed{"real-evidence"}
+        seed_health_loss: context("tls/tls-roots", "seed-health-loss", "", "offline") => failed{"health-roots"}
+        seed_table_loss: context("tls/tls-roots", "seed-table-loss", "", "offline") => failed{"table-roots"}
+        seed_material_loss: context("tls/tls-roots", "seed-material-loss", "", "offline") => failed{"material-roots"}
+        seed_boot_loss: context("tls/tls-roots", "seed-boot-loss", "", "offline") => failed{"boot-roots"}
+        seed_main_loss: context("tls/tls-roots", "seed-main-loss", "", "offline") => failed{"main-roots"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence assert_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence passed_evidence => match call require_int(got.root_count, 5, c, "root-count")
+                    failed
+                    ok evidence count_evidence => match call require_text(got.fixture_name, "tls.can", c, "fixture-name")
+                        failed
+                        ok evidence fixture_evidence => match call require_bool(got.supplied_evidence, true, c, "supplied-evidence")
+                            failed
+                            ok evidence supplied_evidence => match call require_bool(got.real_evidence, true, c, "real-evidence")
+                                failed
+                                ok evidence real_evidence => match call require_int(got.health_roots, 1, c, "health-roots")
+                                    failed
+                                    ok evidence health_evidence => match call require_int(got.table_roots, 1, c, "table-roots")
+                                        failed
+                                        ok evidence table_evidence => match call require_int(got.material_roots, 1, c, "material-roots")
+                                            failed
+                                            ok evidence material_evidence => match call require_int(got.boot_roots, 1, c, "boot-roots")
+                                                failed
+                                                ok evidence boot_evidence => match call require_int(got.main_roots, 1, c, "main-roots")
+                                                    failed
+                                                    ok evidence main_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m08_043: "m08-043" => ok test_case("tls/tls-roots", ["tls", "m08"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("supplied-evidence"), check_ref("real-evidence"), check_ref("health-roots"), check_ref("table-roots"), check_ref("material-roots"), check_ref("boot-roots"), check_ref("main-roots")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m08-043"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("tls/tls-roots", ["tls", "m08"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("supplied-evidence"), check_ref("real-evidence"), check_ref("health-roots"), check_ref("table-roots"), check_ref("material-roots"), check_ref("boot-roots"), check_ref("main-roots")], callable case_body)
