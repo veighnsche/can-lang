@@ -1,5 +1,5 @@
 package m32history073
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M32 HISTORY-073 "dispose during callback completes the callback then drops the rest".

@@ -1,5 +1,5 @@
 package m32history074
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M32 HISTORY-074 "tokens are opaque: SDK handles never leak to callers".

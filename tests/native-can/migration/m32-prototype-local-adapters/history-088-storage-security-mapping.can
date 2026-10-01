@@ -1,5 +1,5 @@
 package m32history088
-    provides [checks, expected_vector, observe, case_body, descriptor]
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
     uses [text]
 
 /// M32 HISTORY-088 "native security failure maps to unavailable with no native text".

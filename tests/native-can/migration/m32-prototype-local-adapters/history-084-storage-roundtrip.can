@@ -1,5 +1,5 @@
 package m32history084
-    provides [checks, expected_vector, observe, case_body, descriptor]
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
     uses [text]
 
 /// M32 HISTORY-084 "roundtrip: set, get, remove, missing reads null".

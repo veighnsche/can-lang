@@ -1,5 +1,5 @@
 package m32history067
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M32 HISTORY-067 "native SDK failure maps to unavailable with no native text".

@@ -1,5 +1,5 @@
 package m32history065
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M32 HISTORY-065 "invalid specs reject before host contact".
