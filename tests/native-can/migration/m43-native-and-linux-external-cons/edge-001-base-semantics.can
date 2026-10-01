@@ -1,0 +1,381 @@
+package m43edge001base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M43 EDGE-001 "main native qualification"
+/// rewire target pact.
+/// Source: distribution/qualify.py symbol
+/// "main native qualification" (L18-35 plus
+/// L89-118): pinned target plus archive plus
+/// digest gates.
+/// Disposition: rewire target only (this row
+/// owns the caller pact as reviewable Can
+/// facts; no caller file changes here; old
+/// python call stays until the integrator
+/// rewires it after each linked row plus gate
+/// has accepted proof).
+/// Protects (this file): facet 1, target OS
+/// plus arch plus minimum version plus glibc,
+/// archive size plus hash plus pulled runtime
+/// digest.
+/// ADAPTATION (noted, plus source lines):
+/// name pins hold OS plus arch spellings; key
+/// pins hold dict spellings; verdict pins
+/// hold refusal bytes; count pins hold ints
+/// tallied from L19 plus L91 plus L98 plus
+/// L113 plus L117.
+/// machine-name-a pins the first L19 machine
+/// name; machine-name-b pins the second L19
+/// machine name.
+/// arch-fn pins machine_arch (L18 plus L92);
+/// machine-name-a pins x86_64 (L19);
+/// machine-name-b pins aarch64 (L19);
+/// amd-name pins amd64 (L19 plus L93);
+/// arm-name pins arm64 (L19 plus L105);
+/// os-release pins /etc/os-release (L24);
+/// getconf-bin pins getconf (L32); libc-query
+/// pins GNU_LIBC_VERSION (L32); min-os-key
+/// pins minimumOSVersion (L98 plus L107);
+/// version-id-key pins VERSION_ID (L97);
+/// arch-key pins architecture (L92 plus
+/// L104); linux-name pins linux (L91);
+/// darwin-name pins darwin (L101 plus L138);
+/// debian-id pins debian (L95); upstream-key
+/// pins upstream (L2 plus L113 plus L114 plus
+/// L116); size-key pins size (L113 plus
+/// L114); sha-key pins sha256 (L15 plus L113
+/// plus L117); member-key pins member (L116);
+/// exec-key pins executable (L116 plus L117
+/// plus L122 plus L124); size-mismatch pins
+/// upstream archive size or SHA-256 mismatch
+/// (L114); exec-mismatch pins extracted
+/// runtime SHA-256 mismatch (L118); glibc-fn
+/// pins glibc (L31 plus L100 plus L163);
+/// arch-map-count pins 2 (L19);
+/// platform-branch-count pins 3 (L91 plus
+/// L101 plus L111); version-gate-count pins 2
+/// (L98 plus L107); digest-gate-count pins 2
+/// (L114 plus L118).
+/// Facet map (pin order): arch-fn,
+/// machine-name-a, machine-name-b, amd-name,
+/// arm-name, os-release, getconf-bin,
+/// libc-query, min-os-key, version-id-key,
+/// arch-key, linux-name, darwin-name,
+/// debian-id, upstream-key, size-key,
+/// sha-key, member-key, exec-key,
+/// size-mismatch, exec-mismatch, glibc-fn,
+/// arch-map-count, platform-branch-count,
+/// version-gate-count, digest-gate-count.
+/// The no-ambient plus isolation roots live
+/// in edge-001-roots-green.can; the combined
+/// report shape plus verdict live in
+/// edge-001-run-shape.can.
+/// Variants: none (row lists zero variants).
+/// Environment: zero gates; bind at P23 plus
+/// QN1; no live run now.
+/// Logical gates SUITE plus PROC plus WORK
+/// plus ENV plus ARCHIVE plus NATIVE plus
+/// FILES bind at P23 plus QN1; no live run
+/// now.
+/// Timeout 120000ms is the offline default
+/// bound (binds at P23 like the M31 no-run
+/// rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23 plus
+/// QN1 accept gates unmet).
+/// Intended consumed report: M35 HISTORY-127
+/// through HISTORY-131 parsed slices (no
+/// qualified report yet; P23 plus QN1 unmet).
+/// Rewire stays blocked; qualify.py plus
+/// smoke.sh plus verifier.yml intact; no call
+/// retired.
+/// Shared old files intact; retirement is a
+/// later integrator choice; Z03 owns
+/// activation.
+/// Case edge/native-platform-archive checks:
+/// arch-fn, machine-name-a, machine-name-b,
+/// amd-name, arm-name, os-release,
+/// getconf-bin, libc-query, min-os-key,
+/// version-id-key, arch-key, linux-name,
+/// darwin-name, debian-id, upstream-key,
+/// size-key, sha-key, member-key, exec-key,
+/// size-mismatch, exec-mismatch, glibc-fn,
+/// arch-map-count, platform-branch-count,
+/// version-gate-count, digest-gate-count.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str arch_fn
+    str machine_name_a
+    str machine_name_b
+    str amd_name
+    str arm_name
+    str os_release
+    str getconf_bin
+    str libc_query
+    str min_os_key
+    str version_id_key
+    str arch_key
+    str linux_name
+    str darwin_name
+    str debian_id
+    str upstream_key
+    str size_key
+    str sha_key
+    str member_key
+    str exec_key
+    str size_mismatch
+    str exec_mismatch
+    str glibc_fn
+    int arch_map_count
+    int platform_branch_count
+    int version_gate_count
+    int digest_gate_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("edge/native-platform-archive", "default", "", "offline"), "arch-fn" => ok "case edge/native-platform-archive variant default root arch-fn run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("edge/native-platform-archive", "default", "", "offline"), "arch-fn" => ok evidence("arch-fn", "true", "true", true, "case edge/native-platform-archive variant default root arch-fn run offline")
+        different: false, true, context("edge/native-platform-archive", "default", "", "offline"), "arch-fn" => failed{"arch-fn"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("edge/native-platform-archive", "default", "", "offline"), "arch-map-count" => ok evidence("arch-map-count", "2", "2", true, "case edge/native-platform-archive variant default root arch-map-count run offline")
+        different: 1, 2, context("edge/native-platform-archive", "default", "", "offline"), "arch-map-count" => failed{"arch-map-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "machine_arch", "machine_arch", context("edge/native-platform-archive", "default", "", "offline"), "arch-fn" => ok evidence("arch-fn", "machine_arch", "machine_arch", true, "case edge/native-platform-archive variant default root arch-fn run offline")
+        different: "machine_arch_2", "machine_arch", context("edge/native-platform-archive", "default", "", "offline"), "arch-fn" => failed{"arch-fn"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_arch_fn: "seed-arch-fn-drift" => ok observation("machine_arch_2", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_machine_name_a: "seed-machine-name-a-drift" => ok observation("machine_arch", "x86_64_2", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_machine_name_b: "seed-machine-name-b-drift" => ok observation("machine_arch", "x86_64", "aarch64_2", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_amd_name: "seed-amd-name-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64_2", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_arm_name: "seed-arm-name-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64_2", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_os_release: "seed-os-release-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release_2", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_getconf_bin: "seed-getconf-bin-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf_2", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_libc_query: "seed-libc-query-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION_2", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_min_os_key: "seed-min-os-key-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion_2", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_version_id_key: "seed-version-id-key-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID_2", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_arch_key: "seed-arch-key-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture_2", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_linux_name: "seed-linux-name-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux_2", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_darwin_name: "seed-darwin-name-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin_2", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_debian_id: "seed-debian-id-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian_2", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_upstream_key: "seed-upstream-key-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream_2", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_size_key: "seed-size-key-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size_2", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_sha_key: "seed-sha-key-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256_2", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_member_key: "seed-member-key-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member_2", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_exec_key: "seed-exec-key-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable_2", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_size_mismatch: "seed-size-mismatch-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch_2", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        seed_exec_mismatch: "seed-exec-mismatch-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch_2", "glibc", 2, 3, 2, 2)
+        seed_glibc_fn: "seed-glibc-fn-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc_2", 2, 3, 2, 2)
+        seed_arch_map_count: "seed-arch-map-count-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 1, 3, 2, 2)
+        seed_platform_branch_count: "seed-platform-branch-count-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 2, 2, 2)
+        seed_version_gate_count: "seed-version-gate-count-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 1, 2)
+        seed_digest_gate_count: "seed-digest-gate-count-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 1)
+    match variant_id
+        "seed-arch-fn-drift" => ok observation("machine_arch_2", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-machine-name-a-drift" => ok observation("machine_arch", "x86_64_2", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-machine-name-b-drift" => ok observation("machine_arch", "x86_64", "aarch64_2", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-amd-name-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64_2", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-arm-name-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64_2", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-os-release-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release_2", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-getconf-bin-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf_2", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-libc-query-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION_2", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-min-os-key-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion_2", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-version-id-key-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID_2", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-arch-key-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture_2", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-linux-name-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux_2", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-darwin-name-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin_2", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-debian-id-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian_2", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-upstream-key-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream_2", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-size-key-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size_2", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-sha-key-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256_2", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-member-key-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member_2", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-exec-key-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable_2", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-size-mismatch-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch_2", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+        "seed-exec-mismatch-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch_2", "glibc", 2, 3, 2, 2)
+        "seed-glibc-fn-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc_2", 2, 3, 2, 2)
+        "seed-arch-map-count-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 1, 3, 2, 2)
+        "seed-platform-branch-count-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 2, 2, 2)
+        "seed-version-gate-count-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 1, 2)
+        "seed-digest-gate-count-drift" => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 1)
+        _ => ok observation("machine_arch", "x86_64", "aarch64", "amd64", "arm64", "/etc/os-release", "getconf", "GNU_LIBC_VERSION", "minimumOSVersion", "VERSION_ID", "architecture", "linux", "darwin", "debian", "upstream", "size", "sha256", "member", "executable", "upstream archive size or SHA-256 mismatch", "extracted runtime SHA-256 mismatch", "glibc", 2, 3, 2, 2)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        edge_scope: "m43-e001" => ok [check("arch-fn", "arch fn keeps its spelling"), check("machine-name-a", "first machine name keeps its bytes"), check("machine-name-b", "second machine name keeps its bytes"), check("amd-name", "amd name keeps its bytes"), check("arm-name", "arm name keeps its bytes"), check("os-release", "os release keeps its bytes"), check("getconf-bin", "getconf bin keeps its spelling"), check("libc-query", "libc query keeps its spelling"), check("min-os-key", "min os key keeps its spelling"), check("version-id-key", "version id key keeps its spelling"), check("arch-key", "arch key keeps its spelling"), check("linux-name", "linux name keeps its bytes"), check("darwin-name", "darwin name keeps its bytes"), check("debian-id", "debian id keeps its bytes"), check("upstream-key", "upstream key keeps its spelling"), check("size-key", "size key keeps its spelling"), check("sha-key", "sha key keeps its spelling"), check("member-key", "member key keeps its spelling"), check("exec-key", "exec key keeps its spelling"), check("size-mismatch", "size mismatch keeps its bytes"), check("exec-mismatch", "exec mismatch keeps its bytes"), check("glibc-fn", "glibc fn keeps its spelling"), check("arch-map-count", "two arch mappings exist"), check("platform-branch-count", "three platform branches exist"), check("version-gate-count", "two version gates exist"), check("digest-gate-count", "two digest gates exist")]
+        other: "nope" => ok []
+    match scope is "m43-e001"
+        false => ok []
+        true => ok [check("arch-fn", "arch fn keeps its spelling"), check("machine-name-a", "first machine name keeps its bytes"), check("machine-name-b", "second machine name keeps its bytes"), check("amd-name", "amd name keeps its bytes"), check("arm-name", "arm name keeps its bytes"), check("os-release", "os release keeps its bytes"), check("getconf-bin", "getconf bin keeps its spelling"), check("libc-query", "libc query keeps its spelling"), check("min-os-key", "min os key keeps its spelling"), check("version-id-key", "version id key keeps its spelling"), check("arch-key", "arch key keeps its spelling"), check("linux-name", "linux name keeps its bytes"), check("darwin-name", "darwin name keeps its bytes"), check("debian-id", "debian id keeps its bytes"), check("upstream-key", "upstream key keeps its spelling"), check("size-key", "size key keeps its spelling"), check("sha-key", "sha key keeps its spelling"), check("member-key", "member key keeps its spelling"), check("exec-key", "exec key keeps its spelling"), check("size-mismatch", "size mismatch keeps its bytes"), check("exec-mismatch", "exec mismatch keeps its bytes"), check("glibc-fn", "glibc fn keeps its spelling"), check("arch-map-count", "two arch mappings exist"), check("platform-branch-count", "three platform branches exist"), check("version-gate-count", "two version gates exist"), check("digest-gate-count", "two digest gates exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "edge/native-platform-archive" => ok [expected_check("arch-fn", "machine_arch"), expected_check("machine-name-a", "x86_64"), expected_check("machine-name-b", "aarch64"), expected_check("amd-name", "amd64"), expected_check("arm-name", "arm64"), expected_check("os-release", "/etc/os-release"), expected_check("getconf-bin", "getconf"), expected_check("libc-query", "GNU_LIBC_VERSION"), expected_check("min-os-key", "minimumOSVersion"), expected_check("version-id-key", "VERSION_ID"), expected_check("arch-key", "architecture"), expected_check("linux-name", "linux"), expected_check("darwin-name", "darwin"), expected_check("debian-id", "debian"), expected_check("upstream-key", "upstream"), expected_check("size-key", "size"), expected_check("sha-key", "sha256"), expected_check("member-key", "member"), expected_check("exec-key", "executable"), expected_check("size-mismatch", "upstream archive size or SHA-256 mismatch"), expected_check("exec-mismatch", "extracted runtime SHA-256 mismatch"), expected_check("glibc-fn", "glibc"), expected_check("arch-map-count", "2"), expected_check("platform-branch-count", "3"), expected_check("version-gate-count", "2"), expected_check("digest-gate-count", "2")]
+        unknown: "nope" => ok []
+    match case is "edge/native-platform-archive"
+        false => ok []
+        true => ok [expected_check("arch-fn", "machine_arch"), expected_check("machine-name-a", "x86_64"), expected_check("machine-name-b", "aarch64"), expected_check("amd-name", "amd64"), expected_check("arm-name", "arm64"), expected_check("os-release", "/etc/os-release"), expected_check("getconf-bin", "getconf"), expected_check("libc-query", "GNU_LIBC_VERSION"), expected_check("min-os-key", "minimumOSVersion"), expected_check("version-id-key", "VERSION_ID"), expected_check("arch-key", "architecture"), expected_check("linux-name", "linux"), expected_check("darwin-name", "darwin"), expected_check("debian-id", "debian"), expected_check("upstream-key", "upstream"), expected_check("size-key", "size"), expected_check("sha-key", "sha256"), expected_check("member-key", "member"), expected_check("exec-key", "executable"), expected_check("size-mismatch", "upstream archive size or SHA-256 mismatch"), expected_check("exec-mismatch", "extracted runtime SHA-256 mismatch"), expected_check("glibc-fn", "glibc"), expected_check("arch-map-count", "2"), expected_check("platform-branch-count", "3"), expected_check("version-gate-count", "2"), expected_check("digest-gate-count", "2")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("edge/native-platform-archive", "default", "", "offline") => ok
+        seed_arch_fn: context("edge/native-platform-archive", "seed-arch-fn-drift", "", "offline") => failed{"arch-fn"}
+        seed_machine_name_a: context("edge/native-platform-archive", "seed-machine-name-a-drift", "", "offline") => failed{"machine-name-a"}
+        seed_machine_name_b: context("edge/native-platform-archive", "seed-machine-name-b-drift", "", "offline") => failed{"machine-name-b"}
+        seed_amd_name: context("edge/native-platform-archive", "seed-amd-name-drift", "", "offline") => failed{"amd-name"}
+        seed_arm_name: context("edge/native-platform-archive", "seed-arm-name-drift", "", "offline") => failed{"arm-name"}
+        seed_os_release: context("edge/native-platform-archive", "seed-os-release-drift", "", "offline") => failed{"os-release"}
+        seed_getconf_bin: context("edge/native-platform-archive", "seed-getconf-bin-drift", "", "offline") => failed{"getconf-bin"}
+        seed_libc_query: context("edge/native-platform-archive", "seed-libc-query-drift", "", "offline") => failed{"libc-query"}
+        seed_min_os_key: context("edge/native-platform-archive", "seed-min-os-key-drift", "", "offline") => failed{"min-os-key"}
+        seed_version_id_key: context("edge/native-platform-archive", "seed-version-id-key-drift", "", "offline") => failed{"version-id-key"}
+        seed_arch_key: context("edge/native-platform-archive", "seed-arch-key-drift", "", "offline") => failed{"arch-key"}
+        seed_linux_name: context("edge/native-platform-archive", "seed-linux-name-drift", "", "offline") => failed{"linux-name"}
+        seed_darwin_name: context("edge/native-platform-archive", "seed-darwin-name-drift", "", "offline") => failed{"darwin-name"}
+        seed_debian_id: context("edge/native-platform-archive", "seed-debian-id-drift", "", "offline") => failed{"debian-id"}
+        seed_upstream_key: context("edge/native-platform-archive", "seed-upstream-key-drift", "", "offline") => failed{"upstream-key"}
+        seed_size_key: context("edge/native-platform-archive", "seed-size-key-drift", "", "offline") => failed{"size-key"}
+        seed_sha_key: context("edge/native-platform-archive", "seed-sha-key-drift", "", "offline") => failed{"sha-key"}
+        seed_member_key: context("edge/native-platform-archive", "seed-member-key-drift", "", "offline") => failed{"member-key"}
+        seed_exec_key: context("edge/native-platform-archive", "seed-exec-key-drift", "", "offline") => failed{"exec-key"}
+        seed_size_mismatch: context("edge/native-platform-archive", "seed-size-mismatch-drift", "", "offline") => failed{"size-mismatch"}
+        seed_exec_mismatch: context("edge/native-platform-archive", "seed-exec-mismatch-drift", "", "offline") => failed{"exec-mismatch"}
+        seed_glibc_fn: context("edge/native-platform-archive", "seed-glibc-fn-drift", "", "offline") => failed{"glibc-fn"}
+        seed_arch_map_count: context("edge/native-platform-archive", "seed-arch-map-count-drift", "", "offline") => failed{"arch-map-count"}
+        seed_platform_branch_count: context("edge/native-platform-archive", "seed-platform-branch-count-drift", "", "offline") => failed{"platform-branch-count"}
+        seed_version_gate_count: context("edge/native-platform-archive", "seed-version-gate-count-drift", "", "offline") => failed{"version-gate-count"}
+        seed_digest_gate_count: context("edge/native-platform-archive", "seed-digest-gate-count-drift", "", "offline") => failed{"digest-gate-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.arch_fn, "machine_arch", c, "arch-fn")
+            failed
+            ok evidence arch_fn_evidence => match call require_text(got.machine_name_a, "x86_64", c, "machine-name-a")
+                failed
+                ok evidence machine_name_a_evidence => match call require_text(got.machine_name_b, "aarch64", c, "machine-name-b")
+                    failed
+                    ok evidence machine_name_b_evidence => match call require_text(got.amd_name, "amd64", c, "amd-name")
+                        failed
+                        ok evidence amd_name_evidence => match call require_text(got.arm_name, "arm64", c, "arm-name")
+                            failed
+                            ok evidence arm_name_evidence => match call require_text(got.os_release, "/etc/os-release", c, "os-release")
+                                failed
+                                ok evidence os_release_evidence => match call require_text(got.getconf_bin, "getconf", c, "getconf-bin")
+                                    failed
+                                    ok evidence getconf_bin_evidence => match call require_text(got.libc_query, "GNU_LIBC_VERSION", c, "libc-query")
+                                        failed
+                                        ok evidence libc_query_evidence => match call require_text(got.min_os_key, "minimumOSVersion", c, "min-os-key")
+                                            failed
+                                            ok evidence min_os_key_evidence => match call require_text(got.version_id_key, "VERSION_ID", c, "version-id-key")
+                                                failed
+                                                ok evidence version_id_key_evidence => match call require_text(got.arch_key, "architecture", c, "arch-key")
+                                                    failed
+                                                    ok evidence arch_key_evidence => match call require_text(got.linux_name, "linux", c, "linux-name")
+                                                        failed
+                                                        ok evidence linux_name_evidence => match call require_text(got.darwin_name, "darwin", c, "darwin-name")
+                                                            failed
+                                                            ok evidence darwin_name_evidence => match call require_text(got.debian_id, "debian", c, "debian-id")
+                                                                failed
+                                                                ok evidence debian_id_evidence => match call require_text(got.upstream_key, "upstream", c, "upstream-key")
+                                                                    failed
+                                                                    ok evidence upstream_key_evidence => match call require_text(got.size_key, "size", c, "size-key")
+                                                                        failed
+                                                                        ok evidence size_key_evidence => match call require_text(got.sha_key, "sha256", c, "sha-key")
+                                                                            failed
+                                                                            ok evidence sha_key_evidence => match call require_text(got.member_key, "member", c, "member-key")
+                                                                                failed
+                                                                                ok evidence member_key_evidence => match call require_text(got.exec_key, "executable", c, "exec-key")
+                                                                                    failed
+                                                                                    ok evidence exec_key_evidence => match call require_text(got.size_mismatch, "upstream archive size or SHA-256 mismatch", c, "size-mismatch")
+                                                                                        failed
+                                                                                        ok evidence size_mismatch_evidence => match call require_text(got.exec_mismatch, "extracted runtime SHA-256 mismatch", c, "exec-mismatch")
+                                                                                            failed
+                                                                                            ok evidence exec_mismatch_evidence => match call require_text(got.glibc_fn, "glibc", c, "glibc-fn")
+                                                                                                failed
+                                                                                                ok evidence glibc_fn_evidence => match call require_int(got.arch_map_count, 2, c, "arch-map-count")
+                                                                                                    failed
+                                                                                                    ok evidence arch_map_count_evidence => match call require_int(got.platform_branch_count, 3, c, "platform-branch-count")
+                                                                                                        failed
+                                                                                                        ok evidence platform_branch_count_evidence => match call require_int(got.version_gate_count, 2, c, "version-gate-count")
+                                                                                                            failed
+                                                                                                            ok evidence version_gate_count_evidence => match call require_int(got.digest_gate_count, 2, c, "digest-gate-count")
+                                                                                                                failed
+                                                                                                                ok evidence digest_gate_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        edge_scope: "m43-e001" => ok test_case("edge/native-platform-archive", ["edge", "m43"], [], 120000, [check_ref("arch-fn"), check_ref("machine-name-a"), check_ref("machine-name-b"), check_ref("amd-name"), check_ref("arm-name"), check_ref("os-release"), check_ref("getconf-bin"), check_ref("libc-query"), check_ref("min-os-key"), check_ref("version-id-key"), check_ref("arch-key"), check_ref("linux-name"), check_ref("darwin-name"), check_ref("debian-id"), check_ref("upstream-key"), check_ref("size-key"), check_ref("sha-key"), check_ref("member-key"), check_ref("exec-key"), check_ref("size-mismatch"), check_ref("exec-mismatch"), check_ref("glibc-fn"), check_ref("arch-map-count"), check_ref("platform-branch-count"), check_ref("version-gate-count"), check_ref("digest-gate-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m43-e001"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("edge/native-platform-archive", ["edge", "m43"], [], 120000, [check_ref("arch-fn"), check_ref("machine-name-a"), check_ref("machine-name-b"), check_ref("amd-name"), check_ref("arm-name"), check_ref("os-release"), check_ref("getconf-bin"), check_ref("libc-query"), check_ref("min-os-key"), check_ref("version-id-key"), check_ref("arch-key"), check_ref("linux-name"), check_ref("darwin-name"), check_ref("debian-id"), check_ref("upstream-key"), check_ref("size-key"), check_ref("sha-key"), check_ref("member-key"), check_ref("exec-key"), check_ref("size-mismatch"), check_ref("exec-mismatch"), check_ref("glibc-fn"), check_ref("arch-map-count"), check_ref("platform-branch-count"), check_ref("version-gate-count"), check_ref("digest-gate-count")], callable case_body)
