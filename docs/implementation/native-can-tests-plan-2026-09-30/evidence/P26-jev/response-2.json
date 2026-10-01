@@ -1,0 +1,19 @@
+{
+ "model": "jev-1.13.0",
+ "answers": {
+  "observation_origin": {
+   "type": "choice",
+   "choice": "seed_built_oracle",
+   "confidence": 0.99,
+   "probabilities": {
+    "dual_build_agreement": 0.0,
+    "seed_built_oracle": 1.0,
+    "fixed_vectors": 0.0
+   }
+  }
+ },
+ "usage": {
+  "input_tokens": 1143,
+  "output_tokens": 54
+ }
+}
