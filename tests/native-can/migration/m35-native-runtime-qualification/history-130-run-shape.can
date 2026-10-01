@@ -1,0 +1,258 @@
+package m35history130run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M35 HISTORY-130 "refuse missing
+/// AsyncLocalStorage without fallback"
+/// call shape.
+/// Source: tests/conformance/native.test.ts
+/// symbol "refuse missing AsyncLocalStorage
+/// without fallback" (L36-39): one test call
+/// opens async, binds one const report and
+/// closes after four lines.
+/// Disposition: migrate (same row pact as the
+/// base slice; this file owns the call shape
+/// plus the span tallies).
+/// Protects (this file): the test call
+/// spellings, the open plus close shapes and
+/// the span tallies over L36-39.
+/// ADAPTATION (recorded, with source lines):
+/// name pins hold ident spellings; shape pins
+/// hold line bytes; count pins hold ints
+/// tallied from L36-39.
+/// test-fn pins test (L36); async-marker
+/// pins async (L36); await-marker pins await
+/// (L37); const-decl pins const (L37);
+/// open-shape pins async()=>{ (L36);
+/// close-shape pins }); (L39);
+/// span-test-count pins int (1) from L36-39;
+/// span-const-count pins int (1) from
+/// L36-39; span-arrow-count pins int (2)
+/// from L36-39; span-name-count pins int (3)
+/// from L36-39; line-count pins int (4) from
+/// L36-39; span-async-count pins int (1)
+/// from L36-39.
+/// Facet map (line order): test-fn,
+/// async-marker, await-marker, const-decl,
+/// open-shape, close-shape, span-test-count,
+/// span-const-count, span-arrow-count,
+/// span-name-count, line-count,
+/// span-async-count.
+/// The injection pact lives in
+/// history-130-base-semantics.can; the fail
+/// closed reason plus assert roots live in
+/// history-130-roots-green.can.
+/// Variants: none (row lists zero variants;
+/// default plus seeded drifts only).
+/// Environment: pinned Bun runtime/native
+/// host (row lists one gate; binds at QN2;
+/// no live run now).
+/// Logical gate N2 binds at QN2; no live
+/// run now.
+/// Timeout 120000ms is the offline default
+/// bound (no bun timeout in this row; binds
+/// at P23 like the M31 no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23/QN2
+/// accept gates unmet).
+/// Case history/async-injection-run checks:
+/// test-fn, async-marker, await-marker,
+/// const-decl, open-shape, close-shape,
+/// span-test-count, span-const-count,
+/// span-arrow-count, span-name-count,
+/// line-count, span-async-count.
+/// Shared old files untouched; retirement is
+/// a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str test_fn
+    str async_marker
+    str await_marker
+    str const_decl
+    str open_shape
+    str close_shape
+    int span_test_count
+    int span_const_count
+    int span_arrow_count
+    int span_name_count
+    int line_count
+    int span_async_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/async-injection-run", "default", "", "offline"), "test-fn" => ok "case history/async-injection-run variant default root test-fn run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/async-injection-run", "default", "", "offline"), "test-fn" => ok evidence("test-fn", "true", "true", true, "case history/async-injection-run variant default root test-fn run offline")
+        different: false, true, context("history/async-injection-run", "default", "", "offline"), "test-fn" => failed{"test-fn"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("history/async-injection-run", "default", "", "offline"), "span-test-count" => ok evidence("span-test-count", "1", "1", true, "case history/async-injection-run variant default root span-test-count run offline")
+        different: 0, 1, context("history/async-injection-run", "default", "", "offline"), "span-test-count" => failed{"span-test-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "test", "test", context("history/async-injection-run", "default", "", "offline"), "test-fn" => ok evidence("test-fn", "test", "test", true, "case history/async-injection-run variant default root test-fn run offline")
+        different: "test_2", "test", context("history/async-injection-run", "default", "", "offline"), "test-fn" => failed{"test-fn"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("test", "async", "await", "const", "async()=>{", "});", 1, 1, 2, 3, 4, 1)
+        seed_test_fn: "seed-test-fn-drift" => ok observation("test_2", "async", "await", "const", "async()=>{", "});", 1, 1, 2, 3, 4, 1)
+        seed_async_marker: "seed-async-marker-drift" => ok observation("test", "async_2", "await", "const", "async()=>{", "});", 1, 1, 2, 3, 4, 1)
+        seed_await_marker: "seed-await-marker-drift" => ok observation("test", "async", "await_2", "const", "async()=>{", "});", 1, 1, 2, 3, 4, 1)
+        seed_const_decl: "seed-const-decl-drift" => ok observation("test", "async", "await", "const_2", "async()=>{", "});", 1, 1, 2, 3, 4, 1)
+        seed_open_shape: "seed-open-shape-drift" => ok observation("test", "async", "await", "const", "async()=>{_2", "});", 1, 1, 2, 3, 4, 1)
+        seed_close_shape: "seed-close-shape-drift" => ok observation("test", "async", "await", "const", "async()=>{", "});_2", 1, 1, 2, 3, 4, 1)
+        seed_span_test_count: "seed-span-test-count-drift" => ok observation("test", "async", "await", "const", "async()=>{", "});", 0, 1, 2, 3, 4, 1)
+        seed_span_const_count: "seed-span-const-count-drift" => ok observation("test", "async", "await", "const", "async()=>{", "});", 1, 0, 2, 3, 4, 1)
+        seed_span_arrow_count: "seed-span-arrow-count-drift" => ok observation("test", "async", "await", "const", "async()=>{", "});", 1, 1, 1, 3, 4, 1)
+        seed_span_name_count: "seed-span-name-count-drift" => ok observation("test", "async", "await", "const", "async()=>{", "});", 1, 1, 2, 2, 4, 1)
+        seed_line_count: "seed-line-count-drift" => ok observation("test", "async", "await", "const", "async()=>{", "});", 1, 1, 2, 3, 3, 1)
+        seed_span_async_count: "seed-span-async-count-drift" => ok observation("test", "async", "await", "const", "async()=>{", "});", 1, 1, 2, 3, 4, 0)
+    match variant_id
+        "seed-test-fn-drift" => ok observation("test_2", "async", "await", "const", "async()=>{", "});", 1, 1, 2, 3, 4, 1)
+        "seed-async-marker-drift" => ok observation("test", "async_2", "await", "const", "async()=>{", "});", 1, 1, 2, 3, 4, 1)
+        "seed-await-marker-drift" => ok observation("test", "async", "await_2", "const", "async()=>{", "});", 1, 1, 2, 3, 4, 1)
+        "seed-const-decl-drift" => ok observation("test", "async", "await", "const_2", "async()=>{", "});", 1, 1, 2, 3, 4, 1)
+        "seed-open-shape-drift" => ok observation("test", "async", "await", "const", "async()=>{_2", "});", 1, 1, 2, 3, 4, 1)
+        "seed-close-shape-drift" => ok observation("test", "async", "await", "const", "async()=>{", "});_2", 1, 1, 2, 3, 4, 1)
+        "seed-span-test-count-drift" => ok observation("test", "async", "await", "const", "async()=>{", "});", 0, 1, 2, 3, 4, 1)
+        "seed-span-const-count-drift" => ok observation("test", "async", "await", "const", "async()=>{", "});", 1, 0, 2, 3, 4, 1)
+        "seed-span-arrow-count-drift" => ok observation("test", "async", "await", "const", "async()=>{", "});", 1, 1, 1, 3, 4, 1)
+        "seed-span-name-count-drift" => ok observation("test", "async", "await", "const", "async()=>{", "});", 1, 1, 2, 2, 4, 1)
+        "seed-line-count-drift" => ok observation("test", "async", "await", "const", "async()=>{", "});", 1, 1, 2, 3, 3, 1)
+        "seed-span-async-count-drift" => ok observation("test", "async", "await", "const", "async()=>{", "});", 1, 1, 2, 3, 4, 0)
+        _ => ok observation("test", "async", "await", "const", "async()=>{", "});", 1, 1, 2, 3, 4, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m35_h130: "m35-h130" => ok [check("test-fn", "test keeps its name"), check("async-marker", "async marker keeps its spelling"), check("await-marker", "await keeps its spelling"), check("const-decl", "const keeps its spelling"), check("open-shape", "open keeps its shape"), check("close-shape", "close keeps its shape"), check("span-test-count", "one test call in span"), check("span-const-count", "one const in span"), check("span-arrow-count", "two arrows in span"), check("span-name-count", "three names in span"), check("line-count", "four lines bound the span"), check("span-async-count", "one async in span")]
+        other: "nope" => ok []
+    match scope is "m35-h130"
+        false => ok []
+        true => ok [check("test-fn", "test keeps its name"), check("async-marker", "async marker keeps its spelling"), check("await-marker", "await keeps its spelling"), check("const-decl", "const keeps its spelling"), check("open-shape", "open keeps its shape"), check("close-shape", "close keeps its shape"), check("span-test-count", "one test call in span"), check("span-const-count", "one const in span"), check("span-arrow-count", "two arrows in span"), check("span-name-count", "three names in span"), check("line-count", "four lines bound the span"), check("span-async-count", "one async in span")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/async-injection-run" => ok [expected_check("test-fn", "test"), expected_check("async-marker", "async"), expected_check("await-marker", "await"), expected_check("const-decl", "const"), expected_check("open-shape", "async()=>{"), expected_check("close-shape", "});"), expected_check("span-test-count", "1"), expected_check("span-const-count", "1"), expected_check("span-arrow-count", "2"), expected_check("span-name-count", "3"), expected_check("line-count", "4"), expected_check("span-async-count", "1")]
+        unknown: "nope" => ok []
+    match case is "history/async-injection-run"
+        false => ok []
+        true => ok [expected_check("test-fn", "test"), expected_check("async-marker", "async"), expected_check("await-marker", "await"), expected_check("const-decl", "const"), expected_check("open-shape", "async()=>{"), expected_check("close-shape", "});"), expected_check("span-test-count", "1"), expected_check("span-const-count", "1"), expected_check("span-arrow-count", "2"), expected_check("span-name-count", "3"), expected_check("line-count", "4"), expected_check("span-async-count", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/async-injection-run", "default", "", "offline") => ok
+        seed_test_fn: context("history/async-injection-run", "seed-test-fn-drift", "", "offline") => failed{"test-fn"}
+        seed_async_marker: context("history/async-injection-run", "seed-async-marker-drift", "", "offline") => failed{"async-marker"}
+        seed_await_marker: context("history/async-injection-run", "seed-await-marker-drift", "", "offline") => failed{"await-marker"}
+        seed_const_decl: context("history/async-injection-run", "seed-const-decl-drift", "", "offline") => failed{"const-decl"}
+        seed_open_shape: context("history/async-injection-run", "seed-open-shape-drift", "", "offline") => failed{"open-shape"}
+        seed_close_shape: context("history/async-injection-run", "seed-close-shape-drift", "", "offline") => failed{"close-shape"}
+        seed_span_test_count: context("history/async-injection-run", "seed-span-test-count-drift", "", "offline") => failed{"span-test-count"}
+        seed_span_const_count: context("history/async-injection-run", "seed-span-const-count-drift", "", "offline") => failed{"span-const-count"}
+        seed_span_arrow_count: context("history/async-injection-run", "seed-span-arrow-count-drift", "", "offline") => failed{"span-arrow-count"}
+        seed_span_name_count: context("history/async-injection-run", "seed-span-name-count-drift", "", "offline") => failed{"span-name-count"}
+        seed_line_count: context("history/async-injection-run", "seed-line-count-drift", "", "offline") => failed{"line-count"}
+        seed_span_async_count: context("history/async-injection-run", "seed-span-async-count-drift", "", "offline") => failed{"span-async-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.test_fn, "test", c, "test-fn")
+            failed
+            ok evidence test_fn_evidence => match call require_text(got.async_marker, "async", c, "async-marker")
+                failed
+                ok evidence async_marker_evidence => match call require_text(got.await_marker, "await", c, "await-marker")
+                    failed
+                    ok evidence await_marker_evidence => match call require_text(got.const_decl, "const", c, "const-decl")
+                        failed
+                        ok evidence const_decl_evidence => match call require_text(got.open_shape, "async()=>{", c, "open-shape")
+                            failed
+                            ok evidence open_shape_evidence => match call require_text(got.close_shape, "});", c, "close-shape")
+                                failed
+                                ok evidence close_shape_evidence => match call require_int(got.span_test_count, 1, c, "span-test-count")
+                                    failed
+                                    ok evidence span_test_count_evidence => match call require_int(got.span_const_count, 1, c, "span-const-count")
+                                        failed
+                                        ok evidence span_const_count_evidence => match call require_int(got.span_arrow_count, 2, c, "span-arrow-count")
+                                            failed
+                                            ok evidence span_arrow_count_evidence => match call require_int(got.span_name_count, 3, c, "span-name-count")
+                                                failed
+                                                ok evidence span_name_count_evidence => match call require_int(got.line_count, 4, c, "line-count")
+                                                    failed
+                                                    ok evidence line_count_evidence => match call require_int(got.span_async_count, 1, c, "span-async-count")
+                                                        failed
+                                                        ok evidence span_async_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m35_h130: "m35-h130" => ok test_case("history/async-injection-run", ["history", "m35"], [], 120000, [check_ref("test-fn"), check_ref("async-marker"), check_ref("await-marker"), check_ref("const-decl"), check_ref("open-shape"), check_ref("close-shape"), check_ref("span-test-count"), check_ref("span-const-count"), check_ref("span-arrow-count"), check_ref("span-name-count"), check_ref("line-count"), check_ref("span-async-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m35-h130"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/async-injection-run", ["history", "m35"], [], 120000, [check_ref("test-fn"), check_ref("async-marker"), check_ref("await-marker"), check_ref("const-decl"), check_ref("open-shape"), check_ref("close-shape"), check_ref("span-test-count"), check_ref("span-const-count"), check_ref("span-arrow-count"), check_ref("span-name-count"), check_ref("line-count"), check_ref("span-async-count")], callable case_body)

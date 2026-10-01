@@ -1,0 +1,261 @@
+package m35history130roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M35 HISTORY-130 "refuse missing
+/// AsyncLocalStorage without fallback"
+/// fail closed roots.
+/// Source: tests/conformance/native.test.ts
+/// symbol "refuse missing AsyncLocalStorage
+/// without fallback" (L38): passed must be
+/// false and failures must hold the withheld
+/// api reason.
+/// Disposition: migrate (same row pact as the
+/// base slice; this file owns the reason
+/// bytes plus the assert chain spellings).
+/// Protects (this file): the full reason,
+/// its head, the report roots, the matcher
+/// names, the wanted flag and the tallies
+/// that bound the two asserts.
+/// ADAPTATION (recorded, with source lines):
+/// reason pins hold reason bytes; root pins
+/// hold ident spellings; name pins hold call
+/// spellings; count pins hold ints tallied
+/// from L38.
+/// reason-full pins missing native API:
+/// node:async_hooks.AsyncLocalStorage (L38);
+/// reason-head pins missing native API:
+/// (L38); passed-root pins passed (L38);
+/// failures-root pins failures (L38);
+/// expect-fn pins expect (L38); tobe-fn pins
+/// toBe (L38); tocontain-fn pins toContain
+/// (L38); passed-want pins false (L38);
+/// assert-count pins int (2) from L38;
+/// span-expect-count pins int (2) from
+/// L36-39; span-tobe-count pins int (1) from
+/// L36-39; span-tocontain-count pins int (1)
+/// from L36-39.
+/// Facet map (assert order): reason-full,
+/// reason-head, passed-root, failures-root,
+/// expect-fn, tobe-fn, tocontain-fn,
+/// passed-want, assert-count,
+/// span-expect-count, span-tobe-count,
+/// span-tocontain-count.
+/// The injection pact lives in
+/// history-130-base-semantics.can; the call
+/// shape plus span tallies live in
+/// history-130-run-shape.can.
+/// Variants: none (row lists zero variants;
+/// default plus seeded drifts only).
+/// Environment: pinned Bun runtime/native
+/// host (row lists one gate; binds at QN2;
+/// no live run now).
+/// Logical gate N2 binds at QN2; no live
+/// run now.
+/// Timeout 120000ms is the offline default
+/// bound (no bun timeout in this row; binds
+/// at P23 like the M31 no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23/QN2
+/// accept gates unmet).
+/// Case history/async-injection-roots
+/// checks: reason-full, reason-head,
+/// passed-root, failures-root, expect-fn,
+/// tobe-fn, tocontain-fn, passed-want,
+/// assert-count, span-expect-count,
+/// span-tobe-count, span-tocontain-count.
+/// Shared old files untouched; retirement is
+/// a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str reason_full
+    str reason_head
+    str passed_root
+    str failures_root
+    str expect_fn
+    str tobe_fn
+    str tocontain_fn
+    str passed_want
+    int assert_count
+    int span_expect_count
+    int span_tobe_count
+    int span_tocontain_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/async-injection-roots", "default", "", "offline"), "reason-full" => ok "case history/async-injection-roots variant default root reason-full run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/async-injection-roots", "default", "", "offline"), "reason-full" => ok evidence("reason-full", "true", "true", true, "case history/async-injection-roots variant default root reason-full run offline")
+        different: false, true, context("history/async-injection-roots", "default", "", "offline"), "reason-full" => failed{"reason-full"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("history/async-injection-roots", "default", "", "offline"), "assert-count" => ok evidence("assert-count", "2", "2", true, "case history/async-injection-roots variant default root assert-count run offline")
+        different: 1, 2, context("history/async-injection-roots", "default", "", "offline"), "assert-count" => failed{"assert-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: node:async_hooks.AsyncLocalStorage", context("history/async-injection-roots", "default", "", "offline"), "reason-full" => ok evidence("reason-full", "missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: node:async_hooks.AsyncLocalStorage", true, "case history/async-injection-roots variant default root reason-full run offline")
+        different: "missing native API: node:async_hooks.AsyncLocalStorage_2", "missing native API: node:async_hooks.AsyncLocalStorage", context("history/async-injection-roots", "default", "", "offline"), "reason-full" => failed{"reason-full"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect", "toBe", "toContain", "false", 2, 2, 1, 1)
+        seed_reason_full: "seed-reason-full-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage_2", "missing native API: ", "passed", "failures", "expect", "toBe", "toContain", "false", 2, 2, 1, 1)
+        seed_reason_head: "seed-reason-head-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: _2", "passed", "failures", "expect", "toBe", "toContain", "false", 2, 2, 1, 1)
+        seed_passed_root: "seed-passed-root-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed_2", "failures", "expect", "toBe", "toContain", "false", 2, 2, 1, 1)
+        seed_failures_root: "seed-failures-root-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures_2", "expect", "toBe", "toContain", "false", 2, 2, 1, 1)
+        seed_expect_fn: "seed-expect-fn-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect_2", "toBe", "toContain", "false", 2, 2, 1, 1)
+        seed_tobe_fn: "seed-tobe-fn-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect", "toBe_2", "toContain", "false", 2, 2, 1, 1)
+        seed_tocontain_fn: "seed-tocontain-fn-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect", "toBe", "toContain_2", "false", 2, 2, 1, 1)
+        seed_passed_want: "seed-passed-want-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect", "toBe", "toContain", "false_2", 2, 2, 1, 1)
+        seed_assert_count: "seed-assert-count-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect", "toBe", "toContain", "false", 1, 2, 1, 1)
+        seed_span_expect_count: "seed-span-expect-count-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect", "toBe", "toContain", "false", 2, 1, 1, 1)
+        seed_span_tobe_count: "seed-span-tobe-count-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect", "toBe", "toContain", "false", 2, 2, 0, 1)
+        seed_span_tocontain_count: "seed-span-tocontain-count-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect", "toBe", "toContain", "false", 2, 2, 1, 0)
+    match variant_id
+        "seed-reason-full-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage_2", "missing native API: ", "passed", "failures", "expect", "toBe", "toContain", "false", 2, 2, 1, 1)
+        "seed-reason-head-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: _2", "passed", "failures", "expect", "toBe", "toContain", "false", 2, 2, 1, 1)
+        "seed-passed-root-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed_2", "failures", "expect", "toBe", "toContain", "false", 2, 2, 1, 1)
+        "seed-failures-root-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures_2", "expect", "toBe", "toContain", "false", 2, 2, 1, 1)
+        "seed-expect-fn-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect_2", "toBe", "toContain", "false", 2, 2, 1, 1)
+        "seed-tobe-fn-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect", "toBe_2", "toContain", "false", 2, 2, 1, 1)
+        "seed-tocontain-fn-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect", "toBe", "toContain_2", "false", 2, 2, 1, 1)
+        "seed-passed-want-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect", "toBe", "toContain", "false_2", 2, 2, 1, 1)
+        "seed-assert-count-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect", "toBe", "toContain", "false", 1, 2, 1, 1)
+        "seed-span-expect-count-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect", "toBe", "toContain", "false", 2, 1, 1, 1)
+        "seed-span-tobe-count-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect", "toBe", "toContain", "false", 2, 2, 0, 1)
+        "seed-span-tocontain-count-drift" => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect", "toBe", "toContain", "false", 2, 2, 1, 0)
+        _ => ok observation("missing native API: node:async_hooks.AsyncLocalStorage", "missing native API: ", "passed", "failures", "expect", "toBe", "toContain", "false", 2, 2, 1, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m35_h130: "m35-h130" => ok [check("reason-full", "fail closed reason keeps its bytes"), check("reason-head", "reason head keeps its bytes"), check("passed-root", "passed root keeps its spelling"), check("failures-root", "failures root keeps its spelling"), check("expect-fn", "expect keeps its name"), check("tobe-fn", "toBe keeps its name"), check("tocontain-fn", "toContain keeps its name"), check("passed-want", "passed wants false"), check("assert-count", "two asserts share the line"), check("span-expect-count", "two expects in span"), check("span-tobe-count", "one toBe in span"), check("span-tocontain-count", "one toContain in span")]
+        other: "nope" => ok []
+    match scope is "m35-h130"
+        false => ok []
+        true => ok [check("reason-full", "fail closed reason keeps its bytes"), check("reason-head", "reason head keeps its bytes"), check("passed-root", "passed root keeps its spelling"), check("failures-root", "failures root keeps its spelling"), check("expect-fn", "expect keeps its name"), check("tobe-fn", "toBe keeps its name"), check("tocontain-fn", "toContain keeps its name"), check("passed-want", "passed wants false"), check("assert-count", "two asserts share the line"), check("span-expect-count", "two expects in span"), check("span-tobe-count", "one toBe in span"), check("span-tocontain-count", "one toContain in span")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/async-injection-roots" => ok [expected_check("reason-full", "missing native API: node:async_hooks.AsyncLocalStorage"), expected_check("reason-head", "missing native API: "), expected_check("passed-root", "passed"), expected_check("failures-root", "failures"), expected_check("expect-fn", "expect"), expected_check("tobe-fn", "toBe"), expected_check("tocontain-fn", "toContain"), expected_check("passed-want", "false"), expected_check("assert-count", "2"), expected_check("span-expect-count", "2"), expected_check("span-tobe-count", "1"), expected_check("span-tocontain-count", "1")]
+        unknown: "nope" => ok []
+    match case is "history/async-injection-roots"
+        false => ok []
+        true => ok [expected_check("reason-full", "missing native API: node:async_hooks.AsyncLocalStorage"), expected_check("reason-head", "missing native API: "), expected_check("passed-root", "passed"), expected_check("failures-root", "failures"), expected_check("expect-fn", "expect"), expected_check("tobe-fn", "toBe"), expected_check("tocontain-fn", "toContain"), expected_check("passed-want", "false"), expected_check("assert-count", "2"), expected_check("span-expect-count", "2"), expected_check("span-tobe-count", "1"), expected_check("span-tocontain-count", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/async-injection-roots", "default", "", "offline") => ok
+        seed_reason_full: context("history/async-injection-roots", "seed-reason-full-drift", "", "offline") => failed{"reason-full"}
+        seed_reason_head: context("history/async-injection-roots", "seed-reason-head-drift", "", "offline") => failed{"reason-head"}
+        seed_passed_root: context("history/async-injection-roots", "seed-passed-root-drift", "", "offline") => failed{"passed-root"}
+        seed_failures_root: context("history/async-injection-roots", "seed-failures-root-drift", "", "offline") => failed{"failures-root"}
+        seed_expect_fn: context("history/async-injection-roots", "seed-expect-fn-drift", "", "offline") => failed{"expect-fn"}
+        seed_tobe_fn: context("history/async-injection-roots", "seed-tobe-fn-drift", "", "offline") => failed{"tobe-fn"}
+        seed_tocontain_fn: context("history/async-injection-roots", "seed-tocontain-fn-drift", "", "offline") => failed{"tocontain-fn"}
+        seed_passed_want: context("history/async-injection-roots", "seed-passed-want-drift", "", "offline") => failed{"passed-want"}
+        seed_assert_count: context("history/async-injection-roots", "seed-assert-count-drift", "", "offline") => failed{"assert-count"}
+        seed_span_expect_count: context("history/async-injection-roots", "seed-span-expect-count-drift", "", "offline") => failed{"span-expect-count"}
+        seed_span_tobe_count: context("history/async-injection-roots", "seed-span-tobe-count-drift", "", "offline") => failed{"span-tobe-count"}
+        seed_span_tocontain_count: context("history/async-injection-roots", "seed-span-tocontain-count-drift", "", "offline") => failed{"span-tocontain-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.reason_full, "missing native API: node:async_hooks.AsyncLocalStorage", c, "reason-full")
+            failed
+            ok evidence reason_full_evidence => match call require_text(got.reason_head, "missing native API: ", c, "reason-head")
+                failed
+                ok evidence reason_head_evidence => match call require_text(got.passed_root, "passed", c, "passed-root")
+                    failed
+                    ok evidence passed_root_evidence => match call require_text(got.failures_root, "failures", c, "failures-root")
+                        failed
+                        ok evidence failures_root_evidence => match call require_text(got.expect_fn, "expect", c, "expect-fn")
+                            failed
+                            ok evidence expect_fn_evidence => match call require_text(got.tobe_fn, "toBe", c, "tobe-fn")
+                                failed
+                                ok evidence tobe_fn_evidence => match call require_text(got.tocontain_fn, "toContain", c, "tocontain-fn")
+                                    failed
+                                    ok evidence tocontain_fn_evidence => match call require_text(got.passed_want, "false", c, "passed-want")
+                                        failed
+                                        ok evidence passed_want_evidence => match call require_int(got.assert_count, 2, c, "assert-count")
+                                            failed
+                                            ok evidence assert_count_evidence => match call require_int(got.span_expect_count, 2, c, "span-expect-count")
+                                                failed
+                                                ok evidence span_expect_count_evidence => match call require_int(got.span_tobe_count, 1, c, "span-tobe-count")
+                                                    failed
+                                                    ok evidence span_tobe_count_evidence => match call require_int(got.span_tocontain_count, 1, c, "span-tocontain-count")
+                                                        failed
+                                                        ok evidence span_tocontain_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m35_h130: "m35-h130" => ok test_case("history/async-injection-roots", ["history", "m35"], [], 120000, [check_ref("reason-full"), check_ref("reason-head"), check_ref("passed-root"), check_ref("failures-root"), check_ref("expect-fn"), check_ref("tobe-fn"), check_ref("tocontain-fn"), check_ref("passed-want"), check_ref("assert-count"), check_ref("span-expect-count"), check_ref("span-tobe-count"), check_ref("span-tocontain-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m35-h130"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/async-injection-roots", ["history", "m35"], [], 120000, [check_ref("reason-full"), check_ref("reason-head"), check_ref("passed-root"), check_ref("failures-root"), check_ref("expect-fn"), check_ref("tobe-fn"), check_ref("tocontain-fn"), check_ref("passed-want"), check_ref("assert-count"), check_ref("span-expect-count"), check_ref("span-tobe-count"), check_ref("span-tocontain-count")], callable case_body)
