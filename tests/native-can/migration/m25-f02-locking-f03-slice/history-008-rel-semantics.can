@@ -1,0 +1,463 @@
+package m25history008rel
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M25 HISTORY-008 "F03 live relational slice: answer semantics".
+/// Source: tests/integration/sql_f03_test.go symbol
+/// TestF03LiveRelationalSlice (L24-242); driver
+/// tests/integration/testdata/sql/f03-live-driver.ts (L271-557)
+/// with seven report parts (L295-532).
+/// Disposition: migrate (this row ports TestF03LiveRelationalSlice to
+/// ordinary Can functions; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): the live relational answers: single/multi
+/// RETURNING rows with bigint identity, do-nothing first/repeat rows,
+/// native 23505 conflict errno plus constraint, duplicate/absent/
+/// two-row/wide error vocabulary outcomes and names, poisoned first/
+/// followup outcomes with 25P02, poisoned txn ok plus replay, eight/
+/// eight/one lookup settlement with race-digest winner and no poison,
+/// seven encoding roundtrips, SQLite single/multi rows, MySQL 1064
+/// errno plus eight-writer ownership mapping.
+/// ADAPTATION (recorded, with source lines): single-rows pins int (1)
+/// from the Go float compare (L154) plus driver length (driver L299);
+/// multi/conflict-first/conflict-repeat/tworow-actual/settlement/
+/// sqlite/mysql counts pin int from Go float compares (L157/L160/
+/// L178/L205/L218/L233) plus driver lengths; single-id-type pins
+/// bigint from the Go string compare (L154) plus driver typeof
+/// (driver L300); duplicate/absent/tworow/wide/first/followup
+/// outcomes pin domain from the Go verdicts (L171/L175/L178/L181/
+/// L189/L192) plus driver outcomeOf (driver L268-269); txn-outcome
+/// pins ok from the Go verdict (L196) plus driver outcomeOf;
+/// replay-ok pins true from the Go guard (L199) plus driver
+/// replay_ok (driver L373); saw-poisoned pins false from the Go
+/// guard (L208) plus driver saw_25P02 (driver L423); encoding legs
+/// pin true from the Go guard (L214) plus driver flags (driver
+/// L437-455); mysql-errno pins int (1064) from the Go float compare
+/// (L229) plus driver errno (driver L475).
+/// Facet map (Go verdict legs): single-rows/single-id-type pin 1/
+/// bigint (L154-155); multi-rows pins 3 (L157-158);
+/// conflict-first-rows/conflict-repeat-rows pin 1/0 (L160-161);
+/// conflict-errno/conflict-constraint pin 23505 plus the deliveries
+/// pkey (L163-164); duplicate-outcome/duplicate-name pin
+/// domain/sql::constraint_failed (L171) plus the pkey (L172);
+/// absent-outcome/absent-name pin domain/sql::row_missing (L175);
+/// tworow-outcome/tworow-name/tworow-actual pin domain/
+/// sql::row_count/2 (L178); wide-outcome/wide-name/wide-reason pin
+/// domain/sql::schema_mismatch/extra_column (L181);
+/// first-outcome/first-name pin domain/sql::constraint_failed
+/// (L189); followup-outcome/followup-name/followup-code pin domain/
+/// sql::query_failed/25P02 (L192-193); txn-outcome pins ok (L196);
+/// replay-ok pins true (L199); writers/settled/accepted pin 8/8/1
+/// (L205); winner-digest/saw-poisoned pin race-digest/false (L208);
+/// null-audit-none/minor-unit/ms-epoch/set-audit/json-codec/
+/// int64-max/int64-min pin true (L214); sqlite-single/sqlite-multi
+/// pin 1/3 (L218); mysql-errno pins 1064 (L229);
+/// mysql-writers/mysql-all-own/mysql-distinct pin 8/true/8 (L233).
+/// The roots-green pin lives in history-008-roots-green.can; the
+/// run shape plus diagnostics live in
+/// history-008-run-shape.can.
+/// Variants: PG RETURNING, error vocabulary, aborted transaction
+/// plus replay, eight-writer race, encoding edges, SQLite, optional
+/// MySQL (all in Go order).
+/// Environment: CAN_TEST_POSTGRES_URL plus bun on PATH gates;
+/// CAN_TEST_MYSQL_URL is optional; requires can-test-postgres-url
+/// and bun-on-path.
+/// Logical gates SUITE/CAN/DB/NATIVE/WORK and C/R/N/S/A identities
+/// bind at P23; no live run now. Accept gates P23/QD1 (plus
+/// QN1/QD2/QD3/QD4) are unmet. F03 timeout 240000ms mirrors the Go
+/// 4-minute ctx (sql_f03_test.go L45).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QD1 unmet).
+/// Case history/f03-rel checks: single-rows, single-id-type,
+/// multi-rows, conflict-first-rows, conflict-repeat-rows,
+/// conflict-errno, conflict-constraint, duplicate-outcome,
+/// duplicate-name, duplicate-constraint, absent-outcome,
+/// absent-name, tworow-outcome, tworow-name, tworow-actual,
+/// wide-outcome, wide-name, wide-reason, first-outcome,
+/// first-name, followup-outcome, followup-name, followup-code,
+/// txn-outcome, replay-ok, writers, settled, accepted,
+/// winner-digest, saw-poisoned, null-audit-none, minor-unit,
+/// ms-epoch, set-audit, json-codec, int64-max, int64-min,
+/// sqlite-single, sqlite-multi, mysql-errno, mysql-writers,
+/// mysql-all-own, mysql-distinct.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int single_rows
+    str single_id_type
+    int multi_rows
+    int conflict_first_rows
+    int conflict_repeat_rows
+    str conflict_errno
+    str conflict_constraint
+    str duplicate_outcome
+    str duplicate_name
+    str duplicate_constraint
+    str absent_outcome
+    str absent_name
+    str tworow_outcome
+    str tworow_name
+    int tworow_actual
+    str wide_outcome
+    str wide_name
+    str wide_reason
+    str first_outcome
+    str first_name
+    str followup_outcome
+    str followup_name
+    str followup_code
+    str txn_outcome
+    bool replay_ok
+    int writers
+    int settled
+    int accepted
+    str winner_digest
+    bool saw_poisoned
+    bool null_audit_none
+    bool minor_unit
+    bool ms_epoch
+    bool set_audit
+    bool json_codec
+    bool int64_max
+    bool int64_min
+    int sqlite_single
+    int sqlite_multi
+    int mysql_errno
+    int mysql_writers
+    bool mysql_all_own
+    int mysql_distinct
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/f03-rel", "default", "", "offline"), "single-rows" => ok "case history/f03-rel variant default root single-rows run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/f03-rel", "default", "", "offline"), "replay-ok" => ok evidence("replay-ok", "true", "true", true, "case history/f03-rel variant default root replay-ok run offline")
+        different: false, true, context("history/f03-rel", "default", "", "offline"), "replay-ok" => failed{"replay-ok"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("history/f03-rel", "default", "", "offline"), "single-rows" => ok evidence("single-rows", "1", "1", true, "case history/f03-rel variant default root single-rows run offline")
+        different: 2, 1, context("history/f03-rel", "default", "", "offline"), "single-rows" => failed{"single-rows"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "bigint", "bigint", context("history/f03-rel", "default", "", "offline"), "single-id-type" => ok evidence("single-id-type", "bigint", "bigint", true, "case history/f03-rel variant default root single-id-type run offline")
+        different: "bigint_2", "bigint", context("history/f03-rel", "default", "", "offline"), "single-id-type" => failed{"single-id-type"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_single_rows: "seed-single-rows-drift" => ok observation(2, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_single_id_type: "seed-single-id-type-drift" => ok observation(1, "number", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_multi_rows: "seed-multi-rows-drift" => ok observation(1, "bigint", 2, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_conflict_first_rows: "seed-conflict-first-rows-drift" => ok observation(1, "bigint", 3, 0, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_conflict_repeat_rows: "seed-conflict-repeat-rows-drift" => ok observation(1, "bigint", 3, 1, 1, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_conflict_errno: "seed-conflict-errno-drift" => ok observation(1, "bigint", 3, 1, 0, "23514", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_conflict_constraint: "seed-conflict-constraint-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_digest_key", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_duplicate_outcome: "seed-duplicate-outcome-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "ok", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_duplicate_name: "seed-duplicate-name-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::query_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_duplicate_constraint: "seed-duplicate-constraint-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_gen_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_absent_outcome: "seed-absent-outcome-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "ok", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_absent_name: "seed-absent-name-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_count", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_tworow_outcome: "seed-tworow-outcome-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "ok", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_tworow_name: "seed-tworow-name-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_missing", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_tworow_actual: "seed-tworow-actual-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 3, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_wide_outcome: "seed-wide-outcome-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "ok", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_wide_name: "seed-wide-name-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::row_count", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_wide_reason: "seed-wide-reason-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "missing_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_first_outcome: "seed-first-outcome-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "ok", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_first_name: "seed-first-name-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::query_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_followup_outcome: "seed-followup-outcome-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "ok", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_followup_name: "seed-followup-name-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::constraint_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_followup_code: "seed-followup-code-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "23505", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_txn_outcome: "seed-txn-outcome-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "domain", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_replay_ok: "seed-replay-ok-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", false, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_writers: "seed-writers-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 7, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_settled: "seed-settled-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 7, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_accepted: "seed-accepted-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 2, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_winner_digest: "seed-winner-digest-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest_2", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_saw_poisoned: "seed-saw-poisoned-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", true, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_null_audit_none: "seed-null-audit-none-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, false, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_minor_unit: "seed-minor-unit-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, false, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_ms_epoch: "seed-ms-epoch-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, false, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_set_audit: "seed-set-audit-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, false, true, true, true, 1, 3, 1064, 8, true, 8)
+        seed_json_codec: "seed-json-codec-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, false, true, true, 1, 3, 1064, 8, true, 8)
+        seed_int64_max: "seed-int64-max-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, false, true, 1, 3, 1064, 8, true, 8)
+        seed_int64_min: "seed-int64-min-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, false, 1, 3, 1064, 8, true, 8)
+        seed_sqlite_single: "seed-sqlite-single-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 2, 3, 1064, 8, true, 8)
+        seed_sqlite_multi: "seed-sqlite-multi-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 2, 1064, 8, true, 8)
+        seed_mysql_errno: "seed-mysql-errno-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1065, 8, true, 8)
+        seed_mysql_writers: "seed-mysql-writers-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 7, true, 8)
+        seed_mysql_all_own: "seed-mysql-all-own-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, false, 8)
+        seed_mysql_distinct: "seed-mysql-distinct-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 7)
+    match variant_id
+        "seed-single-rows-drift" => ok observation(2, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-single-id-type-drift" => ok observation(1, "number", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-multi-rows-drift" => ok observation(1, "bigint", 2, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-conflict-first-rows-drift" => ok observation(1, "bigint", 3, 0, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-conflict-repeat-rows-drift" => ok observation(1, "bigint", 3, 1, 1, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-conflict-errno-drift" => ok observation(1, "bigint", 3, 1, 0, "23514", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-conflict-constraint-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_digest_key", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-duplicate-outcome-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "ok", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-duplicate-name-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::query_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-duplicate-constraint-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_gen_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-absent-outcome-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "ok", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-absent-name-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_count", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-tworow-outcome-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "ok", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-tworow-name-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_missing", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-tworow-actual-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 3, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-wide-outcome-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "ok", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-wide-name-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::row_count", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-wide-reason-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "missing_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-first-outcome-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "ok", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-first-name-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::query_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-followup-outcome-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "ok", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-followup-name-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::constraint_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-followup-code-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "23505", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-txn-outcome-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "domain", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-replay-ok-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", false, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-writers-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 7, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-settled-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 7, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-accepted-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 2, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-winner-digest-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest_2", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-saw-poisoned-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", true, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-null-audit-none-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, false, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-minor-unit-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, false, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-ms-epoch-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, false, true, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-set-audit-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, false, true, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-json-codec-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, false, true, true, 1, 3, 1064, 8, true, 8)
+        "seed-int64-max-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, false, true, 1, 3, 1064, 8, true, 8)
+        "seed-int64-min-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, false, 1, 3, 1064, 8, true, 8)
+        "seed-sqlite-single-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 2, 3, 1064, 8, true, 8)
+        "seed-sqlite-multi-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 2, 1064, 8, true, 8)
+        "seed-mysql-errno-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1065, 8, true, 8)
+        "seed-mysql-writers-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 7, true, 8)
+        "seed-mysql-all-own-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, false, 8)
+        "seed-mysql-distinct-drift" => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 7)
+        _ => ok observation(1, "bigint", 3, 1, 0, "23505", "f03_deliveries_pkey", "domain", "sql::constraint_failed", "f03_deliveries_pkey", "domain", "sql::row_missing", "domain", "sql::row_count", 2, "domain", "sql::schema_mismatch", "extra_column", "domain", "sql::constraint_failed", "domain", "sql::query_failed", "25P02", "ok", true, 8, 8, 1, "race-digest", false, true, true, true, true, true, true, true, 1, 3, 1064, 8, true, 8)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m25_h008: "m25-h008" => ok [check("single-rows", "single insert returns one row"), check("single-id-type", "single id decodes as bigint"), check("multi-rows", "multi insert returns three rows"), check("conflict-first-rows", "do-nothing first insert returns one row"), check("conflict-repeat-rows", "do-nothing repeat returns zero rows"), check("conflict-errno", "conflict surfaces errno 23505"), check("conflict-constraint", "conflict names the deliveries pkey"), check("duplicate-outcome", "duplicate insert is a domain outcome"), check("duplicate-name", "duplicate names constraint failed"), check("duplicate-constraint", "duplicate names the deliveries pkey"), check("absent-outcome", "absent one is a domain outcome"), check("absent-name", "absent one names row missing"), check("tworow-outcome", "two-row one is a domain outcome"), check("tworow-name", "two-row one names row count"), check("tworow-actual", "two-row one reports actual two"), check("wide-outcome", "wide decode is a domain outcome"), check("wide-name", "wide decode names schema mismatch"), check("wide-reason", "wide decode reasons extra column"), check("first-outcome", "poisoning statement is a domain outcome"), check("first-name", "poisoning names constraint failed"), check("followup-outcome", "poisoned followup is a domain outcome"), check("followup-name", "poisoned followup names query failed"), check("followup-code", "poisoned followup codes 25P02"), check("txn-outcome", "poisoned txn still resolves ok"), check("replay-ok", "replay after abort succeeds"), check("writers", "eight lookup-first writers start"), check("settled", "eight writers settle"), check("accepted", "one writer wins"), check("winner-digest", "winner holds race digest"), check("saw-poisoned", "no writer sees 25P02"), check("null-audit-none", "null audit decodes to none"), check("minor-unit", "money keeps minor units"), check("ms-epoch", "times keep ms epochs"), check("set-audit", "set audit round-trips"), check("json-codec", "json codec round-trips"), check("int64-max", "int64 max round-trips"), check("int64-min", "int64 min round-trips"), check("sqlite-single", "sqlite single returns one row"), check("sqlite-multi", "sqlite multi returns three rows"), check("mysql-errno", "mysql returning rejects with 1064"), check("mysql-writers", "eight mysql writers map"), check("mysql-all-own", "every mysql writer owns its row"), check("mysql-distinct", "mysql ids are all distinct")]
+        other: "nope" => ok []
+    match scope is "m25-h008"
+        false => ok []
+        true => ok [check("single-rows", "single insert returns one row"), check("single-id-type", "single id decodes as bigint"), check("multi-rows", "multi insert returns three rows"), check("conflict-first-rows", "do-nothing first insert returns one row"), check("conflict-repeat-rows", "do-nothing repeat returns zero rows"), check("conflict-errno", "conflict surfaces errno 23505"), check("conflict-constraint", "conflict names the deliveries pkey"), check("duplicate-outcome", "duplicate insert is a domain outcome"), check("duplicate-name", "duplicate names constraint failed"), check("duplicate-constraint", "duplicate names the deliveries pkey"), check("absent-outcome", "absent one is a domain outcome"), check("absent-name", "absent one names row missing"), check("tworow-outcome", "two-row one is a domain outcome"), check("tworow-name", "two-row one names row count"), check("tworow-actual", "two-row one reports actual two"), check("wide-outcome", "wide decode is a domain outcome"), check("wide-name", "wide decode names schema mismatch"), check("wide-reason", "wide decode reasons extra column"), check("first-outcome", "poisoning statement is a domain outcome"), check("first-name", "poisoning names constraint failed"), check("followup-outcome", "poisoned followup is a domain outcome"), check("followup-name", "poisoned followup names query failed"), check("followup-code", "poisoned followup codes 25P02"), check("txn-outcome", "poisoned txn still resolves ok"), check("replay-ok", "replay after abort succeeds"), check("writers", "eight lookup-first writers start"), check("settled", "eight writers settle"), check("accepted", "one writer wins"), check("winner-digest", "winner holds race digest"), check("saw-poisoned", "no writer sees 25P02"), check("null-audit-none", "null audit decodes to none"), check("minor-unit", "money keeps minor units"), check("ms-epoch", "times keep ms epochs"), check("set-audit", "set audit round-trips"), check("json-codec", "json codec round-trips"), check("int64-max", "int64 max round-trips"), check("int64-min", "int64 min round-trips"), check("sqlite-single", "sqlite single returns one row"), check("sqlite-multi", "sqlite multi returns three rows"), check("mysql-errno", "mysql returning rejects with 1064"), check("mysql-writers", "eight mysql writers map"), check("mysql-all-own", "every mysql writer owns its row"), check("mysql-distinct", "mysql ids are all distinct")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/f03-rel" => ok [expected_check("single-rows", "1"), expected_check("single-id-type", "bigint"), expected_check("multi-rows", "3"), expected_check("conflict-first-rows", "1"), expected_check("conflict-repeat-rows", "0"), expected_check("conflict-errno", "23505"), expected_check("conflict-constraint", "f03_deliveries_pkey"), expected_check("duplicate-outcome", "domain"), expected_check("duplicate-name", "sql::constraint_failed"), expected_check("duplicate-constraint", "f03_deliveries_pkey"), expected_check("absent-outcome", "domain"), expected_check("absent-name", "sql::row_missing"), expected_check("tworow-outcome", "domain"), expected_check("tworow-name", "sql::row_count"), expected_check("tworow-actual", "2"), expected_check("wide-outcome", "domain"), expected_check("wide-name", "sql::schema_mismatch"), expected_check("wide-reason", "extra_column"), expected_check("first-outcome", "domain"), expected_check("first-name", "sql::constraint_failed"), expected_check("followup-outcome", "domain"), expected_check("followup-name", "sql::query_failed"), expected_check("followup-code", "25P02"), expected_check("txn-outcome", "ok"), expected_check("replay-ok", "true"), expected_check("writers", "8"), expected_check("settled", "8"), expected_check("accepted", "1"), expected_check("winner-digest", "race-digest"), expected_check("saw-poisoned", "false"), expected_check("null-audit-none", "true"), expected_check("minor-unit", "true"), expected_check("ms-epoch", "true"), expected_check("set-audit", "true"), expected_check("json-codec", "true"), expected_check("int64-max", "true"), expected_check("int64-min", "true"), expected_check("sqlite-single", "1"), expected_check("sqlite-multi", "3"), expected_check("mysql-errno", "1064"), expected_check("mysql-writers", "8"), expected_check("mysql-all-own", "true"), expected_check("mysql-distinct", "8")]
+        unknown: "nope" => ok []
+    match case is "history/f03-rel"
+        false => ok []
+        true => ok [expected_check("single-rows", "1"), expected_check("single-id-type", "bigint"), expected_check("multi-rows", "3"), expected_check("conflict-first-rows", "1"), expected_check("conflict-repeat-rows", "0"), expected_check("conflict-errno", "23505"), expected_check("conflict-constraint", "f03_deliveries_pkey"), expected_check("duplicate-outcome", "domain"), expected_check("duplicate-name", "sql::constraint_failed"), expected_check("duplicate-constraint", "f03_deliveries_pkey"), expected_check("absent-outcome", "domain"), expected_check("absent-name", "sql::row_missing"), expected_check("tworow-outcome", "domain"), expected_check("tworow-name", "sql::row_count"), expected_check("tworow-actual", "2"), expected_check("wide-outcome", "domain"), expected_check("wide-name", "sql::schema_mismatch"), expected_check("wide-reason", "extra_column"), expected_check("first-outcome", "domain"), expected_check("first-name", "sql::constraint_failed"), expected_check("followup-outcome", "domain"), expected_check("followup-name", "sql::query_failed"), expected_check("followup-code", "25P02"), expected_check("txn-outcome", "ok"), expected_check("replay-ok", "true"), expected_check("writers", "8"), expected_check("settled", "8"), expected_check("accepted", "1"), expected_check("winner-digest", "race-digest"), expected_check("saw-poisoned", "false"), expected_check("null-audit-none", "true"), expected_check("minor-unit", "true"), expected_check("ms-epoch", "true"), expected_check("set-audit", "true"), expected_check("json-codec", "true"), expected_check("int64-max", "true"), expected_check("int64-min", "true"), expected_check("sqlite-single", "1"), expected_check("sqlite-multi", "3"), expected_check("mysql-errno", "1064"), expected_check("mysql-writers", "8"), expected_check("mysql-all-own", "true"), expected_check("mysql-distinct", "8")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/f03-rel", "default", "", "offline") => ok
+        seed_single_rows: context("history/f03-rel", "seed-single-rows-drift", "", "offline") => failed{"single-rows"}
+        seed_single_id_type: context("history/f03-rel", "seed-single-id-type-drift", "", "offline") => failed{"single-id-type"}
+        seed_multi_rows: context("history/f03-rel", "seed-multi-rows-drift", "", "offline") => failed{"multi-rows"}
+        seed_conflict_first_rows: context("history/f03-rel", "seed-conflict-first-rows-drift", "", "offline") => failed{"conflict-first-rows"}
+        seed_conflict_repeat_rows: context("history/f03-rel", "seed-conflict-repeat-rows-drift", "", "offline") => failed{"conflict-repeat-rows"}
+        seed_conflict_errno: context("history/f03-rel", "seed-conflict-errno-drift", "", "offline") => failed{"conflict-errno"}
+        seed_conflict_constraint: context("history/f03-rel", "seed-conflict-constraint-drift", "", "offline") => failed{"conflict-constraint"}
+        seed_duplicate_outcome: context("history/f03-rel", "seed-duplicate-outcome-drift", "", "offline") => failed{"duplicate-outcome"}
+        seed_duplicate_name: context("history/f03-rel", "seed-duplicate-name-drift", "", "offline") => failed{"duplicate-name"}
+        seed_duplicate_constraint: context("history/f03-rel", "seed-duplicate-constraint-drift", "", "offline") => failed{"duplicate-constraint"}
+        seed_absent_outcome: context("history/f03-rel", "seed-absent-outcome-drift", "", "offline") => failed{"absent-outcome"}
+        seed_absent_name: context("history/f03-rel", "seed-absent-name-drift", "", "offline") => failed{"absent-name"}
+        seed_tworow_outcome: context("history/f03-rel", "seed-tworow-outcome-drift", "", "offline") => failed{"tworow-outcome"}
+        seed_tworow_name: context("history/f03-rel", "seed-tworow-name-drift", "", "offline") => failed{"tworow-name"}
+        seed_tworow_actual: context("history/f03-rel", "seed-tworow-actual-drift", "", "offline") => failed{"tworow-actual"}
+        seed_wide_outcome: context("history/f03-rel", "seed-wide-outcome-drift", "", "offline") => failed{"wide-outcome"}
+        seed_wide_name: context("history/f03-rel", "seed-wide-name-drift", "", "offline") => failed{"wide-name"}
+        seed_wide_reason: context("history/f03-rel", "seed-wide-reason-drift", "", "offline") => failed{"wide-reason"}
+        seed_first_outcome: context("history/f03-rel", "seed-first-outcome-drift", "", "offline") => failed{"first-outcome"}
+        seed_first_name: context("history/f03-rel", "seed-first-name-drift", "", "offline") => failed{"first-name"}
+        seed_followup_outcome: context("history/f03-rel", "seed-followup-outcome-drift", "", "offline") => failed{"followup-outcome"}
+        seed_followup_name: context("history/f03-rel", "seed-followup-name-drift", "", "offline") => failed{"followup-name"}
+        seed_followup_code: context("history/f03-rel", "seed-followup-code-drift", "", "offline") => failed{"followup-code"}
+        seed_txn_outcome: context("history/f03-rel", "seed-txn-outcome-drift", "", "offline") => failed{"txn-outcome"}
+        seed_replay_ok: context("history/f03-rel", "seed-replay-ok-drift", "", "offline") => failed{"replay-ok"}
+        seed_writers: context("history/f03-rel", "seed-writers-drift", "", "offline") => failed{"writers"}
+        seed_settled: context("history/f03-rel", "seed-settled-drift", "", "offline") => failed{"settled"}
+        seed_accepted: context("history/f03-rel", "seed-accepted-drift", "", "offline") => failed{"accepted"}
+        seed_winner_digest: context("history/f03-rel", "seed-winner-digest-drift", "", "offline") => failed{"winner-digest"}
+        seed_saw_poisoned: context("history/f03-rel", "seed-saw-poisoned-drift", "", "offline") => failed{"saw-poisoned"}
+        seed_null_audit_none: context("history/f03-rel", "seed-null-audit-none-drift", "", "offline") => failed{"null-audit-none"}
+        seed_minor_unit: context("history/f03-rel", "seed-minor-unit-drift", "", "offline") => failed{"minor-unit"}
+        seed_ms_epoch: context("history/f03-rel", "seed-ms-epoch-drift", "", "offline") => failed{"ms-epoch"}
+        seed_set_audit: context("history/f03-rel", "seed-set-audit-drift", "", "offline") => failed{"set-audit"}
+        seed_json_codec: context("history/f03-rel", "seed-json-codec-drift", "", "offline") => failed{"json-codec"}
+        seed_int64_max: context("history/f03-rel", "seed-int64-max-drift", "", "offline") => failed{"int64-max"}
+        seed_int64_min: context("history/f03-rel", "seed-int64-min-drift", "", "offline") => failed{"int64-min"}
+        seed_sqlite_single: context("history/f03-rel", "seed-sqlite-single-drift", "", "offline") => failed{"sqlite-single"}
+        seed_sqlite_multi: context("history/f03-rel", "seed-sqlite-multi-drift", "", "offline") => failed{"sqlite-multi"}
+        seed_mysql_errno: context("history/f03-rel", "seed-mysql-errno-drift", "", "offline") => failed{"mysql-errno"}
+        seed_mysql_writers: context("history/f03-rel", "seed-mysql-writers-drift", "", "offline") => failed{"mysql-writers"}
+        seed_mysql_all_own: context("history/f03-rel", "seed-mysql-all-own-drift", "", "offline") => failed{"mysql-all-own"}
+        seed_mysql_distinct: context("history/f03-rel", "seed-mysql-distinct-drift", "", "offline") => failed{"mysql-distinct"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.single_rows, 1, c, "single-rows")
+            failed
+            ok evidence single_rows_evidence => match call require_text(got.single_id_type, "bigint", c, "single-id-type")
+                failed
+                ok evidence single_id_type_evidence => match call require_int(got.multi_rows, 3, c, "multi-rows")
+                    failed
+                    ok evidence multi_rows_evidence => match call require_int(got.conflict_first_rows, 1, c, "conflict-first-rows")
+                        failed
+                        ok evidence conflict_first_rows_evidence => match call require_int(got.conflict_repeat_rows, 0, c, "conflict-repeat-rows")
+                            failed
+                            ok evidence conflict_repeat_rows_evidence => match call require_text(got.conflict_errno, "23505", c, "conflict-errno")
+                                failed
+                                ok evidence conflict_errno_evidence => match call require_text(got.conflict_constraint, "f03_deliveries_pkey", c, "conflict-constraint")
+                                    failed
+                                    ok evidence conflict_constraint_evidence => match call require_text(got.duplicate_outcome, "domain", c, "duplicate-outcome")
+                                        failed
+                                        ok evidence duplicate_outcome_evidence => match call require_text(got.duplicate_name, "sql::constraint_failed", c, "duplicate-name")
+                                            failed
+                                            ok evidence duplicate_name_evidence => match call require_text(got.duplicate_constraint, "f03_deliveries_pkey", c, "duplicate-constraint")
+                                                failed
+                                                ok evidence duplicate_constraint_evidence => match call require_text(got.absent_outcome, "domain", c, "absent-outcome")
+                                                    failed
+                                                    ok evidence absent_outcome_evidence => match call require_text(got.absent_name, "sql::row_missing", c, "absent-name")
+                                                        failed
+                                                        ok evidence absent_name_evidence => match call require_text(got.tworow_outcome, "domain", c, "tworow-outcome")
+                                                            failed
+                                                            ok evidence tworow_outcome_evidence => match call require_text(got.tworow_name, "sql::row_count", c, "tworow-name")
+                                                                failed
+                                                                ok evidence tworow_name_evidence => match call require_int(got.tworow_actual, 2, c, "tworow-actual")
+                                                                    failed
+                                                                    ok evidence tworow_actual_evidence => match call require_text(got.wide_outcome, "domain", c, "wide-outcome")
+                                                                        failed
+                                                                        ok evidence wide_outcome_evidence => match call require_text(got.wide_name, "sql::schema_mismatch", c, "wide-name")
+                                                                            failed
+                                                                            ok evidence wide_name_evidence => match call require_text(got.wide_reason, "extra_column", c, "wide-reason")
+                                                                                failed
+                                                                                ok evidence wide_reason_evidence => match call require_text(got.first_outcome, "domain", c, "first-outcome")
+                                                                                    failed
+                                                                                    ok evidence first_outcome_evidence => match call require_text(got.first_name, "sql::constraint_failed", c, "first-name")
+                                                                                        failed
+                                                                                        ok evidence first_name_evidence => match call require_text(got.followup_outcome, "domain", c, "followup-outcome")
+                                                                                            failed
+                                                                                            ok evidence followup_outcome_evidence => match call require_text(got.followup_name, "sql::query_failed", c, "followup-name")
+                                                                                                failed
+                                                                                                ok evidence followup_name_evidence => match call require_text(got.followup_code, "25P02", c, "followup-code")
+                                                                                                    failed
+                                                                                                    ok evidence followup_code_evidence => match call require_text(got.txn_outcome, "ok", c, "txn-outcome")
+                                                                                                        failed
+                                                                                                        ok evidence txn_outcome_evidence => match call require_bool(got.replay_ok, true, c, "replay-ok")
+                                                                                                            failed
+                                                                                                            ok evidence replay_ok_evidence => match call require_int(got.writers, 8, c, "writers")
+                                                                                                                failed
+                                                                                                                ok evidence writers_evidence => match call require_int(got.settled, 8, c, "settled")
+                                                                                                                    failed
+                                                                                                                    ok evidence settled_evidence => match call require_int(got.accepted, 1, c, "accepted")
+                                                                                                                        failed
+                                                                                                                        ok evidence accepted_evidence => match call require_text(got.winner_digest, "race-digest", c, "winner-digest")
+                                                                                                                            failed
+                                                                                                                            ok evidence winner_digest_evidence => match call require_bool(got.saw_poisoned, false, c, "saw-poisoned")
+                                                                                                                                failed
+                                                                                                                                ok evidence saw_poisoned_evidence => match call require_bool(got.null_audit_none, true, c, "null-audit-none")
+                                                                                                                                    failed
+                                                                                                                                    ok evidence null_audit_none_evidence => match call require_bool(got.minor_unit, true, c, "minor-unit")
+                                                                                                                                        failed
+                                                                                                                                        ok evidence minor_unit_evidence => match call require_bool(got.ms_epoch, true, c, "ms-epoch")
+                                                                                                                                            failed
+                                                                                                                                            ok evidence ms_epoch_evidence => match call require_bool(got.set_audit, true, c, "set-audit")
+                                                                                                                                                failed
+                                                                                                                                                ok evidence set_audit_evidence => match call require_bool(got.json_codec, true, c, "json-codec")
+                                                                                                                                                    failed
+                                                                                                                                                    ok evidence json_codec_evidence => match call require_bool(got.int64_max, true, c, "int64-max")
+                                                                                                                                                        failed
+                                                                                                                                                        ok evidence int64_max_evidence => match call require_bool(got.int64_min, true, c, "int64-min")
+                                                                                                                                                            failed
+                                                                                                                                                            ok evidence int64_min_evidence => match call require_int(got.sqlite_single, 1, c, "sqlite-single")
+                                                                                                                                                                failed
+                                                                                                                                                                ok evidence sqlite_single_evidence => match call require_int(got.sqlite_multi, 3, c, "sqlite-multi")
+                                                                                                                                                                    failed
+                                                                                                                                                                    ok evidence sqlite_multi_evidence => match call require_int(got.mysql_errno, 1064, c, "mysql-errno")
+                                                                                                                                                                        failed
+                                                                                                                                                                        ok evidence mysql_errno_evidence => match call require_int(got.mysql_writers, 8, c, "mysql-writers")
+                                                                                                                                                                            failed
+                                                                                                                                                                            ok evidence mysql_writers_evidence => match call require_bool(got.mysql_all_own, true, c, "mysql-all-own")
+                                                                                                                                                                                failed
+                                                                                                                                                                                ok evidence mysql_all_own_evidence => match call require_int(got.mysql_distinct, 8, c, "mysql-distinct")
+                                                                                                                                                                                    failed
+                                                                                                                                                                                    ok evidence mysql_distinct_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m25_h008: "m25-h008" => ok test_case("history/f03-rel", ["history", "m25"], ["can-test-postgres-url", "bun-on-path"], 240000, [check_ref("single-rows"), check_ref("single-id-type"), check_ref("multi-rows"), check_ref("conflict-first-rows"), check_ref("conflict-repeat-rows"), check_ref("conflict-errno"), check_ref("conflict-constraint"), check_ref("duplicate-outcome"), check_ref("duplicate-name"), check_ref("duplicate-constraint"), check_ref("absent-outcome"), check_ref("absent-name"), check_ref("tworow-outcome"), check_ref("tworow-name"), check_ref("tworow-actual"), check_ref("wide-outcome"), check_ref("wide-name"), check_ref("wide-reason"), check_ref("first-outcome"), check_ref("first-name"), check_ref("followup-outcome"), check_ref("followup-name"), check_ref("followup-code"), check_ref("txn-outcome"), check_ref("replay-ok"), check_ref("writers"), check_ref("settled"), check_ref("accepted"), check_ref("winner-digest"), check_ref("saw-poisoned"), check_ref("null-audit-none"), check_ref("minor-unit"), check_ref("ms-epoch"), check_ref("set-audit"), check_ref("json-codec"), check_ref("int64-max"), check_ref("int64-min"), check_ref("sqlite-single"), check_ref("sqlite-multi"), check_ref("mysql-errno"), check_ref("mysql-writers"), check_ref("mysql-all-own"), check_ref("mysql-distinct")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m25-h008"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/f03-rel", ["history", "m25"], ["can-test-postgres-url", "bun-on-path"], 240000, [check_ref("single-rows"), check_ref("single-id-type"), check_ref("multi-rows"), check_ref("conflict-first-rows"), check_ref("conflict-repeat-rows"), check_ref("conflict-errno"), check_ref("conflict-constraint"), check_ref("duplicate-outcome"), check_ref("duplicate-name"), check_ref("duplicate-constraint"), check_ref("absent-outcome"), check_ref("absent-name"), check_ref("tworow-outcome"), check_ref("tworow-name"), check_ref("tworow-actual"), check_ref("wide-outcome"), check_ref("wide-name"), check_ref("wide-reason"), check_ref("first-outcome"), check_ref("first-name"), check_ref("followup-outcome"), check_ref("followup-name"), check_ref("followup-code"), check_ref("txn-outcome"), check_ref("replay-ok"), check_ref("writers"), check_ref("settled"), check_ref("accepted"), check_ref("winner-digest"), check_ref("saw-poisoned"), check_ref("null-audit-none"), check_ref("minor-unit"), check_ref("ms-epoch"), check_ref("set-audit"), check_ref("json-codec"), check_ref("int64-max"), check_ref("int64-min"), check_ref("sqlite-single"), check_ref("sqlite-multi"), check_ref("mysql-errno"), check_ref("mysql-writers"), check_ref("mysql-all-own"), check_ref("mysql-distinct")], callable case_body)
