@@ -1,0 +1,244 @@
+package m30history056run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-056 "registry.json: disposition review shape".
+/// Source: coverage-map row HISTORY-056 (historical kind, preserve_record
+/// disposition, source tests/baseline/registry.json) reviewed against the
+/// frozen bytes plus live callers plus the T26 comparison report
+/// (tests/baseline/reports/t26-agent-comparison-2026-09-24.json: task T26,
+/// trials not-run, zero attempts, seven covered cases, one deferral).
+/// Disposition: preserve_record; review decision RETAIN. Rationale: three
+/// live Go callers still decode or link the file; the T01 freeze stays the
+/// agreed registry; its 2026-09-24 day plus unrun trials are history, not
+/// new execution evidence; no live leg is retained, so no P23 leg binds.
+/// Protects (this file): the decision inputs as bounded observations:
+/// facet/variant/gate totals, disposition spelling, source path, retain
+/// verdict, live-caller total, report task/trials/attempts/coverage/
+/// deferral pins, pending-slot total and zero execution credit.
+/// ADAPTATION (recorded): decision pins the retain verdict spelling;
+/// report pins mirror the T26 report bytes (task, agentTrials status and
+/// attempts, case total, deferred total); pending-slots re-tallies 7/7
+/// pending candidate slots from the registry; execution-credit pins 0.
+/// Facet map (review): protected-facets pins 1; variant-count pins 0;
+/// env-gates pins 0; disposition pins preserve_record; source pins
+/// tests/baseline/registry.json; decision pins retain; live-callers pins
+/// 3; report-task pins T26; report-trials pins not-run; report-attempts
+/// pins 0; covered-cases pins 7; deferred-count pins 1; pending-slots pins
+/// 7; execution-credit pins 0.
+/// The base-semantics pin lives in history-056-base-semantics.can; the
+/// roots-green pin lives in history-056-roots-green.can.
+/// Variants: none. Environment: no gates; requires nothing. P23 binds no
+/// live leg here; accept gate is reviewed disposition.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (claim zero; retirement_eligible false).
+/// Case history/registry-run checks: protected-facets, variant-count,
+/// env-gates, disposition, source, decision, live-callers, report-task,
+/// report-trials, report-attempts, covered-cases, deferred-count,
+/// pending-slots, execution-credit.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int protected_facets
+    int variant_count
+    int env_gates
+    str disposition
+    str source
+    str decision
+    int live_callers
+    str report_task
+    str report_trials
+    int report_attempts
+    int covered_cases
+    int deferred_count
+    int pending_slots
+    int execution_credit
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/registry-run", "default", "", "offline"), "protected-facets" => ok "case history/registry-run variant default root protected-facets run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/registry-run", "default", "", "offline"), "protected-facets" => ok evidence("protected-facets", "true", "true", true, "case history/registry-run variant default root protected-facets run offline")
+        different: false, true, context("history/registry-run", "default", "", "offline"), "protected-facets" => failed{"protected-facets"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("history/registry-run", "default", "", "offline"), "protected-facets" => ok evidence("protected-facets", "1", "1", true, "case history/registry-run variant default root protected-facets run offline")
+        different: 0, 1, context("history/registry-run", "default", "", "offline"), "protected-facets" => failed{"protected-facets"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "preserve_record", "preserve_record", context("history/registry-run", "default", "", "offline"), "disposition" => ok evidence("disposition", "preserve_record", "preserve_record", true, "case history/registry-run variant default root disposition run offline")
+        different: "preserve_record_2", "preserve_record", context("history/registry-run", "default", "", "offline"), "disposition" => failed{"disposition"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 7, 1, 7, 0)
+        seed_protected_facets: "seed-protected-facets-drift" => ok observation(0, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 7, 1, 7, 0)
+        seed_variant_count: "seed-variant-count-drift" => ok observation(1, -1, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 7, 1, 7, 0)
+        seed_env_gates: "seed-env-gates-drift" => ok observation(1, 0, -1, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 7, 1, 7, 0)
+        seed_disposition: "seed-disposition-drift" => ok observation(1, 0, 0, "preserve_record_2", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 7, 1, 7, 0)
+        seed_source: "seed-source-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json_2", "retain", 3, "T26", "not-run", 0, 7, 1, 7, 0)
+        seed_decision: "seed-decision-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain_2", 3, "T26", "not-run", 0, 7, 1, 7, 0)
+        seed_live_callers: "seed-live-callers-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 2, "T26", "not-run", 0, 7, 1, 7, 0)
+        seed_report_task: "seed-report-task-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26_2", "not-run", 0, 7, 1, 7, 0)
+        seed_report_trials: "seed-report-trials-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run_2", 0, 7, 1, 7, 0)
+        seed_report_attempts: "seed-report-attempts-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", -1, 7, 1, 7, 0)
+        seed_covered_cases: "seed-covered-cases-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 6, 1, 7, 0)
+        seed_deferred_count: "seed-deferred-count-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 7, 0, 7, 0)
+        seed_pending_slots: "seed-pending-slots-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 7, 1, 6, 0)
+        seed_execution_credit: "seed-execution-credit-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 7, 1, 7, -1)
+    match variant_id
+        "seed-protected-facets-drift" => ok observation(0, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 7, 1, 7, 0)
+        "seed-variant-count-drift" => ok observation(1, -1, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 7, 1, 7, 0)
+        "seed-env-gates-drift" => ok observation(1, 0, -1, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 7, 1, 7, 0)
+        "seed-disposition-drift" => ok observation(1, 0, 0, "preserve_record_2", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 7, 1, 7, 0)
+        "seed-source-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json_2", "retain", 3, "T26", "not-run", 0, 7, 1, 7, 0)
+        "seed-decision-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain_2", 3, "T26", "not-run", 0, 7, 1, 7, 0)
+        "seed-live-callers-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 2, "T26", "not-run", 0, 7, 1, 7, 0)
+        "seed-report-task-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26_2", "not-run", 0, 7, 1, 7, 0)
+        "seed-report-trials-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run_2", 0, 7, 1, 7, 0)
+        "seed-report-attempts-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", -1, 7, 1, 7, 0)
+        "seed-covered-cases-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 6, 1, 7, 0)
+        "seed-deferred-count-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 7, 0, 7, 0)
+        "seed-pending-slots-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 7, 1, 6, 0)
+        "seed-execution-credit-drift" => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 7, 1, 7, -1)
+        _ => ok observation(1, 0, 0, "preserve_record", "tests/baseline/registry.json", "retain", 3, "T26", "not-run", 0, 7, 1, 7, 0)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h056: "m30-h056" => ok [check("protected-facets", "row shields one frozen-record facet"), check("variant-count", "row lists zero variants"), check("env-gates", "row lists zero environment gates"), check("disposition", "row disposition stays preserve_record"), check("source", "row source names the registry file"), check("decision", "review decision retains the frozen record"), check("live-callers", "review counts three live callers"), check("report-task", "T26 report carries the T26 task tag"), check("report-trials", "T26 report ran no agent trials"), check("report-attempts", "T26 report records zero attempts"), check("covered-cases", "T26 report covers all seven cases"), check("deferred-count", "T26 report names one deferral"), check("pending-slots", "all seven candidate slots stay pending"), check("execution-credit", "preserved history claims zero execution credit")]
+        other: "nope" => ok []
+    match scope is "m30-h056"
+        false => ok []
+        true => ok [check("protected-facets", "row shields one frozen-record facet"), check("variant-count", "row lists zero variants"), check("env-gates", "row lists zero environment gates"), check("disposition", "row disposition stays preserve_record"), check("source", "row source names the registry file"), check("decision", "review decision retains the frozen record"), check("live-callers", "review counts three live callers"), check("report-task", "T26 report carries the T26 task tag"), check("report-trials", "T26 report ran no agent trials"), check("report-attempts", "T26 report records zero attempts"), check("covered-cases", "T26 report covers all seven cases"), check("deferred-count", "T26 report names one deferral"), check("pending-slots", "all seven candidate slots stay pending"), check("execution-credit", "preserved history claims zero execution credit")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/registry-run" => ok [expected_check("protected-facets", "1"), expected_check("variant-count", "0"), expected_check("env-gates", "0"), expected_check("disposition", "preserve_record"), expected_check("source", "tests/baseline/registry.json"), expected_check("decision", "retain"), expected_check("live-callers", "3"), expected_check("report-task", "T26"), expected_check("report-trials", "not-run"), expected_check("report-attempts", "0"), expected_check("covered-cases", "7"), expected_check("deferred-count", "1"), expected_check("pending-slots", "7"), expected_check("execution-credit", "0")]
+        unknown: "nope" => ok []
+    match case is "history/registry-run"
+        false => ok []
+        true => ok [expected_check("protected-facets", "1"), expected_check("variant-count", "0"), expected_check("env-gates", "0"), expected_check("disposition", "preserve_record"), expected_check("source", "tests/baseline/registry.json"), expected_check("decision", "retain"), expected_check("live-callers", "3"), expected_check("report-task", "T26"), expected_check("report-trials", "not-run"), expected_check("report-attempts", "0"), expected_check("covered-cases", "7"), expected_check("deferred-count", "1"), expected_check("pending-slots", "7"), expected_check("execution-credit", "0")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/registry-run", "default", "", "offline") => ok
+        seed_protected_facets: context("history/registry-run", "seed-protected-facets-drift", "", "offline") => failed{"protected-facets"}
+        seed_variant_count: context("history/registry-run", "seed-variant-count-drift", "", "offline") => failed{"variant-count"}
+        seed_env_gates: context("history/registry-run", "seed-env-gates-drift", "", "offline") => failed{"env-gates"}
+        seed_disposition: context("history/registry-run", "seed-disposition-drift", "", "offline") => failed{"disposition"}
+        seed_source: context("history/registry-run", "seed-source-drift", "", "offline") => failed{"source"}
+        seed_decision: context("history/registry-run", "seed-decision-drift", "", "offline") => failed{"decision"}
+        seed_live_callers: context("history/registry-run", "seed-live-callers-drift", "", "offline") => failed{"live-callers"}
+        seed_report_task: context("history/registry-run", "seed-report-task-drift", "", "offline") => failed{"report-task"}
+        seed_report_trials: context("history/registry-run", "seed-report-trials-drift", "", "offline") => failed{"report-trials"}
+        seed_report_attempts: context("history/registry-run", "seed-report-attempts-drift", "", "offline") => failed{"report-attempts"}
+        seed_covered_cases: context("history/registry-run", "seed-covered-cases-drift", "", "offline") => failed{"covered-cases"}
+        seed_deferred_count: context("history/registry-run", "seed-deferred-count-drift", "", "offline") => failed{"deferred-count"}
+        seed_pending_slots: context("history/registry-run", "seed-pending-slots-drift", "", "offline") => failed{"pending-slots"}
+        seed_execution_credit: context("history/registry-run", "seed-execution-credit-drift", "", "offline") => failed{"execution-credit"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.protected_facets, 1, c, "protected-facets")
+            failed
+            ok evidence protected_facets_evidence => match call require_int(got.variant_count, 0, c, "variant-count")
+                failed
+                ok evidence variant_count_evidence => match call require_int(got.env_gates, 0, c, "env-gates")
+                    failed
+                    ok evidence env_gates_evidence => match call require_text(got.disposition, "preserve_record", c, "disposition")
+                        failed
+                        ok evidence disposition_evidence => match call require_text(got.source, "tests/baseline/registry.json", c, "source")
+                            failed
+                            ok evidence source_evidence => match call require_text(got.decision, "retain", c, "decision")
+                                failed
+                                ok evidence decision_evidence => match call require_int(got.live_callers, 3, c, "live-callers")
+                                    failed
+                                    ok evidence live_callers_evidence => match call require_text(got.report_task, "T26", c, "report-task")
+                                        failed
+                                        ok evidence report_task_evidence => match call require_text(got.report_trials, "not-run", c, "report-trials")
+                                            failed
+                                            ok evidence report_trials_evidence => match call require_int(got.report_attempts, 0, c, "report-attempts")
+                                                failed
+                                                ok evidence report_attempts_evidence => match call require_int(got.covered_cases, 7, c, "covered-cases")
+                                                    failed
+                                                    ok evidence covered_cases_evidence => match call require_int(got.deferred_count, 1, c, "deferred-count")
+                                                        failed
+                                                        ok evidence deferred_count_evidence => match call require_int(got.pending_slots, 7, c, "pending-slots")
+                                                            failed
+                                                            ok evidence pending_slots_evidence => match call require_int(got.execution_credit, 0, c, "execution-credit")
+                                                                failed
+                                                                ok evidence execution_credit_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h056: "m30-h056" => ok test_case("history/registry-run", ["history", "m30"], [], 60000, [check_ref("protected-facets"), check_ref("variant-count"), check_ref("env-gates"), check_ref("disposition"), check_ref("source"), check_ref("decision"), check_ref("live-callers"), check_ref("report-task"), check_ref("report-trials"), check_ref("report-attempts"), check_ref("covered-cases"), check_ref("deferred-count"), check_ref("pending-slots"), check_ref("execution-credit")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h056"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/registry-run", ["history", "m30"], [], 60000, [check_ref("protected-facets"), check_ref("variant-count"), check_ref("env-gates"), check_ref("disposition"), check_ref("source"), check_ref("decision"), check_ref("live-callers"), check_ref("report-task"), check_ref("report-trials"), check_ref("report-attempts"), check_ref("covered-cases"), check_ref("deferred-count"), check_ref("pending-slots"), check_ref("execution-credit")], callable case_body)

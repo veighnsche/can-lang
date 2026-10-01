@@ -1,0 +1,268 @@
+package m30history056base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-056 "registry.json: frozen T01 trial registry".
+/// Source: tests/baseline/registry.json (12282 bytes, md5
+/// cde032ab1b4c6f466cc540fc9f08a40a, one line, five top-level keys).
+/// Disposition: preserve_record; review decision RETAIN (live Go callers
+/// keep decoding it; its dates and unrun trials stay historical, never
+/// new execution evidence; retirement is a later integrator decision).
+/// Protects (this file): the frozen byte/provenance pins: key order and
+/// total, T01 task tag, 2026-09-24 freeze day, seven case ids in file
+/// order, the shared standard trial plus five attempts, four notes,
+/// seven pending slots, byte size and md5.
+/// ADAPTATION (recorded): top-keys pins the comma-joined key order seen
+/// at byte offsets 1/11135/11155/11723/11736; case pins follow registry
+/// order; pending-count tallies candidate status pending over 7/7 cases
+/// (T02 slot absent by design, status still pending); reg-md5 pins the
+/// md5 of the frozen bytes.
+/// Facet map (registry.json): top-keys/top-key-count pin keys (offsets
+/// 1/11135/11155/11723/11736); reg-task pins T01; reg-date pins
+/// 2026-09-24; case-count pins 7; case-one pins closed-variant-arm;
+/// case-two pins two-libraries; case-three pins fixture-link; case-four
+/// pins invoice-edit; case-five pins stream-cleanup; case-six pins
+/// invoice-grid; case-seven pins native-judgment; trial-name/trial-attempts
+/// pin standard/5; notes-count pins 4; pending-count pins 7; reg-bytes
+/// pins 12282; reg-md5 pins cde032ab1b4c6f466cc540fc9f08a40a.
+/// The roots-green pin lives in history-056-roots-green.can; the run shape
+/// plus disposition review live in history-056-run-shape.can.
+/// Variants: none. Environment: no gates; requires nothing. P23 binds no
+/// live leg here; accept gate is reviewed disposition.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (preserved history is not execution
+/// evidence; report trials are not-run with zero attempts).
+/// Case history/registry-base checks: top-keys, top-key-count, reg-task,
+/// reg-date, case-count, case-one, case-two, case-three, case-four,
+/// case-five, case-six, case-seven, trial-name, trial-attempts,
+/// notes-count, pending-count, reg-bytes, reg-md5.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str top_keys
+    int top_key_count
+    str reg_task
+    str reg_date
+    int case_count
+    str case_one
+    str case_two
+    str case_three
+    str case_four
+    str case_five
+    str case_six
+    str case_seven
+    str trial_name
+    int trial_attempts
+    int notes_count
+    int pending_count
+    int reg_bytes
+    str reg_md5
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/registry-base", "default", "", "offline"), "top-keys" => ok "case history/registry-base variant default root top-keys run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/registry-base", "default", "", "offline"), "top-keys" => ok evidence("top-keys", "true", "true", true, "case history/registry-base variant default root top-keys run offline")
+        different: false, true, context("history/registry-base", "default", "", "offline"), "top-keys" => failed{"top-keys"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 5, 5, context("history/registry-base", "default", "", "offline"), "top-key-count" => ok evidence("top-key-count", "5", "5", true, "case history/registry-base variant default root top-key-count run offline")
+        different: 4, 5, context("history/registry-base", "default", "", "offline"), "top-key-count" => failed{"top-key-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "cases,date,notes,task,trials", "cases,date,notes,task,trials", context("history/registry-base", "default", "", "offline"), "top-keys" => ok evidence("top-keys", "cases,date,notes,task,trials", "cases,date,notes,task,trials", true, "case history/registry-base variant default root top-keys run offline")
+        different: "cases,date,notes,task,trials_2", "cases,date,notes,task,trials", context("history/registry-base", "default", "", "offline"), "top-keys" => failed{"top-keys"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_top_keys: "seed-top-keys-drift" => ok observation("cases,date,notes,task,trials_2", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_top_key_count: "seed-top-key-count-drift" => ok observation("cases,date,notes,task,trials", 4, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_reg_task: "seed-reg-task-drift" => ok observation("cases,date,notes,task,trials", 5, "T01_2", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_reg_date: "seed-reg-date-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24_2", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_case_count: "seed-case-count-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 6, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_case_one: "seed-case-one-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm_2", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_case_two: "seed-case-two-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries_2", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_case_three: "seed-case-three-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link_2", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_case_four: "seed-case-four-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit_2", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_case_five: "seed-case-five-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup_2", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_case_six: "seed-case-six-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid_2", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_case_seven: "seed-case-seven-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment_2", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_trial_name: "seed-trial-name-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard_2", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_trial_attempts: "seed-trial-attempts-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 4, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_notes_count: "seed-notes-count-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 3, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_pending_count: "seed-pending-count-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 6, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_reg_bytes: "seed-reg-bytes-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12281, "cde032ab1b4c6f466cc540fc9f08a40a")
+        seed_reg_md5: "seed-reg-md5-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a_2")
+    match variant_id
+        "seed-top-keys-drift" => ok observation("cases,date,notes,task,trials_2", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        "seed-top-key-count-drift" => ok observation("cases,date,notes,task,trials", 4, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        "seed-reg-task-drift" => ok observation("cases,date,notes,task,trials", 5, "T01_2", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        "seed-reg-date-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24_2", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        "seed-case-count-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 6, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        "seed-case-one-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm_2", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        "seed-case-two-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries_2", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        "seed-case-three-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link_2", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        "seed-case-four-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit_2", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        "seed-case-five-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup_2", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        "seed-case-six-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid_2", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        "seed-case-seven-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment_2", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        "seed-trial-name-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard_2", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        "seed-trial-attempts-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 4, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        "seed-notes-count-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 3, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        "seed-pending-count-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 6, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+        "seed-reg-bytes-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12281, "cde032ab1b4c6f466cc540fc9f08a40a")
+        "seed-reg-md5-drift" => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a_2")
+        _ => ok observation("cases,date,notes,task,trials", 5, "T01", "2026-09-24", 7, "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", 5, 4, 7, 12282, "cde032ab1b4c6f466cc540fc9f08a40a")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h056: "m30-h056" => ok [check("top-keys", "registry orders five top-level keys"), check("top-key-count", "registry carries five top-level keys"), check("reg-task", "registry freezes the T01 task tag"), check("reg-date", "registry freezes the dated freeze day"), check("case-count", "registry registers seven cases"), check("case-one", "first case pins closed-variant-arm"), check("case-two", "second case pins two-libraries"), check("case-three", "third case pins fixture-link"), check("case-four", "fourth case pins invoice-edit"), check("case-five", "fifth case pins stream-cleanup"), check("case-six", "sixth case pins invoice-grid"), check("case-seven", "seventh case pins native-judgment"), check("trial-name", "every case names the standard trial"), check("trial-attempts", "standard trial allows five attempts"), check("notes-count", "registry carries four frozen notes"), check("pending-count", "all seven candidate slots stay pending"), check("reg-bytes", "frozen file spans 12282 bytes"), check("reg-md5", "frozen bytes hash to the pinned md5")]
+        other: "nope" => ok []
+    match scope is "m30-h056"
+        false => ok []
+        true => ok [check("top-keys", "registry orders five top-level keys"), check("top-key-count", "registry carries five top-level keys"), check("reg-task", "registry freezes the T01 task tag"), check("reg-date", "registry freezes the dated freeze day"), check("case-count", "registry registers seven cases"), check("case-one", "first case pins closed-variant-arm"), check("case-two", "second case pins two-libraries"), check("case-three", "third case pins fixture-link"), check("case-four", "fourth case pins invoice-edit"), check("case-five", "fifth case pins stream-cleanup"), check("case-six", "sixth case pins invoice-grid"), check("case-seven", "seventh case pins native-judgment"), check("trial-name", "every case names the standard trial"), check("trial-attempts", "standard trial allows five attempts"), check("notes-count", "registry carries four frozen notes"), check("pending-count", "all seven candidate slots stay pending"), check("reg-bytes", "frozen file spans 12282 bytes"), check("reg-md5", "frozen bytes hash to the pinned md5")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/registry-base" => ok [expected_check("top-keys", "cases,date,notes,task,trials"), expected_check("top-key-count", "5"), expected_check("reg-task", "T01"), expected_check("reg-date", "2026-09-24"), expected_check("case-count", "7"), expected_check("case-one", "closed-variant-arm"), expected_check("case-two", "two-libraries"), expected_check("case-three", "fixture-link"), expected_check("case-four", "invoice-edit"), expected_check("case-five", "stream-cleanup"), expected_check("case-six", "invoice-grid"), expected_check("case-seven", "native-judgment"), expected_check("trial-name", "standard"), expected_check("trial-attempts", "5"), expected_check("notes-count", "4"), expected_check("pending-count", "7"), expected_check("reg-bytes", "12282"), expected_check("reg-md5", "cde032ab1b4c6f466cc540fc9f08a40a")]
+        unknown: "nope" => ok []
+    match case is "history/registry-base"
+        false => ok []
+        true => ok [expected_check("top-keys", "cases,date,notes,task,trials"), expected_check("top-key-count", "5"), expected_check("reg-task", "T01"), expected_check("reg-date", "2026-09-24"), expected_check("case-count", "7"), expected_check("case-one", "closed-variant-arm"), expected_check("case-two", "two-libraries"), expected_check("case-three", "fixture-link"), expected_check("case-four", "invoice-edit"), expected_check("case-five", "stream-cleanup"), expected_check("case-six", "invoice-grid"), expected_check("case-seven", "native-judgment"), expected_check("trial-name", "standard"), expected_check("trial-attempts", "5"), expected_check("notes-count", "4"), expected_check("pending-count", "7"), expected_check("reg-bytes", "12282"), expected_check("reg-md5", "cde032ab1b4c6f466cc540fc9f08a40a")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/registry-base", "default", "", "offline") => ok
+        seed_top_keys: context("history/registry-base", "seed-top-keys-drift", "", "offline") => failed{"top-keys"}
+        seed_top_key_count: context("history/registry-base", "seed-top-key-count-drift", "", "offline") => failed{"top-key-count"}
+        seed_reg_task: context("history/registry-base", "seed-reg-task-drift", "", "offline") => failed{"reg-task"}
+        seed_reg_date: context("history/registry-base", "seed-reg-date-drift", "", "offline") => failed{"reg-date"}
+        seed_case_count: context("history/registry-base", "seed-case-count-drift", "", "offline") => failed{"case-count"}
+        seed_case_one: context("history/registry-base", "seed-case-one-drift", "", "offline") => failed{"case-one"}
+        seed_case_two: context("history/registry-base", "seed-case-two-drift", "", "offline") => failed{"case-two"}
+        seed_case_three: context("history/registry-base", "seed-case-three-drift", "", "offline") => failed{"case-three"}
+        seed_case_four: context("history/registry-base", "seed-case-four-drift", "", "offline") => failed{"case-four"}
+        seed_case_five: context("history/registry-base", "seed-case-five-drift", "", "offline") => failed{"case-five"}
+        seed_case_six: context("history/registry-base", "seed-case-six-drift", "", "offline") => failed{"case-six"}
+        seed_case_seven: context("history/registry-base", "seed-case-seven-drift", "", "offline") => failed{"case-seven"}
+        seed_trial_name: context("history/registry-base", "seed-trial-name-drift", "", "offline") => failed{"trial-name"}
+        seed_trial_attempts: context("history/registry-base", "seed-trial-attempts-drift", "", "offline") => failed{"trial-attempts"}
+        seed_notes_count: context("history/registry-base", "seed-notes-count-drift", "", "offline") => failed{"notes-count"}
+        seed_pending_count: context("history/registry-base", "seed-pending-count-drift", "", "offline") => failed{"pending-count"}
+        seed_reg_bytes: context("history/registry-base", "seed-reg-bytes-drift", "", "offline") => failed{"reg-bytes"}
+        seed_reg_md5: context("history/registry-base", "seed-reg-md5-drift", "", "offline") => failed{"reg-md5"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.top_keys, "cases,date,notes,task,trials", c, "top-keys")
+            failed
+            ok evidence top_keys_evidence => match call require_int(got.top_key_count, 5, c, "top-key-count")
+                failed
+                ok evidence top_key_count_evidence => match call require_text(got.reg_task, "T01", c, "reg-task")
+                    failed
+                    ok evidence reg_task_evidence => match call require_text(got.reg_date, "2026-09-24", c, "reg-date")
+                        failed
+                        ok evidence reg_date_evidence => match call require_int(got.case_count, 7, c, "case-count")
+                            failed
+                            ok evidence case_count_evidence => match call require_text(got.case_one, "closed-variant-arm", c, "case-one")
+                                failed
+                                ok evidence case_one_evidence => match call require_text(got.case_two, "two-libraries", c, "case-two")
+                                    failed
+                                    ok evidence case_two_evidence => match call require_text(got.case_three, "fixture-link", c, "case-three")
+                                        failed
+                                        ok evidence case_three_evidence => match call require_text(got.case_four, "invoice-edit", c, "case-four")
+                                            failed
+                                            ok evidence case_four_evidence => match call require_text(got.case_five, "stream-cleanup", c, "case-five")
+                                                failed
+                                                ok evidence case_five_evidence => match call require_text(got.case_six, "invoice-grid", c, "case-six")
+                                                    failed
+                                                    ok evidence case_six_evidence => match call require_text(got.case_seven, "native-judgment", c, "case-seven")
+                                                        failed
+                                                        ok evidence case_seven_evidence => match call require_text(got.trial_name, "standard", c, "trial-name")
+                                                            failed
+                                                            ok evidence trial_name_evidence => match call require_int(got.trial_attempts, 5, c, "trial-attempts")
+                                                                failed
+                                                                ok evidence trial_attempts_evidence => match call require_int(got.notes_count, 4, c, "notes-count")
+                                                                    failed
+                                                                    ok evidence notes_count_evidence => match call require_int(got.pending_count, 7, c, "pending-count")
+                                                                        failed
+                                                                        ok evidence pending_count_evidence => match call require_int(got.reg_bytes, 12282, c, "reg-bytes")
+                                                                            failed
+                                                                            ok evidence reg_bytes_evidence => match call require_text(got.reg_md5, "cde032ab1b4c6f466cc540fc9f08a40a", c, "reg-md5")
+                                                                                failed
+                                                                                ok evidence reg_md5_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h056: "m30-h056" => ok test_case("history/registry-base", ["history", "m30"], [], 60000, [check_ref("top-keys"), check_ref("top-key-count"), check_ref("reg-task"), check_ref("reg-date"), check_ref("case-count"), check_ref("case-one"), check_ref("case-two"), check_ref("case-three"), check_ref("case-four"), check_ref("case-five"), check_ref("case-six"), check_ref("case-seven"), check_ref("trial-name"), check_ref("trial-attempts"), check_ref("notes-count"), check_ref("pending-count"), check_ref("reg-bytes"), check_ref("reg-md5")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h056"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/registry-base", ["history", "m30"], [], 60000, [check_ref("top-keys"), check_ref("top-key-count"), check_ref("reg-task"), check_ref("reg-date"), check_ref("case-count"), check_ref("case-one"), check_ref("case-two"), check_ref("case-three"), check_ref("case-four"), check_ref("case-five"), check_ref("case-six"), check_ref("case-seven"), check_ref("trial-name"), check_ref("trial-attempts"), check_ref("notes-count"), check_ref("pending-count"), check_ref("reg-bytes"), check_ref("reg-md5")], callable case_body)
