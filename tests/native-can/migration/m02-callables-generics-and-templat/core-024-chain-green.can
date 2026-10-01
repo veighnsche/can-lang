@@ -1,0 +1,226 @@
+package m02core024chain
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M02 CORE-024 "bundled generic chain: locked green, nested behavior".
+/// Source: tests/integration/generics_test.go symbol
+/// TestCurrentBundledGenericChain.
+/// Related fixtures: compiler/testdata/current/generics/chain-main.can
+/// (first = helpers::nested(3) L17, second = helpers::nested<int>(4)
+/// L18, third = top(5) L19, direct = core::identity(box(9)) L20,
+/// held = mail::make_email("a@b") L21, probe(6) denied relay L24-26),
+/// chain-core.can, chain-helpers.can, chain-mail.can (vendor sources).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): the locked root + local-vendor dependency chain
+/// verifies its independent lock digest, canlc assert goes green with a
+/// full-scope 10-root report where every root carries real-can evidence,
+/// both nested<int> syntactic paths plus the direct identity<box<int>>
+/// value plus the top<int> value plus the relayed core::denied
+/// completion plus the owner round-trip behave, and the production run
+/// is silent (exit 0, empty stdout, empty stderr).
+/// The corruption/stale/symbolic/owner negative legs live in
+/// core-024-negative-legs.can; production emission counts, source-map
+/// links and the optional strict-tsc leg live in
+/// core-024-artifact-shape.can. C023 owns the bundled-generics surface;
+/// this row owns ONLY the dependency-chain surface.
+/// Variants: root and local dependency; nested<int> inferred and
+/// explicit; identity<box<int>> nested-body and direct calls.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23).
+/// Case bundled/generic-chain-green checks: lock-verified, assert-green,
+/// report-full, root-count, real-can, nested-values, identity-box,
+/// top-value, denied-relay, owner-roundtrip, run-silent.
+/// Facet map (generics_test.go legs): lock-verified pins the independent
+/// lock leg (L224-240: sha256 manifest + captureTreeDigest source/fixture
+/// digests staged into can.lock.json); assert-green pins the assert leg
+/// (L242-245: exit 0, empty stderr); report-full/root-count pin the report
+/// leg (L247-256: passed true, scope full, exactly 10 roots);
+/// real-can pins the evidence leg (L263-269: every root carries real-can);
+/// nested-values pins both nested<int> paths (chain-main.can L17-18:
+/// first.value is 3, second.value is 4); identity-box pins the direct
+/// identity<box<int>> call (L20/L26: direct.value is 9); top-value pins
+/// the root top<int> instance (L19/L26: third.value is 5); denied-relay
+/// pins the relayed completion (L24-26: probe(6) matches core::denied,
+/// never ok int); owner-roundtrip pins the owner pass-through (L21-23/
+/// L26: addr is "a@b"); run-silent pins the run leg (L299-302: exit 0,
+/// empty stdout, empty stderr).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool lock_verified
+    bool assert_green
+    bool report_full
+    int root_count
+    bool real_can
+    bool nested_values
+    bool identity_box
+    bool top_value
+    bool denied_relay
+    bool owner_roundtrip
+    bool run_silent
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/generic-chain-green", "default", "", "offline"), "lock-verified" => ok "case bundled/generic-chain-green variant default root lock-verified run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/generic-chain-green", "default", "", "offline"), "lock-verified" => ok evidence("lock-verified", "true", "true", true, "case bundled/generic-chain-green variant default root lock-verified run offline")
+        different: false, true, context("bundled/generic-chain-green", "default", "", "offline"), "lock-verified" => failed{"lock-verified"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 10, 10, context("bundled/generic-chain-green", "default", "", "offline"), "root-count" => ok evidence("root-count", "10", "10", true, "case bundled/generic-chain-green variant default root root-count run offline")
+        different: 9, 10, context("bundled/generic-chain-green", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, true, 10, true, true, true, true, true, true, true)
+        seed_lock_stale: "seed-lock-stale" => ok observation(false, true, true, 10, true, true, true, true, true, true, true)
+        seed_assert_red: "seed-assert-red" => ok observation(true, false, true, 10, true, true, true, true, true, true, true)
+        seed_report_split: "seed-report-split" => ok observation(true, true, false, 10, true, true, true, true, true, true, true)
+        seed_root_short: "seed-root-short" => ok observation(true, true, true, 9, true, true, true, true, true, true, true)
+        seed_evidence_gap: "seed-evidence-gap" => ok observation(true, true, true, 10, false, true, true, true, true, true, true)
+        seed_nested_drift: "seed-nested-drift" => ok observation(true, true, true, 10, true, false, true, true, true, true, true)
+        seed_direct_drift: "seed-direct-drift" => ok observation(true, true, true, 10, true, true, false, true, true, true, true)
+        seed_top_drift: "seed-top-drift" => ok observation(true, true, true, 10, true, true, true, false, true, true, true)
+        seed_relay_ok: "seed-relay-ok" => ok observation(true, true, true, 10, true, true, true, true, false, true, true)
+        seed_owner_loss: "seed-owner-loss" => ok observation(true, true, true, 10, true, true, true, true, true, false, true)
+        seed_run_noisy: "seed-run-noisy" => ok observation(true, true, true, 10, true, true, true, true, true, true, false)
+    match variant_id
+        "seed-lock-stale" => ok observation(false, true, true, 10, true, true, true, true, true, true, true)
+        "seed-assert-red" => ok observation(true, false, true, 10, true, true, true, true, true, true, true)
+        "seed-report-split" => ok observation(true, true, false, 10, true, true, true, true, true, true, true)
+        "seed-root-short" => ok observation(true, true, true, 9, true, true, true, true, true, true, true)
+        "seed-evidence-gap" => ok observation(true, true, true, 10, false, true, true, true, true, true, true)
+        "seed-nested-drift" => ok observation(true, true, true, 10, true, false, true, true, true, true, true)
+        "seed-direct-drift" => ok observation(true, true, true, 10, true, true, false, true, true, true, true)
+        "seed-top-drift" => ok observation(true, true, true, 10, true, true, true, false, true, true, true)
+        "seed-relay-ok" => ok observation(true, true, true, 10, true, true, true, true, false, true, true)
+        "seed-owner-loss" => ok observation(true, true, true, 10, true, true, true, true, true, false, true)
+        "seed-run-noisy" => ok observation(true, true, true, 10, true, true, true, true, true, true, false)
+        _ => ok observation(true, true, true, 10, true, true, true, true, true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m02_024: "m02-024" => ok [check("lock-verified", "independent lock digest matches the staged vendor bytes"), check("assert-green", "canlc assert exits 0 with empty stderr"), check("report-full", "assert report passes with full scope"), check("root-count", "assert report carries exactly 10 roots"), check("real-can", "every root carries real-can evidence"), check("nested-values", "both nested<int> paths yield 3 and 4"), check("identity-box", "direct identity<box<int>> value is 9"), check("top-value", "root top<int> value is 5"), check("denied-relay", "probe relays exactly the core::denied completion"), check("owner-roundtrip", "owner email round-trips address a@b"), check("run-silent", "production run exits 0 with empty stdout and stderr")]
+        other: "nope" => ok []
+    match scope is "m02-024"
+        false => ok []
+        true => ok [check("lock-verified", "independent lock digest matches the staged vendor bytes"), check("assert-green", "canlc assert exits 0 with empty stderr"), check("report-full", "assert report passes with full scope"), check("root-count", "assert report carries exactly 10 roots"), check("real-can", "every root carries real-can evidence"), check("nested-values", "both nested<int> paths yield 3 and 4"), check("identity-box", "direct identity<box<int>> value is 9"), check("top-value", "root top<int> value is 5"), check("denied-relay", "probe relays exactly the core::denied completion"), check("owner-roundtrip", "owner email round-trips address a@b"), check("run-silent", "production run exits 0 with empty stdout and stderr")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/generic-chain-green" => ok [expected_check("lock-verified", "true"), expected_check("assert-green", "true"), expected_check("report-full", "true"), expected_check("root-count", "10"), expected_check("real-can", "true"), expected_check("nested-values", "true"), expected_check("identity-box", "true"), expected_check("top-value", "true"), expected_check("denied-relay", "true"), expected_check("owner-roundtrip", "true"), expected_check("run-silent", "true")]
+        unknown: "nope" => ok []
+    match case is "bundled/generic-chain-green"
+        false => ok []
+        true => ok [expected_check("lock-verified", "true"), expected_check("assert-green", "true"), expected_check("report-full", "true"), expected_check("root-count", "10"), expected_check("real-can", "true"), expected_check("nested-values", "true"), expected_check("identity-box", "true"), expected_check("top-value", "true"), expected_check("denied-relay", "true"), expected_check("owner-roundtrip", "true"), expected_check("run-silent", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/generic-chain-green", "default", "", "offline") => ok
+        seed_lock_stale: context("bundled/generic-chain-green", "seed-lock-stale", "", "offline") => failed{"lock-verified"}
+        seed_assert_red: context("bundled/generic-chain-green", "seed-assert-red", "", "offline") => failed{"assert-green"}
+        seed_report_split: context("bundled/generic-chain-green", "seed-report-split", "", "offline") => failed{"report-full"}
+        seed_root_short: context("bundled/generic-chain-green", "seed-root-short", "", "offline") => failed{"root-count"}
+        seed_evidence_gap: context("bundled/generic-chain-green", "seed-evidence-gap", "", "offline") => failed{"real-can"}
+        seed_nested_drift: context("bundled/generic-chain-green", "seed-nested-drift", "", "offline") => failed{"nested-values"}
+        seed_direct_drift: context("bundled/generic-chain-green", "seed-direct-drift", "", "offline") => failed{"identity-box"}
+        seed_top_drift: context("bundled/generic-chain-green", "seed-top-drift", "", "offline") => failed{"top-value"}
+        seed_relay_ok: context("bundled/generic-chain-green", "seed-relay-ok", "", "offline") => failed{"denied-relay"}
+        seed_owner_loss: context("bundled/generic-chain-green", "seed-owner-loss", "", "offline") => failed{"owner-roundtrip"}
+        seed_run_noisy: context("bundled/generic-chain-green", "seed-run-noisy", "", "offline") => failed{"run-silent"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.lock_verified, true, c, "lock-verified")
+            failed
+            ok evidence lock_evidence => match call require_bool(got.assert_green, true, c, "assert-green")
+                failed
+                ok evidence assert_evidence => match call require_bool(got.report_full, true, c, "report-full")
+                    failed
+                    ok evidence report_evidence => match call require_int(got.root_count, 10, c, "root-count")
+                        failed
+                        ok evidence count_evidence => match call require_bool(got.real_can, true, c, "real-can")
+                            failed
+                            ok evidence real_evidence => match call require_bool(got.nested_values, true, c, "nested-values")
+                                failed
+                                ok evidence nested_evidence => match call require_bool(got.identity_box, true, c, "identity-box")
+                                    failed
+                                    ok evidence identity_evidence => match call require_bool(got.top_value, true, c, "top-value")
+                                        failed
+                                        ok evidence top_evidence => match call require_bool(got.denied_relay, true, c, "denied-relay")
+                                            failed
+                                            ok evidence relay_evidence => match call require_bool(got.owner_roundtrip, true, c, "owner-roundtrip")
+                                                failed
+                                                ok evidence owner_evidence => match call require_bool(got.run_silent, true, c, "run-silent")
+                                                    failed
+                                                    ok evidence run_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m02_024: "m02-024" => ok test_case("bundled/generic-chain-green", ["generics", "m02"], ["can-bun-archive", "macos-sandbox-exec"], 480000, [check_ref("lock-verified"), check_ref("assert-green"), check_ref("report-full"), check_ref("root-count"), check_ref("real-can"), check_ref("nested-values"), check_ref("identity-box"), check_ref("top-value"), check_ref("denied-relay"), check_ref("owner-roundtrip"), check_ref("run-silent")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m02-024"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/generic-chain-green", ["generics", "m02"], ["can-bun-archive", "macos-sandbox-exec"], 480000, [check_ref("lock-verified"), check_ref("assert-green"), check_ref("report-full"), check_ref("root-count"), check_ref("real-can"), check_ref("nested-values"), check_ref("identity-box"), check_ref("top-value"), check_ref("denied-relay"), check_ref("owner-roundtrip"), check_ref("run-silent")], callable case_body)
