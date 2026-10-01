@@ -1,0 +1,413 @@
+package m08core026http
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M08 CORE-026 "http dispatch: queries, posts, routes, methods, streams".
+/// Source: tests/integration/http_test.go symbol
+/// TestCurrentBundledHTTP (L17-233); the embedded TypeScript harness
+/// (L135-215) drives loopback ingress over the compiled mounted router
+/// and checks every reply below (L157-212).
+/// Related fixture: compiler/testdata/current/http/main.can route table
+/// (L256-272: /a handle, /b submit, /g tagged, /w wrapped, /s search,
+/// /p handle PUT+PATCH, /d handle DELETE, /o handle OPTIONS, /h handle
+/// HEAD, /u upload streamed, /echo stream_echo streamed, /events events,
+/// /attach attach) with handlers (handle L11-27, submit L28-42,
+/// search L50-64, tagged L86-93, upload L94-123, stream_echo L124-159,
+/// events L160-189, attach L190-206).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): compiled dispatch replies. Scenario replies pin
+/// status|body (status alone where the Go test asserts no body); 405
+/// replies pin status|allow since the Go test asserts the Allow header
+/// instead of a body; content headers pin verbatim header values.
+/// The roots-green pin lives in core-026-roots-green.can; the production
+/// process shape lives in core-026-run-shape.can.
+/// Variants: GET /a valid/absent/repeated/plus/percent-encoded (Go
+/// L157-164); POST /b JSON/media/malformed (L165-173); /s form
+/// duplicate/optional/empty/absent/broken (L174-185); /g and /w
+/// (L186-189); missing/method mismatches and Allow (L190-195);
+/// PUT/PATCH/DELETE/OPTIONS/HEAD and Allow sets (L196-204);
+/// upload/echo/events/multipart (L205-212).
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. CAN_TSC gates the optional strict
+/// tsc leg (pinned conditional in the run-shape file). Logical gates
+/// SUITE/WORK/PROC and C/R/N/S/A identities bind at P23; no live run
+/// now. Descriptor timeout 120000ms mirrors the Go 2-minute ctx (L24).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QHTTP unmet).
+/// Case http/http-dispatch checks: get-valid, get-absent, get-repeated,
+/// get-plus, get-encoded, get-content-type, post-json,
+/// post-json-content-type, post-media, post-malformed, form-duplicate,
+/// form-optional, form-empty, form-absent, form-broken, generic-route,
+/// wrapped-route, not-found, method-post-a, method-get-b,
+/// method-head-a, put-route, patch-route, delete-route, options-route,
+/// head-route, head-content-length, allow-post-p, allow-purge-d,
+/// upload-chunk, upload-empty, stream-echo, events-body,
+/// events-content-type, multipart-attach.
+/// Facet map (http_test.go harness legs): get-valid pins /a?q=v
+/// (L158: 200 GET); get-absent pins the missing query (L159: 422
+/// missing); get-repeated pins repeated q (L160: 422, no body asserted);
+/// get-plus pins plus decoding (L161: 200, no body asserted);
+/// get-encoded pins percent decoding (L162: 200, no body asserted);
+/// get-content-type pins the reply header (L163: text/plain;
+/// charset=utf-8); post-json pins valid JSON (L166-167: 200 x);
+/// post-json-content-type pins its header (L168: text/plain;
+/// charset=utf-8); post-media pins media rejection (L169-170: 422 bad);
+/// post-malformed pins malformed JSON (L171-172: 422, no body asserted);
+/// form-duplicate pins duplicate tags (L175-176: 200 ann);
+/// form-optional pins the optional note (L177-178: 200 ann);
+/// form-empty pins the empty query (L179-180: 200 with empty body);
+/// form-absent pins the missing query (L181-182: 422, no body asserted);
+/// form-broken pins invalid percent (L183-184: body query=%FF renders
+/// from the %%FF Sprintf escape; 422, no body asserted); generic-route
+/// pins /g (L187: 200 t); wrapped-route pins POST /w?q=v (L188: 200
+/// POST); not-found pins /nope (L191: 404 Not Found); method-post-a
+/// pins POST /a (L192: 405 Allow GET); method-get-b pins GET /b (L193:
+/// 405 Allow POST); method-head-a pins HEAD /a (L194: 405 Allow GET);
+/// put-route pins PUT /p?q=v (L197: 200 PUT); patch-route pins PATCH
+/// /p?q=v (L198: 200 PATCH); delete-route pins DELETE /d?q=v (L199:
+/// 200 DELETE); options-route pins OPTIONS /o?q=v (L200: 200 OPTIONS);
+/// head-route pins HEAD /h?q=v (L201: 200 with empty body);
+/// head-content-length pins its header (L201: content-length 4);
+/// allow-post-p pins POST /p (L202: 405 Allow PATCH, PUT verbatim
+/// order); allow-purge-d pins PURGE /d (L203: 405 Allow DELETE);
+/// upload-chunk pins the bounded upload (L206: 200 hell, the 4-byte
+/// head of hello-world); upload-empty pins the empty upload (L207: 200
+/// empty); stream-echo pins the echo (L208: 200 stream-me);
+/// events-body pins the event payload (L209: 200 with the exact
+/// beat/id-7/tick/comment bytes); events-content-type pins its header
+/// (L209: text/event-stream; charset=utf-8); multipart-attach pins the
+/// attachment (L211: 200 v|a.txt, first field plus filename).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str get_valid
+    str get_absent
+    str get_repeated
+    str get_plus
+    str get_encoded
+    str get_content_type
+    str post_json
+    str post_json_content_type
+    str post_media
+    str post_malformed
+    str form_duplicate
+    str form_optional
+    str form_empty
+    str form_absent
+    str form_broken
+    str generic_route
+    str wrapped_route
+    str not_found
+    str method_post_a
+    str method_get_b
+    str method_head_a
+    str put_route
+    str patch_route
+    str delete_route
+    str options_route
+    str head_route
+    str head_content_length
+    str allow_post_p
+    str allow_purge_d
+    str upload_chunk
+    str upload_empty
+    str stream_echo
+    str events_body
+    str events_content_type
+    str multipart_attach
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("http/http-dispatch", "default", "", "offline"), "get-valid" => ok "case http/http-dispatch variant default root get-valid run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("http/http-dispatch", "default", "", "offline"), "dispatch-green" => ok evidence("dispatch-green", "true", "true", true, "case http/http-dispatch variant default root dispatch-green run offline")
+        different: false, true, context("http/http-dispatch", "default", "", "offline"), "dispatch-green" => failed{"dispatch-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 35, 35, context("http/http-dispatch", "default", "", "offline"), "reply-count" => ok evidence("reply-count", "35", "35", true, "case http/http-dispatch variant default root reply-count run offline")
+        different: 34, 35, context("http/http-dispatch", "default", "", "offline"), "reply-count" => failed{"reply-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "200|GET", "200|GET", context("http/http-dispatch", "default", "", "offline"), "get-valid" => ok evidence("get-valid", "200|GET", "200|GET", true, "case http/http-dispatch variant default root get-valid run offline")
+        different: "200|POST", "200|GET", context("http/http-dispatch", "default", "", "offline"), "get-valid" => failed{"get-valid"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_get_valid_drift: "seed-get-valid-drift" => ok observation("200|POST", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_get_absent_drift: "seed-get-absent-drift" => ok observation("200|GET", "422|bad", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_get_repeated_drift: "seed-get-repeated-drift" => ok observation("200|GET", "422|missing", "200", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_get_plus_drift: "seed-get-plus-drift" => ok observation("200|GET", "422|missing", "422", "422", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_get_encoded_drift: "seed-get-encoded-drift" => ok observation("200|GET", "422|missing", "422", "200", "422", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_get_content_type_drift: "seed-get-content-type-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/html; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_post_json_drift: "seed-post-json-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|y", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_post_json_content_type_drift: "seed-post-json-content-type-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "application/json", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_post_media_drift: "seed-post-media-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|missing", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_post_malformed_drift: "seed-post-malformed-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "200", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_form_duplicate_drift: "seed-form-duplicate-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|bob", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_form_optional_drift: "seed-form-optional-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|bob", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_form_empty_drift: "seed-form-empty-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|ann", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_form_absent_drift: "seed-form-absent-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "200", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_form_broken_drift: "seed-form-broken-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "200", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_generic_route_drift: "seed-generic-route-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|x", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_wrapped_route_drift: "seed-wrapped-route-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|GET", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_not_found_drift: "seed-not-found-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|missing", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_method_post_a_drift: "seed-method-post-a-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|POST", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_method_get_b_drift: "seed-method-get-b-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|GET", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_method_head_a_drift: "seed-method-head-a-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "404|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_put_route_drift: "seed-put-route-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PATCH", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_patch_route_drift: "seed-patch-route-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PUT", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_delete_route_drift: "seed-delete-route-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETED", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_options_route_drift: "seed-options-route-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTION", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_head_route_drift: "seed-head-route-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|HEAD", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_head_content_length_drift: "seed-head-content-length-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "0", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_allow_post_p_drift: "seed-allow-post-p-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PUT, PATCH", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_allow_purge_d_drift: "seed-allow-purge-d-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|PURGE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_upload_chunk_drift: "seed-upload-chunk-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hello", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_upload_empty_drift: "seed-upload-empty-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|hell", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_stream_echo_drift: "seed-stream-echo-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_events_body_drift: "seed-events-body-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        seed_events_content_type_drift: "seed-events-content-type-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/plain; charset=utf-8", "200|v|a.txt")
+        seed_multipart_attach_drift: "seed-multipart-attach-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v2|a.txt")
+    match variant_id
+        "seed-get-valid-drift" => ok observation("200|POST", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-get-absent-drift" => ok observation("200|GET", "422|bad", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-get-repeated-drift" => ok observation("200|GET", "422|missing", "200", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-get-plus-drift" => ok observation("200|GET", "422|missing", "422", "422", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-get-encoded-drift" => ok observation("200|GET", "422|missing", "422", "200", "422", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-get-content-type-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/html; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-post-json-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|y", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-post-json-content-type-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "application/json", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-post-media-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|missing", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-post-malformed-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "200", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-form-duplicate-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|bob", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-form-optional-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|bob", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-form-empty-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|ann", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-form-absent-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "200", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-form-broken-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "200", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-generic-route-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|x", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-wrapped-route-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|GET", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-not-found-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|missing", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-method-post-a-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|POST", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-method-get-b-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|GET", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-method-head-a-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "404|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-put-route-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PATCH", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-patch-route-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PUT", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-delete-route-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETED", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-options-route-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTION", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-head-route-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|HEAD", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-head-content-length-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "0", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-allow-post-p-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PUT, PATCH", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-allow-purge-d-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|PURGE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-upload-chunk-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hello", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-upload-empty-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|hell", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-stream-echo-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-events-body-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+        "seed-events-content-type-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/plain; charset=utf-8", "200|v|a.txt")
+        "seed-multipart-attach-drift" => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v2|a.txt")
+        _ => ok observation("200|GET", "422|missing", "422", "200", "200", "text/plain; charset=utf-8", "200|x", "text/plain; charset=utf-8", "422|bad", "422", "200|ann", "200|ann", "200|", "422", "422", "200|t", "200|POST", "404|Not Found", "405|GET", "405|POST", "405|GET", "200|PUT", "200|PATCH", "200|DELETE", "200|OPTIONS", "200|", "4", "405|PATCH, PUT", "405|DELETE", "200|hell", "200|empty", "200|stream-me", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", "text/event-stream; charset=utf-8", "200|v|a.txt")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m08_026: "m08-026" => ok [check("get-valid", "GET /a?q=v replies 200 GET"), check("get-absent", "GET /a without q replies 422 missing"), check("get-repeated", "GET /a with repeated q replies 422"), check("get-plus", "GET /a with plus in q replies 200"), check("get-encoded", "GET /a with percent-encoded q replies 200"), check("get-content-type", "GET /a replies carry text/plain utf-8 content type"), check("post-json", "POST /b JSON replies 200 with the item name"), check("post-json-content-type", "POST /b JSON replies carry text/plain utf-8 content type"), check("post-media", "POST /b with text/plain replies 422 bad"), check("post-malformed", "POST /b with malformed JSON replies 422"), check("form-duplicate", "POST /s duplicate tags reply 200 with the query"), check("form-optional", "POST /s optional note replies 200 with the query"), check("form-empty", "POST /s empty query replies 200 with empty body"), check("form-absent", "POST /s missing query replies 422"), check("form-broken", "POST /s invalid percent replies 422"), check("generic-route", "GET /g generic route replies 200 t"), check("wrapped-route", "POST /w wrapped route replies 200 POST"), check("not-found", "GET /nope replies 404 Not Found"), check("method-post-a", "POST /a replies 405 with Allow GET"), check("method-get-b", "GET /b replies 405 with Allow POST"), check("method-head-a", "HEAD /a replies 405 with Allow GET"), check("put-route", "PUT /p replies 200 PUT"), check("patch-route", "PATCH /p replies 200 PATCH"), check("delete-route", "DELETE /d replies 200 DELETE"), check("options-route", "OPTIONS /o replies 200 OPTIONS"), check("head-route", "HEAD /h replies 200 with empty body"), check("head-content-length", "HEAD /h replies carry content-length 4"), check("allow-post-p", "POST /p replies 405 with Allow PATCH, PUT"), check("allow-purge-d", "PURGE /d replies 405 with Allow DELETE"), check("upload-chunk", "POST /u bounded upload replies 200 with the head chunk"), check("upload-empty", "POST /u empty upload replies 200 empty"), check("stream-echo", "POST /echo replies 200 echoing the stream"), check("events-body", "GET /events replies 200 with the exact event payload"), check("events-content-type", "GET /events replies carry the event-stream content type"), check("multipart-attach", "POST /attach replies 200 with field and filename")]
+        other: "nope" => ok []
+    match scope is "m08-026"
+        false => ok []
+        true => ok [check("get-valid", "GET /a?q=v replies 200 GET"), check("get-absent", "GET /a without q replies 422 missing"), check("get-repeated", "GET /a with repeated q replies 422"), check("get-plus", "GET /a with plus in q replies 200"), check("get-encoded", "GET /a with percent-encoded q replies 200"), check("get-content-type", "GET /a replies carry text/plain utf-8 content type"), check("post-json", "POST /b JSON replies 200 with the item name"), check("post-json-content-type", "POST /b JSON replies carry text/plain utf-8 content type"), check("post-media", "POST /b with text/plain replies 422 bad"), check("post-malformed", "POST /b with malformed JSON replies 422"), check("form-duplicate", "POST /s duplicate tags reply 200 with the query"), check("form-optional", "POST /s optional note replies 200 with the query"), check("form-empty", "POST /s empty query replies 200 with empty body"), check("form-absent", "POST /s missing query replies 422"), check("form-broken", "POST /s invalid percent replies 422"), check("generic-route", "GET /g generic route replies 200 t"), check("wrapped-route", "POST /w wrapped route replies 200 POST"), check("not-found", "GET /nope replies 404 Not Found"), check("method-post-a", "POST /a replies 405 with Allow GET"), check("method-get-b", "GET /b replies 405 with Allow POST"), check("method-head-a", "HEAD /a replies 405 with Allow GET"), check("put-route", "PUT /p replies 200 PUT"), check("patch-route", "PATCH /p replies 200 PATCH"), check("delete-route", "DELETE /d replies 200 DELETE"), check("options-route", "OPTIONS /o replies 200 OPTIONS"), check("head-route", "HEAD /h replies 200 with empty body"), check("head-content-length", "HEAD /h replies carry content-length 4"), check("allow-post-p", "POST /p replies 405 with Allow PATCH, PUT"), check("allow-purge-d", "PURGE /d replies 405 with Allow DELETE"), check("upload-chunk", "POST /u bounded upload replies 200 with the head chunk"), check("upload-empty", "POST /u empty upload replies 200 empty"), check("stream-echo", "POST /echo replies 200 echoing the stream"), check("events-body", "GET /events replies 200 with the exact event payload"), check("events-content-type", "GET /events replies carry the event-stream content type"), check("multipart-attach", "POST /attach replies 200 with field and filename")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "http/http-dispatch" => ok [expected_check("get-valid", "200|GET"), expected_check("get-absent", "422|missing"), expected_check("get-repeated", "422"), expected_check("get-plus", "200"), expected_check("get-encoded", "200"), expected_check("get-content-type", "text/plain; charset=utf-8"), expected_check("post-json", "200|x"), expected_check("post-json-content-type", "text/plain; charset=utf-8"), expected_check("post-media", "422|bad"), expected_check("post-malformed", "422"), expected_check("form-duplicate", "200|ann"), expected_check("form-optional", "200|ann"), expected_check("form-empty", "200|"), expected_check("form-absent", "422"), expected_check("form-broken", "422"), expected_check("generic-route", "200|t"), expected_check("wrapped-route", "200|POST"), expected_check("not-found", "404|Not Found"), expected_check("method-post-a", "405|GET"), expected_check("method-get-b", "405|POST"), expected_check("method-head-a", "405|GET"), expected_check("put-route", "200|PUT"), expected_check("patch-route", "200|PATCH"), expected_check("delete-route", "200|DELETE"), expected_check("options-route", "200|OPTIONS"), expected_check("head-route", "200|"), expected_check("head-content-length", "4"), expected_check("allow-post-p", "405|PATCH, PUT"), expected_check("allow-purge-d", "405|DELETE"), expected_check("upload-chunk", "200|hell"), expected_check("upload-empty", "200|empty"), expected_check("stream-echo", "200|stream-me"), expected_check("events-body", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n"), expected_check("events-content-type", "text/event-stream; charset=utf-8"), expected_check("multipart-attach", "200|v|a.txt")]
+        unknown: "nope" => ok []
+    match case is "http/http-dispatch"
+        false => ok []
+        true => ok [expected_check("get-valid", "200|GET"), expected_check("get-absent", "422|missing"), expected_check("get-repeated", "422"), expected_check("get-plus", "200"), expected_check("get-encoded", "200"), expected_check("get-content-type", "text/plain; charset=utf-8"), expected_check("post-json", "200|x"), expected_check("post-json-content-type", "text/plain; charset=utf-8"), expected_check("post-media", "422|bad"), expected_check("post-malformed", "422"), expected_check("form-duplicate", "200|ann"), expected_check("form-optional", "200|ann"), expected_check("form-empty", "200|"), expected_check("form-absent", "422"), expected_check("form-broken", "422"), expected_check("generic-route", "200|t"), expected_check("wrapped-route", "200|POST"), expected_check("not-found", "404|Not Found"), expected_check("method-post-a", "405|GET"), expected_check("method-get-b", "405|POST"), expected_check("method-head-a", "405|GET"), expected_check("put-route", "200|PUT"), expected_check("patch-route", "200|PATCH"), expected_check("delete-route", "200|DELETE"), expected_check("options-route", "200|OPTIONS"), expected_check("head-route", "200|"), expected_check("head-content-length", "4"), expected_check("allow-post-p", "405|PATCH, PUT"), expected_check("allow-purge-d", "405|DELETE"), expected_check("upload-chunk", "200|hell"), expected_check("upload-empty", "200|empty"), expected_check("stream-echo", "200|stream-me"), expected_check("events-body", "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n"), expected_check("events-content-type", "text/event-stream; charset=utf-8"), expected_check("multipart-attach", "200|v|a.txt")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("http/http-dispatch", "default", "", "offline") => ok
+        seed_get_valid_drift: context("http/http-dispatch", "seed-get-valid-drift", "", "offline") => failed{"get-valid"}
+        seed_get_absent_drift: context("http/http-dispatch", "seed-get-absent-drift", "", "offline") => failed{"get-absent"}
+        seed_get_repeated_drift: context("http/http-dispatch", "seed-get-repeated-drift", "", "offline") => failed{"get-repeated"}
+        seed_get_plus_drift: context("http/http-dispatch", "seed-get-plus-drift", "", "offline") => failed{"get-plus"}
+        seed_get_encoded_drift: context("http/http-dispatch", "seed-get-encoded-drift", "", "offline") => failed{"get-encoded"}
+        seed_get_content_type_drift: context("http/http-dispatch", "seed-get-content-type-drift", "", "offline") => failed{"get-content-type"}
+        seed_post_json_drift: context("http/http-dispatch", "seed-post-json-drift", "", "offline") => failed{"post-json"}
+        seed_post_json_content_type_drift: context("http/http-dispatch", "seed-post-json-content-type-drift", "", "offline") => failed{"post-json-content-type"}
+        seed_post_media_drift: context("http/http-dispatch", "seed-post-media-drift", "", "offline") => failed{"post-media"}
+        seed_post_malformed_drift: context("http/http-dispatch", "seed-post-malformed-drift", "", "offline") => failed{"post-malformed"}
+        seed_form_duplicate_drift: context("http/http-dispatch", "seed-form-duplicate-drift", "", "offline") => failed{"form-duplicate"}
+        seed_form_optional_drift: context("http/http-dispatch", "seed-form-optional-drift", "", "offline") => failed{"form-optional"}
+        seed_form_empty_drift: context("http/http-dispatch", "seed-form-empty-drift", "", "offline") => failed{"form-empty"}
+        seed_form_absent_drift: context("http/http-dispatch", "seed-form-absent-drift", "", "offline") => failed{"form-absent"}
+        seed_form_broken_drift: context("http/http-dispatch", "seed-form-broken-drift", "", "offline") => failed{"form-broken"}
+        seed_generic_route_drift: context("http/http-dispatch", "seed-generic-route-drift", "", "offline") => failed{"generic-route"}
+        seed_wrapped_route_drift: context("http/http-dispatch", "seed-wrapped-route-drift", "", "offline") => failed{"wrapped-route"}
+        seed_not_found_drift: context("http/http-dispatch", "seed-not-found-drift", "", "offline") => failed{"not-found"}
+        seed_method_post_a_drift: context("http/http-dispatch", "seed-method-post-a-drift", "", "offline") => failed{"method-post-a"}
+        seed_method_get_b_drift: context("http/http-dispatch", "seed-method-get-b-drift", "", "offline") => failed{"method-get-b"}
+        seed_method_head_a_drift: context("http/http-dispatch", "seed-method-head-a-drift", "", "offline") => failed{"method-head-a"}
+        seed_put_route_drift: context("http/http-dispatch", "seed-put-route-drift", "", "offline") => failed{"put-route"}
+        seed_patch_route_drift: context("http/http-dispatch", "seed-patch-route-drift", "", "offline") => failed{"patch-route"}
+        seed_delete_route_drift: context("http/http-dispatch", "seed-delete-route-drift", "", "offline") => failed{"delete-route"}
+        seed_options_route_drift: context("http/http-dispatch", "seed-options-route-drift", "", "offline") => failed{"options-route"}
+        seed_head_route_drift: context("http/http-dispatch", "seed-head-route-drift", "", "offline") => failed{"head-route"}
+        seed_head_content_length_drift: context("http/http-dispatch", "seed-head-content-length-drift", "", "offline") => failed{"head-content-length"}
+        seed_allow_post_p_drift: context("http/http-dispatch", "seed-allow-post-p-drift", "", "offline") => failed{"allow-post-p"}
+        seed_allow_purge_d_drift: context("http/http-dispatch", "seed-allow-purge-d-drift", "", "offline") => failed{"allow-purge-d"}
+        seed_upload_chunk_drift: context("http/http-dispatch", "seed-upload-chunk-drift", "", "offline") => failed{"upload-chunk"}
+        seed_upload_empty_drift: context("http/http-dispatch", "seed-upload-empty-drift", "", "offline") => failed{"upload-empty"}
+        seed_stream_echo_drift: context("http/http-dispatch", "seed-stream-echo-drift", "", "offline") => failed{"stream-echo"}
+        seed_events_body_drift: context("http/http-dispatch", "seed-events-body-drift", "", "offline") => failed{"events-body"}
+        seed_events_content_type_drift: context("http/http-dispatch", "seed-events-content-type-drift", "", "offline") => failed{"events-content-type"}
+        seed_multipart_attach_drift: context("http/http-dispatch", "seed-multipart-attach-drift", "", "offline") => failed{"multipart-attach"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.get_valid, "200|GET", c, "get-valid")
+            failed
+            ok evidence valid_evidence => match call require_text(got.get_absent, "422|missing", c, "get-absent")
+                failed
+                ok evidence absent_evidence => match call require_text(got.get_repeated, "422", c, "get-repeated")
+                    failed
+                    ok evidence repeated_evidence => match call require_text(got.get_plus, "200", c, "get-plus")
+                        failed
+                        ok evidence plus_evidence => match call require_text(got.get_encoded, "200", c, "get-encoded")
+                            failed
+                            ok evidence encoded_evidence => match call require_text(got.get_content_type, "text/plain; charset=utf-8", c, "get-content-type")
+                                failed
+                                ok evidence getct_evidence => match call require_text(got.post_json, "200|x", c, "post-json")
+                                    failed
+                                    ok evidence json_evidence => match call require_text(got.post_json_content_type, "text/plain; charset=utf-8", c, "post-json-content-type")
+                                        failed
+                                        ok evidence postct_evidence => match call require_text(got.post_media, "422|bad", c, "post-media")
+                                            failed
+                                            ok evidence media_evidence => match call require_text(got.post_malformed, "422", c, "post-malformed")
+                                                failed
+                                                ok evidence malformed_evidence => match call require_text(got.form_duplicate, "200|ann", c, "form-duplicate")
+                                                    failed
+                                                    ok evidence duplicate_evidence => match call require_text(got.form_optional, "200|ann", c, "form-optional")
+                                                        failed
+                                                        ok evidence optional_evidence => match call require_text(got.form_empty, "200|", c, "form-empty")
+                                                            failed
+                                                            ok evidence empty_evidence => match call require_text(got.form_absent, "422", c, "form-absent")
+                                                                failed
+                                                                ok evidence formabsent_evidence => match call require_text(got.form_broken, "422", c, "form-broken")
+                                                                    failed
+                                                                    ok evidence broken_evidence => match call require_text(got.generic_route, "200|t", c, "generic-route")
+                                                                        failed
+                                                                        ok evidence generic_evidence => match call require_text(got.wrapped_route, "200|POST", c, "wrapped-route")
+                                                                            failed
+                                                                            ok evidence wrapped_evidence => match call require_text(got.not_found, "404|Not Found", c, "not-found")
+                                                                                failed
+                                                                                ok evidence notfound_evidence => match call require_text(got.method_post_a, "405|GET", c, "method-post-a")
+                                                                                    failed
+                                                                                    ok evidence posta_evidence => match call require_text(got.method_get_b, "405|POST", c, "method-get-b")
+                                                                                        failed
+                                                                                        ok evidence getb_evidence => match call require_text(got.method_head_a, "405|GET", c, "method-head-a")
+                                                                                            failed
+                                                                                            ok evidence heada_evidence => match call require_text(got.put_route, "200|PUT", c, "put-route")
+                                                                                                failed
+                                                                                                ok evidence put_evidence => match call require_text(got.patch_route, "200|PATCH", c, "patch-route")
+                                                                                                    failed
+                                                                                                    ok evidence patch_evidence => match call require_text(got.delete_route, "200|DELETE", c, "delete-route")
+                                                                                                        failed
+                                                                                                        ok evidence delete_evidence => match call require_text(got.options_route, "200|OPTIONS", c, "options-route")
+                                                                                                            failed
+                                                                                                            ok evidence options_evidence => match call require_text(got.head_route, "200|", c, "head-route")
+                                                                                                                failed
+                                                                                                                ok evidence head_evidence => match call require_text(got.head_content_length, "4", c, "head-content-length")
+                                                                                                                    failed
+                                                                                                                    ok evidence length_evidence => match call require_text(got.allow_post_p, "405|PATCH, PUT", c, "allow-post-p")
+                                                                                                                        failed
+                                                                                                                        ok evidence postp_evidence => match call require_text(got.allow_purge_d, "405|DELETE", c, "allow-purge-d")
+                                                                                                                            failed
+                                                                                                                            ok evidence purged_evidence => match call require_text(got.upload_chunk, "200|hell", c, "upload-chunk")
+                                                                                                                                failed
+                                                                                                                                ok evidence chunk_evidence => match call require_text(got.upload_empty, "200|empty", c, "upload-empty")
+                                                                                                                                    failed
+                                                                                                                                    ok evidence drained_evidence => match call require_text(got.stream_echo, "200|stream-me", c, "stream-echo")
+                                                                                                                                        failed
+                                                                                                                                        ok evidence echo_evidence => match call require_text(got.events_body, "200|event: beat\nid: 7\ndata: tick\n\n: still here\n\n", c, "events-body")
+                                                                                                                                            failed
+                                                                                                                                            ok evidence events_evidence => match call require_text(got.events_content_type, "text/event-stream; charset=utf-8", c, "events-content-type")
+                                                                                                                                                failed
+                                                                                                                                                ok evidence eventsct_evidence => match call require_text(got.multipart_attach, "200|v|a.txt", c, "multipart-attach")
+                                                                                                                                                    failed
+                                                                                                                                                    ok evidence attach_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m08_026: "m08-026" => ok test_case("http/http-dispatch", ["http", "m08"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("get-valid"), check_ref("get-absent"), check_ref("get-repeated"), check_ref("get-plus"), check_ref("get-encoded"), check_ref("get-content-type"), check_ref("post-json"), check_ref("post-json-content-type"), check_ref("post-media"), check_ref("post-malformed"), check_ref("form-duplicate"), check_ref("form-optional"), check_ref("form-empty"), check_ref("form-absent"), check_ref("form-broken"), check_ref("generic-route"), check_ref("wrapped-route"), check_ref("not-found"), check_ref("method-post-a"), check_ref("method-get-b"), check_ref("method-head-a"), check_ref("put-route"), check_ref("patch-route"), check_ref("delete-route"), check_ref("options-route"), check_ref("head-route"), check_ref("head-content-length"), check_ref("allow-post-p"), check_ref("allow-purge-d"), check_ref("upload-chunk"), check_ref("upload-empty"), check_ref("stream-echo"), check_ref("events-body"), check_ref("events-content-type"), check_ref("multipart-attach")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m08-026"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("http/http-dispatch", ["http", "m08"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("get-valid"), check_ref("get-absent"), check_ref("get-repeated"), check_ref("get-plus"), check_ref("post-json"), check_ref("post-json-content-type"), check_ref("post-media"), check_ref("post-malformed"), check_ref("form-duplicate"), check_ref("form-optional"), check_ref("form-empty"), check_ref("form-absent"), check_ref("form-broken"), check_ref("generic-route"), check_ref("wrapped-route"), check_ref("not-found"), check_ref("method-post-a"), check_ref("method-get-b"), check_ref("method-head-a"), check_ref("put-route"), check_ref("patch-route"), check_ref("delete-route"), check_ref("options-route"), check_ref("head-route"), check_ref("head-content-length"), check_ref("allow-post-p"), check_ref("allow-purge-d"), check_ref("upload-chunk"), check_ref("upload-empty"), check_ref("stream-echo"), check_ref("events-body"), check_ref("events-content-type"), check_ref("multipart-attach")], callable case_body)
