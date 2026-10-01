@@ -1,0 +1,231 @@
+package m07core022roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M07 CORE-022 "bundled generation: 4 assert roots green".
+/// Source: tests/integration/generation_test.go symbol
+/// TestCurrentBundledGeneration.
+/// Related fixture: compiler/testdata/current/native/generation.can (read
+/// at Go L92, staged pristine as src/main.can at L97 with only the
+/// endpoint rewritten to the test server at L96; the blank-ask mutation at
+/// L189 and the auth-strip at L202 apply to later legs only, never the
+/// assert leg).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): canlc assert green with a passed report carrying
+/// exactly 4 roots grounded per function in generation.can: describe 1,
+/// generate 1, select 0 (asks branches only, no asserts block), decide 1,
+/// main 1. The report carries the supplied-completion label (Go L119).
+/// Live generation semantics (request profile, formats, Choice body,
+/// error modes, blank-ask/auth gates, strict tsc) live in
+/// core-022-generation-semantics.can; the production process shape lives
+/// in core-022-run-shape.can.
+/// Variants: none in this file (default only); refusal/truncated/invalid/
+/// record (Go L168-185), blank ask (L186-201) and auth omission (L202-208)
+/// belong to the generation-semantics file.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. CAN_I28_TOKEN is harness-supplied
+/// (Go L99/L104: "test-only"), not an external gate. Logical gates
+/// SUITE/DIAG/FAULT and C/R/N/S/A identities bind at P23/QHTTP; no live
+/// run now. Descriptor timeout 300000ms mirrors the Go 5-minute ctx (L27).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QHTTP unmet).
+/// Case bundled/generation-roots checks: assert-green, report-passed,
+/// root-count, fixture-name, describe-roots, generate-roots, select-roots,
+/// decide-roots, main-roots, label-supplied.
+/// Facet map (generation_test.go legs): assert-green pins the assert leg
+/// (L119-121: status 0 and empty diagnostics or the test fatals);
+/// report-passed pins the passed report (derived from the L119 exit-0
+/// pin: canlc assert exits nonzero on failure); root-count pins the four
+/// roots (fixture asserts blocks: describe L33-35, generate L41-43,
+/// decide L56-58, main L65-66); fixture-name grounds the pins in the
+/// staged fixture (L92: generation.can; L97: src/main.can); describe-roots
+/// pins describe (fixture L33-35 drafted, 1 root); generate-roots pins
+/// generate (fixture L41-43 planned, 1 root); select-roots pins select
+/// (fixture L45-51: asks branches only, no asserts block, 0 roots);
+/// decide-roots pins decide (fixture L56-58 chosen, 1 root); main-roots
+/// pins main (fixture L65-66 sample, 1 root); label-supplied pins the
+/// report label (L119: stdout contains "supplied-completion").
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int root_count
+    str fixture_name
+    int describe_roots
+    int generate_roots
+    int select_roots
+    int decide_roots
+    int main_roots
+    bool label_supplied
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/generation-roots", "default", "", "offline"), "assert-green" => ok "case bundled/generation-roots variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/generation-roots", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case bundled/generation-roots variant default root assert-green run offline")
+        different: false, true, context("bundled/generation-roots", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("bundled/generation-roots", "default", "", "offline"), "root-count" => ok evidence("root-count", "4", "4", true, "case bundled/generation-roots variant default root root-count run offline")
+        different: 3, 4, context("bundled/generation-roots", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "generation.can", "generation.can", context("bundled/generation-roots", "default", "", "offline"), "fixture-name" => ok evidence("fixture-name", "generation.can", "generation.can", true, "case bundled/generation-roots variant default root fixture-name run offline")
+        different: "other.can", "generation.can", context("bundled/generation-roots", "default", "", "offline"), "fixture-name" => failed{"fixture-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 4, "generation.can", 1, 1, 0, 1, 1, true)
+        seed_assert_red: "seed-assert-red" => ok observation(false, true, 4, "generation.can", 1, 1, 0, 1, 1, true)
+        seed_report_red: "seed-report-red" => ok observation(true, false, 4, "generation.can", 1, 1, 0, 1, 1, true)
+        seed_root_short: "seed-root-short" => ok observation(true, true, 3, "generation.can", 1, 1, 0, 1, 1, true)
+        seed_fixture_drift: "seed-fixture-drift" => ok observation(true, true, 4, "other.can", 1, 1, 0, 1, 1, true)
+        seed_describe_loss: "seed-describe-loss" => ok observation(true, true, 4, "generation.can", 0, 1, 0, 1, 1, true)
+        seed_generate_loss: "seed-generate-loss" => ok observation(true, true, 4, "generation.can", 1, 0, 0, 1, 1, true)
+        seed_select_phantom: "seed-select-phantom" => ok observation(true, true, 4, "generation.can", 1, 1, 1, 1, 1, true)
+        seed_decide_loss: "seed-decide-loss" => ok observation(true, true, 4, "generation.can", 1, 1, 0, 0, 1, true)
+        seed_main_loss: "seed-main-loss" => ok observation(true, true, 4, "generation.can", 1, 1, 0, 1, 0, true)
+        seed_supplied_missing: "seed-supplied-missing" => ok observation(true, true, 4, "generation.can", 1, 1, 0, 1, 1, false)
+    match variant_id
+        "seed-assert-red" => ok observation(false, true, 4, "generation.can", 1, 1, 0, 1, 1, true)
+        "seed-report-red" => ok observation(true, false, 4, "generation.can", 1, 1, 0, 1, 1, true)
+        "seed-root-short" => ok observation(true, true, 3, "generation.can", 1, 1, 0, 1, 1, true)
+        "seed-fixture-drift" => ok observation(true, true, 4, "other.can", 1, 1, 0, 1, 1, true)
+        "seed-describe-loss" => ok observation(true, true, 4, "generation.can", 0, 1, 0, 1, 1, true)
+        "seed-generate-loss" => ok observation(true, true, 4, "generation.can", 1, 0, 0, 1, 1, true)
+        "seed-select-phantom" => ok observation(true, true, 4, "generation.can", 1, 1, 1, 1, 1, true)
+        "seed-decide-loss" => ok observation(true, true, 4, "generation.can", 1, 1, 0, 0, 1, true)
+        "seed-main-loss" => ok observation(true, true, 4, "generation.can", 1, 1, 0, 1, 0, true)
+        "seed-supplied-missing" => ok observation(true, true, 4, "generation.can", 1, 1, 0, 1, 1, false)
+        _ => ok observation(true, true, 4, "generation.can", 1, 1, 0, 1, 1, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m07_022: "m07-022" => ok [check("assert-green", "canlc assert exits 0 with empty diagnostics"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 4 roots"), check("fixture-name", "root pins ground the staged generation.can fixture"), check("describe-roots", "describe contributes 1 root (drafted)"), check("generate-roots", "generate contributes 1 root (planned)"), check("select-roots", "select contributes 0 roots (asks branches only)"), check("decide-roots", "decide contributes 1 root (chosen)"), check("main-roots", "main contributes 1 root (sample)"), check("label-supplied", "report carries supplied-completion evidence")]
+        other: "nope" => ok []
+    match scope is "m07-022"
+        false => ok []
+        true => ok [check("assert-green", "canlc assert exits 0 with empty diagnostics"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 4 roots"), check("fixture-name", "root pins ground the staged generation.can fixture"), check("describe-roots", "describe contributes 1 root (drafted)"), check("generate-roots", "generate contributes 1 root (planned)"), check("select-roots", "select contributes 0 roots (asks branches only)"), check("decide-roots", "decide contributes 1 root (chosen)"), check("main-roots", "main contributes 1 root (sample)"), check("label-supplied", "report carries supplied-completion evidence")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/generation-roots" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "4"), expected_check("fixture-name", "generation.can"), expected_check("describe-roots", "1"), expected_check("generate-roots", "1"), expected_check("select-roots", "0"), expected_check("decide-roots", "1"), expected_check("main-roots", "1"), expected_check("label-supplied", "true")]
+        unknown: "nope" => ok []
+    match case is "bundled/generation-roots"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "4"), expected_check("fixture-name", "generation.can"), expected_check("describe-roots", "1"), expected_check("generate-roots", "1"), expected_check("select-roots", "0"), expected_check("decide-roots", "1"), expected_check("main-roots", "1"), expected_check("label-supplied", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/generation-roots", "default", "", "offline") => ok
+        seed_assert_red: context("bundled/generation-roots", "seed-assert-red", "", "offline") => failed{"assert-green"}
+        seed_report_red: context("bundled/generation-roots", "seed-report-red", "", "offline") => failed{"report-passed"}
+        seed_root_short: context("bundled/generation-roots", "seed-root-short", "", "offline") => failed{"root-count"}
+        seed_fixture_drift: context("bundled/generation-roots", "seed-fixture-drift", "", "offline") => failed{"fixture-name"}
+        seed_describe_loss: context("bundled/generation-roots", "seed-describe-loss", "", "offline") => failed{"describe-roots"}
+        seed_generate_loss: context("bundled/generation-roots", "seed-generate-loss", "", "offline") => failed{"generate-roots"}
+        seed_select_phantom: context("bundled/generation-roots", "seed-select-phantom", "", "offline") => failed{"select-roots"}
+        seed_decide_loss: context("bundled/generation-roots", "seed-decide-loss", "", "offline") => failed{"decide-roots"}
+        seed_main_loss: context("bundled/generation-roots", "seed-main-loss", "", "offline") => failed{"main-roots"}
+        seed_supplied_missing: context("bundled/generation-roots", "seed-supplied-missing", "", "offline") => failed{"label-supplied"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence assert_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence passed_evidence => match call require_int(got.root_count, 4, c, "root-count")
+                    failed
+                    ok evidence count_evidence => match call require_text(got.fixture_name, "generation.can", c, "fixture-name")
+                        failed
+                        ok evidence fixture_evidence => match call require_int(got.describe_roots, 1, c, "describe-roots")
+                            failed
+                            ok evidence describe_evidence => match call require_int(got.generate_roots, 1, c, "generate-roots")
+                                failed
+                                ok evidence generate_evidence => match call require_int(got.select_roots, 0, c, "select-roots")
+                                    failed
+                                    ok evidence select_evidence => match call require_int(got.decide_roots, 1, c, "decide-roots")
+                                        failed
+                                        ok evidence decide_evidence => match call require_int(got.main_roots, 1, c, "main-roots")
+                                            failed
+                                            ok evidence main_evidence => match call require_bool(got.label_supplied, true, c, "label-supplied")
+                                                failed
+                                                ok evidence supplied_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m07_022: "m07-022" => ok test_case("bundled/generation-roots", ["generation", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("describe-roots"), check_ref("generate-roots"), check_ref("select-roots"), check_ref("decide-roots"), check_ref("main-roots"), check_ref("label-supplied")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m07-022"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/generation-roots", ["generation", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("describe-roots"), check_ref("generate-roots"), check_ref("select-roots"), check_ref("decide-roots"), check_ref("main-roots"), check_ref("label-supplied")], callable case_body)

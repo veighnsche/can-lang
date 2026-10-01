@@ -1,0 +1,293 @@
+package m07core022generation
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M07 CORE-022 "bundled generation: live semantics and error mapping".
+/// Source: tests/integration/generation_test.go symbol
+/// TestCurrentBundledGeneration.
+/// Related fixture: compiler/testdata/current/native/generation.can
+/// (generator L11-19, classifier L20-26, describe L27-36, generate L37-44,
+/// select L45-51, decide L52-60, main L61-103) plus the staged raw
+/// fixtures generation_describe/generate/decide.json.
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): the live request/response path (3 requests with
+/// the pinned profile, formats, asks, headers and transformed Choice
+/// body), the four error variants mapping to distinct errors with no
+/// retry or advance, the blank-ask and auth-omission pre-launch gates,
+/// and the optional strict-ts leg.
+/// The 4-root green pin lives in core-022-roots-green.can; the production
+/// process shape lives in core-022-run-shape.can.
+/// Variants: refusal, truncated, invalid, record (Go L168-185); blank ask
+/// (L186-201); auth omission (L202-208).
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. CAN_I28_TOKEN is harness-supplied
+/// (Go L99/L104: "test-only"), not an external gate. Logical gates
+/// SUITE/DIAG/FAULT and C/R/N/S/A identities bind at P23/QHTTP; no live
+/// run now. Descriptor timeout 300000ms mirrors the Go 5-minute ctx (L27).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QHTTP unmet).
+/// Case bundled/generation-semantics checks: three-requests,
+/// request-profile, text-format, schema-format, schema-shape, asks-inputs,
+/// no-disclosure, choice-request, request-headers, refusal-maps,
+/// truncated-maps, invalid-maps, record-maps, blank-ask-rejects,
+/// blank-ask-silent, auth-build-exit, strict-ts, bigint.
+/// Facet map (generation_test.go legs): three-requests pins the live
+/// request count (L122-125: exactly 3 bodies for text, record, Choice or
+/// the test fatals); request-profile pins the Responses shape (L133: 9
+/// keys with model fixture-model, max_output_tokens 512, store/stream/
+/// background false, truncation disabled); text-format pins the describe
+/// format (L146-149: lone type text); schema-format pins the generate
+/// format (L151-153: type json_schema, strict true, name matching
+/// ^can_[0-9a-f]{32}$); schema-shape pins the generate schema (L155-161:
+/// additionalProperties false, 3 required, choices items with count
+/// integer); asks-inputs pins the prompts and inputs (L136-141: Describe
+/// with {"count":9007199254740993}, Plan with {"description":
+/// "description"}); no-disclosure pins the redaction (L142-144: no body
+/// contains private-not-disclosed); choice-request pins the transformed
+/// Choice body verbatim (L164-167: the jev-latest request); request-headers
+/// pins the live headers (L43-45: POST with Bearer [REDACTED] and
+/// application/json); refusal-maps pins the refusal variant (L171/L176-184:
+/// "error":"llm::refused" with 1 request); truncated-maps pins the
+/// truncated variant ("error":"llm::truncated" with 1 request);
+/// invalid-maps pins the invalid variant ("error":"llm::invalid_response"
+/// with 1 request); record-maps pins the record variant ("error":
+/// "codec::invalid_data" with 2 requests); blank-ask-rejects pins the
+/// blank-asks gate (L189-195: "build verification failed" plus "unused
+/// fixture"); blank-ask-silent pins the gate silence (L190-201: no new
+/// request or the test fatals); auth-build-exit pins the authless build
+/// (L202-208: build exits 0 after the auth strip); strict-ts pins the
+/// optional leg (L215-220: strict tsc over emitted entry.ts via CAN_BUN
+/// runs if and only if CAN_TSC is set); bigint pins the exact count above
+/// float precision (L136/L159: 9007199254740993).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int three_requests
+    str request_profile
+    str text_format
+    str schema_format
+    str schema_shape
+    str asks_inputs
+    bool no_disclosure
+    str choice_request
+    str request_headers
+    str refusal_maps
+    str truncated_maps
+    str invalid_maps
+    str record_maps
+    str blank_ask
+    bool blank_ask_silent
+    int auth_build_exit
+    bool strict_ts
+    int bigint
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/generation-semantics", "default", "", "offline"), "three-requests" => ok "case bundled/generation-semantics variant default root three-requests run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/generation-semantics", "default", "", "offline"), "no-disclosure" => ok evidence("no-disclosure", "true", "true", true, "case bundled/generation-semantics variant default root no-disclosure run offline")
+        different: false, true, context("bundled/generation-semantics", "default", "", "offline"), "no-disclosure" => failed{"no-disclosure"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("bundled/generation-semantics", "default", "", "offline"), "three-requests" => ok evidence("three-requests", "3", "3", true, "case bundled/generation-semantics variant default root three-requests run offline")
+        different: 2, 3, context("bundled/generation-semantics", "default", "", "offline"), "three-requests" => failed{"three-requests"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "text", "text", context("bundled/generation-semantics", "default", "", "offline"), "text-format" => ok evidence("text-format", "text", "text", true, "case bundled/generation-semantics variant default root text-format run offline")
+        different: "json_schema", "text", context("bundled/generation-semantics", "default", "", "offline"), "text-format" => failed{"text-format"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        seed_two_requests: "seed-two-requests" => ok observation(2, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        seed_profile_drift: "seed-profile-drift" => ok observation(3, "8|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        seed_format_drift: "seed-format-drift" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "json_schema", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        seed_schema_drift: "seed-schema-drift" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|lax|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        seed_shape_drift: "seed-shape-drift" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=2|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        seed_asks_drift: "seed-asks-drift" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":1}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        seed_disclosed: "seed-disclosed" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", false, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        seed_choice_drift: "seed-choice-drift" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        seed_headers_drift: "seed-headers-drift" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "GET|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        seed_refusal_retried: "seed-refusal-retried" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|2", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        seed_truncated_retried: "seed-truncated-retried" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|2", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        seed_invalid_retried: "seed-invalid-retried" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|2", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        seed_record_short: "seed-record-short" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|1", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        seed_blank_admitted: "seed-blank-admitted" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "ok", true, 0, true, 9007199254740993)
+        seed_blank_launched: "seed-blank-launched" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", false, 0, true, 9007199254740993)
+        seed_auth_build_red: "seed-auth-build-red" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 1, true, 9007199254740993)
+        seed_tsc_unconditional: "seed-tsc-unconditional" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, false, 9007199254740993)
+        seed_bigint_short: "seed-bigint-short" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740992)
+    match variant_id
+        "seed-two-requests" => ok observation(2, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        "seed-profile-drift" => ok observation(3, "8|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        "seed-format-drift" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "json_schema", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        "seed-schema-drift" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|lax|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        "seed-shape-drift" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=2|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        "seed-asks-drift" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":1}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        "seed-disclosed" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", false, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        "seed-choice-drift" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        "seed-headers-drift" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "GET|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        "seed-refusal-retried" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|2", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        "seed-truncated-retried" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|2", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        "seed-invalid-retried" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|2", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        "seed-record-short" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|1", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+        "seed-blank-admitted" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "ok", true, 0, true, 9007199254740993)
+        "seed-blank-launched" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", false, 0, true, 9007199254740993)
+        "seed-auth-build-red" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 1, true, 9007199254740993)
+        "seed-tsc-unconditional" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, false, 9007199254740993)
+        "seed-bigint-short" => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740992)
+        _ => ok observation(3, "9|fixture-model|512|false|false|false|disabled", "text", "json_schema|strict|can_[0-9a-f]{32}", "additionalProperties=false|required=3|count=integer", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", true, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", "POST|Bearer [REDACTED]|application/json", "\"error\":\"llm::refused\"|1", "\"error\":\"llm::truncated\"|1", "\"error\":\"llm::invalid_response\"|1", "\"error\":\"codec::invalid_data\"|2", "build verification failed|unused fixture", true, 0, true, 9007199254740993)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m07_022: "m07-022" => ok [check("three-requests", "live run issues exactly 3 requests (text, record, Choice)"), check("request-profile", "Responses requests pin the 9-key fixture-model profile"), check("text-format", "describe pins the lone text format"), check("schema-format", "generate pins the strict json_schema format with a can_ name"), check("schema-shape", "generate schema pins closed properties, 3 required, integer count"), check("asks-inputs", "asks pin Describe/Plan with the exact inputs"), check("no-disclosure", "request bodies disclose no private setting"), check("choice-request", "Choice request pins the transformed jev-latest body verbatim"), check("request-headers", "live requests pin POST with the Bearer [REDACTED] JSON headers"), check("refusal-maps", "refusal maps to llm::refused with 1 request"), check("truncated-maps", "truncation maps to llm::truncated with 1 request"), check("invalid-maps", "empty output maps to llm::invalid_response with 1 request"), check("record-maps", "bad record decode maps to codec::invalid_data with 2 requests"), check("blank-ask-rejects", "blank asks rejects with verification failure and unused fixture"), check("blank-ask-silent", "blank asks launches no request"), check("auth-build-exit", "authless build exits 0"), check("strict-ts", "strict tsc leg runs only when CAN_TSC is set"), check("bigint", "count pins exact 9007199254740993")]
+        other: "nope" => ok []
+    match scope is "m07-022"
+        false => ok []
+        true => ok [check("three-requests", "live run issues exactly 3 requests (text, record, Choice)"), check("request-profile", "Responses requests pin the 9-key fixture-model profile"), check("text-format", "describe pins the lone text format"), check("schema-format", "generate pins the strict json_schema format with a can_ name"), check("schema-shape", "generate schema pins closed properties, 3 required, integer count"), check("asks-inputs", "asks pin Describe/Plan with the exact inputs"), check("no-disclosure", "request bodies disclose no private setting"), check("choice-request", "Choice request pins the transformed jev-latest body verbatim"), check("request-headers", "live requests pin POST with the Bearer [REDACTED] JSON headers"), check("refusal-maps", "refusal maps to llm::refused with 1 request"), check("truncated-maps", "truncation maps to llm::truncated with 1 request"), check("invalid-maps", "empty output maps to llm::invalid_response with 1 request"), check("record-maps", "bad record decode maps to codec::invalid_data with 2 requests"), check("blank-ask-rejects", "blank asks rejects with verification failure and unused fixture"), check("blank-ask-silent", "blank asks launches no request"), check("auth-build-exit", "authless build exits 0"), check("strict-ts", "strict tsc leg runs only when CAN_TSC is set"), check("bigint", "count pins exact 9007199254740993")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/generation-semantics" => ok [expected_check("three-requests", "3"), expected_check("request-profile", "9|fixture-model|512|false|false|false|disabled"), expected_check("text-format", "text"), expected_check("schema-format", "json_schema|strict|can_[0-9a-f]{32}"), expected_check("schema-shape", "additionalProperties=false|required=3|count=integer"), expected_check("asks-inputs", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}"), expected_check("no-disclosure", "true"), expected_check("choice-request", "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}"), expected_check("request-headers", "POST|Bearer [REDACTED]|application/json"), expected_check("refusal-maps", "\"error\":\"llm::refused\"|1"), expected_check("truncated-maps", "\"error\":\"llm::truncated\"|1"), expected_check("invalid-maps", "\"error\":\"llm::invalid_response\"|1"), expected_check("record-maps", "\"error\":\"codec::invalid_data\"|2"), expected_check("blank-ask-rejects", "build verification failed|unused fixture"), expected_check("blank-ask-silent", "true"), expected_check("auth-build-exit", "0"), expected_check("strict-ts", "true"), expected_check("bigint", "9007199254740993")]
+        unknown: "nope" => ok []
+    match case is "bundled/generation-semantics"
+        false => ok []
+        true => ok [expected_check("three-requests", "3"), expected_check("request-profile", "9|fixture-model|512|false|false|false|disabled"), expected_check("text-format", "text"), expected_check("schema-format", "json_schema|strict|can_[0-9a-f]{32}"), expected_check("schema-shape", "additionalProperties=false|required=3|count=integer"), expected_check("asks-inputs", "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}"), expected_check("no-disclosure", "true"), expected_check("choice-request", "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}"), expected_check("request-headers", "POST|Bearer [REDACTED]|application/json"), expected_check("refusal-maps", "\"error\":\"llm::refused\"|1"), expected_check("truncated-maps", "\"error\":\"llm::truncated\"|1"), expected_check("invalid-maps", "\"error\":\"llm::invalid_response\"|1"), expected_check("record-maps", "\"error\":\"codec::invalid_data\"|2"), expected_check("blank-ask-rejects", "build verification failed|unused fixture"), expected_check("blank-ask-silent", "true"), expected_check("auth-build-exit", "0"), expected_check("strict-ts", "true"), expected_check("bigint", "9007199254740993")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/generation-semantics", "default", "", "offline") => ok
+        seed_two_requests: context("bundled/generation-semantics", "seed-two-requests", "", "offline") => failed{"three-requests"}
+        seed_profile_drift: context("bundled/generation-semantics", "seed-profile-drift", "", "offline") => failed{"request-profile"}
+        seed_format_drift: context("bundled/generation-semantics", "seed-format-drift", "", "offline") => failed{"text-format"}
+        seed_schema_drift: context("bundled/generation-semantics", "seed-schema-drift", "", "offline") => failed{"schema-format"}
+        seed_shape_drift: context("bundled/generation-semantics", "seed-shape-drift", "", "offline") => failed{"schema-shape"}
+        seed_asks_drift: context("bundled/generation-semantics", "seed-asks-drift", "", "offline") => failed{"asks-inputs"}
+        seed_disclosed: context("bundled/generation-semantics", "seed-disclosed", "", "offline") => failed{"no-disclosure"}
+        seed_choice_drift: context("bundled/generation-semantics", "seed-choice-drift", "", "offline") => failed{"choice-request"}
+        seed_headers_drift: context("bundled/generation-semantics", "seed-headers-drift", "", "offline") => failed{"request-headers"}
+        seed_refusal_retried: context("bundled/generation-semantics", "seed-refusal-retried", "", "offline") => failed{"refusal-maps"}
+        seed_truncated_retried: context("bundled/generation-semantics", "seed-truncated-retried", "", "offline") => failed{"truncated-maps"}
+        seed_invalid_retried: context("bundled/generation-semantics", "seed-invalid-retried", "", "offline") => failed{"invalid-maps"}
+        seed_record_short: context("bundled/generation-semantics", "seed-record-short", "", "offline") => failed{"record-maps"}
+        seed_blank_admitted: context("bundled/generation-semantics", "seed-blank-admitted", "", "offline") => failed{"blank-ask-rejects"}
+        seed_blank_launched: context("bundled/generation-semantics", "seed-blank-launched", "", "offline") => failed{"blank-ask-silent"}
+        seed_auth_build_red: context("bundled/generation-semantics", "seed-auth-build-red", "", "offline") => failed{"auth-build-exit"}
+        seed_tsc_unconditional: context("bundled/generation-semantics", "seed-tsc-unconditional", "", "offline") => failed{"strict-ts"}
+        seed_bigint_short: context("bundled/generation-semantics", "seed-bigint-short", "", "offline") => failed{"bigint"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.three_requests, 3, c, "three-requests")
+            failed
+            ok evidence requests_evidence => match call require_text(got.request_profile, "9|fixture-model|512|false|false|false|disabled", c, "request-profile")
+                failed
+                ok evidence profile_evidence => match call require_text(got.text_format, "text", c, "text-format")
+                    failed
+                    ok evidence format_evidence => match call require_text(got.schema_format, "json_schema|strict|can_[0-9a-f]{32}", c, "schema-format")
+                        failed
+                        ok evidence schema_format_evidence => match call require_text(got.schema_shape, "additionalProperties=false|required=3|count=integer", c, "schema-shape")
+                            failed
+                            ok evidence schema_shape_evidence => match call require_text(got.asks_inputs, "Describe|{\"count\":9007199254740993}|Plan|{\"description\":\"description\"}", c, "asks-inputs")
+                                failed
+                                ok evidence asks_evidence => match call require_bool(got.no_disclosure, true, c, "no-disclosure")
+                                    failed
+                                    ok evidence disclosure_evidence => match call require_text(got.choice_request, "{\"model\":\"jev-latest\",\"state\":{\"generated\":{\"choices\":[{\"label\":\"First\",\"count\":9007199254740993}],\"ready\":true,\"ratio\":0.5}},\"questions\":{\"q0\":{\"type\":\"choice\",\"instructions\":\"Choose\",\"criteria\":{\"first\":\"First transformed\",\"second\":\"Other\"}}}}", c, "choice-request")
+                                        failed
+                                        ok evidence choice_evidence => match call require_text(got.request_headers, "POST|Bearer [REDACTED]|application/json", c, "request-headers")
+                                            failed
+                                            ok evidence headers_evidence => match call require_text(got.refusal_maps, "\"error\":\"llm::refused\"|1", c, "refusal-maps")
+                                                failed
+                                                ok evidence refusal_evidence => match call require_text(got.truncated_maps, "\"error\":\"llm::truncated\"|1", c, "truncated-maps")
+                                                    failed
+                                                    ok evidence truncated_evidence => match call require_text(got.invalid_maps, "\"error\":\"llm::invalid_response\"|1", c, "invalid-maps")
+                                                        failed
+                                                        ok evidence invalid_evidence => match call require_text(got.record_maps, "\"error\":\"codec::invalid_data\"|2", c, "record-maps")
+                                                            failed
+                                                            ok evidence record_evidence => match call require_text(got.blank_ask, "build verification failed|unused fixture", c, "blank-ask-rejects")
+                                                                failed
+                                                                ok evidence blank_evidence => match call require_bool(got.blank_ask_silent, true, c, "blank-ask-silent")
+                                                                    failed
+                                                                    ok evidence silence_evidence => match call require_int(got.auth_build_exit, 0, c, "auth-build-exit")
+                                                                        failed
+                                                                        ok evidence build_evidence => match call require_bool(got.strict_ts, true, c, "strict-ts")
+                                                                            failed
+                                                                            ok evidence tsc_evidence => match call require_int(got.bigint, 9007199254740993, c, "bigint")
+                                                                                failed
+                                                                                ok evidence bigint_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m07_022: "m07-022" => ok test_case("bundled/generation-semantics", ["generation", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("three-requests"), check_ref("request-profile"), check_ref("text-format"), check_ref("schema-format"), check_ref("schema-shape"), check_ref("asks-inputs"), check_ref("no-disclosure"), check_ref("choice-request"), check_ref("request-headers"), check_ref("refusal-maps"), check_ref("truncated-maps"), check_ref("invalid-maps"), check_ref("record-maps"), check_ref("blank-ask-rejects"), check_ref("blank-ask-silent"), check_ref("auth-build-exit"), check_ref("strict-ts"), check_ref("bigint")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m07-022"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/generation-semantics", ["generation", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("three-requests"), check_ref("request-profile"), check_ref("text-format"), check_ref("schema-format"), check_ref("schema-shape"), check_ref("asks-inputs"), check_ref("no-disclosure"), check_ref("choice-request"), check_ref("request-headers"), check_ref("refusal-maps"), check_ref("truncated-maps"), check_ref("invalid-maps"), check_ref("record-maps"), check_ref("blank-ask-rejects"), check_ref("blank-ask-silent"), check_ref("auth-build-exit"), check_ref("strict-ts"), check_ref("bigint")], callable case_body)

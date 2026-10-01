@@ -1,0 +1,243 @@
+package m07core022run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M07 CORE-022 "bundled generation: production run shape".
+/// Source: tests/integration/generation_test.go symbol
+/// TestCurrentBundledGeneration.
+/// Related fixture: compiler/testdata/current/native/generation.can main
+/// entry (L61-103); the live run helper (L100-115) executes the sandboxed
+/// binary under the deny-network profile plus a localhost-only allowance.
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): the production process shape. The green run
+/// exits 0 with empty stdout and empty stderr; the assert leg exits 0
+/// with empty stderr and a report carrying supplied-completion; the
+/// sandbox profile, the run-only network allowance and the credential env
+/// plumbing pin the invocation contract; the compiled raw-provider
+/// harness passes with its two evidence labels.
+/// The 4-root green pin lives in core-022-roots-green.can; live
+/// generation semantics live in core-022-generation-semantics.can.
+/// Variants: none live in this file beyond the green run and assert legs
+/// themselves; error modes, the blank-ask gate, the authless build and
+/// the optional CAN_TSC strict generated-TypeScript leg (L215-220) belong
+/// to the generation-semantics file.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. CAN_I28_TOKEN is harness-supplied
+/// (Go L99/L104: "test-only"), not an external gate. Logical gates
+/// SUITE/DIAG/FAULT and C/R/N/S/A identities bind at P23/QHTTP; no live
+/// run now. Descriptor timeout 300000ms mirrors the Go 5-minute ctx (L27).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QHTTP unmet).
+/// Case bundled/generation-run checks: run-exit, run-stdout-empty,
+/// run-stderr-empty, assert-exit, assert-stderr-empty, assert-stdout-label,
+/// sandbox-profile, network-allowance, credential-env, provider-passed,
+/// provider-evidence.
+/// Facet map (generation_test.go legs): run-exit pins exit 0 on the green
+/// run (L116-118: status 0 or "generation execution" fatals);
+/// run-stdout-empty pins empty stdout on the green run (L116: out must be
+/// ""); run-stderr-empty pins empty stderr on the green run (L116: diag
+/// must be ""); assert-exit pins exit 0 on the assert leg (L119-121:
+/// status 0 or "consumer assertions" fatals); assert-stderr-empty pins
+/// empty stderr on the assert leg (L119: diag must be "");
+/// assert-stdout-label pins the non-silent assert stdout (L119: out
+/// contains "supplied-completion"; adaptation per the CORE-014/019/040
+/// precedent: the Go test pins substring containment, not full-output
+/// equality, so the verbatim needle is pinned, not the whole report);
+/// sandbox-profile pins the deny-network base profile (L102: "(version
+/// 1)(allow default)(deny network*)" verbatim); network-allowance pins the
+/// run-only localhost allowance (L102: "(allow network-outbound (remote
+/// ip "localhost:*"))" verbatim); credential-env pins the credential
+/// plumbing (L99/L104: CAN_I28_TOKEN=test-only in the run environment);
+/// provider-passed pins the compiled raw-provider harness (L246-250: the
+/// report passes); provider-evidence pins its evidence labels (L249:
+/// ["raw-provider-fixture", "real-can"]).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int run_exit
+    bool run_stdout_empty
+    bool run_stderr_empty
+    int assert_exit
+    bool assert_stderr_empty
+    str assert_stdout_label
+    str sandbox_profile
+    str network_allowance
+    str credential_env
+    bool provider_passed
+    str provider_evidence
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/generation-run", "default", "", "offline"), "run-exit" => ok "case bundled/generation-run variant default root run-exit run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/generation-run", "default", "", "offline"), "run-stdout-empty" => ok evidence("run-stdout-empty", "true", "true", true, "case bundled/generation-run variant default root run-stdout-empty run offline")
+        different: false, true, context("bundled/generation-run", "default", "", "offline"), "run-stdout-empty" => failed{"run-stdout-empty"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("bundled/generation-run", "default", "", "offline"), "run-exit" => ok evidence("run-exit", "0", "0", true, "case bundled/generation-run variant default root run-exit run offline")
+        different: 1, 0, context("bundled/generation-run", "default", "", "offline"), "run-exit" => failed{"run-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "(version 1)(allow default)(deny network*)", "(version 1)(allow default)(deny network*)", context("bundled/generation-run", "default", "", "offline"), "sandbox-profile" => ok evidence("sandbox-profile", "(version 1)(allow default)(deny network*)", "(version 1)(allow default)(deny network*)", true, "case bundled/generation-run variant default root sandbox-profile run offline")
+        different: "(version 1)(allow default)", "(version 1)(allow default)(deny network*)", context("bundled/generation-run", "default", "", "offline"), "sandbox-profile" => failed{"sandbox-profile"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(0, true, true, 0, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        seed_run_red: "seed-run-red" => ok observation(1, true, true, 0, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        seed_stdout_noisy: "seed-stdout-noisy" => ok observation(0, false, true, 0, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        seed_stderr_noisy: "seed-stderr-noisy" => ok observation(0, true, false, 0, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        seed_assert_red: "seed-assert-red" => ok observation(0, true, true, 1, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        seed_assert_noisy: "seed-assert-noisy" => ok observation(0, true, true, 0, false, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        seed_label_drift: "seed-label-drift" => ok observation(0, true, true, 0, true, "other-label", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        seed_profile_drift: "seed-profile-drift" => ok observation(0, true, true, 0, true, "supplied-completion", "(version 1)(allow default)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        seed_allowance_drift: "seed-allowance-drift" => ok observation(0, true, true, 0, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound)", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        seed_env_drift: "seed-env-drift" => ok observation(0, true, true, 0, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        seed_provider_red: "seed-provider-red" => ok observation(0, true, true, 0, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", false, "raw-provider-fixture,real-can")
+        seed_evidence_drift: "seed-evidence-drift" => ok observation(0, true, true, 0, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture")
+    match variant_id
+        "seed-run-red" => ok observation(1, true, true, 0, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        "seed-stdout-noisy" => ok observation(0, false, true, 0, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        "seed-stderr-noisy" => ok observation(0, true, false, 0, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        "seed-assert-red" => ok observation(0, true, true, 1, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        "seed-assert-noisy" => ok observation(0, true, true, 0, false, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        "seed-label-drift" => ok observation(0, true, true, 0, true, "other-label", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        "seed-profile-drift" => ok observation(0, true, true, 0, true, "supplied-completion", "(version 1)(allow default)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        "seed-allowance-drift" => ok observation(0, true, true, 0, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound)", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        "seed-env-drift" => ok observation(0, true, true, 0, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+        "seed-provider-red" => ok observation(0, true, true, 0, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", false, "raw-provider-fixture,real-can")
+        "seed-evidence-drift" => ok observation(0, true, true, 0, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture")
+        _ => ok observation(0, true, true, 0, true, "supplied-completion", "(version 1)(allow default)(deny network*)", "(allow network-outbound (remote ip \"localhost:*\"))", "CAN_I28_TOKEN=test-only", true, "raw-provider-fixture,real-can")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m07_022: "m07-022" => ok [check("run-exit", "green run exits 0"), check("run-stdout-empty", "green run keeps stdout empty"), check("run-stderr-empty", "green run keeps stderr empty"), check("assert-exit", "assert leg exits 0"), check("assert-stderr-empty", "assert leg keeps stderr empty"), check("assert-stdout-label", "assert stdout carries supplied-completion"), check("sandbox-profile", "invocation pins the deny-network sandbox profile"), check("network-allowance", "run pins the localhost-only network allowance"), check("credential-env", "run environment carries CAN_I28_TOKEN=test-only"), check("provider-passed", "compiled raw-provider harness passes"), check("provider-evidence", "raw-provider harness pins raw-provider-fixture and real-can")]
+        other: "nope" => ok []
+    match scope is "m07-022"
+        false => ok []
+        true => ok [check("run-exit", "green run exits 0"), check("run-stdout-empty", "green run keeps stdout empty"), check("run-stderr-empty", "green run keeps stderr empty"), check("assert-exit", "assert leg exits 0"), check("assert-stderr-empty", "assert leg keeps stderr empty"), check("assert-stdout-label", "assert stdout carries supplied-completion"), check("sandbox-profile", "invocation pins the deny-network sandbox profile"), check("network-allowance", "run pins the localhost-only network allowance"), check("credential-env", "run environment carries CAN_I28_TOKEN=test-only"), check("provider-passed", "compiled raw-provider harness passes"), check("provider-evidence", "raw-provider harness pins raw-provider-fixture and real-can")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/generation-run" => ok [expected_check("run-exit", "0"), expected_check("run-stdout-empty", "true"), expected_check("run-stderr-empty", "true"), expected_check("assert-exit", "0"), expected_check("assert-stderr-empty", "true"), expected_check("assert-stdout-label", "supplied-completion"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("network-allowance", "(allow network-outbound (remote ip \"localhost:*\"))"), expected_check("credential-env", "CAN_I28_TOKEN=test-only"), expected_check("provider-passed", "true"), expected_check("provider-evidence", "raw-provider-fixture,real-can")]
+        unknown: "nope" => ok []
+    match case is "bundled/generation-run"
+        false => ok []
+        true => ok [expected_check("run-exit", "0"), expected_check("run-stdout-empty", "true"), expected_check("run-stderr-empty", "true"), expected_check("assert-exit", "0"), expected_check("assert-stderr-empty", "true"), expected_check("assert-stdout-label", "supplied-completion"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("network-allowance", "(allow network-outbound (remote ip \"localhost:*\"))"), expected_check("credential-env", "CAN_I28_TOKEN=test-only"), expected_check("provider-passed", "true"), expected_check("provider-evidence", "raw-provider-fixture,real-can")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/generation-run", "default", "", "offline") => ok
+        seed_run_red: context("bundled/generation-run", "seed-run-red", "", "offline") => failed{"run-exit"}
+        seed_stdout_noisy: context("bundled/generation-run", "seed-stdout-noisy", "", "offline") => failed{"run-stdout-empty"}
+        seed_stderr_noisy: context("bundled/generation-run", "seed-stderr-noisy", "", "offline") => failed{"run-stderr-empty"}
+        seed_assert_red: context("bundled/generation-run", "seed-assert-red", "", "offline") => failed{"assert-exit"}
+        seed_assert_noisy: context("bundled/generation-run", "seed-assert-noisy", "", "offline") => failed{"assert-stderr-empty"}
+        seed_label_drift: context("bundled/generation-run", "seed-label-drift", "", "offline") => failed{"assert-stdout-label"}
+        seed_profile_drift: context("bundled/generation-run", "seed-profile-drift", "", "offline") => failed{"sandbox-profile"}
+        seed_allowance_drift: context("bundled/generation-run", "seed-allowance-drift", "", "offline") => failed{"network-allowance"}
+        seed_env_drift: context("bundled/generation-run", "seed-env-drift", "", "offline") => failed{"credential-env"}
+        seed_provider_red: context("bundled/generation-run", "seed-provider-red", "", "offline") => failed{"provider-passed"}
+        seed_evidence_drift: context("bundled/generation-run", "seed-evidence-drift", "", "offline") => failed{"provider-evidence"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.run_exit, 0, c, "run-exit")
+            failed
+            ok evidence exit_evidence => match call require_bool(got.run_stdout_empty, true, c, "run-stdout-empty")
+                failed
+                ok evidence stdout_evidence => match call require_bool(got.run_stderr_empty, true, c, "run-stderr-empty")
+                    failed
+                    ok evidence stderr_evidence => match call require_int(got.assert_exit, 0, c, "assert-exit")
+                        failed
+                        ok evidence assert_exit_evidence => match call require_bool(got.assert_stderr_empty, true, c, "assert-stderr-empty")
+                            failed
+                            ok evidence assert_stderr_evidence => match call require_text(got.assert_stdout_label, "supplied-completion", c, "assert-stdout-label")
+                                failed
+                                ok evidence label_evidence => match call require_text(got.sandbox_profile, "(version 1)(allow default)(deny network*)", c, "sandbox-profile")
+                                    failed
+                                    ok evidence profile_evidence => match call require_text(got.network_allowance, "(allow network-outbound (remote ip \"localhost:*\"))", c, "network-allowance")
+                                        failed
+                                        ok evidence allowance_evidence => match call require_text(got.credential_env, "CAN_I28_TOKEN=test-only", c, "credential-env")
+                                            failed
+                                            ok evidence env_evidence => match call require_bool(got.provider_passed, true, c, "provider-passed")
+                                                failed
+                                                ok evidence provider_evidence => match call require_text(got.provider_evidence, "raw-provider-fixture,real-can", c, "provider-evidence")
+                                                    failed
+                                                    ok evidence labels_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m07_022: "m07-022" => ok test_case("bundled/generation-run", ["generation", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("run-exit"), check_ref("run-stdout-empty"), check_ref("run-stderr-empty"), check_ref("assert-exit"), check_ref("assert-stderr-empty"), check_ref("assert-stdout-label"), check_ref("sandbox-profile"), check_ref("network-allowance"), check_ref("credential-env"), check_ref("provider-passed"), check_ref("provider-evidence")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m07-022"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/generation-run", ["generation", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("run-exit"), check_ref("run-stdout-empty"), check_ref("run-stderr-empty"), check_ref("assert-exit"), check_ref("assert-stderr-empty"), check_ref("assert-stdout-label"), check_ref("sandbox-profile"), check_ref("network-allowance"), check_ref("credential-env"), check_ref("provider-passed"), check_ref("provider-evidence")], callable case_body)
