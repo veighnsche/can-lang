@@ -1,0 +1,308 @@
+package m03core001roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M03 CORE-001 "bundled arrays: roots green, silent run".
+/// Source: tests/integration/arrays_test.go symbol
+/// TestCurrentBundledArrays.
+/// Related fixtures: compiler/testdata/current/arrays/main.can (46 roots)
+/// and contracts.can (28 roots); ground for every count pin below.
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): canlc assert green with passed reports and
+/// exactly 46 main roots plus 28 contracts roots grounded per operation
+/// group and per fixture name, silent production run (exit 0, empty
+/// stdout, empty stderr, both fixtures).
+/// Per-operation order/alias/immutability/scheduling/failure-stop facets
+/// live in core-001-array-semantics.can; callback failure, owner context,
+/// thenable/getter hostility, native delegation, staged traces and the
+/// conditional tsc leg live in core-001-hostile-production.can.
+/// Variants: main fixture (46 roots), contracts fixture (28 roots).
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. CAN_TSC/CAN_BUN gate the optional
+/// strict tsc leg (pinned conditional in the hostile file). Logical gates
+/// SUITE/DIAG/FAULT and C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23).
+/// Case bundled/arrays-roots checks: assert-green, report-passed,
+/// main-count, contracts-count, main-fixture, contracts-fixture,
+/// main-helpers, main-map, main-search, main-fold, main-sort-copy,
+/// main-append, main-entry, contracts-capture, contracts-protected,
+/// contracts-failure, contracts-schedule, contracts-sort,
+/// contracts-owner, contracts-entry, run-silent.
+/// Facet map (arrays_test.go legs): assert-green pins the assert leg
+/// (L80-83: exit 0, empty stderr, both fixtures); report-passed pins the
+/// report leg (L84-87: passed true); main-count/contracts-count pin the
+/// row counts (L71-74, L85: 46 and 28 assertions);
+/// main-fixture/contracts-fixture pin the staged names main.can and
+/// contracts.can; main-helpers pins twice/selected/add/observe/identity
+/// (main.can L9/16/23/31/38: 1 each = 5); main-map pins mapped 2
+/// (L45-46) plus generic_map, referenced_map, referenced_reverse,
+/// spread_map, nested_spread_map, empty_generic_map, direct_empty,
+/// empty_generic_spread, empty_bound_concat 1 each = 11; main-search
+/// pins filtered, found, any, all, referenced_find 2 each = 10;
+/// main-fold pins folded and visited 2 each plus empty_generic_fold and
+/// empty_append_fold 1 each = 6; main-sort-copy pins sorted and copied 2
+/// each = 4; main-append pins referenced_slice 2 plus referenced_append,
+/// inferred_append, direct_append, generic_add, spread_concat,
+/// spread_append, spread_slice 1 each = 9; main-entry pins main (L253:
+/// empty args to ok); contracts-capture pins noop, identity, add_near,
+/// echo 1 each = 4; contracts-protected pins captured, generic_bound,
+/// protected_payloads, accumulate, protected_fold 1 each = 5;
+/// contracts-failure pins fallible 2 plus stops, referenced_stops,
+/// quotient, standard_stop 1 each = 6; contracts-schedule pins source,
+/// queued, mapped_queue, concurrent_queue 1 each = 4; contracts-sort
+/// pins immutable_copies, sort_key, stable_sort, nonfinite_sort 1 each =
+/// 4; contracts-owner pins once, spread_once, map, nominal_map 1 each =
+/// 4; contracts-entry pins main (L213: empty args to ok); run-silent
+/// pins the run leg (L88-91: exit 0, empty stdout, empty stderr, both
+/// fixtures).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int main_count
+    int contracts_count
+    str main_fixture
+    str contracts_fixture
+    int main_helpers
+    int main_map
+    int main_search
+    int main_fold
+    int main_sort_copy
+    int main_append
+    int main_entry
+    int contracts_capture
+    int contracts_protected
+    int contracts_failure
+    int contracts_schedule
+    int contracts_sort
+    int contracts_owner
+    int contracts_entry
+    bool run_silent
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/arrays-roots", "default", "", "offline"), "assert-green" => ok "case bundled/arrays-roots variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/arrays-roots", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case bundled/arrays-roots variant default root assert-green run offline")
+        different: false, true, context("bundled/arrays-roots", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 46, 46, context("bundled/arrays-roots", "default", "", "offline"), "main-count" => ok evidence("main-count", "46", "46", true, "case bundled/arrays-roots variant default root main-count run offline")
+        different: 45, 46, context("bundled/arrays-roots", "default", "", "offline"), "main-count" => failed{"main-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "main.can", "main.can", context("bundled/arrays-roots", "default", "", "offline"), "main-fixture" => ok evidence("main-fixture", "main.can", "main.can", true, "case bundled/arrays-roots variant default root main-fixture run offline")
+        different: "writes.can", "main.can", context("bundled/arrays-roots", "default", "", "offline"), "main-fixture" => failed{"main-fixture"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        seed_assert_red: "seed-assert-red" => ok observation(false, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        seed_report_red: "seed-report-red" => ok observation(true, false, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        seed_main_short: "seed-main-short" => ok observation(true, true, 45, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        seed_contracts_short: "seed-contracts-short" => ok observation(true, true, 46, 27, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        seed_main_fixture_drift: "seed-main-fixture-drift" => ok observation(true, true, 46, 28, "writes.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        seed_contracts_fixture_drift: "seed-contracts-fixture-drift" => ok observation(true, true, 46, 28, "main.can", "writes.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        seed_helpers_loss: "seed-helpers-loss" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 4, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        seed_map_short: "seed-map-short" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 10, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        seed_search_short: "seed-search-short" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 9, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        seed_fold_short: "seed-fold-short" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 5, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        seed_sort_copy_short: "seed-sort-copy-short" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 3, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        seed_append_short: "seed-append-short" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 8, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        seed_main_loss: "seed-main-loss" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 0, 4, 5, 6, 4, 4, 4, 1, true)
+        seed_capture_loss: "seed-capture-loss" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 3, 5, 6, 4, 4, 4, 1, true)
+        seed_protected_loss: "seed-protected-loss" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 4, 6, 4, 4, 4, 1, true)
+        seed_failure_short: "seed-failure-short" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 5, 4, 4, 4, 1, true)
+        seed_schedule_loss: "seed-schedule-loss" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 3, 4, 4, 1, true)
+        seed_sort_loss: "seed-sort-loss" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 3, 4, 1, true)
+        seed_owner_loss: "seed-owner-loss" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 3, 1, true)
+        seed_contracts_loss: "seed-contracts-loss" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 0, true)
+        seed_run_noisy: "seed-run-noisy" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, false)
+    match variant_id
+        "seed-assert-red" => ok observation(false, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        "seed-report-red" => ok observation(true, false, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        "seed-main-short" => ok observation(true, true, 45, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        "seed-contracts-short" => ok observation(true, true, 46, 27, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        "seed-main-fixture-drift" => ok observation(true, true, 46, 28, "writes.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        "seed-contracts-fixture-drift" => ok observation(true, true, 46, 28, "main.can", "writes.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        "seed-helpers-loss" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 4, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        "seed-map-short" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 10, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        "seed-search-short" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 9, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        "seed-fold-short" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 5, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        "seed-sort-copy-short" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 3, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        "seed-append-short" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 8, 1, 4, 5, 6, 4, 4, 4, 1, true)
+        "seed-main-loss" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 0, 4, 5, 6, 4, 4, 4, 1, true)
+        "seed-capture-loss" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 3, 5, 6, 4, 4, 4, 1, true)
+        "seed-protected-loss" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 4, 6, 4, 4, 4, 1, true)
+        "seed-failure-short" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 5, 4, 4, 4, 1, true)
+        "seed-schedule-loss" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 3, 4, 4, 1, true)
+        "seed-sort-loss" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 3, 4, 1, true)
+        "seed-owner-loss" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 3, 1, true)
+        "seed-contracts-loss" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 0, true)
+        "seed-run-noisy" => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, false)
+        _ => ok observation(true, true, 46, 28, "main.can", "contracts.can", 5, 11, 10, 6, 4, 9, 1, 4, 5, 6, 4, 4, 4, 1, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m03_001: "m03-001" => ok [check("assert-green", "canlc assert exits 0 with empty stderr on both fixtures"), check("report-passed", "both assert reports pass"), check("main-count", "main.can yields exactly 46 roots"), check("contracts-count", "contracts.can yields exactly 28 roots"), check("main-fixture", "main roots ground the main.can fixture"), check("contracts-fixture", "contracts roots ground the contracts.can fixture"), check("main-helpers", "twice selected add observe identity contribute 5 roots"), check("main-map", "map legs contribute 11 roots"), check("main-search", "filter and search legs contribute 10 roots"), check("main-fold", "fold and visit legs contribute 6 roots"), check("main-sort-copy", "sort and copy legs contribute 4 roots"), check("main-append", "append concat and slice legs contribute 9 roots"), check("main-entry", "main contributes 1 root (empty args to ok)"), check("contracts-capture", "noop identity add_near echo contribute 4 roots"), check("contracts-protected", "captured and protected legs contribute 5 roots"), check("contracts-failure", "failure-stop legs contribute 6 roots"), check("contracts-schedule", "scheduling legs contribute 4 roots"), check("contracts-sort", "immutability and sort legs contribute 4 roots"), check("contracts-owner", "owner and spread legs contribute 4 roots"), check("contracts-entry", "contracts main contributes 1 root (empty args to ok)"), check("run-silent", "production run is silent with exit 0 on both fixtures")]
+        other: "nope" => ok []
+    match scope is "m03-001"
+        false => ok []
+        true => ok [check("assert-green", "canlc assert exits 0 with empty stderr on both fixtures"), check("report-passed", "both assert reports pass"), check("main-count", "main.can yields exactly 46 roots"), check("contracts-count", "contracts.can yields exactly 28 roots"), check("main-fixture", "main roots ground the main.can fixture"), check("contracts-fixture", "contracts roots ground the contracts.can fixture"), check("main-helpers", "twice selected add observe identity contribute 5 roots"), check("main-map", "map legs contribute 11 roots"), check("main-search", "filter and search legs contribute 10 roots"), check("main-fold", "fold and visit legs contribute 6 roots"), check("main-sort-copy", "sort and copy legs contribute 4 roots"), check("main-append", "append concat and slice legs contribute 9 roots"), check("main-entry", "main contributes 1 root (empty args to ok)"), check("contracts-capture", "noop identity add_near echo contribute 4 roots"), check("contracts-protected", "captured and protected legs contribute 5 roots"), check("contracts-failure", "failure-stop legs contribute 6 roots"), check("contracts-schedule", "scheduling legs contribute 4 roots"), check("contracts-sort", "immutability and sort legs contribute 4 roots"), check("contracts-owner", "owner and spread legs contribute 4 roots"), check("contracts-entry", "contracts main contributes 1 root (empty args to ok)"), check("run-silent", "production run is silent with exit 0 on both fixtures")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/arrays-roots" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("main-count", "46"), expected_check("contracts-count", "28"), expected_check("main-fixture", "main.can"), expected_check("contracts-fixture", "contracts.can"), expected_check("main-helpers", "5"), expected_check("main-map", "11"), expected_check("main-search", "10"), expected_check("main-fold", "6"), expected_check("main-sort-copy", "4"), expected_check("main-append", "9"), expected_check("main-entry", "1"), expected_check("contracts-capture", "4"), expected_check("contracts-protected", "5"), expected_check("contracts-failure", "6"), expected_check("contracts-schedule", "4"), expected_check("contracts-sort", "4"), expected_check("contracts-owner", "4"), expected_check("contracts-entry", "1"), expected_check("run-silent", "true")]
+        unknown: "nope" => ok []
+    match case is "bundled/arrays-roots"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("main-count", "46"), expected_check("contracts-count", "28"), expected_check("main-fixture", "main.can"), expected_check("contracts-fixture", "contracts.can"), expected_check("main-helpers", "5"), expected_check("main-map", "11"), expected_check("main-search", "10"), expected_check("main-fold", "6"), expected_check("main-sort-copy", "4"), expected_check("main-append", "9"), expected_check("main-entry", "1"), expected_check("contracts-capture", "4"), expected_check("contracts-protected", "5"), expected_check("contracts-failure", "6"), expected_check("contracts-schedule", "4"), expected_check("contracts-sort", "4"), expected_check("contracts-owner", "4"), expected_check("contracts-entry", "1"), expected_check("run-silent", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/arrays-roots", "default", "", "offline") => ok
+        seed_assert_red: context("bundled/arrays-roots", "seed-assert-red", "", "offline") => failed{"assert-green"}
+        seed_report_red: context("bundled/arrays-roots", "seed-report-red", "", "offline") => failed{"report-passed"}
+        seed_main_short: context("bundled/arrays-roots", "seed-main-short", "", "offline") => failed{"main-count"}
+        seed_contracts_short: context("bundled/arrays-roots", "seed-contracts-short", "", "offline") => failed{"contracts-count"}
+        seed_main_fixture_drift: context("bundled/arrays-roots", "seed-main-fixture-drift", "", "offline") => failed{"main-fixture"}
+        seed_contracts_fixture_drift: context("bundled/arrays-roots", "seed-contracts-fixture-drift", "", "offline") => failed{"contracts-fixture"}
+        seed_helpers_loss: context("bundled/arrays-roots", "seed-helpers-loss", "", "offline") => failed{"main-helpers"}
+        seed_map_short: context("bundled/arrays-roots", "seed-map-short", "", "offline") => failed{"main-map"}
+        seed_search_short: context("bundled/arrays-roots", "seed-search-short", "", "offline") => failed{"main-search"}
+        seed_fold_short: context("bundled/arrays-roots", "seed-fold-short", "", "offline") => failed{"main-fold"}
+        seed_sort_copy_short: context("bundled/arrays-roots", "seed-sort-copy-short", "", "offline") => failed{"main-sort-copy"}
+        seed_append_short: context("bundled/arrays-roots", "seed-append-short", "", "offline") => failed{"main-append"}
+        seed_main_loss: context("bundled/arrays-roots", "seed-main-loss", "", "offline") => failed{"main-entry"}
+        seed_capture_loss: context("bundled/arrays-roots", "seed-capture-loss", "", "offline") => failed{"contracts-capture"}
+        seed_protected_loss: context("bundled/arrays-roots", "seed-protected-loss", "", "offline") => failed{"contracts-protected"}
+        seed_failure_short: context("bundled/arrays-roots", "seed-failure-short", "", "offline") => failed{"contracts-failure"}
+        seed_schedule_loss: context("bundled/arrays-roots", "seed-schedule-loss", "", "offline") => failed{"contracts-schedule"}
+        seed_sort_loss: context("bundled/arrays-roots", "seed-sort-loss", "", "offline") => failed{"contracts-sort"}
+        seed_owner_loss: context("bundled/arrays-roots", "seed-owner-loss", "", "offline") => failed{"contracts-owner"}
+        seed_contracts_loss: context("bundled/arrays-roots", "seed-contracts-loss", "", "offline") => failed{"contracts-entry"}
+        seed_run_noisy: context("bundled/arrays-roots", "seed-run-noisy", "", "offline") => failed{"run-silent"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence ev_assert => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence ev_passed => match call require_int(got.main_count, 46, c, "main-count")
+                    failed
+                    ok evidence ev_main => match call require_int(got.contracts_count, 28, c, "contracts-count")
+                        failed
+                        ok evidence ev_contracts => match call require_text(got.main_fixture, "main.can", c, "main-fixture")
+                            failed
+                            ok evidence ev_main_fixture => match call require_text(got.contracts_fixture, "contracts.can", c, "contracts-fixture")
+                                failed
+                                ok evidence ev_contracts_fixture => match call require_int(got.main_helpers, 5, c, "main-helpers")
+                                    failed
+                                    ok evidence ev_helpers => match call require_int(got.main_map, 11, c, "main-map")
+                                        failed
+                                        ok evidence ev_map => match call require_int(got.main_search, 10, c, "main-search")
+                                            failed
+                                            ok evidence ev_search => match call require_int(got.main_fold, 6, c, "main-fold")
+                                                failed
+                                                ok evidence ev_fold => match call require_int(got.main_sort_copy, 4, c, "main-sort-copy")
+                                                    failed
+                                                    ok evidence ev_sort_copy => match call require_int(got.main_append, 9, c, "main-append")
+                                                        failed
+                                                        ok evidence ev_append => match call require_int(got.main_entry, 1, c, "main-entry")
+                                                            failed
+                                                            ok evidence ev_entry => match call require_int(got.contracts_capture, 4, c, "contracts-capture")
+                                                                failed
+                                                                ok evidence ev_capture => match call require_int(got.contracts_protected, 5, c, "contracts-protected")
+                                                                    failed
+                                                                    ok evidence ev_protected => match call require_int(got.contracts_failure, 6, c, "contracts-failure")
+                                                                        failed
+                                                                        ok evidence ev_failure => match call require_int(got.contracts_schedule, 4, c, "contracts-schedule")
+                                                                            failed
+                                                                            ok evidence ev_schedule => match call require_int(got.contracts_sort, 4, c, "contracts-sort")
+                                                                                failed
+                                                                                ok evidence ev_sort => match call require_int(got.contracts_owner, 4, c, "contracts-owner")
+                                                                                    failed
+                                                                                    ok evidence ev_owner => match call require_int(got.contracts_entry, 1, c, "contracts-entry")
+                                                                                        failed
+                                                                                        ok evidence ev_centry => match call require_bool(got.run_silent, true, c, "run-silent")
+                                                                                            failed
+                                                                                            ok evidence ev_run => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m03_001: "m03-001" => ok test_case("bundled/arrays-roots", ["arrays", "m03"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("main-count"), check_ref("contracts-count"), check_ref("main-fixture"), check_ref("contracts-fixture"), check_ref("main-helpers"), check_ref("main-map"), check_ref("main-search"), check_ref("main-fold"), check_ref("main-sort-copy"), check_ref("main-append"), check_ref("main-entry"), check_ref("contracts-capture"), check_ref("contracts-protected"), check_ref("contracts-failure"), check_ref("contracts-schedule"), check_ref("contracts-sort"), check_ref("contracts-owner"), check_ref("contracts-entry"), check_ref("run-silent")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m03-001"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/arrays-roots", ["arrays", "m03"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("main-count"), check_ref("contracts-count"), check_ref("main-fixture"), check_ref("contracts-fixture"), check_ref("main-helpers"), check_ref("main-map"), check_ref("main-search"), check_ref("main-fold"), check_ref("main-sort-copy"), check_ref("main-append"), check_ref("main-entry"), check_ref("contracts-capture"), check_ref("contracts-protected"), check_ref("contracts-failure"), check_ref("contracts-schedule"), check_ref("contracts-sort"), check_ref("contracts-owner"), check_ref("contracts-entry"), check_ref("run-silent")], callable case_body)
