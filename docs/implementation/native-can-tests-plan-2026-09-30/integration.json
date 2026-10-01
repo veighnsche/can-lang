@@ -58,7 +58,7 @@
       "acceptance": "Catalogue generation/check and relevant bounded local controls pass. Independent review verifies ordinary Can types/effects, exact input/runtime hashes, wrong-target/missing-binding/forged-owner controls and cleanup. Admit new features using reviewed fixed/native witnesses where predecessor R cannot express them; do not let the new Q suite be its only acceptance oracle. Retain predecessor authority if acceptance is inconclusive. Live-only host behavior is explicitly excluded until its Q gate; R/N binding acceptance cannot assert browser isolation or DB settlement without evidence. Compile/check the complete Can example provisionally and qualify its fixed contract controls independently before promotion. Independently review and accept the changed Can helper/expected-vector delta as S/A, bound to suite source closure and R-built artifact hashes. Prior P23 suite acceptance does not cover these new helpers.",
       "evidence": "evidence/I02.json: predecessor/new R/N identities, delta scope, independent control outcomes, cleanup receipt and review; source and acceptance commit SHAs Include predecessor/new S/A identities, helper closure hashes, expected-vector review and independent assertion controls.",
       "commit": "feat(testing): integrate generated C ingress",
-      "status": "planned",
+      "status": "active",
       "scope": "binding implementation plus separate reference/owner delta acceptance"
     },
     {
