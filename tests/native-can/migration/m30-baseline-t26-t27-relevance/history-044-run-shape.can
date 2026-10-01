@@ -1,0 +1,281 @@
+package m30history044run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-044 "Smoke repeatable: run shape".
+/// Source: tests/baseline/baseline_test.go symbol
+/// TestHarnessSmokeRepeatable (L231-268): exec (L237);
+/// dir (L238); env (L239); binds (L241-242); run
+/// (L243); failures fragment plus matcher (L246); nil
+/// guard (L247); assign (L250); cleanup (L251); steps
+/// loop (L263); fatal call sites (L235, L244, L248,
+/// L255, L258, L261, L265).
+/// Disposition: replace_support (this row ports the
+/// smoke-repeatable offline contract to ordinary Can
+/// functions; the old Go harness stays until the
+/// integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the live run shape: the exec
+/// plus dir plus env plus bind spine, the run guard,
+/// the failures fragment plus matcher plus nil guard,
+/// the report assign, the cleanup join, the steps loop,
+/// the stream count, plus the cleanup-before-load and
+/// load-before-assert orders.
+/// ADAPTATION (recorded, with source lines): shapes pin
+/// the Go statement inner bytes without leading tabs
+/// (L237-243, L246-247, L250-251, L263); exec-stmt pins
+/// the Command head before the quoted args (L237);
+/// env-stmt pins the Env head before the quoted keep
+/// (L239); regex-failures pins the failures= fragment
+/// (L246); stream-count pins int (2) from the two
+/// stream binds (L241-242); cleanup-before-load pins
+/// true since the Cleanup join (L251) precedes the
+/// loadJSON call (L253); load-before-assert pins true
+/// since the load (L253) precedes the clean guard
+/// (L254).
+/// Facet map (launch plus diagnostics): exec-stmt pins
+/// the L237 head; dir-stmt pins the L238 bind;
+/// env-stmt pins the L239 head; stdout-stmt pins the
+/// L241 bind; stderr-stmt pins the L242 bind; run-stmt
+/// pins the L243 guard; regex-failures pins the
+/// fragment (L246); match-stmt pins the matcher call
+/// (L246); nil-guard pins the L247 guard; report-assign
+/// pins the L250 assign; cleanup-stmt pins the L251
+/// join; steps-loop pins the L263 loop; stream-count
+/// pins 2 (L241-242); cleanup-before-load pins true
+/// (L251, L253); load-before-assert pins true (L253,
+/// L254).
+/// The verdict pins live in
+/// history-044-base-semantics.can; the roots-green pin
+/// lives in history-044-roots-green.can.
+/// Variants: none (row lists zero variants; the single
+/// passing path in Go order).
+/// Environment: KEEP_DIR retain plus os TempDir parent
+/// (row lists 1 gate; requires [] offline; binds at
+/// P23).
+/// Logical gates SUITE/WORK/FILES/BUILD/CHILD/PROC/CLOCK
+/// bind at P23; no live run now. Accept gate P23 is
+/// unmet. Timeout 120000ms is the offline default bound
+/// (no Go test timeout in this row; binds at P23 like
+/// the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/smoke-repeatable-run checks: exec-stmt,
+/// dir-stmt, env-stmt, stdout-stmt, stderr-stmt,
+/// run-stmt, regex-failures, match-stmt, nil-guard,
+/// report-assign, cleanup-stmt, steps-loop,
+/// stream-count, cleanup-before-load, load-before-assert.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str exec_stmt
+    str dir_stmt
+    str env_stmt
+    str stdout_stmt
+    str stderr_stmt
+    str run_stmt
+    str regex_failures
+    str match_stmt
+    str nil_guard
+    str report_assign
+    str cleanup_stmt
+    str steps_loop
+    int stream_count
+    bool cleanup_before_load
+    bool load_before_assert
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/smoke-repeatable-run", "default", "", "offline"), "exec-stmt" => ok "case history/smoke-repeatable-run variant default root exec-stmt run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/smoke-repeatable-run", "default", "", "offline"), "cleanup-before-load" => ok evidence("cleanup-before-load", "true", "true", true, "case history/smoke-repeatable-run variant default root cleanup-before-load run offline")
+        different: false, true, context("history/smoke-repeatable-run", "default", "", "offline"), "cleanup-before-load" => failed{"cleanup-before-load"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("history/smoke-repeatable-run", "default", "", "offline"), "stream-count" => ok evidence("stream-count", "2", "2", true, "case history/smoke-repeatable-run variant default root stream-count run offline")
+        different: 1, 2, context("history/smoke-repeatable-run", "default", "", "offline"), "stream-count" => failed{"stream-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "cmd := exec.Command(", "cmd := exec.Command(", context("history/smoke-repeatable-run", "default", "", "offline"), "exec-stmt" => ok evidence("exec-stmt", "cmd := exec.Command(", "cmd := exec.Command(", true, "case history/smoke-repeatable-run variant default root exec-stmt run offline")
+        different: "cmd := exec.Command(_2", "cmd := exec.Command(", context("history/smoke-repeatable-run", "default", "", "offline"), "exec-stmt" => failed{"exec-stmt"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        seed_exec_stmt: "seed-exec-stmt-drift" => ok observation("cmd := exec.Command(_2", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        seed_dir_stmt: "seed-dir-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root_2", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        seed_env_stmt: "seed-env-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), _2", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        seed_stdout_stmt: "seed-stdout-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out_2", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        seed_stderr_stmt: "seed-stderr-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out_2", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        seed_run_stmt: "seed-run-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {_2", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        seed_regex_failures: "seed-regex-failures-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=_2", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        seed_match_stmt: "seed-match-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())_2", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        seed_nil_guard: "seed-nil-guard-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {_2", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        seed_report_assign: "seed-report-assign-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]_2", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        seed_cleanup_stmt: "seed-cleanup-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })_2", "for _, s := range rep.Steps {", 2, true, true)
+        seed_steps_loop: "seed-steps-loop-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {_2", 2, true, true)
+        seed_stream_count: "seed-stream-count-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 1, true, true)
+        seed_cleanup_before_load: "seed-cleanup-before-load-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, false, true)
+        seed_load_before_assert: "seed-load-before-assert-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, false)
+    match variant_id
+        "seed-exec-stmt-drift" => ok observation("cmd := exec.Command(_2", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        "seed-dir-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root_2", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        "seed-env-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), _2", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        "seed-stdout-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out_2", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        "seed-stderr-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out_2", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        "seed-run-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {_2", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        "seed-regex-failures-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=_2", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        "seed-match-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())_2", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        "seed-nil-guard-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {_2", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        "seed-report-assign-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]_2", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+        "seed-cleanup-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })_2", "for _, s := range rep.Steps {", 2, true, true)
+        "seed-steps-loop-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {_2", 2, true, true)
+        "seed-stream-count-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 1, true, true)
+        "seed-cleanup-before-load-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, false, true)
+        "seed-load-before-assert-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, false)
+        _ => ok observation("cmd := exec.Command(", "cmd.Dir = root", "cmd.Env = append(os.Environ(), ", "cmd.Stdout = &out", "cmd.Stderr = &out", "if err := cmd.Run(); err != nil {", "failures=", "FindStringSubmatch(out.String())", "if m == nil {", "reportPath := m[1]", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", "for _, s := range rep.Steps {", 2, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h044: "m30-h044" => ok [check("exec-stmt", "exec statement is pinned"), check("dir-stmt", "dir statement is pinned"), check("env-stmt", "env retain statement is pinned"), check("stdout-stmt", "stdout bind statement is pinned"), check("stderr-stmt", "stderr bind statement is pinned"), check("run-stmt", "run guard statement is pinned"), check("regex-failures", "failures regex fragment is pinned"), check("match-stmt", "matcher call shape is pinned"), check("nil-guard", "nil guard shape is pinned"), check("report-assign", "report path assign is pinned"), check("cleanup-stmt", "cleanup statement is pinned"), check("steps-loop", "steps loop shape is pinned"), check("stream-count", "stream bind count pins two"), check("cleanup-before-load", "cleanup precedes report load"), check("load-before-assert", "load precedes clean assert")]
+        other: "nope" => ok []
+    match scope is "m30-h044"
+        false => ok []
+        true => ok [check("exec-stmt", "exec statement is pinned"), check("dir-stmt", "dir statement is pinned"), check("env-stmt", "env retain statement is pinned"), check("stdout-stmt", "stdout bind statement is pinned"), check("stderr-stmt", "stderr bind statement is pinned"), check("run-stmt", "run guard statement is pinned"), check("regex-failures", "failures regex fragment is pinned"), check("match-stmt", "matcher call shape is pinned"), check("nil-guard", "nil guard shape is pinned"), check("report-assign", "report path assign is pinned"), check("cleanup-stmt", "cleanup statement is pinned"), check("steps-loop", "steps loop shape is pinned"), check("stream-count", "stream bind count pins two"), check("cleanup-before-load", "cleanup precedes report load"), check("load-before-assert", "load precedes clean assert")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/smoke-repeatable-run" => ok [expected_check("exec-stmt", "cmd := exec.Command("), expected_check("dir-stmt", "cmd.Dir = root"), expected_check("env-stmt", "cmd.Env = append(os.Environ(), "), expected_check("stdout-stmt", "cmd.Stdout = &out"), expected_check("stderr-stmt", "cmd.Stderr = &out"), expected_check("run-stmt", "if err := cmd.Run(); err != nil {"), expected_check("regex-failures", "failures="), expected_check("match-stmt", "FindStringSubmatch(out.String())"), expected_check("nil-guard", "if m == nil {"), expected_check("report-assign", "reportPath := m[1]"), expected_check("cleanup-stmt", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })"), expected_check("steps-loop", "for _, s := range rep.Steps {"), expected_check("stream-count", "2"), expected_check("cleanup-before-load", "true"), expected_check("load-before-assert", "true")]
+        unknown: "nope" => ok []
+    match case is "history/smoke-repeatable-run"
+        false => ok []
+        true => ok [expected_check("exec-stmt", "cmd := exec.Command("), expected_check("dir-stmt", "cmd.Dir = root"), expected_check("env-stmt", "cmd.Env = append(os.Environ(), "), expected_check("stdout-stmt", "cmd.Stdout = &out"), expected_check("stderr-stmt", "cmd.Stderr = &out"), expected_check("run-stmt", "if err := cmd.Run(); err != nil {"), expected_check("regex-failures", "failures="), expected_check("match-stmt", "FindStringSubmatch(out.String())"), expected_check("nil-guard", "if m == nil {"), expected_check("report-assign", "reportPath := m[1]"), expected_check("cleanup-stmt", "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })"), expected_check("steps-loop", "for _, s := range rep.Steps {"), expected_check("stream-count", "2"), expected_check("cleanup-before-load", "true"), expected_check("load-before-assert", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/smoke-repeatable-run", "default", "", "offline") => ok
+        seed_exec_stmt: context("history/smoke-repeatable-run", "seed-exec-stmt-drift", "", "offline") => failed{"exec-stmt"}
+        seed_dir_stmt: context("history/smoke-repeatable-run", "seed-dir-stmt-drift", "", "offline") => failed{"dir-stmt"}
+        seed_env_stmt: context("history/smoke-repeatable-run", "seed-env-stmt-drift", "", "offline") => failed{"env-stmt"}
+        seed_stdout_stmt: context("history/smoke-repeatable-run", "seed-stdout-stmt-drift", "", "offline") => failed{"stdout-stmt"}
+        seed_stderr_stmt: context("history/smoke-repeatable-run", "seed-stderr-stmt-drift", "", "offline") => failed{"stderr-stmt"}
+        seed_run_stmt: context("history/smoke-repeatable-run", "seed-run-stmt-drift", "", "offline") => failed{"run-stmt"}
+        seed_regex_failures: context("history/smoke-repeatable-run", "seed-regex-failures-drift", "", "offline") => failed{"regex-failures"}
+        seed_match_stmt: context("history/smoke-repeatable-run", "seed-match-stmt-drift", "", "offline") => failed{"match-stmt"}
+        seed_nil_guard: context("history/smoke-repeatable-run", "seed-nil-guard-drift", "", "offline") => failed{"nil-guard"}
+        seed_report_assign: context("history/smoke-repeatable-run", "seed-report-assign-drift", "", "offline") => failed{"report-assign"}
+        seed_cleanup_stmt: context("history/smoke-repeatable-run", "seed-cleanup-stmt-drift", "", "offline") => failed{"cleanup-stmt"}
+        seed_steps_loop: context("history/smoke-repeatable-run", "seed-steps-loop-drift", "", "offline") => failed{"steps-loop"}
+        seed_stream_count: context("history/smoke-repeatable-run", "seed-stream-count-drift", "", "offline") => failed{"stream-count"}
+        seed_cleanup_before_load: context("history/smoke-repeatable-run", "seed-cleanup-before-load-drift", "", "offline") => failed{"cleanup-before-load"}
+        seed_load_before_assert: context("history/smoke-repeatable-run", "seed-load-before-assert-drift", "", "offline") => failed{"load-before-assert"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.exec_stmt, "cmd := exec.Command(", c, "exec-stmt")
+            failed
+            ok evidence exec_stmt_evidence => match call require_text(got.dir_stmt, "cmd.Dir = root", c, "dir-stmt")
+                failed
+                ok evidence dir_stmt_evidence => match call require_text(got.env_stmt, "cmd.Env = append(os.Environ(), ", c, "env-stmt")
+                    failed
+                    ok evidence env_stmt_evidence => match call require_text(got.stdout_stmt, "cmd.Stdout = &out", c, "stdout-stmt")
+                        failed
+                        ok evidence stdout_stmt_evidence => match call require_text(got.stderr_stmt, "cmd.Stderr = &out", c, "stderr-stmt")
+                            failed
+                            ok evidence stderr_stmt_evidence => match call require_text(got.run_stmt, "if err := cmd.Run(); err != nil {", c, "run-stmt")
+                                failed
+                                ok evidence run_stmt_evidence => match call require_text(got.regex_failures, "failures=", c, "regex-failures")
+                                    failed
+                                    ok evidence regex_failures_evidence => match call require_text(got.match_stmt, "FindStringSubmatch(out.String())", c, "match-stmt")
+                                        failed
+                                        ok evidence match_stmt_evidence => match call require_text(got.nil_guard, "if m == nil {", c, "nil-guard")
+                                            failed
+                                            ok evidence nil_guard_evidence => match call require_text(got.report_assign, "reportPath := m[1]", c, "report-assign")
+                                                failed
+                                                ok evidence report_assign_evidence => match call require_text(got.cleanup_stmt, "t.Cleanup(func() { os.RemoveAll(filepath.Dir(reportPath)) })", c, "cleanup-stmt")
+                                                    failed
+                                                    ok evidence cleanup_stmt_evidence => match call require_text(got.steps_loop, "for _, s := range rep.Steps {", c, "steps-loop")
+                                                        failed
+                                                        ok evidence steps_loop_evidence => match call require_int(got.stream_count, 2, c, "stream-count")
+                                                            failed
+                                                            ok evidence stream_count_evidence => match call require_bool(got.cleanup_before_load, true, c, "cleanup-before-load")
+                                                                failed
+                                                                ok evidence cleanup_before_load_evidence => match call require_bool(got.load_before_assert, true, c, "load-before-assert")
+                                                                    failed
+                                                                    ok evidence load_before_assert_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h044: "m30-h044" => ok test_case("history/smoke-repeatable-run", ["history", "m30"], [], 120000, [check_ref("exec-stmt"), check_ref("dir-stmt"), check_ref("env-stmt"), check_ref("stdout-stmt"), check_ref("stderr-stmt"), check_ref("run-stmt"), check_ref("regex-failures"), check_ref("match-stmt"), check_ref("nil-guard"), check_ref("report-assign"), check_ref("cleanup-stmt"), check_ref("steps-loop"), check_ref("stream-count"), check_ref("cleanup-before-load"), check_ref("load-before-assert")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h044"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/smoke-repeatable-run", ["history", "m30"], [], 120000, [check_ref("exec-stmt"), check_ref("dir-stmt"), check_ref("env-stmt"), check_ref("stdout-stmt"), check_ref("stderr-stmt"), check_ref("run-stmt"), check_ref("regex-failures"), check_ref("match-stmt"), check_ref("nil-guard"), check_ref("report-assign"), check_ref("cleanup-stmt"), check_ref("steps-loop"), check_ref("stream-count"), check_ref("cleanup-before-load"), check_ref("load-before-assert")], callable case_body)
