@@ -1,0 +1,348 @@
+package m44edge009base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M44 EDGE-009 "canlcCache slash TestMain
+/// slash canlcBinary" caller pact.
+/// Source: host/conformance/
+/// admission_test.go
+/// symbol "canlcCache slash TestMain
+/// slash canlcBinary" (L19 plus L234-237
+/// plus L259-266): pinned import plus
+/// module vars plus cache open surface.
+/// Disposition: rewire (this row owns the
+/// caller pact as reviewable Can
+/// facts; old go call stays until
+/// integrator rewires it after each linked
+/// row, variant, plus gate has accepted
+/// proof).
+/// Protects (this file): the tempcache
+/// import (L19) plus four module vars
+/// (L234-237) plus open plus store plus
+/// path (L259-266) plus consumed cache
+/// surface (cache.go L3 plus L21 plus L47
+/// plus L65 plus L100 plus L101 plus
+/// L114) plus tallies that bound the
+/// provision.
+/// ADAPTATION (noted, plus source lines):
+/// decl pins hold var spellings; call pins
+/// hold open plus store plus path bytes;
+/// cache pins hold consumed cache.go
+/// decl plus call bytes; count pins hold
+/// ints tallied from decl plus hit lines.
+/// import-path pins the module import
+/// (L19); cache-type pins the cache
+/// pointer (L237); once-decl pins the
+/// once var (L234); path-decl pins the
+/// path var (L235); err-decl pins the err
+/// var (L236); cache-decl pins the cache
+/// var (L237); open-call pins the open
+/// ref (L260); open-assign pins the open
+/// bind (L260); cache-store pins the
+/// store (L265); cache-path pins the path
+/// ref (L266); package-name pins the
+/// cache package (cache.go L3);
+/// open-decl pins cache open (cache.go
+/// L47); close-decl pins cache close
+/// (cache.go L100); cache-prefix pins
+/// the dir prefix (cache.go L21);
+/// mkdir-call pins dir make (cache.go
+/// L65); nil-guard pins the nil arm
+/// (cache.go L101); remove-call pins dir
+/// removal (cache.go L114);
+/// module-var-count pins int (4) from
+/// L234-237; cache-hit-count pins int (3)
+/// from L237 plus L245 plus L265;
+/// err-hit-count pins int (5) from L236
+/// plus L262 plus L270 plus L275 plus
+/// L276; path-hit-count pins int (3) from
+/// L235 plus L273 plus L278.
+/// Facet map (import then var then cache
+/// order): import-path, cache-type,
+/// once-decl, path-decl, err-decl,
+/// cache-decl, open-call, open-assign,
+/// cache-store, cache-path, package-name,
+/// open-decl, close-decl, cache-prefix,
+/// mkdir-call, nil-guard, remove-call,
+/// module-var-count, cache-hit-count,
+/// err-hit-count, path-hit-count.
+/// The build roots live in
+/// edge-009-roots-green.can; the TestMain
+/// cleanup plus verdict live in
+/// edge-009-run-shape.can.
+/// Variants: none listed (row lists zero
+/// variants; one default run).
+/// Environment: none listed (row lists
+/// zero gates; bind at P23; no live run
+/// now).
+/// Logical gates WORK/PROC/BUILD bind at
+/// P23; no live run now.
+/// Timeout 120000ms is the offline default
+/// bound (binds at P23 like the M37
+/// no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// accept gate unmet).
+/// Intended consumed report: none exists
+/// (no P23-qualified Can report yet; P23
+/// unmet; M29 LIFE-024 parsed only).
+/// Rewire stays blocked; admission_test.go
+/// intact; no call retired.
+/// Case edge/run-owned-cache
+/// checks: import-path, cache-type,
+/// once-decl, path-decl, err-decl,
+/// cache-decl, open-call, open-assign,
+/// cache-store, cache-path, package-name,
+/// open-decl, close-decl, cache-prefix,
+/// mkdir-call, nil-guard, remove-call,
+/// module-var-count, cache-hit-count,
+/// err-hit-count, path-hit-count.
+/// Shared old files intact; retirement is a
+/// later integrator choice.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str import_path
+    str cache_type
+    str once_decl
+    str path_decl
+    str err_decl
+    str cache_decl
+    str open_call
+    str open_assign
+    str cache_store
+    str cache_path
+    str package_name
+    str open_decl
+    str close_decl
+    str cache_prefix
+    str mkdir_call
+    str nil_guard
+    str remove_call
+    int module_var_count
+    int cache_hit_count
+    int err_hit_count
+    int path_hit_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("edge/run-owned-cache", "default", "", "offline"), "import-path" => ok "case edge/run-owned-cache variant default root import-path run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("edge/run-owned-cache", "default", "", "offline"), "import-path" => ok evidence("import-path", "true", "true", true, "case edge/run-owned-cache variant default root import-path run offline")
+        different: false, true, context("edge/run-owned-cache", "default", "", "offline"), "import-path" => failed{"import-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("edge/run-owned-cache", "default", "", "offline"), "module-var-count" => ok evidence("module-var-count", "4", "4", true, "case edge/run-owned-cache variant default root module-var-count run offline")
+        different: 3, 4, context("edge/run-owned-cache", "default", "", "offline"), "module-var-count" => failed{"module-var-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "github.com/veighnsche/can-lang/tests/support/tempcache", "github.com/veighnsche/can-lang/tests/support/tempcache", context("edge/run-owned-cache", "default", "", "offline"), "import-path" => ok evidence("import-path", "github.com/veighnsche/can-lang/tests/support/tempcache", "github.com/veighnsche/can-lang/tests/support/tempcache", true, "case edge/run-owned-cache variant default root import-path run offline")
+        different: "github.com/veighnsche/can-lang/tests/support/tempcache_2", "github.com/veighnsche/can-lang/tests/support/tempcache", context("edge/run-owned-cache", "default", "", "offline"), "import-path" => failed{"import-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        seed_import_path: "seed-import-path-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache_2", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        seed_cache_type: "seed-cache-type-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache_2", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        seed_once_decl: "seed-once-decl-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once_2", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        seed_path_decl: "seed-path-decl-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string_2", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        seed_err_decl: "seed-err-decl-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error_2", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        seed_cache_decl: "seed-cache-decl-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache_2", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        seed_open_call: "seed-open-call-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open_2", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        seed_open_assign: "seed-open-assign-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open_2", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        seed_cache_store: "seed-cache-store-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache_2", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        seed_cache_path: "seed-cache-path-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path_2", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        seed_package_name: "seed-package-name-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache_2", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        seed_open_decl: "seed-open-decl-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)_2", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        seed_close_decl: "seed-close-decl-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error_2", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        seed_cache_prefix: "seed-cache-prefix-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-_2", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        seed_mkdir_call: "seed-mkdir-call-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)_2", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        seed_nil_guard: "seed-nil-guard-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil_2", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        seed_remove_call: "seed-remove-call-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)_2", 4, 3, 5, 3)
+        seed_module_var_count: "seed-module-var-count-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 3, 3, 5, 3)
+        seed_cache_hit_count: "seed-cache-hit-count-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 2, 5, 3)
+        seed_err_hit_count: "seed-err-hit-count-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 4, 3)
+        seed_path_hit_count: "seed-path-hit-count-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 2)
+    match variant_id
+        "seed-import-path-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache_2", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        "seed-cache-type-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache_2", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        "seed-once-decl-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once_2", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        "seed-path-decl-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string_2", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        "seed-err-decl-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error_2", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        "seed-cache-decl-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache_2", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        "seed-open-call-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open_2", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        "seed-open-assign-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open_2", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        "seed-cache-store-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache_2", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        "seed-cache-path-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path_2", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        "seed-package-name-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache_2", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        "seed-open-decl-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)_2", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        "seed-close-decl-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error_2", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        "seed-cache-prefix-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-_2", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        "seed-mkdir-call-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)_2", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        "seed-nil-guard-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil_2", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+        "seed-remove-call-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)_2", 4, 3, 5, 3)
+        "seed-module-var-count-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 3, 3, 5, 3)
+        "seed-cache-hit-count-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 2, 5, 3)
+        "seed-err-hit-count-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 4, 3)
+        "seed-path-hit-count-drift" => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 2)
+        _ => ok observation("github.com/veighnsche/can-lang/tests/support/tempcache", "*tempcache.Cache", "var canlcOnce sync.Once", "var canlcPath string", "var canlcErr error", "var canlcCache *tempcache.Cache", "tempcache.Open", "cache, err := tempcache.Open", "canlcCache = cache", "cache.Path", "package tempcache", "func Open(parent string) (*Cache, error)", "func (c *Cache) Close() error", "can-suite-cache-", "os.MkdirTemp(parent, prefix)", "if c == nil", "os.RemoveAll(c.Path)", 4, 3, 5, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e009: "m44-e009" => ok [check("import-path", "import path keeps its bytes"), check("cache-type", "cache type keeps its bytes"), check("once-decl", "once decl keeps its bytes"), check("path-decl", "path decl keeps its bytes"), check("err-decl", "err decl keeps its bytes"), check("cache-decl", "cache decl keeps its bytes"), check("open-call", "open call keeps its spelling"), check("open-assign", "open assign keeps its bytes"), check("cache-store", "cache store keeps its bytes"), check("cache-path", "cache path keeps its bytes"), check("package-name", "package name keeps its bytes"), check("open-decl", "open decl keeps its bytes"), check("close-decl", "close decl keeps its bytes"), check("cache-prefix", "cache prefix keeps its bytes"), check("mkdir-call", "mkdir call keeps its bytes"), check("nil-guard", "nil guard keeps its bytes"), check("remove-call", "remove call keeps its bytes"), check("module-var-count", "four module vars exist"), check("cache-hit-count", "three cache hits exist"), check("err-hit-count", "five err hits exist"), check("path-hit-count", "three path hits exist")]
+        other: "nope" => ok []
+    match scope is "m44-e009"
+        false => ok []
+        true => ok [check("import-path", "import path keeps its bytes"), check("cache-type", "cache type keeps its bytes"), check("once-decl", "once decl keeps its bytes"), check("path-decl", "path decl keeps its bytes"), check("err-decl", "err decl keeps its bytes"), check("cache-decl", "cache decl keeps its bytes"), check("open-call", "open call keeps its spelling"), check("open-assign", "open assign keeps its bytes"), check("cache-store", "cache store keeps its bytes"), check("cache-path", "cache path keeps its bytes"), check("package-name", "package name keeps its bytes"), check("open-decl", "open decl keeps its bytes"), check("close-decl", "close decl keeps its bytes"), check("cache-prefix", "cache prefix keeps its bytes"), check("mkdir-call", "mkdir call keeps its bytes"), check("nil-guard", "nil guard keeps its bytes"), check("remove-call", "remove call keeps its bytes"), check("module-var-count", "four module vars exist"), check("cache-hit-count", "three cache hits exist"), check("err-hit-count", "five err hits exist"), check("path-hit-count", "three path hits exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "edge/run-owned-cache" => ok [expected_check("import-path", "github.com/veighnsche/can-lang/tests/support/tempcache"), expected_check("cache-type", "*tempcache.Cache"), expected_check("once-decl", "var canlcOnce sync.Once"), expected_check("path-decl", "var canlcPath string"), expected_check("err-decl", "var canlcErr error"), expected_check("cache-decl", "var canlcCache *tempcache.Cache"), expected_check("open-call", "tempcache.Open"), expected_check("open-assign", "cache, err := tempcache.Open"), expected_check("cache-store", "canlcCache = cache"), expected_check("cache-path", "cache.Path"), expected_check("package-name", "package tempcache"), expected_check("open-decl", "func Open(parent string) (*Cache, error)"), expected_check("close-decl", "func (c *Cache) Close() error"), expected_check("cache-prefix", "can-suite-cache-"), expected_check("mkdir-call", "os.MkdirTemp(parent, prefix)"), expected_check("nil-guard", "if c == nil"), expected_check("remove-call", "os.RemoveAll(c.Path)"), expected_check("module-var-count", "4"), expected_check("cache-hit-count", "3"), expected_check("err-hit-count", "5"), expected_check("path-hit-count", "3")]
+        unknown: "nope" => ok []
+    match case is "edge/run-owned-cache"
+        false => ok []
+        true => ok [expected_check("import-path", "github.com/veighnsche/can-lang/tests/support/tempcache"), expected_check("cache-type", "*tempcache.Cache"), expected_check("once-decl", "var canlcOnce sync.Once"), expected_check("path-decl", "var canlcPath string"), expected_check("err-decl", "var canlcErr error"), expected_check("cache-decl", "var canlcCache *tempcache.Cache"), expected_check("open-call", "tempcache.Open"), expected_check("open-assign", "cache, err := tempcache.Open"), expected_check("cache-store", "canlcCache = cache"), expected_check("cache-path", "cache.Path"), expected_check("package-name", "package tempcache"), expected_check("open-decl", "func Open(parent string) (*Cache, error)"), expected_check("close-decl", "func (c *Cache) Close() error"), expected_check("cache-prefix", "can-suite-cache-"), expected_check("mkdir-call", "os.MkdirTemp(parent, prefix)"), expected_check("nil-guard", "if c == nil"), expected_check("remove-call", "os.RemoveAll(c.Path)"), expected_check("module-var-count", "4"), expected_check("cache-hit-count", "3"), expected_check("err-hit-count", "5"), expected_check("path-hit-count", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("edge/run-owned-cache", "default", "", "offline") => ok
+        seed_import_path: context("edge/run-owned-cache", "seed-import-path-drift", "", "offline") => failed{"import-path"}
+        seed_cache_type: context("edge/run-owned-cache", "seed-cache-type-drift", "", "offline") => failed{"cache-type"}
+        seed_once_decl: context("edge/run-owned-cache", "seed-once-decl-drift", "", "offline") => failed{"once-decl"}
+        seed_path_decl: context("edge/run-owned-cache", "seed-path-decl-drift", "", "offline") => failed{"path-decl"}
+        seed_err_decl: context("edge/run-owned-cache", "seed-err-decl-drift", "", "offline") => failed{"err-decl"}
+        seed_cache_decl: context("edge/run-owned-cache", "seed-cache-decl-drift", "", "offline") => failed{"cache-decl"}
+        seed_open_call: context("edge/run-owned-cache", "seed-open-call-drift", "", "offline") => failed{"open-call"}
+        seed_open_assign: context("edge/run-owned-cache", "seed-open-assign-drift", "", "offline") => failed{"open-assign"}
+        seed_cache_store: context("edge/run-owned-cache", "seed-cache-store-drift", "", "offline") => failed{"cache-store"}
+        seed_cache_path: context("edge/run-owned-cache", "seed-cache-path-drift", "", "offline") => failed{"cache-path"}
+        seed_package_name: context("edge/run-owned-cache", "seed-package-name-drift", "", "offline") => failed{"package-name"}
+        seed_open_decl: context("edge/run-owned-cache", "seed-open-decl-drift", "", "offline") => failed{"open-decl"}
+        seed_close_decl: context("edge/run-owned-cache", "seed-close-decl-drift", "", "offline") => failed{"close-decl"}
+        seed_cache_prefix: context("edge/run-owned-cache", "seed-cache-prefix-drift", "", "offline") => failed{"cache-prefix"}
+        seed_mkdir_call: context("edge/run-owned-cache", "seed-mkdir-call-drift", "", "offline") => failed{"mkdir-call"}
+        seed_nil_guard: context("edge/run-owned-cache", "seed-nil-guard-drift", "", "offline") => failed{"nil-guard"}
+        seed_remove_call: context("edge/run-owned-cache", "seed-remove-call-drift", "", "offline") => failed{"remove-call"}
+        seed_module_var_count: context("edge/run-owned-cache", "seed-module-var-count-drift", "", "offline") => failed{"module-var-count"}
+        seed_cache_hit_count: context("edge/run-owned-cache", "seed-cache-hit-count-drift", "", "offline") => failed{"cache-hit-count"}
+        seed_err_hit_count: context("edge/run-owned-cache", "seed-err-hit-count-drift", "", "offline") => failed{"err-hit-count"}
+        seed_path_hit_count: context("edge/run-owned-cache", "seed-path-hit-count-drift", "", "offline") => failed{"path-hit-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.import_path, "github.com/veighnsche/can-lang/tests/support/tempcache", c, "import-path")
+            failed
+            ok evidence import_path_evidence => match call require_text(got.cache_type, "*tempcache.Cache", c, "cache-type")
+                failed
+                ok evidence cache_type_evidence => match call require_text(got.once_decl, "var canlcOnce sync.Once", c, "once-decl")
+                    failed
+                    ok evidence once_decl_evidence => match call require_text(got.path_decl, "var canlcPath string", c, "path-decl")
+                        failed
+                        ok evidence path_decl_evidence => match call require_text(got.err_decl, "var canlcErr error", c, "err-decl")
+                            failed
+                            ok evidence err_decl_evidence => match call require_text(got.cache_decl, "var canlcCache *tempcache.Cache", c, "cache-decl")
+                                failed
+                                ok evidence cache_decl_evidence => match call require_text(got.open_call, "tempcache.Open", c, "open-call")
+                                    failed
+                                    ok evidence open_call_evidence => match call require_text(got.open_assign, "cache, err := tempcache.Open", c, "open-assign")
+                                        failed
+                                        ok evidence open_assign_evidence => match call require_text(got.cache_store, "canlcCache = cache", c, "cache-store")
+                                            failed
+                                            ok evidence cache_store_evidence => match call require_text(got.cache_path, "cache.Path", c, "cache-path")
+                                                failed
+                                                ok evidence cache_path_evidence => match call require_text(got.package_name, "package tempcache", c, "package-name")
+                                                    failed
+                                                    ok evidence package_name_evidence => match call require_text(got.open_decl, "func Open(parent string) (*Cache, error)", c, "open-decl")
+                                                        failed
+                                                        ok evidence open_decl_evidence => match call require_text(got.close_decl, "func (c *Cache) Close() error", c, "close-decl")
+                                                            failed
+                                                            ok evidence close_decl_evidence => match call require_text(got.cache_prefix, "can-suite-cache-", c, "cache-prefix")
+                                                                failed
+                                                                ok evidence cache_prefix_evidence => match call require_text(got.mkdir_call, "os.MkdirTemp(parent, prefix)", c, "mkdir-call")
+                                                                    failed
+                                                                    ok evidence mkdir_call_evidence => match call require_text(got.nil_guard, "if c == nil", c, "nil-guard")
+                                                                        failed
+                                                                        ok evidence nil_guard_evidence => match call require_text(got.remove_call, "os.RemoveAll(c.Path)", c, "remove-call")
+                                                                            failed
+                                                                            ok evidence remove_call_evidence => match call require_int(got.module_var_count, 4, c, "module-var-count")
+                                                                                failed
+                                                                                ok evidence module_var_count_evidence => match call require_int(got.cache_hit_count, 3, c, "cache-hit-count")
+                                                                                    failed
+                                                                                    ok evidence cache_hit_count_evidence => match call require_int(got.err_hit_count, 5, c, "err-hit-count")
+                                                                                        failed
+                                                                                        ok evidence err_hit_count_evidence => match call require_int(got.path_hit_count, 3, c, "path-hit-count")
+                                                                                            failed
+                                                                                            ok evidence path_hit_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e009: "m44-e009" => ok test_case("edge/run-owned-cache", ["edge", "m44"], [], 120000, [check_ref("import-path"), check_ref("cache-type"), check_ref("once-decl"), check_ref("path-decl"), check_ref("err-decl"), check_ref("cache-decl"), check_ref("open-call"), check_ref("open-assign"), check_ref("cache-store"), check_ref("cache-path"), check_ref("package-name"), check_ref("open-decl"), check_ref("close-decl"), check_ref("cache-prefix"), check_ref("mkdir-call"), check_ref("nil-guard"), check_ref("remove-call"), check_ref("module-var-count"), check_ref("cache-hit-count"), check_ref("err-hit-count"), check_ref("path-hit-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m44-e009"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("edge/run-owned-cache", ["edge", "m44"], [], 120000, [check_ref("import-path"), check_ref("cache-type"), check_ref("once-decl"), check_ref("path-decl"), check_ref("err-decl"), check_ref("cache-decl"), check_ref("open-call"), check_ref("open-assign"), check_ref("cache-store"), check_ref("cache-path"), check_ref("package-name"), check_ref("open-decl"), check_ref("close-decl"), check_ref("cache-prefix"), check_ref("mkdir-call"), check_ref("nil-guard"), check_ref("remove-call"), check_ref("module-var-count"), check_ref("cache-hit-count"), check_ref("err-hit-count"), check_ref("path-hit-count")], callable case_body)

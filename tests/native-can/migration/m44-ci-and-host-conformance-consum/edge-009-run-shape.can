@@ -1,0 +1,347 @@
+package m44edge009run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M44 EDGE-009 "canlcCache slash TestMain
+/// slash canlcBinary" verdict pact.
+/// Source: host/conformance/
+/// admission_test.go
+/// symbol "canlcCache slash TestMain
+/// slash canlcBinary" (L239-251 plus
+/// L293 plus L320-323): pinned TestMain
+/// entry plus cleanup plus propagation.
+/// Disposition: rewire (same row pact as
+/// the cache slice; this file owns the
+/// entry plus cleanup plus verdict).
+/// Protects (this file): the TestMain
+/// entry (L239-240) plus run wrapper
+/// plus defer plus close arm (L243-245)
+/// plus stderr plus code override
+/// (L246-247) plus run return (L250)
+/// plus binary handoff plus invoke
+/// (L293 plus L320) plus tallies that
+/// bound the verdict.
+/// ADAPTATION (noted, plus source lines):
+/// entry pins hold TestMain spellings;
+/// cleanup pins hold close plus stderr
+/// plus override bytes; handoff pins hold
+/// leg consume bytes; count pins hold
+/// ints tallied from hit plus stmt lines.
+/// main-decl pins the entry fn (L239);
+/// main-exit pins the exit wrap (L240);
+/// run-symbol pins the wrapper (L240
+/// plus L243, two hits); run-decl pins
+/// the wrapper decl (L243); defer-shape
+/// pins the defer arm (L244);
+/// close-guard pins the close arm (L245);
+/// close-call pins the close ref (L245);
+/// stderr-wording pins the failure bytes
+/// (L246); code-override pins the code
+/// set (L247); run-return pins the run
+/// return (L250); binary-handoff pins
+/// the leg handoff (L293); binary-invoke
+/// pins the leg invoke (L320);
+/// inspect-verb pins the leg verb (L255
+/// plus L320 plus L323, three hits);
+/// m-type pins the run handle type (L239
+/// plus L243, two hits); named-code pins
+/// the named code (L243); stderr-fn pins
+/// the write fn (L246); stderr-handle
+/// pins the write target (L246);
+/// run-hit-count pins int (2) from L240
+/// plus L243; inspect-hit-count pins int
+/// (3) from L255 plus L320 plus L323;
+/// m-type-count pins int (2) from L239
+/// plus L243; cleanup-stmt-count pins int
+/// (3) from L245 plus L246 plus L247.
+/// Facet map (entry then cleanup then
+/// handoff order): main-decl, main-exit,
+/// run-symbol, run-decl, defer-shape,
+/// close-guard, close-call, stderr-wording,
+/// code-override, run-return,
+/// binary-handoff, binary-invoke,
+/// inspect-verb, m-type, named-code,
+/// stderr-fn, stderr-handle,
+/// run-hit-count, inspect-hit-count,
+/// m-type-count, cleanup-stmt-count.
+/// The cache pact lives in
+/// edge-009-base-semantics.can; the
+/// build roots live in
+/// edge-009-roots-green.can.
+/// Variants: none listed (row lists zero
+/// variants; one default run).
+/// Environment: none listed (row lists
+/// zero gates; bind at P23; no live run
+/// now).
+/// Logical gates WORK/PROC/BUILD bind at
+/// P23; no live run now.
+/// Timeout 120000ms is the offline default
+/// bound (binds at P23 like the M37
+/// no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// accept gate unmet).
+/// Intended consumed report: none exists
+/// (no P23-qualified Can report yet; P23
+/// unmet; M29 LIFE-024 parsed only).
+/// Rewire stays blocked; admission_test.go
+/// intact; no call retired.
+/// Case edge/cleanup-verdict
+/// checks: main-decl, main-exit,
+/// run-symbol, run-decl, defer-shape,
+/// close-guard, close-call, stderr-wording,
+/// code-override, run-return,
+/// binary-handoff, binary-invoke,
+/// inspect-verb, m-type, named-code,
+/// stderr-fn, stderr-handle,
+/// run-hit-count, inspect-hit-count,
+/// m-type-count, cleanup-stmt-count.
+/// Shared old files intact; retirement is a
+/// later integrator choice.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str main_decl
+    str main_exit
+    str run_symbol
+    str run_decl
+    str defer_shape
+    str close_guard
+    str close_call
+    str stderr_wording
+    str code_override
+    str run_return
+    str binary_handoff
+    str binary_invoke
+    str inspect_verb
+    str m_type
+    str named_code
+    str stderr_fn
+    str stderr_handle
+    int run_hit_count
+    int inspect_hit_count
+    int m_type_count
+    int cleanup_stmt_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("edge/cleanup-verdict", "default", "", "offline"), "main-decl" => ok "case edge/cleanup-verdict variant default root main-decl run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("edge/cleanup-verdict", "default", "", "offline"), "main-decl" => ok evidence("main-decl", "true", "true", true, "case edge/cleanup-verdict variant default root main-decl run offline")
+        different: false, true, context("edge/cleanup-verdict", "default", "", "offline"), "main-decl" => failed{"main-decl"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("edge/cleanup-verdict", "default", "", "offline"), "run-hit-count" => ok evidence("run-hit-count", "2", "2", true, "case edge/cleanup-verdict variant default root run-hit-count run offline")
+        different: 1, 2, context("edge/cleanup-verdict", "default", "", "offline"), "run-hit-count" => failed{"run-hit-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "func TestMain(m *testing.M)", "func TestMain(m *testing.M)", context("edge/cleanup-verdict", "default", "", "offline"), "main-decl" => ok evidence("main-decl", "func TestMain(m *testing.M)", "func TestMain(m *testing.M)", true, "case edge/cleanup-verdict variant default root main-decl run offline")
+        different: "func TestMain(m *testing.M)_2", "func TestMain(m *testing.M)", context("edge/cleanup-verdict", "default", "", "offline"), "main-decl" => failed{"main-decl"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        seed_main_decl: "seed-main-decl-drift" => ok observation("func TestMain(m *testing.M)_2", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        seed_main_exit: "seed-main-exit-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))_2", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        seed_run_symbol: "seed-run-symbol-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance_2", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        seed_run_decl: "seed-run-decl-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)_2", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        seed_defer_shape: "seed-defer-shape-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {_2", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        seed_close_guard: "seed-close-guard-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil_2", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        seed_close_call: "seed-close-call-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()_2", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        seed_stderr_wording: "seed-stderr-wording-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v_2", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        seed_code_override: "seed-code-override-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1_2", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        seed_run_return: "seed-run-return-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()_2", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        seed_binary_handoff: "seed-binary-handoff-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)_2", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        seed_binary_invoke: "seed-binary-invoke-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,_2", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        seed_inspect_verb: "seed-inspect-verb-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project_2", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        seed_m_type: "seed-m-type-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M_2", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        seed_named_code: "seed-named-code-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int_2", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        seed_stderr_fn: "seed-stderr-fn-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf_2", "os.Stderr", 2, 3, 2, 3)
+        seed_stderr_handle: "seed-stderr-handle-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr_2", 2, 3, 2, 3)
+        seed_run_hit_count: "seed-run-hit-count-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 1, 3, 2, 3)
+        seed_inspect_hit_count: "seed-inspect-hit-count-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 2, 2, 3)
+        seed_m_type_count: "seed-m-type-count-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 1, 3)
+        seed_cleanup_stmt_count: "seed-cleanup-stmt-count-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 2)
+    match variant_id
+        "seed-main-decl-drift" => ok observation("func TestMain(m *testing.M)_2", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        "seed-main-exit-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))_2", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        "seed-run-symbol-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance_2", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        "seed-run-decl-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)_2", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        "seed-defer-shape-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {_2", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        "seed-close-guard-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil_2", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        "seed-close-call-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()_2", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        "seed-stderr-wording-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v_2", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        "seed-code-override-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1_2", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        "seed-run-return-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()_2", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        "seed-binary-handoff-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)_2", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        "seed-binary-invoke-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,_2", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        "seed-inspect-verb-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project_2", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        "seed-m-type-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M_2", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        "seed-named-code-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int_2", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+        "seed-stderr-fn-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf_2", "os.Stderr", 2, 3, 2, 3)
+        "seed-stderr-handle-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr_2", 2, 3, 2, 3)
+        "seed-run-hit-count-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 1, 3, 2, 3)
+        "seed-inspect-hit-count-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 2, 2, 3)
+        "seed-m-type-count-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 1, 3)
+        "seed-cleanup-stmt-count-drift" => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 2)
+        _ => ok observation("func TestMain(m *testing.M)", "os.Exit(runConformance(m))", "runConformance", "func runConformance(m *testing.M) (code int)", "defer func() {", "if err := canlcCache.Close(); err != nil", "canlcCache.Close()", "remove temporary compiler directory: %v", "code = 1", "return m.Run()", "binary := canlcBinary(t)", "exec.Command(binary,", "inspect-project", "*testing.M", "code int", "fmt.Fprintf", "os.Stderr", 2, 3, 2, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e009: "m44-e009" => ok [check("main-decl", "main decl keeps its bytes"), check("main-exit", "main exit keeps its bytes"), check("run-symbol", "run symbol keeps its spelling"), check("run-decl", "run decl keeps its bytes"), check("defer-shape", "defer shape keeps its bytes"), check("close-guard", "close guard keeps its bytes"), check("close-call", "close call keeps its bytes"), check("stderr-wording", "stderr wording keeps its bytes"), check("code-override", "code override keeps its bytes"), check("run-return", "run return keeps its bytes"), check("binary-handoff", "binary handoff keeps its bytes"), check("binary-invoke", "binary invoke keeps its bytes"), check("inspect-verb", "inspect verb keeps its spelling"), check("m-type", "m type keeps its bytes"), check("named-code", "named code keeps its bytes"), check("stderr-fn", "stderr fn keeps its bytes"), check("stderr-handle", "stderr handle keeps its bytes"), check("run-hit-count", "two run hits exist"), check("inspect-hit-count", "three inspect hits exist"), check("m-type-count", "two m types exist"), check("cleanup-stmt-count", "three cleanup stmts exist")]
+        other: "nope" => ok []
+    match scope is "m44-e009"
+        false => ok []
+        true => ok [check("main-decl", "main decl keeps its bytes"), check("main-exit", "main exit keeps its bytes"), check("run-symbol", "run symbol keeps its spelling"), check("run-decl", "run decl keeps its bytes"), check("defer-shape", "defer shape keeps its bytes"), check("close-guard", "close guard keeps its bytes"), check("close-call", "close call keeps its bytes"), check("stderr-wording", "stderr wording keeps its bytes"), check("code-override", "code override keeps its bytes"), check("run-return", "run return keeps its bytes"), check("binary-handoff", "binary handoff keeps its bytes"), check("binary-invoke", "binary invoke keeps its bytes"), check("inspect-verb", "inspect verb keeps its spelling"), check("m-type", "m type keeps its bytes"), check("named-code", "named code keeps its bytes"), check("stderr-fn", "stderr fn keeps its bytes"), check("stderr-handle", "stderr handle keeps its bytes"), check("run-hit-count", "two run hits exist"), check("inspect-hit-count", "three inspect hits exist"), check("m-type-count", "two m types exist"), check("cleanup-stmt-count", "three cleanup stmts exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "edge/cleanup-verdict" => ok [expected_check("main-decl", "func TestMain(m *testing.M)"), expected_check("main-exit", "os.Exit(runConformance(m))"), expected_check("run-symbol", "runConformance"), expected_check("run-decl", "func runConformance(m *testing.M) (code int)"), expected_check("defer-shape", "defer func() {"), expected_check("close-guard", "if err := canlcCache.Close(); err != nil"), expected_check("close-call", "canlcCache.Close()"), expected_check("stderr-wording", "remove temporary compiler directory: %v"), expected_check("code-override", "code = 1"), expected_check("run-return", "return m.Run()"), expected_check("binary-handoff", "binary := canlcBinary(t)"), expected_check("binary-invoke", "exec.Command(binary,"), expected_check("inspect-verb", "inspect-project"), expected_check("m-type", "*testing.M"), expected_check("named-code", "code int"), expected_check("stderr-fn", "fmt.Fprintf"), expected_check("stderr-handle", "os.Stderr"), expected_check("run-hit-count", "2"), expected_check("inspect-hit-count", "3"), expected_check("m-type-count", "2"), expected_check("cleanup-stmt-count", "3")]
+        unknown: "nope" => ok []
+    match case is "edge/cleanup-verdict"
+        false => ok []
+        true => ok [expected_check("main-decl", "func TestMain(m *testing.M)"), expected_check("main-exit", "os.Exit(runConformance(m))"), expected_check("run-symbol", "runConformance"), expected_check("run-decl", "func runConformance(m *testing.M) (code int)"), expected_check("defer-shape", "defer func() {"), expected_check("close-guard", "if err := canlcCache.Close(); err != nil"), expected_check("close-call", "canlcCache.Close()"), expected_check("stderr-wording", "remove temporary compiler directory: %v"), expected_check("code-override", "code = 1"), expected_check("run-return", "return m.Run()"), expected_check("binary-handoff", "binary := canlcBinary(t)"), expected_check("binary-invoke", "exec.Command(binary,"), expected_check("inspect-verb", "inspect-project"), expected_check("m-type", "*testing.M"), expected_check("named-code", "code int"), expected_check("stderr-fn", "fmt.Fprintf"), expected_check("stderr-handle", "os.Stderr"), expected_check("run-hit-count", "2"), expected_check("inspect-hit-count", "3"), expected_check("m-type-count", "2"), expected_check("cleanup-stmt-count", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("edge/cleanup-verdict", "default", "", "offline") => ok
+        seed_main_decl: context("edge/cleanup-verdict", "seed-main-decl-drift", "", "offline") => failed{"main-decl"}
+        seed_main_exit: context("edge/cleanup-verdict", "seed-main-exit-drift", "", "offline") => failed{"main-exit"}
+        seed_run_symbol: context("edge/cleanup-verdict", "seed-run-symbol-drift", "", "offline") => failed{"run-symbol"}
+        seed_run_decl: context("edge/cleanup-verdict", "seed-run-decl-drift", "", "offline") => failed{"run-decl"}
+        seed_defer_shape: context("edge/cleanup-verdict", "seed-defer-shape-drift", "", "offline") => failed{"defer-shape"}
+        seed_close_guard: context("edge/cleanup-verdict", "seed-close-guard-drift", "", "offline") => failed{"close-guard"}
+        seed_close_call: context("edge/cleanup-verdict", "seed-close-call-drift", "", "offline") => failed{"close-call"}
+        seed_stderr_wording: context("edge/cleanup-verdict", "seed-stderr-wording-drift", "", "offline") => failed{"stderr-wording"}
+        seed_code_override: context("edge/cleanup-verdict", "seed-code-override-drift", "", "offline") => failed{"code-override"}
+        seed_run_return: context("edge/cleanup-verdict", "seed-run-return-drift", "", "offline") => failed{"run-return"}
+        seed_binary_handoff: context("edge/cleanup-verdict", "seed-binary-handoff-drift", "", "offline") => failed{"binary-handoff"}
+        seed_binary_invoke: context("edge/cleanup-verdict", "seed-binary-invoke-drift", "", "offline") => failed{"binary-invoke"}
+        seed_inspect_verb: context("edge/cleanup-verdict", "seed-inspect-verb-drift", "", "offline") => failed{"inspect-verb"}
+        seed_m_type: context("edge/cleanup-verdict", "seed-m-type-drift", "", "offline") => failed{"m-type"}
+        seed_named_code: context("edge/cleanup-verdict", "seed-named-code-drift", "", "offline") => failed{"named-code"}
+        seed_stderr_fn: context("edge/cleanup-verdict", "seed-stderr-fn-drift", "", "offline") => failed{"stderr-fn"}
+        seed_stderr_handle: context("edge/cleanup-verdict", "seed-stderr-handle-drift", "", "offline") => failed{"stderr-handle"}
+        seed_run_hit_count: context("edge/cleanup-verdict", "seed-run-hit-count-drift", "", "offline") => failed{"run-hit-count"}
+        seed_inspect_hit_count: context("edge/cleanup-verdict", "seed-inspect-hit-count-drift", "", "offline") => failed{"inspect-hit-count"}
+        seed_m_type_count: context("edge/cleanup-verdict", "seed-m-type-count-drift", "", "offline") => failed{"m-type-count"}
+        seed_cleanup_stmt_count: context("edge/cleanup-verdict", "seed-cleanup-stmt-count-drift", "", "offline") => failed{"cleanup-stmt-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.main_decl, "func TestMain(m *testing.M)", c, "main-decl")
+            failed
+            ok evidence main_decl_evidence => match call require_text(got.main_exit, "os.Exit(runConformance(m))", c, "main-exit")
+                failed
+                ok evidence main_exit_evidence => match call require_text(got.run_symbol, "runConformance", c, "run-symbol")
+                    failed
+                    ok evidence run_symbol_evidence => match call require_text(got.run_decl, "func runConformance(m *testing.M) (code int)", c, "run-decl")
+                        failed
+                        ok evidence run_decl_evidence => match call require_text(got.defer_shape, "defer func() {", c, "defer-shape")
+                            failed
+                            ok evidence defer_shape_evidence => match call require_text(got.close_guard, "if err := canlcCache.Close(); err != nil", c, "close-guard")
+                                failed
+                                ok evidence close_guard_evidence => match call require_text(got.close_call, "canlcCache.Close()", c, "close-call")
+                                    failed
+                                    ok evidence close_call_evidence => match call require_text(got.stderr_wording, "remove temporary compiler directory: %v", c, "stderr-wording")
+                                        failed
+                                        ok evidence stderr_wording_evidence => match call require_text(got.code_override, "code = 1", c, "code-override")
+                                            failed
+                                            ok evidence code_override_evidence => match call require_text(got.run_return, "return m.Run()", c, "run-return")
+                                                failed
+                                                ok evidence run_return_evidence => match call require_text(got.binary_handoff, "binary := canlcBinary(t)", c, "binary-handoff")
+                                                    failed
+                                                    ok evidence binary_handoff_evidence => match call require_text(got.binary_invoke, "exec.Command(binary,", c, "binary-invoke")
+                                                        failed
+                                                        ok evidence binary_invoke_evidence => match call require_text(got.inspect_verb, "inspect-project", c, "inspect-verb")
+                                                            failed
+                                                            ok evidence inspect_verb_evidence => match call require_text(got.m_type, "*testing.M", c, "m-type")
+                                                                failed
+                                                                ok evidence m_type_evidence => match call require_text(got.named_code, "code int", c, "named-code")
+                                                                    failed
+                                                                    ok evidence named_code_evidence => match call require_text(got.stderr_fn, "fmt.Fprintf", c, "stderr-fn")
+                                                                        failed
+                                                                        ok evidence stderr_fn_evidence => match call require_text(got.stderr_handle, "os.Stderr", c, "stderr-handle")
+                                                                            failed
+                                                                            ok evidence stderr_handle_evidence => match call require_int(got.run_hit_count, 2, c, "run-hit-count")
+                                                                                failed
+                                                                                ok evidence run_hit_count_evidence => match call require_int(got.inspect_hit_count, 3, c, "inspect-hit-count")
+                                                                                    failed
+                                                                                    ok evidence inspect_hit_count_evidence => match call require_int(got.m_type_count, 2, c, "m-type-count")
+                                                                                        failed
+                                                                                        ok evidence m_type_count_evidence => match call require_int(got.cleanup_stmt_count, 3, c, "cleanup-stmt-count")
+                                                                                            failed
+                                                                                            ok evidence cleanup_stmt_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e009: "m44-e009" => ok test_case("edge/cleanup-verdict", ["edge", "m44"], [], 120000, [check_ref("main-decl"), check_ref("main-exit"), check_ref("run-symbol"), check_ref("run-decl"), check_ref("defer-shape"), check_ref("close-guard"), check_ref("close-call"), check_ref("stderr-wording"), check_ref("code-override"), check_ref("run-return"), check_ref("binary-handoff"), check_ref("binary-invoke"), check_ref("inspect-verb"), check_ref("m-type"), check_ref("named-code"), check_ref("stderr-fn"), check_ref("stderr-handle"), check_ref("run-hit-count"), check_ref("inspect-hit-count"), check_ref("m-type-count"), check_ref("cleanup-stmt-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m44-e009"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("edge/cleanup-verdict", ["edge", "m44"], [], 120000, [check_ref("main-decl"), check_ref("main-exit"), check_ref("run-symbol"), check_ref("run-decl"), check_ref("defer-shape"), check_ref("close-guard"), check_ref("close-call"), check_ref("stderr-wording"), check_ref("code-override"), check_ref("run-return"), check_ref("binary-handoff"), check_ref("binary-invoke"), check_ref("inspect-verb"), check_ref("m-type"), check_ref("named-code"), check_ref("stderr-fn"), check_ref("stderr-handle"), check_ref("run-hit-count"), check_ref("inspect-hit-count"), check_ref("m-type-count"), check_ref("cleanup-stmt-count")], callable case_body)
