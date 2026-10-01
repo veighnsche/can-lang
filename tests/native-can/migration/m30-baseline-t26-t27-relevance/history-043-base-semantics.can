@@ -1,0 +1,337 @@
+package m30history043base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-043 "Registry complete: doc facts".
+/// Source: tests/baseline/registry.json (R, one line)
+/// plus tests/baseline/baseline_test.go symbol
+/// TestRegistryComplete (L155-217) plus registryFile
+/// (L104-150).
+/// Disposition: historical_candidate (this row pins the
+/// TestRegistryComplete offline pact as reviewable Can
+/// facts; the old Go check stays until the integrator
+/// retires it after every linked row, variant,
+/// environment and control has accepted evidence).
+/// Protects (this file): the registry doc facts in
+/// member order: the T01 task, the seven case ids, the
+/// standard trial name, the pending candidate slot,
+/// the frozen model/effort pairs, and the case/trial/
+/// candidate/prompt/fixture/held-out/hidden/attempt
+/// counts.
+/// ADAPTATION (recorded, with source lines): task pins
+/// T01 (R); case ids pin the seven id members in doc
+/// order (R); trial name pins standard (R); candidate
+/// slot pins pending (R); frozen pairs pin the
+/// primary/efficient/escalation model plus effort
+/// members (R); counts pin ints tallied from R
+/// members: seven cases, one trial, seven pending
+/// slots, three prompt kinds, twelve fixtures, seven
+/// held-out ids, fourteen hidden checks, five
+/// attempts.
+/// Facet map (doc members): registry-task pins T01
+/// (R); case-id-0 pins closed-variant-arm (R);
+/// case-id-1 pins two-libraries (R); case-id-2 pins
+/// fixture-link (R); case-id-3 pins invoice-edit (R);
+/// case-id-4 pins stream-cleanup (R); case-id-5 pins
+/// invoice-grid (R); case-id-6 pins native-judgment
+/// (R); trial-name pins standard (R); candidate-status
+/// pins pending (R); primary-model pins gpt-6-sol (R);
+/// primary-effort pins medium (R); efficient-model
+/// pins gpt-6-luna (R); efficient-effort pins medium
+/// (R); escalation-model pins gpt-6-astra (R);
+/// escalation-effort pins high (R); case-count pins 7
+/// (R); trial-count pins 1 (R); candidate-count pins
+/// 7 (R); prompt-kind-count pins 3 (R); fixture-total
+/// pins 12 (R); heldout-count pins 7 (R); hidden-total
+/// pins 14 (R); trial-attempts pins 5 (R).
+/// The roots-green pin lives in
+/// history-043-roots-green.can; the run shape plus
+/// diagnostics live in history-043-run-shape.can.
+/// Variants: none (row lists zero variants; default
+/// plus seeded drifts only).
+/// Environment: one gate (Bun/Go/Git for T01 smoke or
+/// generator when applicable); binds at P23, requires
+/// [] now (offline only).
+/// Logical gates SUITE/DOC/FILES/PROC/BUILD/WORK bind
+/// at P23; no live run now. Accept gate P23 is unmet.
+/// Timeout 120000ms is the offline default bound (no
+/// Go timeout in this row; binds at P23 like the M11
+/// no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23
+/// unmet).
+/// Case history/registry-base checks: registry-task,
+/// case-id-0, case-id-1, case-id-2, case-id-3,
+/// case-id-4, case-id-5, case-id-6, trial-name,
+/// candidate-status, primary-model, primary-effort,
+/// efficient-model, efficient-effort, escalation-model,
+/// escalation-effort, case-count, trial-count,
+/// candidate-count, prompt-kind-count, fixture-total,
+/// heldout-count, hidden-total, trial-attempts.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str registry_task
+    str case_id_0
+    str case_id_1
+    str case_id_2
+    str case_id_3
+    str case_id_4
+    str case_id_5
+    str case_id_6
+    str trial_name
+    str candidate_status
+    str primary_model
+    str primary_effort
+    str efficient_model
+    str efficient_effort
+    str escalation_model
+    str escalation_effort
+    int case_count
+    int trial_count
+    int candidate_count
+    int prompt_kind_count
+    int fixture_total
+    int heldout_count
+    int hidden_total
+    int trial_attempts
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/registry-base", "default", "", "offline"), "registry-task" => ok "case history/registry-base variant default root registry-task run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/registry-base", "default", "", "offline"), "registry-task" => ok evidence("registry-task", "true", "true", true, "case history/registry-base variant default root registry-task run offline")
+        different: false, true, context("history/registry-base", "default", "", "offline"), "registry-task" => failed{"registry-task"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 7, 7, context("history/registry-base", "default", "", "offline"), "case-count" => ok evidence("case-count", "7", "7", true, "case history/registry-base variant default root case-count run offline")
+        different: 6, 7, context("history/registry-base", "default", "", "offline"), "case-count" => failed{"case-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "T01", "T01", context("history/registry-base", "default", "", "offline"), "registry-task" => ok evidence("registry-task", "T01", "T01", true, "case history/registry-base variant default root registry-task run offline")
+        different: "T01_2", "T01", context("history/registry-base", "default", "", "offline"), "registry-task" => failed{"registry-task"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        seed_registry_task: "seed-registry-task-drift" => ok observation("T01_2", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        seed_case_id_0: "seed-case-id-0-drift" => ok observation("T01", "closed-variant-arm_2", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        seed_case_id_1: "seed-case-id-1-drift" => ok observation("T01", "closed-variant-arm", "two-libraries_2", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        seed_case_id_2: "seed-case-id-2-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link_2", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        seed_case_id_3: "seed-case-id-3-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit_2", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        seed_case_id_4: "seed-case-id-4-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup_2", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        seed_case_id_5: "seed-case-id-5-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid_2", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        seed_case_id_6: "seed-case-id-6-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment_2", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        seed_trial_name: "seed-trial-name-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard_2", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        seed_candidate_status: "seed-candidate-status-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending_2", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        seed_primary_model: "seed-primary-model-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol_2", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        seed_primary_effort: "seed-primary-effort-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium_2", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        seed_efficient_model: "seed-efficient-model-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna_2", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        seed_efficient_effort: "seed-efficient-effort-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium_2", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        seed_escalation_model: "seed-escalation-model-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra_2", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        seed_escalation_effort: "seed-escalation-effort-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high_2", 7, 1, 7, 3, 12, 7, 14, 5)
+        seed_case_count: "seed-case-count-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 6, 1, 7, 3, 12, 7, 14, 5)
+        seed_trial_count: "seed-trial-count-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 0, 7, 3, 12, 7, 14, 5)
+        seed_candidate_count: "seed-candidate-count-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 6, 3, 12, 7, 14, 5)
+        seed_prompt_kind_count: "seed-prompt-kind-count-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 2, 12, 7, 14, 5)
+        seed_fixture_total: "seed-fixture-total-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 11, 7, 14, 5)
+        seed_heldout_count: "seed-heldout-count-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 6, 14, 5)
+        seed_hidden_total: "seed-hidden-total-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 13, 5)
+        seed_trial_attempts: "seed-trial-attempts-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 4)
+    match variant_id
+        "seed-registry-task-drift" => ok observation("T01_2", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        "seed-case-id-0-drift" => ok observation("T01", "closed-variant-arm_2", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        "seed-case-id-1-drift" => ok observation("T01", "closed-variant-arm", "two-libraries_2", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        "seed-case-id-2-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link_2", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        "seed-case-id-3-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit_2", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        "seed-case-id-4-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup_2", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        "seed-case-id-5-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid_2", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        "seed-case-id-6-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment_2", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        "seed-trial-name-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard_2", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        "seed-candidate-status-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending_2", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        "seed-primary-model-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol_2", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        "seed-primary-effort-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium_2", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        "seed-efficient-model-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna_2", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        "seed-efficient-effort-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium_2", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        "seed-escalation-model-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra_2", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+        "seed-escalation-effort-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high_2", 7, 1, 7, 3, 12, 7, 14, 5)
+        "seed-case-count-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 6, 1, 7, 3, 12, 7, 14, 5)
+        "seed-trial-count-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 0, 7, 3, 12, 7, 14, 5)
+        "seed-candidate-count-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 6, 3, 12, 7, 14, 5)
+        "seed-prompt-kind-count-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 2, 12, 7, 14, 5)
+        "seed-fixture-total-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 11, 7, 14, 5)
+        "seed-heldout-count-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 6, 14, 5)
+        "seed-hidden-total-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 13, 5)
+        "seed-trial-attempts-drift" => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 4)
+        _ => ok observation("T01", "closed-variant-arm", "two-libraries", "fixture-link", "invoice-edit", "stream-cleanup", "invoice-grid", "native-judgment", "standard", "pending", "gpt-6-sol", "medium", "gpt-6-luna", "medium", "gpt-6-astra", "high", 7, 1, 7, 3, 12, 7, 14, 5)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h043: "m30-h043" => ok [check("registry-task", "registry pins the T01 task"), check("case-id-0", "first case is closed-variant-arm"), check("case-id-1", "second case is two-libraries"), check("case-id-2", "third case is fixture-link"), check("case-id-3", "fourth case is invoice-edit"), check("case-id-4", "fifth case is stream-cleanup"), check("case-id-5", "sixth case is invoice-grid"), check("case-id-6", "seventh case is native-judgment"), check("trial-name", "trial slot is named standard"), check("candidate-status", "candidate slots stay pending"), check("primary-model", "primary model pins gpt-6-sol"), check("primary-effort", "primary effort pins medium"), check("efficient-model", "efficient model pins gpt-6-luna"), check("efficient-effort", "efficient effort pins medium"), check("escalation-model", "escalation model pins gpt-6-astra"), check("escalation-effort", "escalation effort pins high"), check("case-count", "exactly seven cases register"), check("trial-count", "exactly one trial exists"), check("candidate-count", "seven pending slots exist"), check("prompt-kind-count", "three prompt kinds exist"), check("fixture-total", "twelve fixtures link"), check("heldout-count", "seven held-out variants exist"), check("hidden-total", "fourteen hidden checks exist"), check("trial-attempts", "trial allows five attempts")]
+        other: "nope" => ok []
+    match scope is "m30-h043"
+        false => ok []
+        true => ok [check("registry-task", "registry pins the T01 task"), check("case-id-0", "first case is closed-variant-arm"), check("case-id-1", "second case is two-libraries"), check("case-id-2", "third case is fixture-link"), check("case-id-3", "fourth case is invoice-edit"), check("case-id-4", "fifth case is stream-cleanup"), check("case-id-5", "sixth case is invoice-grid"), check("case-id-6", "seventh case is native-judgment"), check("trial-name", "trial slot is named standard"), check("candidate-status", "candidate slots stay pending"), check("primary-model", "primary model pins gpt-6-sol"), check("primary-effort", "primary effort pins medium"), check("efficient-model", "efficient model pins gpt-6-luna"), check("efficient-effort", "efficient effort pins medium"), check("escalation-model", "escalation model pins gpt-6-astra"), check("escalation-effort", "escalation effort pins high"), check("case-count", "exactly seven cases register"), check("trial-count", "exactly one trial exists"), check("candidate-count", "seven pending slots exist"), check("prompt-kind-count", "three prompt kinds exist"), check("fixture-total", "twelve fixtures link"), check("heldout-count", "seven held-out variants exist"), check("hidden-total", "fourteen hidden checks exist"), check("trial-attempts", "trial allows five attempts")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/registry-base" => ok [expected_check("registry-task", "T01"), expected_check("case-id-0", "closed-variant-arm"), expected_check("case-id-1", "two-libraries"), expected_check("case-id-2", "fixture-link"), expected_check("case-id-3", "invoice-edit"), expected_check("case-id-4", "stream-cleanup"), expected_check("case-id-5", "invoice-grid"), expected_check("case-id-6", "native-judgment"), expected_check("trial-name", "standard"), expected_check("candidate-status", "pending"), expected_check("primary-model", "gpt-6-sol"), expected_check("primary-effort", "medium"), expected_check("efficient-model", "gpt-6-luna"), expected_check("efficient-effort", "medium"), expected_check("escalation-model", "gpt-6-astra"), expected_check("escalation-effort", "high"), expected_check("case-count", "7"), expected_check("trial-count", "1"), expected_check("candidate-count", "7"), expected_check("prompt-kind-count", "3"), expected_check("fixture-total", "12"), expected_check("heldout-count", "7"), expected_check("hidden-total", "14"), expected_check("trial-attempts", "5")]
+        unknown: "nope" => ok []
+    match case is "history/registry-base"
+        false => ok []
+        true => ok [expected_check("registry-task", "T01"), expected_check("case-id-0", "closed-variant-arm"), expected_check("case-id-1", "two-libraries"), expected_check("case-id-2", "fixture-link"), expected_check("case-id-3", "invoice-edit"), expected_check("case-id-4", "stream-cleanup"), expected_check("case-id-5", "invoice-grid"), expected_check("case-id-6", "native-judgment"), expected_check("trial-name", "standard"), expected_check("candidate-status", "pending"), expected_check("primary-model", "gpt-6-sol"), expected_check("primary-effort", "medium"), expected_check("efficient-model", "gpt-6-luna"), expected_check("efficient-effort", "medium"), expected_check("escalation-model", "gpt-6-astra"), expected_check("escalation-effort", "high"), expected_check("case-count", "7"), expected_check("trial-count", "1"), expected_check("candidate-count", "7"), expected_check("prompt-kind-count", "3"), expected_check("fixture-total", "12"), expected_check("heldout-count", "7"), expected_check("hidden-total", "14"), expected_check("trial-attempts", "5")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/registry-base", "default", "", "offline") => ok
+        seed_registry_task: context("history/registry-base", "seed-registry-task-drift", "", "offline") => failed{"registry-task"}
+        seed_case_id_0: context("history/registry-base", "seed-case-id-0-drift", "", "offline") => failed{"case-id-0"}
+        seed_case_id_1: context("history/registry-base", "seed-case-id-1-drift", "", "offline") => failed{"case-id-1"}
+        seed_case_id_2: context("history/registry-base", "seed-case-id-2-drift", "", "offline") => failed{"case-id-2"}
+        seed_case_id_3: context("history/registry-base", "seed-case-id-3-drift", "", "offline") => failed{"case-id-3"}
+        seed_case_id_4: context("history/registry-base", "seed-case-id-4-drift", "", "offline") => failed{"case-id-4"}
+        seed_case_id_5: context("history/registry-base", "seed-case-id-5-drift", "", "offline") => failed{"case-id-5"}
+        seed_case_id_6: context("history/registry-base", "seed-case-id-6-drift", "", "offline") => failed{"case-id-6"}
+        seed_trial_name: context("history/registry-base", "seed-trial-name-drift", "", "offline") => failed{"trial-name"}
+        seed_candidate_status: context("history/registry-base", "seed-candidate-status-drift", "", "offline") => failed{"candidate-status"}
+        seed_primary_model: context("history/registry-base", "seed-primary-model-drift", "", "offline") => failed{"primary-model"}
+        seed_primary_effort: context("history/registry-base", "seed-primary-effort-drift", "", "offline") => failed{"primary-effort"}
+        seed_efficient_model: context("history/registry-base", "seed-efficient-model-drift", "", "offline") => failed{"efficient-model"}
+        seed_efficient_effort: context("history/registry-base", "seed-efficient-effort-drift", "", "offline") => failed{"efficient-effort"}
+        seed_escalation_model: context("history/registry-base", "seed-escalation-model-drift", "", "offline") => failed{"escalation-model"}
+        seed_escalation_effort: context("history/registry-base", "seed-escalation-effort-drift", "", "offline") => failed{"escalation-effort"}
+        seed_case_count: context("history/registry-base", "seed-case-count-drift", "", "offline") => failed{"case-count"}
+        seed_trial_count: context("history/registry-base", "seed-trial-count-drift", "", "offline") => failed{"trial-count"}
+        seed_candidate_count: context("history/registry-base", "seed-candidate-count-drift", "", "offline") => failed{"candidate-count"}
+        seed_prompt_kind_count: context("history/registry-base", "seed-prompt-kind-count-drift", "", "offline") => failed{"prompt-kind-count"}
+        seed_fixture_total: context("history/registry-base", "seed-fixture-total-drift", "", "offline") => failed{"fixture-total"}
+        seed_heldout_count: context("history/registry-base", "seed-heldout-count-drift", "", "offline") => failed{"heldout-count"}
+        seed_hidden_total: context("history/registry-base", "seed-hidden-total-drift", "", "offline") => failed{"hidden-total"}
+        seed_trial_attempts: context("history/registry-base", "seed-trial-attempts-drift", "", "offline") => failed{"trial-attempts"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.registry_task, "T01", c, "registry-task")
+            failed
+            ok evidence registry_task_evidence => match call require_text(got.case_id_0, "closed-variant-arm", c, "case-id-0")
+                failed
+                ok evidence case_id_0_evidence => match call require_text(got.case_id_1, "two-libraries", c, "case-id-1")
+                    failed
+                    ok evidence case_id_1_evidence => match call require_text(got.case_id_2, "fixture-link", c, "case-id-2")
+                        failed
+                        ok evidence case_id_2_evidence => match call require_text(got.case_id_3, "invoice-edit", c, "case-id-3")
+                            failed
+                            ok evidence case_id_3_evidence => match call require_text(got.case_id_4, "stream-cleanup", c, "case-id-4")
+                                failed
+                                ok evidence case_id_4_evidence => match call require_text(got.case_id_5, "invoice-grid", c, "case-id-5")
+                                    failed
+                                    ok evidence case_id_5_evidence => match call require_text(got.case_id_6, "native-judgment", c, "case-id-6")
+                                        failed
+                                        ok evidence case_id_6_evidence => match call require_text(got.trial_name, "standard", c, "trial-name")
+                                            failed
+                                            ok evidence trial_name_evidence => match call require_text(got.candidate_status, "pending", c, "candidate-status")
+                                                failed
+                                                ok evidence candidate_status_evidence => match call require_text(got.primary_model, "gpt-6-sol", c, "primary-model")
+                                                    failed
+                                                    ok evidence primary_model_evidence => match call require_text(got.primary_effort, "medium", c, "primary-effort")
+                                                        failed
+                                                        ok evidence primary_effort_evidence => match call require_text(got.efficient_model, "gpt-6-luna", c, "efficient-model")
+                                                            failed
+                                                            ok evidence efficient_model_evidence => match call require_text(got.efficient_effort, "medium", c, "efficient-effort")
+                                                                failed
+                                                                ok evidence efficient_effort_evidence => match call require_text(got.escalation_model, "gpt-6-astra", c, "escalation-model")
+                                                                    failed
+                                                                    ok evidence escalation_model_evidence => match call require_text(got.escalation_effort, "high", c, "escalation-effort")
+                                                                        failed
+                                                                        ok evidence escalation_effort_evidence => match call require_int(got.case_count, 7, c, "case-count")
+                                                                            failed
+                                                                            ok evidence case_count_evidence => match call require_int(got.trial_count, 1, c, "trial-count")
+                                                                                failed
+                                                                                ok evidence trial_count_evidence => match call require_int(got.candidate_count, 7, c, "candidate-count")
+                                                                                    failed
+                                                                                    ok evidence candidate_count_evidence => match call require_int(got.prompt_kind_count, 3, c, "prompt-kind-count")
+                                                                                        failed
+                                                                                        ok evidence prompt_kind_count_evidence => match call require_int(got.fixture_total, 12, c, "fixture-total")
+                                                                                            failed
+                                                                                            ok evidence fixture_total_evidence => match call require_int(got.heldout_count, 7, c, "heldout-count")
+                                                                                                failed
+                                                                                                ok evidence heldout_count_evidence => match call require_int(got.hidden_total, 14, c, "hidden-total")
+                                                                                                    failed
+                                                                                                    ok evidence hidden_total_evidence => match call require_int(got.trial_attempts, 5, c, "trial-attempts")
+                                                                                                        failed
+                                                                                                        ok evidence trial_attempts_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h043: "m30-h043" => ok test_case("history/registry-base", ["history", "m30"], [], 120000, [check_ref("registry-task"), check_ref("case-id-0"), check_ref("case-id-1"), check_ref("case-id-2"), check_ref("case-id-3"), check_ref("case-id-4"), check_ref("case-id-5"), check_ref("case-id-6"), check_ref("trial-name"), check_ref("candidate-status"), check_ref("primary-model"), check_ref("primary-effort"), check_ref("efficient-model"), check_ref("efficient-effort"), check_ref("escalation-model"), check_ref("escalation-effort"), check_ref("case-count"), check_ref("trial-count"), check_ref("candidate-count"), check_ref("prompt-kind-count"), check_ref("fixture-total"), check_ref("heldout-count"), check_ref("hidden-total"), check_ref("trial-attempts")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h043"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/registry-base", ["history", "m30"], [], 120000, [check_ref("registry-task"), check_ref("case-id-0"), check_ref("case-id-1"), check_ref("case-id-2"), check_ref("case-id-3"), check_ref("case-id-4"), check_ref("case-id-5"), check_ref("case-id-6"), check_ref("trial-name"), check_ref("candidate-status"), check_ref("primary-model"), check_ref("primary-effort"), check_ref("efficient-model"), check_ref("efficient-effort"), check_ref("escalation-model"), check_ref("escalation-effort"), check_ref("case-count"), check_ref("trial-count"), check_ref("candidate-count"), check_ref("prompt-kind-count"), check_ref("fixture-total"), check_ref("heldout-count"), check_ref("hidden-total"), check_ref("trial-attempts")], callable case_body)

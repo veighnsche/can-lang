@@ -1,0 +1,315 @@
+package m30history043run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-043 "Registry complete: run shape".
+/// Source: tests/baseline/baseline_test.go symbol
+/// TestRegistryComplete (L155-217): task leg
+/// (L160-162); empty leg (L163-165); id loop with dup
+/// guard (L166-171); family leg (L172-174); prompt leg
+/// (L175-177); fixture legs (L178-185); candidate leg
+/// (L186-188); held-out leg (L189-191); hidden legs
+/// (L192-199); trial legs (L200-215).
+/// Disposition: historical_candidate (this row pins the
+/// TestRegistryComplete offline pact as reviewable Can
+/// facts; the old Go check stays until the integrator
+/// retires it after every linked row, variant,
+/// environment and control has accepted evidence).
+/// Protects (this file): the live run shape: the test
+/// name, the sixteen refusal wordings in Go order,
+/// and the refusal count.
+/// ADAPTATION (recorded, with source lines): test-name
+/// pins TestRegistryComplete (L155); fatal-task pins
+/// the task inner bytes (L161); fatal-empty pins the
+/// empty inner bytes (L164); fatal-dup pins the dup
+/// inner bytes (L169); fatal-family pins the family
+/// inner bytes (L174); fatal-prompts pins the prompt
+/// inner bytes (L176); fatal-fixtures pins the
+/// fixture inner bytes (L179); fatal-fixture-missing
+/// pins the missing inner bytes (L183);
+/// fatal-candidate pins the candidate inner bytes
+/// (L187); fatal-heldout pins the held-out inner
+/// bytes (L190); fatal-hidden pins the hidden inner
+/// bytes (L193); fatal-hidden-one pins the hidden-one
+/// inner bytes (L197); fatal-trial pins the trial
+/// inner bytes (L202); fatal-attempts pins the
+/// attempts inner bytes (L205); fatal-primary pins
+/// the primary inner bytes (L208); fatal-efficient
+/// pins the efficient inner bytes (L211);
+/// fatal-escalation pins the escalation inner bytes
+/// (L214); fatal-count pins int (16) from the sixteen
+/// legs (L161/L164/L169/L174/L176/L179/L183/L187/
+/// L190/L193/L197/L202/L205/L208/L211/L214).
+/// Facet map (launch plus diagnostics): test-name pins
+/// TestRegistryComplete (L155); fatal-task pins task
+/// plus quoted got (L161); fatal-empty pins no cases
+/// (L164); fatal-dup pins missing-or-duplicated plus
+/// quoted id (L169); fatal-family pins missing
+/// family/workload (L174); fatal-prompts pins the
+/// missing triple (L176); fatal-fixtures pins missing
+/// fixtures/run (L179); fatal-fixture-missing pins
+/// case plus fixture plus err (L183); fatal-candidate
+/// pins pending plus owner (L187); fatal-heldout pins
+/// the missing variant triple (L190); fatal-hidden
+/// pins no checks (L193); fatal-hidden-one pins one
+/// incomplete check (L197); fatal-trial pins unknown
+/// trial plus quoted name (L202); fatal-attempts pins
+/// got plus want 5 (L205); fatal-primary pins got
+/// plus sol/medium (L208); fatal-efficient pins got
+/// plus luna/medium (L211); fatal-escalation pins got
+/// plus astra/high (L214); fatal-count pins 16 (L161
+/// through L214).
+/// The doc facts live in
+/// history-043-base-semantics.can; the roots-green pin
+/// lives in history-043-roots-green.can.
+/// Variants: none (row lists zero variants; default
+/// plus seeded drifts only).
+/// Environment: one gate (Bun/Go/Git for T01 smoke or
+/// generator when applicable); binds at P23, requires
+/// [] now (offline only).
+/// Logical gates SUITE/DOC/FILES/PROC/BUILD/WORK bind
+/// at P23; no live run now. Accept gate P23 is unmet.
+/// Timeout 120000ms is the offline default bound (no
+/// Go timeout in this row; binds at P23 like the M11
+/// no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23
+/// unmet).
+/// Case history/registry-run checks: test-name,
+/// fatal-task, fatal-empty, fatal-dup, fatal-family,
+/// fatal-prompts, fatal-fixtures, fatal-fixture-missing,
+/// fatal-candidate, fatal-heldout, fatal-hidden,
+/// fatal-hidden-one, fatal-trial, fatal-attempts,
+/// fatal-primary, fatal-efficient, fatal-escalation,
+/// fatal-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str test_name
+    str fatal_task
+    str fatal_empty
+    str fatal_dup
+    str fatal_family
+    str fatal_prompts
+    str fatal_fixtures
+    str fatal_fixture_missing
+    str fatal_candidate
+    str fatal_heldout
+    str fatal_hidden
+    str fatal_hidden_one
+    str fatal_trial
+    str fatal_attempts
+    str fatal_primary
+    str fatal_efficient
+    str fatal_escalation
+    int fatal_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/registry-run", "default", "", "offline"), "test-name" => ok "case history/registry-run variant default root test-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/registry-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "true", "true", true, "case history/registry-run variant default root test-name run offline")
+        different: false, true, context("history/registry-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 16, 16, context("history/registry-run", "default", "", "offline"), "fatal-count" => ok evidence("fatal-count", "16", "16", true, "case history/registry-run variant default root fatal-count run offline")
+        different: 15, 16, context("history/registry-run", "default", "", "offline"), "fatal-count" => failed{"fatal-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "TestRegistryComplete", "TestRegistryComplete", context("history/registry-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "TestRegistryComplete", "TestRegistryComplete", true, "case history/registry-run variant default root test-name run offline")
+        different: "TestRegistryComplete_2", "TestRegistryComplete", context("history/registry-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        seed_test_name: "seed-test-name-drift" => ok observation("TestRegistryComplete_2", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        seed_fatal_task: "seed-fatal-task-drift" => ok observation("TestRegistryComplete", "registry task = %q_2", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        seed_fatal_empty: "seed-fatal-empty-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases_2", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        seed_fatal_dup: "seed-fatal-dup-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q_2", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        seed_fatal_family: "seed-fatal-family-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload_2", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        seed_fatal_prompts: "seed-fatal-prompts-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts_2", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        seed_fatal_fixtures: "seed-fatal-fixtures-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run_2", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        seed_fatal_fixture_missing: "seed-fatal-fixture-missing-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v_2", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        seed_fatal_candidate: "seed-fatal-candidate-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task_2", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        seed_fatal_heldout: "seed-fatal-heldout-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)_2", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        seed_fatal_hidden: "seed-fatal-hidden-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks_2", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        seed_fatal_hidden_one: "seed-fatal-hidden-one-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check_2", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        seed_fatal_trial: "seed-fatal-trial-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q_2", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        seed_fatal_attempts: "seed-fatal-attempts-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5_2", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        seed_fatal_primary: "seed-fatal-primary-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium_2", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        seed_fatal_efficient: "seed-fatal-efficient-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium_2", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        seed_fatal_escalation: "seed-fatal-escalation-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high_2", 16)
+        seed_fatal_count: "seed-fatal-count-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 15)
+    match variant_id
+        "seed-test-name-drift" => ok observation("TestRegistryComplete_2", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        "seed-fatal-task-drift" => ok observation("TestRegistryComplete", "registry task = %q_2", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        "seed-fatal-empty-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases_2", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        "seed-fatal-dup-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q_2", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        "seed-fatal-family-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload_2", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        "seed-fatal-prompts-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts_2", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        "seed-fatal-fixtures-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run_2", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        "seed-fatal-fixture-missing-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v_2", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        "seed-fatal-candidate-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task_2", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        "seed-fatal-heldout-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)_2", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        "seed-fatal-hidden-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks_2", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        "seed-fatal-hidden-one-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check_2", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        "seed-fatal-trial-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q_2", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        "seed-fatal-attempts-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5_2", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        "seed-fatal-primary-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium_2", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        "seed-fatal-efficient-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium_2", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+        "seed-fatal-escalation-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high_2", 16)
+        "seed-fatal-count-drift" => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 15)
+        _ => ok observation("TestRegistryComplete", "registry task = %q", "registry has no cases", "case id missing or duplicated: %q", "case %s missing family/workload", "case %s missing creation/refactor/repair prompts", "case %s missing current-idiom fixtures/run", "case %s current fixture %s: %v", "case %s candidate slot must be pending with an owner task", "case %s missing held-out variant (id/rule/renames)", "case %s has no hidden checks", "case %s has an incomplete hidden check", "case %s references unknown trial %q", "case %s trial attempts = %d, want 5", "case %s primary = %+v, want gpt-6-sol/medium", "case %s efficient = %+v, want gpt-6-luna/medium", "case %s escalation = %+v, want gpt-6-astra/high", 16)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h043: "m30-h043" => ok [check("test-name", "row pins the RegistryComplete name"), check("fatal-task", "task refusal wording is pinned"), check("fatal-empty", "empty refusal wording is pinned"), check("fatal-dup", "dup refusal wording is pinned"), check("fatal-family", "family refusal wording is pinned"), check("fatal-prompts", "prompts refusal wording is pinned"), check("fatal-fixtures", "fixtures refusal wording is pinned"), check("fatal-fixture-missing", "missing fixture wording is pinned"), check("fatal-candidate", "candidate refusal wording is pinned"), check("fatal-heldout", "held-out refusal wording is pinned"), check("fatal-hidden", "hidden refusal wording is pinned"), check("fatal-hidden-one", "hidden-one refusal wording is pinned"), check("fatal-trial", "trial refusal wording is pinned"), check("fatal-attempts", "attempts refusal wording is pinned"), check("fatal-primary", "primary refusal wording is pinned"), check("fatal-efficient", "efficient refusal wording is pinned"), check("fatal-escalation", "escalation refusal wording is pinned"), check("fatal-count", "sixteen refusal sites exist")]
+        other: "nope" => ok []
+    match scope is "m30-h043"
+        false => ok []
+        true => ok [check("test-name", "row pins the RegistryComplete name"), check("fatal-task", "task refusal wording is pinned"), check("fatal-empty", "empty refusal wording is pinned"), check("fatal-dup", "dup refusal wording is pinned"), check("fatal-family", "family refusal wording is pinned"), check("fatal-prompts", "prompts refusal wording is pinned"), check("fatal-fixtures", "fixtures refusal wording is pinned"), check("fatal-fixture-missing", "missing fixture wording is pinned"), check("fatal-candidate", "candidate refusal wording is pinned"), check("fatal-heldout", "held-out refusal wording is pinned"), check("fatal-hidden", "hidden refusal wording is pinned"), check("fatal-hidden-one", "hidden-one refusal wording is pinned"), check("fatal-trial", "trial refusal wording is pinned"), check("fatal-attempts", "attempts refusal wording is pinned"), check("fatal-primary", "primary refusal wording is pinned"), check("fatal-efficient", "efficient refusal wording is pinned"), check("fatal-escalation", "escalation refusal wording is pinned"), check("fatal-count", "sixteen refusal sites exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/registry-run" => ok [expected_check("test-name", "TestRegistryComplete"), expected_check("fatal-task", "registry task = %q"), expected_check("fatal-empty", "registry has no cases"), expected_check("fatal-dup", "case id missing or duplicated: %q"), expected_check("fatal-family", "case %s missing family/workload"), expected_check("fatal-prompts", "case %s missing creation/refactor/repair prompts"), expected_check("fatal-fixtures", "case %s missing current-idiom fixtures/run"), expected_check("fatal-fixture-missing", "case %s current fixture %s: %v"), expected_check("fatal-candidate", "case %s candidate slot must be pending with an owner task"), expected_check("fatal-heldout", "case %s missing held-out variant (id/rule/renames)"), expected_check("fatal-hidden", "case %s has no hidden checks"), expected_check("fatal-hidden-one", "case %s has an incomplete hidden check"), expected_check("fatal-trial", "case %s references unknown trial %q"), expected_check("fatal-attempts", "case %s trial attempts = %d, want 5"), expected_check("fatal-primary", "case %s primary = %+v, want gpt-6-sol/medium"), expected_check("fatal-efficient", "case %s efficient = %+v, want gpt-6-luna/medium"), expected_check("fatal-escalation", "case %s escalation = %+v, want gpt-6-astra/high"), expected_check("fatal-count", "16")]
+        unknown: "nope" => ok []
+    match case is "history/registry-run"
+        false => ok []
+        true => ok [expected_check("test-name", "TestRegistryComplete"), expected_check("fatal-task", "registry task = %q"), expected_check("fatal-empty", "registry has no cases"), expected_check("fatal-dup", "case id missing or duplicated: %q"), expected_check("fatal-family", "case %s missing family/workload"), expected_check("fatal-prompts", "case %s missing creation/refactor/repair prompts"), expected_check("fatal-fixtures", "case %s missing current-idiom fixtures/run"), expected_check("fatal-fixture-missing", "case %s current fixture %s: %v"), expected_check("fatal-candidate", "case %s candidate slot must be pending with an owner task"), expected_check("fatal-heldout", "case %s missing held-out variant (id/rule/renames)"), expected_check("fatal-hidden", "case %s has no hidden checks"), expected_check("fatal-hidden-one", "case %s has an incomplete hidden check"), expected_check("fatal-trial", "case %s references unknown trial %q"), expected_check("fatal-attempts", "case %s trial attempts = %d, want 5"), expected_check("fatal-primary", "case %s primary = %+v, want gpt-6-sol/medium"), expected_check("fatal-efficient", "case %s efficient = %+v, want gpt-6-luna/medium"), expected_check("fatal-escalation", "case %s escalation = %+v, want gpt-6-astra/high"), expected_check("fatal-count", "16")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/registry-run", "default", "", "offline") => ok
+        seed_test_name: context("history/registry-run", "seed-test-name-drift", "", "offline") => failed{"test-name"}
+        seed_fatal_task: context("history/registry-run", "seed-fatal-task-drift", "", "offline") => failed{"fatal-task"}
+        seed_fatal_empty: context("history/registry-run", "seed-fatal-empty-drift", "", "offline") => failed{"fatal-empty"}
+        seed_fatal_dup: context("history/registry-run", "seed-fatal-dup-drift", "", "offline") => failed{"fatal-dup"}
+        seed_fatal_family: context("history/registry-run", "seed-fatal-family-drift", "", "offline") => failed{"fatal-family"}
+        seed_fatal_prompts: context("history/registry-run", "seed-fatal-prompts-drift", "", "offline") => failed{"fatal-prompts"}
+        seed_fatal_fixtures: context("history/registry-run", "seed-fatal-fixtures-drift", "", "offline") => failed{"fatal-fixtures"}
+        seed_fatal_fixture_missing: context("history/registry-run", "seed-fatal-fixture-missing-drift", "", "offline") => failed{"fatal-fixture-missing"}
+        seed_fatal_candidate: context("history/registry-run", "seed-fatal-candidate-drift", "", "offline") => failed{"fatal-candidate"}
+        seed_fatal_heldout: context("history/registry-run", "seed-fatal-heldout-drift", "", "offline") => failed{"fatal-heldout"}
+        seed_fatal_hidden: context("history/registry-run", "seed-fatal-hidden-drift", "", "offline") => failed{"fatal-hidden"}
+        seed_fatal_hidden_one: context("history/registry-run", "seed-fatal-hidden-one-drift", "", "offline") => failed{"fatal-hidden-one"}
+        seed_fatal_trial: context("history/registry-run", "seed-fatal-trial-drift", "", "offline") => failed{"fatal-trial"}
+        seed_fatal_attempts: context("history/registry-run", "seed-fatal-attempts-drift", "", "offline") => failed{"fatal-attempts"}
+        seed_fatal_primary: context("history/registry-run", "seed-fatal-primary-drift", "", "offline") => failed{"fatal-primary"}
+        seed_fatal_efficient: context("history/registry-run", "seed-fatal-efficient-drift", "", "offline") => failed{"fatal-efficient"}
+        seed_fatal_escalation: context("history/registry-run", "seed-fatal-escalation-drift", "", "offline") => failed{"fatal-escalation"}
+        seed_fatal_count: context("history/registry-run", "seed-fatal-count-drift", "", "offline") => failed{"fatal-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.test_name, "TestRegistryComplete", c, "test-name")
+            failed
+            ok evidence test_name_evidence => match call require_text(got.fatal_task, "registry task = %q", c, "fatal-task")
+                failed
+                ok evidence fatal_task_evidence => match call require_text(got.fatal_empty, "registry has no cases", c, "fatal-empty")
+                    failed
+                    ok evidence fatal_empty_evidence => match call require_text(got.fatal_dup, "case id missing or duplicated: %q", c, "fatal-dup")
+                        failed
+                        ok evidence fatal_dup_evidence => match call require_text(got.fatal_family, "case %s missing family/workload", c, "fatal-family")
+                            failed
+                            ok evidence fatal_family_evidence => match call require_text(got.fatal_prompts, "case %s missing creation/refactor/repair prompts", c, "fatal-prompts")
+                                failed
+                                ok evidence fatal_prompts_evidence => match call require_text(got.fatal_fixtures, "case %s missing current-idiom fixtures/run", c, "fatal-fixtures")
+                                    failed
+                                    ok evidence fatal_fixtures_evidence => match call require_text(got.fatal_fixture_missing, "case %s current fixture %s: %v", c, "fatal-fixture-missing")
+                                        failed
+                                        ok evidence fatal_fixture_missing_evidence => match call require_text(got.fatal_candidate, "case %s candidate slot must be pending with an owner task", c, "fatal-candidate")
+                                            failed
+                                            ok evidence fatal_candidate_evidence => match call require_text(got.fatal_heldout, "case %s missing held-out variant (id/rule/renames)", c, "fatal-heldout")
+                                                failed
+                                                ok evidence fatal_heldout_evidence => match call require_text(got.fatal_hidden, "case %s has no hidden checks", c, "fatal-hidden")
+                                                    failed
+                                                    ok evidence fatal_hidden_evidence => match call require_text(got.fatal_hidden_one, "case %s has an incomplete hidden check", c, "fatal-hidden-one")
+                                                        failed
+                                                        ok evidence fatal_hidden_one_evidence => match call require_text(got.fatal_trial, "case %s references unknown trial %q", c, "fatal-trial")
+                                                            failed
+                                                            ok evidence fatal_trial_evidence => match call require_text(got.fatal_attempts, "case %s trial attempts = %d, want 5", c, "fatal-attempts")
+                                                                failed
+                                                                ok evidence fatal_attempts_evidence => match call require_text(got.fatal_primary, "case %s primary = %+v, want gpt-6-sol/medium", c, "fatal-primary")
+                                                                    failed
+                                                                    ok evidence fatal_primary_evidence => match call require_text(got.fatal_efficient, "case %s efficient = %+v, want gpt-6-luna/medium", c, "fatal-efficient")
+                                                                        failed
+                                                                        ok evidence fatal_efficient_evidence => match call require_text(got.fatal_escalation, "case %s escalation = %+v, want gpt-6-astra/high", c, "fatal-escalation")
+                                                                            failed
+                                                                            ok evidence fatal_escalation_evidence => match call require_int(got.fatal_count, 16, c, "fatal-count")
+                                                                                failed
+                                                                                ok evidence fatal_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h043: "m30-h043" => ok test_case("history/registry-run", ["history", "m30"], [], 120000, [check_ref("test-name"), check_ref("fatal-task"), check_ref("fatal-empty"), check_ref("fatal-dup"), check_ref("fatal-family"), check_ref("fatal-prompts"), check_ref("fatal-fixtures"), check_ref("fatal-fixture-missing"), check_ref("fatal-candidate"), check_ref("fatal-heldout"), check_ref("fatal-hidden"), check_ref("fatal-hidden-one"), check_ref("fatal-trial"), check_ref("fatal-attempts"), check_ref("fatal-primary"), check_ref("fatal-efficient"), check_ref("fatal-escalation"), check_ref("fatal-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h043"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/registry-run", ["history", "m30"], [], 120000, [check_ref("test-name"), check_ref("fatal-task"), check_ref("fatal-empty"), check_ref("fatal-dup"), check_ref("fatal-family"), check_ref("fatal-prompts"), check_ref("fatal-fixtures"), check_ref("fatal-fixture-missing"), check_ref("fatal-candidate"), check_ref("fatal-heldout"), check_ref("fatal-hidden"), check_ref("fatal-hidden-one"), check_ref("fatal-trial"), check_ref("fatal-attempts"), check_ref("fatal-primary"), check_ref("fatal-efficient"), check_ref("fatal-escalation"), check_ref("fatal-count")], callable case_body)
