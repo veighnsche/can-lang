@@ -1,0 +1,248 @@
+package m29life019run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 LIFE-019 "Contamination verdict: run shape".
+/// Source: tests/integration/harness_cache_test.go symbol
+/// TestHarnessVerifyContaminated (L94-105): comment pair
+/// (L94-95); parallel gate (L97); bundle line (L98); tamper
+/// write (L99-101); verify check (L102-104).
+/// Disposition: consolidate (this row ports
+/// TestHarnessVerifyContaminated to ordinary Can functions; the old
+/// Go harness stays until the integrator retires it after
+/// every linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the live run shape: the test name,
+/// the Parallel gate, the entry local plus full bundle
+/// line plus map shape, the full tamper write line, the
+/// err guard plus Fatal err refusal, the full verify check
+/// line, the passed-verification refusal, and the
+/// write/verify-call counts.
+/// ADAPTATION (recorded, with source lines): parallel-call
+/// pins t.Parallel() with parens (L97); bundle-line pins
+/// the full L98 spelling; tamper-line pins the full L99
+/// spelling; err-guard pins err != nil (L99); fatal-err pins
+/// t.Fatal(err) (L100); verify-line pins the full L102
+/// spelling; write-count pins int (1) from the one tamper
+/// write (L99); verify-count pins int (1) from the one
+/// verify call (L102).
+/// Facet map (launch plus diagnostics): test-name pins
+/// TestHarnessVerifyContaminated (L96); parallel-call pins
+/// t.Parallel() (L97); entry-name pins entry (L98);
+/// bundle-line pins the full bundle line (L98); map-shape
+/// pins map[string]string (L98); tamper-line pins the full
+/// tamper line (L99); err-guard pins err != nil (L99);
+/// fatal-err pins t.Fatal(err) (L100); verify-line pins the
+/// full verify line (L102); fatal-contam pins the passed
+/// refusal (L103); write-count pins 1 (L99); verify-count
+/// pins 1 (L102).
+/// The verdict pins live in life-019-cache-semantics.can; the
+/// roots-green pin lives in life-019-roots-green.can.
+/// Variants: none (row lists zero variants; default plus
+/// seeded drifts only).
+/// Environment: none (no gates; requires []).
+/// Logical gates WORK/BUILD/CHILD/CLOCK bind at P23; no live
+/// run now. Accept gate P23 is unmet. Timeout 120000ms is the
+/// offline default bound (no Go timeout in this row; binds at
+/// P23 like the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case life/contam-run checks: test-name, parallel-call,
+/// entry-name, bundle-line, map-shape, tamper-line,
+/// err-guard, fatal-err, verify-line, fatal-contam,
+/// write-count, verify-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str test_name
+    str parallel_call
+    str entry_name
+    str bundle_line
+    str map_shape
+    str tamper_line
+    str err_guard
+    str fatal_err
+    str verify_line
+    str fatal_contam
+    int write_count
+    int verify_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/contam-run", "default", "", "offline"), "test-name" => ok "case life/contam-run variant default root test-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/contam-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "true", "true", true, "case life/contam-run variant default root test-name run offline")
+        different: false, true, context("life/contam-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("life/contam-run", "default", "", "offline"), "write-count" => ok evidence("write-count", "1", "1", true, "case life/contam-run variant default root write-count run offline")
+        different: 0, 1, context("life/contam-run", "default", "", "offline"), "write-count" => failed{"write-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "TestHarnessVerifyContaminated", "TestHarnessVerifyContaminated", context("life/contam-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "TestHarnessVerifyContaminated", "TestHarnessVerifyContaminated", true, "case life/contam-run variant default root test-name run offline")
+        different: "TestHarnessVerifyContaminated_2", "TestHarnessVerifyContaminated", context("life/contam-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+        seed_test_name: "seed-test-name-drift" => ok observation("TestHarnessVerifyContaminated_2", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+        seed_parallel_call: "seed-parallel-call-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()_2", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+        seed_entry_name: "seed-entry-name-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry_2", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+        seed_bundle_line: "seed-bundle-line-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})_2", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+        seed_map_shape: "seed-map-shape-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string_2", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+        seed_tamper_line: "seed-tamper-line-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {_2", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+        seed_err_guard: "seed-err-guard-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil_2", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+        seed_fatal_err: "seed-fatal-err-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)_2", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+        seed_verify_line: "seed-verify-line-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {_2", "contaminated entry passed verification", 1, 1)
+        seed_fatal_contam: "seed-fatal-contam-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification_2", 1, 1)
+        seed_write_count: "seed-write-count-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 0, 1)
+        seed_verify_count: "seed-verify-count-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 0)
+    match variant_id
+        "seed-test-name-drift" => ok observation("TestHarnessVerifyContaminated_2", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+        "seed-parallel-call-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()_2", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+        "seed-entry-name-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry_2", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+        "seed-bundle-line-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})_2", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+        "seed-map-shape-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string_2", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+        "seed-tamper-line-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {_2", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+        "seed-err-guard-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil_2", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+        "seed-fatal-err-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)_2", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+        "seed-verify-line-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {_2", "contaminated entry passed verification", 1, 1)
+        "seed-fatal-contam-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification_2", 1, 1)
+        "seed-write-count-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 0, 1)
+        "seed-verify-count-drift" => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 0)
+        _ => ok observation("TestHarnessVerifyContaminated", "t.Parallel()", "entry", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", "map[string]string", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", "err != nil", "t.Fatal(err)", "if err := harnessVerify(entry); err == nil {", "contaminated entry passed verification", 1, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l019: "m29-l019" => ok [check("test-name", "row pins the Contaminated test name"), check("parallel-call", "test pins the Parallel call"), check("entry-name", "bundle local is named entry"), check("bundle-line", "entry pins the full bundle line"), check("map-shape", "bundle pins the map shape"), check("tamper-line", "tamper pins the full write line"), check("err-guard", "tamper leg faces the err guard"), check("fatal-err", "err leg refuses with Fatal err"), check("verify-line", "verify pins the full check line"), check("fatal-contam", "passed refusal wording is pinned"), check("write-count", "exactly one tamper write runs"), check("verify-count", "exactly one verify call runs")]
+        other: "nope" => ok []
+    match scope is "m29-l019"
+        false => ok []
+        true => ok [check("test-name", "row pins the Contaminated test name"), check("parallel-call", "test pins the Parallel call"), check("entry-name", "bundle local is named entry"), check("bundle-line", "entry pins the full bundle line"), check("map-shape", "bundle pins the map shape"), check("tamper-line", "tamper pins the full write line"), check("err-guard", "tamper leg faces the err guard"), check("fatal-err", "err leg refuses with Fatal err"), check("verify-line", "verify pins the full check line"), check("fatal-contam", "passed refusal wording is pinned"), check("write-count", "exactly one tamper write runs"), check("verify-count", "exactly one verify call runs")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/contam-run" => ok [expected_check("test-name", "TestHarnessVerifyContaminated"), expected_check("parallel-call", "t.Parallel()"), expected_check("entry-name", "entry"), expected_check("bundle-line", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})"), expected_check("map-shape", "map[string]string"), expected_check("tamper-line", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {"), expected_check("err-guard", "err != nil"), expected_check("fatal-err", "t.Fatal(err)"), expected_check("verify-line", "if err := harnessVerify(entry); err == nil {"), expected_check("fatal-contam", "contaminated entry passed verification"), expected_check("write-count", "1"), expected_check("verify-count", "1")]
+        unknown: "nope" => ok []
+    match case is "life/contam-run"
+        false => ok []
+        true => ok [expected_check("test-name", "TestHarnessVerifyContaminated"), expected_check("parallel-call", "t.Parallel()"), expected_check("entry-name", "entry"), expected_check("bundle-line", "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})"), expected_check("map-shape", "map[string]string"), expected_check("tamper-line", "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {"), expected_check("err-guard", "err != nil"), expected_check("fatal-err", "t.Fatal(err)"), expected_check("verify-line", "if err := harnessVerify(entry); err == nil {"), expected_check("fatal-contam", "contaminated entry passed verification"), expected_check("write-count", "1"), expected_check("verify-count", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/contam-run", "default", "", "offline") => ok
+        seed_test_name: context("life/contam-run", "seed-test-name-drift", "", "offline") => failed{"test-name"}
+        seed_parallel_call: context("life/contam-run", "seed-parallel-call-drift", "", "offline") => failed{"parallel-call"}
+        seed_entry_name: context("life/contam-run", "seed-entry-name-drift", "", "offline") => failed{"entry-name"}
+        seed_bundle_line: context("life/contam-run", "seed-bundle-line-drift", "", "offline") => failed{"bundle-line"}
+        seed_map_shape: context("life/contam-run", "seed-map-shape-drift", "", "offline") => failed{"map-shape"}
+        seed_tamper_line: context("life/contam-run", "seed-tamper-line-drift", "", "offline") => failed{"tamper-line"}
+        seed_err_guard: context("life/contam-run", "seed-err-guard-drift", "", "offline") => failed{"err-guard"}
+        seed_fatal_err: context("life/contam-run", "seed-fatal-err-drift", "", "offline") => failed{"fatal-err"}
+        seed_verify_line: context("life/contam-run", "seed-verify-line-drift", "", "offline") => failed{"verify-line"}
+        seed_fatal_contam: context("life/contam-run", "seed-fatal-contam-drift", "", "offline") => failed{"fatal-contam"}
+        seed_write_count: context("life/contam-run", "seed-write-count-drift", "", "offline") => failed{"write-count"}
+        seed_verify_count: context("life/contam-run", "seed-verify-count-drift", "", "offline") => failed{"verify-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.test_name, "TestHarnessVerifyContaminated", c, "test-name")
+            failed
+            ok evidence test_name_evidence => match call require_text(got.parallel_call, "t.Parallel()", c, "parallel-call")
+                failed
+                ok evidence parallel_call_evidence => match call require_text(got.entry_name, "entry", c, "entry-name")
+                    failed
+                    ok evidence entry_name_evidence => match call require_text(got.bundle_line, "entry := writeFakeBundle(t, map[string]string{\"bin/canlc\": \"launcher\"})", c, "bundle-line")
+                        failed
+                        ok evidence bundle_line_evidence => match call require_text(got.map_shape, "map[string]string", c, "map-shape")
+                            failed
+                            ok evidence map_shape_evidence => match call require_text(got.tamper_line, "if err := os.WriteFile(filepath.Join(entry, \"bin\", \"canlc\"), []byte(\"tampered\"), 0600); err != nil {", c, "tamper-line")
+                                failed
+                                ok evidence tamper_line_evidence => match call require_text(got.err_guard, "err != nil", c, "err-guard")
+                                    failed
+                                    ok evidence err_guard_evidence => match call require_text(got.fatal_err, "t.Fatal(err)", c, "fatal-err")
+                                        failed
+                                        ok evidence fatal_err_evidence => match call require_text(got.verify_line, "if err := harnessVerify(entry); err == nil {", c, "verify-line")
+                                            failed
+                                            ok evidence verify_line_evidence => match call require_text(got.fatal_contam, "contaminated entry passed verification", c, "fatal-contam")
+                                                failed
+                                                ok evidence fatal_contam_evidence => match call require_int(got.write_count, 1, c, "write-count")
+                                                    failed
+                                                    ok evidence write_count_evidence => match call require_int(got.verify_count, 1, c, "verify-count")
+                                                        failed
+                                                        ok evidence verify_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l019: "m29-l019" => ok test_case("life/contam-run", ["life", "m29"], [], 120000, [check_ref("test-name"), check_ref("parallel-call"), check_ref("entry-name"), check_ref("bundle-line"), check_ref("map-shape"), check_ref("tamper-line"), check_ref("err-guard"), check_ref("fatal-err"), check_ref("verify-line"), check_ref("fatal-contam"), check_ref("write-count"), check_ref("verify-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-l019"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/contam-run", ["life", "m29"], [], 120000, [check_ref("test-name"), check_ref("parallel-call"), check_ref("entry-name"), check_ref("bundle-line"), check_ref("map-shape"), check_ref("tamper-line"), check_ref("err-guard"), check_ref("fatal-err"), check_ref("verify-line"), check_ref("fatal-contam"), check_ref("write-count"), check_ref("verify-count")], callable case_body)
