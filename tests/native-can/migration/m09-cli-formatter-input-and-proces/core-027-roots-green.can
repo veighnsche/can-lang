@@ -1,0 +1,214 @@
+package m09core027roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M09 CORE-027 "bundled input capture: roots green, raw-backed inventory".
+/// Source: tests/integration/input_capture_test.go symbol
+/// TestCurrentBundledInputCapture (L46-246).
+/// Related fixtures: none shipped; the staged src/main.can (Go L99) and
+/// vendor/src/lib.can (Go L102-103) are inline in the Go test, with the
+/// raw fixture JSON inline at L104-108.
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): static assert inventory of the staged capture
+/// project as the green baseline: exactly 4 roots at the assert stage
+/// (root 3 + vendor 1), matching the Go report length pin (L169).
+/// ADAPTATION (recorded, with source lines): the load_helper when-table
+/// rows (L99: sample use helpers::fetched(7), direct => ok) are call
+/// routing rows, not assert roots, and are excluded from the per-function
+/// counts per the CORE-008/014 precedent (when-table rows are not
+/// declaration.Assertions roots); the vendor fixture cases (L102: two
+/// cases) are fixture data, not assert roots either.
+/// Facet map (input_capture_test.go legs plus staged arms): assert-green
+/// pins the would-be canlc assert exit (L165: exit 0, empty diagnostics);
+/// report-passed pins the report flag (L169: passed true); root-count
+/// pins the total (L169: 4 assertions); fixture-name pins the primary
+/// raw fixture path (L102: fixtures/load.json, the fetch decoded arm);
+/// load-helper-roots pins load_helper (L99: direct 1 root);
+/// load-consumer-roots pins load_consumer (L99: sample 1 root);
+/// main-roots pins main (L99: empty 1 root); vendor-load-roots pins the
+/// vendor fetch (L102: decoded 1 root).
+/// Capture semantics live in core-027-capture-semantics.can; the
+/// production process shape lives in core-027-run-shape.can.
+/// Variants: none in this file (default only); timeout 5000/6000 and
+/// fixture bytes before/after mutation live in the capture file.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/WORK/PROC/N1
+/// and C/R/N/S/A identities bind at P23; no live run now. Descriptor
+/// timeout 240000ms mirrors the Go 4-minute ctx (L52).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QN1 unmet).
+/// Case capture/bundled-roots checks: assert-green, report-passed,
+/// root-count, fixture-name, load-helper-roots, load-consumer-roots,
+/// main-roots, vendor-load-roots.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int root_count
+    str fixture_name
+    int load_helper_roots
+    int load_consumer_roots
+    int main_roots
+    int vendor_load_roots
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("capture/bundled-roots", "default", "", "offline"), "assert-green" => ok "case capture/bundled-roots variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("capture/bundled-roots", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case capture/bundled-roots variant default root assert-green run offline")
+        different: false, true, context("capture/bundled-roots", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("capture/bundled-roots", "default", "", "offline"), "root-count" => ok evidence("root-count", "4", "4", true, "case capture/bundled-roots variant default root root-count run offline")
+        different: 5, 4, context("capture/bundled-roots", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "fixtures/load.json", "fixtures/load.json", context("capture/bundled-roots", "default", "", "offline"), "fixture-name" => ok evidence("fixture-name", "fixtures/load.json", "fixtures/load.json", true, "case capture/bundled-roots variant default root fixture-name run offline")
+        different: "fixtures/load.json-drift", "fixtures/load.json", context("capture/bundled-roots", "default", "", "offline"), "fixture-name" => failed{"fixture-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 4, "fixtures/load.json", 1, 1, 1, 1)
+        seed_assert_green_drift: "seed-assert-green-drift" => ok observation(false, true, 4, "fixtures/load.json", 1, 1, 1, 1)
+        seed_report_passed_drift: "seed-report-passed-drift" => ok observation(true, false, 4, "fixtures/load.json", 1, 1, 1, 1)
+        seed_root_count_drift: "seed-root-count-drift" => ok observation(true, true, 3, "fixtures/load.json", 1, 1, 1, 1)
+        seed_fixture_name_drift: "seed-fixture-name-drift" => ok observation(true, true, 4, "fixtures/fetched.json", 1, 1, 1, 1)
+        seed_load_helper_roots_drift: "seed-load-helper-roots-drift" => ok observation(true, true, 4, "fixtures/load.json", 0, 1, 1, 1)
+        seed_load_consumer_roots_drift: "seed-load-consumer-roots-drift" => ok observation(true, true, 4, "fixtures/load.json", 1, 0, 1, 1)
+        seed_main_roots_drift: "seed-main-roots-drift" => ok observation(true, true, 4, "fixtures/load.json", 1, 1, 0, 1)
+        seed_vendor_load_roots_drift: "seed-vendor-load-roots-drift" => ok observation(true, true, 4, "fixtures/load.json", 1, 1, 1, 0)
+    match variant_id
+        "seed-assert-green-drift" => ok observation(false, true, 4, "fixtures/load.json", 1, 1, 1, 1)
+        "seed-report-passed-drift" => ok observation(true, false, 4, "fixtures/load.json", 1, 1, 1, 1)
+        "seed-root-count-drift" => ok observation(true, true, 3, "fixtures/load.json", 1, 1, 1, 1)
+        "seed-fixture-name-drift" => ok observation(true, true, 4, "fixtures/fetched.json", 1, 1, 1, 1)
+        "seed-load-helper-roots-drift" => ok observation(true, true, 4, "fixtures/load.json", 0, 1, 1, 1)
+        "seed-load-consumer-roots-drift" => ok observation(true, true, 4, "fixtures/load.json", 1, 0, 1, 1)
+        "seed-main-roots-drift" => ok observation(true, true, 4, "fixtures/load.json", 1, 1, 0, 1)
+        "seed-vendor-load-roots-drift" => ok observation(true, true, 4, "fixtures/load.json", 1, 1, 1, 0)
+        _ => ok observation(true, true, 4, "fixtures/load.json", 1, 1, 1, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m09_027: "m09-027" => ok [check("assert-green", "staged capture project asserts green (exit 0, empty diagnostics)"), check("report-passed", "assert report passes"), check("root-count", "staged project carries exactly 4 roots (3 root + 1 vendor)"), check("fixture-name", "primary raw fixture is fixtures/load.json"), check("load-helper-roots", "load_helper contributes 1 root (direct)"), check("load-consumer-roots", "load_consumer contributes 1 root (sample)"), check("main-roots", "main contributes 1 root (empty)"), check("vendor-load-roots", "vendor load contributes 1 root (decoded)")]
+        other: "nope" => ok []
+    match scope is "m09-027"
+        false => ok []
+        true => ok [check("assert-green", "staged capture project asserts green (exit 0, empty diagnostics)"), check("report-passed", "assert report passes"), check("root-count", "staged project carries exactly 4 roots (3 root + 1 vendor)"), check("fixture-name", "primary raw fixture is fixtures/load.json"), check("load-helper-roots", "load_helper contributes 1 root (direct)"), check("load-consumer-roots", "load_consumer contributes 1 root (sample)"), check("main-roots", "main contributes 1 root (empty)"), check("vendor-load-roots", "vendor load contributes 1 root (decoded)")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "capture/bundled-roots" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "4"), expected_check("fixture-name", "fixtures/load.json"), expected_check("load-helper-roots", "1"), expected_check("load-consumer-roots", "1"), expected_check("main-roots", "1"), expected_check("vendor-load-roots", "1")]
+        unknown: "nope" => ok []
+    match case is "capture/bundled-roots"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "4"), expected_check("fixture-name", "fixtures/load.json"), expected_check("load-helper-roots", "1"), expected_check("load-consumer-roots", "1"), expected_check("main-roots", "1"), expected_check("vendor-load-roots", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("capture/bundled-roots", "default", "", "offline") => ok
+        seed_assert_green_drift: context("capture/bundled-roots", "seed-assert-green-drift", "", "offline") => failed{"assert-green"}
+        seed_report_passed_drift: context("capture/bundled-roots", "seed-report-passed-drift", "", "offline") => failed{"report-passed"}
+        seed_root_count_drift: context("capture/bundled-roots", "seed-root-count-drift", "", "offline") => failed{"root-count"}
+        seed_fixture_name_drift: context("capture/bundled-roots", "seed-fixture-name-drift", "", "offline") => failed{"fixture-name"}
+        seed_load_helper_roots_drift: context("capture/bundled-roots", "seed-load-helper-roots-drift", "", "offline") => failed{"load-helper-roots"}
+        seed_load_consumer_roots_drift: context("capture/bundled-roots", "seed-load-consumer-roots-drift", "", "offline") => failed{"load-consumer-roots"}
+        seed_main_roots_drift: context("capture/bundled-roots", "seed-main-roots-drift", "", "offline") => failed{"main-roots"}
+        seed_vendor_load_roots_drift: context("capture/bundled-roots", "seed-vendor-load-roots-drift", "", "offline") => failed{"vendor-load-roots"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence assert_green_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence report_passed_evidence => match call require_int(got.root_count, 4, c, "root-count")
+                    failed
+                    ok evidence root_count_evidence => match call require_text(got.fixture_name, "fixtures/load.json", c, "fixture-name")
+                        failed
+                        ok evidence fixture_name_evidence => match call require_int(got.load_helper_roots, 1, c, "load-helper-roots")
+                            failed
+                            ok evidence load_helper_roots_evidence => match call require_int(got.load_consumer_roots, 1, c, "load-consumer-roots")
+                                failed
+                                ok evidence load_consumer_roots_evidence => match call require_int(got.main_roots, 1, c, "main-roots")
+                                    failed
+                                    ok evidence main_roots_evidence => match call require_int(got.vendor_load_roots, 1, c, "vendor-load-roots")
+                                        failed
+                                        ok evidence vendor_load_roots_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m09_027: "m09-027" => ok test_case("capture/bundled-roots", ["capture", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 240000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("load-helper-roots"), check_ref("load-consumer-roots"), check_ref("main-roots"), check_ref("vendor-load-roots")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m09-027"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("capture/bundled-roots", ["capture", "m09"], ["can-bun-archive", "macos-sandbox-exec"], 240000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("load-helper-roots"), check_ref("load-consumer-roots"), check_ref("main-roots"), check_ref("vendor-load-roots")], callable case_body)

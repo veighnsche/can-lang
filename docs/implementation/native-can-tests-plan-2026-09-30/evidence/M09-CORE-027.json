@@ -1,0 +1,145 @@
+{
+ "changed_paths": [
+  "tests/native-can/migration/m09-cli-formatter-input-and-proces/core-027-roots-green.can",
+  "tests/native-can/migration/m09-cli-formatter-input-and-proces/core-027-capture-semantics.can",
+  "tests/native-can/migration/m09-cli-formatter-input-and-proces/core-027-run-shape.can",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/M09-CORE-027.json"
+ ],
+ "commands_with_deadlines_and_results": [
+  {
+   "command": "for s in 'can-source-tree-v1' 'can-fixture-tree-v1' 'lib.can' 'src/fixtures/load.json' 'src/fixtures/fetched.json' 'fixtures/load.json' 'fixtures/fetched.json' 'can.project.dependency/vendor/helpers::load' 'can.project.dependency/vendor' 'can.native-fixture.v1' 'eyJjb3VudCI6N30=' 'eyJjb3VudCI6OH0=' 'raw-provider-fixture' 'stale dependency digest' '--assert-timeout-ms' 'bin/canlc' '/usr/bin/sandbox-exec' 'PATH=/nonexistent' '(version 1)(allow default)(deny network*)(allow network-outbound (remote ip \"localhost:*\"))' 'http://127.0.0.1:1/load'; do c=$(grep -c -F \"$s\" tests/integration/input_capture_test.go); echo \"$c :: $s\"; done; grep -n 'REDACTED\\|earer' tests/integration/input_capture_test.go; md5 tests/integration/input_capture_test.go",
+   "deadline": "60s",
+   "result": "All pins present at byte level: can-source-tree-v1:1, can-fixture-tree-v1:1, lib.can:2, src/fixtures/load.json:3, src/fixtures/fetched.json:2, fixtures/load.json:4, fixtures/fetched.json:3, fixture target:1, lock edge target:3, schema:1, staged marker eyJjb3VudCI6N30=:3, mutated marker eyJjb3VudCI6OH0=:1, raw-provider-fixture:1, stale dependency digest:1, bin/canlc:1, /usr/bin/sandbox-exec:1, PATH=/nonexistent:1, full sandbox profile:1, fixture URL:1. The --assert-timeout-ms iteration errored (leading dashes parsed as flags; re-verified in the next command). REDACTED/bearer grep: no matches (exit 1). md5 6635696ee457d5de21de3ef019d3e6c6."
+  },
+  {
+   "command": "grep -c -F -e '--assert-timeout-ms' tests/integration/input_capture_test.go && grep -n -F -e '--assert-timeout-ms' tests/integration/input_capture_test.go && grep -n 'asserts' tests/integration/input_capture_test.go | head; sed -n '99p;102p' tests/integration/input_capture_test.go | od -c | head -20",
+   "deadline": "60s",
+   "result": "--assert-timeout-ms count 3 (L164 5000, L191 6000, L238 5000). asserts blocks: L99 stages src/main.can with load_helper direct, load_consumer sample, main empty (3 roots; the load_helper when-table rows sample/direct are call routing, not assert roots); L102 stages vendorSource with fetch decoded (1 root; the two fixture cases are fixture data, not assert roots). od -c byte dump of L99/L102 confirms the staged source text. 3 + 1 = 4 matches the Go report length pin (L169)."
+  },
+  {
+   "command": "E=docs/implementation/native-can-tests-plan-2026-09-30/evidence; ls $E | grep -E '^(P15|P20|P27|P28|K17|K18)\\.json'; ls $E | grep -E '^P23'; ls $E | grep -E '^QN1'; ls tests/native-can/migration/m09-cli-formatter-input-and-proces/; grep -h '\"status\"' $E/M09-*.json; ls /tmp/muse-m09c027-*; ls -d /tmp/m09c027check /tmp/m09c027neg",
+   "deadline": "60s",
+   "result": "Start gates satisfied: P15.json, P20.json, P27.json, P28.json, K17.json, K18.json all present. No P23 or QN1 evidence file (both greps exit 1): accept_after P23/QN1 UNMET. Owned dir held only the landed core-008 slices (plus sibling core-020 files appearing later from concurrent M09-C020, untouched). M09 evidence status convention: complete. Integrator-owned /tmp/muse-m09c027-prompt.md present, untouched. No stale /tmp/m09c027check or /tmp/m09c027neg."
+  },
+  {
+   "command": "python3 /tmp/m09c027gen.py && D=tests/native-can/migration/m09-cli-formatter-input-and-proces && go run ./compiler parse $D/core-027-roots-green.can && go run ./compiler parse $D/core-027-capture-semantics.can && go run ./compiler parse $D/core-027-run-shape.can && grep -c 'REDACTED' $D/core-027-*.can",
+   "deadline": "180s",
+   "result": "Generator wrote roots 215 lines, capture 295 lines, run 260 lines. parse: package m09core027roots, 17 declarations, exit 0; package m09core027capture, 17 declarations, exit 0; package m09core027run, 17 declarations, exit 0 (17 = 8 shapes + 9 fns: selector/require_bool/require_int/require_text/observe/checks/expected_vector/case_body/descriptor, matching the landed 008 shape). REDACTED count 0 per file (trailing exit 1 = no matches). NOTE: this first generation emitted `text` as field/param types and failed the probe check; the fix (text->str, Can string type) and re-parse are recorded below; final files are the fixed generation."
+  },
+  {
+   "command": "python3 dead-seed scan: parse each observe default tuple and every seed arm tuple (quote/escape-aware split), diff each seed against default, require exactly one differing field",
+   "deadline": "60s",
+   "result": "Clean on all 42 seeds, each differing in exactly its target field. roots (8 fields, 8 seeds): assert-green@[0], report-passed@[1], root-count@[2], fixture-name@[3], load-helper-roots@[4], load-consumer-roots@[5], main-roots@[6], vendor-load-roots@[7]. capture (20 fields, 20 seeds): source-prefix@[0], fixture-prefix@[1], source-path@[2], fixture-path-load@[3], fixture-path-fetched@[4], fixture-target@[5], fixture-schema@[6], timeout-first@[7], timeout-second@[8], options-split@[9], source-stable@[10], deps-stable@[11], generation-first@[12], generation-second@[13], staged-marker@[14], mutated-marker@[15], raw-evidence@[16], stale-needle@[17], stale-exit-nonzero@[18], lock-preserved@[19]. run (14 fields, 14 seeds): assert-exit@[0], assert-stderr-empty@[1], assert-report-passed@[2], assert-count@[3], assert-stdout-evidence@[4], retime-exit@[5], retime-stderr-empty@[6], stale-exit-nonzero@[7], stale-diagnostic@[8], sandbox-profile@[9], offline-path@[10], assert-flag@[11], assert-binary@[12], sandbox-tool@[13]. bad: NONE in all three files. (A first scan revision undercounted roots/run because its filter dropped variant ids containing 'assert'; the scan was fixed and the rerun above is authoritative.)"
+  },
+  {
+   "command": "D=tests/native-can/migration/m09-cli-formatter-input-and-proces; rm -rf /tmp/m09c027check && mkdir -p /tmp/m09c027check/src/roots /tmp/m09c027check/src/capture /tmp/m09c027check/src/run && cp $D/core-027-roots-green.can /tmp/m09c027check/src/roots/ && cp $D/core-027-capture-semantics.can /tmp/m09c027check/src/capture/ && cp $D/core-027-run-shape.can /tmp/m09c027check/src/run/ && printf can.project.json/can.errors.json (active sorted [m09core027capture::failed, m09core027roots::failed, m09core027run::failed]) && 3x diff && echo STAGE-IDENTICAL && go run ./compiler check --json /tmp/m09c027check",
+   "deadline": "280s",
+   "result": "STAGE-IDENTICAL (first generation): all 3 diffs empty; registry active sorted. check exit 1, accepted:false, 25 resolve errors 'no eligible declaration for \"text\"': the generator had emitted `text` as record-field and fn-param types, but Can's string type is `str` (`text` is only the helper module in uses). Landed-008 repro probe in the same session passed accepted:true/0 diagnostics, proving the defect was mine, not environment drift. Generator fixed (text->str in both emit sites), files regenerated, stray-type grep confirms zero `text` types remain, re-parse 3x17 decls exit 0."
+  },
+  {
+   "command": "Same restage (rm -rf /tmp/m09c027check, mkdir src/roots+src/capture+src/run, cp 3 files, project + sorted registry, 3x diff) then: go run ./compiler check --json /tmp/m09c027check > /tmp/m09c027check-out.json 2>/tmp/m09c027check-err.txt; python accepted/diagnostics/keys dump; wc -c stderr",
+   "deadline": "280s",
+   "result": "STAGE-IDENTICAL (fixed generation): all 3 diffs empty. check exit 0, accepted:true, diagnostics:[], first run on the fixed files. Top-level keys kind/result/schema_version/status (can.check/completed/1). Stderr capture empty (0 bytes). Slice is cancheck-clean standalone (provides include the shape types per the H023 lesson; one package per src subdirectory)."
+  },
+  {
+   "command": "rm -rf /tmp/m09c027neg && cp -r /tmp/m09c027check /tmp/m09c027neg && sed -i '' 's/^    int root_count$/    str root_count/' /tmp/m09c027neg/src/roots/core-027-roots-green.can && grep -n root_count (neg) && go run ./compiler check --json /tmp/m09c027neg; python accepted/ndiag/files/codes/sev/first dump",
+   "deadline": "280s",
+   "result": "Seed applied in neg copy only (L68 now 'str root_count'). check exit 1, accepted:false, diagnostics: 19 (19 errors), all 19 naming src/roots/core-027-roots-green.can, code CAN-CHECK, message 'expression type does not fit expected type' (first at start_line 133). Harness is non-vacuous."
+  },
+  {
+   "command": "python start_lines from /tmp/m09c027neg-out.json; grep -c '^    int root_count$' live roots file; grep -c 'str root_count' live roots file; rm -rf /tmp/m09c027neg /tmp/m09c027neg-out.json /tmp/m09c027neg-err.txt; ls /tmp/m09c027neg; ls /tmp/m09c027neg-out.json",
+   "deadline": "60s",
+   "result": "start_lines: [133-141, 143-151, 191] (observe asserts + match arms + require_int call L191). Live-tree file verified still 'int root_count' (grep count 1, str-defect count 0). /tmp/m09c027neg and captures removed after (both ls confirm absent; trailing exit 1 is the expected absent-path ls)."
+  },
+  {
+   "command": "go run ./compiler check --json /Users/vince/Projects/can-lang/tests/native-can > /tmp/m09c027-live.json 2>/tmp/m09c027-live.err; python accepted/ndiag/sev/per-diag/core-027-mentions/m09core027-mentions dump; wc -c stderr",
+   "deadline": "280s",
+   "result": "exit 0, accepted:true, diagnostics: 2 (0 errors), first run. Both are the pre-existing CAN-CHECK-STRING-MATCH-LADDER warnings in untouched src/report/reducer/reducer.can (start_line 466, 486 as reported). grep core-027: 0 matches; grep m09core027: 0 matches; stderr empty (0 bytes). Slice contributes zero live-tree diagnostics (read-only; zero live-tree writes outside owned paths)."
+  },
+  {
+   "command": "printf CAN_BUN_ARCHIVE/CAN_TSC/CAN_BUN; ls archive-or-nonexistent; ls /usr/bin/sandbox-exec; ls evidence | grep -E '^P23'; ls evidence | grep -E '^QN1'; ls evidence | grep -E '^(P15|P20|P27|P28|K17|K18)\\.json'; uname -sm; go version; ls /tmp/muse-m09c027-*",
+   "deadline": "60s",
+   "result": "CAN_BUN_ARCHIVE=<unset>; CAN_TSC=<unset>; CAN_BUN=<unset>; archive ls: 'No such file or directory'. /usr/bin/sandbox-exec present (macOS host tool). No P23 evidence file and no QN1 evidence file (both greps exit 1): accept_after P23/QN1 UNMET. Start gates satisfied: P15.json, P20.json, P27.json, P28.json, K17.json, K18.json all present. No live canlc assert attempted, no bundle build, no tsc run (broad builds deferred; execution BLOCKED, recorded not waived). Host: Darwin arm64; go1.27.1 darwin/arm64. Integrator-owned /tmp/muse-m09c027-prompt.md listed only, untouched."
+  },
+  {
+   "command": "git status --short; echo ===; git log --oneline -3",
+   "deadline": "60s",
+   "result": "Pre-evidence status: owned 3 core-027 .can files untracked (new); concurrent-lane core-020 slices (M09-C020) present, untouched by this worker; compiler/internal/emit modifications + descriptor files from other lanes present, untouched; landed CORE-008 at HEAD (8aaf69f0). Nothing staged. HEAD 8aaf69f0 test(m09): migrate CORE-008 CLI roots/semantics/run-shape to Can."
+  },
+  {
+   "command": "rm -rf /tmp/m09c027check /tmp/m09c027check-out.json /tmp/m09c027check-err.txt /tmp/m09c027-live.json /tmp/m09c027-live.err /tmp/m09c027gen.py /tmp/m09c008repro /tmp/m09c008repro-out.json; ls each absent; ls /tmp/muse-m09c027-*; ls -d /tmp/m09c027neg; git status --short",
+   "deadline": "60s",
+   "result": "Owned scratch gone: /tmp/m09c027check probe, both check captures, both live-tree captures, the /tmp/m09c027gen.py generator, and the /tmp/m09c008repro 008-repro probe + capture removed (all ls confirm absent; /tmp/m09c027neg already removed at gate c, still absent). Integrator-owned /tmp/muse-m09c027-prompt.md left untouched. Final git status shows the owned 3 core-027 .can files + this evidence file alongside concurrent-lane files, all untouched except owned paths; nothing staged, nothing committed, nothing pushed."
+  },
+  {
+   "command": "integrator independent re-verification: parse 3 files; fresh stage /tmp/m09c027check (3 diffs) + check --json; fresh neg copy (int->str root_count); combined live-tree check; dead-seed scan; Bearer/REDACTED scan; env probe",
+   "deadline": "280s",
+   "result": "parse 3x17 decls (m09core027roots/capture/run). STAGE-IDENTICAL; check exit 0 accepted:true diagnostics:[]. Neg exit 1 accepted:false 19 errors all in seeded file (matches worker-declared 19). Live-tree accepted:true, 2 pre-existing warnings, 0 mentions. Dead-seed scan clean; no Bearer/REDACTED pins. Archives unset; P23/QN1 unmet."
+  }
+ ],
+ "coverage": {
+  "case_check_ids": [
+   "capture/bundled-roots: assert-green, report-passed, root-count, fixture-name, load-helper-roots, load-consumer-roots, main-roots, vendor-load-roots (core-027-roots-green.can, package m09core027roots)",
+   "capture/bundled-capture: source-prefix, fixture-prefix, source-path, fixture-path-load, fixture-path-fetched, fixture-target, fixture-schema, timeout-first, timeout-second, options-split, source-stable, deps-stable, generation-first, generation-second, staged-marker, mutated-marker, raw-evidence, stale-needle, stale-exit-nonzero, lock-preserved (core-027-capture-semantics.can, package m09core027capture)",
+   "capture/bundled-run: assert-exit, assert-stderr-empty, assert-report-passed, assert-count, assert-stdout-evidence, retime-exit, retime-stderr-empty, stale-exit-nonzero, stale-diagnostic, sandbox-profile, offline-path, assert-flag, assert-binary, sandbox-tool (core-027-run-shape.can, package m09core027run)"
+  ],
+  "controls": [
+   "Positive: every case_body 'expected' root on the default variant yields ok (42 checks across 3 cases: 8 + 20 + 14).",
+   "Seeded defect: each of the 42 checks has its own seed refusing with the exact check id - bundled-roots: seed-assert-green-drift -> failed{assert-green}; seed-report-passed-drift -> failed{report-passed}; seed-root-count-drift -> failed{root-count}; seed-fixture-name-drift -> failed{fixture-name}; seed-load-helper-roots-drift -> failed{load-helper-roots}; seed-load-consumer-roots-drift -> failed{load-consumer-roots}; seed-main-roots-drift -> failed{main-roots}; seed-vendor-load-roots-drift -> failed{vendor-load-roots}. bundled-capture: seed-source-prefix-drift -> failed{source-prefix}; seed-fixture-prefix-drift -> failed{fixture-prefix}; seed-source-path-drift -> failed{source-path}; seed-fixture-path-load-drift -> failed{fixture-path-load}; seed-fixture-path-fetched-drift -> failed{fixture-path-fetched}; seed-fixture-target-drift -> failed{fixture-target}; seed-fixture-schema-drift -> failed{fixture-schema}; seed-timeout-first-drift -> failed{timeout-first}; seed-timeout-second-drift -> failed{timeout-second}; seed-options-split-drift -> failed{options-split}; seed-source-stable-drift -> failed{source-stable}; seed-deps-stable-drift -> failed{deps-stable}; seed-generation-first-drift -> failed{generation-first}; seed-generation-second-drift -> failed{generation-second}; seed-staged-marker-drift -> failed{staged-marker}; seed-mutated-marker-drift -> failed{mutated-marker}; seed-raw-evidence-drift -> failed{raw-evidence}; seed-stale-needle-drift -> failed{stale-needle}; seed-stale-exit-nonzero-drift -> failed{stale-exit-nonzero}; seed-lock-preserved-drift -> failed{lock-preserved}. bundled-run: seed-assert-exit-drift -> failed{assert-exit}; seed-assert-stderr-empty-drift -> failed{assert-stderr-empty}; seed-assert-report-passed-drift -> failed{assert-report-passed}; seed-assert-count-drift -> failed{assert-count}; seed-assert-stdout-evidence-drift -> failed{assert-stdout-evidence}; seed-retime-exit-drift -> failed{retime-exit}; seed-retime-stderr-empty-drift -> failed{retime-stderr-empty}; seed-stale-exit-nonzero-drift -> failed{stale-exit-nonzero}; seed-stale-diagnostic-drift -> failed{stale-diagnostic}; seed-sandbox-profile-drift -> failed{sandbox-profile}; seed-offline-path-drift -> failed{offline-path}; seed-assert-flag-drift -> failed{assert-flag}; seed-assert-binary-drift -> failed{assert-binary}; seed-sandbox-tool-drift -> failed{sandbox-tool}.",
+   "Missing evidence: seed-root-count-drift (3/4 roots) -> failed{root-count}; per-function loss seeds (load-helper/load-consumer/main/vendor-load 0/1) -> failed at their -roots gate; short counts (generation-first 0/1, generation-second 1/2, assert-count 3/4) and flipped exits/bools -> failed at their gates; drifted texts (fetched fixture name, v2 prefixes, alternate paths/target/schema, truncated base64 markers, mock evidence, hash needle, truncated sandbox profile, /usr/bin PATH, short flag/binary/tool names) -> failed at their text gates. Each refuses at its count/text gate rather than passing vacuously.",
+   "Dead-seed scan: every seed arm's observation tuple programmatically diffed against the default arm; all 42 seeds differ in exactly one field (their target field); bad: NONE in all three files. Full per-seed diff indices recorded in the commands above.",
+   "Controls are authored as Can assert roots and typecheck (0-error cancheck); live execution of the asserts needs P23 + an execution leg, so no execution credit is claimed here."
+  ],
+  "retained_facets": [
+   "Four assertion roots with raw-provider-fixture evidence and timeout policy; independently length-framed lock digest binds vendor source and raw fixture trees (protects 1; input_capture_test.go L24-44 digest format, L99-L118 staged sources/fixtures, L114-130 lock, L164-187 first run + one generation): 4 roots (root 3 + vendor 1) with passed=true, raw-provider-fixture in the report, timeoutMs 5000; source prefix can-source-tree-v1 over lib.can, fixture prefix can-fixture-tree-v1 over src/fixtures/load.json + src/fixtures/fetched.json; fixture schema can.native-fixture.v1 targeting can.project.dependency/vendor/helpers::load.",
+   "Timeout-only 5000->6000 change yields a new options identity with unchanged source/dependency identity and a second staged generation (protects 2; input_capture_test.go L189-211): timeout-first 5000, timeout-second 6000, options-split true, source-stable true, deps-stable true, generation-first 1, generation-second 2.",
+   "Staged modules carry captured raw response bytes; fixture-only dependency change rejects as stale digest without rewriting the lock (protects 3; input_capture_test.go L213-245): staged marker eyJjb3VudCI6N30= embedded in staged .ts, mutated marker eyJjb3VudCI6OH0= after the edit, stale-needle 'stale dependency digest' with nonzero exit, lock bytes preserved.",
+   "Production process shape (observes; input_capture_test.go L74-80, L164-177, L191-194, L238-241): assert path exits 0 with empty stderr, report passed with 4 assertions and the raw-evidence needle; retime path exits 0 with empty stderr; stale path exits nonzero with the stale diagnostic; invocation pins the full localhost-outbound sandbox profile, PATH=/nonexistent, --assert-timeout-ms, bin/canlc assert, and /usr/bin/sandbox-exec verbatim.",
+   "Observes: canlc assert JSON/timeout/evidence (report flag, count, raw needle, timeoutMs identity split); independently computed source and fixture lock digests (prefix + path pins); staged manifest input identities and emitted fixture byte marker; rejection diagnostic and unchanged lock. Full report JSON beyond passed/count/timeout/evidence is unpinned by Go and stays unpinned here (adaptation).",
+   "Variants: timeout 5000 and 6000 (both pinned); fixture bytes before (staged-marker) and after mutation (mutated-marker). Environment: requires can-bun-archive + macos-sandbox-exec; 240000ms timeout mirroring the Go 4-minute ctx (L52).",
+   "Delegated oracles: none (coverage-map delegated_oracles empty; no DELEGATE entry referenced)."
+  ],
+  "unrun_or_blocked": [
+   "Live execution of the new Can asserts (canlc assert over the staged capture project): BLOCKED - CAN_BUN_ARCHIVE unset in this session (probe recorded above); accept gates P23/QN1 unmet, so no execution credit claimed or attempted; no bundles, no live assert, no R/N qualification.",
+   "Staged capture runs (5000 assert, 6000 retime, stale rejection via sandboxed canlc assert): BLOCKED - archive unset; all 42 pins are static Can expectations only.",
+   "Lock digest cross-check observation (independent length-framed digests vs compiler digests) and staged-manifest identity/generation observation: BLOCKED - needs CAN_BUN_ARCHIVE execution; pinned as static references only.",
+   "Environment-gated legs (CAN_BUN_ARCHIVE execution, macOS sandbox-exec runs): BLOCKED/CONDITIONAL - archive unset; pinned as requires can-bun-archive + macos-sandbox-exec on every descriptor, never waived; the present /usr/bin/sandbox-exec host tool alone authorizes no live run.",
+   "Mandatory offline checks with R + new suite/artifact S/A binding (suite_snapshot_acceptance): DEFERRED to P23 - R bundle not built/used here; identities identified below, not bound.",
+   "tests/native-can project cancheck delta from this slice: none - slice lives outside the src/ source root (M32 precedent); live-tree run shows only the 2 pre-existing reducer warnings with zero core-027/m09core027 mentions."
+  ]
+ },
+ "deletion_policy": "No shared old file is deleted by this slice. tests/integration/input_capture_test.go stays intact per its delete_when gates (every protected behavior, observation, variant, negative control and required environment reproduced with independent qualification evidence and callers rewired first); retirement_eligible=false; retirement is a later integrator decision. Nothing proposed for deletion.",
+ "executor": "worker M09-C027",
+ "identities": {
+  "artifact": "N/A: no built executable promoted; no live run, so no artifact identity to bind (P23 scope).",
+  "candidate": "N/A: no candidate executed; Can asserts are static/type-level only (provisional until P23, like P15-P17).",
+  "host_profile": "Darwin arm64; go1.27.1 darwin/arm64 (observed via uname/go version this session).",
+  "observer": "go run ./compiler check --json output (accepted flag + diagnostic counts/files/lines/codes) recorded verbatim in commands above.",
+  "owner": "N/A as an N artifact; this slice exercises no N admission path.",
+  "reference": "R-seed scope identified per docs/implementation/native-can-tests-plan-2026-09-30/reference-seed.md (R-core/P26 and suite acceptance/P23 unfinished). No R bundle built or used in this session; mandatory R checks deferred to P23.",
+  "suite": "3 standalone Can packages under the owned prefix (m09core027roots, m09core027capture, m09core027run); uses [text] only; self-contained local shapes mirroring spec:: equivalents; S identity binding deferred to P23 (no execution credit)."
+ },
+ "limitations": [
+  "Static-only verification: parse + 0-error cancheck (standalone) + non-vacuous negative control + live-tree attribution + authored (unexecuted) Can assert controls + dead-seed diff scan. Assert bodies are unaudited by execution; P23 qualification + an execution leg must bind before any execution credit.",
+  "Slice packages avoid uses [spec] (outside the src/ source root, M32 precedent); at P23 the local test_case/check/evidence shapes map onto spec:: equivalents.",
+  "Slice follows the H023 provides shape on purpose: provides includes the shape types (context/check/evidence/observation/failed/test_case) because cancheck rejects exported signatures over private types.",
+  "Count/text pins mirror the checked-in sources verbatim (4 roots 3+1 with per-function 1/1/1/1, 'fixtures/load.json', digest prefixes, digested paths, fixture target/schema, 5000/6000, generations 1/2, both base64 markers, 'raw-provider-fixture', 'stale dependency digest', exits 0/nonzero, the full localhost-outbound sandbox profile, 'PATH=/nonexistent', '--assert-timeout-ms', 'bin/canlc', '/usr/bin/sandbox-exec'); if the Go test ever changes them, these pins move with it at migration-update time. Every pin byte-verified with grep -c/od/md5 before writing; no literal [REDACTED] in any pin.",
+  "Roots-green adaptation (documented): the load_helper when-table rows (sample/direct at L99) are call routing rows, not assert roots, and the vendor fixture cases (L102) are fixture data, not assert roots, per the CORE-008/014 precedent; the 4-root total matches the Go report length pin (L169).",
+  "Run-shape adaptation (documented, CORE-014/019/040 precedent): the assert entry emits its JSON report on stdout by design (L168-177), so this row has no silent (exit 0, empty stdout, empty stderr) production path; the stdout facts are pinned (report flag, count, raw needle) and silence pins land where silence holds (assert-stderr-empty, retime-stderr-empty). Retime stdout is unpinned because Go checks only status/diag (L191-194); stale stdout is unpinned because Go discards it (L238); stale exit is a nonzero bool pin because Go pins no exact code (L239); the full report JSON beyond passed/count/timeout/evidence is unpinned (L169-177).",
+  "Exit codes are observed evidence only: the int/bool checks pin the Go predicates (exit 0, nonzero stale exit, passed flags, empty-stderr facts) without over-pinning runner internals or full-output equality.",
+  "Environment-gated legs (CAN_BUN_ARCHIVE execution, macOS sandbox-exec runs) are recorded blocked/conditional with probes above, never waived; the present /usr/bin/sandbox-exec host tool alone authorizes no live run.",
+  "M09-C020/C028 run concurrently per the row card: no sibling-worker file was read for content, written, or staged by this worker; the owned m09 directory additions by this worker are only this row's 3 files."
+ ],
+ "resource_and_cleanup_receipts": [
+  "No live runs, no R-seed use, no bundles built, no tsc run, no network, no persistent caches (default GOCACHE only; no temp cache created).",
+  "No repo writes outside the owned prefix + this evidence file; shared old files untouched; tests/integration/ untouched; nothing staged, nothing committed, nothing pushed.",
+  "/tmp/m09c027check (probe project, diff-verified identical) removed after gates with its check captures; /tmp/m09c027neg (negative control) and its captures removed after firing at gate c; /tmp/m09c027-live.json/.err (live-tree output) removed; /tmp/m09c027gen.py (deterministic file generator) removed; /tmp/m09c008repro probe + capture (landed-008 control proving the text/str defect was mine) removed; ls confirms none remain. Integrator-owned /tmp/muse-m09c027-prompt.md left untouched.",
+  "No EMFILE or infrastructure failure in this session; all gates ran to completion."
+ ],
+ "retirement_eligible": false,
+ "reviewer_disposition": "Integrator accepted 2026-10-01: worker gates independently reproduced (parse, staged accepted:true, neg 19 exact-match, counts 8+20+14=42 confirmed, attribution clean, no dead seeds). No execution credit (P23/QN1 unmet); retirement_eligible=false, old harness retained.",
+ "row_or_file_slice": "CORE-027",
+ "status": "complete",
+ "task_id": "M09",
+ "writing_owner": "migration-history"
+}
