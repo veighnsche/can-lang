@@ -1,0 +1,144 @@
+package m27history024provenance
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M27 HISTORY-024 "owner-negative fails closed: report shape and failure provenance".
+/// Source: tests/failure-conventions/owner_test.go symbol TestOwnerNegativeFailsClosed
+/// plus harness assertOutcome/assertReport (tests/failure-conventions/harness_test.go).
+/// Related fixtures: tests/failure-conventions/owner-negative/ (asserted project).
+/// Disposition: RETAIN. The tainted leg observes the assert outcome (nonzero exit,
+/// decoded report present, report not passed): the suite fails rather than passing
+/// with a rejecting factory input.
+/// Protects (this file): exit-nonzero, report-present, report-failed pins.
+/// Per-root isolation (only the tainted row fails) lives in
+/// history-024-roots-fails-closed.can; the two located fault frames live in
+/// history-024-fault-frames.can.
+/// Variants: tainted owner project only. Green-setup (023), forged-owner (025),
+/// sneak (026) and repair (027) variants are other rows, not this one.
+/// Environment: CONV_BUNDLE or CAN_BUN_ARCHIVE; requires
+/// conv-bundle-or-can-bun-archive. Logical gates SUITE/DIAG/FAULT and C/R/N/S/A
+/// identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case owner-negative/report-provenance checks: exit-nonzero, report-present,
+/// report-failed.
+/// Facet map: exit-nonzero pins the Go `Status != 0` predicate without
+/// over-pinning an exact code (exit_code stays observed evidence);
+/// report-present pins a decoded can.assertion-report on stdout (Report != nil);
+/// report-failed pins the decoded report Passed flag false.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int exit_code
+    bool exit_nonzero
+    bool report_present
+    bool report_passed
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("owner-negative/report-provenance", "default", "", "offline"), "exit-nonzero" => ok "case owner-negative/report-provenance variant default root exit-nonzero run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("owner-negative/report-provenance", "default", "", "offline"), "report-present" => ok evidence("report-present", "true", "true", true, "case owner-negative/report-provenance variant default root report-present run offline")
+        different: false, true, context("owner-negative/report-provenance", "default", "", "offline"), "report-present" => failed{"report-present"}
+        same_false: false, false, context("owner-negative/report-provenance", "default", "", "offline"), "report-failed" => ok evidence("report-failed", "false", "false", true, "case owner-negative/report-provenance variant default root report-failed run offline")
+        different_false: true, false, context("owner-negative/report-provenance", "default", "", "offline"), "report-failed" => failed{"report-failed"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(1, true, true, false)
+        seed_suite_passed: "seed-suite-passed" => ok observation(0, false, true, true)
+        seed_report_missing: "seed-report-missing" => ok observation(1, true, false, false)
+        seed_report_passed: "seed-report-passed" => ok observation(1, true, true, true)
+    match variant_id
+        "seed-suite-passed" => ok observation(0, false, true, true)
+        "seed-report-missing" => ok observation(1, true, false, false)
+        "seed-report-passed" => ok observation(1, true, true, true)
+        _ => ok observation(1, true, true, false)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m27_024: "m27-024" => ok [check("exit-nonzero", "canlc assert exits nonzero"), check("report-present", "decoded assert report present on stdout"), check("report-failed", "decoded assert report not passed")]
+        other: "nope" => ok []
+    match scope is "m27-024"
+        false => ok []
+        true => ok [check("exit-nonzero", "canlc assert exits nonzero"), check("report-present", "decoded assert report present on stdout"), check("report-failed", "decoded assert report not passed")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "owner-negative/report-provenance" => ok [expected_check("exit-nonzero", "true"), expected_check("report-present", "true"), expected_check("report-failed", "false")]
+        unknown: "nope" => ok []
+    match case is "owner-negative/report-provenance"
+        false => ok []
+        true => ok [expected_check("exit-nonzero", "true"), expected_check("report-present", "true"), expected_check("report-failed", "false")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("owner-negative/report-provenance", "default", "", "offline") => ok
+        seed_suite_passed: context("owner-negative/report-provenance", "seed-suite-passed", "", "offline") => failed{"exit-nonzero"}
+        seed_report_missing: context("owner-negative/report-provenance", "seed-report-missing", "", "offline") => failed{"report-present"}
+        seed_report_passed: context("owner-negative/report-provenance", "seed-report-passed", "", "offline") => failed{"report-failed"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.exit_nonzero, true, c, "exit-nonzero")
+            failed
+            ok evidence exit_evidence => match call require_bool(got.report_present, true, c, "report-present")
+                failed
+                ok evidence present_evidence => match call require_bool(got.report_passed, false, c, "report-failed")
+                    failed
+                    ok evidence failed_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m27_024: "m27-024" => ok test_case("owner-negative/report-provenance", ["owner", "m27", "tainted"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("exit-nonzero"), check_ref("report-present"), check_ref("report-failed")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m27-024"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("owner-negative/report-provenance", ["owner", "m27", "tainted"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("exit-nonzero"), check_ref("report-present"), check_ref("report-failed")], callable case_body)

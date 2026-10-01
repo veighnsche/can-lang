@@ -1,0 +1,173 @@
+package m27history024frames
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M27 HISTORY-024 "owner-negative fails closed: two located fault frames".
+/// Source: tests/failure-conventions/owner_test.go symbol TestOwnerNegativeFailsClosed
+/// plus the trapLine helper (owner_test.go:31-44).
+/// Related fixtures: tests/failure-conventions/owner-negative/src/handler/handler.can.
+/// Disposition: RETAIN. The tainted row fails with a located standard fault: its
+/// entry carries exactly 2 frames, the first at the arithmetic trap span and the
+/// second at the tainted input site.
+/// Protects (this file): frame-count 2; first frame file handler/handler.can,
+/// operation binary, line of the `1 / 0` trap expression; second frame file
+/// handler/handler.can, operation call.
+/// Per-root isolation (only the tainted row fails) lives in
+/// history-024-roots-fails-closed.can; report shape and failure provenance live
+/// in history-024-report-provenance.can.
+/// Variants: tainted owner project only. Green-setup (023), forged-owner (025),
+/// sneak (026) and repair (027) variants are other rows, not this one.
+/// Environment: CONV_BUNDLE or CAN_BUN_ARCHIVE; requires
+/// conv-bundle-or-can-bun-archive. Logical gates SUITE/DIAG/FAULT and C/R/N/S/A
+/// identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case owner-negative/fault-frames checks: frame-count, first-file, first-op,
+/// first-line, second-file, second-op.
+/// Facet map: frame-count pins the 2-frame entry; first-file/first-op/first-line
+/// pin the trap span (handler/handler.can, binary, line 49: the trapLine() scan
+/// result for `1 / 0` in the checked-in owner-negative fixture; the pin moves
+/// with the fixture if the trap ever moves); second-file/second-op pin the
+/// tainted input site (handler/handler.can, call). The second frame line is
+/// deliberately unpinned: the Go test does not pin it either (owner_test.go:80).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int frame_count
+    str first_file
+    str first_op
+    int first_line
+    str second_file
+    str second_op
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("owner-negative/fault-frames", "default", "", "offline"), "frame-count" => ok "case owner-negative/fault-frames variant default root frame-count run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("owner-negative/fault-frames", "default", "", "offline"), "frame-count" => ok evidence("frame-count", "2", "2", true, "case owner-negative/fault-frames variant default root frame-count run offline")
+        different: 1, 2, context("owner-negative/fault-frames", "default", "", "offline"), "frame-count" => failed{"frame-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "binary", "binary", context("owner-negative/fault-frames", "default", "", "offline"), "first-op" => ok evidence("first-op", "binary", "binary", true, "case owner-negative/fault-frames variant default root first-op run offline")
+        different: "call", "binary", context("owner-negative/fault-frames", "default", "", "offline"), "first-op" => failed{"first-op"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(2, "handler/handler.can", "binary", 49, "handler/handler.can", "call")
+        seed_frame_short: "seed-frame-short" => ok observation(1, "handler/handler.can", "binary", 49, "", "")
+        seed_first_op_drift: "seed-first-op-drift" => ok observation(2, "handler/handler.can", "call", 49, "handler/handler.can", "call")
+        seed_first_line_drift: "seed-first-line-drift" => ok observation(2, "handler/handler.can", "binary", 1, "handler/handler.can", "call")
+        seed_second_op_drift: "seed-second-op-drift" => ok observation(2, "handler/handler.can", "binary", 49, "handler/handler.can", "binary")
+        seed_file_missing: "seed-file-missing" => ok observation(2, "", "binary", 49, "handler/handler.can", "call")
+    match variant_id
+        "seed-frame-short" => ok observation(1, "handler/handler.can", "binary", 49, "", "")
+        "seed-first-op-drift" => ok observation(2, "handler/handler.can", "call", 49, "handler/handler.can", "call")
+        "seed-first-line-drift" => ok observation(2, "handler/handler.can", "binary", 1, "handler/handler.can", "call")
+        "seed-second-op-drift" => ok observation(2, "handler/handler.can", "binary", 49, "handler/handler.can", "binary")
+        "seed-file-missing" => ok observation(2, "", "binary", 49, "handler/handler.can", "call")
+        _ => ok observation(2, "handler/handler.can", "binary", 49, "handler/handler.can", "call")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m27_024: "m27-024" => ok [check("frame-count", "tainted entry carries exactly 2 located frames"), check("first-file", "first frame locates handler/handler.can"), check("first-op", "first frame faults at the binary trap operation"), check("first-line", "first frame line is the 1 / 0 trap line"), check("second-file", "second frame locates handler/handler.can"), check("second-op", "second frame is the tainted call-site call")]
+        other: "nope" => ok []
+    match scope is "m27-024"
+        false => ok []
+        true => ok [check("frame-count", "tainted entry carries exactly 2 located frames"), check("first-file", "first frame locates handler/handler.can"), check("first-op", "first frame faults at the binary trap operation"), check("first-line", "first frame line is the 1 / 0 trap line"), check("second-file", "second frame locates handler/handler.can"), check("second-op", "second frame is the tainted call-site call")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "owner-negative/fault-frames" => ok [expected_check("frame-count", "2"), expected_check("first-file", "handler/handler.can"), expected_check("first-op", "binary"), expected_check("first-line", "49"), expected_check("second-file", "handler/handler.can"), expected_check("second-op", "call")]
+        unknown: "nope" => ok []
+    match case is "owner-negative/fault-frames"
+        false => ok []
+        true => ok [expected_check("frame-count", "2"), expected_check("first-file", "handler/handler.can"), expected_check("first-op", "binary"), expected_check("first-line", "49"), expected_check("second-file", "handler/handler.can"), expected_check("second-op", "call")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("owner-negative/fault-frames", "default", "", "offline") => ok
+        seed_frame_short: context("owner-negative/fault-frames", "seed-frame-short", "", "offline") => failed{"frame-count"}
+        seed_first_op_drift: context("owner-negative/fault-frames", "seed-first-op-drift", "", "offline") => failed{"first-op"}
+        seed_first_line_drift: context("owner-negative/fault-frames", "seed-first-line-drift", "", "offline") => failed{"first-line"}
+        seed_second_op_drift: context("owner-negative/fault-frames", "seed-second-op-drift", "", "offline") => failed{"second-op"}
+        seed_file_missing: context("owner-negative/fault-frames", "seed-file-missing", "", "offline") => failed{"first-file"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.frame_count, 2, c, "frame-count")
+            failed
+            ok evidence count_evidence => match call require_text(got.first_file, "handler/handler.can", c, "first-file")
+                failed
+                ok evidence first_file_evidence => match call require_text(got.first_op, "binary", c, "first-op")
+                    failed
+                    ok evidence first_op_evidence => match call require_int(got.first_line, 49, c, "first-line")
+                        failed
+                        ok evidence first_line_evidence => match call require_text(got.second_file, "handler/handler.can", c, "second-file")
+                            failed
+                            ok evidence second_file_evidence => match call require_text(got.second_op, "call", c, "second-op")
+                                failed
+                                ok evidence second_op_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m27_024: "m27-024" => ok test_case("owner-negative/fault-frames", ["owner", "m27", "tainted"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("frame-count"), check_ref("first-file"), check_ref("first-op"), check_ref("first-line"), check_ref("second-file"), check_ref("second-op")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m27-024"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("owner-negative/fault-frames", ["owner", "m27", "tainted"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("frame-count"), check_ref("first-file"), check_ref("first-op"), check_ref("first-line"), check_ref("second-file"), check_ref("second-op")], callable case_body)
