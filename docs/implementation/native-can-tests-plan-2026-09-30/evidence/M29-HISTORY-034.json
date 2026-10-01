@@ -1,0 +1,133 @@
+{
+  "changed_paths": [
+    "docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-HISTORY-034.json",
+    "tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-034-cache-semantics.can",
+    "tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-034-roots-green.can",
+    "tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-034-run-shape.can"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "python3 /tmp/m29h034scratch/gen.py && go run ./compiler parse <each of the 3 owned slices>",
+      "deadline": "280s",
+      "result": "Generator emitted the 3 owned slices deterministically (semantics 290 lines/18 checks/25997 bytes md5 7e3feb042931ed81f53ff5200fece766; roots 306 lines/20 checks/33435 bytes md5 5cac8c119f7e47e64be21a82282efe44; run 323 lines/22 checks/39940 bytes md5 36dcb85911a6218701280080b26971c9). Parse exit 0 each: m29history034cache 17 declarations; m29history034roots 17 declarations; m29history034run 17 declarations (17 = 8 shapes + 9 fns: selector/require_bool/require_int/require_text/observe/checks/expected_vector/case_body/descriptor, matching HISTORY-008). Generator asserts str/int/bool-only spec types plus ASCII and refuses the substring 'text' in every spec string, so no text->str bug can ship. No fix-and-regenerate needed: first emitted content passed every gate below."
+    },
+    {
+      "command": "grep -c '^    text ' <each owned slice>; bare-text scan minus uses-text/text::-require_text/context allowlist; grep -c postgres://; grep -c -i redacted; grep -n -i 'password|passwd|secret|Bearer|token' (mine only); python3 non-ASCII scan",
+      "deadline": "60s",
+      "result": "Vocabulary control: '^    text ' count 0 on all 3 files (record/given types are str/int/bool only; text appears solely as uses [text] plus the text:: package qualifier and context/require_text identifiers, matching HISTORY-008). Bare-text scan: clean (grep exit 1, zero stray lines). postgres:// 0 per file. redacted (case-insensitive): 0 on all 3 files (this row has no redactor; grep over both sources also finds zero 'redact', so no sanitizer-placeholder literals exist here). Secret scan on owned files: clean (grep exit 1). Non-ASCII bytes: 0 per file."
+    },
+    {
+      "command": "python3 /tmp/m29h034scratch/byttruth.py (51 exact-count needles + 22 structural line checks + decoded-pin byte-presence + vocab/secret re-assert + source md5 locks)",
+      "deadline": "60s",
+      "result": "BYTTRUTH CLEAN, exit 0. cache_test.go md5 fbe704b58239864698466f2b600bf8d2 (4626 bytes): range L40-65 Open(parent) x2, .Close() x3, os.Stat x3, t.Fatalf x3, t.Fatal( x3, IsNotExist x1, TempDir x1, firstPath x2, second.Path x1, os.IsNotExist x1, err-nil x5, negated-gone x1, defer x2, t.Fatal(err) x3, defer-first/second x1 each, capture x1, three stat legs x1 each, first/second Close x2/x1, t.TempDir() x1, parent x5, first x6, second x3, Path x4, %v x3; whole-file func x1, TempDir x5, Open(parent) x2, Stat x6, IsNotExist x2, three diags x1 each, Fatalf x9, negated-gone x2, parent x26. cache.go md5 839fe3c2b1398a31feb0cae97d0f601b (7534 bytes): prefix/marker/lease/schema x1 each, 0755 x1, 0600 x2, recoveryLimit-16 x1, Close-sig x1, nil-guard x1, IsNotExist(statErr) x1, SameFile x3, replaced-diag x1, RemoveAll-Path x1, Path-clear x1, Join-lease-Close x1, Open-sig x1, MkdirTemp x1, MkdirAll-0755 x1. Structural: test L1/L40/L41/L42/L46/L47/L51/L52/L53/L56/L57/L59/L60/L62/L63, impl L21/L22/L23/L24/L30/L100/L112. Decoded default-arm str pins: all 36 byte-present in their designated sources (3 sem in test, 17 roots in test/either/impl, 16 run in test/impl as mapped)."
+    },
+    {
+      "command": "python3 /tmp/m29h034scratch/deadseed.py (extracts every ok observation(...) tuple from observe asserts AND match arms; diffs each seed against expected; checks assert/arm parity, spec-value equality and type-default separation)",
+      "deadline": "60s",
+      "result": "CLEAN, exit 0: semantics 19 assert tuples + 19 match arms at 18 fields; roots 21 + 21 at 20 fields; run 23 + 23 at 22 fields. All 60 seeds differ from the expected tuple in exactly one field, always the seed's target field with no type change; every assert tuple is byte-identical to its match arm (including the default arm); every expected value equals its generator spec pin; every tuple differs from the type-default tuple. Dead-seed counts: semantics 18, roots 20, run 22 (sum 60). Full per-seed diff table in coverage.controls."
+    },
+    {
+      "command": "D=tests/native-can/migration/m29-cache-ownership-reuse-recovery; rm -rf /tmp/m29h034check && mkdir -p /tmp/m29h034check/src/{cache,roots,run} && cp $D/history-034-*.can (one package per subdir) && cp tests/native-can/can.project.json + printf can.errors.json active [m29history034cache::failed, m29history034roots::failed, m29history034run::failed] && 3x diff && python3 sorted-check && echo STAGE-IDENTICAL",
+      "deadline": "60s",
+      "result": "STAGE-IDENTICAL: all 3 diffs empty (absolute probe paths /Users/vince/Projects/can-lang/... vs /tmp/m29h034check/src/...). Registry active byte-sorted: [m29history034cache::failed, m29history034roots::failed, m29history034run::failed]."
+    },
+    {
+      "command": "go run ./compiler check --json /tmp/m29h034check > /tmp/m29h034check-out.json 2>/tmp/m29h034check-err.txt; python3 print keys/accepted/diagnostics/status/kind/schema; wc stderr capture",
+      "deadline": "280s",
+      "result": "exit 0, accepted:true, diagnostics:[], first run on final content (parse + vocab + dead-seed + byte-truth all clean before this run; no fix-and-regenerate at any point). Top-level keys kind/result/schema_version/status (can.check/completed/1). Stderr capture empty (0 bytes). Slice is cancheck-clean standalone (provides include the shape types per the H023 lesson; one package per src subdirectory; uses [text] only)."
+    },
+    {
+      "command": "rm -rf /tmp/m29h034neg && cp -r /tmp/m29h034check /tmp/m29h034neg && sed -i '' 's/^    int tempdir_count$/    str tempdir_count/' /tmp/m29h034neg/src/run/history-034-run-shape.can && go run ./compiler check --json /tmp/m29h034neg > captures; python3 print accepted/ndiag/files/codes/severities/messages/locations",
+      "deadline": "280s",
+      "result": "Seed applied in neg copy only (grep L107 now 'str tempdir_count'). check exit 1, accepted:false, diagnostics: 47 (47 errors), all 47 naming src/run/history-034-run-shape.can, code CAN-CHECK, message 'expression type does not fit expected type'. Locations (checker start_line, 0-based offset as in HISTORY-008): L172-194 (23 observe asserts) + L196-218 (23 match arms) + L300 (1 case_body require_int call site) = 47, all unique, verified exactly equal to the predicted line sets. Grep lines are +1 (asserts L173-195, arms L197-219, call L301). Arithmetic: (22 run dead-seeds + 1) asserts + (22 + 1) arms + 1 call site = 47, consistent with the per-file dead-seed counts. Harness is non-vacuous. Stderr capture 14 bytes ('exit status 1')."
+    },
+    {
+      "command": "grep -c '^    int tempdir_count$' live file; grep -c 'str tempdir_count' live file; rm -rf /tmp/m29h034neg + captures; ls (verify absent)",
+      "deadline": "60s",
+      "result": "Live file intact: '^    int tempdir_count' count 1, 'str tempdir_count' count 0 (mutation never touched the owned file). /tmp/m29h034neg plus both captures removed; ls confirms absent."
+    },
+    {
+      "command": "go run ./compiler check --json /Users/vince/Projects/can-lang/tests/native-can > /tmp/m29h034-live.json 2>/tmp/m29h034-live.err; python3 print accepted/ndiag/sev/each diagnostic/m29history034+history-034+history-019+history-021 mentions; wc stderr",
+      "deadline": "280s",
+      "result": "exit 0, accepted:true, diagnostics: 2 (0 errors, 2 warnings), first run, no retry needed. Both are the pre-existing CAN-CHECK-STRING-MATCH-LADDER warnings in untouched src/report/reducer/reducer.can (start_line 466, 486; same baseline as M25). m29history034 mentions: 0; history-034 mentions: 0; m26history019 mentions: 0; history-019 mentions: 0; m26history021 mentions: 0; history-021 mentions: 0; stderr empty (0 bytes). Slice contributes zero live-tree diagnostics (migration/ lives outside the src/ source root like HISTORY-008). No transient concurrent-worker diagnostics appeared, so no 60s retry was needed. Concurrent state observed but never touched: HEAD 0e5a9fe1 feat(m26) HISTORY-021 plus muse-resume.md modification."
+    },
+    {
+      "command": "printf CAN_TEST_POSTGRES_URL + CAN_TEST_MYSQL_URL + CAN_TEST_SQLITE_URL + CAN_BUN_ARCHIVE presence; ls evidence | grep -E '^(P15|P28|P27|K17|P20).json'; ls evidence | grep -E '^(P23|QD1|QF1)'; uname -sm; go version",
+      "deadline": "60s",
+      "result": "CAN_TEST_POSTGRES_URL=<unset>; CAN_TEST_MYSQL_URL=<unset>; CAN_TEST_SQLITE_URL=<unset>; CAN_BUN_ARCHIVE=<unset>. Nothing contacted; no database, no network, no live run attempted; no cache dirs created or deleted (offline check acceptance only; filesystem mutation confined to /tmp scratch plus owned paths). Start gates satisfied: P15.json, P28.json, P27.json, K17.json, P20.json all present. No P23/QD1/QF1 evidence file (grep exit 1): accept_after P23 UNMET. Host: Darwin arm64; go1.27.1 darwin/arm64."
+    },
+    {
+      "command": "git status --short; git log --oneline -1",
+      "deadline": "60s",
+      "result": "Pre-existing state untouched: docs/.../muse-resume.md modification (not mine). Concurrent state untouched: HEAD 0e5a9fe1 feat(m26): migrate HISTORY-021 SQLite seed fixture to native Can (m26 history-019/history-021 files live in a different directory, never touched). m29 history-035/036 triples appeared in the same directory at 18:45 during this run, never touched (ls only at final verification). Mine: 3 owned history-034 .can files untracked under tests/.../m29-cache-ownership-reuse-recovery/; this evidence file added after. Nothing staged. Nothing committed, nothing pushed (read-only rule for history)."
+    },
+    {
+      "command": "rm -rf /tmp/m29h034check /tmp/m29h034check-out.json /tmp/m29h034check-err.txt /tmp/m29h034-live.json /tmp/m29h034-live.err /tmp/m29h034scratch; ls each (verify absent); ls /tmp/m29h034* (verify absent); git status --short (final)",
+      "deadline": "60s",
+      "result": "All /tmp/m29h034* scratch removed (probe project with its check captures, live-tree captures, generator + audit scripts); every ls confirms absent and ls /tmp/m29h034* is empty. Final git status shows only this worker's 3 owned .can files plus this evidence file as new paths (plus the pre-existing muse-resume.md modification, never touched); nothing staged, committed, or pushed."
+    }
+  ],
+  "coverage": {
+    "case_check_ids": [
+      "history/cache-close-semantics: owned-gone, concurrent-kept, parent-kept, close-ok, owned-diag, concurrent-diag, parent-diag, open-count, close-sites, explicit-close, defer-close, stat-count, fatalf-count, fatal-count, cache-count, total-legs, not-exist-legs, err-nil-legs (history-034-cache-semantics.can, package m29history034cache)",
+      "history/cache-close-roots: pkg-name, func-name, tempdir-op, open-op, close-op, path-field, stat-op, is-not-exist-op, lstat-op, remove-all-op, same-file-op, cache-prefix, marker-name, lease-name, schema-name, mkdir-mode, file-mode, recovery-limit, cache-field-count, nil-close-ok (history-034-roots-green.can, package m29history034roots)",
+      "history/cache-close-run: parent-var, first-var, second-var, first-path-var, tempdir-call, open-call, defer-first, defer-second, capture-leg, first-stat-leg, first-stat-pred, second-stat-leg, third-stat-leg, fatal-call, fatalf-op, replace-diag, tempdir-count, err-guard-count, func-line-count, verb-count, defer-before-capture, close-before-stats (history-034-run-shape.can, package m29history034run)"
+    ],
+    "controls": [
+      "Positive: every case_body 'expected' root on the default variant yields ok (60 checks across 3 cases: 18 + 20 + 22).",
+      "Seeded defect: each of the 60 checks has its own seed refusing with the exact check id - sem: seed-owned-gone-drift -> failed{owned-gone}; seed-concurrent-kept-drift -> failed{concurrent-kept}; seed-parent-kept-drift -> failed{parent-kept}; seed-close-ok-drift -> failed{close-ok}; seed-owned-diag-drift -> failed{owned-diag}; seed-concurrent-diag-drift -> failed{concurrent-diag}; seed-parent-diag-drift -> failed{parent-diag}; seed-open-count-drift -> failed{open-count}; seed-close-sites-drift -> failed{close-sites}; seed-explicit-close-drift -> failed{explicit-close}; seed-defer-close-drift -> failed{defer-close}; seed-stat-count-drift -> failed{stat-count}; seed-fatalf-count-drift -> failed{fatalf-count}; seed-fatal-count-drift -> failed{fatal-count}; seed-cache-count-drift -> failed{cache-count}; seed-total-legs-drift -> failed{total-legs}; seed-not-exist-legs-drift -> failed{not-exist-legs}; seed-err-nil-legs-drift -> failed{err-nil-legs}. roots: seed-pkg-name-drift -> failed{pkg-name}; seed-func-name-drift -> failed{func-name}; seed-tempdir-op-drift -> failed{tempdir-op}; seed-open-op-drift -> failed{open-op}; seed-close-op-drift -> failed{close-op}; seed-path-field-drift -> failed{path-field}; seed-stat-op-drift -> failed{stat-op}; seed-is-not-exist-op-drift -> failed{is-not-exist-op}; seed-lstat-op-drift -> failed{lstat-op}; seed-remove-all-op-drift -> failed{remove-all-op}; seed-same-file-op-drift -> failed{same-file-op}; seed-cache-prefix-drift -> failed{cache-prefix}; seed-marker-name-drift -> failed{marker-name}; seed-lease-name-drift -> failed{lease-name}; seed-schema-name-drift -> failed{schema-name}; seed-mkdir-mode-drift -> failed{mkdir-mode}; seed-file-mode-drift -> failed{file-mode}; seed-recovery-limit-drift -> failed{recovery-limit}; seed-cache-field-count-drift -> failed{cache-field-count}; seed-nil-close-ok-drift -> failed{nil-close-ok}. run: seed-parent-var-drift -> failed{parent-var}; seed-first-var-drift -> failed{first-var}; seed-second-var-drift -> failed{second-var}; seed-first-path-var-drift -> failed{first-path-var}; seed-tempdir-call-drift -> failed{tempdir-call}; seed-open-call-drift -> failed{open-call}; seed-defer-first-drift -> failed{defer-first}; seed-defer-second-drift -> failed{defer-second}; seed-capture-leg-drift -> failed{capture-leg}; seed-first-stat-leg-drift -> failed{first-stat-leg}; seed-first-stat-pred-drift -> failed{first-stat-pred}; seed-second-stat-leg-drift -> failed{second-stat-leg}; seed-third-stat-leg-drift -> failed{third-stat-leg}; seed-fatal-call-drift -> failed{fatal-call}; seed-fatalf-op-drift -> failed{fatalf-op}; seed-replace-diag-drift -> failed{replace-diag}; seed-tempdir-count-drift -> failed{tempdir-count}; seed-err-guard-count-drift -> failed{err-guard-count}; seed-func-line-count-drift -> failed{func-line-count}; seed-verb-count-drift -> failed{verb-count}; seed-defer-before-capture-drift -> failed{defer-before-capture}; seed-close-before-stats-drift -> failed{close-before-stats}.",
+      "Dead-seed diff (programmatic, from authored bytes; every seed differs in exactly its target field, assert tuple identical to its match arm): sem[18]: owned-gone/concurrent-kept/parent-kept/close-ok f0-f3 true->false; owned-diag/concurrent-diag/parent-diag f4-f6 _2; open-count f7 2->3; close-sites f8 3->4; explicit-close f9 1->2; defer-close f10 2->3; stat-count f11 3->2; fatalf-count f12 3->4; fatal-count f13 3->2; cache-count f14 2->1; total-legs f15 3->4; not-exist-legs f16 1->0; err-nil-legs f17 2->1. roots[20]: pkg-name/func-name/tempdir-op/open-op/close-op/path-field/stat-op/is-not-exist-op/lstat-op/remove-all-op/same-file-op/cache-prefix/marker-name/lease-name/schema-name/mkdir-mode/file-mode f0-f16 _2; recovery-limit f17 16->15; cache-field-count f18 3->2; nil-close-ok f19 true->false. run[22]: parent-var/first-var/second-var/first-path-var/tempdir-call/open-call/defer-first/defer-second/capture-leg/first-stat-leg/first-stat-pred/second-stat-leg/third-stat-leg/fatal-call/fatalf-op/replace-diag f0-f15 _2; tempdir-count f16 1->2; err-guard-count f17 5->4; func-line-count f18 26->25; verb-count f19 3->2; defer-before-capture/close-before-stats f20-f21 true->false. Zero dead seeds; zero multi-field diffs.",
+      "Missing evidence: short counts (opens 3/2 or 1/2, closes 4/3 or 2/3, stats 2/3, fatals 2/3, caches 1/2, legs 2/3, guards 4/5, lines 25/26, verbs 2/3, limit 15/16, fields 2/3), unset verdicts (false gone/kept/close/nil/order flags), and drifted wordings (renamed package/func/ops/vars/calls/legs/preds, wrong prefix/marker/lease/schema/modes, remote refusal, stopped run, umbrella-free _2 diagnostics) each refuse at their count/wording gate rather than passing vacuously.",
+      "Controls are authored as Can assert roots and typecheck (0-error cancheck); live execution of the asserts needs P23 + an execution leg, so no execution credit is claimed here. Standalone negative control: one type mutation in a probe copy fired exactly 47 CAN-CHECK errors, all naming the mutated file."
+    ],
+    "retained_facets": [
+      "Closing one owned cache removes only that cache, preserving its parent and concurrent cache (protects; Go L40-65 + impl L100-123): owned-gone pins true with the retained wording; concurrent-kept and parent-kept pin true with their removed wordings; explicit close pins ok; two opens, three close sites, three stats, three Fatalf plus three Fatal guards, two caches, three legs, one negated-gone plus two nil-err legs.",
+      "Static live baseline as the green root (roots; test L1/L40-65 + impl L21-30/L32-42/L47-96/L100-123): tempcache package plus close-test func; TempDir/Open/Close/Path/Stat/IsNotExist spellings; Close-only Lstat/RemoveAll/SameFile; can-suite-cache- prefix, .can-test-owner.json marker, .can-test-lease lease, can.test-suite-cache/1 schema; 0755 mkdir plus 0600 file modes; recovery bound 16; Cache three fields; nil-close ok.",
+      "Observes: filesystem path existence (row observes): owned gone via negated IsNotExist, concurrent plus parent kept via nil-err Stats, close-ok via nil-err Close, every Fatal/Fatalf call shape plus the three refusal wordings and the Close replacement refusal pin verbatim; tempdir/err-guard/line/verb counts plus defer-plus-close ordering pin the run shape.",
+      "Variants: two concurrent caches (first plus second, Go order in history/cache-close-semantics; single shared run shape in history/cache-close-run). Environment: no env gate (row lists zero); local temp dir only; 60000ms timeout bounds the two-Open/one-Close/three-Stat sequence (no Go guard exists; offline only).",
+      "Delegated oracles: none (row lists none)."
+    ],
+    "unrun_or_blocked": [
+      "Live execution of the new Can asserts (TempDir, two Opens, explicit Close, three Stat verdicts): BLOCKED - accept gate P23 unmet, so no execution credit claimed or attempted; no bundles, no live run, no cache dirs created or deleted, no qualification, no retirement.",
+      "Open/Close/Stat legs (MkdirTemp, marker/lease 0600 bytes, Flock, Lstat/SameFile/RemoveAll ownership, IsNotExist/err-nil verdicts, Fatal/Fatalf legs, replacement refusal): BLOCKED - gates unmet; all 60 pins are static Can expectations only.",
+      "Environment-gated legs: none (row lists zero env gates); pinned as requires [] on every descriptor, never waived.",
+      "Mandatory offline checks with R + new suite/artifact binding (suite_snapshot_acceptance): DEFERRED to P23 - R bundle not built/used here; identities identified below, not bound.",
+      "tests/native-can project cancheck delta from this slice: none - slice lives outside the src/ source root (M32 precedent); live-tree run shows only the 2 pre-existing reducer warnings with zero m29history034/history-034 mentions."
+    ]
+  },
+  "deletion_policy": "No shared old file is deleted by this slice. tests/support/tempcache/cache_test.go and tests/support/tempcache/cache.go stay intact per the row delete_when gates (named obligations need passing Can-owned evidence, negative controls and required environments covered, active callers rewired, old host harness shown unused); retirement_eligible=false; retirement is a later integrator decision. Nothing proposed for deletion.",
+  "executor": "worker M29-H034",
+  "identities": {
+    "artifact": "N/A: no built executable promoted; no live run, so no artifact identity to bind (binds at P23).",
+    "candidate": "N/A: no candidate executed; Can asserts are static/type-level only (provisional until P23, like P15-P17).",
+    "host_profile": "Darwin arm64; go1.27.1 darwin/arm64 (observed via uname/go version this session).",
+    "observer": "go run ./compiler check --json output (accepted flag + diagnostic counts/files/lines/codes) and go run ./compiler parse output (package + declaration counts) recorded verbatim in commands above.",
+    "owner": "N/A as an N artifact; this slice exercises no N admission path.",
+    "reference": "R-seed scope identified per docs/implementation/native-can-tests-plan-2026-09-30/reference-seed.md (R-core/P26 and suite acceptance/P23 unfinished). No R bundle built or used in this session; mandatory R checks deferred to P23.",
+    "suite": "3 standalone Can packages under the owned prefix (m29history034cache, m29history034roots, m29history034run); uses [text] only; self-contained local shapes mirroring spec:: equivalents; S identity binding deferred to P23 (no execution credit)."
+  },
+  "limitations": [
+    "Static-only verification: parse + 0-error cancheck (standalone) + non-vacuous negative control + live-tree attribution + authored (unexecuted) Can assert controls + programmatic dead-seed diff + byte-truth audit. Assert bodies are unaudited by execution; P23 qualification + an execution leg must bind before any execution credit.",
+    "Slice packages avoid uses [spec] (outside the src/ source root, M32 precedent); at P23 the local test_case/check/evidence shapes map onto spec:: equivalents.",
+    "Slice follows the H023 provides shape on purpose: provides includes the shape types (context/check/evidence/observation/failed/test_case) because cancheck rejects exported signatures over private types.",
+    "Slices were emitted by a deterministic owned generator script from compact check specs (guaranteeing assert/match-arm/vector consistency); the script lived in owned /tmp scratch, was verified through the same gates as hand-written sources, and was removed at cleanup.",
+    "Count/wording pins mirror the checked-in sources verbatim (three verdicts, close-ok, three diags, 2/3/1/2/3/3/3/2/3/1/2 counts, package/func/ops/prefix/marker/lease/schema/modes/limit/fields/nil-close, vars/calls/legs/preds/fatal shapes, replacement refusal, 1/5/26/3 counts, two ordering verdicts); if the Go test ever changes them, these pins move with it at migration-update time.",
+    "Recorded adaptations (documented in slice headers): verdicts pin bools from the Stat guards; close-ok pins bool from the Close guard; counts pin ints from the Open/Close/Stat/Fatal sites; tempdir-count pins 1 in-range (5 file-wide); err-guard-count pins 5 from the err-nil guards; func-line-count pins 26 from L40-65; verb-count pins 3 from the Fatalf verbs; modes pin str to keep 0755/0600 spellings; ordering verdicts pin bools from line order; call spellings pin exact Go bytes without leading tabs or trailing braces.",
+    "No credential or secret value is pinned: only temp-dir/call shapes, op/field/var spellings, cache prefix/marker/lease/schema names, modes, counts, verdicts and refusal wordings. No redactor or sanitizer placeholder exists in either source (grep 'redact' is 0 everywhere).",
+    "Sibling rows are out of scope: HISTORY-035/036/037/038 and other M29 rows (untouched); this row pins the close-preserves slice plus its own roots and run shape only.",
+    "Environment-gated legs are recorded blocked with probes above, never waived; this row lists zero env gates (requires []), and no filesystem mutation outside /tmp scratch plus owned paths was attempted.",
+    "Concurrent-worker files were observed but never touched (HEAD 0e5a9fe1 feat(m26) HISTORY-021; muse-resume.md modification; m26 history-019/history-021 live in a different directory; m29 history-035/036 triples appeared at 18:45 in the same directory): no sibling-worker file was read for content, written, or staged by this worker; this worker's owned m29 directory paths are only this row's triple. Shared compiler/catalogue/runtime paths, old Go harnesses and other evidence files untouched."
+  ],
+  "resource_and_cleanup_receipts": [
+    "No live runs, no R-seed use, no bundles built, no network, no database contact, no cache dirs created or deleted, no persistent caches (default GOCACHE only; no temp cache created).",
+    "No repo writes outside the owned prefix + this evidence file; shared old files untouched; tests/support/tempcache/ untouched; nothing staged, nothing committed, nothing pushed.",
+    "/tmp/m29h034check (probe project, diff-verified identical) removed after gates with its check captures; /tmp/m29h034neg (negative control) and its captures removed after firing; /tmp/m29h034-live.json/.err (live-tree output) removed; /tmp/m29h034scratch (generator + dead-seed + byte-truth scripts) removed; every ls confirms none remain and ls /tmp/m29h034* is empty.",
+    "No EMFILE or infrastructure failure in this session; all gates ran to completion."
+  ],
+  "retirement_eligible": false,
+  "reviewer_disposition": null,
+  "row_or_file_slice": "HISTORY-034",
+  "status": "complete",
+  "task_id": "M29",
+  "writing_owner": "migration-history"
+}

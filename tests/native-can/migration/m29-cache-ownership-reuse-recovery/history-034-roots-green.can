@@ -1,0 +1,306 @@
+package m29history034roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 HISTORY-034 "Close preserves parent and peer: roots green".
+/// Source: tests/support/tempcache/cache_test.go symbol
+/// TestClosePreservesParentAndConcurrentCache (L40-65);
+/// package plus imports (L1-11); impl
+/// tests/support/tempcache/cache.go consts (L21-30),
+/// structs (L32-42), Open (L47-96), Close (L100-123).
+/// Disposition: migrate (this row ports
+/// TestClosePreservesParentAndConcurrentCache to ordinary Can
+/// functions; the old Go harness stays until the integrator
+/// retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): the static live baseline as the
+/// green root: the package plus func names, the TempDir,
+/// Open, Close, Path, Stat, IsNotExist spellings, the
+/// Close-only Lstat, RemoveAll, SameFile spellings, the
+/// cache prefix, marker, lease, schema names, the mkdir
+/// plus file modes, the recovery bound, the Cache field
+/// count, and the nil-close ok.
+/// ADAPTATION (recorded, with source lines): modes pin str
+/// to keep the 0755/0600 spellings (cache.go L55/L80/L91);
+/// limit pins int 16 (L30); field count pins int 3 from
+/// the Cache struct (L39-41); nil-close pins bool from the
+/// nil guard (L101-103); op spellings pin the exact Go
+/// identifiers (TempDir L41, Open L42/L47, Close
+/// L46/L51/L53, Path L52/L59, Stat L56/L59/L62,
+/// IsNotExist L56, Lstat L106, RemoveAll L114, SameFile
+/// L111).
+/// Facet map (static baseline): pkg-name pins tempcache
+/// (test L1); func-name pins the close test (L40);
+/// tempdir-op pins TempDir (L41); open-op pins Open
+/// (L42/L47); close-op pins Close (L46/L51/L53);
+/// path-field pins Path (L52/L59); stat-op pins Stat
+/// (L56/L59/L62); is-not-exist-op pins IsNotExist (L56);
+/// lstat-op pins Lstat (impl L106); remove-all-op pins
+/// RemoveAll (impl L114); same-file-op pins SameFile
+/// (impl L111); cache-prefix pins can-suite-cache- (impl
+/// L21); marker-name pins .can-test-owner.json (impl
+/// L22); lease-name pins .can-test-lease (impl L23);
+/// schema-name pins can.test-suite-cache/1 (impl L24);
+/// mkdir-mode pins 0755 (impl L55); file-mode pins 0600
+/// (impl L80/L91); recovery-limit pins 16 (impl L30);
+/// cache-field-count pins 3 (impl L39-41); nil-close-ok
+/// pins true (impl L101-103).
+/// Answer verdicts live in history-034-cache-semantics.can;
+/// the run shape lives in history-034-run-shape.can.
+/// Variants: none in this file (default only); the
+/// two-cache variant pins in cache-semantics.
+/// Environment: no env gate; local temp dir only.
+/// Logical gates SUITE/WORK/FILES/FAULT/NATIVE and C/R/N/S/A
+/// identities bind at P23; no live run now. Accept gate P23
+/// is unmet. Timeout 60000ms bounds the static baseline
+/// probe (no Go guard exists; offline only).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/cache-close-roots checks: pkg-name,
+/// func-name, tempdir-op, open-op, close-op, path-field,
+/// stat-op, is-not-exist-op, lstat-op, remove-all-op,
+/// same-file-op, cache-prefix, marker-name, lease-name,
+/// schema-name, mkdir-mode, file-mode, recovery-limit,
+/// cache-field-count, nil-close-ok.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str pkg_name
+    str func_name
+    str tempdir_op
+    str open_op
+    str close_op
+    str path_field
+    str stat_op
+    str is_not_exist_op
+    str lstat_op
+    str remove_all_op
+    str same_file_op
+    str cache_prefix
+    str marker_name
+    str lease_name
+    str schema_name
+    str mkdir_mode
+    str file_mode
+    int recovery_limit
+    int cache_field_count
+    bool nil_close_ok
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/cache-close-roots", "default", "", "offline"), "pkg-name" => ok "case history/cache-close-roots variant default root pkg-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/cache-close-roots", "default", "", "offline"), "nil-close-ok" => ok evidence("nil-close-ok", "true", "true", true, "case history/cache-close-roots variant default root nil-close-ok run offline")
+        different: false, true, context("history/cache-close-roots", "default", "", "offline"), "nil-close-ok" => failed{"nil-close-ok"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 16, 16, context("history/cache-close-roots", "default", "", "offline"), "recovery-limit" => ok evidence("recovery-limit", "16", "16", true, "case history/cache-close-roots variant default root recovery-limit run offline")
+        different: 15, 16, context("history/cache-close-roots", "default", "", "offline"), "recovery-limit" => failed{"recovery-limit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "tempcache", "tempcache", context("history/cache-close-roots", "default", "", "offline"), "pkg-name" => ok evidence("pkg-name", "tempcache", "tempcache", true, "case history/cache-close-roots variant default root pkg-name run offline")
+        different: "tempcache_2", "tempcache", context("history/cache-close-roots", "default", "", "offline"), "pkg-name" => failed{"pkg-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_pkg_name: "seed-pkg-name-drift" => ok observation("tempcache_2", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_func_name: "seed-func-name-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache_2", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_tempdir_op: "seed-tempdir-op-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir_2", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_open_op: "seed-open-op-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open_2", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_close_op: "seed-close-op-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close_2", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_path_field: "seed-path-field-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path_2", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_stat_op: "seed-stat-op-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat_2", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_is_not_exist_op: "seed-is-not-exist-op-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist_2", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_lstat_op: "seed-lstat-op-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat_2", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_remove_all_op: "seed-remove-all-op-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll_2", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_same_file_op: "seed-same-file-op-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile_2", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_cache_prefix: "seed-cache-prefix-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-_2", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_marker_name: "seed-marker-name-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json_2", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_lease_name: "seed-lease-name-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease_2", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_schema_name: "seed-schema-name-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1_2", "0755", "0600", 16, 3, true)
+        seed_mkdir_mode: "seed-mkdir-mode-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755_2", "0600", 16, 3, true)
+        seed_file_mode: "seed-file-mode-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600_2", 16, 3, true)
+        seed_recovery_limit: "seed-recovery-limit-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 15, 3, true)
+        seed_cache_field_count: "seed-cache-field-count-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 2, true)
+        seed_nil_close_ok: "seed-nil-close-ok-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, false)
+    match variant_id
+        "seed-pkg-name-drift" => ok observation("tempcache_2", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-func-name-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache_2", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-tempdir-op-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir_2", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-open-op-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open_2", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-close-op-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close_2", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-path-field-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path_2", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-stat-op-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat_2", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-is-not-exist-op-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist_2", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-lstat-op-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat_2", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-remove-all-op-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll_2", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-same-file-op-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile_2", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-cache-prefix-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-_2", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-marker-name-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json_2", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-lease-name-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease_2", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-schema-name-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1_2", "0755", "0600", 16, 3, true)
+        "seed-mkdir-mode-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755_2", "0600", 16, 3, true)
+        "seed-file-mode-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600_2", 16, 3, true)
+        "seed-recovery-limit-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 15, 3, true)
+        "seed-cache-field-count-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 2, true)
+        "seed-nil-close-ok-drift" => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, false)
+        _ => ok observation("tempcache", "TestClosePreservesParentAndConcurrentCache", "TempDir", "Open", "Close", "Path", "Stat", "IsNotExist", "Lstat", "RemoveAll", "SameFile", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h034: "m29-h034" => ok [check("pkg-name", "package name is tempcache"), check("func-name", "func name pins close test"), check("tempdir-op", "tempdir op spelling"), check("open-op", "open op spelling"), check("close-op", "close op spelling"), check("path-field", "path field spelling"), check("stat-op", "stat op spelling"), check("is-not-exist-op", "gone predicate spelling"), check("lstat-op", "lstat op spelling in close"), check("remove-all-op", "remove-all op spelling"), check("same-file-op", "same-file guard spelling"), check("cache-prefix", "cache prefix spelling"), check("marker-name", "marker file name"), check("lease-name", "lease file name"), check("schema-name", "schema name spelling"), check("mkdir-mode", "mkdir mode spelling"), check("file-mode", "file mode spelling"), check("recovery-limit", "recovery bound is sixteen"), check("cache-field-count", "cache holds three fields"), check("nil-close-ok", "nil close returns nil")]
+        other: "nope" => ok []
+    match scope is "m29-h034"
+        false => ok []
+        true => ok [check("pkg-name", "package name is tempcache"), check("func-name", "func name pins close test"), check("tempdir-op", "tempdir op spelling"), check("open-op", "open op spelling"), check("close-op", "close op spelling"), check("path-field", "path field spelling"), check("stat-op", "stat op spelling"), check("is-not-exist-op", "gone predicate spelling"), check("lstat-op", "lstat op spelling in close"), check("remove-all-op", "remove-all op spelling"), check("same-file-op", "same-file guard spelling"), check("cache-prefix", "cache prefix spelling"), check("marker-name", "marker file name"), check("lease-name", "lease file name"), check("schema-name", "schema name spelling"), check("mkdir-mode", "mkdir mode spelling"), check("file-mode", "file mode spelling"), check("recovery-limit", "recovery bound is sixteen"), check("cache-field-count", "cache holds three fields"), check("nil-close-ok", "nil close returns nil")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/cache-close-roots" => ok [expected_check("pkg-name", "tempcache"), expected_check("func-name", "TestClosePreservesParentAndConcurrentCache"), expected_check("tempdir-op", "TempDir"), expected_check("open-op", "Open"), expected_check("close-op", "Close"), expected_check("path-field", "Path"), expected_check("stat-op", "Stat"), expected_check("is-not-exist-op", "IsNotExist"), expected_check("lstat-op", "Lstat"), expected_check("remove-all-op", "RemoveAll"), expected_check("same-file-op", "SameFile"), expected_check("cache-prefix", "can-suite-cache-"), expected_check("marker-name", ".can-test-owner.json"), expected_check("lease-name", ".can-test-lease"), expected_check("schema-name", "can.test-suite-cache/1"), expected_check("mkdir-mode", "0755"), expected_check("file-mode", "0600"), expected_check("recovery-limit", "16"), expected_check("cache-field-count", "3"), expected_check("nil-close-ok", "true")]
+        unknown: "nope" => ok []
+    match case is "history/cache-close-roots"
+        false => ok []
+        true => ok [expected_check("pkg-name", "tempcache"), expected_check("func-name", "TestClosePreservesParentAndConcurrentCache"), expected_check("tempdir-op", "TempDir"), expected_check("open-op", "Open"), expected_check("close-op", "Close"), expected_check("path-field", "Path"), expected_check("stat-op", "Stat"), expected_check("is-not-exist-op", "IsNotExist"), expected_check("lstat-op", "Lstat"), expected_check("remove-all-op", "RemoveAll"), expected_check("same-file-op", "SameFile"), expected_check("cache-prefix", "can-suite-cache-"), expected_check("marker-name", ".can-test-owner.json"), expected_check("lease-name", ".can-test-lease"), expected_check("schema-name", "can.test-suite-cache/1"), expected_check("mkdir-mode", "0755"), expected_check("file-mode", "0600"), expected_check("recovery-limit", "16"), expected_check("cache-field-count", "3"), expected_check("nil-close-ok", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/cache-close-roots", "default", "", "offline") => ok
+        seed_pkg_name: context("history/cache-close-roots", "seed-pkg-name-drift", "", "offline") => failed{"pkg-name"}
+        seed_func_name: context("history/cache-close-roots", "seed-func-name-drift", "", "offline") => failed{"func-name"}
+        seed_tempdir_op: context("history/cache-close-roots", "seed-tempdir-op-drift", "", "offline") => failed{"tempdir-op"}
+        seed_open_op: context("history/cache-close-roots", "seed-open-op-drift", "", "offline") => failed{"open-op"}
+        seed_close_op: context("history/cache-close-roots", "seed-close-op-drift", "", "offline") => failed{"close-op"}
+        seed_path_field: context("history/cache-close-roots", "seed-path-field-drift", "", "offline") => failed{"path-field"}
+        seed_stat_op: context("history/cache-close-roots", "seed-stat-op-drift", "", "offline") => failed{"stat-op"}
+        seed_is_not_exist_op: context("history/cache-close-roots", "seed-is-not-exist-op-drift", "", "offline") => failed{"is-not-exist-op"}
+        seed_lstat_op: context("history/cache-close-roots", "seed-lstat-op-drift", "", "offline") => failed{"lstat-op"}
+        seed_remove_all_op: context("history/cache-close-roots", "seed-remove-all-op-drift", "", "offline") => failed{"remove-all-op"}
+        seed_same_file_op: context("history/cache-close-roots", "seed-same-file-op-drift", "", "offline") => failed{"same-file-op"}
+        seed_cache_prefix: context("history/cache-close-roots", "seed-cache-prefix-drift", "", "offline") => failed{"cache-prefix"}
+        seed_marker_name: context("history/cache-close-roots", "seed-marker-name-drift", "", "offline") => failed{"marker-name"}
+        seed_lease_name: context("history/cache-close-roots", "seed-lease-name-drift", "", "offline") => failed{"lease-name"}
+        seed_schema_name: context("history/cache-close-roots", "seed-schema-name-drift", "", "offline") => failed{"schema-name"}
+        seed_mkdir_mode: context("history/cache-close-roots", "seed-mkdir-mode-drift", "", "offline") => failed{"mkdir-mode"}
+        seed_file_mode: context("history/cache-close-roots", "seed-file-mode-drift", "", "offline") => failed{"file-mode"}
+        seed_recovery_limit: context("history/cache-close-roots", "seed-recovery-limit-drift", "", "offline") => failed{"recovery-limit"}
+        seed_cache_field_count: context("history/cache-close-roots", "seed-cache-field-count-drift", "", "offline") => failed{"cache-field-count"}
+        seed_nil_close_ok: context("history/cache-close-roots", "seed-nil-close-ok-drift", "", "offline") => failed{"nil-close-ok"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.pkg_name, "tempcache", c, "pkg-name")
+            failed
+            ok evidence pkg_name_evidence => match call require_text(got.func_name, "TestClosePreservesParentAndConcurrentCache", c, "func-name")
+                failed
+                ok evidence func_name_evidence => match call require_text(got.tempdir_op, "TempDir", c, "tempdir-op")
+                    failed
+                    ok evidence tempdir_op_evidence => match call require_text(got.open_op, "Open", c, "open-op")
+                        failed
+                        ok evidence open_op_evidence => match call require_text(got.close_op, "Close", c, "close-op")
+                            failed
+                            ok evidence close_op_evidence => match call require_text(got.path_field, "Path", c, "path-field")
+                                failed
+                                ok evidence path_field_evidence => match call require_text(got.stat_op, "Stat", c, "stat-op")
+                                    failed
+                                    ok evidence stat_op_evidence => match call require_text(got.is_not_exist_op, "IsNotExist", c, "is-not-exist-op")
+                                        failed
+                                        ok evidence is_not_exist_op_evidence => match call require_text(got.lstat_op, "Lstat", c, "lstat-op")
+                                            failed
+                                            ok evidence lstat_op_evidence => match call require_text(got.remove_all_op, "RemoveAll", c, "remove-all-op")
+                                                failed
+                                                ok evidence remove_all_op_evidence => match call require_text(got.same_file_op, "SameFile", c, "same-file-op")
+                                                    failed
+                                                    ok evidence same_file_op_evidence => match call require_text(got.cache_prefix, "can-suite-cache-", c, "cache-prefix")
+                                                        failed
+                                                        ok evidence cache_prefix_evidence => match call require_text(got.marker_name, ".can-test-owner.json", c, "marker-name")
+                                                            failed
+                                                            ok evidence marker_name_evidence => match call require_text(got.lease_name, ".can-test-lease", c, "lease-name")
+                                                                failed
+                                                                ok evidence lease_name_evidence => match call require_text(got.schema_name, "can.test-suite-cache/1", c, "schema-name")
+                                                                    failed
+                                                                    ok evidence schema_name_evidence => match call require_text(got.mkdir_mode, "0755", c, "mkdir-mode")
+                                                                        failed
+                                                                        ok evidence mkdir_mode_evidence => match call require_text(got.file_mode, "0600", c, "file-mode")
+                                                                            failed
+                                                                            ok evidence file_mode_evidence => match call require_int(got.recovery_limit, 16, c, "recovery-limit")
+                                                                                failed
+                                                                                ok evidence recovery_limit_evidence => match call require_int(got.cache_field_count, 3, c, "cache-field-count")
+                                                                                    failed
+                                                                                    ok evidence cache_field_count_evidence => match call require_bool(got.nil_close_ok, true, c, "nil-close-ok")
+                                                                                        failed
+                                                                                        ok evidence nil_close_ok_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h034: "m29-h034" => ok test_case("history/cache-close-roots", ["history", "m29"], [], 60000, [check_ref("pkg-name"), check_ref("func-name"), check_ref("tempdir-op"), check_ref("open-op"), check_ref("close-op"), check_ref("path-field"), check_ref("stat-op"), check_ref("is-not-exist-op"), check_ref("lstat-op"), check_ref("remove-all-op"), check_ref("same-file-op"), check_ref("cache-prefix"), check_ref("marker-name"), check_ref("lease-name"), check_ref("schema-name"), check_ref("mkdir-mode"), check_ref("file-mode"), check_ref("recovery-limit"), check_ref("cache-field-count"), check_ref("nil-close-ok")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-h034"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/cache-close-roots", ["history", "m29"], [], 60000, [check_ref("pkg-name"), check_ref("func-name"), check_ref("tempdir-op"), check_ref("open-op"), check_ref("close-op"), check_ref("path-field"), check_ref("stat-op"), check_ref("is-not-exist-op"), check_ref("lstat-op"), check_ref("remove-all-op"), check_ref("same-file-op"), check_ref("cache-prefix"), check_ref("marker-name"), check_ref("lease-name"), check_ref("schema-name"), check_ref("mkdir-mode"), check_ref("file-mode"), check_ref("recovery-limit"), check_ref("cache-field-count"), check_ref("nil-close-ok")], callable case_body)
