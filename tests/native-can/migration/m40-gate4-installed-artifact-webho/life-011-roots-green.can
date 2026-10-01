@@ -1,0 +1,587 @@
+package m40life011roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M40 LIFE-011 TestCompanionPairLiveF06
+/// pair plus sized plus poison plus
+/// destination plus credential plus
+/// timeout legs.
+/// Source: tests/integration/
+/// webhook_f06_test.go symbol
+/// TestCompanionPairLiveF06 (L550-1190):
+/// the leg B pair pins, the leg C
+/// sized pins, the leg D poison pins,
+/// and the leg E plus F plus G
+/// policy pins.
+/// Disposition: migrate (same row pact
+/// as the base slice; this file owns
+/// the six middle legs only).
+/// Protects (this file): the leg B
+/// half of facet two (two workers
+/// claim disjoint capped batches) plus
+/// facet three (serial plus parallel
+/// concurrency bounds; five-attempt
+/// poison dead-letter with no sixth
+/// send) plus facet four (destination
+/// policy and credential binding
+/// failures never post; timeout retry
+/// stays truthful).
+/// ADAPTATION (recorded, with source
+/// lines): prefix pins hold seed id
+/// heads; flag pins hold CLI words;
+/// route pins hold subscription names;
+/// mark pins hold report plus row
+/// reason bytes; url pins hold the
+/// denied peer; count pins hold ints
+/// tallied from guards and call sites.
+/// pair-prefix pins f06-pair- (L671);
+/// dup-note pins claimed by (L702);
+/// maxbatch-flag pins --max-batch
+/// (L672); conc1-prefix pins f06-c1-
+/// (L740); conc4-prefix pins
+/// f06-conc4- (L755); conc-flag pins
+/// --concurrency (L741); poison-prefix
+/// pins f06-poison- (L775);
+/// poison-lease pins 1000 (L776);
+/// lease-flag pins --lease-ms (L776);
+/// poison-failed-occ pins 500 (L793);
+/// poison-dead-occ pins 5 (L797);
+/// poison-dead-state pins dead (L826);
+/// poison-dead-reason pins poison
+/// (L813); sub-ok pins sub-ok (L605);
+/// sub-poison pins sub-poison (L607);
+/// stub-500-body pins downstream
+/// failed (L142); drained-note pins
+/// drained run recorded (L731);
+/// deny-prefix pins f06-deny- (L846);
+/// unmap-prefix pins f06-unmap-
+/// (L847); sub-denied pins sub-denied
+/// (L608); sub-unmapped pins
+/// sub-unmapped (L847 seed plus L865
+/// occurrence, same spelling);
+/// denied-url pins
+/// http://example.com:9/hook (L608);
+/// denied-occ pins no-matching-rule
+/// (L862); denied-dead-reason pins
+/// destination_denied (L869);
+/// unmap-dead-reason pins
+/// no_destination (L872); cred-prefix
+/// pins f06-cred- (L883); cred-binding
+/// pins F06_HOOK_TOKEN (L889, label
+/// only, bound bytes never quoted);
+/// bearer-prefix pins the Bearer
+/// scheme plus gap (L902); sub-cred
+/// pins sub-cred (L606); flaky-prefix
+/// pins f06-flaky- (L911); timeout-ms
+/// pins 1500 (L912; L895 holds a
+/// same-spelled soak); timeout-flag
+/// pins --timeout-ms (L912);
+/// timeout-occ pins timeout (L917);
+/// pair-rows pins int (48) from L671;
+/// pair-cap pins int (24) from L672;
+/// conc1-rows pins int (8) from L740;
+/// conc4-rows pins int (12) from L755;
+/// conc-one pins int (1) from L741;
+/// conc-four pins int (4) from L756;
+/// serial-peak pins int (1) from L751;
+/// parallel-peak-low pins int (2) from
+/// L766; conc4-delay-ms pins int
+/// (100) from L151; poison-rows pins
+/// int (3) from L775;
+/// poison-round-cap pins int (12) from
+/// L778; poison-attempts pins int (5)
+/// from L834; poison-version-min pins
+/// int (6) from L831; dest-steps pins
+/// int (2) from L850; flaky-posts pins
+/// int (2) from L928; flaky-first-
+/// sleep-s pins int (3) from L147.
+/// Facet map (declared order):
+/// pair-prefix, dup-note,
+/// maxbatch-flag, conc1-prefix,
+/// conc4-prefix, conc-flag,
+/// poison-prefix, poison-lease,
+/// lease-flag, poison-failed-occ,
+/// poison-dead-occ, poison-dead-state,
+/// poison-dead-reason, sub-ok,
+/// sub-poison, stub-500-body,
+/// drained-note, deny-prefix,
+/// unmap-prefix, sub-denied,
+/// sub-unmapped, denied-url,
+/// denied-occ, denied-dead-reason,
+/// unmap-dead-reason, cred-prefix,
+/// cred-binding, bearer-prefix,
+/// sub-cred, flaky-prefix, timeout-ms,
+/// timeout-flag, timeout-occ,
+/// pair-rows, pair-cap, conc1-rows,
+/// conc4-rows, conc-one, conc-four,
+/// serial-peak, parallel-peak-low,
+/// conc4-delay-ms, poison-rows,
+/// poison-round-cap, poison-attempts,
+/// poison-version-min, dest-steps,
+/// flaky-posts, flaky-first-sleep-s.
+/// The report shape plus auth leg live
+/// in life-011-base-semantics.can; the
+/// run envelope plus crash plus batch
+/// plus idle legs live in
+/// life-011-run-shape.can.
+/// Variants: B pair, C concurrency, D
+/// poison, E destination, F credential
+/// and G timeout here; default plus
+/// seeded drifts only here.
+/// Environment: CAN_BUN_ARCHIVE plus
+/// staged bundle plus loopback plus
+/// disposable SQLite (row lists four
+/// gates; bind at P23; no live run
+/// now).
+/// Logical gates CHILD plus HTTP plus
+/// PEER plus DB bind at P23; no live
+/// run now.
+/// Timeout 120000ms is the offline
+/// default bound (binds at P23 like
+/// the M31 no-run rows).
+/// Delegated oracles: none in this row.
+/// Execution credit: NOT claimed (P23
+/// plus QHTTP plus QD1 plus QD2 plus
+/// QD4 accept gates unmet).
+/// Case life/companion-pair-roots
+/// checks: pair-prefix, dup-note,
+/// maxbatch-flag, conc1-prefix,
+/// conc4-prefix, conc-flag,
+/// poison-prefix, poison-lease,
+/// lease-flag, poison-failed-occ,
+/// poison-dead-occ, poison-dead-state,
+/// poison-dead-reason, sub-ok,
+/// sub-poison, stub-500-body,
+/// drained-note, deny-prefix,
+/// unmap-prefix, sub-denied,
+/// sub-unmapped, denied-url,
+/// denied-occ, denied-dead-reason,
+/// unmap-dead-reason, cred-prefix,
+/// cred-binding, bearer-prefix,
+/// sub-cred, flaky-prefix, timeout-ms,
+/// timeout-flag, timeout-occ,
+/// pair-rows, pair-cap, conc1-rows,
+/// conc4-rows, conc-one, conc-four,
+/// serial-peak, parallel-peak-low,
+/// conc4-delay-ms, poison-rows,
+/// poison-round-cap, poison-attempts,
+/// poison-version-min, dest-steps,
+/// flaky-posts, flaky-first-sleep-s.
+/// Shared old files untouched;
+/// retirement is a later integrator
+/// decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str pair_prefix
+    str dup_note
+    str maxbatch_flag
+    str conc1_prefix
+    str conc4_prefix
+    str conc_flag
+    str poison_prefix
+    str poison_lease
+    str lease_flag
+    str poison_failed_occ
+    str poison_dead_occ
+    str poison_dead_state
+    str poison_dead_reason
+    str sub_ok
+    str sub_poison
+    str stub_500_body
+    str drained_note
+    str deny_prefix
+    str unmap_prefix
+    str sub_denied
+    str sub_unmapped
+    str denied_url
+    str denied_occ
+    str denied_dead_reason
+    str unmap_dead_reason
+    str cred_prefix
+    str cred_binding
+    str bearer_prefix
+    str sub_cred
+    str flaky_prefix
+    str timeout_ms
+    str timeout_flag
+    str timeout_occ
+    int pair_rows
+    int pair_cap
+    int conc1_rows
+    int conc4_rows
+    int conc_one
+    int conc_four
+    int serial_peak
+    int parallel_peak_low
+    int conc4_delay_ms
+    int poison_rows
+    int poison_round_cap
+    int poison_attempts
+    int poison_version_min
+    int dest_steps
+    int flaky_posts
+    int flaky_first_sleep_s
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/companion-pair-roots", "default", "", "offline"), "pair-prefix" => ok "case life/companion-pair-roots variant default root pair-prefix run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/companion-pair-roots", "default", "", "offline"), "pair-prefix" => ok evidence("pair-prefix", "true", "true", true, "case life/companion-pair-roots variant default root pair-prefix run offline")
+        different: false, true, context("life/companion-pair-roots", "default", "", "offline"), "pair-prefix" => failed{"pair-prefix"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 48, 48, context("life/companion-pair-roots", "default", "", "offline"), "pair-rows" => ok evidence("pair-rows", "48", "48", true, "case life/companion-pair-roots variant default root pair-rows run offline")
+        different: 47, 48, context("life/companion-pair-roots", "default", "", "offline"), "pair-rows" => failed{"pair-rows"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "f06-pair-", "f06-pair-", context("life/companion-pair-roots", "default", "", "offline"), "pair-prefix" => ok evidence("pair-prefix", "f06-pair-", "f06-pair-", true, "case life/companion-pair-roots variant default root pair-prefix run offline")
+        different: "f06-pair-_2", "f06-pair-", context("life/companion-pair-roots", "default", "", "offline"), "pair-prefix" => failed{"pair-prefix"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_pair_prefix: "seed-pair-prefix-drift" => ok observation("f06-pair-_2", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_dup_note: "seed-dup-note-drift" => ok observation("f06-pair-", "claimed by_2", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_maxbatch_flag: "seed-maxbatch-flag-drift" => ok observation("f06-pair-", "claimed by", "--max-batch_2", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_conc1_prefix: "seed-conc1-prefix-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-_2", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_conc4_prefix: "seed-conc4-prefix-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-_2", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_conc_flag: "seed-conc-flag-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency_2", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_poison_prefix: "seed-poison-prefix-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-_2", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_poison_lease: "seed-poison-lease-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000_2", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_lease_flag: "seed-lease-flag-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms_2", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_poison_failed_occ: "seed-poison-failed-occ-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500_2", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_poison_dead_occ: "seed-poison-dead-occ-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5_2", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_poison_dead_state: "seed-poison-dead-state-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead_2", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_poison_dead_reason: "seed-poison-dead-reason-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison_2", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_sub_ok: "seed-sub-ok-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok_2", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_sub_poison: "seed-sub-poison-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison_2", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_stub_500_body: "seed-stub-500-body-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed_2", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_drained_note: "seed-drained-note-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded_2", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_deny_prefix: "seed-deny-prefix-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-_2", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_unmap_prefix: "seed-unmap-prefix-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-_2", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_sub_denied: "seed-sub-denied-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied_2", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_sub_unmapped: "seed-sub-unmapped-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped_2", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_denied_url: "seed-denied-url-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook_2", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_denied_occ: "seed-denied-occ-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule_2", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_denied_dead_reason: "seed-denied-dead-reason-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied_2", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_unmap_dead_reason: "seed-unmap-dead-reason-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination_2", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_cred_prefix: "seed-cred-prefix-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-_2", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_cred_binding: "seed-cred-binding-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN_2", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_bearer_prefix: "seed-bearer-prefix-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer _2", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_sub_cred: "seed-sub-cred-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred_2", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_flaky_prefix: "seed-flaky-prefix-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-_2", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_timeout_ms: "seed-timeout-ms-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500_2", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_timeout_flag: "seed-timeout-flag-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms_2", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_timeout_occ: "seed-timeout-occ-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout_2", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_pair_rows: "seed-pair-rows-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 47, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_pair_cap: "seed-pair-cap-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 23, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_conc1_rows: "seed-conc1-rows-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 7, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_conc4_rows: "seed-conc4-rows-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 11, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_conc_one: "seed-conc-one-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 0, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_conc_four: "seed-conc-four-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 3, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_serial_peak: "seed-serial-peak-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 0, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_parallel_peak_low: "seed-parallel-peak-low-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 1, 100, 3, 12, 5, 6, 2, 2, 3)
+        seed_conc4_delay_ms: "seed-conc4-delay-ms-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 99, 3, 12, 5, 6, 2, 2, 3)
+        seed_poison_rows: "seed-poison-rows-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 2, 12, 5, 6, 2, 2, 3)
+        seed_poison_round_cap: "seed-poison-round-cap-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 11, 5, 6, 2, 2, 3)
+        seed_poison_attempts: "seed-poison-attempts-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 4, 6, 2, 2, 3)
+        seed_poison_version_min: "seed-poison-version-min-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 5, 2, 2, 3)
+        seed_dest_steps: "seed-dest-steps-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 1, 2, 3)
+        seed_flaky_posts: "seed-flaky-posts-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 1, 3)
+        seed_flaky_first_sleep_s: "seed-flaky-first-sleep-s-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 2)
+    match variant_id
+        "seed-pair-prefix-drift" => ok observation("f06-pair-_2", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-dup-note-drift" => ok observation("f06-pair-", "claimed by_2", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-maxbatch-flag-drift" => ok observation("f06-pair-", "claimed by", "--max-batch_2", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-conc1-prefix-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-_2", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-conc4-prefix-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-_2", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-conc-flag-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency_2", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-poison-prefix-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-_2", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-poison-lease-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000_2", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-lease-flag-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms_2", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-poison-failed-occ-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500_2", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-poison-dead-occ-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5_2", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-poison-dead-state-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead_2", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-poison-dead-reason-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison_2", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-sub-ok-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok_2", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-sub-poison-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison_2", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-stub-500-body-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed_2", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-drained-note-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded_2", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-deny-prefix-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-_2", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-unmap-prefix-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-_2", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-sub-denied-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied_2", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-sub-unmapped-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped_2", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-denied-url-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook_2", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-denied-occ-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule_2", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-denied-dead-reason-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied_2", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-unmap-dead-reason-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination_2", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-cred-prefix-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-_2", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-cred-binding-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN_2", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-bearer-prefix-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer _2", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-sub-cred-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred_2", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-flaky-prefix-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-_2", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-timeout-ms-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500_2", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-timeout-flag-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms_2", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-timeout-occ-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout_2", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-pair-rows-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 47, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-pair-cap-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 23, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-conc1-rows-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 7, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-conc4-rows-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 11, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-conc-one-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 0, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-conc-four-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 3, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-serial-peak-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 0, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-parallel-peak-low-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 1, 100, 3, 12, 5, 6, 2, 2, 3)
+        "seed-conc4-delay-ms-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 99, 3, 12, 5, 6, 2, 2, 3)
+        "seed-poison-rows-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 2, 12, 5, 6, 2, 2, 3)
+        "seed-poison-round-cap-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 11, 5, 6, 2, 2, 3)
+        "seed-poison-attempts-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 4, 6, 2, 2, 3)
+        "seed-poison-version-min-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 5, 2, 2, 3)
+        "seed-dest-steps-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 1, 2, 3)
+        "seed-flaky-posts-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 1, 3)
+        "seed-flaky-first-sleep-s-drift" => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 2)
+        _ => ok observation("f06-pair-", "claimed by", "--max-batch", "f06-c1-", "f06-conc4-", "--concurrency", "f06-poison-", "1000", "--lease-ms", "500", "5", "dead", "poison", "sub-ok", "sub-poison", "downstream failed", "drained run recorded", "f06-deny-", "f06-unmap-", "sub-denied", "sub-unmapped", "http://example.com:9/hook", "no-matching-rule", "destination_denied", "no_destination", "f06-cred-", "F06_HOOK_TOKEN", "Bearer ", "sub-cred", "f06-flaky-", "1500", "--timeout-ms", "timeout", 48, 24, 8, 12, 1, 4, 1, 2, 100, 3, 12, 5, 6, 2, 2, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m40_l011: "m40-l011" => ok [check("pair-prefix", "pair leg keeps its seed prefix"), check("dup-note", "pair leg bars double claims"), check("maxbatch-flag", "pair leg keeps its cap flag"), check("conc1-prefix", "serial leg keeps its seed prefix"), check("conc4-prefix", "parallel leg keeps its seed prefix"), check("conc-flag", "sized legs keep their size flag"), check("poison-prefix", "poison leg keeps its seed prefix"), check("poison-lease", "poison leg keeps its short lease"), check("lease-flag", "tuned legs keep their lease flag"), check("poison-failed-occ", "poison leg keeps its failed mark"), check("poison-dead-occ", "poison leg keeps its dead mark"), check("poison-dead-state", "poison row keeps its dead state"), check("poison-dead-reason", "poison row keeps its dead reason"), check("sub-ok", "live legs keep sub-ok"), check("sub-poison", "poison legs keep their route"), check("stub-500-body", "stub keeps its failed body"), check("drained-note", "drained leg records no new batch"), check("deny-prefix", "denied leg keeps its seed prefix"), check("unmap-prefix", "unmapped leg keeps its seed prefix"), check("sub-denied", "denied leg keeps its route"), check("sub-unmapped", "unmapped leg keeps its route"), check("denied-url", "denied leg keeps its denied peer"), check("denied-occ", "denied leg keeps its no-rule mark"), check("denied-dead-reason", "denied row keeps its dead reason"), check("unmap-dead-reason", "unmapped row keeps its dead reason"), check("cred-prefix", "credential leg keeps its seed prefix"), check("cred-binding", "credential leg keeps its binding label"), check("bearer-prefix", "credential leg keeps its bearer scheme"), check("sub-cred", "credential leg keeps its route"), check("flaky-prefix", "timeout leg keeps its seed prefix"), check("timeout-ms", "timeout leg keeps its bound value"), check("timeout-flag", "timeout leg keeps its bound flag"), check("timeout-occ", "timeout leg keeps its timeout mark"), check("pair-rows", "pair leg seeds 48 rows"), check("pair-cap", "pair leg caps batches at 24"), check("conc1-rows", "serial leg seeds 8 rows"), check("conc4-rows", "parallel leg seeds 12 rows"), check("conc-one", "serial leg runs solo"), check("conc-four", "parallel leg runs four wide"), check("serial-peak", "serial leg peaks at one"), check("parallel-peak-low", "parallel leg overlaps past one"), check("conc4-delay-ms", "parallel sends delay 100ms"), check("poison-rows", "poison leg seeds 3 rows"), check("poison-round-cap", "poison loop caps at 12 rounds"), check("poison-attempts", "poison rows fail 5 times"), check("poison-version-min", "poison rows reach version 6"), check("dest-steps", "destination leg batches 2 steps"), check("flaky-posts", "flaky row posts twice"), check("flaky-first-sleep-s", "flaky first send hangs 3s")]
+        other: "nope" => ok []
+    match scope is "m40-l011"
+        false => ok []
+        true => ok [check("pair-prefix", "pair leg keeps its seed prefix"), check("dup-note", "pair leg bars double claims"), check("maxbatch-flag", "pair leg keeps its cap flag"), check("conc1-prefix", "serial leg keeps its seed prefix"), check("conc4-prefix", "parallel leg keeps its seed prefix"), check("conc-flag", "sized legs keep their size flag"), check("poison-prefix", "poison leg keeps its seed prefix"), check("poison-lease", "poison leg keeps its short lease"), check("lease-flag", "tuned legs keep their lease flag"), check("poison-failed-occ", "poison leg keeps its failed mark"), check("poison-dead-occ", "poison leg keeps its dead mark"), check("poison-dead-state", "poison row keeps its dead state"), check("poison-dead-reason", "poison row keeps its dead reason"), check("sub-ok", "live legs keep sub-ok"), check("sub-poison", "poison legs keep their route"), check("stub-500-body", "stub keeps its failed body"), check("drained-note", "drained leg records no new batch"), check("deny-prefix", "denied leg keeps its seed prefix"), check("unmap-prefix", "unmapped leg keeps its seed prefix"), check("sub-denied", "denied leg keeps its route"), check("sub-unmapped", "unmapped leg keeps its route"), check("denied-url", "denied leg keeps its denied peer"), check("denied-occ", "denied leg keeps its no-rule mark"), check("denied-dead-reason", "denied row keeps its dead reason"), check("unmap-dead-reason", "unmapped row keeps its dead reason"), check("cred-prefix", "credential leg keeps its seed prefix"), check("cred-binding", "credential leg keeps its binding label"), check("bearer-prefix", "credential leg keeps its bearer scheme"), check("sub-cred", "credential leg keeps its route"), check("flaky-prefix", "timeout leg keeps its seed prefix"), check("timeout-ms", "timeout leg keeps its bound value"), check("timeout-flag", "timeout leg keeps its bound flag"), check("timeout-occ", "timeout leg keeps its timeout mark"), check("pair-rows", "pair leg seeds 48 rows"), check("pair-cap", "pair leg caps batches at 24"), check("conc1-rows", "serial leg seeds 8 rows"), check("conc4-rows", "parallel leg seeds 12 rows"), check("conc-one", "serial leg runs solo"), check("conc-four", "parallel leg runs four wide"), check("serial-peak", "serial leg peaks at one"), check("parallel-peak-low", "parallel leg overlaps past one"), check("conc4-delay-ms", "parallel sends delay 100ms"), check("poison-rows", "poison leg seeds 3 rows"), check("poison-round-cap", "poison loop caps at 12 rounds"), check("poison-attempts", "poison rows fail 5 times"), check("poison-version-min", "poison rows reach version 6"), check("dest-steps", "destination leg batches 2 steps"), check("flaky-posts", "flaky row posts twice"), check("flaky-first-sleep-s", "flaky first send hangs 3s")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/companion-pair-roots" => ok [expected_check("pair-prefix", "f06-pair-"), expected_check("dup-note", "claimed by"), expected_check("maxbatch-flag", "--max-batch"), expected_check("conc1-prefix", "f06-c1-"), expected_check("conc4-prefix", "f06-conc4-"), expected_check("conc-flag", "--concurrency"), expected_check("poison-prefix", "f06-poison-"), expected_check("poison-lease", "1000"), expected_check("lease-flag", "--lease-ms"), expected_check("poison-failed-occ", "500"), expected_check("poison-dead-occ", "5"), expected_check("poison-dead-state", "dead"), expected_check("poison-dead-reason", "poison"), expected_check("sub-ok", "sub-ok"), expected_check("sub-poison", "sub-poison"), expected_check("stub-500-body", "downstream failed"), expected_check("drained-note", "drained run recorded"), expected_check("deny-prefix", "f06-deny-"), expected_check("unmap-prefix", "f06-unmap-"), expected_check("sub-denied", "sub-denied"), expected_check("sub-unmapped", "sub-unmapped"), expected_check("denied-url", "http://example.com:9/hook"), expected_check("denied-occ", "no-matching-rule"), expected_check("denied-dead-reason", "destination_denied"), expected_check("unmap-dead-reason", "no_destination"), expected_check("cred-prefix", "f06-cred-"), expected_check("cred-binding", "F06_HOOK_TOKEN"), expected_check("bearer-prefix", "Bearer "), expected_check("sub-cred", "sub-cred"), expected_check("flaky-prefix", "f06-flaky-"), expected_check("timeout-ms", "1500"), expected_check("timeout-flag", "--timeout-ms"), expected_check("timeout-occ", "timeout"), expected_check("pair-rows", "48"), expected_check("pair-cap", "24"), expected_check("conc1-rows", "8"), expected_check("conc4-rows", "12"), expected_check("conc-one", "1"), expected_check("conc-four", "4"), expected_check("serial-peak", "1"), expected_check("parallel-peak-low", "2"), expected_check("conc4-delay-ms", "100"), expected_check("poison-rows", "3"), expected_check("poison-round-cap", "12"), expected_check("poison-attempts", "5"), expected_check("poison-version-min", "6"), expected_check("dest-steps", "2"), expected_check("flaky-posts", "2"), expected_check("flaky-first-sleep-s", "3")]
+        unknown: "nope" => ok []
+    match case is "life/companion-pair-roots"
+        false => ok []
+        true => ok [expected_check("pair-prefix", "f06-pair-"), expected_check("dup-note", "claimed by"), expected_check("maxbatch-flag", "--max-batch"), expected_check("conc1-prefix", "f06-c1-"), expected_check("conc4-prefix", "f06-conc4-"), expected_check("conc-flag", "--concurrency"), expected_check("poison-prefix", "f06-poison-"), expected_check("poison-lease", "1000"), expected_check("lease-flag", "--lease-ms"), expected_check("poison-failed-occ", "500"), expected_check("poison-dead-occ", "5"), expected_check("poison-dead-state", "dead"), expected_check("poison-dead-reason", "poison"), expected_check("sub-ok", "sub-ok"), expected_check("sub-poison", "sub-poison"), expected_check("stub-500-body", "downstream failed"), expected_check("drained-note", "drained run recorded"), expected_check("deny-prefix", "f06-deny-"), expected_check("unmap-prefix", "f06-unmap-"), expected_check("sub-denied", "sub-denied"), expected_check("sub-unmapped", "sub-unmapped"), expected_check("denied-url", "http://example.com:9/hook"), expected_check("denied-occ", "no-matching-rule"), expected_check("denied-dead-reason", "destination_denied"), expected_check("unmap-dead-reason", "no_destination"), expected_check("cred-prefix", "f06-cred-"), expected_check("cred-binding", "F06_HOOK_TOKEN"), expected_check("bearer-prefix", "Bearer "), expected_check("sub-cred", "sub-cred"), expected_check("flaky-prefix", "f06-flaky-"), expected_check("timeout-ms", "1500"), expected_check("timeout-flag", "--timeout-ms"), expected_check("timeout-occ", "timeout"), expected_check("pair-rows", "48"), expected_check("pair-cap", "24"), expected_check("conc1-rows", "8"), expected_check("conc4-rows", "12"), expected_check("conc-one", "1"), expected_check("conc-four", "4"), expected_check("serial-peak", "1"), expected_check("parallel-peak-low", "2"), expected_check("conc4-delay-ms", "100"), expected_check("poison-rows", "3"), expected_check("poison-round-cap", "12"), expected_check("poison-attempts", "5"), expected_check("poison-version-min", "6"), expected_check("dest-steps", "2"), expected_check("flaky-posts", "2"), expected_check("flaky-first-sleep-s", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/companion-pair-roots", "default", "", "offline") => ok
+        seed_pair_prefix: context("life/companion-pair-roots", "seed-pair-prefix-drift", "", "offline") => failed{"pair-prefix"}
+        seed_dup_note: context("life/companion-pair-roots", "seed-dup-note-drift", "", "offline") => failed{"dup-note"}
+        seed_maxbatch_flag: context("life/companion-pair-roots", "seed-maxbatch-flag-drift", "", "offline") => failed{"maxbatch-flag"}
+        seed_conc1_prefix: context("life/companion-pair-roots", "seed-conc1-prefix-drift", "", "offline") => failed{"conc1-prefix"}
+        seed_conc4_prefix: context("life/companion-pair-roots", "seed-conc4-prefix-drift", "", "offline") => failed{"conc4-prefix"}
+        seed_conc_flag: context("life/companion-pair-roots", "seed-conc-flag-drift", "", "offline") => failed{"conc-flag"}
+        seed_poison_prefix: context("life/companion-pair-roots", "seed-poison-prefix-drift", "", "offline") => failed{"poison-prefix"}
+        seed_poison_lease: context("life/companion-pair-roots", "seed-poison-lease-drift", "", "offline") => failed{"poison-lease"}
+        seed_lease_flag: context("life/companion-pair-roots", "seed-lease-flag-drift", "", "offline") => failed{"lease-flag"}
+        seed_poison_failed_occ: context("life/companion-pair-roots", "seed-poison-failed-occ-drift", "", "offline") => failed{"poison-failed-occ"}
+        seed_poison_dead_occ: context("life/companion-pair-roots", "seed-poison-dead-occ-drift", "", "offline") => failed{"poison-dead-occ"}
+        seed_poison_dead_state: context("life/companion-pair-roots", "seed-poison-dead-state-drift", "", "offline") => failed{"poison-dead-state"}
+        seed_poison_dead_reason: context("life/companion-pair-roots", "seed-poison-dead-reason-drift", "", "offline") => failed{"poison-dead-reason"}
+        seed_sub_ok: context("life/companion-pair-roots", "seed-sub-ok-drift", "", "offline") => failed{"sub-ok"}
+        seed_sub_poison: context("life/companion-pair-roots", "seed-sub-poison-drift", "", "offline") => failed{"sub-poison"}
+        seed_stub_500_body: context("life/companion-pair-roots", "seed-stub-500-body-drift", "", "offline") => failed{"stub-500-body"}
+        seed_drained_note: context("life/companion-pair-roots", "seed-drained-note-drift", "", "offline") => failed{"drained-note"}
+        seed_deny_prefix: context("life/companion-pair-roots", "seed-deny-prefix-drift", "", "offline") => failed{"deny-prefix"}
+        seed_unmap_prefix: context("life/companion-pair-roots", "seed-unmap-prefix-drift", "", "offline") => failed{"unmap-prefix"}
+        seed_sub_denied: context("life/companion-pair-roots", "seed-sub-denied-drift", "", "offline") => failed{"sub-denied"}
+        seed_sub_unmapped: context("life/companion-pair-roots", "seed-sub-unmapped-drift", "", "offline") => failed{"sub-unmapped"}
+        seed_denied_url: context("life/companion-pair-roots", "seed-denied-url-drift", "", "offline") => failed{"denied-url"}
+        seed_denied_occ: context("life/companion-pair-roots", "seed-denied-occ-drift", "", "offline") => failed{"denied-occ"}
+        seed_denied_dead_reason: context("life/companion-pair-roots", "seed-denied-dead-reason-drift", "", "offline") => failed{"denied-dead-reason"}
+        seed_unmap_dead_reason: context("life/companion-pair-roots", "seed-unmap-dead-reason-drift", "", "offline") => failed{"unmap-dead-reason"}
+        seed_cred_prefix: context("life/companion-pair-roots", "seed-cred-prefix-drift", "", "offline") => failed{"cred-prefix"}
+        seed_cred_binding: context("life/companion-pair-roots", "seed-cred-binding-drift", "", "offline") => failed{"cred-binding"}
+        seed_bearer_prefix: context("life/companion-pair-roots", "seed-bearer-prefix-drift", "", "offline") => failed{"bearer-prefix"}
+        seed_sub_cred: context("life/companion-pair-roots", "seed-sub-cred-drift", "", "offline") => failed{"sub-cred"}
+        seed_flaky_prefix: context("life/companion-pair-roots", "seed-flaky-prefix-drift", "", "offline") => failed{"flaky-prefix"}
+        seed_timeout_ms: context("life/companion-pair-roots", "seed-timeout-ms-drift", "", "offline") => failed{"timeout-ms"}
+        seed_timeout_flag: context("life/companion-pair-roots", "seed-timeout-flag-drift", "", "offline") => failed{"timeout-flag"}
+        seed_timeout_occ: context("life/companion-pair-roots", "seed-timeout-occ-drift", "", "offline") => failed{"timeout-occ"}
+        seed_pair_rows: context("life/companion-pair-roots", "seed-pair-rows-drift", "", "offline") => failed{"pair-rows"}
+        seed_pair_cap: context("life/companion-pair-roots", "seed-pair-cap-drift", "", "offline") => failed{"pair-cap"}
+        seed_conc1_rows: context("life/companion-pair-roots", "seed-conc1-rows-drift", "", "offline") => failed{"conc1-rows"}
+        seed_conc4_rows: context("life/companion-pair-roots", "seed-conc4-rows-drift", "", "offline") => failed{"conc4-rows"}
+        seed_conc_one: context("life/companion-pair-roots", "seed-conc-one-drift", "", "offline") => failed{"conc-one"}
+        seed_conc_four: context("life/companion-pair-roots", "seed-conc-four-drift", "", "offline") => failed{"conc-four"}
+        seed_serial_peak: context("life/companion-pair-roots", "seed-serial-peak-drift", "", "offline") => failed{"serial-peak"}
+        seed_parallel_peak_low: context("life/companion-pair-roots", "seed-parallel-peak-low-drift", "", "offline") => failed{"parallel-peak-low"}
+        seed_conc4_delay_ms: context("life/companion-pair-roots", "seed-conc4-delay-ms-drift", "", "offline") => failed{"conc4-delay-ms"}
+        seed_poison_rows: context("life/companion-pair-roots", "seed-poison-rows-drift", "", "offline") => failed{"poison-rows"}
+        seed_poison_round_cap: context("life/companion-pair-roots", "seed-poison-round-cap-drift", "", "offline") => failed{"poison-round-cap"}
+        seed_poison_attempts: context("life/companion-pair-roots", "seed-poison-attempts-drift", "", "offline") => failed{"poison-attempts"}
+        seed_poison_version_min: context("life/companion-pair-roots", "seed-poison-version-min-drift", "", "offline") => failed{"poison-version-min"}
+        seed_dest_steps: context("life/companion-pair-roots", "seed-dest-steps-drift", "", "offline") => failed{"dest-steps"}
+        seed_flaky_posts: context("life/companion-pair-roots", "seed-flaky-posts-drift", "", "offline") => failed{"flaky-posts"}
+        seed_flaky_first_sleep_s: context("life/companion-pair-roots", "seed-flaky-first-sleep-s-drift", "", "offline") => failed{"flaky-first-sleep-s"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.pair_prefix, "f06-pair-", c, "pair-prefix")
+            failed
+            ok evidence pair_prefix_evidence => match call require_text(got.dup_note, "claimed by", c, "dup-note")
+                failed
+                ok evidence dup_note_evidence => match call require_text(got.maxbatch_flag, "--max-batch", c, "maxbatch-flag")
+                    failed
+                    ok evidence maxbatch_flag_evidence => match call require_text(got.conc1_prefix, "f06-c1-", c, "conc1-prefix")
+                        failed
+                        ok evidence conc1_prefix_evidence => match call require_text(got.conc4_prefix, "f06-conc4-", c, "conc4-prefix")
+                            failed
+                            ok evidence conc4_prefix_evidence => match call require_text(got.conc_flag, "--concurrency", c, "conc-flag")
+                                failed
+                                ok evidence conc_flag_evidence => match call require_text(got.poison_prefix, "f06-poison-", c, "poison-prefix")
+                                    failed
+                                    ok evidence poison_prefix_evidence => match call require_text(got.poison_lease, "1000", c, "poison-lease")
+                                        failed
+                                        ok evidence poison_lease_evidence => match call require_text(got.lease_flag, "--lease-ms", c, "lease-flag")
+                                            failed
+                                            ok evidence lease_flag_evidence => match call require_text(got.poison_failed_occ, "500", c, "poison-failed-occ")
+                                                failed
+                                                ok evidence poison_failed_occ_evidence => match call require_text(got.poison_dead_occ, "5", c, "poison-dead-occ")
+                                                    failed
+                                                    ok evidence poison_dead_occ_evidence => match call require_text(got.poison_dead_state, "dead", c, "poison-dead-state")
+                                                        failed
+                                                        ok evidence poison_dead_state_evidence => match call require_text(got.poison_dead_reason, "poison", c, "poison-dead-reason")
+                                                            failed
+                                                            ok evidence poison_dead_reason_evidence => match call require_text(got.sub_ok, "sub-ok", c, "sub-ok")
+                                                                failed
+                                                                ok evidence sub_ok_evidence => match call require_text(got.sub_poison, "sub-poison", c, "sub-poison")
+                                                                    failed
+                                                                    ok evidence sub_poison_evidence => match call require_text(got.stub_500_body, "downstream failed", c, "stub-500-body")
+                                                                        failed
+                                                                        ok evidence stub_500_body_evidence => match call require_text(got.drained_note, "drained run recorded", c, "drained-note")
+                                                                            failed
+                                                                            ok evidence drained_note_evidence => match call require_text(got.deny_prefix, "f06-deny-", c, "deny-prefix")
+                                                                                failed
+                                                                                ok evidence deny_prefix_evidence => match call require_text(got.unmap_prefix, "f06-unmap-", c, "unmap-prefix")
+                                                                                    failed
+                                                                                    ok evidence unmap_prefix_evidence => match call require_text(got.sub_denied, "sub-denied", c, "sub-denied")
+                                                                                        failed
+                                                                                        ok evidence sub_denied_evidence => match call require_text(got.sub_unmapped, "sub-unmapped", c, "sub-unmapped")
+                                                                                            failed
+                                                                                            ok evidence sub_unmapped_evidence => match call require_text(got.denied_url, "http://example.com:9/hook", c, "denied-url")
+                                                                                                failed
+                                                                                                ok evidence denied_url_evidence => match call require_text(got.denied_occ, "no-matching-rule", c, "denied-occ")
+                                                                                                    failed
+                                                                                                    ok evidence denied_occ_evidence => match call require_text(got.denied_dead_reason, "destination_denied", c, "denied-dead-reason")
+                                                                                                        failed
+                                                                                                        ok evidence denied_dead_reason_evidence => match call require_text(got.unmap_dead_reason, "no_destination", c, "unmap-dead-reason")
+                                                                                                            failed
+                                                                                                            ok evidence unmap_dead_reason_evidence => match call require_text(got.cred_prefix, "f06-cred-", c, "cred-prefix")
+                                                                                                                failed
+                                                                                                                ok evidence cred_prefix_evidence => match call require_text(got.cred_binding, "F06_HOOK_TOKEN", c, "cred-binding")
+                                                                                                                    failed
+                                                                                                                    ok evidence cred_binding_evidence => match call require_text(got.bearer_prefix, "Bearer ", c, "bearer-prefix")
+                                                                                                                        failed
+                                                                                                                        ok evidence bearer_prefix_evidence => match call require_text(got.sub_cred, "sub-cred", c, "sub-cred")
+                                                                                                                            failed
+                                                                                                                            ok evidence sub_cred_evidence => match call require_text(got.flaky_prefix, "f06-flaky-", c, "flaky-prefix")
+                                                                                                                                failed
+                                                                                                                                ok evidence flaky_prefix_evidence => match call require_text(got.timeout_ms, "1500", c, "timeout-ms")
+                                                                                                                                    failed
+                                                                                                                                    ok evidence timeout_ms_evidence => match call require_text(got.timeout_flag, "--timeout-ms", c, "timeout-flag")
+                                                                                                                                        failed
+                                                                                                                                        ok evidence timeout_flag_evidence => match call require_text(got.timeout_occ, "timeout", c, "timeout-occ")
+                                                                                                                                            failed
+                                                                                                                                            ok evidence timeout_occ_evidence => match call require_int(got.pair_rows, 48, c, "pair-rows")
+                                                                                                                                                failed
+                                                                                                                                                ok evidence pair_rows_evidence => match call require_int(got.pair_cap, 24, c, "pair-cap")
+                                                                                                                                                    failed
+                                                                                                                                                    ok evidence pair_cap_evidence => match call require_int(got.conc1_rows, 8, c, "conc1-rows")
+                                                                                                                                                        failed
+                                                                                                                                                        ok evidence conc1_rows_evidence => match call require_int(got.conc4_rows, 12, c, "conc4-rows")
+                                                                                                                                                            failed
+                                                                                                                                                            ok evidence conc4_rows_evidence => match call require_int(got.conc_one, 1, c, "conc-one")
+                                                                                                                                                                failed
+                                                                                                                                                                ok evidence conc_one_evidence => match call require_int(got.conc_four, 4, c, "conc-four")
+                                                                                                                                                                    failed
+                                                                                                                                                                    ok evidence conc_four_evidence => match call require_int(got.serial_peak, 1, c, "serial-peak")
+                                                                                                                                                                        failed
+                                                                                                                                                                        ok evidence serial_peak_evidence => match call require_int(got.parallel_peak_low, 2, c, "parallel-peak-low")
+                                                                                                                                                                            failed
+                                                                                                                                                                            ok evidence parallel_peak_low_evidence => match call require_int(got.conc4_delay_ms, 100, c, "conc4-delay-ms")
+                                                                                                                                                                                failed
+                                                                                                                                                                                ok evidence conc4_delay_ms_evidence => match call require_int(got.poison_rows, 3, c, "poison-rows")
+                                                                                                                                                                                    failed
+                                                                                                                                                                                    ok evidence poison_rows_evidence => match call require_int(got.poison_round_cap, 12, c, "poison-round-cap")
+                                                                                                                                                                                        failed
+                                                                                                                                                                                        ok evidence poison_round_cap_evidence => match call require_int(got.poison_attempts, 5, c, "poison-attempts")
+                                                                                                                                                                                            failed
+                                                                                                                                                                                            ok evidence poison_attempts_evidence => match call require_int(got.poison_version_min, 6, c, "poison-version-min")
+                                                                                                                                                                                                failed
+                                                                                                                                                                                                ok evidence poison_version_min_evidence => match call require_int(got.dest_steps, 2, c, "dest-steps")
+                                                                                                                                                                                                    failed
+                                                                                                                                                                                                    ok evidence dest_steps_evidence => match call require_int(got.flaky_posts, 2, c, "flaky-posts")
+                                                                                                                                                                                                        failed
+                                                                                                                                                                                                        ok evidence flaky_posts_evidence => match call require_int(got.flaky_first_sleep_s, 3, c, "flaky-first-sleep-s")
+                                                                                                                                                                                                            failed
+                                                                                                                                                                                                            ok evidence flaky_first_sleep_s_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m40_l011: "m40-l011" => ok test_case("life/companion-pair-roots", ["life", "m40"], [], 120000, [check_ref("pair-prefix"), check_ref("dup-note"), check_ref("maxbatch-flag"), check_ref("conc1-prefix"), check_ref("conc4-prefix"), check_ref("conc-flag"), check_ref("poison-prefix"), check_ref("poison-lease"), check_ref("lease-flag"), check_ref("poison-failed-occ"), check_ref("poison-dead-occ"), check_ref("poison-dead-state"), check_ref("poison-dead-reason"), check_ref("sub-ok"), check_ref("sub-poison"), check_ref("stub-500-body"), check_ref("drained-note"), check_ref("deny-prefix"), check_ref("unmap-prefix"), check_ref("sub-denied"), check_ref("sub-unmapped"), check_ref("denied-url"), check_ref("denied-occ"), check_ref("denied-dead-reason"), check_ref("unmap-dead-reason"), check_ref("cred-prefix"), check_ref("cred-binding"), check_ref("bearer-prefix"), check_ref("sub-cred"), check_ref("flaky-prefix"), check_ref("timeout-ms"), check_ref("timeout-flag"), check_ref("timeout-occ"), check_ref("pair-rows"), check_ref("pair-cap"), check_ref("conc1-rows"), check_ref("conc4-rows"), check_ref("conc-one"), check_ref("conc-four"), check_ref("serial-peak"), check_ref("parallel-peak-low"), check_ref("conc4-delay-ms"), check_ref("poison-rows"), check_ref("poison-round-cap"), check_ref("poison-attempts"), check_ref("poison-version-min"), check_ref("dest-steps"), check_ref("flaky-posts"), check_ref("flaky-first-sleep-s")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m40-l011"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/companion-pair-roots", ["life", "m40"], [], 120000, [check_ref("pair-prefix"), check_ref("dup-note"), check_ref("maxbatch-flag"), check_ref("conc1-prefix"), check_ref("conc4-prefix"), check_ref("conc-flag"), check_ref("poison-prefix"), check_ref("poison-lease"), check_ref("lease-flag"), check_ref("poison-failed-occ"), check_ref("poison-dead-occ"), check_ref("poison-dead-state"), check_ref("poison-dead-reason"), check_ref("sub-ok"), check_ref("sub-poison"), check_ref("stub-500-body"), check_ref("drained-note"), check_ref("deny-prefix"), check_ref("unmap-prefix"), check_ref("sub-denied"), check_ref("sub-unmapped"), check_ref("denied-url"), check_ref("denied-occ"), check_ref("denied-dead-reason"), check_ref("unmap-dead-reason"), check_ref("cred-prefix"), check_ref("cred-binding"), check_ref("bearer-prefix"), check_ref("sub-cred"), check_ref("flaky-prefix"), check_ref("timeout-ms"), check_ref("timeout-flag"), check_ref("timeout-occ"), check_ref("pair-rows"), check_ref("pair-cap"), check_ref("conc1-rows"), check_ref("conc4-rows"), check_ref("conc-one"), check_ref("conc-four"), check_ref("serial-peak"), check_ref("parallel-peak-low"), check_ref("conc4-delay-ms"), check_ref("poison-rows"), check_ref("poison-round-cap"), check_ref("poison-attempts"), check_ref("poison-version-min"), check_ref("dest-steps"), check_ref("flaky-posts"), check_ref("flaky-first-sleep-s")], callable case_body)

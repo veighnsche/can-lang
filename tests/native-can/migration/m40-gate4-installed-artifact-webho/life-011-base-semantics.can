@@ -1,0 +1,474 @@
+package m40life011base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M40 LIFE-011 TestCompanionPairLiveF06
+/// report shape plus auth leg.
+/// Source: tests/integration/
+/// webhook_f06_test.go symbol
+/// TestCompanionPairLiveF06 (L550-1190):
+/// the C-A report shape pins plus
+/// the leg A auth pins.
+/// Disposition: migrate (this row owns
+/// the companion pair as reviewable Can
+/// facts; the old go check stays until
+/// the integrator retires it after
+/// every linked row, variant,
+/// environment and control has accepted
+/// evidence).
+/// Protects (this file): facet one
+/// (actual companion report step plus
+/// failure plus occurrence shape and
+/// redaction of secrets and URLs) and
+/// the leg A half of facet two (wrong
+/// carrier plus bad flag leave the row
+/// untouched; one smoke row delivers).
+/// ADAPTATION (recorded, with source
+/// lines): shape pins hold the finite
+/// report marks; probe pins hold the
+/// wrong-carrier and bad-flag bytes;
+/// count pins hold ints tallied from
+/// maps and guards.
+/// protocol-one pins 1 (L426);
+/// worker-a pins worker-A (L659);
+/// worker-b pins worker-B (L673);
+/// outcome-delivered pins delivered
+/// (L75); outcome-failed pins failed
+/// (L75); outcome-dead pins dead (L75);
+/// outcome-error pins error (L75);
+/// ident-ok pins ok (L79);
+/// ident-downstream-status pins
+/// downstream-status (L79);
+/// ident-downstream-transport pins
+/// downstream-transport (L79);
+/// ident-downstream-timeout pins
+/// downstream-timeout (L80);
+/// ident-credential-missing pins
+/// credential-missing (L80);
+/// ident-redirect-denied pins
+/// redirect-denied (L81);
+/// ident-redirect-hops pins
+/// redirect-hops (L81); ident-poison
+/// pins poison (L81);
+/// ident-destination-denied pins
+/// destination-denied (L82);
+/// ident-no-destination pins
+/// no-destination (L82);
+/// ident-lease-lost pins lease-lost
+/// (L82); ident-protocol-error pins
+/// protocol-error (L83);
+/// ident-store-unavailable pins
+/// store-unavailable (L83); leak-http
+/// pins http:// (L473); leak-https
+/// pins https:// (L473); auth-prefix
+/// pins f06-auth- (L648);
+/// wrong-carrier-label pins
+/// wrong-secret (L649); wrong-stderr
+/// pins unauthorized (L650);
+/// badflag-stderr pins usage: (L656);
+/// badflag-value pins 5 (L655);
+/// outbox-pending pins pending (L654);
+/// ident-count pins int (13) tallied
+/// from the L78-84 map keys (no 13
+/// literal lives in source);
+/// outcome-count pins int (4) tallied
+/// from the L74-76 map keys;
+/// wrong-exit pins int (1) from L650;
+/// badflag-exit pins int (2) from L656;
+/// auth-steps pins int (1) from L662.
+/// The three live carrier values live
+/// at L583-585; values withheld,
+/// labels only, never quoted.
+/// Facet map (declared order):
+/// protocol-one, worker-a, worker-b,
+/// outcome-delivered, outcome-failed,
+/// outcome-dead, outcome-error,
+/// ident-ok, ident-downstream-status,
+/// ident-downstream-transport,
+/// ident-downstream-timeout,
+/// ident-credential-missing,
+/// ident-redirect-denied,
+/// ident-redirect-hops, ident-poison,
+/// ident-destination-denied,
+/// ident-no-destination,
+/// ident-lease-lost,
+/// ident-protocol-error,
+/// ident-store-unavailable, leak-http,
+/// leak-https, auth-prefix,
+/// wrong-carrier-label, wrong-stderr,
+/// badflag-stderr, badflag-value,
+/// outbox-pending, ident-count,
+/// outcome-count, wrong-exit,
+/// badflag-exit, auth-steps.
+/// The pair plus concurrency plus
+/// poison plus destination plus
+/// credential plus timeout legs live in
+/// life-011-roots-green.can; the run
+/// envelope plus crash plus batch plus
+/// idle legs live in
+/// life-011-run-shape.can.
+/// Variants: A auth here; B pair, C
+/// concurrency, D poison, E
+/// destination, F credential and G
+/// timeout in roots; H crash, W4.3
+/// batch and I idle in run; default
+/// plus seeded drifts only here.
+/// Environment: CAN_BUN_ARCHIVE plus
+/// staged bundle plus loopback plus
+/// disposable SQLite (row lists four
+/// gates; bind at P23; no live run
+/// now).
+/// Logical gates CHILD plus HTTP plus
+/// PEER plus DB bind at P23; no live
+/// run now.
+/// Timeout 120000ms is the offline
+/// default bound (binds at P23 like
+/// the M31 no-run rows).
+/// Delegated oracles: none in this row.
+/// Execution credit: NOT claimed (P23
+/// plus QHTTP plus QD1 plus QD2 plus
+/// QD4 accept gates unmet).
+/// Case life/companion-pair-base
+/// checks: protocol-one, worker-a,
+/// worker-b, outcome-delivered,
+/// outcome-failed, outcome-dead,
+/// outcome-error, ident-ok,
+/// ident-downstream-status,
+/// ident-downstream-transport,
+/// ident-downstream-timeout,
+/// ident-credential-missing,
+/// ident-redirect-denied,
+/// ident-redirect-hops, ident-poison,
+/// ident-destination-denied,
+/// ident-no-destination,
+/// ident-lease-lost,
+/// ident-protocol-error,
+/// ident-store-unavailable, leak-http,
+/// leak-https, auth-prefix,
+/// wrong-carrier-label, wrong-stderr,
+/// badflag-stderr, badflag-value,
+/// outbox-pending, ident-count,
+/// outcome-count, wrong-exit,
+/// badflag-exit, auth-steps.
+/// Shared old files untouched;
+/// retirement is a later integrator
+/// decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str protocol_one
+    str worker_a
+    str worker_b
+    str outcome_delivered
+    str outcome_failed
+    str outcome_dead
+    str outcome_error
+    str ident_ok
+    str ident_downstream_status
+    str ident_downstream_transport
+    str ident_downstream_timeout
+    str ident_credential_missing
+    str ident_redirect_denied
+    str ident_redirect_hops
+    str ident_poison
+    str ident_destination_denied
+    str ident_no_destination
+    str ident_lease_lost
+    str ident_protocol_error
+    str ident_store_unavailable
+    str leak_http
+    str leak_https
+    str auth_prefix
+    str wrong_carrier_label
+    str wrong_stderr
+    str badflag_stderr
+    str badflag_value
+    str outbox_pending
+    int ident_count
+    int outcome_count
+    int wrong_exit
+    int badflag_exit
+    int auth_steps
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/companion-pair-base", "default", "", "offline"), "protocol-one" => ok "case life/companion-pair-base variant default root protocol-one run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/companion-pair-base", "default", "", "offline"), "protocol-one" => ok evidence("protocol-one", "true", "true", true, "case life/companion-pair-base variant default root protocol-one run offline")
+        different: false, true, context("life/companion-pair-base", "default", "", "offline"), "protocol-one" => failed{"protocol-one"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 13, 13, context("life/companion-pair-base", "default", "", "offline"), "ident-count" => ok evidence("ident-count", "13", "13", true, "case life/companion-pair-base variant default root ident-count run offline")
+        different: 12, 13, context("life/companion-pair-base", "default", "", "offline"), "ident-count" => failed{"ident-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "1", "1", context("life/companion-pair-base", "default", "", "offline"), "protocol-one" => ok evidence("protocol-one", "1", "1", true, "case life/companion-pair-base variant default root protocol-one run offline")
+        different: "1_2", "1", context("life/companion-pair-base", "default", "", "offline"), "protocol-one" => failed{"protocol-one"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_protocol_one: "seed-protocol-one-drift" => ok observation("1_2", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_worker_a: "seed-worker-a-drift" => ok observation("1", "worker-A_2", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_worker_b: "seed-worker-b-drift" => ok observation("1", "worker-A", "worker-B_2", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_outcome_delivered: "seed-outcome-delivered-drift" => ok observation("1", "worker-A", "worker-B", "delivered_2", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_outcome_failed: "seed-outcome-failed-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed_2", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_outcome_dead: "seed-outcome-dead-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead_2", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_outcome_error: "seed-outcome-error-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error_2", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_ident_ok: "seed-ident-ok-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok_2", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_ident_downstream_status: "seed-ident-downstream-status-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status_2", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_ident_downstream_transport: "seed-ident-downstream-transport-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport_2", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_ident_downstream_timeout: "seed-ident-downstream-timeout-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout_2", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_ident_credential_missing: "seed-ident-credential-missing-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing_2", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_ident_redirect_denied: "seed-ident-redirect-denied-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied_2", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_ident_redirect_hops: "seed-ident-redirect-hops-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops_2", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_ident_poison: "seed-ident-poison-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison_2", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_ident_destination_denied: "seed-ident-destination-denied-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied_2", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_ident_no_destination: "seed-ident-no-destination-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination_2", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_ident_lease_lost: "seed-ident-lease-lost-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost_2", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_ident_protocol_error: "seed-ident-protocol-error-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error_2", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_ident_store_unavailable: "seed-ident-store-unavailable-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable_2", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_leak_http: "seed-leak-http-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://_2", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_leak_https: "seed-leak-https-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://_2", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_auth_prefix: "seed-auth-prefix-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-_2", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_wrong_carrier_label: "seed-wrong-carrier-label-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret_2", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_wrong_stderr: "seed-wrong-stderr-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized_2", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        seed_badflag_stderr: "seed-badflag-stderr-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:_2", "5", "pending", 13, 4, 1, 2, 1)
+        seed_badflag_value: "seed-badflag-value-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5_2", "pending", 13, 4, 1, 2, 1)
+        seed_outbox_pending: "seed-outbox-pending-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending_2", 13, 4, 1, 2, 1)
+        seed_ident_count: "seed-ident-count-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 12, 4, 1, 2, 1)
+        seed_outcome_count: "seed-outcome-count-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 3, 1, 2, 1)
+        seed_wrong_exit: "seed-wrong-exit-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 0, 2, 1)
+        seed_badflag_exit: "seed-badflag-exit-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 1, 1)
+        seed_auth_steps: "seed-auth-steps-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 0)
+    match variant_id
+        "seed-protocol-one-drift" => ok observation("1_2", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-worker-a-drift" => ok observation("1", "worker-A_2", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-worker-b-drift" => ok observation("1", "worker-A", "worker-B_2", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-outcome-delivered-drift" => ok observation("1", "worker-A", "worker-B", "delivered_2", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-outcome-failed-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed_2", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-outcome-dead-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead_2", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-outcome-error-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error_2", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-ident-ok-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok_2", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-ident-downstream-status-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status_2", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-ident-downstream-transport-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport_2", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-ident-downstream-timeout-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout_2", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-ident-credential-missing-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing_2", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-ident-redirect-denied-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied_2", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-ident-redirect-hops-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops_2", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-ident-poison-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison_2", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-ident-destination-denied-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied_2", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-ident-no-destination-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination_2", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-ident-lease-lost-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost_2", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-ident-protocol-error-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error_2", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-ident-store-unavailable-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable_2", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-leak-http-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://_2", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-leak-https-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://_2", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-auth-prefix-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-_2", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-wrong-carrier-label-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret_2", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-wrong-stderr-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized_2", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-badflag-stderr-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:_2", "5", "pending", 13, 4, 1, 2, 1)
+        "seed-badflag-value-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5_2", "pending", 13, 4, 1, 2, 1)
+        "seed-outbox-pending-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending_2", 13, 4, 1, 2, 1)
+        "seed-ident-count-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 12, 4, 1, 2, 1)
+        "seed-outcome-count-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 3, 1, 2, 1)
+        "seed-wrong-exit-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 0, 2, 1)
+        "seed-badflag-exit-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 1, 1)
+        "seed-auth-steps-drift" => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 0)
+        _ => ok observation("1", "worker-A", "worker-B", "delivered", "failed", "dead", "error", "ok", "downstream-status", "downstream-transport", "downstream-timeout", "credential-missing", "redirect-denied", "redirect-hops", "poison", "destination-denied", "no-destination", "lease-lost", "protocol-error", "store-unavailable", "http://", "https://", "f06-auth-", "wrong-secret", "unauthorized", "usage:", "5", "pending", 13, 4, 1, 2, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m40_l011: "m40-l011" => ok [check("protocol-one", "report keeps its protocol mark"), check("worker-a", "smoke leg keeps worker A"), check("worker-b", "pair leg keeps worker B"), check("outcome-delivered", "shape keeps delivered"), check("outcome-failed", "shape keeps failed"), check("outcome-dead", "shape keeps dead"), check("outcome-error", "shape keeps error"), check("ident-ok", "shape keeps ok"), check("ident-downstream-status", "shape keeps downstream-status"), check("ident-downstream-transport", "shape keeps downstream-transport"), check("ident-downstream-timeout", "shape keeps downstream-timeout"), check("ident-credential-missing", "shape keeps credential-missing"), check("ident-redirect-denied", "shape keeps redirect-denied"), check("ident-redirect-hops", "shape keeps redirect-hops"), check("ident-poison", "shape keeps poison"), check("ident-destination-denied", "shape keeps destination-denied"), check("ident-no-destination", "shape keeps no-destination"), check("ident-lease-lost", "shape keeps lease-lost"), check("ident-protocol-error", "shape keeps protocol-error"), check("ident-store-unavailable", "shape keeps store-unavailable"), check("leak-http", "redaction bars plain http"), check("leak-https", "redaction bars https"), check("auth-prefix", "auth leg keeps its seed prefix"), check("wrong-carrier-label", "auth leg keeps its wrong probe"), check("wrong-stderr", "wrong probe keeps its stderr mark"), check("badflag-stderr", "bad flag keeps its usage mark"), check("badflag-value", "bad flag keeps its rejected value"), check("outbox-pending", "wrong probe leaves the row pending"), check("ident-count", "shape holds thirteen idents"), check("outcome-count", "shape holds four outcomes"), check("wrong-exit", "wrong probe exits 1"), check("badflag-exit", "bad flag exits 2"), check("auth-steps", "smoke leg delivers one step")]
+        other: "nope" => ok []
+    match scope is "m40-l011"
+        false => ok []
+        true => ok [check("protocol-one", "report keeps its protocol mark"), check("worker-a", "smoke leg keeps worker A"), check("worker-b", "pair leg keeps worker B"), check("outcome-delivered", "shape keeps delivered"), check("outcome-failed", "shape keeps failed"), check("outcome-dead", "shape keeps dead"), check("outcome-error", "shape keeps error"), check("ident-ok", "shape keeps ok"), check("ident-downstream-status", "shape keeps downstream-status"), check("ident-downstream-transport", "shape keeps downstream-transport"), check("ident-downstream-timeout", "shape keeps downstream-timeout"), check("ident-credential-missing", "shape keeps credential-missing"), check("ident-redirect-denied", "shape keeps redirect-denied"), check("ident-redirect-hops", "shape keeps redirect-hops"), check("ident-poison", "shape keeps poison"), check("ident-destination-denied", "shape keeps destination-denied"), check("ident-no-destination", "shape keeps no-destination"), check("ident-lease-lost", "shape keeps lease-lost"), check("ident-protocol-error", "shape keeps protocol-error"), check("ident-store-unavailable", "shape keeps store-unavailable"), check("leak-http", "redaction bars plain http"), check("leak-https", "redaction bars https"), check("auth-prefix", "auth leg keeps its seed prefix"), check("wrong-carrier-label", "auth leg keeps its wrong probe"), check("wrong-stderr", "wrong probe keeps its stderr mark"), check("badflag-stderr", "bad flag keeps its usage mark"), check("badflag-value", "bad flag keeps its rejected value"), check("outbox-pending", "wrong probe leaves the row pending"), check("ident-count", "shape holds thirteen idents"), check("outcome-count", "shape holds four outcomes"), check("wrong-exit", "wrong probe exits 1"), check("badflag-exit", "bad flag exits 2"), check("auth-steps", "smoke leg delivers one step")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/companion-pair-base" => ok [expected_check("protocol-one", "1"), expected_check("worker-a", "worker-A"), expected_check("worker-b", "worker-B"), expected_check("outcome-delivered", "delivered"), expected_check("outcome-failed", "failed"), expected_check("outcome-dead", "dead"), expected_check("outcome-error", "error"), expected_check("ident-ok", "ok"), expected_check("ident-downstream-status", "downstream-status"), expected_check("ident-downstream-transport", "downstream-transport"), expected_check("ident-downstream-timeout", "downstream-timeout"), expected_check("ident-credential-missing", "credential-missing"), expected_check("ident-redirect-denied", "redirect-denied"), expected_check("ident-redirect-hops", "redirect-hops"), expected_check("ident-poison", "poison"), expected_check("ident-destination-denied", "destination-denied"), expected_check("ident-no-destination", "no-destination"), expected_check("ident-lease-lost", "lease-lost"), expected_check("ident-protocol-error", "protocol-error"), expected_check("ident-store-unavailable", "store-unavailable"), expected_check("leak-http", "http://"), expected_check("leak-https", "https://"), expected_check("auth-prefix", "f06-auth-"), expected_check("wrong-carrier-label", "wrong-secret"), expected_check("wrong-stderr", "unauthorized"), expected_check("badflag-stderr", "usage:"), expected_check("badflag-value", "5"), expected_check("outbox-pending", "pending"), expected_check("ident-count", "13"), expected_check("outcome-count", "4"), expected_check("wrong-exit", "1"), expected_check("badflag-exit", "2"), expected_check("auth-steps", "1")]
+        unknown: "nope" => ok []
+    match case is "life/companion-pair-base"
+        false => ok []
+        true => ok [expected_check("protocol-one", "1"), expected_check("worker-a", "worker-A"), expected_check("worker-b", "worker-B"), expected_check("outcome-delivered", "delivered"), expected_check("outcome-failed", "failed"), expected_check("outcome-dead", "dead"), expected_check("outcome-error", "error"), expected_check("ident-ok", "ok"), expected_check("ident-downstream-status", "downstream-status"), expected_check("ident-downstream-transport", "downstream-transport"), expected_check("ident-downstream-timeout", "downstream-timeout"), expected_check("ident-credential-missing", "credential-missing"), expected_check("ident-redirect-denied", "redirect-denied"), expected_check("ident-redirect-hops", "redirect-hops"), expected_check("ident-poison", "poison"), expected_check("ident-destination-denied", "destination-denied"), expected_check("ident-no-destination", "no-destination"), expected_check("ident-lease-lost", "lease-lost"), expected_check("ident-protocol-error", "protocol-error"), expected_check("ident-store-unavailable", "store-unavailable"), expected_check("leak-http", "http://"), expected_check("leak-https", "https://"), expected_check("auth-prefix", "f06-auth-"), expected_check("wrong-carrier-label", "wrong-secret"), expected_check("wrong-stderr", "unauthorized"), expected_check("badflag-stderr", "usage:"), expected_check("badflag-value", "5"), expected_check("outbox-pending", "pending"), expected_check("ident-count", "13"), expected_check("outcome-count", "4"), expected_check("wrong-exit", "1"), expected_check("badflag-exit", "2"), expected_check("auth-steps", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/companion-pair-base", "default", "", "offline") => ok
+        seed_protocol_one: context("life/companion-pair-base", "seed-protocol-one-drift", "", "offline") => failed{"protocol-one"}
+        seed_worker_a: context("life/companion-pair-base", "seed-worker-a-drift", "", "offline") => failed{"worker-a"}
+        seed_worker_b: context("life/companion-pair-base", "seed-worker-b-drift", "", "offline") => failed{"worker-b"}
+        seed_outcome_delivered: context("life/companion-pair-base", "seed-outcome-delivered-drift", "", "offline") => failed{"outcome-delivered"}
+        seed_outcome_failed: context("life/companion-pair-base", "seed-outcome-failed-drift", "", "offline") => failed{"outcome-failed"}
+        seed_outcome_dead: context("life/companion-pair-base", "seed-outcome-dead-drift", "", "offline") => failed{"outcome-dead"}
+        seed_outcome_error: context("life/companion-pair-base", "seed-outcome-error-drift", "", "offline") => failed{"outcome-error"}
+        seed_ident_ok: context("life/companion-pair-base", "seed-ident-ok-drift", "", "offline") => failed{"ident-ok"}
+        seed_ident_downstream_status: context("life/companion-pair-base", "seed-ident-downstream-status-drift", "", "offline") => failed{"ident-downstream-status"}
+        seed_ident_downstream_transport: context("life/companion-pair-base", "seed-ident-downstream-transport-drift", "", "offline") => failed{"ident-downstream-transport"}
+        seed_ident_downstream_timeout: context("life/companion-pair-base", "seed-ident-downstream-timeout-drift", "", "offline") => failed{"ident-downstream-timeout"}
+        seed_ident_credential_missing: context("life/companion-pair-base", "seed-ident-credential-missing-drift", "", "offline") => failed{"ident-credential-missing"}
+        seed_ident_redirect_denied: context("life/companion-pair-base", "seed-ident-redirect-denied-drift", "", "offline") => failed{"ident-redirect-denied"}
+        seed_ident_redirect_hops: context("life/companion-pair-base", "seed-ident-redirect-hops-drift", "", "offline") => failed{"ident-redirect-hops"}
+        seed_ident_poison: context("life/companion-pair-base", "seed-ident-poison-drift", "", "offline") => failed{"ident-poison"}
+        seed_ident_destination_denied: context("life/companion-pair-base", "seed-ident-destination-denied-drift", "", "offline") => failed{"ident-destination-denied"}
+        seed_ident_no_destination: context("life/companion-pair-base", "seed-ident-no-destination-drift", "", "offline") => failed{"ident-no-destination"}
+        seed_ident_lease_lost: context("life/companion-pair-base", "seed-ident-lease-lost-drift", "", "offline") => failed{"ident-lease-lost"}
+        seed_ident_protocol_error: context("life/companion-pair-base", "seed-ident-protocol-error-drift", "", "offline") => failed{"ident-protocol-error"}
+        seed_ident_store_unavailable: context("life/companion-pair-base", "seed-ident-store-unavailable-drift", "", "offline") => failed{"ident-store-unavailable"}
+        seed_leak_http: context("life/companion-pair-base", "seed-leak-http-drift", "", "offline") => failed{"leak-http"}
+        seed_leak_https: context("life/companion-pair-base", "seed-leak-https-drift", "", "offline") => failed{"leak-https"}
+        seed_auth_prefix: context("life/companion-pair-base", "seed-auth-prefix-drift", "", "offline") => failed{"auth-prefix"}
+        seed_wrong_carrier_label: context("life/companion-pair-base", "seed-wrong-carrier-label-drift", "", "offline") => failed{"wrong-carrier-label"}
+        seed_wrong_stderr: context("life/companion-pair-base", "seed-wrong-stderr-drift", "", "offline") => failed{"wrong-stderr"}
+        seed_badflag_stderr: context("life/companion-pair-base", "seed-badflag-stderr-drift", "", "offline") => failed{"badflag-stderr"}
+        seed_badflag_value: context("life/companion-pair-base", "seed-badflag-value-drift", "", "offline") => failed{"badflag-value"}
+        seed_outbox_pending: context("life/companion-pair-base", "seed-outbox-pending-drift", "", "offline") => failed{"outbox-pending"}
+        seed_ident_count: context("life/companion-pair-base", "seed-ident-count-drift", "", "offline") => failed{"ident-count"}
+        seed_outcome_count: context("life/companion-pair-base", "seed-outcome-count-drift", "", "offline") => failed{"outcome-count"}
+        seed_wrong_exit: context("life/companion-pair-base", "seed-wrong-exit-drift", "", "offline") => failed{"wrong-exit"}
+        seed_badflag_exit: context("life/companion-pair-base", "seed-badflag-exit-drift", "", "offline") => failed{"badflag-exit"}
+        seed_auth_steps: context("life/companion-pair-base", "seed-auth-steps-drift", "", "offline") => failed{"auth-steps"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.protocol_one, "1", c, "protocol-one")
+            failed
+            ok evidence protocol_one_evidence => match call require_text(got.worker_a, "worker-A", c, "worker-a")
+                failed
+                ok evidence worker_a_evidence => match call require_text(got.worker_b, "worker-B", c, "worker-b")
+                    failed
+                    ok evidence worker_b_evidence => match call require_text(got.outcome_delivered, "delivered", c, "outcome-delivered")
+                        failed
+                        ok evidence outcome_delivered_evidence => match call require_text(got.outcome_failed, "failed", c, "outcome-failed")
+                            failed
+                            ok evidence outcome_failed_evidence => match call require_text(got.outcome_dead, "dead", c, "outcome-dead")
+                                failed
+                                ok evidence outcome_dead_evidence => match call require_text(got.outcome_error, "error", c, "outcome-error")
+                                    failed
+                                    ok evidence outcome_error_evidence => match call require_text(got.ident_ok, "ok", c, "ident-ok")
+                                        failed
+                                        ok evidence ident_ok_evidence => match call require_text(got.ident_downstream_status, "downstream-status", c, "ident-downstream-status")
+                                            failed
+                                            ok evidence ident_downstream_status_evidence => match call require_text(got.ident_downstream_transport, "downstream-transport", c, "ident-downstream-transport")
+                                                failed
+                                                ok evidence ident_downstream_transport_evidence => match call require_text(got.ident_downstream_timeout, "downstream-timeout", c, "ident-downstream-timeout")
+                                                    failed
+                                                    ok evidence ident_downstream_timeout_evidence => match call require_text(got.ident_credential_missing, "credential-missing", c, "ident-credential-missing")
+                                                        failed
+                                                        ok evidence ident_credential_missing_evidence => match call require_text(got.ident_redirect_denied, "redirect-denied", c, "ident-redirect-denied")
+                                                            failed
+                                                            ok evidence ident_redirect_denied_evidence => match call require_text(got.ident_redirect_hops, "redirect-hops", c, "ident-redirect-hops")
+                                                                failed
+                                                                ok evidence ident_redirect_hops_evidence => match call require_text(got.ident_poison, "poison", c, "ident-poison")
+                                                                    failed
+                                                                    ok evidence ident_poison_evidence => match call require_text(got.ident_destination_denied, "destination-denied", c, "ident-destination-denied")
+                                                                        failed
+                                                                        ok evidence ident_destination_denied_evidence => match call require_text(got.ident_no_destination, "no-destination", c, "ident-no-destination")
+                                                                            failed
+                                                                            ok evidence ident_no_destination_evidence => match call require_text(got.ident_lease_lost, "lease-lost", c, "ident-lease-lost")
+                                                                                failed
+                                                                                ok evidence ident_lease_lost_evidence => match call require_text(got.ident_protocol_error, "protocol-error", c, "ident-protocol-error")
+                                                                                    failed
+                                                                                    ok evidence ident_protocol_error_evidence => match call require_text(got.ident_store_unavailable, "store-unavailable", c, "ident-store-unavailable")
+                                                                                        failed
+                                                                                        ok evidence ident_store_unavailable_evidence => match call require_text(got.leak_http, "http://", c, "leak-http")
+                                                                                            failed
+                                                                                            ok evidence leak_http_evidence => match call require_text(got.leak_https, "https://", c, "leak-https")
+                                                                                                failed
+                                                                                                ok evidence leak_https_evidence => match call require_text(got.auth_prefix, "f06-auth-", c, "auth-prefix")
+                                                                                                    failed
+                                                                                                    ok evidence auth_prefix_evidence => match call require_text(got.wrong_carrier_label, "wrong-secret", c, "wrong-carrier-label")
+                                                                                                        failed
+                                                                                                        ok evidence wrong_carrier_label_evidence => match call require_text(got.wrong_stderr, "unauthorized", c, "wrong-stderr")
+                                                                                                            failed
+                                                                                                            ok evidence wrong_stderr_evidence => match call require_text(got.badflag_stderr, "usage:", c, "badflag-stderr")
+                                                                                                                failed
+                                                                                                                ok evidence badflag_stderr_evidence => match call require_text(got.badflag_value, "5", c, "badflag-value")
+                                                                                                                    failed
+                                                                                                                    ok evidence badflag_value_evidence => match call require_text(got.outbox_pending, "pending", c, "outbox-pending")
+                                                                                                                        failed
+                                                                                                                        ok evidence outbox_pending_evidence => match call require_int(got.ident_count, 13, c, "ident-count")
+                                                                                                                            failed
+                                                                                                                            ok evidence ident_count_evidence => match call require_int(got.outcome_count, 4, c, "outcome-count")
+                                                                                                                                failed
+                                                                                                                                ok evidence outcome_count_evidence => match call require_int(got.wrong_exit, 1, c, "wrong-exit")
+                                                                                                                                    failed
+                                                                                                                                    ok evidence wrong_exit_evidence => match call require_int(got.badflag_exit, 2, c, "badflag-exit")
+                                                                                                                                        failed
+                                                                                                                                        ok evidence badflag_exit_evidence => match call require_int(got.auth_steps, 1, c, "auth-steps")
+                                                                                                                                            failed
+                                                                                                                                            ok evidence auth_steps_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m40_l011: "m40-l011" => ok test_case("life/companion-pair-base", ["life", "m40"], [], 120000, [check_ref("protocol-one"), check_ref("worker-a"), check_ref("worker-b"), check_ref("outcome-delivered"), check_ref("outcome-failed"), check_ref("outcome-dead"), check_ref("outcome-error"), check_ref("ident-ok"), check_ref("ident-downstream-status"), check_ref("ident-downstream-transport"), check_ref("ident-downstream-timeout"), check_ref("ident-credential-missing"), check_ref("ident-redirect-denied"), check_ref("ident-redirect-hops"), check_ref("ident-poison"), check_ref("ident-destination-denied"), check_ref("ident-no-destination"), check_ref("ident-lease-lost"), check_ref("ident-protocol-error"), check_ref("ident-store-unavailable"), check_ref("leak-http"), check_ref("leak-https"), check_ref("auth-prefix"), check_ref("wrong-carrier-label"), check_ref("wrong-stderr"), check_ref("badflag-stderr"), check_ref("badflag-value"), check_ref("outbox-pending"), check_ref("ident-count"), check_ref("outcome-count"), check_ref("wrong-exit"), check_ref("badflag-exit"), check_ref("auth-steps")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m40-l011"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/companion-pair-base", ["life", "m40"], [], 120000, [check_ref("protocol-one"), check_ref("worker-a"), check_ref("worker-b"), check_ref("outcome-delivered"), check_ref("outcome-failed"), check_ref("outcome-dead"), check_ref("outcome-error"), check_ref("ident-ok"), check_ref("ident-downstream-status"), check_ref("ident-downstream-transport"), check_ref("ident-downstream-timeout"), check_ref("ident-credential-missing"), check_ref("ident-redirect-denied"), check_ref("ident-redirect-hops"), check_ref("ident-poison"), check_ref("ident-destination-denied"), check_ref("ident-no-destination"), check_ref("ident-lease-lost"), check_ref("ident-protocol-error"), check_ref("ident-store-unavailable"), check_ref("leak-http"), check_ref("leak-https"), check_ref("auth-prefix"), check_ref("wrong-carrier-label"), check_ref("wrong-stderr"), check_ref("badflag-stderr"), check_ref("badflag-value"), check_ref("outbox-pending"), check_ref("ident-count"), check_ref("outcome-count"), check_ref("wrong-exit"), check_ref("badflag-exit"), check_ref("auth-steps")], callable case_body)
