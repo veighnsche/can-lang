@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 09f5aa725600e45e5801c4135f58e075e545243eaef6b61203036a4243acbcda.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 00f83a8a1a0a9cf12a4f30717a000c3f5a7a094d3ce3346a22b96f49c2895761.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -55,6 +55,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - http_peer → can.std.http_peer@1
 - native → can.std.native@1
 - descriptor → can.std.descriptor@1
+- c → can.std.c@1
 
 ## Types
 
@@ -239,6 +240,20 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | descriptor::snapshot | record |  | str state, str generation_digest | true |
 | descriptor::descriptor_map | record |  | str schema_version, str run_id, str launch_id, descriptor::snapshot snapshot, descriptor::fd_entry[] descriptors | true |
 | descriptor::environment | record |  | str schema_version, str run_id, str launch_id, str entry, str[] argv, str[] env_names, str env_digest, str log_sink | true |
+| c::parsed_name | record |  | str exported, str local, bool aliased | true |
+| c::parsed_edge | record |  | str specifier, bool type_only, c::parsed_name[] names, bool side_effect | true |
+| c::parsed_module | record |  | c::parsed_edge[] imports, str[] exports, bool dynamic_import, str body | true |
+| c::name_binding | record |  | str exported, str local | true |
+| c::fixed_edge | record |  | option::value&lt;str&gt; runtime_module, option::value&lt;str&gt; resolved, bool type_only, c::name_binding[] names | true |
+| c::manifest_entry | record |  | str path, str body_pattern, c::fixed_edge[] fixed_edges | true |
+| c::runtime_edge | record |  | str runtime_module, bool type_only | true |
+| c::resolved_edge | record |  | str resolved, bool type_only | true |
+| c::case_requirements | record |  | c::runtime_edge[] runtime_edges, c::resolved_edge[] resolved_edges, str[] exports | true |
+| c::manifest | record |  | str local_prefix, str[] program_roots, str[] runtime_modules, c::manifest_entry executable, c::manifest_entry assertion_root, c::case_requirements assertion_case | true |
+| c::artifact_facts | record |  | str artifact, str adapter_export, str adapter_binding, str artifact_digest, str token, int seq | true |
+| c::witness_counters | record |  | int artifacts, int invocations, int completions, int observations, int rejected | true |
+| c::executable_observation | record |  | str artifact, str adapter_export, str adapter_binding, str artifact_digest, str invocation, str completion, str binding, int exit_code, int report_lines | true |
+| c::case_observation | record |  | str artifact, str adapter_export, str adapter_binding, str artifact_digest, str invocation, str completion, str binding, bool passed, option::value&lt;str&gt; reason | true |
 
 ## Domain errors
 

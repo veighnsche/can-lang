@@ -170,6 +170,10 @@
   {
    "name": "descriptor",
    "identity": "can.std.descriptor@1"
+  },
+  {
+   "name": "c",
+   "identity": "can.std.c@1"
   }
  ],
  "prelude": [
@@ -3837,6 +3841,408 @@
     {
      "name": "log_sink",
      "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::parsed_name",
+   "identity": "can.std.c@1::parsed_name",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "exported",
+     "type": "str"
+    },
+    {
+     "name": "local",
+     "type": "str"
+    },
+    {
+     "name": "aliased",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::parsed_edge",
+   "identity": "can.std.c@1::parsed_edge",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "specifier",
+     "type": "str"
+    },
+    {
+     "name": "type_only",
+     "type": "bool"
+    },
+    {
+     "name": "names",
+     "type": "c::parsed_name[]"
+    },
+    {
+     "name": "side_effect",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::parsed_module",
+   "identity": "can.std.c@1::parsed_module",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "imports",
+     "type": "c::parsed_edge[]"
+    },
+    {
+     "name": "exports",
+     "type": "str[]"
+    },
+    {
+     "name": "dynamic_import",
+     "type": "bool"
+    },
+    {
+     "name": "body",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::name_binding",
+   "identity": "can.std.c@1::name_binding",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "exported",
+     "type": "str"
+    },
+    {
+     "name": "local",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::fixed_edge",
+   "identity": "can.std.c@1::fixed_edge",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "runtime_module",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "resolved",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "type_only",
+     "type": "bool"
+    },
+    {
+     "name": "names",
+     "type": "c::name_binding[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::manifest_entry",
+   "identity": "can.std.c@1::manifest_entry",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "body_pattern",
+     "type": "str"
+    },
+    {
+     "name": "fixed_edges",
+     "type": "c::fixed_edge[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::runtime_edge",
+   "identity": "can.std.c@1::runtime_edge",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "runtime_module",
+     "type": "str"
+    },
+    {
+     "name": "type_only",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::resolved_edge",
+   "identity": "can.std.c@1::resolved_edge",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "resolved",
+     "type": "str"
+    },
+    {
+     "name": "type_only",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::case_requirements",
+   "identity": "can.std.c@1::case_requirements",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "runtime_edges",
+     "type": "c::runtime_edge[]"
+    },
+    {
+     "name": "resolved_edges",
+     "type": "c::resolved_edge[]"
+    },
+    {
+     "name": "exports",
+     "type": "str[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::manifest",
+   "identity": "can.std.c@1::manifest",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "local_prefix",
+     "type": "str"
+    },
+    {
+     "name": "program_roots",
+     "type": "str[]"
+    },
+    {
+     "name": "runtime_modules",
+     "type": "str[]"
+    },
+    {
+     "name": "executable",
+     "type": "c::manifest_entry"
+    },
+    {
+     "name": "assertion_root",
+     "type": "c::manifest_entry"
+    },
+    {
+     "name": "assertion_case",
+     "type": "c::case_requirements"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::artifact_facts",
+   "identity": "can.std.c@1::artifact_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "artifact",
+     "type": "str"
+    },
+    {
+     "name": "adapter_export",
+     "type": "str"
+    },
+    {
+     "name": "adapter_binding",
+     "type": "str"
+    },
+    {
+     "name": "artifact_digest",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    },
+    {
+     "name": "seq",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::witness_counters",
+   "identity": "can.std.c@1::witness_counters",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "artifacts",
+     "type": "int"
+    },
+    {
+     "name": "invocations",
+     "type": "int"
+    },
+    {
+     "name": "completions",
+     "type": "int"
+    },
+    {
+     "name": "observations",
+     "type": "int"
+    },
+    {
+     "name": "rejected",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::executable_observation",
+   "identity": "can.std.c@1::executable_observation",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "artifact",
+     "type": "str"
+    },
+    {
+     "name": "adapter_export",
+     "type": "str"
+    },
+    {
+     "name": "adapter_binding",
+     "type": "str"
+    },
+    {
+     "name": "artifact_digest",
+     "type": "str"
+    },
+    {
+     "name": "invocation",
+     "type": "str"
+    },
+    {
+     "name": "completion",
+     "type": "str"
+    },
+    {
+     "name": "binding",
+     "type": "str"
+    },
+    {
+     "name": "exit_code",
+     "type": "int"
+    },
+    {
+     "name": "report_lines",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::case_observation",
+   "identity": "can.std.c@1::case_observation",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "artifact",
+     "type": "str"
+    },
+    {
+     "name": "adapter_export",
+     "type": "str"
+    },
+    {
+     "name": "adapter_binding",
+     "type": "str"
+    },
+    {
+     "name": "artifact_digest",
+     "type": "str"
+    },
+    {
+     "name": "invocation",
+     "type": "str"
+    },
+    {
+     "name": "completion",
+     "type": "str"
+    },
+    {
+     "name": "binding",
+     "type": "str"
+    },
+    {
+     "name": "passed",
+     "type": "bool"
+    },
+    {
+     "name": "reason",
+     "type": "option::value<str>"
     }
    ],
    "leaves": [],

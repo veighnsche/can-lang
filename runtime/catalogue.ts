@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "09f5aa725600e45e5801c4135f58e075e545243eaef6b61203036a4243acbcda";
+export const catalogueSHA256 = "00f83a8a1a0a9cf12a4f30717a000c3f5a7a094d3ce3346a22b96f49c2895761";
 export const catalogue = freeze({
  "schemaVersion": 1,
  "revision": 1,
@@ -180,6 +180,10 @@ export const catalogue = freeze({
   {
    "name": "descriptor",
    "identity": "can.std.descriptor@1"
+  },
+  {
+   "name": "c",
+   "identity": "can.std.c@1"
   }
  ],
  "prelude": [
@@ -3847,6 +3851,408 @@ export const catalogue = freeze({
     {
      "name": "log_sink",
      "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::parsed_name",
+   "identity": "can.std.c@1::parsed_name",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "exported",
+     "type": "str"
+    },
+    {
+     "name": "local",
+     "type": "str"
+    },
+    {
+     "name": "aliased",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::parsed_edge",
+   "identity": "can.std.c@1::parsed_edge",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "specifier",
+     "type": "str"
+    },
+    {
+     "name": "type_only",
+     "type": "bool"
+    },
+    {
+     "name": "names",
+     "type": "c::parsed_name[]"
+    },
+    {
+     "name": "side_effect",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::parsed_module",
+   "identity": "can.std.c@1::parsed_module",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "imports",
+     "type": "c::parsed_edge[]"
+    },
+    {
+     "name": "exports",
+     "type": "str[]"
+    },
+    {
+     "name": "dynamic_import",
+     "type": "bool"
+    },
+    {
+     "name": "body",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::name_binding",
+   "identity": "can.std.c@1::name_binding",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "exported",
+     "type": "str"
+    },
+    {
+     "name": "local",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::fixed_edge",
+   "identity": "can.std.c@1::fixed_edge",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "runtime_module",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "resolved",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "type_only",
+     "type": "bool"
+    },
+    {
+     "name": "names",
+     "type": "c::name_binding[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::manifest_entry",
+   "identity": "can.std.c@1::manifest_entry",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "body_pattern",
+     "type": "str"
+    },
+    {
+     "name": "fixed_edges",
+     "type": "c::fixed_edge[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::runtime_edge",
+   "identity": "can.std.c@1::runtime_edge",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "runtime_module",
+     "type": "str"
+    },
+    {
+     "name": "type_only",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::resolved_edge",
+   "identity": "can.std.c@1::resolved_edge",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "resolved",
+     "type": "str"
+    },
+    {
+     "name": "type_only",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::case_requirements",
+   "identity": "can.std.c@1::case_requirements",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "runtime_edges",
+     "type": "c::runtime_edge[]"
+    },
+    {
+     "name": "resolved_edges",
+     "type": "c::resolved_edge[]"
+    },
+    {
+     "name": "exports",
+     "type": "str[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::manifest",
+   "identity": "can.std.c@1::manifest",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "local_prefix",
+     "type": "str"
+    },
+    {
+     "name": "program_roots",
+     "type": "str[]"
+    },
+    {
+     "name": "runtime_modules",
+     "type": "str[]"
+    },
+    {
+     "name": "executable",
+     "type": "c::manifest_entry"
+    },
+    {
+     "name": "assertion_root",
+     "type": "c::manifest_entry"
+    },
+    {
+     "name": "assertion_case",
+     "type": "c::case_requirements"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::artifact_facts",
+   "identity": "can.std.c@1::artifact_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "artifact",
+     "type": "str"
+    },
+    {
+     "name": "adapter_export",
+     "type": "str"
+    },
+    {
+     "name": "adapter_binding",
+     "type": "str"
+    },
+    {
+     "name": "artifact_digest",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    },
+    {
+     "name": "seq",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::witness_counters",
+   "identity": "can.std.c@1::witness_counters",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "artifacts",
+     "type": "int"
+    },
+    {
+     "name": "invocations",
+     "type": "int"
+    },
+    {
+     "name": "completions",
+     "type": "int"
+    },
+    {
+     "name": "observations",
+     "type": "int"
+    },
+    {
+     "name": "rejected",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::executable_observation",
+   "identity": "can.std.c@1::executable_observation",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "artifact",
+     "type": "str"
+    },
+    {
+     "name": "adapter_export",
+     "type": "str"
+    },
+    {
+     "name": "adapter_binding",
+     "type": "str"
+    },
+    {
+     "name": "artifact_digest",
+     "type": "str"
+    },
+    {
+     "name": "invocation",
+     "type": "str"
+    },
+    {
+     "name": "completion",
+     "type": "str"
+    },
+    {
+     "name": "binding",
+     "type": "str"
+    },
+    {
+     "name": "exit_code",
+     "type": "int"
+    },
+    {
+     "name": "report_lines",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "c::case_observation",
+   "identity": "can.std.c@1::case_observation",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "artifact",
+     "type": "str"
+    },
+    {
+     "name": "adapter_export",
+     "type": "str"
+    },
+    {
+     "name": "adapter_binding",
+     "type": "str"
+    },
+    {
+     "name": "artifact_digest",
+     "type": "str"
+    },
+    {
+     "name": "invocation",
+     "type": "str"
+    },
+    {
+     "name": "completion",
+     "type": "str"
+    },
+    {
+     "name": "binding",
+     "type": "str"
+    },
+    {
+     "name": "passed",
+     "type": "bool"
+    },
+    {
+     "name": "reason",
+     "type": "option::value<str>"
     }
    ],
    "leaves": [],
@@ -23871,6 +24277,631 @@ export const catalogueTypeShapes = freeze([
         "type": {
           "name": "str",
           "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "c::parsed_name",
+    "identity": "can.std.c@1::parsed_name",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "exported",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "local",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "aliased",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "c::parsed_edge",
+    "identity": "can.std.c@1::parsed_edge",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "specifier",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "type_only",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "names",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "c::parsed_name",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "side_effect",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "c::parsed_module",
+    "identity": "can.std.c@1::parsed_module",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "imports",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "c::parsed_edge",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "exports",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "dynamic_import",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "body",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "c::name_binding",
+    "identity": "can.std.c@1::name_binding",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "exported",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "local",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "c::fixed_edge",
+    "identity": "can.std.c@1::fixed_edge",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "runtime_module",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "resolved",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "type_only",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "names",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "c::name_binding",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "c::manifest_entry",
+    "identity": "can.std.c@1::manifest_entry",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "path",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "body_pattern",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "fixed_edges",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "c::fixed_edge",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "c::runtime_edge",
+    "identity": "can.std.c@1::runtime_edge",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "runtime_module",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "type_only",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "c::resolved_edge",
+    "identity": "can.std.c@1::resolved_edge",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "resolved",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "type_only",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "c::case_requirements",
+    "identity": "can.std.c@1::case_requirements",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "runtime_edges",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "c::runtime_edge",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "resolved_edges",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "c::resolved_edge",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "exports",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "c::manifest",
+    "identity": "can.std.c@1::manifest",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "local_prefix",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "program_roots",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "runtime_modules",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "executable",
+        "type": {
+          "name": "c::manifest_entry",
+          "arguments": null
+        }
+      },
+      {
+        "name": "assertion_root",
+        "type": {
+          "name": "c::manifest_entry",
+          "arguments": null
+        }
+      },
+      {
+        "name": "assertion_case",
+        "type": {
+          "name": "c::case_requirements",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "c::artifact_facts",
+    "identity": "can.std.c@1::artifact_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "artifact",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "adapter_export",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "adapter_binding",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "artifact_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "token",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "seq",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "c::witness_counters",
+    "identity": "can.std.c@1::witness_counters",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "artifacts",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "invocations",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "completions",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "observations",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "rejected",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "c::executable_observation",
+    "identity": "can.std.c@1::executable_observation",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "artifact",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "adapter_export",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "adapter_binding",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "artifact_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "invocation",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "completion",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "binding",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "exit_code",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "report_lines",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "c::case_observation",
+    "identity": "can.std.c@1::case_observation",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "artifact",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "adapter_export",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "adapter_binding",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "artifact_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "invocation",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "completion",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "binding",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "passed",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
         }
       }
     ],
