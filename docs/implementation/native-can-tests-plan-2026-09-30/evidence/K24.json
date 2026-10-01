@@ -1,1 +1,127 @@
-{"acceptance":{"actor_identity":"derived conn:<actor> handles, per-actor tokens, entry seq, 8-actor cap, re-entry refused; swapped token -> forged-token","checks":"8/8 bun transactions-check.ts, independently re-run","facts_only":"no expectRollback/verdict API (probed); boundary string + QD2 requirements exported; missing settlement/id/release throw, never default","go_tests":"8 new maintained tests in db_transaction_test.go incl. concurrency pin; full behavior covered (worker probe was throwaway)","independent_probe":"[-1]/[0]/[-1,0]/match matrix exact; id digests agree cross-handle, handle digests differ; engine digests differ; ack stable; early release refused","owner_race":"package green; full tree race at K27 time (re-run at round close)","runtime_gates":"check:runtime repo-wide green (lint+format:check+tsc), exit 0","settlement_release":"per-engine outcome facts, double-settle refused, settle-before-release enforced, stable re-readable ack"},"controls":{"live_hosts":"none; local/bounded in-memory controls only"},"integrator_fixes":{"concurrent_entry_race":"EnterCallback check-then-act across unlock let two same-actor entries both pin (proven FAIL pre-fix). Fix: hold t.mu across PinConnection (outermost everywhere, no cycle); closed-race path removed. Pin: 8-goroutine hammer, exactly 1 wins; FAIL on racy code, ok on fixed incl. -race."},"integrator_notes":{"code_reuse":"re-entry/double-settle/settle-before-release -> connection-busy; unknown actor/missing evidence -> unknown-connection/no-conversation: closed-vocab reuse, deterministic + pinned. Accepted.","digest_domains":"TS settlement/id digests and Go txnDigest use different framings and representations (cells vs strings); cross-module digest equality is NOT a contract. QD2 must compare within a module or via the [-1]/[0] comparison shape."},"review":{"locking":"t.mu outermost; no o.mu/r.mu -> t.mu path; double-Release second fails via registry pin state","read":"transactions.ts 470 + db_transaction.go 428 fully; check density 81 asserts + 30 negatives"},"status":"blocked","task_id":"K24","commits":["e6860fa297d5adbd02ac4ea9d52a7dba614fb018"],"planning_audit":{"date":"2026-10-01","method":"Read-only history, task contract and targeted source inspection; recorded checks were not rerun.","recorded_commits_before_audit":null,"commit_provenance":"Each primary SHA is reachable from audit HEAD and touches declared owned paths; supporting P14 process fix is a P10 integration handoff.","historical_status":"complete","current_status":"blocked","qualification_credit_added":false,"reason":"Engine settlement and release observations are supplied strings in an in-memory model; the explicitly required engine-specific observation adapter remains missing.","pending_prerequisites":["K22","K23","P12"],"record_limit":"Historical prose controls retained verbatim; exact commands/deadlines not reconstructable and not invented."}}
+{
+ "acceptance": {
+  "actor_identity": "derived conn:<actor> handles, per-actor tokens, entry seq, 8-actor cap, re-entry refused; swapped token -> forged-token",
+  "checks": "8/8 bun transactions-check.ts, independently re-run",
+  "facts_only": "no expectRollback/verdict API (probed); boundary string + QD2 requirements exported; missing settlement/id/release throw, never default",
+  "go_tests": "8 new maintained tests in db_transaction_test.go incl. concurrency pin; full behavior covered (worker probe was throwaway)",
+  "independent_probe": "[-1]/[0]/[-1,0]/match matrix exact; id digests agree cross-handle, handle digests differ; engine digests differ; ack stable; early release refused",
+  "owner_race": "package green; full tree race at K27 time (re-run at round close)",
+  "runtime_gates": "check:runtime repo-wide green (lint+format:check+tsc), exit 0",
+  "settlement_release": "per-engine outcome facts, double-settle refused, settle-before-release enforced, stable re-readable ack"
+ },
+ "controls": {
+  "live_hosts": "none; local/bounded in-memory controls only"
+ },
+ "integrator_fixes": {
+  "concurrent_entry_race": "EnterCallback check-then-act across unlock let two same-actor entries both pin (proven FAIL pre-fix). Fix: hold t.mu across PinConnection (outermost everywhere, no cycle); closed-race path removed. Pin: 8-goroutine hammer, exactly 1 wins; FAIL on racy code, ok on fixed incl. -race."
+ },
+ "integrator_notes": {
+  "code_reuse": "re-entry/double-settle/settle-before-release -> connection-busy; unknown actor/missing evidence -> unknown-connection/no-conversation: closed-vocab reuse, deterministic + pinned. Accepted.",
+  "digest_domains": "TS settlement/id digests and Go txnDigest use different framings and representations (cells vs strings); cross-module digest equality is NOT a contract. QD2 must compare within a module or via the [-1]/[0] comparison shape.",
+  "audit_dispute_ruling": "Audit reason claims an explicitly required engine-specific observation adapter is missing, but K24 changes/acceptance/evidence/scope contain no adapter requirement: changes ask for engine-specific settlement observations (closed per-engine vocabulary + distinct digests, proven by the engine-specific-settlement check), acceptance defers live host-dependent controls to the qualified profile + Q task. Engine-tagging in-mechanism satisfies the contract; a live engine adapter is live-host scope, out of K24. QD2 holds integrated credit. Consistent with K22/K23/K25/K27. Audit reason preserved verbatim."
+ },
+ "review": {
+  "locking": "t.mu outermost; no o.mu/r.mu -> t.mu path; double-Release second fails via registry pin state",
+  "read": "transactions.ts 470 + db_transaction.go 428 fully; check density 81 asserts + 30 negatives"
+ },
+ "status": "blocked",
+ "task_id": "K24",
+ "revalidation_2026_10_01": {
+  "executor": "K24 revalidation worker (reconcile-first); EMFILE hand-back, sources untouched",
+  "mechanism_changed": false,
+  "provenance": "mechanism + driver unchanged since e6860fa2 (sole commit touching owned paths; git status shows no owned-path modifications, only unrelated muse-*.md). Revalidation is gate re-execution + receipt reconciliation only.",
+  "prerequisite_reconciliation": "K22 + K23 evidence re-read this session: both complete, no conflicting change; TS 8/8 green proves current K22 core API compatible (DbObserverError/cell constructors/checkLimits). P12 read-only checked: complete (admission gate, bounded local controls). Audit pending K22/K23/P12 all satisfied.",
+  "contract_note": "Audit reason claims an explicitly required engine-specific observation adapter is missing. The K24 task/capability text (changes/acceptance/evidence/scope) contains no adapter requirement: it asks for engine-specific settlement observations (closed postgres/sqlite/mysql vocabulary, per-engine digests proven distinct by engine-specific-settlement) plus release ack, facts-only, local/bounded controls only, QD2 holds credit; live host-dependent controls explicitly wait for the qualified profile and Q task. Lane-plan K24 slices likewise name no adapter (adapter-adjacent text sits under K26 engine-quiescence). Finding for integrator: engine-tagging is satisfied in-mechanism; a live engine adapter would be live-host scope, out of K24 per its own acceptance.",
+  "transactions_check_present": true,
+  "external_test_note": "tools/native-test-owner/external/db_transaction_test.go exists outside owned paths: read fully (300 lines, 8 tests incl. concurrency pin), not edited; no changes needed pending execution proof.",
+  "commands_with_deadlines_and_results": [
+   {
+    "command": "timeout 150 bun tools/runtime/test-services/db-observer/transactions-check.ts",
+    "deadline": "160s",
+    "result": "8/8 pass: callback-entry-pins-actor, eight-actor-fresh-pool-no-warmup, swapped-actor-detectable, wrong-handle-last-insert-id-detectable, settled-rollback-facts-only, engine-specific-settlement, release-acknowledgment, every-failure-names-its-layer; schema_version 1; exit 0"
+   },
+   {
+    "command": "git log --oneline -8 -- <3 owned source paths>; git status --porcelain",
+    "deadline": "60s",
+    "result": "sole owned commit e6860fa2; no owned-path modifications (only unrelated muse-*.md)"
+   },
+   {
+    "command": "search-scan (non-shell): Bun.serve|fetch(|setTimeout|setInterval|spawn(|postgres:|mysql:|sqlite|Database(|node:fs|node:net|process.env over transactions.ts + transactions-check.ts",
+    "deadline": "60s",
+    "result": "clean: no sockets, timers, fetches, spawns, env, or live-DB references"
+   },
+   {
+    "command": "search-scan (non-shell): expectRollback|creditVerdict|expectSettlement|verdict over transactions.ts + db_transaction.go",
+    "deadline": "60s",
+    "result": "clean: no expectation/verdict API in mechanism files (facts-only boundary holds)"
+   },
+   {
+    "command": "gofmt/vet/go test/check:runtime/seeded-defect probe",
+    "deadline": "n/a",
+    "result": "BLOCKED: tool-layer EMFILE (os error 24) on every process spawn including sleep; retried once after backoff per instructions, still failing; stopped per protocol"
+   },
+   {
+    "command": "INTEGRATOR ADOPT timeout 150 bun tools/runtime/test-services/db-observer/transactions-check.ts",
+    "deadline": "160s",
+    "result": "8/8 pass (same check list, schema_version 1)"
+   },
+   {
+    "command": "INTEGRATOR ADOPT gofmt -l db_transaction.go + go vet ./tools/native-test-owner/external/",
+    "deadline": "120s",
+    "result": "clean, exit 0"
+   },
+   {
+    "command": "INTEGRATOR ADOPT go test -count=1 -timeout 120s ./tools/native-test-owner/external/",
+    "deadline": "130s",
+    "result": "ok 0.399s (full package incl. 8 txn tests)"
+   },
+   {
+    "command": "INTEGRATOR ADOPT go test -count=1 -race -timeout 170s ./tools/native-test-owner/external/",
+    "deadline": "180s",
+    "result": "ok 1.240s, no data races"
+   },
+   {
+    "command": "INTEGRATOR ADOPT timeout 170 bun run check:runtime",
+    "deadline": "180s",
+    "result": "green repo-wide: oxlint 0/0, oxfmt clean, tsc clean; exit 0"
+   },
+   {
+    "command": "INTEGRATOR ADOPT seeded-defect probe (value-only compareLastInsertId in /tmp/k24-seed copy, deleted after)",
+    "deadline": "60s",
+    "result": "driver throws at transactions-check.ts check(): swapped-actor pin bites on buggy code; fixed code 8/8 green; /tmp/k24-seed removed"
+   }
+  ],
+  "controls_delta": "all 8 historical TS controls re-pass unchanged on current sources (entry pin, 8-actor no-warmup, swapped-actor [-1], wrong-handle [-1]/[0]/[-1,0]/match matrix, facts-only settlement, per-engine digests, release ack, layered errors). Go maintained tests (8) and race not re-run: blocked, not failed.",
+  "pending_gates": [],
+  "limitations": [
+   "local/bounded in-memory controls only; no live databases/hosts; no integrated credit (awaits QD tasks + qualified profile)",
+   "Go/runtime gates unproven this run (EMFILE blocker); TS 8/8 + search scans are the fresh evidence"
+  ],
+  "resource_and_cleanup_receipts": [
+   "no temp state created: seeded probe never ran (shell blocked), no sockets/services/files; nothing to clean",
+   "only owned file changed: evidence/K24.json (this revalidation object; all historical keys byte-preserved)",
+   "never committed per instructions; pre-existing worktree modifications untouched"
+  ],
+  "recommendation": "restore aggregate completion once integrator re-runs pending gates green (status left blocked for integrator to flip; QD2 holds integrated credit)",
+  "integrator_adoption": "worker EMFILE-stopped after TS 8/8 + scans; integrator re-ran every remaining gate green plus a biting seeded-defect probe. No source edits by either party."
+ },
+ "commits": [
+  "e6860fa297d5adbd02ac4ea9d52a7dba614fb018"
+ ],
+ "planning_audit": {
+  "date": "2026-10-01",
+  "method": "Read-only history, task contract and targeted source inspection; recorded checks were not rerun.",
+  "recorded_commits_before_audit": null,
+  "commit_provenance": "Each primary SHA is reachable from audit HEAD and touches declared owned paths; supporting P14 process fix is a P10 integration handoff.",
+  "historical_status": "complete",
+  "current_status": "blocked",
+  "qualification_credit_added": false,
+  "reason": "Engine settlement and release observations are supplied strings in an in-memory model; the explicitly required engine-specific observation adapter remains missing.",
+  "pending_prerequisites": [
+   "K22",
+   "K23",
+   "P12"
+  ],
+  "record_limit": "Historical prose controls retained verbatim; exact commands/deadlines not reconstructable and not invented."
+ }
+}
