@@ -1,0 +1,218 @@
+package m07core029roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M07 CORE-029 "bundled Noul judge: 3 assert roots green".
+/// Source: tests/integration/judge_test.go symbol
+/// TestCurrentBundledNoulJudge.
+/// Related fixture: compiler/testdata/current/native/noul.can (read at Go
+/// L67, staged pristine as src/main.can at L72 with only the endpoint
+/// rewritten to the test server at L71; the blank-descriptor mutation at
+/// L110 and the handler-fault mutation at L123 apply to later legs only,
+/// never the assert leg; the "native" raw fixtures stage at L73).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): canlc assert green with a passed report carrying
+/// exactly 3 roots grounded per function in noul.can: report 1, likelihood
+/// 0 (asks branches only, no asserts block), assess 1, main 1. The report
+/// carries the supplied-completion label (Go L95).
+/// Live judge semantics (supplied completion, live provider batch, stage
+/// rejection of invalid/blank/faulty variants, raw-provider drive) live in
+/// core-029-judge-semantics.can; the production process shape lives in
+/// core-029-run-shape.can.
+/// Variants: none in this file (default only); invalid answer (Go L103-107),
+/// blank descriptor (L108-118), faulty handler (L120-132) and raw provider
+/// (L134-202) belong to the judge-semantics file.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. CAN_I17_TOKEN is harness-supplied
+/// (Go L79: "test-only"), not an external gate. Logical gates SUITE/DIAG/
+/// FAULT and C/R/N/S/A identities bind at P23/QHTTP; no live run now.
+/// Descriptor timeout 120000ms mirrors the Go 2-minute ctx (L27).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QHTTP unmet).
+/// Case bundled/judge-roots checks: assert-green, report-passed,
+/// root-count, fixture-name, report-roots, likelihood-roots, assess-roots,
+/// main-roots.
+/// Facet map (judge_test.go legs): assert-green pins the assert leg
+/// (L95-97: status 0 and empty diagnostics or the test fatals "ordinary
+/// Noul consumer assertions"); report-passed pins the passed report
+/// (derived from the L95 exit-0 pin: canlc assert exits nonzero on
+/// failure); root-count pins the three roots (fixture asserts blocks:
+/// report L18-19, assess L45-47, main L57-58); fixture-name grounds the
+/// pins in the staged fixture (L67: noul.can; L72: src/main.can);
+/// report-roots pins report (fixture L18-19 direct, 1 root);
+/// likelihood-roots pins likelihood (fixture L31-38: asks branches only,
+/// no asserts block, 0 roots); assess-roots pins assess (fixture L45-47
+/// sample with the raw noul_assess.json fixture, 1 root); main-roots pins
+/// main (fixture L57-58 sample, 1 root).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int root_count
+    str fixture_name
+    int report_roots
+    int likelihood_roots
+    int assess_roots
+    int main_roots
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/judge-roots", "default", "", "offline"), "assert-green" => ok "case bundled/judge-roots variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/judge-roots", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case bundled/judge-roots variant default root assert-green run offline")
+        different: false, true, context("bundled/judge-roots", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("bundled/judge-roots", "default", "", "offline"), "root-count" => ok evidence("root-count", "3", "3", true, "case bundled/judge-roots variant default root root-count run offline")
+        different: 2, 3, context("bundled/judge-roots", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "noul.can", "noul.can", context("bundled/judge-roots", "default", "", "offline"), "fixture-name" => ok evidence("fixture-name", "noul.can", "noul.can", true, "case bundled/judge-roots variant default root fixture-name run offline")
+        different: "other.can", "noul.can", context("bundled/judge-roots", "default", "", "offline"), "fixture-name" => failed{"fixture-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 3, "noul.can", 1, 0, 1, 1)
+        seed_assert_red: "seed-assert-red" => ok observation(false, true, 3, "noul.can", 1, 0, 1, 1)
+        seed_report_red: "seed-report-red" => ok observation(true, false, 3, "noul.can", 1, 0, 1, 1)
+        seed_root_short: "seed-root-short" => ok observation(true, true, 2, "noul.can", 1, 0, 1, 1)
+        seed_fixture_drift: "seed-fixture-drift" => ok observation(true, true, 3, "other.can", 1, 0, 1, 1)
+        seed_report_loss: "seed-report-loss" => ok observation(true, true, 3, "noul.can", 0, 0, 1, 1)
+        seed_likelihood_phantom: "seed-likelihood-phantom" => ok observation(true, true, 3, "noul.can", 1, 1, 1, 1)
+        seed_assess_loss: "seed-assess-loss" => ok observation(true, true, 3, "noul.can", 1, 0, 0, 1)
+        seed_main_loss: "seed-main-loss" => ok observation(true, true, 3, "noul.can", 1, 0, 1, 0)
+    match variant_id
+        "seed-assert-red" => ok observation(false, true, 3, "noul.can", 1, 0, 1, 1)
+        "seed-report-red" => ok observation(true, false, 3, "noul.can", 1, 0, 1, 1)
+        "seed-root-short" => ok observation(true, true, 2, "noul.can", 1, 0, 1, 1)
+        "seed-fixture-drift" => ok observation(true, true, 3, "other.can", 1, 0, 1, 1)
+        "seed-report-loss" => ok observation(true, true, 3, "noul.can", 0, 0, 1, 1)
+        "seed-likelihood-phantom" => ok observation(true, true, 3, "noul.can", 1, 1, 1, 1)
+        "seed-assess-loss" => ok observation(true, true, 3, "noul.can", 1, 0, 0, 1)
+        "seed-main-loss" => ok observation(true, true, 3, "noul.can", 1, 0, 1, 0)
+        _ => ok observation(true, true, 3, "noul.can", 1, 0, 1, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m07_029: "m07-029" => ok [check("assert-green", "canlc assert exits 0 with empty diagnostics"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 3 roots"), check("fixture-name", "root pins ground the staged noul.can fixture"), check("report-roots", "report contributes 1 root (direct)"), check("likelihood-roots", "likelihood contributes 0 roots (asks branches only)"), check("assess-roots", "assess contributes 1 root (sample)"), check("main-roots", "main contributes 1 root (sample)")]
+        other: "nope" => ok []
+    match scope is "m07-029"
+        false => ok []
+        true => ok [check("assert-green", "canlc assert exits 0 with empty diagnostics"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 3 roots"), check("fixture-name", "root pins ground the staged noul.can fixture"), check("report-roots", "report contributes 1 root (direct)"), check("likelihood-roots", "likelihood contributes 0 roots (asks branches only)"), check("assess-roots", "assess contributes 1 root (sample)"), check("main-roots", "main contributes 1 root (sample)")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/judge-roots" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "3"), expected_check("fixture-name", "noul.can"), expected_check("report-roots", "1"), expected_check("likelihood-roots", "0"), expected_check("assess-roots", "1"), expected_check("main-roots", "1")]
+        unknown: "nope" => ok []
+    match case is "bundled/judge-roots"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "3"), expected_check("fixture-name", "noul.can"), expected_check("report-roots", "1"), expected_check("likelihood-roots", "0"), expected_check("assess-roots", "1"), expected_check("main-roots", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/judge-roots", "default", "", "offline") => ok
+        seed_assert_red: context("bundled/judge-roots", "seed-assert-red", "", "offline") => failed{"assert-green"}
+        seed_report_red: context("bundled/judge-roots", "seed-report-red", "", "offline") => failed{"report-passed"}
+        seed_root_short: context("bundled/judge-roots", "seed-root-short", "", "offline") => failed{"root-count"}
+        seed_fixture_drift: context("bundled/judge-roots", "seed-fixture-drift", "", "offline") => failed{"fixture-name"}
+        seed_report_loss: context("bundled/judge-roots", "seed-report-loss", "", "offline") => failed{"report-roots"}
+        seed_likelihood_phantom: context("bundled/judge-roots", "seed-likelihood-phantom", "", "offline") => failed{"likelihood-roots"}
+        seed_assess_loss: context("bundled/judge-roots", "seed-assess-loss", "", "offline") => failed{"assess-roots"}
+        seed_main_loss: context("bundled/judge-roots", "seed-main-loss", "", "offline") => failed{"main-roots"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence assert_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence passed_evidence => match call require_int(got.root_count, 3, c, "root-count")
+                    failed
+                    ok evidence count_evidence => match call require_text(got.fixture_name, "noul.can", c, "fixture-name")
+                        failed
+                        ok evidence fixture_evidence => match call require_int(got.report_roots, 1, c, "report-roots")
+                            failed
+                            ok evidence report_evidence => match call require_int(got.likelihood_roots, 0, c, "likelihood-roots")
+                                failed
+                                ok evidence likelihood_evidence => match call require_int(got.assess_roots, 1, c, "assess-roots")
+                                    failed
+                                    ok evidence assess_evidence => match call require_int(got.main_roots, 1, c, "main-roots")
+                                        failed
+                                        ok evidence main_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m07_029: "m07-029" => ok test_case("bundled/judge-roots", ["judge", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("report-roots"), check_ref("likelihood-roots"), check_ref("assess-roots"), check_ref("main-roots")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m07-029"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/judge-roots", ["judge", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("report-roots"), check_ref("likelihood-roots"), check_ref("assess-roots"), check_ref("main-roots")], callable case_body)
