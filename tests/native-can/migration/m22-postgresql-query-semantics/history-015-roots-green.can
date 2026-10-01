@@ -1,0 +1,254 @@
+package m22history015roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M22 HISTORY-015 "queries-driver.ts: fixture inventory, roots green".
+/// Source: tests/integration/testdata/sql/queries-driver.ts symbol
+/// queries-driver.ts (L49-56 version/count/report legs, L60 teardown
+/// report); related fixture tests/integration/testdata/sql/queries.sql
+/// (L7-31; retained by HISTORY-020, read here for row counts only).
+/// Disposition: migrate (this row ports queries-driver.ts to ordinary
+/// Can functions; the old TS script stays until the integrator retires
+/// it after every linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the static inventory as the green baseline:
+/// the two fixture tables, their seeded row counts, the version and
+/// count queries, the count key, the setup report keys, and the
+/// teardown report green (dropped key plus true).
+/// ADAPTATION (recorded, with source lines): accounts-rows (6) counts
+/// the sql L15-20 value rows and cover-rows (2) counts the sql L28-29
+/// value rows (counts, not source literals); the escaped/non-ASCII row
+/// values (quoted quote, accented name, bytea escapes) are deliberately
+/// not pinned as literals here (count pins avoid encoding drift; value
+/// semantics belong to HISTORY-001/002).
+/// Facet map (queries-driver.ts legs): accounts-table pins
+/// can_i35_accounts (driver L54; sql L8); cover-table pins
+/// can_i35_cover (driver L55; sql L7); accounts-rows pins 6 (sql
+/// L15-20; observed by L54); cover-rows pins 2 (sql L28-29; observed
+/// by L55); version-query pins SELECT version() (L49); version-prefix
+/// pins PostgreSQL 17. (L51); accounts-query pins the L54 count query;
+/// cover-query pins the L55 count query; count-key pins count (L54-55);
+/// report-version-key, report-accounts-key and report-cover-key pin
+/// serverVersion/accounts/cover (L56); dropped-key pins dropped (L60);
+/// dropped-value pins true (L60).
+/// Seed semantics live in history-015-seed-semantics.can; the
+/// invocation/run shape lives in history-015-run-shape.can.
+/// Variants: none (single seed/teardown scenario; row lists none).
+/// Environment: disposable database named by CAN_TEST_POSTGRES_URL;
+/// see related Go case gates; requires can-test-postgres-url.
+/// R/N/C/S/A identities identified in evidence; S/A bind at P23; no
+/// live run now. Descriptor timeout 0 records that the driver pins no
+/// timeout (no ctx/deadline leg in queries-driver.ts).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QD1 unmet).
+/// Case history/queries-roots checks: accounts-table, cover-table,
+/// accounts-rows, cover-rows, version-query, version-prefix,
+/// accounts-query, cover-query, count-key, report-version-key,
+/// report-accounts-key, report-cover-key, dropped-key, dropped-value.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str accounts_table
+    str cover_table
+    int accounts_rows
+    int cover_rows
+    str version_query
+    str version_prefix
+    str accounts_query
+    str cover_query
+    str count_key
+    str report_version_key
+    str report_accounts_key
+    str report_cover_key
+    str dropped_key
+    bool dropped_value
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/queries-roots", "default", "", "offline"), "accounts-table" => ok "case history/queries-roots variant default root accounts-table run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/queries-roots", "default", "", "offline"), "dropped-value" => ok evidence("dropped-value", "true", "true", true, "case history/queries-roots variant default root dropped-value run offline")
+        different: false, true, context("history/queries-roots", "default", "", "offline"), "dropped-value" => failed{"dropped-value"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 6, 6, context("history/queries-roots", "default", "", "offline"), "accounts-rows" => ok evidence("accounts-rows", "6", "6", true, "case history/queries-roots variant default root accounts-rows run offline")
+        different: 7, 6, context("history/queries-roots", "default", "", "offline"), "accounts-rows" => failed{"accounts-rows"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "can_i35_accounts", "can_i35_accounts", context("history/queries-roots", "default", "", "offline"), "accounts-table" => ok evidence("accounts-table", "can_i35_accounts", "can_i35_accounts", true, "case history/queries-roots variant default root accounts-table run offline")
+        different: "can_i35_accounts2", "can_i35_accounts", context("history/queries-roots", "default", "", "offline"), "accounts-table" => failed{"accounts-table"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", true)
+        seed_accounts_table: "seed-accounts-table-drift" => ok observation("can_i35_accounts2", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", true)
+        seed_cover_table: "seed-cover-table-drift" => ok observation("can_i35_accounts", "can_i35_cover2", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", true)
+        seed_accounts_rows: "seed-accounts-rows-drift" => ok observation("can_i35_accounts", "can_i35_cover", 5, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", true)
+        seed_cover_rows: "seed-cover-rows-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 1, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", true)
+        seed_version_query: "seed-version-query-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", true)
+        seed_version_prefix: "seed-version-prefix-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 16.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", true)
+        seed_accounts_query: "seed-accounts-query-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts2", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", true)
+        seed_cover_query: "seed-cover-query-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover2", "count", "serverVersion", "accounts", "cover", "dropped", true)
+        seed_count_key: "seed-count-key-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "cnt", "serverVersion", "accounts", "cover", "dropped", true)
+        seed_report_version_key: "seed-report-version-key-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverversion", "accounts", "cover", "dropped", true)
+        seed_report_accounts_key: "seed-report-accounts-key-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "account", "cover", "dropped", true)
+        seed_report_cover_key: "seed-report-cover-key-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "covers", "dropped", true)
+        seed_dropped_key: "seed-dropped-key-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "drop", true)
+        seed_dropped_value: "seed-dropped-value-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", false)
+    match variant_id
+        "seed-accounts-table-drift" => ok observation("can_i35_accounts2", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", true)
+        "seed-cover-table-drift" => ok observation("can_i35_accounts", "can_i35_cover2", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", true)
+        "seed-accounts-rows-drift" => ok observation("can_i35_accounts", "can_i35_cover", 5, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", true)
+        "seed-cover-rows-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 1, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", true)
+        "seed-version-query-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", true)
+        "seed-version-prefix-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 16.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", true)
+        "seed-accounts-query-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts2", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", true)
+        "seed-cover-query-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover2", "count", "serverVersion", "accounts", "cover", "dropped", true)
+        "seed-count-key-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "cnt", "serverVersion", "accounts", "cover", "dropped", true)
+        "seed-report-version-key-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverversion", "accounts", "cover", "dropped", true)
+        "seed-report-accounts-key-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "account", "cover", "dropped", true)
+        "seed-report-cover-key-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "covers", "dropped", true)
+        "seed-dropped-key-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "drop", true)
+        "seed-dropped-value-drift" => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", false)
+        _ => ok observation("can_i35_accounts", "can_i35_cover", 6, 2, "SELECT version()", "PostgreSQL 17.", "SELECT COUNT(*)::int AS count FROM can_i35_accounts", "SELECT COUNT(*)::int AS count FROM can_i35_cover", "count", "serverVersion", "accounts", "cover", "dropped", true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m22_h015: "m22-h015" => ok [check("accounts-table", "accounts fixture table is can_i35_accounts"), check("cover-table", "cover fixture table is can_i35_cover"), check("accounts-rows", "accounts seed carries 6 rows"), check("cover-rows", "cover seed carries 2 rows"), check("version-query", "setup reads the server version"), check("version-prefix", "test database must be PostgreSQL 17"), check("accounts-query", "setup counts the accounts rows"), check("cover-query", "setup counts the cover rows"), check("count-key", "count queries alias the count key"), check("report-version-key", "setup report carries serverVersion"), check("report-accounts-key", "setup report carries accounts"), check("report-cover-key", "setup report carries cover"), check("dropped-key", "teardown report carries dropped"), check("dropped-value", "teardown report drops true")]
+        other: "nope" => ok []
+    match scope is "m22-h015"
+        false => ok []
+        true => ok [check("accounts-table", "accounts fixture table is can_i35_accounts"), check("cover-table", "cover fixture table is can_i35_cover"), check("accounts-rows", "accounts seed carries 6 rows"), check("cover-rows", "cover seed carries 2 rows"), check("version-query", "setup reads the server version"), check("version-prefix", "test database must be PostgreSQL 17"), check("accounts-query", "setup counts the accounts rows"), check("cover-query", "setup counts the cover rows"), check("count-key", "count queries alias the count key"), check("report-version-key", "setup report carries serverVersion"), check("report-accounts-key", "setup report carries accounts"), check("report-cover-key", "setup report carries cover"), check("dropped-key", "teardown report carries dropped"), check("dropped-value", "teardown report drops true")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/queries-roots" => ok [expected_check("accounts-table", "can_i35_accounts"), expected_check("cover-table", "can_i35_cover"), expected_check("accounts-rows", "6"), expected_check("cover-rows", "2"), expected_check("version-query", "SELECT version()"), expected_check("version-prefix", "PostgreSQL 17."), expected_check("accounts-query", "SELECT COUNT(*)::int AS count FROM can_i35_accounts"), expected_check("cover-query", "SELECT COUNT(*)::int AS count FROM can_i35_cover"), expected_check("count-key", "count"), expected_check("report-version-key", "serverVersion"), expected_check("report-accounts-key", "accounts"), expected_check("report-cover-key", "cover"), expected_check("dropped-key", "dropped"), expected_check("dropped-value", "true")]
+        unknown: "nope" => ok []
+    match case is "history/queries-roots"
+        false => ok []
+        true => ok [expected_check("accounts-table", "can_i35_accounts"), expected_check("cover-table", "can_i35_cover"), expected_check("accounts-rows", "6"), expected_check("cover-rows", "2"), expected_check("version-query", "SELECT version()"), expected_check("version-prefix", "PostgreSQL 17."), expected_check("accounts-query", "SELECT COUNT(*)::int AS count FROM can_i35_accounts"), expected_check("cover-query", "SELECT COUNT(*)::int AS count FROM can_i35_cover"), expected_check("count-key", "count"), expected_check("report-version-key", "serverVersion"), expected_check("report-accounts-key", "accounts"), expected_check("report-cover-key", "cover"), expected_check("dropped-key", "dropped"), expected_check("dropped-value", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/queries-roots", "default", "", "offline") => ok
+        seed_accounts_table: context("history/queries-roots", "seed-accounts-table-drift", "", "offline") => failed{"accounts-table"}
+        seed_cover_table: context("history/queries-roots", "seed-cover-table-drift", "", "offline") => failed{"cover-table"}
+        seed_accounts_rows: context("history/queries-roots", "seed-accounts-rows-drift", "", "offline") => failed{"accounts-rows"}
+        seed_cover_rows: context("history/queries-roots", "seed-cover-rows-drift", "", "offline") => failed{"cover-rows"}
+        seed_version_query: context("history/queries-roots", "seed-version-query-drift", "", "offline") => failed{"version-query"}
+        seed_version_prefix: context("history/queries-roots", "seed-version-prefix-drift", "", "offline") => failed{"version-prefix"}
+        seed_accounts_query: context("history/queries-roots", "seed-accounts-query-drift", "", "offline") => failed{"accounts-query"}
+        seed_cover_query: context("history/queries-roots", "seed-cover-query-drift", "", "offline") => failed{"cover-query"}
+        seed_count_key: context("history/queries-roots", "seed-count-key-drift", "", "offline") => failed{"count-key"}
+        seed_report_version_key: context("history/queries-roots", "seed-report-version-key-drift", "", "offline") => failed{"report-version-key"}
+        seed_report_accounts_key: context("history/queries-roots", "seed-report-accounts-key-drift", "", "offline") => failed{"report-accounts-key"}
+        seed_report_cover_key: context("history/queries-roots", "seed-report-cover-key-drift", "", "offline") => failed{"report-cover-key"}
+        seed_dropped_key: context("history/queries-roots", "seed-dropped-key-drift", "", "offline") => failed{"dropped-key"}
+        seed_dropped_value: context("history/queries-roots", "seed-dropped-value-drift", "", "offline") => failed{"dropped-value"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.accounts_table, "can_i35_accounts", c, "accounts-table")
+            failed
+            ok evidence accounts_table_evidence => match call require_text(got.cover_table, "can_i35_cover", c, "cover-table")
+                failed
+                ok evidence cover_table_evidence => match call require_int(got.accounts_rows, 6, c, "accounts-rows")
+                    failed
+                    ok evidence accounts_rows_evidence => match call require_int(got.cover_rows, 2, c, "cover-rows")
+                        failed
+                        ok evidence cover_rows_evidence => match call require_text(got.version_query, "SELECT version()", c, "version-query")
+                            failed
+                            ok evidence version_query_evidence => match call require_text(got.version_prefix, "PostgreSQL 17.", c, "version-prefix")
+                                failed
+                                ok evidence version_prefix_evidence => match call require_text(got.accounts_query, "SELECT COUNT(*)::int AS count FROM can_i35_accounts", c, "accounts-query")
+                                    failed
+                                    ok evidence accounts_query_evidence => match call require_text(got.cover_query, "SELECT COUNT(*)::int AS count FROM can_i35_cover", c, "cover-query")
+                                        failed
+                                        ok evidence cover_query_evidence => match call require_text(got.count_key, "count", c, "count-key")
+                                            failed
+                                            ok evidence count_key_evidence => match call require_text(got.report_version_key, "serverVersion", c, "report-version-key")
+                                                failed
+                                                ok evidence report_version_key_evidence => match call require_text(got.report_accounts_key, "accounts", c, "report-accounts-key")
+                                                    failed
+                                                    ok evidence report_accounts_key_evidence => match call require_text(got.report_cover_key, "cover", c, "report-cover-key")
+                                                        failed
+                                                        ok evidence report_cover_key_evidence => match call require_text(got.dropped_key, "dropped", c, "dropped-key")
+                                                            failed
+                                                            ok evidence dropped_key_evidence => match call require_bool(got.dropped_value, true, c, "dropped-value")
+                                                                failed
+                                                                ok evidence dropped_value_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m22_h015: "m22-h015" => ok test_case("history/queries-roots", ["history", "m22"], ["can-test-postgres-url"], 0, [check_ref("accounts-table"), check_ref("cover-table"), check_ref("accounts-rows"), check_ref("cover-rows"), check_ref("version-query"), check_ref("version-prefix"), check_ref("accounts-query"), check_ref("cover-query"), check_ref("count-key"), check_ref("report-version-key"), check_ref("report-accounts-key"), check_ref("report-cover-key"), check_ref("dropped-key"), check_ref("dropped-value")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m22-h015"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/queries-roots", ["history", "m22"], ["can-test-postgres-url"], 0, [check_ref("accounts-table"), check_ref("cover-table"), check_ref("accounts-rows"), check_ref("cover-rows"), check_ref("version-query"), check_ref("version-prefix"), check_ref("accounts-query"), check_ref("cover-query"), check_ref("count-key"), check_ref("report-version-key"), check_ref("report-accounts-key"), check_ref("report-cover-key"), check_ref("dropped-key"), check_ref("dropped-value")], callable case_body)
