@@ -1,0 +1,239 @@
+package m10core036run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M10 CORE-036 "release install/update: run shape, offline invocation".
+/// Source: tests/integration/release_test.go symbol
+/// TestReleaseInstallUpdate (L28-358).
+/// Related fixtures: the sandbox-exec run helper (L122-132), the old-binary
+/// run (L311-316), the install/refusal roots (L103/L146) and the
+/// environment gate (L30-36).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): production run shape of the offline install path.
+/// The installed tree runs through the selected link under sandbox-exec
+/// with a deny-network profile, a cleared PATH, an isolated HOME and an
+/// unrelated cwd; the archive and host gates admit only the pinned macOS
+/// arm64 target within the 6-minute flow deadline.
+/// ADAPTATION (recorded, with source lines): Go pins no run exit or stream
+/// bytes (the helper fails the test on any error at L127-131 and the
+/// runtime-check assertions decode JSON at L137/L320), so this file pins
+/// the invocation shape and gate literals verbatim instead of exit/stream
+/// facts; the roots-green pin lives in core-036-roots-green.can and the
+/// install/update behaviors live in core-036-release-semantics.can.
+/// Variants: ok path (selected run, old-binary run), gate path (archive
+/// skip, host fatal), refusal roots.
+/// Environment: CAN_BUN_ARCHIVE + macOS arm64; requires
+/// can-bun-archive, macos-arm64. Logical gates SUITE/BUILD/ARCHIVE/ENV and
+/// C/R/N/S/A identities bind at P23; no live run now. Descriptor
+/// timeout 360000ms mirrors the Go 6-minute ctx (L42).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case dist/release-run checks: sandbox-tool, sandbox-profile,
+/// selected-binary, offline-path, home-name, cwd-name, env-archive,
+/// target-os, target-arch, ctx-timeout-ms, install-root-name,
+/// refuse-root-name.
+/// Facet map (release_test.go legs): sandbox-tool pins
+/// /usr/bin/sandbox-exec (L124); sandbox-profile pins the deny-network
+/// profile verbatim (L124); selected-binary pins current/bin/canlc (L124);
+/// offline-path pins PATH=/nonexistent (L126); home-name pins home (L115);
+/// cwd-name pins unrelated (L116); env-archive pins CAN_BUN_ARCHIVE (L30);
+/// target-os pins darwin (L34); target-arch pins arm64 (L34);
+/// ctx-timeout-ms pins 360000 (L42: 6*time.Minute); install-root-name pins
+/// install-root (L103); refuse-root-name pins refuse-root (L146).
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str sandbox_tool
+    str sandbox_profile
+    str selected_binary
+    str offline_path
+    str home_name
+    str cwd_name
+    str env_archive
+    str target_os
+    str target_arch
+    int ctx_timeout_ms
+    str install_root_name
+    str refuse_root_name
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("dist/release-run", "default", "", "offline"), "sandbox-tool" => ok "case dist/release-run variant default root sandbox-tool run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("dist/release-run", "default", "", "offline"), "sandbox-tool" => ok evidence("sandbox-tool", "true", "true", true, "case dist/release-run variant default root sandbox-tool run offline")
+        different: false, true, context("dist/release-run", "default", "", "offline"), "sandbox-tool" => failed{"sandbox-tool"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 360000, 360000, context("dist/release-run", "default", "", "offline"), "ctx-timeout-ms" => ok evidence("ctx-timeout-ms", "360000", "360000", true, "case dist/release-run variant default root ctx-timeout-ms run offline")
+        different: 359999, 360000, context("dist/release-run", "default", "", "offline"), "ctx-timeout-ms" => failed{"ctx-timeout-ms"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "/usr/bin/sandbox-exec", "/usr/bin/sandbox-exec", context("dist/release-run", "default", "", "offline"), "sandbox-tool" => ok evidence("sandbox-tool", "/usr/bin/sandbox-exec", "/usr/bin/sandbox-exec", true, "case dist/release-run variant default root sandbox-tool run offline")
+        different: "/usr/bin/sandbox-execx", "/usr/bin/sandbox-exec", context("dist/release-run", "default", "", "offline"), "sandbox-tool" => failed{"sandbox-tool"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-root", "refuse-root")
+        seed_sandbox_tool: "seed-sandbox-tool-drift" => ok observation("/usr/bin/other-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-root", "refuse-root")
+        seed_sandbox_profile: "seed-sandbox-profile-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-root", "refuse-root")
+        seed_selected_binary: "seed-selected-binary-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/other", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-root", "refuse-root")
+        seed_offline_path: "seed-offline-path-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/usr/bin", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-root", "refuse-root")
+        seed_home_name: "seed-home-name-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "house", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-root", "refuse-root")
+        seed_cwd_name: "seed-cwd-name-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "related", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-root", "refuse-root")
+        seed_env_archive: "seed-env-archive-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_OTHER", "darwin", "arm64", 360000, "install-root", "refuse-root")
+        seed_target_os: "seed-target-os-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "linux", "arm64", 360000, "install-root", "refuse-root")
+        seed_target_arch: "seed-target-arch-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "amd64", 360000, "install-root", "refuse-root")
+        seed_ctx_timeout_ms: "seed-ctx-timeout-ms-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 359999, "install-root", "refuse-root")
+        seed_install_root_name: "seed-install-root-name-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-other", "refuse-root")
+        seed_refuse_root_name: "seed-refuse-root-name-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-root", "refuse-other")
+    match variant_id
+        "seed-sandbox-tool-drift" => ok observation("/usr/bin/other-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-root", "refuse-root")
+        "seed-sandbox-profile-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-root", "refuse-root")
+        "seed-selected-binary-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/other", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-root", "refuse-root")
+        "seed-offline-path-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/usr/bin", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-root", "refuse-root")
+        "seed-home-name-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "house", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-root", "refuse-root")
+        "seed-cwd-name-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "related", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-root", "refuse-root")
+        "seed-env-archive-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_OTHER", "darwin", "arm64", 360000, "install-root", "refuse-root")
+        "seed-target-os-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "linux", "arm64", 360000, "install-root", "refuse-root")
+        "seed-target-arch-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "amd64", 360000, "install-root", "refuse-root")
+        "seed-ctx-timeout-ms-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 359999, "install-root", "refuse-root")
+        "seed-install-root-name-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-other", "refuse-root")
+        "seed-refuse-root-name-drift" => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-root", "refuse-other")
+        _ => ok observation("/usr/bin/sandbox-exec", "(version 1)(allow default)(deny network*)", "current/bin/canlc", "PATH=/nonexistent", "home", "unrelated", "CAN_BUN_ARCHIVE", "darwin", "arm64", 360000, "install-root", "refuse-root")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m10_036: "m10-036" => ok [check("sandbox-tool", "offline runs go through sandbox-exec"), check("sandbox-profile", "sandbox profile denies network"), check("selected-binary", "offline runs use current/bin/canlc"), check("offline-path", "offline runs clear PATH"), check("home-name", "offline runs use an isolated home"), check("cwd-name", "offline runs start in an unrelated dir"), check("env-archive", "archive gate reads CAN_BUN_ARCHIVE"), check("target-os", "admitted target OS is darwin"), check("target-arch", "admitted target arch is arm64"), check("ctx-timeout-ms", "flow deadline is 360000ms"), check("install-root-name", "install leg uses install-root"), check("refuse-root-name", "refusal legs use refuse-root")]
+        other: "nope" => ok []
+    match scope is "m10-036"
+        false => ok []
+        true => ok [check("sandbox-tool", "offline runs go through sandbox-exec"), check("sandbox-profile", "sandbox profile denies network"), check("selected-binary", "offline runs use current/bin/canlc"), check("offline-path", "offline runs clear PATH"), check("home-name", "offline runs use an isolated home"), check("cwd-name", "offline runs start in an unrelated dir"), check("env-archive", "archive gate reads CAN_BUN_ARCHIVE"), check("target-os", "admitted target OS is darwin"), check("target-arch", "admitted target arch is arm64"), check("ctx-timeout-ms", "flow deadline is 360000ms"), check("install-root-name", "install leg uses install-root"), check("refuse-root-name", "refusal legs use refuse-root")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "dist/release-run" => ok [expected_check("sandbox-tool", "/usr/bin/sandbox-exec"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("selected-binary", "current/bin/canlc"), expected_check("offline-path", "PATH=/nonexistent"), expected_check("home-name", "home"), expected_check("cwd-name", "unrelated"), expected_check("env-archive", "CAN_BUN_ARCHIVE"), expected_check("target-os", "darwin"), expected_check("target-arch", "arm64"), expected_check("ctx-timeout-ms", "360000"), expected_check("install-root-name", "install-root"), expected_check("refuse-root-name", "refuse-root")]
+        unknown: "nope" => ok []
+    match case is "dist/release-run"
+        false => ok []
+        true => ok [expected_check("sandbox-tool", "/usr/bin/sandbox-exec"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("selected-binary", "current/bin/canlc"), expected_check("offline-path", "PATH=/nonexistent"), expected_check("home-name", "home"), expected_check("cwd-name", "unrelated"), expected_check("env-archive", "CAN_BUN_ARCHIVE"), expected_check("target-os", "darwin"), expected_check("target-arch", "arm64"), expected_check("ctx-timeout-ms", "360000"), expected_check("install-root-name", "install-root"), expected_check("refuse-root-name", "refuse-root")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("dist/release-run", "default", "", "offline") => ok
+        seed_sandbox_tool: context("dist/release-run", "seed-sandbox-tool-drift", "", "offline") => failed{"sandbox-tool"}
+        seed_sandbox_profile: context("dist/release-run", "seed-sandbox-profile-drift", "", "offline") => failed{"sandbox-profile"}
+        seed_selected_binary: context("dist/release-run", "seed-selected-binary-drift", "", "offline") => failed{"selected-binary"}
+        seed_offline_path: context("dist/release-run", "seed-offline-path-drift", "", "offline") => failed{"offline-path"}
+        seed_home_name: context("dist/release-run", "seed-home-name-drift", "", "offline") => failed{"home-name"}
+        seed_cwd_name: context("dist/release-run", "seed-cwd-name-drift", "", "offline") => failed{"cwd-name"}
+        seed_env_archive: context("dist/release-run", "seed-env-archive-drift", "", "offline") => failed{"env-archive"}
+        seed_target_os: context("dist/release-run", "seed-target-os-drift", "", "offline") => failed{"target-os"}
+        seed_target_arch: context("dist/release-run", "seed-target-arch-drift", "", "offline") => failed{"target-arch"}
+        seed_ctx_timeout_ms: context("dist/release-run", "seed-ctx-timeout-ms-drift", "", "offline") => failed{"ctx-timeout-ms"}
+        seed_install_root_name: context("dist/release-run", "seed-install-root-name-drift", "", "offline") => failed{"install-root-name"}
+        seed_refuse_root_name: context("dist/release-run", "seed-refuse-root-name-drift", "", "offline") => failed{"refuse-root-name"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.sandbox_tool, "/usr/bin/sandbox-exec", c, "sandbox-tool")
+            failed
+            ok evidence sandbox_tool_evidence => match call require_text(got.sandbox_profile, "(version 1)(allow default)(deny network*)", c, "sandbox-profile")
+                failed
+                ok evidence sandbox_profile_evidence => match call require_text(got.selected_binary, "current/bin/canlc", c, "selected-binary")
+                    failed
+                    ok evidence selected_binary_evidence => match call require_text(got.offline_path, "PATH=/nonexistent", c, "offline-path")
+                        failed
+                        ok evidence offline_path_evidence => match call require_text(got.home_name, "home", c, "home-name")
+                            failed
+                            ok evidence home_name_evidence => match call require_text(got.cwd_name, "unrelated", c, "cwd-name")
+                                failed
+                                ok evidence cwd_name_evidence => match call require_text(got.env_archive, "CAN_BUN_ARCHIVE", c, "env-archive")
+                                    failed
+                                    ok evidence env_archive_evidence => match call require_text(got.target_os, "darwin", c, "target-os")
+                                        failed
+                                        ok evidence target_os_evidence => match call require_text(got.target_arch, "arm64", c, "target-arch")
+                                            failed
+                                            ok evidence target_arch_evidence => match call require_int(got.ctx_timeout_ms, 360000, c, "ctx-timeout-ms")
+                                                failed
+                                                ok evidence ctx_timeout_ms_evidence => match call require_text(got.install_root_name, "install-root", c, "install-root-name")
+                                                    failed
+                                                    ok evidence install_root_name_evidence => match call require_text(got.refuse_root_name, "refuse-root", c, "refuse-root-name")
+                                                        failed
+                                                        ok evidence refuse_root_name_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m10_036: "m10-036" => ok test_case("dist/release-run", ["dist", "m10"], ["can-bun-archive", "macos-arm64"], 360000, [check_ref("sandbox-tool"), check_ref("sandbox-profile"), check_ref("selected-binary"), check_ref("offline-path"), check_ref("home-name"), check_ref("cwd-name"), check_ref("env-archive"), check_ref("target-os"), check_ref("target-arch"), check_ref("ctx-timeout-ms"), check_ref("install-root-name"), check_ref("refuse-root-name")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m10-036"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("dist/release-run", ["dist", "m10"], ["can-bun-archive", "macos-arm64"], 360000, [check_ref("sandbox-tool"), check_ref("sandbox-profile"), check_ref("selected-binary"), check_ref("offline-path"), check_ref("home-name"), check_ref("cwd-name"), check_ref("env-archive"), check_ref("target-os"), check_ref("target-arch"), check_ref("ctx-timeout-ms"), check_ref("install-root-name"), check_ref("refuse-root-name")], callable case_body)
