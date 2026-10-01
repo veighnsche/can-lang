@@ -1,0 +1,483 @@
+package m40life010run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M40 LIFE-010 TestWebhookSliceLive
+/// crash plus batch plus harness legs.
+/// Source: tests/integration/
+/// webhook_test.go symbol
+/// TestWebhookSliceLive (L470-939):
+/// each crash leg must converge to one
+/// ledger effect with honest downstream
+/// receipts, the batch pair must claim
+/// plus settle in turn, and the harness
+/// must gate plus stage plus serve plus
+/// report the run.
+/// Disposition: migrate (same row pact as
+/// the base slice; this file owns the
+/// crash plus batch plus harness legs
+/// only).
+/// Protects (this file): facet five
+/// (L780-903): crash before ack gives
+/// at-least-once downstream delivery
+/// with one ledger effect, inflight
+/// crash converges; facet six
+/// (L905-931): two pending rows claim
+/// plus settle without a candidate-read
+/// failure; harness (L470-533, L933-939):
+/// archive gate, staged bundle, driver
+/// setup, served entry, stub receipts,
+/// pair report.
+/// ADAPTATION (recorded, with source
+/// lines): name pins hold env plus file
+/// names; path pins hold route plus
+/// driver paths; payload pins hold
+/// delivery bytes; note pins hold remark
+/// lines; mark pins hold report marks;
+/// count pins hold ints from the named
+/// assert lines; line pins hold source
+/// line numbers for the two signing
+/// loci (bytes stay in the source and
+/// are never quoted here).
+/// archive-env pins CAN_BUN_ARCHIVE
+/// (L472); skip-note pins the skip
+/// remark (L474); timeout-call pins
+/// 10*time.Minute (L477); driver-rel
+/// pins the driver path (L514); db-name
+/// pins hook.sqlite (L515);
+/// snapshot-name pins snapshot-webhook
+/// (L526); entry-name pins entry.ts
+/// (L529); schema-name pins schema.sql
+/// (L516); health-path pins /health
+/// (helper L354); real-mark pins
+/// real-can (L500); pair-log pins the
+/// pair head (L937); seventh-payload
+/// pins the del-A bytes (L907);
+/// eighth-payload pins the del-B bytes
+/// (L908); inflight-note pins the
+/// inflight remark (L863); converge-note
+/// pins the converge remark (L882);
+/// crash-kill-note pins SIGKILL (L9);
+/// seventh-note pins the seventh remark
+/// (L912); eighth-note pins the eighth
+/// remark (L915); webhook-port pins int
+/// (18494) from L36; setup-tables pins
+/// int (5) from L520;
+/// live-timeout-minutes pins int (10)
+/// from L477; crash-count pins int (3)
+/// from L782 plus L804 plus L858;
+/// crash-ledger-four pins int (4) from
+/// L789; crash-outbox-four pins int (4)
+/// from L789; stub-del5-two pins int (2)
+/// from L818; ledger-del5-one pins int
+/// (1) from L828; attempts-del5-one pins
+/// int (1) from L840;
+/// converged-ledger-six pins int (6)
+/// from L885; del6-outbox-one pins int
+/// (1) from L894; converge-retries pins
+/// int (3) from L868; batch-ledger-eight
+/// pins int (8) from L929;
+/// batch-outbox-eight pins int (8) from
+/// L929; stub-del1-one pins int (1) from
+/// L934; provider-sign-line pins int
+/// (524); carrier-sign-line pins int
+/// (525).
+/// Related driver:
+/// tests/integration/testdata/webhook/
+/// driver.ts applies five schema
+/// statements (setup) and reports ledger
+/// plus outbox plus attempt plus
+/// dead-letter plus nonce rows
+/// (inspect); the run pins the driver
+/// path plus the table count above.
+/// Facet map (leg order): archive-env,
+/// skip-note, timeout-call, driver-rel,
+/// db-name, snapshot-name, entry-name,
+/// schema-name, health-path, real-mark,
+/// pair-log, seventh-payload,
+/// eighth-payload, inflight-note,
+/// converge-note, crash-kill-note,
+/// seventh-note, eighth-note,
+/// webhook-port, setup-tables,
+/// live-timeout-minutes, crash-count,
+/// crash-ledger-four, crash-outbox-four,
+/// stub-del5-two, ledger-del5-one,
+/// attempts-del5-one, converged-ledger-six,
+/// del6-outbox-one, converge-retries,
+/// batch-ledger-eight, batch-outbox-eight,
+/// stub-del1-one, provider-sign-line,
+/// carrier-sign-line.
+/// The provider plus carrier legs live in
+/// life-010-base-semantics.can; the claim
+/// plus poison legs live in
+/// life-010-roots-green.can.
+/// Variants: between-delivery plus
+/// unacked plus inflight crash; two-row
+/// batch; default plus seeded drifts
+/// only here.
+/// Environment: CAN_BUN_ARCHIVE plus a
+/// staged bundle plus cut-off homes plus
+/// loopback ports plus a disposable file
+/// (row lists three gates; bind at P23;
+/// no live run now).
+/// Logical gates ARCHIVE plus PEER plus
+/// DB plus CHILD plus CLOCK bind at P23;
+/// no live run now.
+/// Timeout 120000ms is the offline default
+/// bound (the live ten minute hold is
+/// pinned above as live-timeout-minutes;
+/// binds at P23 like the M31 no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// accept gate unmet).
+/// Case life/webhook-run
+/// checks: archive-env,
+/// skip-note, timeout-call, driver-rel,
+/// db-name, snapshot-name, entry-name,
+/// schema-name, health-path, real-mark,
+/// pair-log, seventh-payload,
+/// eighth-payload, inflight-note,
+/// converge-note, crash-kill-note,
+/// seventh-note, eighth-note,
+/// webhook-port, setup-tables,
+/// live-timeout-minutes, crash-count,
+/// crash-ledger-four, crash-outbox-four,
+/// stub-del5-two, ledger-del5-one,
+/// attempts-del5-one, converged-ledger-six,
+/// del6-outbox-one, converge-retries,
+/// batch-ledger-eight, batch-outbox-eight,
+/// stub-del1-one, provider-sign-line,
+/// carrier-sign-line.
+/// Shared old files untouched; retirement
+/// is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str archive_env
+    str skip_note
+    str timeout_call
+    str driver_rel
+    str db_name
+    str snapshot_name
+    str entry_name
+    str schema_name
+    str health_path
+    str real_mark
+    str pair_log
+    str seventh_payload
+    str eighth_payload
+    str inflight_note
+    str converge_note
+    str crash_kill_note
+    str seventh_note
+    str eighth_note
+    int webhook_port
+    int setup_tables
+    int live_timeout_minutes
+    int crash_count
+    int crash_ledger_four
+    int crash_outbox_four
+    int stub_del5_two
+    int ledger_del5_one
+    int attempts_del5_one
+    int converged_ledger_six
+    int del6_outbox_one
+    int converge_retries
+    int batch_ledger_eight
+    int batch_outbox_eight
+    int stub_del1_one
+    int provider_sign_line
+    int carrier_sign_line
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/webhook-run", "default", "", "offline"), "archive-env" => ok "case life/webhook-run variant default root archive-env run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/webhook-run", "default", "", "offline"), "archive-env" => ok evidence("archive-env", "true", "true", true, "case life/webhook-run variant default root archive-env run offline")
+        different: false, true, context("life/webhook-run", "default", "", "offline"), "archive-env" => failed{"archive-env"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 18494, 18494, context("life/webhook-run", "default", "", "offline"), "webhook-port" => ok evidence("webhook-port", "18494", "18494", true, "case life/webhook-run variant default root webhook-port run offline")
+        different: 18493, 18494, context("life/webhook-run", "default", "", "offline"), "webhook-port" => failed{"webhook-port"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "CAN_BUN_ARCHIVE", "CAN_BUN_ARCHIVE", context("life/webhook-run", "default", "", "offline"), "archive-env" => ok evidence("archive-env", "CAN_BUN_ARCHIVE", "CAN_BUN_ARCHIVE", true, "case life/webhook-run variant default root archive-env run offline")
+        different: "CAN_BUN_ARCHIVE_2", "CAN_BUN_ARCHIVE", context("life/webhook-run", "default", "", "offline"), "archive-env" => failed{"archive-env"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_archive_env: "seed-archive-env-drift" => ok observation("CAN_BUN_ARCHIVE_2", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_skip_note: "seed-skip-note-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution_2", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_timeout_call: "seed-timeout-call-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute_2", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_driver_rel: "seed-driver-rel-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts_2", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_db_name: "seed-db-name-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite_2", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_snapshot_name: "seed-snapshot-name-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook_2", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_entry_name: "seed-entry-name-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts_2", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_schema_name: "seed-schema-name-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql_2", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_health_path: "seed-health-path-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health_2", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_real_mark: "seed-real-mark-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can_2", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_pair_log: "seed-pair-log-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:_2", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_seventh_payload: "seed-seventh-payload-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}_2", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_eighth_payload: "seed-eighth-payload-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}_2", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_inflight_note: "seed-inflight-note-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome_2", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_converge_note: "seed-converge-note-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate_2", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_crash_kill_note: "seed-crash-kill-note-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL_2", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_seventh_note: "seed-seventh-note-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh_2", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_eighth_note: "seed-eighth-note-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth_2", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_webhook_port: "seed-webhook-port-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18493, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_setup_tables: "seed-setup-tables-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 4, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_live_timeout_minutes: "seed-live-timeout-minutes-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 9, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_crash_count: "seed-crash-count-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 2, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_crash_ledger_four: "seed-crash-ledger-four-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 3, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_crash_outbox_four: "seed-crash-outbox-four-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 3, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_stub_del5_two: "seed-stub-del5-two-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 1, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_ledger_del5_one: "seed-ledger-del5-one-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 0, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_attempts_del5_one: "seed-attempts-del5-one-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 0, 6, 1, 3, 8, 8, 1, 524, 525)
+        seed_converged_ledger_six: "seed-converged-ledger-six-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 5, 1, 3, 8, 8, 1, 524, 525)
+        seed_del6_outbox_one: "seed-del6-outbox-one-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 0, 3, 8, 8, 1, 524, 525)
+        seed_converge_retries: "seed-converge-retries-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 2, 8, 8, 1, 524, 525)
+        seed_batch_ledger_eight: "seed-batch-ledger-eight-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 7, 8, 1, 524, 525)
+        seed_batch_outbox_eight: "seed-batch-outbox-eight-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 7, 1, 524, 525)
+        seed_stub_del1_one: "seed-stub-del1-one-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 0, 524, 525)
+        seed_provider_sign_line: "seed-provider-sign-line-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 523, 525)
+        seed_carrier_sign_line: "seed-carrier-sign-line-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 524)
+    match variant_id
+        "seed-archive-env-drift" => ok observation("CAN_BUN_ARCHIVE_2", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-skip-note-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution_2", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-timeout-call-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute_2", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-driver-rel-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts_2", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-db-name-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite_2", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-snapshot-name-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook_2", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-entry-name-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts_2", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-schema-name-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql_2", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-health-path-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health_2", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-real-mark-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can_2", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-pair-log-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:_2", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-seventh-payload-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}_2", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-eighth-payload-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}_2", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-inflight-note-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome_2", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-converge-note-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate_2", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-crash-kill-note-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL_2", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-seventh-note-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh_2", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-eighth-note-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth_2", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-webhook-port-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18493, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-setup-tables-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 4, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-live-timeout-minutes-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 9, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-crash-count-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 2, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-crash-ledger-four-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 3, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-crash-outbox-four-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 3, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-stub-del5-two-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 1, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-ledger-del5-one-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 0, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-attempts-del5-one-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 0, 6, 1, 3, 8, 8, 1, 524, 525)
+        "seed-converged-ledger-six-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 5, 1, 3, 8, 8, 1, 524, 525)
+        "seed-del6-outbox-one-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 0, 3, 8, 8, 1, 524, 525)
+        "seed-converge-retries-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 2, 8, 8, 1, 524, 525)
+        "seed-batch-ledger-eight-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 7, 8, 1, 524, 525)
+        "seed-batch-outbox-eight-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 7, 1, 524, 525)
+        "seed-stub-del1-one-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 0, 524, 525)
+        "seed-provider-sign-line-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 523, 525)
+        "seed-carrier-sign-line-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 524)
+        _ => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE for staged webhook execution", "10*time.Minute", "tests/integration/testdata/webhook/driver.ts", "hook.sqlite", "snapshot-webhook", "entry.ts", "schema.sql", "/health", "real-can", "webhook pair:", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "in-flight outcome", "in-flight delivery never converged to duplicate", "SIGKILL", "claim seventh", "claim eighth", 18494, 5, 10, 3, 4, 4, 2, 1, 1, 6, 1, 3, 8, 8, 1, 524, 525)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m40_l010: "m40-l010" => ok [check("archive-env", "gate keeps its env name"), check("skip-note", "gate keeps its skip remark"), check("timeout-call", "run keeps its timeout call"), check("driver-rel", "run keeps its driver path"), check("db-name", "run keeps its file name"), check("snapshot-name", "run keeps its snapshot name"), check("entry-name", "run keeps its entry name"), check("schema-name", "run keeps its schema name"), check("health-path", "server keeps its health path"), check("real-mark", "assert keeps its real mark"), check("pair-log", "run keeps its pair log head"), check("seventh-payload", "seventh delivery keeps its bytes"), check("eighth-payload", "eighth delivery keeps its bytes"), check("inflight-note", "inflight leg keeps its remark"), check("converge-note", "converge leg keeps its remark"), check("crash-kill-note", "crash leg keeps its kill word"), check("seventh-note", "seventh claim keeps its remark"), check("eighth-note", "eighth claim keeps its remark"), check("webhook-port", "server keeps its port"), check("setup-tables", "setup keeps its table count"), check("live-timeout-minutes", "run keeps its live minutes"), check("crash-count", "run keeps its crash count"), check("crash-ledger-four", "crash keeps its ledger rows"), check("crash-outbox-four", "crash keeps its outbox rows"), check("stub-del5-two", "stub keeps its del-5 receipts"), check("ledger-del5-one", "ledger keeps its del-5 effect"), check("attempts-del5-one", "attempts keep their del-5 row"), check("converged-ledger-six", "converge keeps its ledger rows"), check("del6-outbox-one", "converge keeps its del-6 row"), check("converge-retries", "converge keeps its retry bound"), check("batch-ledger-eight", "batch keeps its ledger rows"), check("batch-outbox-eight", "batch keeps its outbox rows"), check("stub-del1-one", "stub keeps its del-1 receipts"), check("provider-sign-line", "provider signing keeps its line"), check("carrier-sign-line", "carrier signing keeps its line")]
+        other: "nope" => ok []
+    match scope is "m40-l010"
+        false => ok []
+        true => ok [check("archive-env", "gate keeps its env name"), check("skip-note", "gate keeps its skip remark"), check("timeout-call", "run keeps its timeout call"), check("driver-rel", "run keeps its driver path"), check("db-name", "run keeps its file name"), check("snapshot-name", "run keeps its snapshot name"), check("entry-name", "run keeps its entry name"), check("schema-name", "run keeps its schema name"), check("health-path", "server keeps its health path"), check("real-mark", "assert keeps its real mark"), check("pair-log", "run keeps its pair log head"), check("seventh-payload", "seventh delivery keeps its bytes"), check("eighth-payload", "eighth delivery keeps its bytes"), check("inflight-note", "inflight leg keeps its remark"), check("converge-note", "converge leg keeps its remark"), check("crash-kill-note", "crash leg keeps its kill word"), check("seventh-note", "seventh claim keeps its remark"), check("eighth-note", "eighth claim keeps its remark"), check("webhook-port", "server keeps its port"), check("setup-tables", "setup keeps its table count"), check("live-timeout-minutes", "run keeps its live minutes"), check("crash-count", "run keeps its crash count"), check("crash-ledger-four", "crash keeps its ledger rows"), check("crash-outbox-four", "crash keeps its outbox rows"), check("stub-del5-two", "stub keeps its del-5 receipts"), check("ledger-del5-one", "ledger keeps its del-5 effect"), check("attempts-del5-one", "attempts keep their del-5 row"), check("converged-ledger-six", "converge keeps its ledger rows"), check("del6-outbox-one", "converge keeps its del-6 row"), check("converge-retries", "converge keeps its retry bound"), check("batch-ledger-eight", "batch keeps its ledger rows"), check("batch-outbox-eight", "batch keeps its outbox rows"), check("stub-del1-one", "stub keeps its del-1 receipts"), check("provider-sign-line", "provider signing keeps its line"), check("carrier-sign-line", "carrier signing keeps its line")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/webhook-run" => ok [expected_check("archive-env", "CAN_BUN_ARCHIVE"), expected_check("skip-note", "set CAN_BUN_ARCHIVE for staged webhook execution"), expected_check("timeout-call", "10*time.Minute"), expected_check("driver-rel", "tests/integration/testdata/webhook/driver.ts"), expected_check("db-name", "hook.sqlite"), expected_check("snapshot-name", "snapshot-webhook"), expected_check("entry-name", "entry.ts"), expected_check("schema-name", "schema.sql"), expected_check("health-path", "/health"), expected_check("real-mark", "real-can"), expected_check("pair-log", "webhook pair:"), expected_check("seventh-payload", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}"), expected_check("eighth-payload", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}"), expected_check("inflight-note", "in-flight outcome"), expected_check("converge-note", "in-flight delivery never converged to duplicate"), expected_check("crash-kill-note", "SIGKILL"), expected_check("seventh-note", "claim seventh"), expected_check("eighth-note", "claim eighth"), expected_check("webhook-port", "18494"), expected_check("setup-tables", "5"), expected_check("live-timeout-minutes", "10"), expected_check("crash-count", "3"), expected_check("crash-ledger-four", "4"), expected_check("crash-outbox-four", "4"), expected_check("stub-del5-two", "2"), expected_check("ledger-del5-one", "1"), expected_check("attempts-del5-one", "1"), expected_check("converged-ledger-six", "6"), expected_check("del6-outbox-one", "1"), expected_check("converge-retries", "3"), expected_check("batch-ledger-eight", "8"), expected_check("batch-outbox-eight", "8"), expected_check("stub-del1-one", "1"), expected_check("provider-sign-line", "524"), expected_check("carrier-sign-line", "525")]
+        unknown: "nope" => ok []
+    match case is "life/webhook-run"
+        false => ok []
+        true => ok [expected_check("archive-env", "CAN_BUN_ARCHIVE"), expected_check("skip-note", "set CAN_BUN_ARCHIVE for staged webhook execution"), expected_check("timeout-call", "10*time.Minute"), expected_check("driver-rel", "tests/integration/testdata/webhook/driver.ts"), expected_check("db-name", "hook.sqlite"), expected_check("snapshot-name", "snapshot-webhook"), expected_check("entry-name", "entry.ts"), expected_check("schema-name", "schema.sql"), expected_check("health-path", "/health"), expected_check("real-mark", "real-can"), expected_check("pair-log", "webhook pair:"), expected_check("seventh-payload", "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}"), expected_check("eighth-payload", "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}"), expected_check("inflight-note", "in-flight outcome"), expected_check("converge-note", "in-flight delivery never converged to duplicate"), expected_check("crash-kill-note", "SIGKILL"), expected_check("seventh-note", "claim seventh"), expected_check("eighth-note", "claim eighth"), expected_check("webhook-port", "18494"), expected_check("setup-tables", "5"), expected_check("live-timeout-minutes", "10"), expected_check("crash-count", "3"), expected_check("crash-ledger-four", "4"), expected_check("crash-outbox-four", "4"), expected_check("stub-del5-two", "2"), expected_check("ledger-del5-one", "1"), expected_check("attempts-del5-one", "1"), expected_check("converged-ledger-six", "6"), expected_check("del6-outbox-one", "1"), expected_check("converge-retries", "3"), expected_check("batch-ledger-eight", "8"), expected_check("batch-outbox-eight", "8"), expected_check("stub-del1-one", "1"), expected_check("provider-sign-line", "524"), expected_check("carrier-sign-line", "525")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/webhook-run", "default", "", "offline") => ok
+        seed_archive_env: context("life/webhook-run", "seed-archive-env-drift", "", "offline") => failed{"archive-env"}
+        seed_skip_note: context("life/webhook-run", "seed-skip-note-drift", "", "offline") => failed{"skip-note"}
+        seed_timeout_call: context("life/webhook-run", "seed-timeout-call-drift", "", "offline") => failed{"timeout-call"}
+        seed_driver_rel: context("life/webhook-run", "seed-driver-rel-drift", "", "offline") => failed{"driver-rel"}
+        seed_db_name: context("life/webhook-run", "seed-db-name-drift", "", "offline") => failed{"db-name"}
+        seed_snapshot_name: context("life/webhook-run", "seed-snapshot-name-drift", "", "offline") => failed{"snapshot-name"}
+        seed_entry_name: context("life/webhook-run", "seed-entry-name-drift", "", "offline") => failed{"entry-name"}
+        seed_schema_name: context("life/webhook-run", "seed-schema-name-drift", "", "offline") => failed{"schema-name"}
+        seed_health_path: context("life/webhook-run", "seed-health-path-drift", "", "offline") => failed{"health-path"}
+        seed_real_mark: context("life/webhook-run", "seed-real-mark-drift", "", "offline") => failed{"real-mark"}
+        seed_pair_log: context("life/webhook-run", "seed-pair-log-drift", "", "offline") => failed{"pair-log"}
+        seed_seventh_payload: context("life/webhook-run", "seed-seventh-payload-drift", "", "offline") => failed{"seventh-payload"}
+        seed_eighth_payload: context("life/webhook-run", "seed-eighth-payload-drift", "", "offline") => failed{"eighth-payload"}
+        seed_inflight_note: context("life/webhook-run", "seed-inflight-note-drift", "", "offline") => failed{"inflight-note"}
+        seed_converge_note: context("life/webhook-run", "seed-converge-note-drift", "", "offline") => failed{"converge-note"}
+        seed_crash_kill_note: context("life/webhook-run", "seed-crash-kill-note-drift", "", "offline") => failed{"crash-kill-note"}
+        seed_seventh_note: context("life/webhook-run", "seed-seventh-note-drift", "", "offline") => failed{"seventh-note"}
+        seed_eighth_note: context("life/webhook-run", "seed-eighth-note-drift", "", "offline") => failed{"eighth-note"}
+        seed_webhook_port: context("life/webhook-run", "seed-webhook-port-drift", "", "offline") => failed{"webhook-port"}
+        seed_setup_tables: context("life/webhook-run", "seed-setup-tables-drift", "", "offline") => failed{"setup-tables"}
+        seed_live_timeout_minutes: context("life/webhook-run", "seed-live-timeout-minutes-drift", "", "offline") => failed{"live-timeout-minutes"}
+        seed_crash_count: context("life/webhook-run", "seed-crash-count-drift", "", "offline") => failed{"crash-count"}
+        seed_crash_ledger_four: context("life/webhook-run", "seed-crash-ledger-four-drift", "", "offline") => failed{"crash-ledger-four"}
+        seed_crash_outbox_four: context("life/webhook-run", "seed-crash-outbox-four-drift", "", "offline") => failed{"crash-outbox-four"}
+        seed_stub_del5_two: context("life/webhook-run", "seed-stub-del5-two-drift", "", "offline") => failed{"stub-del5-two"}
+        seed_ledger_del5_one: context("life/webhook-run", "seed-ledger-del5-one-drift", "", "offline") => failed{"ledger-del5-one"}
+        seed_attempts_del5_one: context("life/webhook-run", "seed-attempts-del5-one-drift", "", "offline") => failed{"attempts-del5-one"}
+        seed_converged_ledger_six: context("life/webhook-run", "seed-converged-ledger-six-drift", "", "offline") => failed{"converged-ledger-six"}
+        seed_del6_outbox_one: context("life/webhook-run", "seed-del6-outbox-one-drift", "", "offline") => failed{"del6-outbox-one"}
+        seed_converge_retries: context("life/webhook-run", "seed-converge-retries-drift", "", "offline") => failed{"converge-retries"}
+        seed_batch_ledger_eight: context("life/webhook-run", "seed-batch-ledger-eight-drift", "", "offline") => failed{"batch-ledger-eight"}
+        seed_batch_outbox_eight: context("life/webhook-run", "seed-batch-outbox-eight-drift", "", "offline") => failed{"batch-outbox-eight"}
+        seed_stub_del1_one: context("life/webhook-run", "seed-stub-del1-one-drift", "", "offline") => failed{"stub-del1-one"}
+        seed_provider_sign_line: context("life/webhook-run", "seed-provider-sign-line-drift", "", "offline") => failed{"provider-sign-line"}
+        seed_carrier_sign_line: context("life/webhook-run", "seed-carrier-sign-line-drift", "", "offline") => failed{"carrier-sign-line"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.archive_env, "CAN_BUN_ARCHIVE", c, "archive-env")
+            failed
+            ok evidence archive_env_evidence => match call require_text(got.skip_note, "set CAN_BUN_ARCHIVE for staged webhook execution", c, "skip-note")
+                failed
+                ok evidence skip_note_evidence => match call require_text(got.timeout_call, "10*time.Minute", c, "timeout-call")
+                    failed
+                    ok evidence timeout_call_evidence => match call require_text(got.driver_rel, "tests/integration/testdata/webhook/driver.ts", c, "driver-rel")
+                        failed
+                        ok evidence driver_rel_evidence => match call require_text(got.db_name, "hook.sqlite", c, "db-name")
+                            failed
+                            ok evidence db_name_evidence => match call require_text(got.snapshot_name, "snapshot-webhook", c, "snapshot-name")
+                                failed
+                                ok evidence snapshot_name_evidence => match call require_text(got.entry_name, "entry.ts", c, "entry-name")
+                                    failed
+                                    ok evidence entry_name_evidence => match call require_text(got.schema_name, "schema.sql", c, "schema-name")
+                                        failed
+                                        ok evidence schema_name_evidence => match call require_text(got.health_path, "/health", c, "health-path")
+                                            failed
+                                            ok evidence health_path_evidence => match call require_text(got.real_mark, "real-can", c, "real-mark")
+                                                failed
+                                                ok evidence real_mark_evidence => match call require_text(got.pair_log, "webhook pair:", c, "pair-log")
+                                                    failed
+                                                    ok evidence pair_log_evidence => match call require_text(got.seventh_payload, "{\"delivery_id\":\"del-A\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", c, "seventh-payload")
+                                                        failed
+                                                        ok evidence seventh_payload_evidence => match call require_text(got.eighth_payload, "{\"delivery_id\":\"del-B\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", c, "eighth-payload")
+                                                            failed
+                                                            ok evidence eighth_payload_evidence => match call require_text(got.inflight_note, "in-flight outcome", c, "inflight-note")
+                                                                failed
+                                                                ok evidence inflight_note_evidence => match call require_text(got.converge_note, "in-flight delivery never converged to duplicate", c, "converge-note")
+                                                                    failed
+                                                                    ok evidence converge_note_evidence => match call require_text(got.crash_kill_note, "SIGKILL", c, "crash-kill-note")
+                                                                        failed
+                                                                        ok evidence crash_kill_note_evidence => match call require_text(got.seventh_note, "claim seventh", c, "seventh-note")
+                                                                            failed
+                                                                            ok evidence seventh_note_evidence => match call require_text(got.eighth_note, "claim eighth", c, "eighth-note")
+                                                                                failed
+                                                                                ok evidence eighth_note_evidence => match call require_int(got.webhook_port, 18494, c, "webhook-port")
+                                                                                    failed
+                                                                                    ok evidence webhook_port_evidence => match call require_int(got.setup_tables, 5, c, "setup-tables")
+                                                                                        failed
+                                                                                        ok evidence setup_tables_evidence => match call require_int(got.live_timeout_minutes, 10, c, "live-timeout-minutes")
+                                                                                            failed
+                                                                                            ok evidence live_timeout_minutes_evidence => match call require_int(got.crash_count, 3, c, "crash-count")
+                                                                                                failed
+                                                                                                ok evidence crash_count_evidence => match call require_int(got.crash_ledger_four, 4, c, "crash-ledger-four")
+                                                                                                    failed
+                                                                                                    ok evidence crash_ledger_four_evidence => match call require_int(got.crash_outbox_four, 4, c, "crash-outbox-four")
+                                                                                                        failed
+                                                                                                        ok evidence crash_outbox_four_evidence => match call require_int(got.stub_del5_two, 2, c, "stub-del5-two")
+                                                                                                            failed
+                                                                                                            ok evidence stub_del5_two_evidence => match call require_int(got.ledger_del5_one, 1, c, "ledger-del5-one")
+                                                                                                                failed
+                                                                                                                ok evidence ledger_del5_one_evidence => match call require_int(got.attempts_del5_one, 1, c, "attempts-del5-one")
+                                                                                                                    failed
+                                                                                                                    ok evidence attempts_del5_one_evidence => match call require_int(got.converged_ledger_six, 6, c, "converged-ledger-six")
+                                                                                                                        failed
+                                                                                                                        ok evidence converged_ledger_six_evidence => match call require_int(got.del6_outbox_one, 1, c, "del6-outbox-one")
+                                                                                                                            failed
+                                                                                                                            ok evidence del6_outbox_one_evidence => match call require_int(got.converge_retries, 3, c, "converge-retries")
+                                                                                                                                failed
+                                                                                                                                ok evidence converge_retries_evidence => match call require_int(got.batch_ledger_eight, 8, c, "batch-ledger-eight")
+                                                                                                                                    failed
+                                                                                                                                    ok evidence batch_ledger_eight_evidence => match call require_int(got.batch_outbox_eight, 8, c, "batch-outbox-eight")
+                                                                                                                                        failed
+                                                                                                                                        ok evidence batch_outbox_eight_evidence => match call require_int(got.stub_del1_one, 1, c, "stub-del1-one")
+                                                                                                                                            failed
+                                                                                                                                            ok evidence stub_del1_one_evidence => match call require_int(got.provider_sign_line, 524, c, "provider-sign-line")
+                                                                                                                                                failed
+                                                                                                                                                ok evidence provider_sign_line_evidence => match call require_int(got.carrier_sign_line, 525, c, "carrier-sign-line")
+                                                                                                                                                    failed
+                                                                                                                                                    ok evidence carrier_sign_line_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m40_l010: "m40-l010" => ok test_case("life/webhook-run", ["life", "m40"], [], 120000, [check_ref("archive-env"), check_ref("skip-note"), check_ref("timeout-call"), check_ref("driver-rel"), check_ref("db-name"), check_ref("snapshot-name"), check_ref("entry-name"), check_ref("schema-name"), check_ref("health-path"), check_ref("real-mark"), check_ref("pair-log"), check_ref("seventh-payload"), check_ref("eighth-payload"), check_ref("inflight-note"), check_ref("converge-note"), check_ref("crash-kill-note"), check_ref("seventh-note"), check_ref("eighth-note"), check_ref("webhook-port"), check_ref("setup-tables"), check_ref("live-timeout-minutes"), check_ref("crash-count"), check_ref("crash-ledger-four"), check_ref("crash-outbox-four"), check_ref("stub-del5-two"), check_ref("ledger-del5-one"), check_ref("attempts-del5-one"), check_ref("converged-ledger-six"), check_ref("del6-outbox-one"), check_ref("converge-retries"), check_ref("batch-ledger-eight"), check_ref("batch-outbox-eight"), check_ref("stub-del1-one"), check_ref("provider-sign-line"), check_ref("carrier-sign-line")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m40-l010"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/webhook-run", ["life", "m40"], [], 120000, [check_ref("archive-env"), check_ref("skip-note"), check_ref("timeout-call"), check_ref("driver-rel"), check_ref("db-name"), check_ref("snapshot-name"), check_ref("entry-name"), check_ref("schema-name"), check_ref("health-path"), check_ref("real-mark"), check_ref("pair-log"), check_ref("seventh-payload"), check_ref("eighth-payload"), check_ref("inflight-note"), check_ref("converge-note"), check_ref("crash-kill-note"), check_ref("seventh-note"), check_ref("eighth-note"), check_ref("webhook-port"), check_ref("setup-tables"), check_ref("live-timeout-minutes"), check_ref("crash-count"), check_ref("crash-ledger-four"), check_ref("crash-outbox-four"), check_ref("stub-del5-two"), check_ref("ledger-del5-one"), check_ref("attempts-del5-one"), check_ref("converged-ledger-six"), check_ref("del6-outbox-one"), check_ref("converge-retries"), check_ref("batch-ledger-eight"), check_ref("batch-outbox-eight"), check_ref("stub-del1-one"), check_ref("provider-sign-line"), check_ref("carrier-sign-line")], callable case_body)

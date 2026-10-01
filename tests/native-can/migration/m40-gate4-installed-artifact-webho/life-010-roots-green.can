@@ -1,0 +1,392 @@
+package m40life010roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M40 LIFE-010 TestWebhookSliceLive
+/// claim plus poison legs.
+/// Source: tests/integration/
+/// webhook_test.go symbol
+/// TestWebhookSliceLive (L470-939):
+/// one holder at a time must own each
+/// outbox row across claim plus lease
+/// plus heartbeat plus ack, and five
+/// failures must bury a row where all
+/// replays converge.
+/// Disposition: migrate (same row pact as
+/// the base slice; this file owns the
+/// claim plus poison legs only).
+/// Protects (this file): facet three
+/// (L646-741): claim exclusivity, leases,
+/// failure plus reclaim, heartbeat
+/// version plus holder, terminal replay;
+/// facet four (L743-778): poison
+/// dead-letter after five failures,
+/// duplicate ack plus dead-letter
+/// idempotence, unknown plus already-done
+/// cases.
+/// ADAPTATION (recorded, with source
+/// lines): path pins hold carrier paths;
+/// word pins hold status plus reason
+/// words; body pins hold answer bytes;
+/// head pins hold answer prefixes; note
+/// pins hold remark lines; lease pins
+/// hold ints from the named claim lines;
+/// version pins hold ints from the named
+/// claim lines; bound pins hold ints
+/// from the named loop lines.
+/// heartbeat-path pins
+/// /outbox/heartbeat (helper L254);
+/// ack-path pins /outbox/ack (helper
+/// L263); dead-letter-path pins
+/// /outbox/dead_letter (helper L271);
+/// claimed-word pins claimed (L660);
+/// empty-word pins empty (L675);
+/// done-one-body pins the done bytes
+/// (L679); pending-one-body pins the
+/// pending bytes (L703); replay-body
+/// pins the replay bytes (L663);
+/// extended-prefix pins the extended
+/// head (L726); lease-lost-body pins the
+/// lease_lost bytes (L729);
+/// unknown-attempts-body pins the
+/// unknown attempts bytes (L692);
+/// pending-prefix pins the poison head
+/// (L751); dead-five-body pins the dead
+/// bytes (L756); already-done-body pins
+/// the already_done bytes (L765);
+/// poison-word pins poison (L753);
+/// delivered-word pins delivered (L689);
+/// rival-note pins the rival remark
+/// (L676); reclaim-note pins the reclaim
+/// remark (L712); done-note pins the
+/// terminal remark (L740);
+/// short-lease-ms pins int (1000) from
+/// L700; lease-sleep-ms pins int (1200)
+/// from L709; claim-version-one pins int
+/// (1) from L667; reclaim-version-two
+/// pins int (2) from L711;
+/// poison-failures pins int (5) from
+/// L750; foreign-heartbeat-status pins
+/// int (409) from L732.
+/// Facet map (leg order): heartbeat-path,
+/// ack-path, dead-letter-path,
+/// claimed-word, empty-word,
+/// done-one-body, pending-one-body,
+/// replay-body, extended-prefix,
+/// lease-lost-body, unknown-attempts-body,
+/// pending-prefix, dead-five-body,
+/// already-done-body, poison-word,
+/// delivered-word, rival-note,
+/// reclaim-note, done-note,
+/// short-lease-ms, lease-sleep-ms,
+/// claim-version-one, reclaim-version-two,
+/// poison-failures, foreign-heartbeat-status.
+/// The provider plus carrier legs live in
+/// life-010-base-semantics.can; the crash
+/// plus batch plus harness shape lives in
+/// life-010-run-shape.can.
+/// Variants: claim plus heartbeat plus
+/// ack plus dead-letter; default plus
+/// seeded drifts only here.
+/// Environment: CAN_BUN_ARCHIVE plus a
+/// staged bundle plus cut-off homes plus
+/// loopback ports plus a disposable file
+/// (row lists three gates; bind at P23;
+/// no live run now).
+/// Logical gates ARCHIVE plus PEER plus
+/// DB plus CHILD plus CLOCK bind at P23;
+/// no live run now.
+/// Timeout 120000ms is the offline default
+/// bound (the live ten minute hold is
+/// pinned in the run slice; binds at P23
+/// like the M31 no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// accept gate unmet).
+/// Case life/webhook-roots
+/// checks: heartbeat-path,
+/// ack-path, dead-letter-path,
+/// claimed-word, empty-word,
+/// done-one-body, pending-one-body,
+/// replay-body, extended-prefix,
+/// lease-lost-body, unknown-attempts-body,
+/// pending-prefix, dead-five-body,
+/// already-done-body, poison-word,
+/// delivered-word, rival-note,
+/// reclaim-note, done-note,
+/// short-lease-ms, lease-sleep-ms,
+/// claim-version-one, reclaim-version-two,
+/// poison-failures, foreign-heartbeat-status.
+/// Shared old files untouched; retirement
+/// is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str heartbeat_path
+    str ack_path
+    str dead_letter_path
+    str claimed_word
+    str empty_word
+    str done_one_body
+    str pending_one_body
+    str replay_body
+    str extended_prefix
+    str lease_lost_body
+    str unknown_attempts_body
+    str pending_prefix
+    str dead_five_body
+    str already_done_body
+    str poison_word
+    str delivered_word
+    str rival_note
+    str reclaim_note
+    str done_note
+    int short_lease_ms
+    int lease_sleep_ms
+    int claim_version_one
+    int reclaim_version_two
+    int poison_failures
+    int foreign_heartbeat_status
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/webhook-roots", "default", "", "offline"), "heartbeat-path" => ok "case life/webhook-roots variant default root heartbeat-path run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/webhook-roots", "default", "", "offline"), "heartbeat-path" => ok evidence("heartbeat-path", "true", "true", true, "case life/webhook-roots variant default root heartbeat-path run offline")
+        different: false, true, context("life/webhook-roots", "default", "", "offline"), "heartbeat-path" => failed{"heartbeat-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1000, 1000, context("life/webhook-roots", "default", "", "offline"), "short-lease-ms" => ok evidence("short-lease-ms", "1000", "1000", true, "case life/webhook-roots variant default root short-lease-ms run offline")
+        different: 999, 1000, context("life/webhook-roots", "default", "", "offline"), "short-lease-ms" => failed{"short-lease-ms"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "/outbox/heartbeat", "/outbox/heartbeat", context("life/webhook-roots", "default", "", "offline"), "heartbeat-path" => ok evidence("heartbeat-path", "/outbox/heartbeat", "/outbox/heartbeat", true, "case life/webhook-roots variant default root heartbeat-path run offline")
+        different: "/outbox/heartbeat_2", "/outbox/heartbeat", context("life/webhook-roots", "default", "", "offline"), "heartbeat-path" => failed{"heartbeat-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_heartbeat_path: "seed-heartbeat-path-drift" => ok observation("/outbox/heartbeat_2", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_ack_path: "seed-ack-path-drift" => ok observation("/outbox/heartbeat", "/outbox/ack_2", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_dead_letter_path: "seed-dead-letter-path-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter_2", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_claimed_word: "seed-claimed-word-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed_2", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_empty_word: "seed-empty-word-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty_2", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_done_one_body: "seed-done-one-body-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}_2", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_pending_one_body: "seed-pending-one-body-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}_2", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_replay_body: "seed-replay-body-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}_2", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_extended_prefix: "seed-extended-prefix-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":_2", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_lease_lost_body: "seed-lease-lost-body-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}_2", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_unknown_attempts_body: "seed-unknown-attempts-body-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}_2", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_pending_prefix: "seed-pending-prefix-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":_2", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_dead_five_body: "seed-dead-five-body-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}_2", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_already_done_body: "seed-already-done-body-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}_2", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_poison_word: "seed-poison-word-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison_2", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_delivered_word: "seed-delivered-word-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered_2", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_rival_note: "seed-rival-note-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held_2", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_reclaim_note: "seed-reclaim-note-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry_2", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        seed_done_note: "seed-done-note-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done_2", 1000, 1200, 1, 2, 5, 409)
+        seed_short_lease_ms: "seed-short-lease-ms-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 999, 1200, 1, 2, 5, 409)
+        seed_lease_sleep_ms: "seed-lease-sleep-ms-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1199, 1, 2, 5, 409)
+        seed_claim_version_one: "seed-claim-version-one-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 0, 2, 5, 409)
+        seed_reclaim_version_two: "seed-reclaim-version-two-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 1, 5, 409)
+        seed_poison_failures: "seed-poison-failures-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 4, 409)
+        seed_foreign_heartbeat_status: "seed-foreign-heartbeat-status-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 408)
+    match variant_id
+        "seed-heartbeat-path-drift" => ok observation("/outbox/heartbeat_2", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-ack-path-drift" => ok observation("/outbox/heartbeat", "/outbox/ack_2", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-dead-letter-path-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter_2", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-claimed-word-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed_2", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-empty-word-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty_2", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-done-one-body-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}_2", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-pending-one-body-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}_2", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-replay-body-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}_2", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-extended-prefix-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":_2", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-lease-lost-body-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}_2", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-unknown-attempts-body-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}_2", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-pending-prefix-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":_2", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-dead-five-body-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}_2", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-already-done-body-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}_2", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-poison-word-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison_2", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-delivered-word-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered_2", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-rival-note-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held_2", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-reclaim-note-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry_2", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+        "seed-done-note-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done_2", 1000, 1200, 1, 2, 5, 409)
+        "seed-short-lease-ms-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 999, 1200, 1, 2, 5, 409)
+        "seed-lease-sleep-ms-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1199, 1, 2, 5, 409)
+        "seed-claim-version-one-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 0, 2, 5, 409)
+        "seed-reclaim-version-two-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 1, 5, 409)
+        "seed-poison-failures-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 4, 409)
+        "seed-foreign-heartbeat-status-drift" => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 408)
+        _ => ok observation("/outbox/heartbeat", "/outbox/ack", "/outbox/dead_letter", "claimed", "empty", "{\"status\":\"done\",\"attempts\":1}", "{\"status\":\"pending\",\"attempts\":1}", "{\"status\":\"replay\",\"items\":[]}", "{\"status\":\"extended\",\"lease_until_ms\":", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", "{\"status\":\"unknown\",\"attempts\":0}", "{\"status\":\"pending\",\"attempts\":", "{\"status\":\"dead\",\"attempts\":5}", "{\"status\":\"already_done\",\"attempts\":1}", "poison", "delivered", "rival claim while held", "reclaim after expiry", "heartbeat after done", 1000, 1200, 1, 2, 5, 409)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m40_l010: "m40-l010" => ok [check("heartbeat-path", "carrier keeps its heartbeat path"), check("ack-path", "carrier keeps its ack path"), check("dead-letter-path", "carrier keeps its dead letter path"), check("claimed-word", "claim keeps its claimed word"), check("empty-word", "rival claim keeps its empty word"), check("done-one-body", "ack keeps its done body"), check("pending-one-body", "failed ack keeps its pending body"), check("replay-body", "committed claim keeps its replay body"), check("extended-prefix", "heartbeat keeps its extended head"), check("lease-lost-body", "stale heartbeat keeps its body"), check("unknown-attempts-body", "unknown id keeps its attempts body"), check("pending-prefix", "poison loop keeps its pending head"), check("dead-five-body", "dead letter keeps its dead body"), check("already-done-body", "dead on done keeps its body"), check("poison-word", "dead letter keeps its reason word"), check("delivered-word", "attempt keeps its outcome word"), check("rival-note", "rival claim keeps its remark"), check("reclaim-note", "reclaim keeps its remark"), check("done-note", "terminal replay keeps its remark"), check("short-lease-ms", "second claim keeps its lease"), check("lease-sleep-ms", "expiry pause keeps its span"), check("claim-version-one", "first claim keeps its version"), check("reclaim-version-two", "reclaim keeps its version"), check("poison-failures", "poison loop keeps its bound"), check("foreign-heartbeat-status", "foreign holder keeps its status")]
+        other: "nope" => ok []
+    match scope is "m40-l010"
+        false => ok []
+        true => ok [check("heartbeat-path", "carrier keeps its heartbeat path"), check("ack-path", "carrier keeps its ack path"), check("dead-letter-path", "carrier keeps its dead letter path"), check("claimed-word", "claim keeps its claimed word"), check("empty-word", "rival claim keeps its empty word"), check("done-one-body", "ack keeps its done body"), check("pending-one-body", "failed ack keeps its pending body"), check("replay-body", "committed claim keeps its replay body"), check("extended-prefix", "heartbeat keeps its extended head"), check("lease-lost-body", "stale heartbeat keeps its body"), check("unknown-attempts-body", "unknown id keeps its attempts body"), check("pending-prefix", "poison loop keeps its pending head"), check("dead-five-body", "dead letter keeps its dead body"), check("already-done-body", "dead on done keeps its body"), check("poison-word", "dead letter keeps its reason word"), check("delivered-word", "attempt keeps its outcome word"), check("rival-note", "rival claim keeps its remark"), check("reclaim-note", "reclaim keeps its remark"), check("done-note", "terminal replay keeps its remark"), check("short-lease-ms", "second claim keeps its lease"), check("lease-sleep-ms", "expiry pause keeps its span"), check("claim-version-one", "first claim keeps its version"), check("reclaim-version-two", "reclaim keeps its version"), check("poison-failures", "poison loop keeps its bound"), check("foreign-heartbeat-status", "foreign holder keeps its status")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/webhook-roots" => ok [expected_check("heartbeat-path", "/outbox/heartbeat"), expected_check("ack-path", "/outbox/ack"), expected_check("dead-letter-path", "/outbox/dead_letter"), expected_check("claimed-word", "claimed"), expected_check("empty-word", "empty"), expected_check("done-one-body", "{\"status\":\"done\",\"attempts\":1}"), expected_check("pending-one-body", "{\"status\":\"pending\",\"attempts\":1}"), expected_check("replay-body", "{\"status\":\"replay\",\"items\":[]}"), expected_check("extended-prefix", "{\"status\":\"extended\",\"lease_until_ms\":"), expected_check("lease-lost-body", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}"), expected_check("unknown-attempts-body", "{\"status\":\"unknown\",\"attempts\":0}"), expected_check("pending-prefix", "{\"status\":\"pending\",\"attempts\":"), expected_check("dead-five-body", "{\"status\":\"dead\",\"attempts\":5}"), expected_check("already-done-body", "{\"status\":\"already_done\",\"attempts\":1}"), expected_check("poison-word", "poison"), expected_check("delivered-word", "delivered"), expected_check("rival-note", "rival claim while held"), expected_check("reclaim-note", "reclaim after expiry"), expected_check("done-note", "heartbeat after done"), expected_check("short-lease-ms", "1000"), expected_check("lease-sleep-ms", "1200"), expected_check("claim-version-one", "1"), expected_check("reclaim-version-two", "2"), expected_check("poison-failures", "5"), expected_check("foreign-heartbeat-status", "409")]
+        unknown: "nope" => ok []
+    match case is "life/webhook-roots"
+        false => ok []
+        true => ok [expected_check("heartbeat-path", "/outbox/heartbeat"), expected_check("ack-path", "/outbox/ack"), expected_check("dead-letter-path", "/outbox/dead_letter"), expected_check("claimed-word", "claimed"), expected_check("empty-word", "empty"), expected_check("done-one-body", "{\"status\":\"done\",\"attempts\":1}"), expected_check("pending-one-body", "{\"status\":\"pending\",\"attempts\":1}"), expected_check("replay-body", "{\"status\":\"replay\",\"items\":[]}"), expected_check("extended-prefix", "{\"status\":\"extended\",\"lease_until_ms\":"), expected_check("lease-lost-body", "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}"), expected_check("unknown-attempts-body", "{\"status\":\"unknown\",\"attempts\":0}"), expected_check("pending-prefix", "{\"status\":\"pending\",\"attempts\":"), expected_check("dead-five-body", "{\"status\":\"dead\",\"attempts\":5}"), expected_check("already-done-body", "{\"status\":\"already_done\",\"attempts\":1}"), expected_check("poison-word", "poison"), expected_check("delivered-word", "delivered"), expected_check("rival-note", "rival claim while held"), expected_check("reclaim-note", "reclaim after expiry"), expected_check("done-note", "heartbeat after done"), expected_check("short-lease-ms", "1000"), expected_check("lease-sleep-ms", "1200"), expected_check("claim-version-one", "1"), expected_check("reclaim-version-two", "2"), expected_check("poison-failures", "5"), expected_check("foreign-heartbeat-status", "409")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/webhook-roots", "default", "", "offline") => ok
+        seed_heartbeat_path: context("life/webhook-roots", "seed-heartbeat-path-drift", "", "offline") => failed{"heartbeat-path"}
+        seed_ack_path: context("life/webhook-roots", "seed-ack-path-drift", "", "offline") => failed{"ack-path"}
+        seed_dead_letter_path: context("life/webhook-roots", "seed-dead-letter-path-drift", "", "offline") => failed{"dead-letter-path"}
+        seed_claimed_word: context("life/webhook-roots", "seed-claimed-word-drift", "", "offline") => failed{"claimed-word"}
+        seed_empty_word: context("life/webhook-roots", "seed-empty-word-drift", "", "offline") => failed{"empty-word"}
+        seed_done_one_body: context("life/webhook-roots", "seed-done-one-body-drift", "", "offline") => failed{"done-one-body"}
+        seed_pending_one_body: context("life/webhook-roots", "seed-pending-one-body-drift", "", "offline") => failed{"pending-one-body"}
+        seed_replay_body: context("life/webhook-roots", "seed-replay-body-drift", "", "offline") => failed{"replay-body"}
+        seed_extended_prefix: context("life/webhook-roots", "seed-extended-prefix-drift", "", "offline") => failed{"extended-prefix"}
+        seed_lease_lost_body: context("life/webhook-roots", "seed-lease-lost-body-drift", "", "offline") => failed{"lease-lost-body"}
+        seed_unknown_attempts_body: context("life/webhook-roots", "seed-unknown-attempts-body-drift", "", "offline") => failed{"unknown-attempts-body"}
+        seed_pending_prefix: context("life/webhook-roots", "seed-pending-prefix-drift", "", "offline") => failed{"pending-prefix"}
+        seed_dead_five_body: context("life/webhook-roots", "seed-dead-five-body-drift", "", "offline") => failed{"dead-five-body"}
+        seed_already_done_body: context("life/webhook-roots", "seed-already-done-body-drift", "", "offline") => failed{"already-done-body"}
+        seed_poison_word: context("life/webhook-roots", "seed-poison-word-drift", "", "offline") => failed{"poison-word"}
+        seed_delivered_word: context("life/webhook-roots", "seed-delivered-word-drift", "", "offline") => failed{"delivered-word"}
+        seed_rival_note: context("life/webhook-roots", "seed-rival-note-drift", "", "offline") => failed{"rival-note"}
+        seed_reclaim_note: context("life/webhook-roots", "seed-reclaim-note-drift", "", "offline") => failed{"reclaim-note"}
+        seed_done_note: context("life/webhook-roots", "seed-done-note-drift", "", "offline") => failed{"done-note"}
+        seed_short_lease_ms: context("life/webhook-roots", "seed-short-lease-ms-drift", "", "offline") => failed{"short-lease-ms"}
+        seed_lease_sleep_ms: context("life/webhook-roots", "seed-lease-sleep-ms-drift", "", "offline") => failed{"lease-sleep-ms"}
+        seed_claim_version_one: context("life/webhook-roots", "seed-claim-version-one-drift", "", "offline") => failed{"claim-version-one"}
+        seed_reclaim_version_two: context("life/webhook-roots", "seed-reclaim-version-two-drift", "", "offline") => failed{"reclaim-version-two"}
+        seed_poison_failures: context("life/webhook-roots", "seed-poison-failures-drift", "", "offline") => failed{"poison-failures"}
+        seed_foreign_heartbeat_status: context("life/webhook-roots", "seed-foreign-heartbeat-status-drift", "", "offline") => failed{"foreign-heartbeat-status"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.heartbeat_path, "/outbox/heartbeat", c, "heartbeat-path")
+            failed
+            ok evidence heartbeat_path_evidence => match call require_text(got.ack_path, "/outbox/ack", c, "ack-path")
+                failed
+                ok evidence ack_path_evidence => match call require_text(got.dead_letter_path, "/outbox/dead_letter", c, "dead-letter-path")
+                    failed
+                    ok evidence dead_letter_path_evidence => match call require_text(got.claimed_word, "claimed", c, "claimed-word")
+                        failed
+                        ok evidence claimed_word_evidence => match call require_text(got.empty_word, "empty", c, "empty-word")
+                            failed
+                            ok evidence empty_word_evidence => match call require_text(got.done_one_body, "{\"status\":\"done\",\"attempts\":1}", c, "done-one-body")
+                                failed
+                                ok evidence done_one_body_evidence => match call require_text(got.pending_one_body, "{\"status\":\"pending\",\"attempts\":1}", c, "pending-one-body")
+                                    failed
+                                    ok evidence pending_one_body_evidence => match call require_text(got.replay_body, "{\"status\":\"replay\",\"items\":[]}", c, "replay-body")
+                                        failed
+                                        ok evidence replay_body_evidence => match call require_text(got.extended_prefix, "{\"status\":\"extended\",\"lease_until_ms\":", c, "extended-prefix")
+                                            failed
+                                            ok evidence extended_prefix_evidence => match call require_text(got.lease_lost_body, "{\"status\":\"lease_lost\",\"lease_until_ms\":0,\"version\":0,\"attempts\":0}", c, "lease-lost-body")
+                                                failed
+                                                ok evidence lease_lost_body_evidence => match call require_text(got.unknown_attempts_body, "{\"status\":\"unknown\",\"attempts\":0}", c, "unknown-attempts-body")
+                                                    failed
+                                                    ok evidence unknown_attempts_body_evidence => match call require_text(got.pending_prefix, "{\"status\":\"pending\",\"attempts\":", c, "pending-prefix")
+                                                        failed
+                                                        ok evidence pending_prefix_evidence => match call require_text(got.dead_five_body, "{\"status\":\"dead\",\"attempts\":5}", c, "dead-five-body")
+                                                            failed
+                                                            ok evidence dead_five_body_evidence => match call require_text(got.already_done_body, "{\"status\":\"already_done\",\"attempts\":1}", c, "already-done-body")
+                                                                failed
+                                                                ok evidence already_done_body_evidence => match call require_text(got.poison_word, "poison", c, "poison-word")
+                                                                    failed
+                                                                    ok evidence poison_word_evidence => match call require_text(got.delivered_word, "delivered", c, "delivered-word")
+                                                                        failed
+                                                                        ok evidence delivered_word_evidence => match call require_text(got.rival_note, "rival claim while held", c, "rival-note")
+                                                                            failed
+                                                                            ok evidence rival_note_evidence => match call require_text(got.reclaim_note, "reclaim after expiry", c, "reclaim-note")
+                                                                                failed
+                                                                                ok evidence reclaim_note_evidence => match call require_text(got.done_note, "heartbeat after done", c, "done-note")
+                                                                                    failed
+                                                                                    ok evidence done_note_evidence => match call require_int(got.short_lease_ms, 1000, c, "short-lease-ms")
+                                                                                        failed
+                                                                                        ok evidence short_lease_ms_evidence => match call require_int(got.lease_sleep_ms, 1200, c, "lease-sleep-ms")
+                                                                                            failed
+                                                                                            ok evidence lease_sleep_ms_evidence => match call require_int(got.claim_version_one, 1, c, "claim-version-one")
+                                                                                                failed
+                                                                                                ok evidence claim_version_one_evidence => match call require_int(got.reclaim_version_two, 2, c, "reclaim-version-two")
+                                                                                                    failed
+                                                                                                    ok evidence reclaim_version_two_evidence => match call require_int(got.poison_failures, 5, c, "poison-failures")
+                                                                                                        failed
+                                                                                                        ok evidence poison_failures_evidence => match call require_int(got.foreign_heartbeat_status, 409, c, "foreign-heartbeat-status")
+                                                                                                            failed
+                                                                                                            ok evidence foreign_heartbeat_status_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m40_l010: "m40-l010" => ok test_case("life/webhook-roots", ["life", "m40"], [], 120000, [check_ref("heartbeat-path"), check_ref("ack-path"), check_ref("dead-letter-path"), check_ref("claimed-word"), check_ref("empty-word"), check_ref("done-one-body"), check_ref("pending-one-body"), check_ref("replay-body"), check_ref("extended-prefix"), check_ref("lease-lost-body"), check_ref("unknown-attempts-body"), check_ref("pending-prefix"), check_ref("dead-five-body"), check_ref("already-done-body"), check_ref("poison-word"), check_ref("delivered-word"), check_ref("rival-note"), check_ref("reclaim-note"), check_ref("done-note"), check_ref("short-lease-ms"), check_ref("lease-sleep-ms"), check_ref("claim-version-one"), check_ref("reclaim-version-two"), check_ref("poison-failures"), check_ref("foreign-heartbeat-status")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m40-l010"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/webhook-roots", ["life", "m40"], [], 120000, [check_ref("heartbeat-path"), check_ref("ack-path"), check_ref("dead-letter-path"), check_ref("claimed-word"), check_ref("empty-word"), check_ref("done-one-body"), check_ref("pending-one-body"), check_ref("replay-body"), check_ref("extended-prefix"), check_ref("lease-lost-body"), check_ref("unknown-attempts-body"), check_ref("pending-prefix"), check_ref("dead-five-body"), check_ref("already-done-body"), check_ref("poison-word"), check_ref("delivered-word"), check_ref("rival-note"), check_ref("reclaim-note"), check_ref("done-note"), check_ref("short-lease-ms"), check_ref("lease-sleep-ms"), check_ref("claim-version-one"), check_ref("reclaim-version-two"), check_ref("poison-failures"), check_ref("foreign-heartbeat-status")], callable case_body)
