@@ -764,7 +764,7 @@
       "acceptance": "Detect input drift, partial fills, corrupt bundles, waiter cancellation, key omissions, leased eviction and reused determinism/corruption subjects. Failed fills do not publish; no persistent full bundle cache or hidden producer overlap; actual reuse qualification is included in P23.",
       "evidence": "evidence/P27.json with exact identities, checks, controls, cleanup and independent review",
       "commit": "feat(testing): reuse immutable builds within one run",
-      "status": "active",
+      "status": "complete",
       "start_after": [
         "P09",
         "P12",

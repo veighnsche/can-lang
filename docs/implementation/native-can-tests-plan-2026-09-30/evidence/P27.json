@@ -1,5 +1,5 @@
 {
- "status": "ready-for-review",
+ "status": "complete",
  "executor": "p27-build-reuse delegated slice run (worker-a-p27 scope)",
  "writing_owner": "can-suite-cli",
  "task_id": "P27",
@@ -11,7 +11,8 @@
  ],
  "acceptance_prerequisite_receipts": [],
  "commits": [
-  "d49b00d92fd722bd61091b258b253396b9268809"
+  "d49b00d92fd722bd61091b258b253396b9268809",
+  "b6ecd7b93ebaf04cdb031325e9e3d489610af1d2"
  ],
  "commit_note": "No commit per delegation (never commit; integrator owns commits).",
  "changed_paths": [
@@ -174,7 +175,7 @@
  "relevance_decision": null,
  "retirement_eligible": false,
  "retirement_commit": null,
- "reviewer_disposition": "integrator accepted key-policy + publication-lease-hook in d49b00d9: read keys.can/reuse.can/test_reuse.go in full; independently re-ran gofmt/vet clean, reuse tests ok (18 top-level incl. new stress), -race clean, parse 12+20 decls, project diagnostics 0 errors + 2 pre-existing reducer.can warnings. Integrator fixes (all in-commit): evict/acquire race left mappings to discarded generations (permanent key wedge) -> evict now drops post-discard with orphan drain; content-aliased keys across evicts double-discarded -> per-key mapping drop with last-sharer discard; Lookup maps post-evict acquire failures to miss; Outstanding = acquired-minus-released (orphan-exact). Added TestReuseEvictLookupRaceNeverWedges (deliberately aliased bytes). P27 stays active: reuse-controls slice (builds/controls/) is next per lane plan; P23 holds qualification credit. Reuse-controls accepted after integrator gate adoption (worker wrote vectors + honest UNRUN entries, then EMFILE-stopped): parse 2+4+5 decls, cancheck 0 errors identical to controls-removed baseline, negative control bites (4 errors), probe + scratch removed. No integrator source fixes needed.",
+ "reviewer_disposition": "integrator accepted key-policy + publication-lease-hook in d49b00d9: read keys.can/reuse.can/test_reuse.go in full; independently re-ran gofmt/vet clean, reuse tests ok (18 top-level incl. new stress), -race clean, parse 12+20 decls, project diagnostics 0 errors + 2 pre-existing reducer.can warnings. Integrator fixes (all in-commit): evict/acquire race left mappings to discarded generations (permanent key wedge) -> evict now drops post-discard with orphan drain; content-aliased keys across evicts double-discarded -> per-key mapping drop with last-sharer discard; Lookup maps post-evict acquire failures to miss; Outstanding = acquired-minus-released (orphan-exact). Added TestReuseEvictLookupRaceNeverWedges (deliberately aliased bytes). P27 stays active: reuse-controls slice (builds/controls/) is next per lane plan; P23 holds qualification credit. Reuse-controls accepted after integrator gate adoption (worker wrote vectors + honest UNRUN entries, then EMFILE-stopped): parse 2+4+5 decls, cancheck 0 errors identical to controls-removed baseline, negative control bites (4 errors), probe + scratch removed. No integrator source fixes needed. P27 COMPLETE: all three subdeliveries accepted (key-policy + publication-lease-hook in d49b00d9 with integrator race fixes; reuse-controls in b6ecd7b9 after integrator gate adoption). Every acceptance clause covered: drift/partial/corrupt/cancel/omission/leased-evict/determinism subjects, failed fills unpublished, memory-only table, one producer. Independent review: worker-authored slices reviewed + gate-adopted by the integrator (separate parties); no slice was integrator-written. P23 holds qualification credit.",
  "limitations": [
   "unix-only lease/floor mechanics (syscall flock/Statfs via OutputStore/P12): same platform scope as P10/P11/P12",
   "cancel-vs-settle in the same instant may still join (inherent race); a waiter that already cancelled never joins (explicit pre-check)",
