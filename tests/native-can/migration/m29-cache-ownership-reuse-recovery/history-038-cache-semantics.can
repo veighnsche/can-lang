@@ -1,0 +1,294 @@
+package m29history038cache
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 HISTORY-038 "Bounded recovery: verdicts".
+/// Source: tests/support/tempcache/cache_test.go symbol
+/// TestRecoveryWorkIsBounded (L152-172); impl
+/// tests/support/tempcache/cache.go limit (L30) plus
+/// recoverAbandoned (L132-178).
+/// Disposition: migrate (this row ports
+/// TestRecoveryWorkIsBounded to ordinary Can
+/// functions; the old Go harness stays until the integrator
+/// retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): the two live verdicts in Go order:
+/// the bounded-count leg, the overflow-kept leg, the
+/// recover-ok guard, the two refusal wordings, the
+/// sixteen cap, the plus-one seed shape, the
+/// candidate/recover/readdir counts, the len/limit/
+/// leg/verb counts, and the single leftover.
+/// ADAPTATION (recorded, with source lines): verdicts pin
+/// bools from the len guards (L158/L169); recover-ok pins
+/// bool from the recover guard (L157/L162); diags pin the
+/// exact Go Fatalf spellings (L159/L170); recovery-limit
+/// pins 16 from the const (impl L30); seed-extra pins 1
+/// from the +1 (L154); seed-total pins 17 from 16+1
+/// (L154); candidate-sites pins 1 (L155); recover-sites
+/// pins 1 (L157); readdir-count pins 1 (L165);
+/// fatalf-count pins 2 (L159/L170); fatal-count pins 2
+/// (L163/L167); len-count pins 4 (L158/L159/L169/L170);
+/// limit-refs pins 3 (L154/L158/L159); total-legs pins 2
+/// (L158/L169); verb-count pins 3 (L159 x2 plus L170);
+/// overflow-count pins 1 (L169).
+/// Facet map (Go verdict legs): bounded-ok pins true
+/// (L158); overflow-kept pins true (L169); recover-ok pins
+/// true (L157/L162); count-diag pins the count wording
+/// (L159); unbounded-diag pins the unbounded wording
+/// (L170); recovery-limit pins 16 (impl L30); seed-extra
+/// pins 1 (L154); seed-total pins 17 (L154);
+/// candidate-sites pins 1 (L155); recover-sites pins 1
+/// (L157); readdir-count pins 1 (L165); fatalf-count pins
+/// 2 (L159/L170); fatal-count pins 2 (L163/L167);
+/// len-count pins 4 (L158/L159/L169/L170); limit-refs pins
+/// 3 (L154/L158/L159); total-legs pins 2 (L158/L169);
+/// verb-count pins 3 (L159/L170); overflow-count pins 1
+/// (L169).
+/// The roots-green pin lives in history-038-roots-green.can;
+/// the run shape lives in history-038-run-shape.can.
+/// Variants: limit-plus-one seeds (sixteen plus one, Go
+/// order).
+/// Environment: no env gate; local temp dir only.
+/// Logical gates SUITE/WORK/FILES/FAULT/NATIVE and C/R/N/S/A
+/// identities bind at P23; no live run now. Accept gate P23
+/// is unmet. Timeout 60000ms bounds the seed-loop/one-
+/// recover/one-readdir/two-verdict sequence (no Go guard
+/// exists; offline only).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/cache-bounded-semantics checks: bounded-ok,
+/// overflow-kept, recover-ok, count-diag, unbounded-diag,
+/// recovery-limit, seed-extra, seed-total, candidate-sites,
+/// recover-sites, readdir-count, fatalf-count, fatal-count,
+/// len-count, limit-refs, total-legs, verb-count,
+/// overflow-count.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool bounded_ok
+    bool overflow_kept
+    bool recover_ok
+    str count_diag
+    str unbounded_diag
+    int recovery_limit
+    int seed_extra
+    int seed_total
+    int candidate_sites
+    int recover_sites
+    int readdir_count
+    int fatalf_count
+    int fatal_count
+    int len_count
+    int limit_refs
+    int total_legs
+    int verb_count
+    int overflow_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/cache-bounded-semantics", "default", "", "offline"), "bounded-ok" => ok "case history/cache-bounded-semantics variant default root bounded-ok run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/cache-bounded-semantics", "default", "", "offline"), "bounded-ok" => ok evidence("bounded-ok", "true", "true", true, "case history/cache-bounded-semantics variant default root bounded-ok run offline")
+        different: false, true, context("history/cache-bounded-semantics", "default", "", "offline"), "bounded-ok" => failed{"bounded-ok"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 16, 16, context("history/cache-bounded-semantics", "default", "", "offline"), "recovery-limit" => ok evidence("recovery-limit", "16", "16", true, "case history/cache-bounded-semantics variant default root recovery-limit run offline")
+        different: 17, 16, context("history/cache-bounded-semantics", "default", "", "offline"), "recovery-limit" => failed{"recovery-limit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "recovery count %d, want %d", "recovery count %d, want %d", context("history/cache-bounded-semantics", "default", "", "offline"), "count-diag" => ok evidence("count-diag", "recovery count %d, want %d", "recovery count %d, want %d", true, "case history/cache-bounded-semantics variant default root count-diag run offline")
+        different: "recovery count %d, want %d_2", "recovery count %d, want %d", context("history/cache-bounded-semantics", "default", "", "offline"), "count-diag" => failed{"count-diag"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        seed_bounded_ok: "seed-bounded-ok-drift" => ok observation(false, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        seed_overflow_kept: "seed-overflow-kept-drift" => ok observation(true, false, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        seed_recover_ok: "seed-recover-ok-drift" => ok observation(true, true, false, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        seed_count_diag: "seed-count-diag-drift" => ok observation(true, true, true, "recovery count %d, want %d_2", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        seed_unbounded_diag: "seed-unbounded-diag-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain_2", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        seed_recovery_limit: "seed-recovery-limit-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 17, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        seed_seed_extra: "seed-seed-extra-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 2, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        seed_seed_total: "seed-seed-total-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 18, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        seed_candidate_sites: "seed-candidate-sites-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 2, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        seed_recover_sites: "seed-recover-sites-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 2, 1, 2, 2, 4, 3, 2, 3, 1)
+        seed_readdir_count: "seed-readdir-count-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 2, 2, 2, 4, 3, 2, 3, 1)
+        seed_fatalf_count: "seed-fatalf-count-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 3, 2, 4, 3, 2, 3, 1)
+        seed_fatal_count: "seed-fatal-count-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 3, 4, 3, 2, 3, 1)
+        seed_len_count: "seed-len-count-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 5, 3, 2, 3, 1)
+        seed_limit_refs: "seed-limit-refs-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 4, 2, 3, 1)
+        seed_total_legs: "seed-total-legs-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 3, 3, 1)
+        seed_verb_count: "seed-verb-count-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 4, 1)
+        seed_overflow_count: "seed-overflow-count-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 2)
+    match variant_id
+        "seed-bounded-ok-drift" => ok observation(false, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        "seed-overflow-kept-drift" => ok observation(true, false, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        "seed-recover-ok-drift" => ok observation(true, true, false, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        "seed-count-diag-drift" => ok observation(true, true, true, "recovery count %d, want %d_2", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        "seed-unbounded-diag-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain_2", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        "seed-recovery-limit-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 17, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        "seed-seed-extra-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 2, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        "seed-seed-total-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 18, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        "seed-candidate-sites-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 2, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+        "seed-recover-sites-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 2, 1, 2, 2, 4, 3, 2, 3, 1)
+        "seed-readdir-count-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 2, 2, 2, 4, 3, 2, 3, 1)
+        "seed-fatalf-count-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 3, 2, 4, 3, 2, 3, 1)
+        "seed-fatal-count-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 3, 4, 3, 2, 3, 1)
+        "seed-len-count-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 5, 3, 2, 3, 1)
+        "seed-limit-refs-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 4, 2, 3, 1)
+        "seed-total-legs-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 3, 3, 1)
+        "seed-verb-count-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 4, 1)
+        "seed-overflow-count-drift" => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 2)
+        _ => ok observation(true, true, true, "recovery count %d, want %d", "unbounded recovery: %d remain", 16, 1, 17, 1, 1, 1, 2, 2, 4, 3, 2, 3, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h038: "m29-h038" => ok [check("bounded-ok", "recovery processes at most the limit"), check("overflow-kept", "overflow stays for later runs"), check("recover-ok", "bounded recovery returns nil"), check("count-diag", "count mismatch refusal wording"), check("unbounded-diag", "unbounded refusal wording"), check("recovery-limit", "recovery bound is sixteen"), check("seed-extra", "one seed beyond the limit"), check("seed-total", "seventeen seeds run"), check("candidate-sites", "one candidate site exists"), check("recover-sites", "one recover site in range"), check("readdir-count", "one readdir guards overflow"), check("fatalf-count", "two fatalf legs exist"), check("fatal-count", "two fatal guards exist"), check("len-count", "four len calls exist"), check("limit-refs", "three limit refs exist"), check("total-legs", "two verdict legs run"), check("verb-count", "three verbs in diags"), check("overflow-count", "one overflow remains")]
+        other: "nope" => ok []
+    match scope is "m29-h038"
+        false => ok []
+        true => ok [check("bounded-ok", "recovery processes at most the limit"), check("overflow-kept", "overflow stays for later runs"), check("recover-ok", "bounded recovery returns nil"), check("count-diag", "count mismatch refusal wording"), check("unbounded-diag", "unbounded refusal wording"), check("recovery-limit", "recovery bound is sixteen"), check("seed-extra", "one seed beyond the limit"), check("seed-total", "seventeen seeds run"), check("candidate-sites", "one candidate site exists"), check("recover-sites", "one recover site in range"), check("readdir-count", "one readdir guards overflow"), check("fatalf-count", "two fatalf legs exist"), check("fatal-count", "two fatal guards exist"), check("len-count", "four len calls exist"), check("limit-refs", "three limit refs exist"), check("total-legs", "two verdict legs run"), check("verb-count", "three verbs in diags"), check("overflow-count", "one overflow remains")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/cache-bounded-semantics" => ok [expected_check("bounded-ok", "true"), expected_check("overflow-kept", "true"), expected_check("recover-ok", "true"), expected_check("count-diag", "recovery count %d, want %d"), expected_check("unbounded-diag", "unbounded recovery: %d remain"), expected_check("recovery-limit", "16"), expected_check("seed-extra", "1"), expected_check("seed-total", "17"), expected_check("candidate-sites", "1"), expected_check("recover-sites", "1"), expected_check("readdir-count", "1"), expected_check("fatalf-count", "2"), expected_check("fatal-count", "2"), expected_check("len-count", "4"), expected_check("limit-refs", "3"), expected_check("total-legs", "2"), expected_check("verb-count", "3"), expected_check("overflow-count", "1")]
+        unknown: "nope" => ok []
+    match case is "history/cache-bounded-semantics"
+        false => ok []
+        true => ok [expected_check("bounded-ok", "true"), expected_check("overflow-kept", "true"), expected_check("recover-ok", "true"), expected_check("count-diag", "recovery count %d, want %d"), expected_check("unbounded-diag", "unbounded recovery: %d remain"), expected_check("recovery-limit", "16"), expected_check("seed-extra", "1"), expected_check("seed-total", "17"), expected_check("candidate-sites", "1"), expected_check("recover-sites", "1"), expected_check("readdir-count", "1"), expected_check("fatalf-count", "2"), expected_check("fatal-count", "2"), expected_check("len-count", "4"), expected_check("limit-refs", "3"), expected_check("total-legs", "2"), expected_check("verb-count", "3"), expected_check("overflow-count", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/cache-bounded-semantics", "default", "", "offline") => ok
+        seed_bounded_ok: context("history/cache-bounded-semantics", "seed-bounded-ok-drift", "", "offline") => failed{"bounded-ok"}
+        seed_overflow_kept: context("history/cache-bounded-semantics", "seed-overflow-kept-drift", "", "offline") => failed{"overflow-kept"}
+        seed_recover_ok: context("history/cache-bounded-semantics", "seed-recover-ok-drift", "", "offline") => failed{"recover-ok"}
+        seed_count_diag: context("history/cache-bounded-semantics", "seed-count-diag-drift", "", "offline") => failed{"count-diag"}
+        seed_unbounded_diag: context("history/cache-bounded-semantics", "seed-unbounded-diag-drift", "", "offline") => failed{"unbounded-diag"}
+        seed_recovery_limit: context("history/cache-bounded-semantics", "seed-recovery-limit-drift", "", "offline") => failed{"recovery-limit"}
+        seed_seed_extra: context("history/cache-bounded-semantics", "seed-seed-extra-drift", "", "offline") => failed{"seed-extra"}
+        seed_seed_total: context("history/cache-bounded-semantics", "seed-seed-total-drift", "", "offline") => failed{"seed-total"}
+        seed_candidate_sites: context("history/cache-bounded-semantics", "seed-candidate-sites-drift", "", "offline") => failed{"candidate-sites"}
+        seed_recover_sites: context("history/cache-bounded-semantics", "seed-recover-sites-drift", "", "offline") => failed{"recover-sites"}
+        seed_readdir_count: context("history/cache-bounded-semantics", "seed-readdir-count-drift", "", "offline") => failed{"readdir-count"}
+        seed_fatalf_count: context("history/cache-bounded-semantics", "seed-fatalf-count-drift", "", "offline") => failed{"fatalf-count"}
+        seed_fatal_count: context("history/cache-bounded-semantics", "seed-fatal-count-drift", "", "offline") => failed{"fatal-count"}
+        seed_len_count: context("history/cache-bounded-semantics", "seed-len-count-drift", "", "offline") => failed{"len-count"}
+        seed_limit_refs: context("history/cache-bounded-semantics", "seed-limit-refs-drift", "", "offline") => failed{"limit-refs"}
+        seed_total_legs: context("history/cache-bounded-semantics", "seed-total-legs-drift", "", "offline") => failed{"total-legs"}
+        seed_verb_count: context("history/cache-bounded-semantics", "seed-verb-count-drift", "", "offline") => failed{"verb-count"}
+        seed_overflow_count: context("history/cache-bounded-semantics", "seed-overflow-count-drift", "", "offline") => failed{"overflow-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.bounded_ok, true, c, "bounded-ok")
+            failed
+            ok evidence bounded_ok_evidence => match call require_bool(got.overflow_kept, true, c, "overflow-kept")
+                failed
+                ok evidence overflow_kept_evidence => match call require_bool(got.recover_ok, true, c, "recover-ok")
+                    failed
+                    ok evidence recover_ok_evidence => match call require_text(got.count_diag, "recovery count %d, want %d", c, "count-diag")
+                        failed
+                        ok evidence count_diag_evidence => match call require_text(got.unbounded_diag, "unbounded recovery: %d remain", c, "unbounded-diag")
+                            failed
+                            ok evidence unbounded_diag_evidence => match call require_int(got.recovery_limit, 16, c, "recovery-limit")
+                                failed
+                                ok evidence recovery_limit_evidence => match call require_int(got.seed_extra, 1, c, "seed-extra")
+                                    failed
+                                    ok evidence seed_extra_evidence => match call require_int(got.seed_total, 17, c, "seed-total")
+                                        failed
+                                        ok evidence seed_total_evidence => match call require_int(got.candidate_sites, 1, c, "candidate-sites")
+                                            failed
+                                            ok evidence candidate_sites_evidence => match call require_int(got.recover_sites, 1, c, "recover-sites")
+                                                failed
+                                                ok evidence recover_sites_evidence => match call require_int(got.readdir_count, 1, c, "readdir-count")
+                                                    failed
+                                                    ok evidence readdir_count_evidence => match call require_int(got.fatalf_count, 2, c, "fatalf-count")
+                                                        failed
+                                                        ok evidence fatalf_count_evidence => match call require_int(got.fatal_count, 2, c, "fatal-count")
+                                                            failed
+                                                            ok evidence fatal_count_evidence => match call require_int(got.len_count, 4, c, "len-count")
+                                                                failed
+                                                                ok evidence len_count_evidence => match call require_int(got.limit_refs, 3, c, "limit-refs")
+                                                                    failed
+                                                                    ok evidence limit_refs_evidence => match call require_int(got.total_legs, 2, c, "total-legs")
+                                                                        failed
+                                                                        ok evidence total_legs_evidence => match call require_int(got.verb_count, 3, c, "verb-count")
+                                                                            failed
+                                                                            ok evidence verb_count_evidence => match call require_int(got.overflow_count, 1, c, "overflow-count")
+                                                                                failed
+                                                                                ok evidence overflow_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h038: "m29-h038" => ok test_case("history/cache-bounded-semantics", ["history", "m29"], [], 60000, [check_ref("bounded-ok"), check_ref("overflow-kept"), check_ref("recover-ok"), check_ref("count-diag"), check_ref("unbounded-diag"), check_ref("recovery-limit"), check_ref("seed-extra"), check_ref("seed-total"), check_ref("candidate-sites"), check_ref("recover-sites"), check_ref("readdir-count"), check_ref("fatalf-count"), check_ref("fatal-count"), check_ref("len-count"), check_ref("limit-refs"), check_ref("total-legs"), check_ref("verb-count"), check_ref("overflow-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-h038"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/cache-bounded-semantics", ["history", "m29"], [], 60000, [check_ref("bounded-ok"), check_ref("overflow-kept"), check_ref("recover-ok"), check_ref("count-diag"), check_ref("unbounded-diag"), check_ref("recovery-limit"), check_ref("seed-extra"), check_ref("seed-total"), check_ref("candidate-sites"), check_ref("recover-sites"), check_ref("readdir-count"), check_ref("fatalf-count"), check_ref("fatal-count"), check_ref("len-count"), check_ref("limit-refs"), check_ref("total-legs"), check_ref("verb-count"), check_ref("overflow-count")], callable case_body)

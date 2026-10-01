@@ -1,0 +1,305 @@
+package m29history038roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 HISTORY-038 "Bounded recovery: roots green".
+/// Source: tests/support/tempcache/cache_test.go symbol
+/// TestRecoveryWorkIsBounded (L152-172); package plus
+/// imports (L1-11); impl tests/support/tempcache/cache.go
+/// consts (L21-30), recover guard (L144-152).
+/// Disposition: migrate (this row ports
+/// TestRecoveryWorkIsBounded to ordinary Can
+/// functions; the old Go harness stays until the integrator
+/// retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): the static live baseline as the
+/// green root: the package plus func names, the TempDir,
+/// candidate, recover, ReadDir, len, Fatal, Fatalf
+/// spellings, the inspected/break/HasPrefix/IsDir guard
+/// spellings, the cache prefix, marker, lease, schema
+/// names, the recovery bound, the single leftover, and
+/// the bound-guard verdict.
+/// ADAPTATION (recorded, with source lines): bound-guarded
+/// pins bool from the inspected guard (impl L149);
+/// overflow-left pins int 1 from the len guard (L169);
+/// limit pins int 16 (L30); op spellings pin the exact Go
+/// identifiers (TempDir L153, candidate L155,
+/// recoverAbandoned L157, ReadDir L165, len
+/// L158/L159/L169/L170, t.Fatal L163/L167, t.Fatalf
+/// L159/L170, inspected L144/L149/L152, break L150,
+/// HasPrefix L146, IsDir L146/L220).
+/// Facet map (static baseline): pkg-name pins tempcache
+/// (test L1); func-name pins the bounded test (L152);
+/// tempdir-op pins TempDir (L153); candidate-op pins
+/// candidate (L155); recover-op pins recoverAbandoned
+/// (L157); readdir-op pins ReadDir (L165); len-op pins len
+/// (L158); fatal-op pins t.Fatal (L163/L167); fatalf-op
+/// pins t.Fatalf (L159/L170); inspected-var pins inspected
+/// (impl L144); break-op pins break (impl L150);
+/// prefix-op pins HasPrefix (impl L146); isdir-op pins
+/// IsDir (impl L146/L220); cache-prefix pins
+/// can-suite-cache- (impl L21); marker-name pins
+/// .can-test-owner.json (impl L22); lease-name pins
+/// .can-test-lease (impl L23); schema-name pins
+/// can.test-suite-cache/1 (impl L24); recovery-limit pins
+/// 16 (impl L30); overflow-left pins 1 (L169);
+/// bound-guarded pins true (impl L149).
+/// Answer verdicts live in history-038-cache-semantics.can;
+/// the run shape lives in history-038-run-shape.can.
+/// Variants: none in this file (default only); the
+/// limit-plus-one variant pins in cache-semantics.
+/// Environment: no env gate; local temp dir only.
+/// Logical gates SUITE/WORK/FILES/FAULT/NATIVE and C/R/N/S/A
+/// identities bind at P23; no live run now. Accept gate P23
+/// is unmet. Timeout 60000ms bounds the static baseline
+/// probe (no Go guard exists; offline only).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/cache-bounded-roots checks: pkg-name,
+/// func-name, tempdir-op, candidate-op, recover-op,
+/// readdir-op, len-op, fatal-op, fatalf-op, inspected-var,
+/// break-op, prefix-op, isdir-op, cache-prefix, marker-name,
+/// lease-name, schema-name, recovery-limit, overflow-left,
+/// bound-guarded.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str pkg_name
+    str func_name
+    str tempdir_op
+    str candidate_op
+    str recover_op
+    str readdir_op
+    str len_op
+    str fatal_op
+    str fatalf_op
+    str inspected_var
+    str break_op
+    str prefix_op
+    str isdir_op
+    str cache_prefix
+    str marker_name
+    str lease_name
+    str schema_name
+    int recovery_limit
+    int overflow_left
+    bool bound_guarded
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/cache-bounded-roots", "default", "", "offline"), "pkg-name" => ok "case history/cache-bounded-roots variant default root pkg-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/cache-bounded-roots", "default", "", "offline"), "bound-guarded" => ok evidence("bound-guarded", "true", "true", true, "case history/cache-bounded-roots variant default root bound-guarded run offline")
+        different: false, true, context("history/cache-bounded-roots", "default", "", "offline"), "bound-guarded" => failed{"bound-guarded"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 16, 16, context("history/cache-bounded-roots", "default", "", "offline"), "recovery-limit" => ok evidence("recovery-limit", "16", "16", true, "case history/cache-bounded-roots variant default root recovery-limit run offline")
+        different: 17, 16, context("history/cache-bounded-roots", "default", "", "offline"), "recovery-limit" => failed{"recovery-limit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "tempcache", "tempcache", context("history/cache-bounded-roots", "default", "", "offline"), "pkg-name" => ok evidence("pkg-name", "tempcache", "tempcache", true, "case history/cache-bounded-roots variant default root pkg-name run offline")
+        different: "tempcache_2", "tempcache", context("history/cache-bounded-roots", "default", "", "offline"), "pkg-name" => failed{"pkg-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        seed_pkg_name: "seed-pkg-name-drift" => ok observation("tempcache_2", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        seed_func_name: "seed-func-name-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded_2", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        seed_tempdir_op: "seed-tempdir-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir_2", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        seed_candidate_op: "seed-candidate-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate_2", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        seed_recover_op: "seed-recover-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned_2", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        seed_readdir_op: "seed-readdir-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir_2", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        seed_len_op: "seed-len-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len_2", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        seed_fatal_op: "seed-fatal-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal_2", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        seed_fatalf_op: "seed-fatalf-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf_2", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        seed_inspected_var: "seed-inspected-var-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected_2", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        seed_break_op: "seed-break-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break_2", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        seed_prefix_op: "seed-prefix-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix_2", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        seed_isdir_op: "seed-isdir-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir_2", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        seed_cache_prefix: "seed-cache-prefix-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-_2", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        seed_marker_name: "seed-marker-name-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json_2", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        seed_lease_name: "seed-lease-name-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease_2", "can.test-suite-cache/1", 16, 1, true)
+        seed_schema_name: "seed-schema-name-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1_2", 16, 1, true)
+        seed_recovery_limit: "seed-recovery-limit-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 17, 1, true)
+        seed_overflow_left: "seed-overflow-left-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 2, true)
+        seed_bound_guarded: "seed-bound-guarded-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, false)
+    match variant_id
+        "seed-pkg-name-drift" => ok observation("tempcache_2", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        "seed-func-name-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded_2", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        "seed-tempdir-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir_2", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        "seed-candidate-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate_2", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        "seed-recover-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned_2", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        "seed-readdir-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir_2", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        "seed-len-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len_2", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        "seed-fatal-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal_2", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        "seed-fatalf-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf_2", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        "seed-inspected-var-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected_2", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        "seed-break-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break_2", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        "seed-prefix-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix_2", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        "seed-isdir-op-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir_2", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        "seed-cache-prefix-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-_2", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        "seed-marker-name-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json_2", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+        "seed-lease-name-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease_2", "can.test-suite-cache/1", 16, 1, true)
+        "seed-schema-name-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1_2", 16, 1, true)
+        "seed-recovery-limit-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 17, 1, true)
+        "seed-overflow-left-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 2, true)
+        "seed-bound-guarded-drift" => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, false)
+        _ => ok observation("tempcache", "TestRecoveryWorkIsBounded", "TempDir", "candidate", "recoverAbandoned", "ReadDir", "len", "t.Fatal", "t.Fatalf", "inspected", "break", "HasPrefix", "IsDir", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", 16, 1, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h038: "m29-h038" => ok [check("pkg-name", "package name is tempcache"), check("func-name", "func name pins bounded test"), check("tempdir-op", "tempdir op spelling"), check("candidate-op", "candidate helper spelling"), check("recover-op", "recover op spelling"), check("readdir-op", "readdir op spelling"), check("len-op", "len op spelling"), check("fatal-op", "fatal op spelling"), check("fatalf-op", "fatalf op spelling"), check("inspected-var", "inspected counter spelling"), check("break-op", "break op spelling"), check("prefix-op", "prefix guard spelling"), check("isdir-op", "isdir guard spelling"), check("cache-prefix", "cache prefix spelling"), check("marker-name", "marker file name"), check("lease-name", "lease file name"), check("schema-name", "schema name spelling"), check("recovery-limit", "recovery bound is sixteen"), check("overflow-left", "one overflow left over"), check("bound-guarded", "limit guard breaks early")]
+        other: "nope" => ok []
+    match scope is "m29-h038"
+        false => ok []
+        true => ok [check("pkg-name", "package name is tempcache"), check("func-name", "func name pins bounded test"), check("tempdir-op", "tempdir op spelling"), check("candidate-op", "candidate helper spelling"), check("recover-op", "recover op spelling"), check("readdir-op", "readdir op spelling"), check("len-op", "len op spelling"), check("fatal-op", "fatal op spelling"), check("fatalf-op", "fatalf op spelling"), check("inspected-var", "inspected counter spelling"), check("break-op", "break op spelling"), check("prefix-op", "prefix guard spelling"), check("isdir-op", "isdir guard spelling"), check("cache-prefix", "cache prefix spelling"), check("marker-name", "marker file name"), check("lease-name", "lease file name"), check("schema-name", "schema name spelling"), check("recovery-limit", "recovery bound is sixteen"), check("overflow-left", "one overflow left over"), check("bound-guarded", "limit guard breaks early")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/cache-bounded-roots" => ok [expected_check("pkg-name", "tempcache"), expected_check("func-name", "TestRecoveryWorkIsBounded"), expected_check("tempdir-op", "TempDir"), expected_check("candidate-op", "candidate"), expected_check("recover-op", "recoverAbandoned"), expected_check("readdir-op", "ReadDir"), expected_check("len-op", "len"), expected_check("fatal-op", "t.Fatal"), expected_check("fatalf-op", "t.Fatalf"), expected_check("inspected-var", "inspected"), expected_check("break-op", "break"), expected_check("prefix-op", "HasPrefix"), expected_check("isdir-op", "IsDir"), expected_check("cache-prefix", "can-suite-cache-"), expected_check("marker-name", ".can-test-owner.json"), expected_check("lease-name", ".can-test-lease"), expected_check("schema-name", "can.test-suite-cache/1"), expected_check("recovery-limit", "16"), expected_check("overflow-left", "1"), expected_check("bound-guarded", "true")]
+        unknown: "nope" => ok []
+    match case is "history/cache-bounded-roots"
+        false => ok []
+        true => ok [expected_check("pkg-name", "tempcache"), expected_check("func-name", "TestRecoveryWorkIsBounded"), expected_check("tempdir-op", "TempDir"), expected_check("candidate-op", "candidate"), expected_check("recover-op", "recoverAbandoned"), expected_check("readdir-op", "ReadDir"), expected_check("len-op", "len"), expected_check("fatal-op", "t.Fatal"), expected_check("fatalf-op", "t.Fatalf"), expected_check("inspected-var", "inspected"), expected_check("break-op", "break"), expected_check("prefix-op", "HasPrefix"), expected_check("isdir-op", "IsDir"), expected_check("cache-prefix", "can-suite-cache-"), expected_check("marker-name", ".can-test-owner.json"), expected_check("lease-name", ".can-test-lease"), expected_check("schema-name", "can.test-suite-cache/1"), expected_check("recovery-limit", "16"), expected_check("overflow-left", "1"), expected_check("bound-guarded", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/cache-bounded-roots", "default", "", "offline") => ok
+        seed_pkg_name: context("history/cache-bounded-roots", "seed-pkg-name-drift", "", "offline") => failed{"pkg-name"}
+        seed_func_name: context("history/cache-bounded-roots", "seed-func-name-drift", "", "offline") => failed{"func-name"}
+        seed_tempdir_op: context("history/cache-bounded-roots", "seed-tempdir-op-drift", "", "offline") => failed{"tempdir-op"}
+        seed_candidate_op: context("history/cache-bounded-roots", "seed-candidate-op-drift", "", "offline") => failed{"candidate-op"}
+        seed_recover_op: context("history/cache-bounded-roots", "seed-recover-op-drift", "", "offline") => failed{"recover-op"}
+        seed_readdir_op: context("history/cache-bounded-roots", "seed-readdir-op-drift", "", "offline") => failed{"readdir-op"}
+        seed_len_op: context("history/cache-bounded-roots", "seed-len-op-drift", "", "offline") => failed{"len-op"}
+        seed_fatal_op: context("history/cache-bounded-roots", "seed-fatal-op-drift", "", "offline") => failed{"fatal-op"}
+        seed_fatalf_op: context("history/cache-bounded-roots", "seed-fatalf-op-drift", "", "offline") => failed{"fatalf-op"}
+        seed_inspected_var: context("history/cache-bounded-roots", "seed-inspected-var-drift", "", "offline") => failed{"inspected-var"}
+        seed_break_op: context("history/cache-bounded-roots", "seed-break-op-drift", "", "offline") => failed{"break-op"}
+        seed_prefix_op: context("history/cache-bounded-roots", "seed-prefix-op-drift", "", "offline") => failed{"prefix-op"}
+        seed_isdir_op: context("history/cache-bounded-roots", "seed-isdir-op-drift", "", "offline") => failed{"isdir-op"}
+        seed_cache_prefix: context("history/cache-bounded-roots", "seed-cache-prefix-drift", "", "offline") => failed{"cache-prefix"}
+        seed_marker_name: context("history/cache-bounded-roots", "seed-marker-name-drift", "", "offline") => failed{"marker-name"}
+        seed_lease_name: context("history/cache-bounded-roots", "seed-lease-name-drift", "", "offline") => failed{"lease-name"}
+        seed_schema_name: context("history/cache-bounded-roots", "seed-schema-name-drift", "", "offline") => failed{"schema-name"}
+        seed_recovery_limit: context("history/cache-bounded-roots", "seed-recovery-limit-drift", "", "offline") => failed{"recovery-limit"}
+        seed_overflow_left: context("history/cache-bounded-roots", "seed-overflow-left-drift", "", "offline") => failed{"overflow-left"}
+        seed_bound_guarded: context("history/cache-bounded-roots", "seed-bound-guarded-drift", "", "offline") => failed{"bound-guarded"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.pkg_name, "tempcache", c, "pkg-name")
+            failed
+            ok evidence pkg_name_evidence => match call require_text(got.func_name, "TestRecoveryWorkIsBounded", c, "func-name")
+                failed
+                ok evidence func_name_evidence => match call require_text(got.tempdir_op, "TempDir", c, "tempdir-op")
+                    failed
+                    ok evidence tempdir_op_evidence => match call require_text(got.candidate_op, "candidate", c, "candidate-op")
+                        failed
+                        ok evidence candidate_op_evidence => match call require_text(got.recover_op, "recoverAbandoned", c, "recover-op")
+                            failed
+                            ok evidence recover_op_evidence => match call require_text(got.readdir_op, "ReadDir", c, "readdir-op")
+                                failed
+                                ok evidence readdir_op_evidence => match call require_text(got.len_op, "len", c, "len-op")
+                                    failed
+                                    ok evidence len_op_evidence => match call require_text(got.fatal_op, "t.Fatal", c, "fatal-op")
+                                        failed
+                                        ok evidence fatal_op_evidence => match call require_text(got.fatalf_op, "t.Fatalf", c, "fatalf-op")
+                                            failed
+                                            ok evidence fatalf_op_evidence => match call require_text(got.inspected_var, "inspected", c, "inspected-var")
+                                                failed
+                                                ok evidence inspected_var_evidence => match call require_text(got.break_op, "break", c, "break-op")
+                                                    failed
+                                                    ok evidence break_op_evidence => match call require_text(got.prefix_op, "HasPrefix", c, "prefix-op")
+                                                        failed
+                                                        ok evidence prefix_op_evidence => match call require_text(got.isdir_op, "IsDir", c, "isdir-op")
+                                                            failed
+                                                            ok evidence isdir_op_evidence => match call require_text(got.cache_prefix, "can-suite-cache-", c, "cache-prefix")
+                                                                failed
+                                                                ok evidence cache_prefix_evidence => match call require_text(got.marker_name, ".can-test-owner.json", c, "marker-name")
+                                                                    failed
+                                                                    ok evidence marker_name_evidence => match call require_text(got.lease_name, ".can-test-lease", c, "lease-name")
+                                                                        failed
+                                                                        ok evidence lease_name_evidence => match call require_text(got.schema_name, "can.test-suite-cache/1", c, "schema-name")
+                                                                            failed
+                                                                            ok evidence schema_name_evidence => match call require_int(got.recovery_limit, 16, c, "recovery-limit")
+                                                                                failed
+                                                                                ok evidence recovery_limit_evidence => match call require_int(got.overflow_left, 1, c, "overflow-left")
+                                                                                    failed
+                                                                                    ok evidence overflow_left_evidence => match call require_bool(got.bound_guarded, true, c, "bound-guarded")
+                                                                                        failed
+                                                                                        ok evidence bound_guarded_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h038: "m29-h038" => ok test_case("history/cache-bounded-roots", ["history", "m29"], [], 60000, [check_ref("pkg-name"), check_ref("func-name"), check_ref("tempdir-op"), check_ref("candidate-op"), check_ref("recover-op"), check_ref("readdir-op"), check_ref("len-op"), check_ref("fatal-op"), check_ref("fatalf-op"), check_ref("inspected-var"), check_ref("break-op"), check_ref("prefix-op"), check_ref("isdir-op"), check_ref("cache-prefix"), check_ref("marker-name"), check_ref("lease-name"), check_ref("schema-name"), check_ref("recovery-limit"), check_ref("overflow-left"), check_ref("bound-guarded")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-h038"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/cache-bounded-roots", ["history", "m29"], [], 60000, [check_ref("pkg-name"), check_ref("func-name"), check_ref("tempdir-op"), check_ref("candidate-op"), check_ref("recover-op"), check_ref("readdir-op"), check_ref("len-op"), check_ref("fatal-op"), check_ref("fatalf-op"), check_ref("inspected-var"), check_ref("break-op"), check_ref("prefix-op"), check_ref("isdir-op"), check_ref("cache-prefix"), check_ref("marker-name"), check_ref("lease-name"), check_ref("schema-name"), check_ref("recovery-limit"), check_ref("overflow-left"), check_ref("bound-guarded")], callable case_body)

@@ -1,0 +1,321 @@
+package m29history038run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 HISTORY-038 "Bounded recovery: run shape".
+/// Source: tests/support/tempcache/cache_test.go symbol
+/// TestRecoveryWorkIsBounded (L152-172); impl
+/// tests/support/tempcache/cache.go inspected guard
+/// (L144-152).
+/// Disposition: migrate (this row ports
+/// TestRecoveryWorkIsBounded to ordinary Can
+/// functions; the old Go harness stays until the integrator
+/// retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): the live run shape in Go order:
+/// the parent var plus TempDir call, the loop head with
+/// its candidate call, the recover call with the bound leg
+/// and count wording, the Fatal call shape plus Fatalf op,
+/// the readdir leg, the overflow leg with its wording, the
+/// return-nil leg, the tempdir/err-guard/line/verb counts,
+/// and the loop-plus-recover ordering verdicts.
+/// ADAPTATION (recorded, with source lines): tempdir-count
+/// pins 1 from the in-range TempDir site (L153; five exist
+/// file-wide); err-guard-count pins 2 from the in-range
+/// err-nil guards (L162/L166); func-line-count pins 21
+/// from L152-172 inclusive; verb-count pins 3 from the
+/// Fatalf verbs (L159 x2 plus L170); ordering verdicts pin
+/// bools from line order (loop L154 precedes recover L157;
+/// recover L157 precedes readdir L165); call spellings pin
+/// exact Go bytes without leading tabs or trailing braces.
+/// Facet map (run order): parent-var pins parent (L153);
+/// loop-var pins i (L154); paths-var pins paths (L157);
+/// remaining-var pins remaining (L165); tempdir-call pins
+/// t.TempDir() (L153); loop-head pins the for line (L154);
+/// candidate-call pins candidate(t, parent, deadPID, true)
+/// (L155); recover-call pins the recover line (L157);
+/// bound-leg pins len(paths) != recoveryLimit (L158);
+/// count-diag pins the count wording (L159); fatalf-op pins
+/// t.Fatalf (L159/L170); fatal-call pins t.Fatal(err)
+/// (L163/L167); readdir-leg pins os.ReadDir(parent) (L165);
+/// overflow-leg pins len(remaining) != 1 (L169);
+/// unbounded-diag pins the unbounded wording (L170);
+/// return-leg pins return nil (L161); tempdir-count pins 1
+/// (L153); err-guard-count pins 2 (L162/L166);
+/// func-line-count pins 21 (L152-172); verb-count pins 3
+/// (L159/L170); loop-before-recover pins true (L154 before
+/// L157); recover-before-readdir pins true (L157 before
+/// L165).
+/// Answer verdicts live in history-038-cache-semantics.can;
+/// the roots-green pin lives in history-038-roots-green.can.
+/// Variants: limit-plus-one seeds share one run shape (a
+/// single default case; per-leg verdicts pin in
+/// cache-semantics).
+/// Environment: no env gate; local temp dir only.
+/// Logical gates SUITE/WORK/FILES/FAULT/NATIVE and C/R/N/S/A
+/// identities bind at P23; no live run now. Accept gate P23
+/// is unmet. Timeout 60000ms bounds the run-shape probe
+/// (no Go guard exists; offline only).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/cache-bounded-run checks: parent-var,
+/// loop-var, paths-var, remaining-var, tempdir-call,
+/// loop-head, candidate-call, recover-call, bound-leg,
+/// count-diag, fatalf-op, fatal-call, readdir-leg,
+/// overflow-leg, unbounded-diag, return-leg, tempdir-count,
+/// err-guard-count, func-line-count, verb-count,
+/// loop-before-recover, recover-before-readdir.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str parent_var
+    str loop_var
+    str paths_var
+    str remaining_var
+    str tempdir_call
+    str loop_head
+    str candidate_call
+    str recover_call
+    str bound_leg
+    str count_diag
+    str fatalf_op
+    str fatal_call
+    str readdir_leg
+    str overflow_leg
+    str unbounded_diag
+    str return_leg
+    int tempdir_count
+    int err_guard_count
+    int func_line_count
+    int verb_count
+    bool loop_before_recover
+    bool recover_before_readdir
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/cache-bounded-run", "default", "", "offline"), "parent-var" => ok "case history/cache-bounded-run variant default root parent-var run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/cache-bounded-run", "default", "", "offline"), "loop-before-recover" => ok evidence("loop-before-recover", "true", "true", true, "case history/cache-bounded-run variant default root loop-before-recover run offline")
+        different: false, true, context("history/cache-bounded-run", "default", "", "offline"), "loop-before-recover" => failed{"loop-before-recover"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("history/cache-bounded-run", "default", "", "offline"), "tempdir-count" => ok evidence("tempdir-count", "1", "1", true, "case history/cache-bounded-run variant default root tempdir-count run offline")
+        different: 2, 1, context("history/cache-bounded-run", "default", "", "offline"), "tempdir-count" => failed{"tempdir-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "parent", "parent", context("history/cache-bounded-run", "default", "", "offline"), "parent-var" => ok evidence("parent-var", "parent", "parent", true, "case history/cache-bounded-run variant default root parent-var run offline")
+        different: "parent_2", "parent", context("history/cache-bounded-run", "default", "", "offline"), "parent-var" => failed{"parent-var"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        seed_parent_var: "seed-parent-var-drift" => ok observation("parent_2", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        seed_loop_var: "seed-loop-var-drift" => ok observation("parent", "i_2", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        seed_paths_var: "seed-paths-var-drift" => ok observation("parent", "i", "paths_2", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        seed_remaining_var: "seed-remaining-var-drift" => ok observation("parent", "i", "paths", "remaining_2", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        seed_tempdir_call: "seed-tempdir-call-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()_2", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        seed_loop_head: "seed-loop-head-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++_2", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        seed_candidate_call: "seed-candidate-call-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)_2", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        seed_recover_call: "seed-recover-call-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error_2", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        seed_bound_leg: "seed-bound-leg-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit_2", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        seed_count_diag: "seed-count-diag-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d_2", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        seed_fatalf_op: "seed-fatalf-op-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf_2", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        seed_fatal_call: "seed-fatal-call-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)_2", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        seed_readdir_leg: "seed-readdir-leg-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)_2", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        seed_overflow_leg: "seed-overflow-leg-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1_2", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        seed_unbounded_diag: "seed-unbounded-diag-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain_2", "return nil", 1, 2, 21, 3, true, true)
+        seed_return_leg: "seed-return-leg-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil_2", 1, 2, 21, 3, true, true)
+        seed_tempdir_count: "seed-tempdir-count-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 2, 2, 21, 3, true, true)
+        seed_err_guard_count: "seed-err-guard-count-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 3, 21, 3, true, true)
+        seed_func_line_count: "seed-func-line-count-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 22, 3, true, true)
+        seed_verb_count: "seed-verb-count-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 4, true, true)
+        seed_loop_before_recover: "seed-loop-before-recover-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, false, true)
+        seed_recover_before_readdir: "seed-recover-before-readdir-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, false)
+    match variant_id
+        "seed-parent-var-drift" => ok observation("parent_2", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        "seed-loop-var-drift" => ok observation("parent", "i_2", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        "seed-paths-var-drift" => ok observation("parent", "i", "paths_2", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        "seed-remaining-var-drift" => ok observation("parent", "i", "paths", "remaining_2", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        "seed-tempdir-call-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()_2", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        "seed-loop-head-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++_2", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        "seed-candidate-call-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)_2", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        "seed-recover-call-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error_2", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        "seed-bound-leg-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit_2", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        "seed-count-diag-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d_2", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        "seed-fatalf-op-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf_2", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        "seed-fatal-call-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)_2", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        "seed-readdir-leg-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)_2", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        "seed-overflow-leg-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1_2", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+        "seed-unbounded-diag-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain_2", "return nil", 1, 2, 21, 3, true, true)
+        "seed-return-leg-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil_2", 1, 2, 21, 3, true, true)
+        "seed-tempdir-count-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 2, 2, 21, 3, true, true)
+        "seed-err-guard-count-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 3, 21, 3, true, true)
+        "seed-func-line-count-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 22, 3, true, true)
+        "seed-verb-count-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 4, true, true)
+        "seed-loop-before-recover-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, false, true)
+        "seed-recover-before-readdir-drift" => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, false)
+        _ => ok observation("parent", "i", "paths", "remaining", "t.TempDir()", "for i := 0; i < recoveryLimit+1; i++", "candidate(t, parent, deadPID, true)", "recoverAbandoned(parent, time.Now(), func(paths []string) error", "len(paths) != recoveryLimit", "recovery count %d, want %d", "t.Fatalf", "t.Fatal(err)", "os.ReadDir(parent)", "len(remaining) != 1", "unbounded recovery: %d remain", "return nil", 1, 2, 21, 3, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h038: "m29-h038" => ok [check("parent-var", "parent var spelling"), check("loop-var", "loop var spelling"), check("paths-var", "paths var spelling"), check("remaining-var", "remaining var spelling"), check("tempdir-call", "tempdir call shape"), check("loop-head", "loop head shape"), check("candidate-call", "candidate call shape"), check("recover-call", "recover call shape"), check("bound-leg", "bound leg shape"), check("count-diag", "count refusal wording"), check("fatalf-op", "fatalf op spelling"), check("fatal-call", "fatal call shape"), check("readdir-leg", "readdir leg shape"), check("overflow-leg", "overflow leg shape"), check("unbounded-diag", "unbounded refusal wording"), check("return-leg", "return nil leg shape"), check("tempdir-count", "one tempdir in range"), check("err-guard-count", "two err guards in range"), check("func-line-count", "func spans twenty-one lines"), check("verb-count", "three verbs in diags"), check("loop-before-recover", "loop precedes recover"), check("recover-before-readdir", "recover precedes readdir")]
+        other: "nope" => ok []
+    match scope is "m29-h038"
+        false => ok []
+        true => ok [check("parent-var", "parent var spelling"), check("loop-var", "loop var spelling"), check("paths-var", "paths var spelling"), check("remaining-var", "remaining var spelling"), check("tempdir-call", "tempdir call shape"), check("loop-head", "loop head shape"), check("candidate-call", "candidate call shape"), check("recover-call", "recover call shape"), check("bound-leg", "bound leg shape"), check("count-diag", "count refusal wording"), check("fatalf-op", "fatalf op spelling"), check("fatal-call", "fatal call shape"), check("readdir-leg", "readdir leg shape"), check("overflow-leg", "overflow leg shape"), check("unbounded-diag", "unbounded refusal wording"), check("return-leg", "return nil leg shape"), check("tempdir-count", "one tempdir in range"), check("err-guard-count", "two err guards in range"), check("func-line-count", "func spans twenty-one lines"), check("verb-count", "three verbs in diags"), check("loop-before-recover", "loop precedes recover"), check("recover-before-readdir", "recover precedes readdir")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/cache-bounded-run" => ok [expected_check("parent-var", "parent"), expected_check("loop-var", "i"), expected_check("paths-var", "paths"), expected_check("remaining-var", "remaining"), expected_check("tempdir-call", "t.TempDir()"), expected_check("loop-head", "for i := 0; i < recoveryLimit+1; i++"), expected_check("candidate-call", "candidate(t, parent, deadPID, true)"), expected_check("recover-call", "recoverAbandoned(parent, time.Now(), func(paths []string) error"), expected_check("bound-leg", "len(paths) != recoveryLimit"), expected_check("count-diag", "recovery count %d, want %d"), expected_check("fatalf-op", "t.Fatalf"), expected_check("fatal-call", "t.Fatal(err)"), expected_check("readdir-leg", "os.ReadDir(parent)"), expected_check("overflow-leg", "len(remaining) != 1"), expected_check("unbounded-diag", "unbounded recovery: %d remain"), expected_check("return-leg", "return nil"), expected_check("tempdir-count", "1"), expected_check("err-guard-count", "2"), expected_check("func-line-count", "21"), expected_check("verb-count", "3"), expected_check("loop-before-recover", "true"), expected_check("recover-before-readdir", "true")]
+        unknown: "nope" => ok []
+    match case is "history/cache-bounded-run"
+        false => ok []
+        true => ok [expected_check("parent-var", "parent"), expected_check("loop-var", "i"), expected_check("paths-var", "paths"), expected_check("remaining-var", "remaining"), expected_check("tempdir-call", "t.TempDir()"), expected_check("loop-head", "for i := 0; i < recoveryLimit+1; i++"), expected_check("candidate-call", "candidate(t, parent, deadPID, true)"), expected_check("recover-call", "recoverAbandoned(parent, time.Now(), func(paths []string) error"), expected_check("bound-leg", "len(paths) != recoveryLimit"), expected_check("count-diag", "recovery count %d, want %d"), expected_check("fatalf-op", "t.Fatalf"), expected_check("fatal-call", "t.Fatal(err)"), expected_check("readdir-leg", "os.ReadDir(parent)"), expected_check("overflow-leg", "len(remaining) != 1"), expected_check("unbounded-diag", "unbounded recovery: %d remain"), expected_check("return-leg", "return nil"), expected_check("tempdir-count", "1"), expected_check("err-guard-count", "2"), expected_check("func-line-count", "21"), expected_check("verb-count", "3"), expected_check("loop-before-recover", "true"), expected_check("recover-before-readdir", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/cache-bounded-run", "default", "", "offline") => ok
+        seed_parent_var: context("history/cache-bounded-run", "seed-parent-var-drift", "", "offline") => failed{"parent-var"}
+        seed_loop_var: context("history/cache-bounded-run", "seed-loop-var-drift", "", "offline") => failed{"loop-var"}
+        seed_paths_var: context("history/cache-bounded-run", "seed-paths-var-drift", "", "offline") => failed{"paths-var"}
+        seed_remaining_var: context("history/cache-bounded-run", "seed-remaining-var-drift", "", "offline") => failed{"remaining-var"}
+        seed_tempdir_call: context("history/cache-bounded-run", "seed-tempdir-call-drift", "", "offline") => failed{"tempdir-call"}
+        seed_loop_head: context("history/cache-bounded-run", "seed-loop-head-drift", "", "offline") => failed{"loop-head"}
+        seed_candidate_call: context("history/cache-bounded-run", "seed-candidate-call-drift", "", "offline") => failed{"candidate-call"}
+        seed_recover_call: context("history/cache-bounded-run", "seed-recover-call-drift", "", "offline") => failed{"recover-call"}
+        seed_bound_leg: context("history/cache-bounded-run", "seed-bound-leg-drift", "", "offline") => failed{"bound-leg"}
+        seed_count_diag: context("history/cache-bounded-run", "seed-count-diag-drift", "", "offline") => failed{"count-diag"}
+        seed_fatalf_op: context("history/cache-bounded-run", "seed-fatalf-op-drift", "", "offline") => failed{"fatalf-op"}
+        seed_fatal_call: context("history/cache-bounded-run", "seed-fatal-call-drift", "", "offline") => failed{"fatal-call"}
+        seed_readdir_leg: context("history/cache-bounded-run", "seed-readdir-leg-drift", "", "offline") => failed{"readdir-leg"}
+        seed_overflow_leg: context("history/cache-bounded-run", "seed-overflow-leg-drift", "", "offline") => failed{"overflow-leg"}
+        seed_unbounded_diag: context("history/cache-bounded-run", "seed-unbounded-diag-drift", "", "offline") => failed{"unbounded-diag"}
+        seed_return_leg: context("history/cache-bounded-run", "seed-return-leg-drift", "", "offline") => failed{"return-leg"}
+        seed_tempdir_count: context("history/cache-bounded-run", "seed-tempdir-count-drift", "", "offline") => failed{"tempdir-count"}
+        seed_err_guard_count: context("history/cache-bounded-run", "seed-err-guard-count-drift", "", "offline") => failed{"err-guard-count"}
+        seed_func_line_count: context("history/cache-bounded-run", "seed-func-line-count-drift", "", "offline") => failed{"func-line-count"}
+        seed_verb_count: context("history/cache-bounded-run", "seed-verb-count-drift", "", "offline") => failed{"verb-count"}
+        seed_loop_before_recover: context("history/cache-bounded-run", "seed-loop-before-recover-drift", "", "offline") => failed{"loop-before-recover"}
+        seed_recover_before_readdir: context("history/cache-bounded-run", "seed-recover-before-readdir-drift", "", "offline") => failed{"recover-before-readdir"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.parent_var, "parent", c, "parent-var")
+            failed
+            ok evidence parent_var_evidence => match call require_text(got.loop_var, "i", c, "loop-var")
+                failed
+                ok evidence loop_var_evidence => match call require_text(got.paths_var, "paths", c, "paths-var")
+                    failed
+                    ok evidence paths_var_evidence => match call require_text(got.remaining_var, "remaining", c, "remaining-var")
+                        failed
+                        ok evidence remaining_var_evidence => match call require_text(got.tempdir_call, "t.TempDir()", c, "tempdir-call")
+                            failed
+                            ok evidence tempdir_call_evidence => match call require_text(got.loop_head, "for i := 0; i < recoveryLimit+1; i++", c, "loop-head")
+                                failed
+                                ok evidence loop_head_evidence => match call require_text(got.candidate_call, "candidate(t, parent, deadPID, true)", c, "candidate-call")
+                                    failed
+                                    ok evidence candidate_call_evidence => match call require_text(got.recover_call, "recoverAbandoned(parent, time.Now(), func(paths []string) error", c, "recover-call")
+                                        failed
+                                        ok evidence recover_call_evidence => match call require_text(got.bound_leg, "len(paths) != recoveryLimit", c, "bound-leg")
+                                            failed
+                                            ok evidence bound_leg_evidence => match call require_text(got.count_diag, "recovery count %d, want %d", c, "count-diag")
+                                                failed
+                                                ok evidence count_diag_evidence => match call require_text(got.fatalf_op, "t.Fatalf", c, "fatalf-op")
+                                                    failed
+                                                    ok evidence fatalf_op_evidence => match call require_text(got.fatal_call, "t.Fatal(err)", c, "fatal-call")
+                                                        failed
+                                                        ok evidence fatal_call_evidence => match call require_text(got.readdir_leg, "os.ReadDir(parent)", c, "readdir-leg")
+                                                            failed
+                                                            ok evidence readdir_leg_evidence => match call require_text(got.overflow_leg, "len(remaining) != 1", c, "overflow-leg")
+                                                                failed
+                                                                ok evidence overflow_leg_evidence => match call require_text(got.unbounded_diag, "unbounded recovery: %d remain", c, "unbounded-diag")
+                                                                    failed
+                                                                    ok evidence unbounded_diag_evidence => match call require_text(got.return_leg, "return nil", c, "return-leg")
+                                                                        failed
+                                                                        ok evidence return_leg_evidence => match call require_int(got.tempdir_count, 1, c, "tempdir-count")
+                                                                            failed
+                                                                            ok evidence tempdir_count_evidence => match call require_int(got.err_guard_count, 2, c, "err-guard-count")
+                                                                                failed
+                                                                                ok evidence err_guard_count_evidence => match call require_int(got.func_line_count, 21, c, "func-line-count")
+                                                                                    failed
+                                                                                    ok evidence func_line_count_evidence => match call require_int(got.verb_count, 3, c, "verb-count")
+                                                                                        failed
+                                                                                        ok evidence verb_count_evidence => match call require_bool(got.loop_before_recover, true, c, "loop-before-recover")
+                                                                                            failed
+                                                                                            ok evidence loop_before_recover_evidence => match call require_bool(got.recover_before_readdir, true, c, "recover-before-readdir")
+                                                                                                failed
+                                                                                                ok evidence recover_before_readdir_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h038: "m29-h038" => ok test_case("history/cache-bounded-run", ["history", "m29"], [], 60000, [check_ref("parent-var"), check_ref("loop-var"), check_ref("paths-var"), check_ref("remaining-var"), check_ref("tempdir-call"), check_ref("loop-head"), check_ref("candidate-call"), check_ref("recover-call"), check_ref("bound-leg"), check_ref("count-diag"), check_ref("fatalf-op"), check_ref("fatal-call"), check_ref("readdir-leg"), check_ref("overflow-leg"), check_ref("unbounded-diag"), check_ref("return-leg"), check_ref("tempdir-count"), check_ref("err-guard-count"), check_ref("func-line-count"), check_ref("verb-count"), check_ref("loop-before-recover"), check_ref("recover-before-readdir")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-h038"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/cache-bounded-run", ["history", "m29"], [], 60000, [check_ref("parent-var"), check_ref("loop-var"), check_ref("paths-var"), check_ref("remaining-var"), check_ref("tempdir-call"), check_ref("loop-head"), check_ref("candidate-call"), check_ref("recover-call"), check_ref("bound-leg"), check_ref("count-diag"), check_ref("fatalf-op"), check_ref("fatal-call"), check_ref("readdir-leg"), check_ref("overflow-leg"), check_ref("unbounded-diag"), check_ref("return-leg"), check_ref("tempdir-count"), check_ref("err-guard-count"), check_ref("func-line-count"), check_ref("verb-count"), check_ref("loop-before-recover"), check_ref("recover-before-readdir")], callable case_body)
