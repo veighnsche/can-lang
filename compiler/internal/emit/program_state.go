@@ -79,6 +79,7 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 		builder.declareDbState()
 		builder.declareDbTransactionState()
 		builder.declareDbPoisonState()
+		builder.declareDbDeadlineState()
 		builder.declareStreamState()
 		builder.declareWebSocketState()
 	}
@@ -126,6 +127,7 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 		builder.initializeDbState()
 		builder.initializeDbTransactionState()
 		builder.initializeDbPoisonState()
+		builder.initializeDbDeadlineState()
 		builder.initializeStreamState()
 		builder.initializeWebSocketState()
 	}
@@ -493,6 +495,7 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 		imports = append(imports, builder.assembly.dbStateImports(runtime)...)
 		imports = append(imports, builder.assembly.dbTransactionStateImports(runtime)...)
 		imports = append(imports, builder.assembly.dbPoisonStateImports(runtime)...)
+		imports = append(imports, builder.assembly.dbDeadlineStateImports(runtime)...)
 		imports = append(imports, builder.assembly.streamStateImports(runtime)...)
 		imports = append(imports, builder.assembly.websocketStateImports(runtime)...)
 	}
@@ -528,6 +531,7 @@ func stateValueImportNames() []ImportName {
 	names = append(names, dbStateValueImportNames()...)
 	names = append(names, dbTransactionStateValueImportNames()...)
 	names = append(names, dbPoisonStateValueImportNames()...)
+	names = append(names, dbDeadlineStateValueImportNames()...)
 	names = append(names, streamStateValueImportNames()...)
 	names = append(names, websocketStateValueImportNames()...)
 	names = append(names, cookiesStateValueImportNames()...)

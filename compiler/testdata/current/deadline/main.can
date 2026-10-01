@@ -1,0 +1,39 @@
+package test_db_deadline
+    provides []
+    uses [db, test]
+fn int deadline_roundtrip
+    emits {test::invalid_grant, test::stale_handle, db::db_fault}
+    given
+        str grant
+    asserts
+        probe: "ng1-0123456789abcdef0123456789abcdef" => ok 0
+    match chain
+        call test::grant_admit(grant) as test::owner owner
+        call db::dispatch(owner, "work-0", "SELECT 1", "postgres") as db::dispatched_work sent
+        call db::dispatch_facts(owner, "work-0") as db::dispatch_record known
+        call db::observe_deadline(owner, "work-0", "deadline-token-stub", 50) as db::deadline_record watched
+        call db::deadline_facts(owner, "work-0") as db::deadline_record reread_deadline
+        call db::record_driver_settlement(owner, "work-0", "deadline-token-stub", "timed-out") as db::driver_settlement_facts settled
+        call db::driver_facts(owner, "work-0") as db::driver_settlement_facts reread_driver
+        call db::record_server_ack(owner, "work-0", "deadline-token-stub", "applied") as db::server_ack_facts acked
+        call db::server_facts(owner, "work-0") as db::server_ack_facts reread_server
+        call db::acquire_cancel_grant(owner, "postgres") as db::cancel_grant granted
+        call db::request_cancel(owner, "work-0", "deadline-token-stub", "cancel-grant-stub") as db::cancel_record cancelled
+        call db::cancel_facts(owner, "work-0") as db::cancel_record reread_cancel
+        call db::quiesce_engine(owner, "postgres") as str[] live
+        call db::fence(owner, "work-0", "deadline-token-stub") as db::fence_record fenced
+        call db::fence_facts(owner, "work-0") as db::fence_record reread_fence
+        call db::lease_facts(owner, "work-0") as db::lease_record leased
+        call db::deadline_release(owner, "work-0", "deadline-token-stub") as db::deadline_release_record freed
+        call db::deadline_release_ack(owner, "work-0") as db::deadline_release_record reread_release
+        test::invalid_grant
+        test::stale_handle
+        db::db_fault
+        ok => ok 0
+fn void main
+    emits {}
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok
