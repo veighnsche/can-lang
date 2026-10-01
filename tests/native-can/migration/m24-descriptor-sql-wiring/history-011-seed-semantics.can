@@ -1,0 +1,268 @@
+package m24history011seed
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M24 HISTORY-011 "descriptors-driver.ts: four-statement seed shape".
+/// Source: tests/integration/testdata/sql/descriptors-driver.ts symbol
+/// descriptors-driver.ts (L83-95 seed parse/shape legs, L92/L97/L169 setup
+/// and drop bindings); related fixture
+/// tests/integration/testdata/sql/descriptors.sql (L5-17 four statements
+/// in seed order).
+/// Disposition: migrate (this row ports descriptors-driver.ts to ordinary
+/// Can functions; the old TS script stays until the integrator retires
+/// it after every linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the seed-file shape contract: the LF line split,
+/// the comment filter and statement split, the four-statement count gate,
+/// the four per-position kind pins in seed order, both refusal messages,
+/// the setup/teardown apply counts, and the four setup/drop binding names.
+/// ADAPTATION (recorded, with source lines): the setup-apply pin (3)
+/// counts the L97 array elements and teardown-drops (1) counts the
+/// L169 await (counts, not source literals, per the M12 app-count
+/// precedent); the kind pins mirror startsWith prefixes (L93), not
+/// full statements; count-message pins the static template prefix
+/// (L91); setup-first/setup-mid/setup-last/teardown-only pin the L92
+/// destructured binding names at their L97/L169 use sites (scenario
+/// statement identities, not SQL text).
+/// Facet map (descriptors-driver.ts legs): stmt-count pins 4 (L91);
+/// comment-prefix pins -- (L86); line-split pins LF (L85/L87);
+/// stmt-split pins ; (L88); s1-create pins CREATE TABLE (L93; sql L5);
+/// s2-truncate pins TRUNCATE (L93; sql L9); s3-insert pins
+/// INSERT INTO (L93; sql L10); s4-drop pins DROP TABLE (L93; sql L17);
+/// count-message pins the L91 template prefix; shape-refusal pins the
+/// L94 refusal; setup-apply pins 3 (L97); teardown-drops pins 1 (L169);
+/// setup-first/setup-mid/setup-last pin create/truncate/insert (L92/L97);
+/// teardown-only pins drop (L92/L169).
+/// The roots-green pin lives in history-011-roots-green.can; the
+/// invocation/run shape lives in history-011-run-shape.can.
+/// Variants: none (single seed/teardown scenario; row lists none).
+/// Environment: disposable database named by CAN_TEST_POSTGRES_URL;
+/// see related Go case gates; requires can-test-postgres-url.
+/// R/N/C/S/A identities identified in evidence; S/A bind at P23; no
+/// live run now. Descriptor timeout 0 records that the driver pins no
+/// timeout (no ctx/deadline leg in descriptors-driver.ts).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QD1 unmet).
+/// Case history/descriptors-seed checks: stmt-count, comment-prefix,
+/// line-split, stmt-split, s1-create, s2-truncate, s3-insert, s4-drop,
+/// count-message, shape-refusal, setup-apply, teardown-drops, setup-first,
+/// setup-mid, setup-last, teardown-only.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int stmt_count
+    str comment_prefix
+    str line_split
+    str stmt_split
+    str s1_create
+    str s2_truncate
+    str s3_insert
+    str s4_drop
+    str count_message
+    str shape_refusal
+    int setup_apply
+    int teardown_drops
+    str setup_first
+    str setup_mid
+    str setup_last
+    str teardown_only
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/descriptors-seed", "default", "", "offline"), "stmt-count" => ok "case history/descriptors-seed variant default root stmt-count run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/descriptors-seed", "default", "", "offline"), "stmt-count" => ok evidence("stmt-count", "true", "true", true, "case history/descriptors-seed variant default root stmt-count run offline")
+        different: false, true, context("history/descriptors-seed", "default", "", "offline"), "stmt-count" => failed{"stmt-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("history/descriptors-seed", "default", "", "offline"), "stmt-count" => ok evidence("stmt-count", "4", "4", true, "case history/descriptors-seed variant default root stmt-count run offline")
+        different: 5, 4, context("history/descriptors-seed", "default", "", "offline"), "stmt-count" => failed{"stmt-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "--", "--", context("history/descriptors-seed", "default", "", "offline"), "comment-prefix" => ok evidence("comment-prefix", "--", "--", true, "case history/descriptors-seed variant default root comment-prefix run offline")
+        different: "//", "--", context("history/descriptors-seed", "default", "", "offline"), "comment-prefix" => failed{"comment-prefix"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        seed_stmt_count: "seed-stmt-count-drift" => ok observation(5, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        seed_comment_prefix: "seed-comment-prefix-drift" => ok observation(4, "//", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        seed_line_split: "seed-line-split-drift" => ok observation(4, "--", "\r", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        seed_stmt_split: "seed-stmt-split-drift" => ok observation(4, "--", "\n", ",", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        seed_s1_create: "seed-s1-create-drift" => ok observation(4, "--", "\n", ";", "CREATE-TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        seed_s2_truncate: "seed-s2-truncate-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE-TABLE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        seed_s3_insert: "seed-s3-insert-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT-INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        seed_s4_drop: "seed-s4-drop-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP-TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        seed_count_message: "seed-count-message-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 5 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        seed_shape_refusal: "seed-shape-refusal-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup", 3, 1, "create", "truncate", "insert", "drop")
+        seed_setup_apply: "seed-setup-apply-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 2, 1, "create", "truncate", "insert", "drop")
+        seed_teardown_drops: "seed-teardown-drops-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 0, "create", "truncate", "insert", "drop")
+        seed_setup_first: "seed-setup-first-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "created", "truncate", "insert", "drop")
+        seed_setup_mid: "seed-setup-mid-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncated", "insert", "drop")
+        seed_setup_last: "seed-setup-last-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "inserted", "drop")
+        seed_teardown_only: "seed-teardown-only-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "dropped")
+    match variant_id
+        "seed-stmt-count-drift" => ok observation(5, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        "seed-comment-prefix-drift" => ok observation(4, "//", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        "seed-line-split-drift" => ok observation(4, "--", "\r", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        "seed-stmt-split-drift" => ok observation(4, "--", "\n", ",", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        "seed-s1-create-drift" => ok observation(4, "--", "\n", ";", "CREATE-TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        "seed-s2-truncate-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE-TABLE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        "seed-s3-insert-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT-INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        "seed-s4-drop-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP-TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        "seed-count-message-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 5 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+        "seed-shape-refusal-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup", 3, 1, "create", "truncate", "insert", "drop")
+        "seed-setup-apply-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 2, 1, "create", "truncate", "insert", "drop")
+        "seed-teardown-drops-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 0, "create", "truncate", "insert", "drop")
+        "seed-setup-first-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "created", "truncate", "insert", "drop")
+        "seed-setup-mid-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncated", "insert", "drop")
+        "seed-setup-last-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "inserted", "drop")
+        "seed-teardown-only-drift" => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "dropped")
+        _ => ok observation(4, "--", "\n", ";", "CREATE TABLE", "TRUNCATE", "INSERT INTO", "DROP TABLE", "seed file must hold 4 statements, saw ", "seed file shape changed; refusing to run setup/teardown", 3, 1, "create", "truncate", "insert", "drop")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m24_h011: "m24-h011" => ok [check("stmt-count", "seed file holds exactly 4 statements"), check("comment-prefix", "seed parse filters -- comment lines"), check("line-split", "seed parse splits lines on LF before filtering"), check("stmt-split", "seed parse splits statements on ;"), check("s1-create", "seed statement 1 creates the accounts table"), check("s2-truncate", "seed statement 2 truncates accounts"), check("s3-insert", "seed statement 3 inserts accounts rows"), check("s4-drop", "seed statement 4 drops the accounts table"), check("count-message", "wrong statement count refuses with the count message"), check("shape-refusal", "changed seed shape refuses setup/teardown"), check("setup-apply", "setup applies the 3 create/truncate/insert statements"), check("teardown-drops", "teardown runs the 1 drop statement"), check("setup-first", "setup starts with the create binding"), check("setup-mid", "setup middles with the truncate binding"), check("setup-last", "setup ends with the insert binding"), check("teardown-only", "teardown drops the drop binding only")]
+        other: "nope" => ok []
+    match scope is "m24-h011"
+        false => ok []
+        true => ok [check("stmt-count", "seed file holds exactly 4 statements"), check("comment-prefix", "seed parse filters -- comment lines"), check("line-split", "seed parse splits lines on LF before filtering"), check("stmt-split", "seed parse splits statements on ;"), check("s1-create", "seed statement 1 creates the accounts table"), check("s2-truncate", "seed statement 2 truncates accounts"), check("s3-insert", "seed statement 3 inserts accounts rows"), check("s4-drop", "seed statement 4 drops the accounts table"), check("count-message", "wrong statement count refuses with the count message"), check("shape-refusal", "changed seed shape refuses setup/teardown"), check("setup-apply", "setup applies the 3 create/truncate/insert statements"), check("teardown-drops", "teardown runs the 1 drop statement"), check("setup-first", "setup starts with the create binding"), check("setup-mid", "setup middles with the truncate binding"), check("setup-last", "setup ends with the insert binding"), check("teardown-only", "teardown drops the drop binding only")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/descriptors-seed" => ok [expected_check("stmt-count", "4"), expected_check("comment-prefix", "--"), expected_check("line-split", "\n"), expected_check("stmt-split", ";"), expected_check("s1-create", "CREATE TABLE"), expected_check("s2-truncate", "TRUNCATE"), expected_check("s3-insert", "INSERT INTO"), expected_check("s4-drop", "DROP TABLE"), expected_check("count-message", "seed file must hold 4 statements, saw "), expected_check("shape-refusal", "seed file shape changed; refusing to run setup/teardown"), expected_check("setup-apply", "3"), expected_check("teardown-drops", "1"), expected_check("setup-first", "create"), expected_check("setup-mid", "truncate"), expected_check("setup-last", "insert"), expected_check("teardown-only", "drop")]
+        unknown: "nope" => ok []
+    match case is "history/descriptors-seed"
+        false => ok []
+        true => ok [expected_check("stmt-count", "4"), expected_check("comment-prefix", "--"), expected_check("line-split", "\n"), expected_check("stmt-split", ";"), expected_check("s1-create", "CREATE TABLE"), expected_check("s2-truncate", "TRUNCATE"), expected_check("s3-insert", "INSERT INTO"), expected_check("s4-drop", "DROP TABLE"), expected_check("count-message", "seed file must hold 4 statements, saw "), expected_check("shape-refusal", "seed file shape changed; refusing to run setup/teardown"), expected_check("setup-apply", "3"), expected_check("teardown-drops", "1"), expected_check("setup-first", "create"), expected_check("setup-mid", "truncate"), expected_check("setup-last", "insert"), expected_check("teardown-only", "drop")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/descriptors-seed", "default", "", "offline") => ok
+        seed_stmt_count: context("history/descriptors-seed", "seed-stmt-count-drift", "", "offline") => failed{"stmt-count"}
+        seed_comment_prefix: context("history/descriptors-seed", "seed-comment-prefix-drift", "", "offline") => failed{"comment-prefix"}
+        seed_line_split: context("history/descriptors-seed", "seed-line-split-drift", "", "offline") => failed{"line-split"}
+        seed_stmt_split: context("history/descriptors-seed", "seed-stmt-split-drift", "", "offline") => failed{"stmt-split"}
+        seed_s1_create: context("history/descriptors-seed", "seed-s1-create-drift", "", "offline") => failed{"s1-create"}
+        seed_s2_truncate: context("history/descriptors-seed", "seed-s2-truncate-drift", "", "offline") => failed{"s2-truncate"}
+        seed_s3_insert: context("history/descriptors-seed", "seed-s3-insert-drift", "", "offline") => failed{"s3-insert"}
+        seed_s4_drop: context("history/descriptors-seed", "seed-s4-drop-drift", "", "offline") => failed{"s4-drop"}
+        seed_count_message: context("history/descriptors-seed", "seed-count-message-drift", "", "offline") => failed{"count-message"}
+        seed_shape_refusal: context("history/descriptors-seed", "seed-shape-refusal-drift", "", "offline") => failed{"shape-refusal"}
+        seed_setup_apply: context("history/descriptors-seed", "seed-setup-apply-drift", "", "offline") => failed{"setup-apply"}
+        seed_teardown_drops: context("history/descriptors-seed", "seed-teardown-drops-drift", "", "offline") => failed{"teardown-drops"}
+        seed_setup_first: context("history/descriptors-seed", "seed-setup-first-drift", "", "offline") => failed{"setup-first"}
+        seed_setup_mid: context("history/descriptors-seed", "seed-setup-mid-drift", "", "offline") => failed{"setup-mid"}
+        seed_setup_last: context("history/descriptors-seed", "seed-setup-last-drift", "", "offline") => failed{"setup-last"}
+        seed_teardown_only: context("history/descriptors-seed", "seed-teardown-only-drift", "", "offline") => failed{"teardown-only"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.stmt_count, 4, c, "stmt-count")
+            failed
+            ok evidence stmt_count_evidence => match call require_text(got.comment_prefix, "--", c, "comment-prefix")
+                failed
+                ok evidence comment_prefix_evidence => match call require_text(got.line_split, "\n", c, "line-split")
+                    failed
+                    ok evidence line_split_evidence => match call require_text(got.stmt_split, ";", c, "stmt-split")
+                        failed
+                        ok evidence stmt_split_evidence => match call require_text(got.s1_create, "CREATE TABLE", c, "s1-create")
+                            failed
+                            ok evidence s1_create_evidence => match call require_text(got.s2_truncate, "TRUNCATE", c, "s2-truncate")
+                                failed
+                                ok evidence s2_truncate_evidence => match call require_text(got.s3_insert, "INSERT INTO", c, "s3-insert")
+                                    failed
+                                    ok evidence s3_insert_evidence => match call require_text(got.s4_drop, "DROP TABLE", c, "s4-drop")
+                                        failed
+                                        ok evidence s4_drop_evidence => match call require_text(got.count_message, "seed file must hold 4 statements, saw ", c, "count-message")
+                                            failed
+                                            ok evidence count_message_evidence => match call require_text(got.shape_refusal, "seed file shape changed; refusing to run setup/teardown", c, "shape-refusal")
+                                                failed
+                                                ok evidence shape_refusal_evidence => match call require_int(got.setup_apply, 3, c, "setup-apply")
+                                                    failed
+                                                    ok evidence setup_apply_evidence => match call require_int(got.teardown_drops, 1, c, "teardown-drops")
+                                                        failed
+                                                        ok evidence teardown_drops_evidence => match call require_text(got.setup_first, "create", c, "setup-first")
+                                                            failed
+                                                            ok evidence setup_first_evidence => match call require_text(got.setup_mid, "truncate", c, "setup-mid")
+                                                                failed
+                                                                ok evidence setup_mid_evidence => match call require_text(got.setup_last, "insert", c, "setup-last")
+                                                                    failed
+                                                                    ok evidence setup_last_evidence => match call require_text(got.teardown_only, "drop", c, "teardown-only")
+                                                                        failed
+                                                                        ok evidence teardown_only_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m24_h011: "m24-h011" => ok test_case("history/descriptors-seed", ["history", "m24"], ["can-test-postgres-url"], 0, [check_ref("stmt-count"), check_ref("comment-prefix"), check_ref("line-split"), check_ref("stmt-split"), check_ref("s1-create"), check_ref("s2-truncate"), check_ref("s3-insert"), check_ref("s4-drop"), check_ref("count-message"), check_ref("shape-refusal"), check_ref("setup-apply"), check_ref("teardown-drops"), check_ref("setup-first"), check_ref("setup-mid"), check_ref("setup-last"), check_ref("teardown-only")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m24-h011"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/descriptors-seed", ["history", "m24"], ["can-test-postgres-url"], 0, [check_ref("stmt-count"), check_ref("comment-prefix"), check_ref("line-split"), check_ref("stmt-split"), check_ref("s1-create"), check_ref("s2-truncate"), check_ref("s3-insert"), check_ref("s4-drop"), check_ref("count-message"), check_ref("shape-refusal"), check_ref("setup-apply"), check_ref("teardown-drops"), check_ref("setup-first"), check_ref("setup-mid"), check_ref("setup-last"), check_ref("teardown-only")], callable case_body)

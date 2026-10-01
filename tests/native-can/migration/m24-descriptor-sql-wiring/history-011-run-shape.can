@@ -1,0 +1,352 @@
+package m24history011run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M24 HISTORY-011 "descriptors-driver.ts: invocation and named rows".
+/// Source: tests/integration/testdata/sql/descriptors-driver.ts symbol
+/// descriptors-driver.ts (L55-67 arg/env/report legs, L126-165 named
+/// query legs, L177-183 harness/exit legs).
+/// Disposition: migrate (this row ports descriptors-driver.ts to ordinary
+/// Can functions; the old TS script stays until the integrator retires
+/// it after every linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the invocation shape (argv positions, env gate,
+/// every refusal message, URL guards, harness name, exit code), the
+/// report checks key, every named expected row list and count decision
+/// with exact values, the two hostile bound payloads, and the by-id keys.
+/// ADAPTATION (recorded, with source lines): row-list pins use the pass
+/// detail join format [a, b] (L52 assertNames detail); count pins mirror
+/// the N rows / count 1 detail literals (L132-L165); url-space pins the
+/// single-space needle of the L67 includes guard; hostile payloads pin
+/// verbatim (L130/L133, the bound-value security contract); search terms
+/// and limits are cited in check titles, expected values pin in fields.
+/// Facet map (descriptors-driver.ts legs): build-arg pins 2 (L61);
+/// seed-arg pins 3 (L62); env-gate pins CAN_TEST_POSTGRES_URL (L63);
+/// missing-build pins the L64 message; missing-seed pins the L65 message;
+/// unset-db pins the L66 message; url-space pins the space needle (L67);
+/// url-scheme pins postgres (L67); url-refusal pins the L67 message;
+/// report-checks pins checks (L55); harness-name pins harness (L178);
+/// error-exit pins 1 (L181/L183); search-like pins [Jason, Mason] (L126);
+/// search-quote pins [O'Brien] (L127); search-unicode pins [Zoë] (L128);
+/// injection-or and injection-stacked pin 0 rows (L132/L135);
+/// survives-injection pins 6 rows (L138); repeat-once pins the five
+/// o-rows (L140); by-id-one pins Bob (L146); by-id-missing pins 0 rows
+/// (L149); insert-execute pins count 1 (L156); insert-round-trip pins
+/// [Q'ueen] (L157); comment-literal pins 7 rows (L161); limit-bound pins
+/// 2 rows (L165); hostile-or-input pins the L130 payload;
+/// hostile-stacked-input pins the L133 payload; by-id-key pins 4 (L142);
+/// missing-key pins 999 (L147).
+/// Seed semantics live in history-011-seed-semantics.can; the
+/// roots-green pin lives in history-011-roots-green.can.
+/// Variants: none (single seed/teardown scenario; row lists none).
+/// Environment: disposable database named by CAN_TEST_POSTGRES_URL;
+/// see related Go case gates; requires can-test-postgres-url.
+/// R/N/C/S/A identities identified in evidence; S/A bind at P23; no
+/// live run now. Descriptor timeout 0 records that the driver pins no
+/// timeout (no ctx/deadline leg in descriptors-driver.ts).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QD1 unmet).
+/// Case history/descriptors-run checks: build-arg, seed-arg, env-gate,
+/// missing-build, missing-seed, unset-db, url-space, url-scheme,
+/// url-refusal, report-checks, harness-name, error-exit, search-like,
+/// search-quote, search-unicode, injection-or, injection-stacked,
+/// survives-injection, repeat-once, by-id-one, by-id-missing,
+/// insert-execute, insert-round-trip, comment-literal, limit-bound,
+/// hostile-or-input, hostile-stacked-input, by-id-key, missing-key.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int build_arg
+    int seed_arg
+    str env_gate
+    str missing_build
+    str missing_seed
+    str unset_db
+    str url_space
+    str url_scheme
+    str url_refusal
+    str report_checks
+    str harness_name
+    int error_exit
+    str search_like
+    str search_quote
+    str search_unicode
+    str injection_or
+    str injection_stacked
+    str survives_injection
+    str repeat_once
+    str by_id_one
+    str by_id_missing
+    str insert_execute
+    str insert_round_trip
+    str comment_literal
+    str limit_bound
+    str hostile_or_input
+    str hostile_stacked_input
+    int by_id_key
+    int missing_key
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/descriptors-run", "default", "", "offline"), "build-arg" => ok "case history/descriptors-run variant default root build-arg run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/descriptors-run", "default", "", "offline"), "build-arg" => ok evidence("build-arg", "true", "true", true, "case history/descriptors-run variant default root build-arg run offline")
+        different: false, true, context("history/descriptors-run", "default", "", "offline"), "build-arg" => failed{"build-arg"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("history/descriptors-run", "default", "", "offline"), "build-arg" => ok evidence("build-arg", "2", "2", true, "case history/descriptors-run variant default root build-arg run offline")
+        different: 1, 2, context("history/descriptors-run", "default", "", "offline"), "build-arg" => failed{"build-arg"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "CAN_TEST_POSTGRES_URL", "CAN_TEST_POSTGRES_URL", context("history/descriptors-run", "default", "", "offline"), "env-gate" => ok evidence("env-gate", "CAN_TEST_POSTGRES_URL", "CAN_TEST_POSTGRES_URL", true, "case history/descriptors-run variant default root env-gate run offline")
+        different: "CAN_TEST_POSTGRES_URL2", "CAN_TEST_POSTGRES_URL", context("history/descriptors-run", "default", "", "offline"), "env-gate" => failed{"env-gate"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_build_arg: "seed-build-arg-drift" => ok observation(1, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_seed_arg: "seed-seed-arg-drift" => ok observation(2, 4, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_env_gate: "seed-env-gate-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL2", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_missing_build: "seed-missing-build-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_missing_seed: "seed-missing-seed-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_unset_db: "seed-unset-db-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the shared test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_url_space: "seed-url-space-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", "  ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_url_scheme: "seed-url-scheme-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "mysql", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_url_refusal: "seed-url-refusal-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres live URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_report_checks: "seed-report-checks-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "check", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_harness_name: "seed-harness-name-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness2", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_error_exit: "seed-error-exit-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 0, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_search_like: "seed-search-like-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_search_quote: "seed-search-quote-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[OBrien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_search_unicode: "seed-search-unicode-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoe]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_injection_or: "seed-injection-or-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 row", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_injection_stacked: "seed-injection-stacked-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 row", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_survives_injection: "seed-survives-injection-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 row", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_repeat_once: "seed-repeat-once-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_by_id_one: "seed-by-id-one-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob2", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_by_id_missing: "seed-by-id-missing-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 row", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_insert_execute: "seed-insert-execute-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 2", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_insert_round_trip: "seed-insert-round-trip-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Queen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_comment_literal: "seed-comment-literal-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "6 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_limit_bound: "seed-limit-bound-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "3 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_hostile_or_input: "seed-hostile-or-input-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='2", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        seed_hostile_stacked_input: "seed-hostile-stacked-input-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;", 4, 999)
+        seed_by_id_key: "seed-by-id-key-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 5, 999)
+        seed_missing_key: "seed-missing-key-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 1000)
+    match variant_id
+        "seed-build-arg-drift" => ok observation(1, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-seed-arg-drift" => ok observation(2, 4, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-env-gate-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL2", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-missing-build-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-missing-seed-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-unset-db-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the shared test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-url-space-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", "  ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-url-scheme-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "mysql", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-url-refusal-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres live URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-report-checks-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "check", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-harness-name-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness2", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-error-exit-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 0, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-search-like-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-search-quote-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[OBrien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-search-unicode-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoe]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-injection-or-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 row", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-injection-stacked-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 row", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-survives-injection-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 row", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-repeat-once-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-by-id-one-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob2", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-by-id-missing-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 row", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-insert-execute-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 2", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-insert-round-trip-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Queen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-comment-literal-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "6 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-limit-bound-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "3 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-hostile-or-input-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='2", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+        "seed-hostile-stacked-input-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;", 4, 999)
+        "seed-by-id-key-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 5, 999)
+        "seed-missing-key-drift" => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 1000)
+        _ => ok observation(2, 3, "CAN_TEST_POSTGRES_URL", "missing build directory argument", "missing seed path argument", "set CAN_TEST_POSTGRES_URL to the disposable test database", " ", "postgres", "refusing non-postgres test URL", "checks", "harness", 1, "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows", "%' OR '1'='1", "'; DROP TABLE can_i37_accounts;--", 4, 999)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m24_h011: "m24-h011" => ok [check("build-arg", "build directory arrives as argv 2"), check("seed-arg", "seed path arrives as argv 3"), check("env-gate", "database URL reads CAN_TEST_POSTGRES_URL"), check("missing-build", "missing build directory refuses"), check("missing-seed", "missing seed path refuses"), check("unset-db", "unset database URL refuses with the gate message"), check("url-space", "database URL must not contain a space"), check("url-scheme", "database URL must start with postgres"), check("url-refusal", "non-postgres URL refuses"), check("report-checks", "report carries the checks array"), check("harness-name", "failure leg reports under harness"), check("error-exit", "failure exits 1"), check("search-like", "\"search like\" expects Jason, Mason for %son%"), check("search-quote", "\"search quote\" expects O'Brien"), check("search-unicode", "\"search unicode\" expects Zoë"), check("injection-or", "\"injection or\" matches 0 rows"), check("injection-stacked", "\"injection stacked\" matches 0 rows"), check("survives-injection", "\"table survives injection\" still sees 6 rows"), check("repeat-once", "\"repeat binds once\" expects all five o-rows"), check("by-id-one", "\"by id one\" resolves Bob"), check("by-id-missing", "\"by id missing\" matches 0 rows"), check("insert-execute", "\"insert execute\" reports count 1"), check("insert-round-trip", "\"insert round trip\" reads back Q'ueen"), check("comment-literal", "\"comment literal\" sees 7 rows after insert"), check("limit-bound", "\"limit bound\" sees 2 rows for limit 2"), check("hostile-or-input", "injection-or payload stays a bound value"), check("hostile-stacked-input", "stacked payload cannot drop can_i37_accounts"), check("by-id-key", "by-id hit looks up key 4"), check("missing-key", "by-id miss looks up key 999")]
+        other: "nope" => ok []
+    match scope is "m24-h011"
+        false => ok []
+        true => ok [check("build-arg", "build directory arrives as argv 2"), check("seed-arg", "seed path arrives as argv 3"), check("env-gate", "database URL reads CAN_TEST_POSTGRES_URL"), check("missing-build", "missing build directory refuses"), check("missing-seed", "missing seed path refuses"), check("unset-db", "unset database URL refuses with the gate message"), check("url-space", "database URL must not contain a space"), check("url-scheme", "database URL must start with postgres"), check("url-refusal", "non-postgres URL refuses"), check("report-checks", "report carries the checks array"), check("harness-name", "failure leg reports under harness"), check("error-exit", "failure exits 1"), check("search-like", "\"search like\" expects Jason, Mason for %son%"), check("search-quote", "\"search quote\" expects O'Brien"), check("search-unicode", "\"search unicode\" expects Zoë"), check("injection-or", "\"injection or\" matches 0 rows"), check("injection-stacked", "\"injection stacked\" matches 0 rows"), check("survives-injection", "\"table survives injection\" still sees 6 rows"), check("repeat-once", "\"repeat binds once\" expects all five o-rows"), check("by-id-one", "\"by id one\" resolves Bob"), check("by-id-missing", "\"by id missing\" matches 0 rows"), check("insert-execute", "\"insert execute\" reports count 1"), check("insert-round-trip", "\"insert round trip\" reads back Q'ueen"), check("comment-literal", "\"comment literal\" sees 7 rows after insert"), check("limit-bound", "\"limit bound\" sees 2 rows for limit 2"), check("hostile-or-input", "injection-or payload stays a bound value"), check("hostile-stacked-input", "stacked payload cannot drop can_i37_accounts"), check("by-id-key", "by-id hit looks up key 4"), check("missing-key", "by-id miss looks up key 999")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/descriptors-run" => ok [expected_check("build-arg", "2"), expected_check("seed-arg", "3"), expected_check("env-gate", "CAN_TEST_POSTGRES_URL"), expected_check("missing-build", "missing build directory argument"), expected_check("missing-seed", "missing seed path argument"), expected_check("unset-db", "set CAN_TEST_POSTGRES_URL to the disposable test database"), expected_check("url-space", " "), expected_check("url-scheme", "postgres"), expected_check("url-refusal", "refusing non-postgres test URL"), expected_check("report-checks", "checks"), expected_check("harness-name", "harness"), expected_check("error-exit", "1"), expected_check("search-like", "[Jason, Mason]"), expected_check("search-quote", "[O'Brien]"), expected_check("search-unicode", "[Zoë]"), expected_check("injection-or", "0 rows"), expected_check("injection-stacked", "0 rows"), expected_check("survives-injection", "6 rows"), expected_check("repeat-once", "[Jason, Mason, Bob, O'Brien, Zoë]"), expected_check("by-id-one", "Bob"), expected_check("by-id-missing", "0 rows"), expected_check("insert-execute", "count 1"), expected_check("insert-round-trip", "[Q'ueen]"), expected_check("comment-literal", "7 rows"), expected_check("limit-bound", "2 rows"), expected_check("hostile-or-input", "%' OR '1'='1"), expected_check("hostile-stacked-input", "'; DROP TABLE can_i37_accounts;--"), expected_check("by-id-key", "4"), expected_check("missing-key", "999")]
+        unknown: "nope" => ok []
+    match case is "history/descriptors-run"
+        false => ok []
+        true => ok [expected_check("build-arg", "2"), expected_check("seed-arg", "3"), expected_check("env-gate", "CAN_TEST_POSTGRES_URL"), expected_check("missing-build", "missing build directory argument"), expected_check("missing-seed", "missing seed path argument"), expected_check("unset-db", "set CAN_TEST_POSTGRES_URL to the disposable test database"), expected_check("url-space", " "), expected_check("url-scheme", "postgres"), expected_check("url-refusal", "refusing non-postgres test URL"), expected_check("report-checks", "checks"), expected_check("harness-name", "harness"), expected_check("error-exit", "1"), expected_check("search-like", "[Jason, Mason]"), expected_check("search-quote", "[O'Brien]"), expected_check("search-unicode", "[Zoë]"), expected_check("injection-or", "0 rows"), expected_check("injection-stacked", "0 rows"), expected_check("survives-injection", "6 rows"), expected_check("repeat-once", "[Jason, Mason, Bob, O'Brien, Zoë]"), expected_check("by-id-one", "Bob"), expected_check("by-id-missing", "0 rows"), expected_check("insert-execute", "count 1"), expected_check("insert-round-trip", "[Q'ueen]"), expected_check("comment-literal", "7 rows"), expected_check("limit-bound", "2 rows"), expected_check("hostile-or-input", "%' OR '1'='1"), expected_check("hostile-stacked-input", "'; DROP TABLE can_i37_accounts;--"), expected_check("by-id-key", "4"), expected_check("missing-key", "999")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/descriptors-run", "default", "", "offline") => ok
+        seed_build_arg: context("history/descriptors-run", "seed-build-arg-drift", "", "offline") => failed{"build-arg"}
+        seed_seed_arg: context("history/descriptors-run", "seed-seed-arg-drift", "", "offline") => failed{"seed-arg"}
+        seed_env_gate: context("history/descriptors-run", "seed-env-gate-drift", "", "offline") => failed{"env-gate"}
+        seed_missing_build: context("history/descriptors-run", "seed-missing-build-drift", "", "offline") => failed{"missing-build"}
+        seed_missing_seed: context("history/descriptors-run", "seed-missing-seed-drift", "", "offline") => failed{"missing-seed"}
+        seed_unset_db: context("history/descriptors-run", "seed-unset-db-drift", "", "offline") => failed{"unset-db"}
+        seed_url_space: context("history/descriptors-run", "seed-url-space-drift", "", "offline") => failed{"url-space"}
+        seed_url_scheme: context("history/descriptors-run", "seed-url-scheme-drift", "", "offline") => failed{"url-scheme"}
+        seed_url_refusal: context("history/descriptors-run", "seed-url-refusal-drift", "", "offline") => failed{"url-refusal"}
+        seed_report_checks: context("history/descriptors-run", "seed-report-checks-drift", "", "offline") => failed{"report-checks"}
+        seed_harness_name: context("history/descriptors-run", "seed-harness-name-drift", "", "offline") => failed{"harness-name"}
+        seed_error_exit: context("history/descriptors-run", "seed-error-exit-drift", "", "offline") => failed{"error-exit"}
+        seed_search_like: context("history/descriptors-run", "seed-search-like-drift", "", "offline") => failed{"search-like"}
+        seed_search_quote: context("history/descriptors-run", "seed-search-quote-drift", "", "offline") => failed{"search-quote"}
+        seed_search_unicode: context("history/descriptors-run", "seed-search-unicode-drift", "", "offline") => failed{"search-unicode"}
+        seed_injection_or: context("history/descriptors-run", "seed-injection-or-drift", "", "offline") => failed{"injection-or"}
+        seed_injection_stacked: context("history/descriptors-run", "seed-injection-stacked-drift", "", "offline") => failed{"injection-stacked"}
+        seed_survives_injection: context("history/descriptors-run", "seed-survives-injection-drift", "", "offline") => failed{"survives-injection"}
+        seed_repeat_once: context("history/descriptors-run", "seed-repeat-once-drift", "", "offline") => failed{"repeat-once"}
+        seed_by_id_one: context("history/descriptors-run", "seed-by-id-one-drift", "", "offline") => failed{"by-id-one"}
+        seed_by_id_missing: context("history/descriptors-run", "seed-by-id-missing-drift", "", "offline") => failed{"by-id-missing"}
+        seed_insert_execute: context("history/descriptors-run", "seed-insert-execute-drift", "", "offline") => failed{"insert-execute"}
+        seed_insert_round_trip: context("history/descriptors-run", "seed-insert-round-trip-drift", "", "offline") => failed{"insert-round-trip"}
+        seed_comment_literal: context("history/descriptors-run", "seed-comment-literal-drift", "", "offline") => failed{"comment-literal"}
+        seed_limit_bound: context("history/descriptors-run", "seed-limit-bound-drift", "", "offline") => failed{"limit-bound"}
+        seed_hostile_or_input: context("history/descriptors-run", "seed-hostile-or-input-drift", "", "offline") => failed{"hostile-or-input"}
+        seed_hostile_stacked_input: context("history/descriptors-run", "seed-hostile-stacked-input-drift", "", "offline") => failed{"hostile-stacked-input"}
+        seed_by_id_key: context("history/descriptors-run", "seed-by-id-key-drift", "", "offline") => failed{"by-id-key"}
+        seed_missing_key: context("history/descriptors-run", "seed-missing-key-drift", "", "offline") => failed{"missing-key"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.build_arg, 2, c, "build-arg")
+            failed
+            ok evidence build_arg_evidence => match call require_int(got.seed_arg, 3, c, "seed-arg")
+                failed
+                ok evidence seed_arg_evidence => match call require_text(got.env_gate, "CAN_TEST_POSTGRES_URL", c, "env-gate")
+                    failed
+                    ok evidence env_gate_evidence => match call require_text(got.missing_build, "missing build directory argument", c, "missing-build")
+                        failed
+                        ok evidence missing_build_evidence => match call require_text(got.missing_seed, "missing seed path argument", c, "missing-seed")
+                            failed
+                            ok evidence missing_seed_evidence => match call require_text(got.unset_db, "set CAN_TEST_POSTGRES_URL to the disposable test database", c, "unset-db")
+                                failed
+                                ok evidence unset_db_evidence => match call require_text(got.url_space, " ", c, "url-space")
+                                    failed
+                                    ok evidence url_space_evidence => match call require_text(got.url_scheme, "postgres", c, "url-scheme")
+                                        failed
+                                        ok evidence url_scheme_evidence => match call require_text(got.url_refusal, "refusing non-postgres test URL", c, "url-refusal")
+                                            failed
+                                            ok evidence url_refusal_evidence => match call require_text(got.report_checks, "checks", c, "report-checks")
+                                                failed
+                                                ok evidence report_checks_evidence => match call require_text(got.harness_name, "harness", c, "harness-name")
+                                                    failed
+                                                    ok evidence harness_name_evidence => match call require_int(got.error_exit, 1, c, "error-exit")
+                                                        failed
+                                                        ok evidence error_exit_evidence => match call require_text(got.search_like, "[Jason, Mason]", c, "search-like")
+                                                            failed
+                                                            ok evidence search_like_evidence => match call require_text(got.search_quote, "[O'Brien]", c, "search-quote")
+                                                                failed
+                                                                ok evidence search_quote_evidence => match call require_text(got.search_unicode, "[Zoë]", c, "search-unicode")
+                                                                    failed
+                                                                    ok evidence search_unicode_evidence => match call require_text(got.injection_or, "0 rows", c, "injection-or")
+                                                                        failed
+                                                                        ok evidence injection_or_evidence => match call require_text(got.injection_stacked, "0 rows", c, "injection-stacked")
+                                                                            failed
+                                                                            ok evidence injection_stacked_evidence => match call require_text(got.survives_injection, "6 rows", c, "survives-injection")
+                                                                                failed
+                                                                                ok evidence survives_injection_evidence => match call require_text(got.repeat_once, "[Jason, Mason, Bob, O'Brien, Zoë]", c, "repeat-once")
+                                                                                    failed
+                                                                                    ok evidence repeat_once_evidence => match call require_text(got.by_id_one, "Bob", c, "by-id-one")
+                                                                                        failed
+                                                                                        ok evidence by_id_one_evidence => match call require_text(got.by_id_missing, "0 rows", c, "by-id-missing")
+                                                                                            failed
+                                                                                            ok evidence by_id_missing_evidence => match call require_text(got.insert_execute, "count 1", c, "insert-execute")
+                                                                                                failed
+                                                                                                ok evidence insert_execute_evidence => match call require_text(got.insert_round_trip, "[Q'ueen]", c, "insert-round-trip")
+                                                                                                    failed
+                                                                                                    ok evidence insert_round_trip_evidence => match call require_text(got.comment_literal, "7 rows", c, "comment-literal")
+                                                                                                        failed
+                                                                                                        ok evidence comment_literal_evidence => match call require_text(got.limit_bound, "2 rows", c, "limit-bound")
+                                                                                                            failed
+                                                                                                            ok evidence limit_bound_evidence => match call require_text(got.hostile_or_input, "%' OR '1'='1", c, "hostile-or-input")
+                                                                                                                failed
+                                                                                                                ok evidence hostile_or_input_evidence => match call require_text(got.hostile_stacked_input, "'; DROP TABLE can_i37_accounts;--", c, "hostile-stacked-input")
+                                                                                                                    failed
+                                                                                                                    ok evidence hostile_stacked_input_evidence => match call require_int(got.by_id_key, 4, c, "by-id-key")
+                                                                                                                        failed
+                                                                                                                        ok evidence by_id_key_evidence => match call require_int(got.missing_key, 999, c, "missing-key")
+                                                                                                                            failed
+                                                                                                                            ok evidence missing_key_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m24_h011: "m24-h011" => ok test_case("history/descriptors-run", ["history", "m24"], ["can-test-postgres-url"], 0, [check_ref("build-arg"), check_ref("seed-arg"), check_ref("env-gate"), check_ref("missing-build"), check_ref("missing-seed"), check_ref("unset-db"), check_ref("url-space"), check_ref("url-scheme"), check_ref("url-refusal"), check_ref("report-checks"), check_ref("harness-name"), check_ref("error-exit"), check_ref("search-like"), check_ref("search-quote"), check_ref("search-unicode"), check_ref("injection-or"), check_ref("injection-stacked"), check_ref("survives-injection"), check_ref("repeat-once"), check_ref("by-id-one"), check_ref("by-id-missing"), check_ref("insert-execute"), check_ref("insert-round-trip"), check_ref("comment-literal"), check_ref("limit-bound"), check_ref("hostile-or-input"), check_ref("hostile-stacked-input"), check_ref("by-id-key"), check_ref("missing-key")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m24-h011"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/descriptors-run", ["history", "m24"], ["can-test-postgres-url"], 0, [check_ref("build-arg"), check_ref("seed-arg"), check_ref("env-gate"), check_ref("missing-build"), check_ref("missing-seed"), check_ref("unset-db"), check_ref("url-space"), check_ref("url-scheme"), check_ref("url-refusal"), check_ref("report-checks"), check_ref("harness-name"), check_ref("error-exit"), check_ref("search-like"), check_ref("search-quote"), check_ref("search-unicode"), check_ref("injection-or"), check_ref("injection-stacked"), check_ref("survives-injection"), check_ref("repeat-once"), check_ref("by-id-one"), check_ref("by-id-missing"), check_ref("insert-execute"), check_ref("insert-round-trip"), check_ref("comment-literal"), check_ref("limit-bound"), check_ref("hostile-or-input"), check_ref("hostile-stacked-input"), check_ref("by-id-key"), check_ref("missing-key")], callable case_body)
