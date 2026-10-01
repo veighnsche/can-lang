@@ -1,0 +1,215 @@
+package m30history057roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-057 roots: live readers of the frozen T26 record.
+/// Source: tests/baseline/reports/t26-agent-comparison-2026-09-24.json.
+/// One live code reader exists: tests/baseline/t26_product_guide_test.go
+/// line 158 loads the record via loadJSON into t26Report inside
+/// TestT26AgentComparisonReportConsistent and guards Task, trial state,
+/// no-significance wording, per-case trial/disposition shape, coverage
+/// parity and the deferral entry.
+/// Header comment line 5 names the record; prose companion line 6 points
+/// at the machine form. No other Go/TS reader was found by repo search.
+/// This file pins reader file, lines, loader, report kind, guard
+/// spellings and the live-reader count.
+/// Checks: caller-file, caller-line, test-name, loader-call, report-type, task-guard, trials-guard, significance-guard, case-trials-guard, disposition-guard, deferred-guard, comment-ref-line, prose-ref-file, prose-ref-line, caller-count.
+/// Byte pins live in base-semantics; review inputs live in run-shape.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str caller_file
+    int caller_line
+    str test_name
+    str loader_call
+    str report_type
+    str task_guard
+    str trials_guard
+    str significance_guard
+    str case_trials_guard
+    str disposition_guard
+    str deferred_guard
+    int comment_ref_line
+    str prose_ref_file
+    int prose_ref_line
+    int caller_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/t26-comparison-roots", "default", "", "offline"), "caller-file" => ok "case history/t26-comparison-roots variant default root caller-file run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 158, 158, context("history/t26-comparison-roots", "default", "", "offline"), "caller-line" => ok evidence("caller-line", "158", "158", true, "case history/t26-comparison-roots variant default root caller-line run offline")
+        different: 157, 158, context("history/t26-comparison-roots", "default", "", "offline"), "caller-line" => failed{"caller-line"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "tests/baseline/t26_product_guide_test.go", "tests/baseline/t26_product_guide_test.go", context("history/t26-comparison-roots", "default", "", "offline"), "caller-file" => ok evidence("caller-file", "tests/baseline/t26_product_guide_test.go", "tests/baseline/t26_product_guide_test.go", true, "case history/t26-comparison-roots variant default root caller-file run offline")
+        different: "tests/baseline/t26_product_guide_test.go_2", "tests/baseline/t26_product_guide_test.go", context("history/t26-comparison-roots", "default", "", "offline"), "caller-file" => failed{"caller-file"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        seed_caller_file_drift: "seed-caller-file-drift" => ok observation("tests/baseline/t26_product_guide_test.go_2", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        seed_caller_line_drift: "seed-caller-line-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 157, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        seed_test_name_drift: "seed-test-name-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent_2", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        seed_loader_call_drift: "seed-loader-call-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON_2", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        seed_report_type_drift: "seed-report-type-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report_2", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        seed_task_guard_drift: "seed-task-guard-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"_2", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        seed_trials_guard_drift: "seed-trials-guard-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0_2", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        seed_significance_guard_drift: "seed-significance-guard-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")_2", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        seed_case_trials_guard_drift: "seed-case-trials-guard-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"_2", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        seed_disposition_guard_drift: "seed-disposition-guard-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"_2", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        seed_deferred_guard_drift: "seed-deferred-guard-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0_2", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        seed_comment_ref_line_drift: "seed-comment-ref-line-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 4, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        seed_prose_ref_file_drift: "seed-prose-ref-file-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md_2", 6, 1)
+        seed_prose_ref_line_drift: "seed-prose-ref-line-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 5, 1)
+        seed_caller_count_drift: "seed-caller-count-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 0)
+    match variant_id
+        "seed-caller-file-drift" => ok observation("tests/baseline/t26_product_guide_test.go_2", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        "seed-caller-line-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 157, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        "seed-test-name-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent_2", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        "seed-loader-call-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON_2", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        "seed-report-type-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report_2", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        "seed-task-guard-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"_2", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        "seed-trials-guard-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0_2", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        "seed-significance-guard-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")_2", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        "seed-case-trials-guard-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"_2", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        "seed-disposition-guard-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"_2", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        "seed-deferred-guard-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0_2", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        "seed-comment-ref-line-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 4, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+        "seed-prose-ref-file-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md_2", 6, 1)
+        "seed-prose-ref-line-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 5, 1)
+        "seed-caller-count-drift" => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 0)
+        _ => ok observation("tests/baseline/t26_product_guide_test.go", 158, "TestT26AgentComparisonReportConsistent", "loadJSON", "t26Report", "rep.Task != \"T26\"", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", "c.AgentTrials != \"not-run\"", "c.Disposition == \"\"", "len(rep.Deferred) == 0", 5, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", 6, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_057: "m30-057" => ok [check("caller-file", "live reader file is pinned"), check("caller-line", "live reader load sits at line 158"), check("test-name", "owning check name is pinned"), check("loader-call", "loader call reads loadJSON"), check("report-type", "report kind reads t26Report"), check("task-guard", "task guard spelling is pinned"), check("trials-guard", "trial-state guard spelling is pinned"), check("significance-guard", "wording guard spelling is pinned"), check("case-trials-guard", "per-case trial guard spelling is pinned"), check("disposition-guard", "disposition guard spelling is pinned"), check("deferred-guard", "deferral guard spelling is pinned"), check("comment-ref-line", "header comment names the record at line 5"), check("prose-ref-file", "prose companion file is pinned"), check("prose-ref-line", "prose pointer sits at line 6"), check("caller-count", "exactly 1 live code reader exists")]
+        other: "nope" => ok []
+    match scope is "m30-057"
+        false => ok []
+        true => ok [check("caller-file", "live reader file is pinned"), check("caller-line", "live reader load sits at line 158"), check("test-name", "owning check name is pinned"), check("loader-call", "loader call reads loadJSON"), check("report-type", "report kind reads t26Report"), check("task-guard", "task guard spelling is pinned"), check("trials-guard", "trial-state guard spelling is pinned"), check("significance-guard", "wording guard spelling is pinned"), check("case-trials-guard", "per-case trial guard spelling is pinned"), check("disposition-guard", "disposition guard spelling is pinned"), check("deferred-guard", "deferral guard spelling is pinned"), check("comment-ref-line", "header comment names the record at line 5"), check("prose-ref-file", "prose companion file is pinned"), check("prose-ref-line", "prose pointer sits at line 6"), check("caller-count", "exactly 1 live code reader exists")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/t26-comparison-roots" => ok [expected_check("caller-file", "tests/baseline/t26_product_guide_test.go"), expected_check("caller-line", "158"), expected_check("test-name", "TestT26AgentComparisonReportConsistent"), expected_check("loader-call", "loadJSON"), expected_check("report-type", "t26Report"), expected_check("task-guard", "rep.Task != \"T26\""), expected_check("trials-guard", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0"), expected_check("significance-guard", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")"), expected_check("case-trials-guard", "c.AgentTrials != \"not-run\""), expected_check("disposition-guard", "c.Disposition == \"\""), expected_check("deferred-guard", "len(rep.Deferred) == 0"), expected_check("comment-ref-line", "5"), expected_check("prose-ref-file", "tests/baseline/reports/t26-agent-comparison-2026-09-24.md"), expected_check("prose-ref-line", "6"), expected_check("caller-count", "1")]
+        unknown: "nope" => ok []
+    match case is "history/t26-comparison-roots"
+        false => ok []
+        true => ok [expected_check("caller-file", "tests/baseline/t26_product_guide_test.go"), expected_check("caller-line", "158"), expected_check("test-name", "TestT26AgentComparisonReportConsistent"), expected_check("loader-call", "loadJSON"), expected_check("report-type", "t26Report"), expected_check("task-guard", "rep.Task != \"T26\""), expected_check("trials-guard", "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0"), expected_check("significance-guard", "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")"), expected_check("case-trials-guard", "c.AgentTrials != \"not-run\""), expected_check("disposition-guard", "c.Disposition == \"\""), expected_check("deferred-guard", "len(rep.Deferred) == 0"), expected_check("comment-ref-line", "5"), expected_check("prose-ref-file", "tests/baseline/reports/t26-agent-comparison-2026-09-24.md"), expected_check("prose-ref-line", "6"), expected_check("caller-count", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/t26-comparison-roots", "default", "", "offline") => ok
+        seed_caller_file_drift: context("history/t26-comparison-roots", "seed-caller-file-drift", "", "offline") => failed{"caller-file"}
+        seed_caller_line_drift: context("history/t26-comparison-roots", "seed-caller-line-drift", "", "offline") => failed{"caller-line"}
+        seed_test_name_drift: context("history/t26-comparison-roots", "seed-test-name-drift", "", "offline") => failed{"test-name"}
+        seed_loader_call_drift: context("history/t26-comparison-roots", "seed-loader-call-drift", "", "offline") => failed{"loader-call"}
+        seed_report_type_drift: context("history/t26-comparison-roots", "seed-report-type-drift", "", "offline") => failed{"report-type"}
+        seed_task_guard_drift: context("history/t26-comparison-roots", "seed-task-guard-drift", "", "offline") => failed{"task-guard"}
+        seed_trials_guard_drift: context("history/t26-comparison-roots", "seed-trials-guard-drift", "", "offline") => failed{"trials-guard"}
+        seed_significance_guard_drift: context("history/t26-comparison-roots", "seed-significance-guard-drift", "", "offline") => failed{"significance-guard"}
+        seed_case_trials_guard_drift: context("history/t26-comparison-roots", "seed-case-trials-guard-drift", "", "offline") => failed{"case-trials-guard"}
+        seed_disposition_guard_drift: context("history/t26-comparison-roots", "seed-disposition-guard-drift", "", "offline") => failed{"disposition-guard"}
+        seed_deferred_guard_drift: context("history/t26-comparison-roots", "seed-deferred-guard-drift", "", "offline") => failed{"deferred-guard"}
+        seed_comment_ref_line_drift: context("history/t26-comparison-roots", "seed-comment-ref-line-drift", "", "offline") => failed{"comment-ref-line"}
+        seed_prose_ref_file_drift: context("history/t26-comparison-roots", "seed-prose-ref-file-drift", "", "offline") => failed{"prose-ref-file"}
+        seed_prose_ref_line_drift: context("history/t26-comparison-roots", "seed-prose-ref-line-drift", "", "offline") => failed{"prose-ref-line"}
+        seed_caller_count_drift: context("history/t26-comparison-roots", "seed-caller-count-drift", "", "offline") => failed{"caller-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.caller_file, "tests/baseline/t26_product_guide_test.go", c, "caller-file")
+            failed
+            ok evidence caller_file_evidence => match call require_int(got.caller_line, 158, c, "caller-line")
+                failed
+                ok evidence caller_line_evidence => match call require_text(got.test_name, "TestT26AgentComparisonReportConsistent", c, "test-name")
+                    failed
+                    ok evidence test_name_evidence => match call require_text(got.loader_call, "loadJSON", c, "loader-call")
+                        failed
+                        ok evidence loader_call_evidence => match call require_text(got.report_type, "t26Report", c, "report-type")
+                            failed
+                            ok evidence report_type_evidence => match call require_text(got.task_guard, "rep.Task != \"T26\"", c, "task-guard")
+                                failed
+                                ok evidence task_guard_evidence => match call require_text(got.trials_guard, "rep.AgentTrials.Status != \"not-run\" || rep.AgentTrials.Attempts != 0", c, "trials-guard")
+                                    failed
+                                    ok evidence trials_guard_evidence => match call require_text(got.significance_guard, "!strings.Contains(strings.ToLower(rep.Significance), \"none claimed\")", c, "significance-guard")
+                                        failed
+                                        ok evidence significance_guard_evidence => match call require_text(got.case_trials_guard, "c.AgentTrials != \"not-run\"", c, "case-trials-guard")
+                                            failed
+                                            ok evidence case_trials_guard_evidence => match call require_text(got.disposition_guard, "c.Disposition == \"\"", c, "disposition-guard")
+                                                failed
+                                                ok evidence disposition_guard_evidence => match call require_text(got.deferred_guard, "len(rep.Deferred) == 0", c, "deferred-guard")
+                                                    failed
+                                                    ok evidence deferred_guard_evidence => match call require_int(got.comment_ref_line, 5, c, "comment-ref-line")
+                                                        failed
+                                                        ok evidence comment_ref_line_evidence => match call require_text(got.prose_ref_file, "tests/baseline/reports/t26-agent-comparison-2026-09-24.md", c, "prose-ref-file")
+                                                            failed
+                                                            ok evidence prose_ref_file_evidence => match call require_int(got.prose_ref_line, 6, c, "prose-ref-line")
+                                                                failed
+                                                                ok evidence prose_ref_line_evidence => match call require_int(got.caller_count, 1, c, "caller-count")
+                                                                    failed
+                                                                    ok evidence caller_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_057: "m30-057" => ok test_case("history/t26-comparison-roots", ["history", "m30"], [], 60000, [check_ref("caller-file"), check_ref("caller-line"), check_ref("test-name"), check_ref("loader-call"), check_ref("report-type"), check_ref("task-guard"), check_ref("trials-guard"), check_ref("significance-guard"), check_ref("case-trials-guard"), check_ref("disposition-guard"), check_ref("deferred-guard"), check_ref("comment-ref-line"), check_ref("prose-ref-file"), check_ref("prose-ref-line"), check_ref("caller-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-057"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/t26-comparison-roots", ["history", "m30"], [], 60000, [check_ref("caller-file"), check_ref("caller-line"), check_ref("test-name"), check_ref("loader-call"), check_ref("report-type"), check_ref("task-guard"), check_ref("trials-guard"), check_ref("significance-guard"), check_ref("case-trials-guard"), check_ref("disposition-guard"), check_ref("deferred-guard"), check_ref("comment-ref-line"), check_ref("prose-ref-file"), check_ref("prose-ref-line"), check_ref("caller-count")], callable case_body)
