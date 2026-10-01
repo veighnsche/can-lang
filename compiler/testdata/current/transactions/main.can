@@ -1,0 +1,31 @@
+package test_db_transactions
+    provides []
+    uses [db, test]
+fn int txn_roundtrip
+    emits {test::invalid_grant, test::stale_handle, db::db_fault}
+    given
+        str grant
+    asserts
+        probe: "ng1-0123456789abcdef0123456789abcdef" => ok 0
+    match chain
+        call test::grant_admit(grant) as test::owner owner
+        call db::enter_callback(owner, "a1") as db::callback_entry entered
+        call db::actor_facts(owner, "a1") as db::actor_identity_facts known
+        call db::record_last_insert_id(owner, "a1", "txn-token-stub", db::number_cell("42")) as db::last_insert_id_record bound
+        call db::last_insert_id_facts(owner, "a1") as db::last_insert_id_record reread
+        call db::compare_last_insert_id(owner, reread, db::last_insert_id_claim("a1", "conn:a1", db::number_cell("42"))) as db::identity_comparison agreed
+        call db::record_settlement(owner, "a1", "txn-token-stub", "committed", "postgres") as db::settlement_record settled
+        call db::settlement_facts(owner, "a1") as db::settlement_record reread_settlement
+        call db::release(owner, "a1", "txn-token-stub") as db::release_record freed
+        call db::release_ack(owner, "a1") as db::release_record acked
+        test::invalid_grant
+        test::stale_handle
+        db::db_fault
+        ok => ok 0
+fn void main
+    emits {}
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok
