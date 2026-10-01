@@ -1,0 +1,164 @@
+package m11core050rewrite
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M11 CORE-050 "staged authorization strip: rewrite (pairs removed, others identical, malformed refused)".
+/// Source: tests/integration/raw_fixtures_test.go symbol stripStagedAuthorization (lines 44-96).
+/// Related fixtures: staged can.native-fixture.v1 JSON inputs under src/fixtures.
+/// Callers: tests/integration/{judge,questions,generation}_test.go direct raw-provider probes.
+/// Disposition: REPLACE_SUPPORT. The Can slice ports the stripping RULES, not
+/// the bytes: which pairs are selected, how the rewrite applies, where it lands.
+/// Protects (this file): authorization pairs removed from staged request
+/// headers, all other pairs preserved byte-identically in order, the rewrite
+/// scoped to request headers, malformed staged fixtures refused, and
+/// fixtures that lose no pair left unrewritten.
+/// Pair selection lives in core-050-selection.can; write placement and the
+/// inputs-not-scenarios boundary live in core-050-layout.can.
+/// Variants: judge, questions and generation direct raw-provider probes.
+/// Environment: none (no gates). Capabilities FILES/NATIVE/SUITE and the
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case auth-strip/rewrite checks: pairs-removed, others-identical,
+/// request-scoped, malformed-refused, no-strip-no-write.
+/// Facet map: pairs-removed pins the kept-minus-auth rebuild plus headers
+/// reassignment (raw_fixtures_test.go:76-87); it requires the headers array
+/// to be present, so a missing array fails rather than passing vacuously;
+/// others-identical pins the unchanged carry-through of non-matching pairs
+/// (line 82); request-scoped pins that only exchange.request.headers is
+/// reassigned (lines 68-87), leaving response headers, bodies and the
+/// environment untouched; malformed-refused pins the t.Fatal refusal of
+/// invalid staged JSON (lines 61-63); no-strip-no-write pins the
+/// len(kept) == len(staged) early continue (lines 84-86).
+/// BOUNDARY (not this row): stageRawFixtures (landed C049) and
+/// clearStagedFixtureEnvironments (CORE-051, same Go file) are out of scope;
+/// the Go helper stays until its delete_when gates pass
+/// (retirement_eligible=false). Shared old files untouched; retirement is a
+/// later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool pairs_removed
+    bool others_identical
+    bool request_scoped
+    bool malformed_refused
+    bool no_strip_no_write
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("auth-strip/rewrite", "default", "", "offline"), "pairs-removed" => ok "case auth-strip/rewrite variant default root pairs-removed run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("auth-strip/rewrite", "default", "", "offline"), "pairs-removed" => ok evidence("pairs-removed", "true", "true", true, "case auth-strip/rewrite variant default root pairs-removed run offline")
+        different: false, true, context("auth-strip/rewrite", "default", "", "offline"), "pairs-removed" => failed{"pairs-removed"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, true, true, true)
+        seed_auth_left: "seed-auth-left" => ok observation(false, true, true, true, true)
+        seed_other_drift: "seed-other-drift" => ok observation(true, false, true, true, true)
+        seed_response_touched: "seed-response-touched" => ok observation(true, true, false, true, true)
+        seed_malformed_passed: "seed-malformed-passed" => ok observation(true, true, true, false, true)
+        seed_noop_rewritten: "seed-noop-rewritten" => ok observation(true, true, true, true, false)
+        seed_missing_headers: "seed-missing-headers" => ok observation(false, true, true, true, true)
+    match variant_id
+        "seed-auth-left" => ok observation(false, true, true, true, true)
+        "seed-other-drift" => ok observation(true, false, true, true, true)
+        "seed-response-touched" => ok observation(true, true, false, true, true)
+        "seed-malformed-passed" => ok observation(true, true, true, false, true)
+        "seed-noop-rewritten" => ok observation(true, true, true, true, false)
+        "seed-missing-headers" => ok observation(false, true, true, true, true)
+        _ => ok observation(true, true, true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m11_050: "m11-050" => ok [check("pairs-removed", "staged request headers hold no authorization pair"), check("others-identical", "all other request pairs are preserved byte-identically"), check("request-scoped", "only request headers change"), check("malformed-refused", "malformed staged fixtures are refused"), check("no-strip-no-write", "fixtures that lose no pair are not rewritten")]
+        other: "nope" => ok []
+    match scope is "m11-050"
+        false => ok []
+        true => ok [check("pairs-removed", "staged request headers hold no authorization pair"), check("others-identical", "all other request pairs are preserved byte-identically"), check("request-scoped", "only request headers change"), check("malformed-refused", "malformed staged fixtures are refused"), check("no-strip-no-write", "fixtures that lose no pair are not rewritten")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "auth-strip/rewrite" => ok [expected_check("pairs-removed", "true"), expected_check("others-identical", "true"), expected_check("request-scoped", "true"), expected_check("malformed-refused", "true"), expected_check("no-strip-no-write", "true")]
+        unknown: "nope" => ok []
+    match case is "auth-strip/rewrite"
+        false => ok []
+        true => ok [expected_check("pairs-removed", "true"), expected_check("others-identical", "true"), expected_check("request-scoped", "true"), expected_check("malformed-refused", "true"), expected_check("no-strip-no-write", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("auth-strip/rewrite", "default", "", "offline") => ok
+        seed_auth_left: context("auth-strip/rewrite", "seed-auth-left", "", "offline") => failed{"pairs-removed"}
+        seed_other_drift: context("auth-strip/rewrite", "seed-other-drift", "", "offline") => failed{"others-identical"}
+        seed_response_touched: context("auth-strip/rewrite", "seed-response-touched", "", "offline") => failed{"request-scoped"}
+        seed_malformed_passed: context("auth-strip/rewrite", "seed-malformed-passed", "", "offline") => failed{"malformed-refused"}
+        seed_noop_rewritten: context("auth-strip/rewrite", "seed-noop-rewritten", "", "offline") => failed{"no-strip-no-write"}
+        seed_missing_headers: context("auth-strip/rewrite", "seed-missing-headers", "", "offline") => failed{"pairs-removed"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.pairs_removed, true, c, "pairs-removed")
+            failed
+            ok evidence pairs_removed_evidence => match call require_bool(got.others_identical, true, c, "others-identical")
+                failed
+                ok evidence others_identical_evidence => match call require_bool(got.request_scoped, true, c, "request-scoped")
+                    failed
+                    ok evidence request_scoped_evidence => match call require_bool(got.malformed_refused, true, c, "malformed-refused")
+                        failed
+                        ok evidence malformed_refused_evidence => match call require_bool(got.no_strip_no_write, true, c, "no-strip-no-write")
+                            failed
+                            ok evidence no_strip_no_write_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m11_050: "m11-050" => ok test_case("auth-strip/rewrite", ["staging", "m11", "fixtures"], [], 120000, [check_ref("pairs-removed"), check_ref("others-identical"), check_ref("request-scoped"), check_ref("malformed-refused"), check_ref("no-strip-no-write")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m11-050"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("auth-strip/rewrite", ["staging", "m11", "fixtures"], [], 120000, [check_ref("pairs-removed"), check_ref("others-identical"), check_ref("request-scoped"), check_ref("malformed-refused"), check_ref("no-strip-no-write")], callable case_body)

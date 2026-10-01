@@ -1,0 +1,165 @@
+package m11core050selection
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M11 CORE-050 "staged authorization strip: selection (auth pairs only, by probe variant)".
+/// Source: tests/integration/raw_fixtures_test.go symbol stripStagedAuthorization (lines 44-96).
+/// Related fixtures: staged can.native-fixture.v1 JSON inputs under src/fixtures.
+/// Callers: tests/integration/{judge,questions,generation}_test.go direct raw-provider probes.
+/// Disposition: REPLACE_SUPPORT. The Can slice ports the stripping RULES, not
+/// the bytes: which pairs are selected, how the rewrite applies, where it lands.
+/// Protects (this file): only authorization pairs selected, exact lowercase
+/// name match, only two-cell pairs selected, selection applied on all three
+/// direct raw-provider probe variants (judge, questions, generation).
+/// Pair removal and byte preservation live in core-050-rewrite.can; write
+/// placement and the inputs-not-scenarios boundary live in
+/// core-050-layout.can.
+/// Variants: judge, questions and generation direct raw-provider probes.
+/// Environment: none (no gates). Capabilities FILES/NATIVE/SUITE and the
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case auth-strip/selection checks: auth-only, exact-name, two-cell,
+/// per-variant.
+/// Facet map: auth-only pins that every non-authorization pair is kept
+/// (raw_fixtures_test.go:77-82); exact-name pins the cells[0] ==
+/// "authorization" equality gate (line 79), so near-miss names never strip;
+/// two-cell pins the ok && len(cells) == 2 shape gate (same line), so odd
+/// shapes are kept; per-variant pins that the pass runs on all three direct
+/// probes (judge_test.go:142, questions_test.go:274, generation_test.go:204).
+/// BOUNDARY (not this row): stageRawFixtures (landed C049) and
+/// clearStagedFixtureEnvironments (CORE-051, same Go file) are out of scope;
+/// the Go helper stays until its delete_when gates pass
+/// (retirement_eligible=false). Shared old files untouched; retirement is a
+/// later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int variants_stripped
+    bool auth_only
+    bool exact_name
+    bool two_cell
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("auth-strip/selection", "default", "", "offline"), "auth-only" => ok "case auth-strip/selection variant default root auth-only run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("auth-strip/selection", "default", "", "offline"), "auth-only" => ok evidence("auth-only", "true", "true", true, "case auth-strip/selection variant default root auth-only run offline")
+        different: false, true, context("auth-strip/selection", "default", "", "offline"), "auth-only" => failed{"auth-only"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("auth-strip/selection", "default", "", "offline"), "per-variant" => ok evidence("per-variant", "3", "3", true, "case auth-strip/selection variant default root per-variant run offline")
+        different: 2, 3, context("auth-strip/selection", "default", "", "offline"), "per-variant" => failed{"per-variant"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(3, true, true, true)
+        seed_non_auth_stripped: "seed-non-auth-stripped" => ok observation(3, false, true, true)
+        seed_near_name_stripped: "seed-near-name-stripped" => ok observation(3, true, false, true)
+        seed_odd_shape_stripped: "seed-odd-shape-stripped" => ok observation(3, true, true, false)
+        seed_variant_skipped: "seed-variant-skipped" => ok observation(2, true, true, true)
+    match variant_id
+        "seed-non-auth-stripped" => ok observation(3, false, true, true)
+        "seed-near-name-stripped" => ok observation(3, true, false, true)
+        "seed-odd-shape-stripped" => ok observation(3, true, true, false)
+        "seed-variant-skipped" => ok observation(2, true, true, true)
+        _ => ok observation(3, true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m11_050: "m11-050" => ok [check("auth-only", "only authorization pairs are selected for stripping"), check("exact-name", "selection matches the exact lowercase authorization name"), check("two-cell", "only two-cell header pairs are selected"), check("per-variant", "all three direct raw-provider probe variants strip")]
+        other: "nope" => ok []
+    match scope is "m11-050"
+        false => ok []
+        true => ok [check("auth-only", "only authorization pairs are selected for stripping"), check("exact-name", "selection matches the exact lowercase authorization name"), check("two-cell", "only two-cell header pairs are selected"), check("per-variant", "all three direct raw-provider probe variants strip")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "auth-strip/selection" => ok [expected_check("auth-only", "true"), expected_check("exact-name", "true"), expected_check("two-cell", "true"), expected_check("per-variant", "3")]
+        unknown: "nope" => ok []
+    match case is "auth-strip/selection"
+        false => ok []
+        true => ok [expected_check("auth-only", "true"), expected_check("exact-name", "true"), expected_check("two-cell", "true"), expected_check("per-variant", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("auth-strip/selection", "default", "", "offline") => ok
+        seed_non_auth_stripped: context("auth-strip/selection", "seed-non-auth-stripped", "", "offline") => failed{"auth-only"}
+        seed_near_name_stripped: context("auth-strip/selection", "seed-near-name-stripped", "", "offline") => failed{"exact-name"}
+        seed_odd_shape_stripped: context("auth-strip/selection", "seed-odd-shape-stripped", "", "offline") => failed{"two-cell"}
+        seed_variant_skipped: context("auth-strip/selection", "seed-variant-skipped", "", "offline") => failed{"per-variant"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.auth_only, true, c, "auth-only")
+            failed
+            ok evidence auth_only_evidence => match call require_bool(got.exact_name, true, c, "exact-name")
+                failed
+                ok evidence exact_name_evidence => match call require_bool(got.two_cell, true, c, "two-cell")
+                    failed
+                    ok evidence two_cell_evidence => match call require_int(got.variants_stripped, 3, c, "per-variant")
+                        failed
+                        ok evidence per_variant_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m11_050: "m11-050" => ok test_case("auth-strip/selection", ["staging", "m11", "fixtures"], [], 120000, [check_ref("auth-only"), check_ref("exact-name"), check_ref("two-cell"), check_ref("per-variant")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m11-050"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("auth-strip/selection", ["staging", "m11", "fixtures"], [], 120000, [check_ref("auth-only"), check_ref("exact-name"), check_ref("two-cell"), check_ref("per-variant")], callable case_body)

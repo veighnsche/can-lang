@@ -1,0 +1,158 @@
+package m11core050layout
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M11 CORE-050 "staged authorization strip: layout (in-place rewrite, no extras, source pristine)".
+/// Source: tests/integration/raw_fixtures_test.go symbol stripStagedAuthorization (lines 44-96).
+/// Related fixtures: staged can.native-fixture.v1 JSON inputs under src/fixtures.
+/// Callers: tests/integration/{judge,questions,generation}_test.go direct raw-provider probes.
+/// Disposition: REPLACE_SUPPORT. The Can slice ports the stripping RULES, not
+/// the bytes: which pairs are selected, how the rewrite applies, where it lands.
+/// Protects (this file): stripped fixtures rewritten at the same staged path,
+/// only fixtures that lost a pair rewritten (no sibling or stray paths),
+/// committed fixture sources untouched, and rewritten fixtures written with
+/// mode 0600.
+/// Pair selection lives in core-050-selection.can; pair removal and byte
+/// preservation live in core-050-rewrite.can.
+/// Variants: judge, questions and generation direct raw-provider probes.
+/// Environment: none (no gates). Capabilities FILES/NATIVE/SUITE and the
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case auth-strip/layout checks: same-path, no-extra-writes,
+/// source-pristine, mode-restricted.
+/// Facet map: same-path pins the in-place os.WriteFile(path, ...)
+/// destination (raw_fixtures_test.go:92), so entry names and the staged
+/// directory carry through unchanged; no-extra-writes pins that only staged
+/// .json fixtures that lost a pair are rewritten (dirs and non-.json
+/// entries skipped at lines 51-54, no-op fixtures skipped at lines 84-86,
+/// no sibling or stray paths); source-pristine pins that writes land under
+/// the staged root's src/fixtures only (lines 46, 55), leaving the committed
+/// compiler/testdata sources untouched; mode-restricted pins the 0600 write
+/// mode (line 92).
+/// BOUNDARY (not this row): stageRawFixtures (landed C049) and
+/// clearStagedFixtureEnvironments (CORE-051, same Go file) are out of scope;
+/// the Go helper stays until its delete_when gates pass
+/// (retirement_eligible=false). Shared old files untouched; retirement is a
+/// later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool same_path
+    bool no_extra_writes
+    bool source_pristine
+    bool mode_restricted
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("auth-strip/layout", "default", "", "offline"), "same-path" => ok "case auth-strip/layout variant default root same-path run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("auth-strip/layout", "default", "", "offline"), "same-path" => ok evidence("same-path", "true", "true", true, "case auth-strip/layout variant default root same-path run offline")
+        different: false, true, context("auth-strip/layout", "default", "", "offline"), "same-path" => failed{"same-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, true, true)
+        seed_moved: "seed-moved" => ok observation(false, true, true, true)
+        seed_extra_write: "seed-extra-write" => ok observation(true, false, true, true)
+        seed_source_mutated: "seed-source-mutated" => ok observation(true, true, false, true)
+        seed_mode_open: "seed-mode-open" => ok observation(true, true, true, false)
+        seed_nothing_rewritten: "seed-nothing-rewritten" => ok observation(false, false, true, true)
+    match variant_id
+        "seed-moved" => ok observation(false, true, true, true)
+        "seed-extra-write" => ok observation(true, false, true, true)
+        "seed-source-mutated" => ok observation(true, true, false, true)
+        "seed-mode-open" => ok observation(true, true, true, false)
+        "seed-nothing-rewritten" => ok observation(false, false, true, true)
+        _ => ok observation(true, true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m11_050: "m11-050" => ok [check("same-path", "stripped fixtures are rewritten at the same staged path"), check("no-extra-writes", "only fixtures that lost a pair are rewritten"), check("source-pristine", "committed fixture sources are untouched"), check("mode-restricted", "rewritten fixtures are written with mode 0600")]
+        other: "nope" => ok []
+    match scope is "m11-050"
+        false => ok []
+        true => ok [check("same-path", "stripped fixtures are rewritten at the same staged path"), check("no-extra-writes", "only fixtures that lost a pair are rewritten"), check("source-pristine", "committed fixture sources are untouched"), check("mode-restricted", "rewritten fixtures are written with mode 0600")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "auth-strip/layout" => ok [expected_check("same-path", "true"), expected_check("no-extra-writes", "true"), expected_check("source-pristine", "true"), expected_check("mode-restricted", "true")]
+        unknown: "nope" => ok []
+    match case is "auth-strip/layout"
+        false => ok []
+        true => ok [expected_check("same-path", "true"), expected_check("no-extra-writes", "true"), expected_check("source-pristine", "true"), expected_check("mode-restricted", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("auth-strip/layout", "default", "", "offline") => ok
+        seed_moved: context("auth-strip/layout", "seed-moved", "", "offline") => failed{"same-path"}
+        seed_extra_write: context("auth-strip/layout", "seed-extra-write", "", "offline") => failed{"no-extra-writes"}
+        seed_source_mutated: context("auth-strip/layout", "seed-source-mutated", "", "offline") => failed{"source-pristine"}
+        seed_mode_open: context("auth-strip/layout", "seed-mode-open", "", "offline") => failed{"mode-restricted"}
+        seed_nothing_rewritten: context("auth-strip/layout", "seed-nothing-rewritten", "", "offline") => failed{"same-path"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.same_path, true, c, "same-path")
+            failed
+            ok evidence same_path_evidence => match call require_bool(got.no_extra_writes, true, c, "no-extra-writes")
+                failed
+                ok evidence no_extra_writes_evidence => match call require_bool(got.source_pristine, true, c, "source-pristine")
+                    failed
+                    ok evidence source_pristine_evidence => match call require_bool(got.mode_restricted, true, c, "mode-restricted")
+                        failed
+                        ok evidence mode_restricted_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m11_050: "m11-050" => ok test_case("auth-strip/layout", ["staging", "m11", "fixtures"], [], 120000, [check_ref("same-path"), check_ref("no-extra-writes"), check_ref("source-pristine"), check_ref("mode-restricted")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m11-050"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("auth-strip/layout", ["staging", "m11", "fixtures"], [], 120000, [check_ref("same-path"), check_ref("no-extra-writes"), check_ref("source-pristine"), check_ref("mode-restricted")], callable case_body)
