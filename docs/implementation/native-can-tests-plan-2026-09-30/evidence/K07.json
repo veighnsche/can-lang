@@ -218,5 +218,187 @@
   "status": "active",
   "task_id": "K07",
   "writing_owner": "browser",
-  "acceptance_rule": "Slice receipts never complete a parent or override task/row start_after, accept_after, conditional or actual-facet gates."
+  "acceptance_rule": "Slice receipts never complete a parent or override task/row start_after, accept_after, conditional or actual-facet gates.",
+  "subdeliveries": {
+    "admission-adapter": {
+      "status": "complete",
+      "executor": "k07-admission-adapter (Muse Spark)",
+      "writing_owner": "browser",
+      "task_id": "K07",
+      "parent_task_id": "K07",
+      "slice_id": "admission-adapter",
+      "row_or_file_slice": "lane-plan K07 admission adapter slice: tools/runtime/test-services/browser-driver/admission.ts + admission-check.ts after the observer receipt-contract seal",
+      "start_prerequisite_receipts": [
+        "P01 complete",
+        "P12 complete (evidence/P12.json)",
+        "K07 independent-observer slice accepted (commit 763ce130; sealed Go receipt contract with the lost flag)"
+      ],
+      "acceptance_prerequisite_receipts": [],
+      "commits": [
+        "50e04741283b3687f499262c80d9297303bf18f0"
+      ],
+      "changed_paths": [
+        "tools/runtime/test-services/browser-driver/admission.ts",
+        "tools/runtime/test-services/browser-driver/admission-check.ts",
+        "docs/implementation/native-can-tests-plan-2026-09-30/evidence/K07.json"
+      ],
+      "commands_with_deadlines_and_results": [
+        {
+          "command": "bun tools/runtime/test-services/browser-driver/admission-check.ts",
+          "deadline": "120s",
+          "result": "18/18 pass (13 pre-existing checks retained green + 5 new parity pins)"
+        },
+        {
+          "command": "bun run lint:fix:runtime",
+          "deadline": "180s",
+          "result": "0 warnings, 0 errors (350 files)"
+        },
+        {
+          "command": "bun run format:runtime + bun run format:check:runtime",
+          "deadline": "120s",
+          "result": "all matched files correctly formatted (349 files)"
+        },
+        {
+          "command": "bun run check:runtime (lint + format:check + tsc -p tsconfig.runtime.json)",
+          "deadline": "300s",
+          "result": "all green; tsc clean"
+        },
+        {
+          "command": "git status --porcelain (slice scope check)",
+          "deadline": "60s",
+          "result": "only the two owned adapter files modified by this slice; all Go files untouched; no commit (per slice rules)"
+        }
+      ],
+      "identities": {
+        "reference": "tools/native-test-owner/host/browser_observer/observer.go at the sealed contract (READ-ONLY; mirrored lost flag, interrupt capacity pre-check, AttestLaunch name-validation order)",
+        "owner": "owner-n (string identity in the TS typed adapter; the Go mirror uses Owner{PID, StartToken})",
+        "candidate": null,
+        "suite": "bounded local self-check only; in-memory doubles; no browser, process, flags, env, sampling, or I/O",
+        "artifact": null,
+        "host_profile": "darwin arm64 local bootstrap only; no qualified host profile claimed",
+        "observer": "BrowserObserverService in-memory double (TS typed admission adapter)"
+      },
+      "coverage": {
+        "case_check_ids": [
+          "lost-flag-seals-unknown-after-full-observation (mirrors Go TestLossWithFullyObservedTicksSealsUnknown)",
+          "lost-continuity-rejects",
+          "wrong-identity-rejects-everywhere",
+          "false-completeness-rejects",
+          "refusal-precedes-effect",
+          "13 pre-existing admission checks retained green"
+        ],
+        "retained_facets": [
+          "owned-scope admission; opaque minted tokens verified by lookup; digest-only frozen facts",
+          "interval through confirmed disposal; dead driver noted, never sealing",
+          "gap/unknown keys; single-shot corrections journaled in order",
+          "interruption suspends; loss forces unknown even for fully observed ticks (new lost flag)",
+          "only verified closed gapless attestation judges; forbidden proofs reject",
+          "every failure names its layer; closed 18-code vocabulary unchanged"
+        ],
+        "variants_and_environments": [
+          "bun on darwin arm64, in-memory only, small bounded constants"
+        ],
+        "unrun_or_blocked": [
+          "live host-dependent controls (qualified profile + Q task)",
+          "QB0 integrated launch/host-effect/service-death qualification"
+        ]
+      },
+      "controls": {
+        "positive": [
+          {
+            "check": "fully-observed-then-lost seals unknown (Go parity mirror)",
+            "result": "pass (lost-flag-seals-unknown-after-full-observation): intervalFacts, disposal receipt, and no-UI verdict all unknown; uiSeen false"
+          },
+          {
+            "check": "interval facts and the honest unknown-seal stay available after loss; pre-loss correction journal survives",
+            "result": "pass (lost-continuity-rejects): c1 intact with correction origin; receipt carries unknown + corrections:1; disposal receipt reads back"
+          },
+          {
+            "check": "owned interval still seals clean after the full wrong/missing identity probe battery",
+            "result": "pass (wrong-identity-rejects-everywhere): refused probes mutate nothing; final seal unknown:false"
+          },
+          {
+            "check": "refused interrupt at tick capacity mutates nothing; scope stays open and admitting",
+            "result": "pass (refusal-precedes-effect): second launch admits, observation continues, tick stays open"
+          },
+          {
+            "check": "all 13 pre-existing admission checks",
+            "result": "pass; contract preserved"
+          }
+        ],
+        "seeded_defect": [
+          {
+            "check": "post-loss observe/endTick/noteDriverDeath/publishCorrection/markUnknown/attestation/token read",
+            "result": "all refuse observer-lost; post-loss admitLaunch refuses no-observer (lost-continuity-rejects)"
+          },
+          {
+            "check": "foreign owner on seal/attestation/token/tick/correction-log/disposal-receipt/close/interrupt/resume/lose",
+            "result": "all refuse wrong-owner; foreign admitLaunch refuses no-observer (wrong-identity-rejects-everywhere)"
+          },
+          {
+            "check": "missing scope/profile on the same entry points",
+            "result": "all refuse unknown-scope (wrong-identity-rejects-everywhere)"
+          },
+          {
+            "check": "flag tamper: unknown/disposed/driver-death flips on a sealed unknown interval; unknown-entry scrub to absent",
+            "result": "all refuse forbidden-proof on digest mismatch (false-completeness-rejects)"
+          },
+          {
+            "check": "gap-bearing interval body with a rebuilt valid digest",
+            "result": "judge still refuses forbidden-proof (false-completeness-rejects)"
+          },
+          {
+            "check": "malformed launch names with no live binding",
+            "result": "refuse unknown-launch before the binding check, matching Go AttestLaunch order (refusal-precedes-effect)"
+          }
+        ],
+        "missing_evidence": [
+          {
+            "check": "live host-UI sensor on a qualified host profile",
+            "result": "not run; waits for the qualified profile + Q task"
+          },
+          {
+            "check": "QB0 actual browser launch, host effects, and service-death qualification",
+            "result": "not run; mechanism slice only, no integrated credit"
+          }
+        ]
+      },
+      "resource_and_cleanup_receipts": [
+        "no processes spawned, no temp files, no network, no sleeps; in-memory only, nothing to clean",
+        "bounded: every loop capped by a small constant; suite deadline 120s"
+      ],
+      "correction_registry_head": null,
+      "relevance_decision": null,
+      "retirement_eligible": false,
+      "retirement_commit": null,
+      "reviewer_disposition": "integrator accepted: read admission.ts diff + full 1023-line admission-check.ts; verified all 3 parity claims line-by-line against the sealed Go source (launchRecord.lost set/read sites, InterruptScope pre-mark capacity loop, AttestLaunch name-checks-before-binding), confirmed Go mirror TestLossWithFullyObservedTicksSealsUnknown asserts identical semantics, confirmed 13/13 pre-existing checks retained + 5 new = 18, confirmed EndTick close-then-refuse wedge preserved exactly in both layers. Independently re-ran the driver (18/18), Go observer package (ok), and bun run check:runtime (clean). parity_gaps_remaining:[] is bounded to the 18 checked behaviours plus the disclosed by-design identity-representation difference; no broader Go/TS audit claimed. Parent K07 stays active.",
+      "limitations": [
+        "The TS adapter is typed in-memory interval mechanics plus the admission gate; the live observation channel, child process, and fsync journal live in the Go mirror.",
+        "Owner identity representation differs by layer by design (TS string vs Go Owner{PID, StartToken}); scopeDigest derivation differs accordingly. All sealed behavioral semantics match.",
+        "EndTick at tick capacity closes the open tick before refusing (tick wedged until dispose); preserved exactly as in the sealed Go contract, not fixed.",
+        "Round trips carry no deadline in the Go child channel (noted in the observer slice); the TS adapter has no transport and is unaffected."
+      ],
+      "path_reservation": {
+        "writer": "k07-admission-adapter",
+        "exact_paths": [
+          "tools/runtime/test-services/browser-driver/admission.ts",
+          "tools/runtime/test-services/browser-driver/admission-check.ts"
+        ],
+        "handoff_from": "independent-observer seal (763ce130)",
+        "released_at": null
+      },
+      "source_slice_status": "complete",
+      "local_control_slice_status": "complete",
+      "promotion_status": "planned",
+      "campaign": {
+        "manifest": null,
+        "id": null,
+        "job_registered_before_execution": null,
+        "append_only_index": null,
+        "attempt_id": null
+      },
+      "parity_gaps_remaining": [],
+      "acceptance_rule": "Slice receipts never complete a parent or override task/row start_after, accept_after, conditional or actual-facet gates."
+    }
+  }
 }
