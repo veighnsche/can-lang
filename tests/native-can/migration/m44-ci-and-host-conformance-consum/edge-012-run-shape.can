@@ -1,0 +1,404 @@
+package m44edge012run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M44 EDGE-012 "Linux
+/// provisioning/launcher" postgres
+/// plus done pact.
+/// Source:
+/// distribution/linux/run.sh
+/// symbol "Linux
+/// provisioning/launcher" (L48-70):
+/// pinned postgres leg plus done
+/// plus report dirs.
+/// Disposition: rewire (same row pact
+/// as the provision slice; this file
+/// owns the postgres plus done
+/// spellings).
+/// Protects (this file): postgres
+/// provision plus readiness plus pg
+/// call plus done plus tallies that
+/// bound the leg.
+/// ADAPTATION (noted, plus source
+/// lines): name pins hold docker
+/// spellings; net pins hold network
+/// bytes; probe pins hold pg bytes;
+/// count pins hold ints tallied
+/// from L49-60.
+/// pg-head pins --- postgres leg
+/// (L48); prov-var pins PROV_PG
+/// (L49 plus L50 plus L56 plus L59);
+/// pg-qualifier pins
+/// postgresQualificationImage (L49);
+/// pg-digest pins amd64ManifestDigest
+/// (L49); pull-verb pins docker pull
+/// (L50); pg-image pins
+/// docker.io/library/postgres:17@
+/// (L50 plus L56 plus L59);
+/// null-sink pins >/dev/null (eight
+/// hits file-wide); net-create pins
+/// docker network create (L51);
+/// smoke-net pins can-t19-smoke
+/// (five hits file-wide);
+/// stderr-merge pins 2>&1 (L51 plus
+/// L52 twice plus L60); true-guard
+/// pins || true (L51 plus L52 twice);
+/// cleanup-fn pins cleanup() (L52);
+/// pg-name pins can-t19-pg (L52 plus
+/// L54 plus L60 plus L65);
+/// trap-line pins trap cleanup EXIT
+/// (L53); run-detached pins docker
+/// run -d (L54); net-flag pins
+/// --network can-t19-smoke (L54 plus
+/// L58 plus L63); db-env pins
+/// POSTGRES_DB=smoke (L55; second -e
+/// var on L55 noted but not pinned);
+/// retry-bound pins seq 1 60 (L57);
+/// ready-probe pins pg_isready (L60);
+/// pg-script pins
+/// /src/distribution/linux/postgres.sh
+/// (L66); db-url-var pins
+/// DATABASE_URL (L65; name only, no
+/// value pinned); done-head pins
+/// --- done (L68); reports-line pins
+/// reports: plus gaps plus
+/// $WORK/reports (L70);
+/// pg-ref-count pins int (3) from
+/// L50 plus L56 plus L59;
+/// stderr-merge-count pins int (4)
+/// from L51 plus L52 twice plus L60;
+/// ready-retry-bound pins int (60)
+/// from L57.
+/// Facet map (leg then done order):
+/// pg-head, prov-var,
+/// pg-qualifier, pg-digest,
+/// pull-verb, pg-image, null-sink,
+/// net-create, smoke-net,
+/// stderr-merge, true-guard,
+/// cleanup-fn, pg-name, trap-line,
+/// run-detached, net-flag, db-env,
+/// retry-bound, ready-probe,
+/// pg-script, db-url-var,
+/// done-head, reports-line,
+/// pg-ref-count,
+/// stderr-merge-count,
+/// ready-retry-bound.
+/// The provision pins live in
+/// edge-012-base-semantics.can; the
+/// build plus smoke pins live in
+/// edge-012-roots-green.can.
+/// Variants: none listed (row lists
+/// zero variants).
+/// Environment: no gates listed (binds
+/// at P23; no live run now).
+/// Logical gates ENV/WORK/PROC bind
+/// at P23; no live run now.
+/// Timeout 120000ms is the offline
+/// default bound (binds at P23 like
+/// the M31 no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// accept gate unmet).
+/// Intended consumed report: M41
+/// LIFE-012 plus LIFE-013 Linux
+/// slices (no qualified report yet;
+/// P23/QD1/QN1 unmet).
+/// Rewire stays blocked; run.sh stays
+/// intact; no call retired.
+/// Related:
+/// distribution/linux/smoke.sh
+/// (invoked by the caller; owned
+/// outside M44).
+/// Case linux/launcher-postgres-done
+/// checks: pg-head, prov-var,
+/// pg-qualifier, pg-digest,
+/// pull-verb, pg-image, null-sink,
+/// net-create, smoke-net,
+/// stderr-merge, true-guard,
+/// cleanup-fn, pg-name, trap-line,
+/// run-detached, net-flag, db-env,
+/// retry-bound, ready-probe,
+/// pg-script, db-url-var,
+/// done-head, reports-line,
+/// pg-ref-count,
+/// stderr-merge-count,
+/// ready-retry-bound.
+/// Shared old files intact; retirement
+/// is a later integrator choice.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str pg_head
+    str prov_var
+    str pg_qualifier
+    str pg_digest
+    str pull_verb
+    str pg_image
+    str null_sink
+    str net_create
+    str smoke_net
+    str stderr_merge
+    str true_guard
+    str cleanup_fn
+    str pg_name
+    str trap_line
+    str run_detached
+    str net_flag
+    str db_env
+    str retry_bound
+    str ready_probe
+    str pg_script
+    str db_url_var
+    str done_head
+    str reports_line
+    int pg_ref_count
+    int stderr_merge_count
+    int ready_retry_bound
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("linux/launcher-postgres-done", "default", "", "offline"), "pg-head" => ok "case linux/launcher-postgres-done variant default root pg-head run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("linux/launcher-postgres-done", "default", "", "offline"), "pg-head" => ok evidence("pg-head", "true", "true", true, "case linux/launcher-postgres-done variant default root pg-head run offline")
+        different: false, true, context("linux/launcher-postgres-done", "default", "", "offline"), "pg-head" => failed{"pg-head"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("linux/launcher-postgres-done", "default", "", "offline"), "pg-ref-count" => ok evidence("pg-ref-count", "3", "3", true, "case linux/launcher-postgres-done variant default root pg-ref-count run offline")
+        different: 2, 3, context("linux/launcher-postgres-done", "default", "", "offline"), "pg-ref-count" => failed{"pg-ref-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "--- postgres leg", "--- postgres leg", context("linux/launcher-postgres-done", "default", "", "offline"), "pg-head" => ok evidence("pg-head", "--- postgres leg", "--- postgres leg", true, "case linux/launcher-postgres-done variant default root pg-head run offline")
+        different: "--- postgres leg_2", "--- postgres leg", context("linux/launcher-postgres-done", "default", "", "offline"), "pg-head" => failed{"pg-head"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_pg_head: "seed-pg-head-drift" => ok observation("--- postgres leg_2", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_prov_var: "seed-prov-var-drift" => ok observation("--- postgres leg", "PROV_PG_2", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_pg_qualifier: "seed-pg-qualifier-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage_2", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_pg_digest: "seed-pg-digest-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest_2", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_pull_verb: "seed-pull-verb-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull_2", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_pg_image: "seed-pg-image-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@_2", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_null_sink: "seed-null-sink-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null_2", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_net_create: "seed-net-create-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create_2", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_smoke_net: "seed-smoke-net-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke_2", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_stderr_merge: "seed-stderr-merge-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1_2", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_true_guard: "seed-true-guard-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true_2", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_cleanup_fn: "seed-cleanup-fn-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()_2", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_pg_name: "seed-pg-name-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg_2", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_trap_line: "seed-trap-line-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT_2", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_run_detached: "seed-run-detached-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d_2", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_net_flag: "seed-net-flag-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke_2", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_db_env: "seed-db-env-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke_2", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_retry_bound: "seed-retry-bound-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60_2", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_ready_probe: "seed-ready-probe-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready_2", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_pg_script: "seed-pg-script-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh_2", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_db_url_var: "seed-db-url-var-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL_2", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        seed_done_head: "seed-done-head-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done_2", "reports:   $WORK/reports", 3, 4, 60)
+        seed_reports_line: "seed-reports-line-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports_2", 3, 4, 60)
+        seed_pg_ref_count: "seed-pg-ref-count-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 2, 4, 60)
+        seed_stderr_merge_count: "seed-stderr-merge-count-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 3, 60)
+        seed_ready_retry_bound: "seed-ready-retry-bound-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 59)
+    match variant_id
+        "seed-pg-head-drift" => ok observation("--- postgres leg_2", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-prov-var-drift" => ok observation("--- postgres leg", "PROV_PG_2", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-pg-qualifier-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage_2", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-pg-digest-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest_2", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-pull-verb-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull_2", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-pg-image-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@_2", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-null-sink-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null_2", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-net-create-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create_2", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-smoke-net-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke_2", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-stderr-merge-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1_2", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-true-guard-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true_2", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-cleanup-fn-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()_2", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-pg-name-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg_2", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-trap-line-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT_2", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-run-detached-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d_2", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-net-flag-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke_2", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-db-env-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke_2", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-retry-bound-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60_2", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-ready-probe-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready_2", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-pg-script-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh_2", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-db-url-var-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL_2", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-done-head-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done_2", "reports:   $WORK/reports", 3, 4, 60)
+        "seed-reports-line-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports_2", 3, 4, 60)
+        "seed-pg-ref-count-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 2, 4, 60)
+        "seed-stderr-merge-count-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 3, 60)
+        "seed-ready-retry-bound-drift" => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 59)
+        _ => ok observation("--- postgres leg", "PROV_PG", "postgresQualificationImage", "amd64ManifestDigest", "docker pull", "docker.io/library/postgres:17@", ">/dev/null", "docker network create", "can-t19-smoke", "2>&1", "|| true", "cleanup()", "can-t19-pg", "trap cleanup EXIT", "docker run -d", "--network can-t19-smoke", "POSTGRES_DB=smoke", "seq 1 60", "pg_isready", "/src/distribution/linux/postgres.sh", "DATABASE_URL", "--- done", "reports:   $WORK/reports", 3, 4, 60)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e012: "m44-e012" => ok [check("pg-head", "pg head keeps its bytes"), check("prov-var", "prov var keeps its spelling"), check("pg-qualifier", "pg qualifier keeps its bytes"), check("pg-digest", "pg digest keeps its bytes"), check("pull-verb", "pull verb keeps its bytes"), check("pg-image", "pg image keeps its bytes"), check("null-sink", "null sink keeps its bytes"), check("net-create", "net create keeps its bytes"), check("smoke-net", "smoke net keeps its bytes"), check("stderr-merge", "stderr merge keeps its bytes"), check("true-guard", "true guard keeps its bytes"), check("cleanup-fn", "cleanup fn keeps its spelling"), check("pg-name", "pg name keeps its bytes"), check("trap-line", "trap line keeps its bytes"), check("run-detached", "run detached keeps its bytes"), check("net-flag", "net flag keeps its bytes"), check("db-env", "db env keeps its bytes"), check("retry-bound", "retry bound keeps its bytes"), check("ready-probe", "ready probe keeps its spelling"), check("pg-script", "pg script keeps its bytes"), check("db-url-var", "db url var keeps its spelling"), check("done-head", "done head keeps its bytes"), check("reports-line", "reports line keeps its bytes"), check("pg-ref-count", "three pg refs exist"), check("stderr-merge-count", "four stderr merges exist"), check("ready-retry-bound", "retry bound is sixty")]
+        other: "nope" => ok []
+    match scope is "m44-e012"
+        false => ok []
+        true => ok [check("pg-head", "pg head keeps its bytes"), check("prov-var", "prov var keeps its spelling"), check("pg-qualifier", "pg qualifier keeps its bytes"), check("pg-digest", "pg digest keeps its bytes"), check("pull-verb", "pull verb keeps its bytes"), check("pg-image", "pg image keeps its bytes"), check("null-sink", "null sink keeps its bytes"), check("net-create", "net create keeps its bytes"), check("smoke-net", "smoke net keeps its bytes"), check("stderr-merge", "stderr merge keeps its bytes"), check("true-guard", "true guard keeps its bytes"), check("cleanup-fn", "cleanup fn keeps its spelling"), check("pg-name", "pg name keeps its bytes"), check("trap-line", "trap line keeps its bytes"), check("run-detached", "run detached keeps its bytes"), check("net-flag", "net flag keeps its bytes"), check("db-env", "db env keeps its bytes"), check("retry-bound", "retry bound keeps its bytes"), check("ready-probe", "ready probe keeps its spelling"), check("pg-script", "pg script keeps its bytes"), check("db-url-var", "db url var keeps its spelling"), check("done-head", "done head keeps its bytes"), check("reports-line", "reports line keeps its bytes"), check("pg-ref-count", "three pg refs exist"), check("stderr-merge-count", "four stderr merges exist"), check("ready-retry-bound", "retry bound is sixty")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "linux/launcher-postgres-done" => ok [expected_check("pg-head", "--- postgres leg"), expected_check("prov-var", "PROV_PG"), expected_check("pg-qualifier", "postgresQualificationImage"), expected_check("pg-digest", "amd64ManifestDigest"), expected_check("pull-verb", "docker pull"), expected_check("pg-image", "docker.io/library/postgres:17@"), expected_check("null-sink", ">/dev/null"), expected_check("net-create", "docker network create"), expected_check("smoke-net", "can-t19-smoke"), expected_check("stderr-merge", "2>&1"), expected_check("true-guard", "|| true"), expected_check("cleanup-fn", "cleanup()"), expected_check("pg-name", "can-t19-pg"), expected_check("trap-line", "trap cleanup EXIT"), expected_check("run-detached", "docker run -d"), expected_check("net-flag", "--network can-t19-smoke"), expected_check("db-env", "POSTGRES_DB=smoke"), expected_check("retry-bound", "seq 1 60"), expected_check("ready-probe", "pg_isready"), expected_check("pg-script", "/src/distribution/linux/postgres.sh"), expected_check("db-url-var", "DATABASE_URL"), expected_check("done-head", "--- done"), expected_check("reports-line", "reports:   $WORK/reports"), expected_check("pg-ref-count", "3"), expected_check("stderr-merge-count", "4"), expected_check("ready-retry-bound", "60")]
+        unknown: "nope" => ok []
+    match case is "linux/launcher-postgres-done"
+        false => ok []
+        true => ok [expected_check("pg-head", "--- postgres leg"), expected_check("prov-var", "PROV_PG"), expected_check("pg-qualifier", "postgresQualificationImage"), expected_check("pg-digest", "amd64ManifestDigest"), expected_check("pull-verb", "docker pull"), expected_check("pg-image", "docker.io/library/postgres:17@"), expected_check("null-sink", ">/dev/null"), expected_check("net-create", "docker network create"), expected_check("smoke-net", "can-t19-smoke"), expected_check("stderr-merge", "2>&1"), expected_check("true-guard", "|| true"), expected_check("cleanup-fn", "cleanup()"), expected_check("pg-name", "can-t19-pg"), expected_check("trap-line", "trap cleanup EXIT"), expected_check("run-detached", "docker run -d"), expected_check("net-flag", "--network can-t19-smoke"), expected_check("db-env", "POSTGRES_DB=smoke"), expected_check("retry-bound", "seq 1 60"), expected_check("ready-probe", "pg_isready"), expected_check("pg-script", "/src/distribution/linux/postgres.sh"), expected_check("db-url-var", "DATABASE_URL"), expected_check("done-head", "--- done"), expected_check("reports-line", "reports:   $WORK/reports"), expected_check("pg-ref-count", "3"), expected_check("stderr-merge-count", "4"), expected_check("ready-retry-bound", "60")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("linux/launcher-postgres-done", "default", "", "offline") => ok
+        seed_pg_head: context("linux/launcher-postgres-done", "seed-pg-head-drift", "", "offline") => failed{"pg-head"}
+        seed_prov_var: context("linux/launcher-postgres-done", "seed-prov-var-drift", "", "offline") => failed{"prov-var"}
+        seed_pg_qualifier: context("linux/launcher-postgres-done", "seed-pg-qualifier-drift", "", "offline") => failed{"pg-qualifier"}
+        seed_pg_digest: context("linux/launcher-postgres-done", "seed-pg-digest-drift", "", "offline") => failed{"pg-digest"}
+        seed_pull_verb: context("linux/launcher-postgres-done", "seed-pull-verb-drift", "", "offline") => failed{"pull-verb"}
+        seed_pg_image: context("linux/launcher-postgres-done", "seed-pg-image-drift", "", "offline") => failed{"pg-image"}
+        seed_null_sink: context("linux/launcher-postgres-done", "seed-null-sink-drift", "", "offline") => failed{"null-sink"}
+        seed_net_create: context("linux/launcher-postgres-done", "seed-net-create-drift", "", "offline") => failed{"net-create"}
+        seed_smoke_net: context("linux/launcher-postgres-done", "seed-smoke-net-drift", "", "offline") => failed{"smoke-net"}
+        seed_stderr_merge: context("linux/launcher-postgres-done", "seed-stderr-merge-drift", "", "offline") => failed{"stderr-merge"}
+        seed_true_guard: context("linux/launcher-postgres-done", "seed-true-guard-drift", "", "offline") => failed{"true-guard"}
+        seed_cleanup_fn: context("linux/launcher-postgres-done", "seed-cleanup-fn-drift", "", "offline") => failed{"cleanup-fn"}
+        seed_pg_name: context("linux/launcher-postgres-done", "seed-pg-name-drift", "", "offline") => failed{"pg-name"}
+        seed_trap_line: context("linux/launcher-postgres-done", "seed-trap-line-drift", "", "offline") => failed{"trap-line"}
+        seed_run_detached: context("linux/launcher-postgres-done", "seed-run-detached-drift", "", "offline") => failed{"run-detached"}
+        seed_net_flag: context("linux/launcher-postgres-done", "seed-net-flag-drift", "", "offline") => failed{"net-flag"}
+        seed_db_env: context("linux/launcher-postgres-done", "seed-db-env-drift", "", "offline") => failed{"db-env"}
+        seed_retry_bound: context("linux/launcher-postgres-done", "seed-retry-bound-drift", "", "offline") => failed{"retry-bound"}
+        seed_ready_probe: context("linux/launcher-postgres-done", "seed-ready-probe-drift", "", "offline") => failed{"ready-probe"}
+        seed_pg_script: context("linux/launcher-postgres-done", "seed-pg-script-drift", "", "offline") => failed{"pg-script"}
+        seed_db_url_var: context("linux/launcher-postgres-done", "seed-db-url-var-drift", "", "offline") => failed{"db-url-var"}
+        seed_done_head: context("linux/launcher-postgres-done", "seed-done-head-drift", "", "offline") => failed{"done-head"}
+        seed_reports_line: context("linux/launcher-postgres-done", "seed-reports-line-drift", "", "offline") => failed{"reports-line"}
+        seed_pg_ref_count: context("linux/launcher-postgres-done", "seed-pg-ref-count-drift", "", "offline") => failed{"pg-ref-count"}
+        seed_stderr_merge_count: context("linux/launcher-postgres-done", "seed-stderr-merge-count-drift", "", "offline") => failed{"stderr-merge-count"}
+        seed_ready_retry_bound: context("linux/launcher-postgres-done", "seed-ready-retry-bound-drift", "", "offline") => failed{"ready-retry-bound"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.pg_head, "--- postgres leg", c, "pg-head")
+            failed
+            ok evidence pg_head_evidence => match call require_text(got.prov_var, "PROV_PG", c, "prov-var")
+                failed
+                ok evidence prov_var_evidence => match call require_text(got.pg_qualifier, "postgresQualificationImage", c, "pg-qualifier")
+                    failed
+                    ok evidence pg_qualifier_evidence => match call require_text(got.pg_digest, "amd64ManifestDigest", c, "pg-digest")
+                        failed
+                        ok evidence pg_digest_evidence => match call require_text(got.pull_verb, "docker pull", c, "pull-verb")
+                            failed
+                            ok evidence pull_verb_evidence => match call require_text(got.pg_image, "docker.io/library/postgres:17@", c, "pg-image")
+                                failed
+                                ok evidence pg_image_evidence => match call require_text(got.null_sink, ">/dev/null", c, "null-sink")
+                                    failed
+                                    ok evidence null_sink_evidence => match call require_text(got.net_create, "docker network create", c, "net-create")
+                                        failed
+                                        ok evidence net_create_evidence => match call require_text(got.smoke_net, "can-t19-smoke", c, "smoke-net")
+                                            failed
+                                            ok evidence smoke_net_evidence => match call require_text(got.stderr_merge, "2>&1", c, "stderr-merge")
+                                                failed
+                                                ok evidence stderr_merge_evidence => match call require_text(got.true_guard, "|| true", c, "true-guard")
+                                                    failed
+                                                    ok evidence true_guard_evidence => match call require_text(got.cleanup_fn, "cleanup()", c, "cleanup-fn")
+                                                        failed
+                                                        ok evidence cleanup_fn_evidence => match call require_text(got.pg_name, "can-t19-pg", c, "pg-name")
+                                                            failed
+                                                            ok evidence pg_name_evidence => match call require_text(got.trap_line, "trap cleanup EXIT", c, "trap-line")
+                                                                failed
+                                                                ok evidence trap_line_evidence => match call require_text(got.run_detached, "docker run -d", c, "run-detached")
+                                                                    failed
+                                                                    ok evidence run_detached_evidence => match call require_text(got.net_flag, "--network can-t19-smoke", c, "net-flag")
+                                                                        failed
+                                                                        ok evidence net_flag_evidence => match call require_text(got.db_env, "POSTGRES_DB=smoke", c, "db-env")
+                                                                            failed
+                                                                            ok evidence db_env_evidence => match call require_text(got.retry_bound, "seq 1 60", c, "retry-bound")
+                                                                                failed
+                                                                                ok evidence retry_bound_evidence => match call require_text(got.ready_probe, "pg_isready", c, "ready-probe")
+                                                                                    failed
+                                                                                    ok evidence ready_probe_evidence => match call require_text(got.pg_script, "/src/distribution/linux/postgres.sh", c, "pg-script")
+                                                                                        failed
+                                                                                        ok evidence pg_script_evidence => match call require_text(got.db_url_var, "DATABASE_URL", c, "db-url-var")
+                                                                                            failed
+                                                                                            ok evidence db_url_var_evidence => match call require_text(got.done_head, "--- done", c, "done-head")
+                                                                                                failed
+                                                                                                ok evidence done_head_evidence => match call require_text(got.reports_line, "reports:   $WORK/reports", c, "reports-line")
+                                                                                                    failed
+                                                                                                    ok evidence reports_line_evidence => match call require_int(got.pg_ref_count, 3, c, "pg-ref-count")
+                                                                                                        failed
+                                                                                                        ok evidence pg_ref_count_evidence => match call require_int(got.stderr_merge_count, 4, c, "stderr-merge-count")
+                                                                                                            failed
+                                                                                                            ok evidence stderr_merge_count_evidence => match call require_int(got.ready_retry_bound, 60, c, "ready-retry-bound")
+                                                                                                                failed
+                                                                                                                ok evidence ready_retry_bound_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e012: "m44-e012" => ok test_case("linux/launcher-postgres-done", ["linux", "m44"], [], 120000, [check_ref("pg-head"), check_ref("prov-var"), check_ref("pg-qualifier"), check_ref("pg-digest"), check_ref("pull-verb"), check_ref("pg-image"), check_ref("null-sink"), check_ref("net-create"), check_ref("smoke-net"), check_ref("stderr-merge"), check_ref("true-guard"), check_ref("cleanup-fn"), check_ref("pg-name"), check_ref("trap-line"), check_ref("run-detached"), check_ref("net-flag"), check_ref("db-env"), check_ref("retry-bound"), check_ref("ready-probe"), check_ref("pg-script"), check_ref("db-url-var"), check_ref("done-head"), check_ref("reports-line"), check_ref("pg-ref-count"), check_ref("stderr-merge-count"), check_ref("ready-retry-bound")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m44-e012"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("linux/launcher-postgres-done", ["linux", "m44"], [], 120000, [check_ref("pg-head"), check_ref("prov-var"), check_ref("pg-qualifier"), check_ref("pg-digest"), check_ref("pull-verb"), check_ref("pg-image"), check_ref("null-sink"), check_ref("net-create"), check_ref("smoke-net"), check_ref("stderr-merge"), check_ref("true-guard"), check_ref("cleanup-fn"), check_ref("pg-name"), check_ref("trap-line"), check_ref("run-detached"), check_ref("net-flag"), check_ref("db-env"), check_ref("retry-bound"), check_ref("ready-probe"), check_ref("pg-script"), check_ref("db-url-var"), check_ref("done-head"), check_ref("reports-line"), check_ref("pg-ref-count"), check_ref("stderr-merge-count"), check_ref("ready-retry-bound")], callable case_body)
