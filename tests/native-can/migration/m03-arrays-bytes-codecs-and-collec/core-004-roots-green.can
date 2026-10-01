@@ -1,0 +1,251 @@
+package m03core004roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M03 CORE-004 "bundled bytes: roundtrip roots green".
+/// Source: tests/integration/bytes_test.go symbol
+/// TestCurrentBundledBytes.
+/// Related fixtures: compiler/testdata/current/bytes/roundtrip.can
+/// (ground for every root pin below: roundtrip 2, integers 3,
+/// base64_of_text 2, text_of_base64 2, hex_of_text 2, text_of_hex 2,
+/// empty_size 1, captured 1, callable_roundtrip 1, main 1 = 17 roots).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): canlc assert green with passed report and exactly
+/// 17 roots grounded per function in roundtrip.can.
+/// Byte-data preservation facets and offline behavior live in
+/// core-004-byte-preservation.can; the run output/status shape and silent
+/// production entry live in core-004-run-shape.can.
+/// Variants: roundtrip.can fixture.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23).
+/// Case bundled/bytes-roots checks: assert-green, report-passed,
+/// root-count, fixture-name, roundtrip-roots, integers-roots,
+/// base64enc-roots, base64dec-roots, hexenc-roots, hexdec-roots,
+/// empty-roots, captured-roots, callable-roots, main-roots.
+/// Facet map (bytes_test.go legs): assert-green pins the assert leg
+/// (L68-71: exit 0, empty stderr); report-passed/root-count pin the report
+/// leg (L72-75: passed true, 17 assertions); fixture-name grounds the 17
+/// roots in roundtrip.can; roundtrip-roots pins roundtrip (roundtrip.can
+/// L9-10: multibyte "héllo 😀" => ok same, empty "" => ok ""); 
+/// integers-roots pins integers (L21-23: edges [0,255,128] => ok same,
+/// [-1]/[256] => codec::invalid_data byte_range); base64enc-roots pins
+/// base64_of_text (L34-35: sample => ok "aMOpbGxvIPCfmIA=", empty => ok
+/// ""); base64dec-roots pins text_of_base64 (L46-47: sample => ok "héllo
+/// 😀", "QQ" => codec::invalid_data base64); hexenc-roots pins hex_of_text
+/// (L58-59: sample => ok "68c3a96c6c6f20f09f9880", empty => ok "");
+/// hexdec-roots pins text_of_hex (L70-71: uppercase sample => ok "héllo
+/// 😀", "0g" => codec::invalid_data hex); empty-roots pins empty_size
+/// (L80: => ok 0); captured-roots pins captured (L88: empty => ok "");
+/// callable-roots pins callable_roundtrip (L95: sample => ok sample);
+/// main-roots pins main (L106: [] => ok).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int root_count
+    str fixture_name
+    int roundtrip_roots
+    int integers_roots
+    int base64enc_roots
+    int base64dec_roots
+    int hexenc_roots
+    int hexdec_roots
+    int empty_roots
+    int captured_roots
+    int callable_roots
+    int main_roots
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/bytes-roots", "default", "", "offline"), "assert-green" => ok "case bundled/bytes-roots variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/bytes-roots", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case bundled/bytes-roots variant default root assert-green run offline")
+        different: false, true, context("bundled/bytes-roots", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 17, 17, context("bundled/bytes-roots", "default", "", "offline"), "root-count" => ok evidence("root-count", "17", "17", true, "case bundled/bytes-roots variant default root root-count run offline")
+        different: 16, 17, context("bundled/bytes-roots", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "roundtrip.can", "roundtrip.can", context("bundled/bytes-roots", "default", "", "offline"), "fixture-name" => ok evidence("fixture-name", "roundtrip.can", "roundtrip.can", true, "case bundled/bytes-roots variant default root fixture-name run offline")
+        different: "captures.can", "roundtrip.can", context("bundled/bytes-roots", "default", "", "offline"), "fixture-name" => failed{"fixture-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 17, "roundtrip.can", 2, 3, 2, 2, 2, 2, 1, 1, 1, 1)
+        seed_assert_red: "seed-assert-red" => ok observation(false, true, 17, "roundtrip.can", 2, 3, 2, 2, 2, 2, 1, 1, 1, 1)
+        seed_report_red: "seed-report-red" => ok observation(true, false, 17, "roundtrip.can", 2, 3, 2, 2, 2, 2, 1, 1, 1, 1)
+        seed_root_short: "seed-root-short" => ok observation(true, true, 16, "roundtrip.can", 2, 3, 2, 2, 2, 2, 1, 1, 1, 1)
+        seed_fixture_drift: "seed-fixture-drift" => ok observation(true, true, 17, "captures.can", 2, 3, 2, 2, 2, 2, 1, 1, 1, 1)
+        seed_roundtrip_short: "seed-roundtrip-short" => ok observation(true, true, 17, "roundtrip.can", 1, 3, 2, 2, 2, 2, 1, 1, 1, 1)
+        seed_integers_short: "seed-integers-short" => ok observation(true, true, 17, "roundtrip.can", 2, 2, 2, 2, 2, 2, 1, 1, 1, 1)
+        seed_base64enc_short: "seed-base64enc-short" => ok observation(true, true, 17, "roundtrip.can", 2, 3, 1, 2, 2, 2, 1, 1, 1, 1)
+        seed_base64dec_short: "seed-base64dec-short" => ok observation(true, true, 17, "roundtrip.can", 2, 3, 2, 1, 2, 2, 1, 1, 1, 1)
+        seed_hexenc_short: "seed-hexenc-short" => ok observation(true, true, 17, "roundtrip.can", 2, 3, 2, 2, 1, 2, 1, 1, 1, 1)
+        seed_hexdec_short: "seed-hexdec-short" => ok observation(true, true, 17, "roundtrip.can", 2, 3, 2, 2, 2, 1, 1, 1, 1, 1)
+        seed_empty_loss: "seed-empty-loss" => ok observation(true, true, 17, "roundtrip.can", 2, 3, 2, 2, 2, 2, 0, 1, 1, 1)
+        seed_captured_loss: "seed-captured-loss" => ok observation(true, true, 17, "roundtrip.can", 2, 3, 2, 2, 2, 2, 1, 0, 1, 1)
+        seed_callable_loss: "seed-callable-loss" => ok observation(true, true, 17, "roundtrip.can", 2, 3, 2, 2, 2, 2, 1, 1, 0, 1)
+        seed_main_loss: "seed-main-loss" => ok observation(true, true, 17, "roundtrip.can", 2, 3, 2, 2, 2, 2, 1, 1, 1, 0)
+    match variant_id
+        "seed-assert-red" => ok observation(false, true, 17, "roundtrip.can", 2, 3, 2, 2, 2, 2, 1, 1, 1, 1)
+        "seed-report-red" => ok observation(true, false, 17, "roundtrip.can", 2, 3, 2, 2, 2, 2, 1, 1, 1, 1)
+        "seed-root-short" => ok observation(true, true, 16, "roundtrip.can", 2, 3, 2, 2, 2, 2, 1, 1, 1, 1)
+        "seed-fixture-drift" => ok observation(true, true, 17, "captures.can", 2, 3, 2, 2, 2, 2, 1, 1, 1, 1)
+        "seed-roundtrip-short" => ok observation(true, true, 17, "roundtrip.can", 1, 3, 2, 2, 2, 2, 1, 1, 1, 1)
+        "seed-integers-short" => ok observation(true, true, 17, "roundtrip.can", 2, 2, 2, 2, 2, 2, 1, 1, 1, 1)
+        "seed-base64enc-short" => ok observation(true, true, 17, "roundtrip.can", 2, 3, 1, 2, 2, 2, 1, 1, 1, 1)
+        "seed-base64dec-short" => ok observation(true, true, 17, "roundtrip.can", 2, 3, 2, 1, 2, 2, 1, 1, 1, 1)
+        "seed-hexenc-short" => ok observation(true, true, 17, "roundtrip.can", 2, 3, 2, 2, 1, 2, 1, 1, 1, 1)
+        "seed-hexdec-short" => ok observation(true, true, 17, "roundtrip.can", 2, 3, 2, 2, 2, 1, 1, 1, 1, 1)
+        "seed-empty-loss" => ok observation(true, true, 17, "roundtrip.can", 2, 3, 2, 2, 2, 2, 0, 1, 1, 1)
+        "seed-captured-loss" => ok observation(true, true, 17, "roundtrip.can", 2, 3, 2, 2, 2, 2, 1, 0, 1, 1)
+        "seed-callable-loss" => ok observation(true, true, 17, "roundtrip.can", 2, 3, 2, 2, 2, 2, 1, 1, 0, 1)
+        "seed-main-loss" => ok observation(true, true, 17, "roundtrip.can", 2, 3, 2, 2, 2, 2, 1, 1, 1, 0)
+        _ => ok observation(true, true, 17, "roundtrip.can", 2, 3, 2, 2, 2, 2, 1, 1, 1, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m03_004: "m03-004" => ok [check("assert-green", "canlc assert exits 0 with empty stderr"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 17 roots"), check("fixture-name", "root pins ground the roundtrip.can fixture"), check("roundtrip-roots", "roundtrip contributes 2 roots (multibyte + empty)"), check("integers-roots", "integers contributes 3 roots (edges + 2 rejections)"), check("base64enc-roots", "base64_of_text contributes 2 roots (sample + empty)"), check("base64dec-roots", "text_of_base64 contributes 2 roots (sample + bad_padding)"), check("hexenc-roots", "hex_of_text contributes 2 roots (sample + empty)"), check("hexdec-roots", "text_of_hex contributes 2 roots (sample + bad_digit)"), check("empty-roots", "empty_size contributes 1 root (=> ok 0)"), check("captured-roots", "captured contributes 1 root (empty => ok empty)"), check("callable-roots", "callable_roundtrip contributes 1 root (sample => ok sample)"), check("main-roots", "main contributes 1 root ([] => ok)")]
+        other: "nope" => ok []
+    match scope is "m03-004"
+        false => ok []
+        true => ok [check("assert-green", "canlc assert exits 0 with empty stderr"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 17 roots"), check("fixture-name", "root pins ground the roundtrip.can fixture"), check("roundtrip-roots", "roundtrip contributes 2 roots (multibyte + empty)"), check("integers-roots", "integers contributes 3 roots (edges + 2 rejections)"), check("base64enc-roots", "base64_of_text contributes 2 roots (sample + empty)"), check("base64dec-roots", "text_of_base64 contributes 2 roots (sample + bad_padding)"), check("hexenc-roots", "hex_of_text contributes 2 roots (sample + empty)"), check("hexdec-roots", "text_of_hex contributes 2 roots (sample + bad_digit)"), check("empty-roots", "empty_size contributes 1 root (=> ok 0)"), check("captured-roots", "captured contributes 1 root (empty => ok empty)"), check("callable-roots", "callable_roundtrip contributes 1 root (sample => ok sample)"), check("main-roots", "main contributes 1 root ([] => ok)")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/bytes-roots" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "17"), expected_check("fixture-name", "roundtrip.can"), expected_check("roundtrip-roots", "2"), expected_check("integers-roots", "3"), expected_check("base64enc-roots", "2"), expected_check("base64dec-roots", "2"), expected_check("hexenc-roots", "2"), expected_check("hexdec-roots", "2"), expected_check("empty-roots", "1"), expected_check("captured-roots", "1"), expected_check("callable-roots", "1"), expected_check("main-roots", "1")]
+        unknown: "nope" => ok []
+    match case is "bundled/bytes-roots"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "17"), expected_check("fixture-name", "roundtrip.can"), expected_check("roundtrip-roots", "2"), expected_check("integers-roots", "3"), expected_check("base64enc-roots", "2"), expected_check("base64dec-roots", "2"), expected_check("hexenc-roots", "2"), expected_check("hexdec-roots", "2"), expected_check("empty-roots", "1"), expected_check("captured-roots", "1"), expected_check("callable-roots", "1"), expected_check("main-roots", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/bytes-roots", "default", "", "offline") => ok
+        seed_assert_red: context("bundled/bytes-roots", "seed-assert-red", "", "offline") => failed{"assert-green"}
+        seed_report_red: context("bundled/bytes-roots", "seed-report-red", "", "offline") => failed{"report-passed"}
+        seed_root_short: context("bundled/bytes-roots", "seed-root-short", "", "offline") => failed{"root-count"}
+        seed_fixture_drift: context("bundled/bytes-roots", "seed-fixture-drift", "", "offline") => failed{"fixture-name"}
+        seed_roundtrip_short: context("bundled/bytes-roots", "seed-roundtrip-short", "", "offline") => failed{"roundtrip-roots"}
+        seed_integers_short: context("bundled/bytes-roots", "seed-integers-short", "", "offline") => failed{"integers-roots"}
+        seed_base64enc_short: context("bundled/bytes-roots", "seed-base64enc-short", "", "offline") => failed{"base64enc-roots"}
+        seed_base64dec_short: context("bundled/bytes-roots", "seed-base64dec-short", "", "offline") => failed{"base64dec-roots"}
+        seed_hexenc_short: context("bundled/bytes-roots", "seed-hexenc-short", "", "offline") => failed{"hexenc-roots"}
+        seed_hexdec_short: context("bundled/bytes-roots", "seed-hexdec-short", "", "offline") => failed{"hexdec-roots"}
+        seed_empty_loss: context("bundled/bytes-roots", "seed-empty-loss", "", "offline") => failed{"empty-roots"}
+        seed_captured_loss: context("bundled/bytes-roots", "seed-captured-loss", "", "offline") => failed{"captured-roots"}
+        seed_callable_loss: context("bundled/bytes-roots", "seed-callable-loss", "", "offline") => failed{"callable-roots"}
+        seed_main_loss: context("bundled/bytes-roots", "seed-main-loss", "", "offline") => failed{"main-roots"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence assert_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence passed_evidence => match call require_int(got.root_count, 17, c, "root-count")
+                    failed
+                    ok evidence count_evidence => match call require_text(got.fixture_name, "roundtrip.can", c, "fixture-name")
+                        failed
+                        ok evidence fixture_evidence => match call require_int(got.roundtrip_roots, 2, c, "roundtrip-roots")
+                            failed
+                            ok evidence roundtrip_evidence => match call require_int(got.integers_roots, 3, c, "integers-roots")
+                                failed
+                                ok evidence integers_evidence => match call require_int(got.base64enc_roots, 2, c, "base64enc-roots")
+                                    failed
+                                    ok evidence base64enc_evidence => match call require_int(got.base64dec_roots, 2, c, "base64dec-roots")
+                                        failed
+                                        ok evidence base64dec_evidence => match call require_int(got.hexenc_roots, 2, c, "hexenc-roots")
+                                            failed
+                                            ok evidence hexenc_evidence => match call require_int(got.hexdec_roots, 2, c, "hexdec-roots")
+                                                failed
+                                                ok evidence hexdec_evidence => match call require_int(got.empty_roots, 1, c, "empty-roots")
+                                                    failed
+                                                    ok evidence empty_evidence => match call require_int(got.captured_roots, 1, c, "captured-roots")
+                                                        failed
+                                                        ok evidence captured_evidence => match call require_int(got.callable_roots, 1, c, "callable-roots")
+                                                            failed
+                                                            ok evidence callable_evidence => match call require_int(got.main_roots, 1, c, "main-roots")
+                                                                failed
+                                                                ok evidence main_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m03_004: "m03-004" => ok test_case("bundled/bytes-roots", ["bytes", "m03"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("roundtrip-roots"), check_ref("integers-roots"), check_ref("base64enc-roots"), check_ref("base64dec-roots"), check_ref("hexenc-roots"), check_ref("hexdec-roots"), check_ref("empty-roots"), check_ref("captured-roots"), check_ref("callable-roots"), check_ref("main-roots")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m03-004"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/bytes-roots", ["bytes", "m03"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("roundtrip-roots"), check_ref("integers-roots"), check_ref("base64enc-roots"), check_ref("base64dec-roots"), check_ref("hexenc-roots"), check_ref("hexdec-roots"), check_ref("empty-roots"), check_ref("captured-roots"), check_ref("callable-roots"), check_ref("main-roots")], callable case_body)

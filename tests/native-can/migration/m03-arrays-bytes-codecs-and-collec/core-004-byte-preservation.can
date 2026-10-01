@@ -1,0 +1,224 @@
+package m03core004bytes
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M03 CORE-004 "bundled bytes: byte-data preservation, offline behavior".
+/// Source: tests/integration/bytes_test.go symbol
+/// TestCurrentBundledBytes.
+/// Related fixtures: compiler/testdata/current/bytes/roundtrip.can
+/// (every verbatim data pin below comes from its assert roots: the
+/// multibyte sample, the base64/hex encodings, the empty preservation
+/// roots, the byte-range and codec rejection roots).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): byte roundtrips preserve data exactly (multibyte
+/// UTF-8, base64, hex, empty inputs, byte edges) and reject invalid data
+/// with codec kinds; offline sandboxed execution preserves byte data.
+/// The 17-root assert pin lives in core-004-roots-green.can; the run
+/// output/status shape and silent production entry live in
+/// core-004-run-shape.can.
+/// Variants: roundtrip.can fixture.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23).
+/// Case bundled/byte-preservation checks: utf8-sample, base64-sample,
+/// hex-sample, hex-upper, empty-preserved, edges-preserved,
+/// range-rejected, codec-rejected, empty-zero, offline-preserved.
+/// Facet map (roundtrip.can roots + bytes_test.go legs): utf8-sample pins
+/// the multibyte roundtrip (L9: "héllo 😀" => ok same);
+/// base64-sample pins the base64 encoding (L34: sample => ok
+/// "aMOpbGxvIPCfmIA="); hex-sample pins the hex encoding (L58: sample =>
+/// ok "68c3a96c6c6f20f09f9880"); hex-upper pins uppercase hex acceptance
+/// (L70: "68C3A96C6C6F20F09F9880" => ok "héllo 😀"); empty-preserved pins
+/// the empty roundtrips (L10/L35/L59: "" => ok ""); edges-preserved pins
+/// the byte edges (L21: [0,255,128] => ok same); range-rejected pins the
+/// byte-range rejections (L22-23: [-1]/[256] => codec::invalid_data
+/// byte_range); codec-rejected pins the codec rejections (L47: "QQ" =>
+/// base64; L71: "0g" => hex); empty-zero pins the empty size (L80: => ok
+/// 0); offline-preserved pins the offline behavior (bytes_test.go L46-50:
+/// deny-network sandbox with PATH=/nonexistent preserves byte data).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str utf8_sample
+    str base64_sample
+    str hex_sample
+    str hex_upper
+    bool empty_preserved
+    bool edges_preserved
+    bool range_rejected
+    bool codec_rejected
+    int empty_zero
+    bool offline_preserved
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/byte-preservation", "default", "", "offline"), "utf8-sample" => ok "case bundled/byte-preservation variant default root utf8-sample run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/byte-preservation", "default", "", "offline"), "empty-preserved" => ok evidence("empty-preserved", "true", "true", true, "case bundled/byte-preservation variant default root empty-preserved run offline")
+        different: false, true, context("bundled/byte-preservation", "default", "", "offline"), "empty-preserved" => failed{"empty-preserved"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("bundled/byte-preservation", "default", "", "offline"), "empty-zero" => ok evidence("empty-zero", "0", "0", true, "case bundled/byte-preservation variant default root empty-zero run offline")
+        different: 1, 0, context("bundled/byte-preservation", "default", "", "offline"), "empty-zero" => failed{"empty-zero"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "héllo 😀", "héllo 😀", context("bundled/byte-preservation", "default", "", "offline"), "utf8-sample" => ok evidence("utf8-sample", "héllo 😀", "héllo 😀", true, "case bundled/byte-preservation variant default root utf8-sample run offline")
+        different: "hello", "héllo 😀", context("bundled/byte-preservation", "default", "", "offline"), "utf8-sample" => failed{"utf8-sample"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", true, true, true, true, 0, true)
+        seed_utf8_drift: "seed-utf8-drift" => ok observation("hello", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", true, true, true, true, 0, true)
+        seed_base64_drift: "seed-base64-drift" => ok observation("héllo 😀", "aGVsbG8=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", true, true, true, true, 0, true)
+        seed_hex_drift: "seed-hex-drift" => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68656c6c6f", "68C3A96C6C6F20F09F9880", true, true, true, true, 0, true)
+        seed_upper_drift: "seed-upper-drift" => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68656C6C6F", true, true, true, true, 0, true)
+        seed_empty_lost: "seed-empty-lost" => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", false, true, true, true, 0, true)
+        seed_edges_lost: "seed-edges-lost" => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", true, false, true, true, 0, true)
+        seed_range_accepted: "seed-range-accepted" => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", true, true, false, true, 0, true)
+        seed_codec_accepted: "seed-codec-accepted" => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", true, true, true, false, 0, true)
+        seed_empty_nonzero: "seed-empty-nonzero" => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", true, true, true, true, 1, true)
+        seed_offline_lost: "seed-offline-lost" => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", true, true, true, true, 0, false)
+    match variant_id
+        "seed-utf8-drift" => ok observation("hello", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", true, true, true, true, 0, true)
+        "seed-base64-drift" => ok observation("héllo 😀", "aGVsbG8=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", true, true, true, true, 0, true)
+        "seed-hex-drift" => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68656c6c6f", "68C3A96C6C6F20F09F9880", true, true, true, true, 0, true)
+        "seed-upper-drift" => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68656C6C6F", true, true, true, true, 0, true)
+        "seed-empty-lost" => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", false, true, true, true, 0, true)
+        "seed-edges-lost" => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", true, false, true, true, 0, true)
+        "seed-range-accepted" => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", true, true, false, true, 0, true)
+        "seed-codec-accepted" => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", true, true, true, false, 0, true)
+        "seed-empty-nonzero" => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", true, true, true, true, 1, true)
+        "seed-offline-lost" => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", true, true, true, true, 0, false)
+        _ => ok observation("héllo 😀", "aMOpbGxvIPCfmIA=", "68c3a96c6c6f20f09f9880", "68C3A96C6C6F20F09F9880", true, true, true, true, 0, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m03_004: "m03-004" => ok [check("utf8-sample", "multibyte sample pins héllo emoji verbatim"), check("base64-sample", "base64 encoding pins aMOpbGxvIPCfmIA= verbatim"), check("hex-sample", "hex encoding pins 68c3a96c6c6f20f09f9880 verbatim"), check("hex-upper", "text_of_hex accepts uppercase 68C3A96C6C6F20F09F9880"), check("empty-preserved", "empty string roundtrips to empty"), check("edges-preserved", "byte edges 0, 128, 255 roundtrip intact"), check("range-rejected", "out-of-range ints rejected with byte_range"), check("codec-rejected", "bad base64 and hex rejected with codec kinds"), check("empty-zero", "empty_size pins 0"), check("offline-preserved", "offline sandboxed execution preserves byte data")]
+        other: "nope" => ok []
+    match scope is "m03-004"
+        false => ok []
+        true => ok [check("utf8-sample", "multibyte sample pins héllo emoji verbatim"), check("base64-sample", "base64 encoding pins aMOpbGxvIPCfmIA= verbatim"), check("hex-sample", "hex encoding pins 68c3a96c6c6f20f09f9880 verbatim"), check("hex-upper", "text_of_hex accepts uppercase 68C3A96C6C6F20F09F9880"), check("empty-preserved", "empty string roundtrips to empty"), check("edges-preserved", "byte edges 0, 128, 255 roundtrip intact"), check("range-rejected", "out-of-range ints rejected with byte_range"), check("codec-rejected", "bad base64 and hex rejected with codec kinds"), check("empty-zero", "empty_size pins 0"), check("offline-preserved", "offline sandboxed execution preserves byte data")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/byte-preservation" => ok [expected_check("utf8-sample", "héllo 😀"), expected_check("base64-sample", "aMOpbGxvIPCfmIA="), expected_check("hex-sample", "68c3a96c6c6f20f09f9880"), expected_check("hex-upper", "68C3A96C6C6F20F09F9880"), expected_check("empty-preserved", "true"), expected_check("edges-preserved", "true"), expected_check("range-rejected", "true"), expected_check("codec-rejected", "true"), expected_check("empty-zero", "0"), expected_check("offline-preserved", "true")]
+        unknown: "nope" => ok []
+    match case is "bundled/byte-preservation"
+        false => ok []
+        true => ok [expected_check("utf8-sample", "héllo 😀"), expected_check("base64-sample", "aMOpbGxvIPCfmIA="), expected_check("hex-sample", "68c3a96c6c6f20f09f9880"), expected_check("hex-upper", "68C3A96C6C6F20F09F9880"), expected_check("empty-preserved", "true"), expected_check("edges-preserved", "true"), expected_check("range-rejected", "true"), expected_check("codec-rejected", "true"), expected_check("empty-zero", "0"), expected_check("offline-preserved", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/byte-preservation", "default", "", "offline") => ok
+        seed_utf8_drift: context("bundled/byte-preservation", "seed-utf8-drift", "", "offline") => failed{"utf8-sample"}
+        seed_base64_drift: context("bundled/byte-preservation", "seed-base64-drift", "", "offline") => failed{"base64-sample"}
+        seed_hex_drift: context("bundled/byte-preservation", "seed-hex-drift", "", "offline") => failed{"hex-sample"}
+        seed_upper_drift: context("bundled/byte-preservation", "seed-upper-drift", "", "offline") => failed{"hex-upper"}
+        seed_empty_lost: context("bundled/byte-preservation", "seed-empty-lost", "", "offline") => failed{"empty-preserved"}
+        seed_edges_lost: context("bundled/byte-preservation", "seed-edges-lost", "", "offline") => failed{"edges-preserved"}
+        seed_range_accepted: context("bundled/byte-preservation", "seed-range-accepted", "", "offline") => failed{"range-rejected"}
+        seed_codec_accepted: context("bundled/byte-preservation", "seed-codec-accepted", "", "offline") => failed{"codec-rejected"}
+        seed_empty_nonzero: context("bundled/byte-preservation", "seed-empty-nonzero", "", "offline") => failed{"empty-zero"}
+        seed_offline_lost: context("bundled/byte-preservation", "seed-offline-lost", "", "offline") => failed{"offline-preserved"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.utf8_sample, "héllo 😀", c, "utf8-sample")
+            failed
+            ok evidence utf8_evidence => match call require_text(got.base64_sample, "aMOpbGxvIPCfmIA=", c, "base64-sample")
+                failed
+                ok evidence base64_evidence => match call require_text(got.hex_sample, "68c3a96c6c6f20f09f9880", c, "hex-sample")
+                    failed
+                    ok evidence hex_evidence => match call require_text(got.hex_upper, "68C3A96C6C6F20F09F9880", c, "hex-upper")
+                        failed
+                        ok evidence upper_evidence => match call require_bool(got.empty_preserved, true, c, "empty-preserved")
+                            failed
+                            ok evidence empty_evidence => match call require_bool(got.edges_preserved, true, c, "edges-preserved")
+                                failed
+                                ok evidence edges_evidence => match call require_bool(got.range_rejected, true, c, "range-rejected")
+                                    failed
+                                    ok evidence range_evidence => match call require_bool(got.codec_rejected, true, c, "codec-rejected")
+                                        failed
+                                        ok evidence codec_evidence => match call require_int(got.empty_zero, 0, c, "empty-zero")
+                                            failed
+                                            ok evidence zero_evidence => match call require_bool(got.offline_preserved, true, c, "offline-preserved")
+                                                failed
+                                                ok evidence offline_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m03_004: "m03-004" => ok test_case("bundled/byte-preservation", ["bytes", "m03"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("utf8-sample"), check_ref("base64-sample"), check_ref("hex-sample"), check_ref("hex-upper"), check_ref("empty-preserved"), check_ref("edges-preserved"), check_ref("range-rejected"), check_ref("codec-rejected"), check_ref("empty-zero"), check_ref("offline-preserved")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m03-004"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/byte-preservation", ["bytes", "m03"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("utf8-sample"), check_ref("base64-sample"), check_ref("hex-sample"), check_ref("hex-upper"), check_ref("empty-preserved"), check_ref("edges-preserved"), check_ref("range-rejected"), check_ref("codec-rejected"), check_ref("empty-zero"), check_ref("offline-preserved")], callable case_body)
