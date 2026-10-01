@@ -1,0 +1,309 @@
+package m43edge003base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M43 EDGE-003 "PostgreSQL smoke"
+/// rewire target pact.
+/// Source: distribution/linux/postgres.sh
+/// symbol "PostgreSQL smoke" (L1-9):
+/// pinned shell envelope plus env
+/// defaults.
+/// Disposition: rewire target only (this
+/// row owns the caller pact as reviewable
+/// Can facts; no caller file changes
+/// here; old shell call stays until the
+/// integrator rewires it after each
+/// linked row plus gate has accepted
+/// proof).
+/// Protects (this file): installed
+/// sidecar plus PostgreSQL-17 row plus
+/// version roundtrip wants, envelope leg:
+/// shell header plus env defaults plus
+/// image pin.
+/// ADAPTATION (noted, plus source
+/// lines): name pins hold env spellings;
+/// path pins hold default bytes; count
+/// pins hold ints tallied from L2 plus
+/// L7 plus L8 plus L9.
+/// shebang pins #!/bin/sh (L1);
+/// product-name pins PostgreSQL (L2);
+/// smoke-tag pins T19 (L2);
+/// disposable-word pins disposable (L3
+/// plus L9); network-word pins network
+/// (L2 plus L3); sidecar-word pins
+/// sidecar (L4); driver-kind pins
+/// Bun.SQL (L4); shell-flags pins set
+/// -eu (L5); src-name pins SRC (L7 plus
+/// L16); src-path pins /src (L7);
+/// work-name pins WORK (L8 plus L11
+/// plus L12 plus L17 plus L18);
+/// work-path pins /work (L8);
+/// database-url-name pins DATABASE_URL
+/// (L9); postgres-image pins
+/// postgres:17 (L9); env-default-count
+/// pins 3 (L7 plus L8 plus L9);
+/// header-comment-count pins 3 (L2 plus
+/// L3 plus L4).
+/// Facet map (pin order): shebang,
+/// product-name, smoke-tag,
+/// disposable-word, network-word,
+/// sidecar-word, driver-kind,
+/// shell-flags, src-name, src-path,
+/// work-name, work-path,
+/// database-url-name, postgres-image,
+/// env-default-count,
+/// header-comment-count.
+/// The binary plus gate plus
+/// invocation roots live in
+/// edge-003-roots-green.can; the
+/// embedded assertion plus verdict shape
+/// lives in edge-003-run-shape.can.
+/// Variants: none (row lists zero
+/// variants).
+/// Environment: zero gates; bind at P23
+/// plus QD1; no live run now.
+/// Logical gates SUITE plus PROC plus
+/// WORK plus ENV plus DB bind at P23
+/// plus QD1; no live run now.
+/// Timeout 120000ms is the offline
+/// default bound (binds at P23 like the
+/// M31 no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// plus QD1 accept gates unmet).
+/// Intended consumed report: M41
+/// LIFE-013 parsed slice (no qualified
+/// report yet; P23 plus QD1 plus QN1
+/// unmet).
+/// Rewire stays blocked; postgres.sh
+/// plus pg-driver.ts plus the Go caller
+/// intact; no call retired.
+/// Shared old files intact; retirement
+/// is a later integrator choice; Z03
+/// owns activation.
+/// Case edge/postgres-provision checks:
+/// shebang, product-name, smoke-tag,
+/// disposable-word, network-word,
+/// sidecar-word, driver-kind,
+/// shell-flags, src-name, src-path,
+/// work-name, work-path,
+/// database-url-name, postgres-image,
+/// env-default-count,
+/// header-comment-count.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str shebang
+    str product_name
+    str smoke_tag
+    str disposable_word
+    str network_word
+    str sidecar_word
+    str driver_kind
+    str shell_flags
+    str src_name
+    str src_path
+    str work_name
+    str work_path
+    str database_url_name
+    str postgres_image
+    int env_default_count
+    int header_comment_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("edge/postgres-provision", "default", "", "offline"), "shebang" => ok "case edge/postgres-provision variant default root shebang run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("edge/postgres-provision", "default", "", "offline"), "shebang" => ok evidence("shebang", "true", "true", true, "case edge/postgres-provision variant default root shebang run offline")
+        different: false, true, context("edge/postgres-provision", "default", "", "offline"), "shebang" => failed{"shebang"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("edge/postgres-provision", "default", "", "offline"), "env-default-count" => ok evidence("env-default-count", "3", "3", true, "case edge/postgres-provision variant default root env-default-count run offline")
+        different: 2, 3, context("edge/postgres-provision", "default", "", "offline"), "env-default-count" => failed{"env-default-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "#!/bin/sh", "#!/bin/sh", context("edge/postgres-provision", "default", "", "offline"), "shebang" => ok evidence("shebang", "#!/bin/sh", "#!/bin/sh", true, "case edge/postgres-provision variant default root shebang run offline")
+        different: "#!/bin/sh_2", "#!/bin/sh", context("edge/postgres-provision", "default", "", "offline"), "shebang" => failed{"shebang"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        seed_shebang: "seed-shebang-drift" => ok observation("#!/bin/sh_2", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        seed_product_name: "seed-product-name-drift" => ok observation("#!/bin/sh", "PostgreSQL_2", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        seed_smoke_tag: "seed-smoke-tag-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19_2", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        seed_disposable_word: "seed-disposable-word-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable_2", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        seed_network_word: "seed-network-word-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network_2", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        seed_sidecar_word: "seed-sidecar-word-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar_2", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        seed_driver_kind: "seed-driver-kind-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL_2", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        seed_shell_flags: "seed-shell-flags-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu_2", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        seed_src_name: "seed-src-name-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC_2", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        seed_src_path: "seed-src-path-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src_2", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        seed_work_name: "seed-work-name-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK_2", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        seed_work_path: "seed-work-path-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work_2", "DATABASE_URL", "postgres:17", 3, 3)
+        seed_database_url_name: "seed-database-url-name-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL_2", "postgres:17", 3, 3)
+        seed_postgres_image: "seed-postgres-image-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17_2", 3, 3)
+        seed_env_default_count: "seed-env-default-count-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 2, 3)
+        seed_header_comment_count: "seed-header-comment-count-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 2)
+    match variant_id
+        "seed-shebang-drift" => ok observation("#!/bin/sh_2", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        "seed-product-name-drift" => ok observation("#!/bin/sh", "PostgreSQL_2", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        "seed-smoke-tag-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19_2", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        "seed-disposable-word-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable_2", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        "seed-network-word-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network_2", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        "seed-sidecar-word-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar_2", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        "seed-driver-kind-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL_2", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        "seed-shell-flags-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu_2", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        "seed-src-name-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC_2", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        "seed-src-path-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src_2", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        "seed-work-name-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK_2", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+        "seed-work-path-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work_2", "DATABASE_URL", "postgres:17", 3, 3)
+        "seed-database-url-name-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL_2", "postgres:17", 3, 3)
+        "seed-postgres-image-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17_2", 3, 3)
+        "seed-env-default-count-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 2, 3)
+        "seed-header-comment-count-drift" => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 2)
+        _ => ok observation("#!/bin/sh", "PostgreSQL", "T19", "disposable", "network", "sidecar", "Bun.SQL", "set -eu", "SRC", "/src", "WORK", "/work", "DATABASE_URL", "postgres:17", 3, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        edge_scope: "m43-e003" => ok [check("shebang", "shebang keeps its bytes"), check("product-name", "product name keeps its spelling"), check("smoke-tag", "smoke tag keeps its bytes"), check("disposable-word", "disposable word keeps its bytes"), check("network-word", "network word keeps its bytes"), check("sidecar-word", "sidecar word keeps its bytes"), check("driver-kind", "driver kind keeps its spelling"), check("shell-flags", "shell flags keep their bytes"), check("src-name", "src name keeps its spelling"), check("src-path", "src path keeps its bytes"), check("work-name", "work name keeps its spelling"), check("work-path", "work path keeps its bytes"), check("database-url-name", "database url name keeps its spelling"), check("postgres-image", "postgres image keeps its bytes"), check("env-default-count", "three env defaults exist"), check("header-comment-count", "three header comments exist")]
+        other: "nope" => ok []
+    match scope is "m43-e003"
+        false => ok []
+        true => ok [check("shebang", "shebang keeps its bytes"), check("product-name", "product name keeps its spelling"), check("smoke-tag", "smoke tag keeps its bytes"), check("disposable-word", "disposable word keeps its bytes"), check("network-word", "network word keeps its bytes"), check("sidecar-word", "sidecar word keeps its bytes"), check("driver-kind", "driver kind keeps its spelling"), check("shell-flags", "shell flags keep their bytes"), check("src-name", "src name keeps its spelling"), check("src-path", "src path keeps its bytes"), check("work-name", "work name keeps its spelling"), check("work-path", "work path keeps its bytes"), check("database-url-name", "database url name keeps its spelling"), check("postgres-image", "postgres image keeps its bytes"), check("env-default-count", "three env defaults exist"), check("header-comment-count", "three header comments exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "edge/postgres-provision" => ok [expected_check("shebang", "#!/bin/sh"), expected_check("product-name", "PostgreSQL"), expected_check("smoke-tag", "T19"), expected_check("disposable-word", "disposable"), expected_check("network-word", "network"), expected_check("sidecar-word", "sidecar"), expected_check("driver-kind", "Bun.SQL"), expected_check("shell-flags", "set -eu"), expected_check("src-name", "SRC"), expected_check("src-path", "/src"), expected_check("work-name", "WORK"), expected_check("work-path", "/work"), expected_check("database-url-name", "DATABASE_URL"), expected_check("postgres-image", "postgres:17"), expected_check("env-default-count", "3"), expected_check("header-comment-count", "3")]
+        unknown: "nope" => ok []
+    match case is "edge/postgres-provision"
+        false => ok []
+        true => ok [expected_check("shebang", "#!/bin/sh"), expected_check("product-name", "PostgreSQL"), expected_check("smoke-tag", "T19"), expected_check("disposable-word", "disposable"), expected_check("network-word", "network"), expected_check("sidecar-word", "sidecar"), expected_check("driver-kind", "Bun.SQL"), expected_check("shell-flags", "set -eu"), expected_check("src-name", "SRC"), expected_check("src-path", "/src"), expected_check("work-name", "WORK"), expected_check("work-path", "/work"), expected_check("database-url-name", "DATABASE_URL"), expected_check("postgres-image", "postgres:17"), expected_check("env-default-count", "3"), expected_check("header-comment-count", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("edge/postgres-provision", "default", "", "offline") => ok
+        seed_shebang: context("edge/postgres-provision", "seed-shebang-drift", "", "offline") => failed{"shebang"}
+        seed_product_name: context("edge/postgres-provision", "seed-product-name-drift", "", "offline") => failed{"product-name"}
+        seed_smoke_tag: context("edge/postgres-provision", "seed-smoke-tag-drift", "", "offline") => failed{"smoke-tag"}
+        seed_disposable_word: context("edge/postgres-provision", "seed-disposable-word-drift", "", "offline") => failed{"disposable-word"}
+        seed_network_word: context("edge/postgres-provision", "seed-network-word-drift", "", "offline") => failed{"network-word"}
+        seed_sidecar_word: context("edge/postgres-provision", "seed-sidecar-word-drift", "", "offline") => failed{"sidecar-word"}
+        seed_driver_kind: context("edge/postgres-provision", "seed-driver-kind-drift", "", "offline") => failed{"driver-kind"}
+        seed_shell_flags: context("edge/postgres-provision", "seed-shell-flags-drift", "", "offline") => failed{"shell-flags"}
+        seed_src_name: context("edge/postgres-provision", "seed-src-name-drift", "", "offline") => failed{"src-name"}
+        seed_src_path: context("edge/postgres-provision", "seed-src-path-drift", "", "offline") => failed{"src-path"}
+        seed_work_name: context("edge/postgres-provision", "seed-work-name-drift", "", "offline") => failed{"work-name"}
+        seed_work_path: context("edge/postgres-provision", "seed-work-path-drift", "", "offline") => failed{"work-path"}
+        seed_database_url_name: context("edge/postgres-provision", "seed-database-url-name-drift", "", "offline") => failed{"database-url-name"}
+        seed_postgres_image: context("edge/postgres-provision", "seed-postgres-image-drift", "", "offline") => failed{"postgres-image"}
+        seed_env_default_count: context("edge/postgres-provision", "seed-env-default-count-drift", "", "offline") => failed{"env-default-count"}
+        seed_header_comment_count: context("edge/postgres-provision", "seed-header-comment-count-drift", "", "offline") => failed{"header-comment-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.shebang, "#!/bin/sh", c, "shebang")
+            failed
+            ok evidence shebang_evidence => match call require_text(got.product_name, "PostgreSQL", c, "product-name")
+                failed
+                ok evidence product_name_evidence => match call require_text(got.smoke_tag, "T19", c, "smoke-tag")
+                    failed
+                    ok evidence smoke_tag_evidence => match call require_text(got.disposable_word, "disposable", c, "disposable-word")
+                        failed
+                        ok evidence disposable_word_evidence => match call require_text(got.network_word, "network", c, "network-word")
+                            failed
+                            ok evidence network_word_evidence => match call require_text(got.sidecar_word, "sidecar", c, "sidecar-word")
+                                failed
+                                ok evidence sidecar_word_evidence => match call require_text(got.driver_kind, "Bun.SQL", c, "driver-kind")
+                                    failed
+                                    ok evidence driver_kind_evidence => match call require_text(got.shell_flags, "set -eu", c, "shell-flags")
+                                        failed
+                                        ok evidence shell_flags_evidence => match call require_text(got.src_name, "SRC", c, "src-name")
+                                            failed
+                                            ok evidence src_name_evidence => match call require_text(got.src_path, "/src", c, "src-path")
+                                                failed
+                                                ok evidence src_path_evidence => match call require_text(got.work_name, "WORK", c, "work-name")
+                                                    failed
+                                                    ok evidence work_name_evidence => match call require_text(got.work_path, "/work", c, "work-path")
+                                                        failed
+                                                        ok evidence work_path_evidence => match call require_text(got.database_url_name, "DATABASE_URL", c, "database-url-name")
+                                                            failed
+                                                            ok evidence database_url_name_evidence => match call require_text(got.postgres_image, "postgres:17", c, "postgres-image")
+                                                                failed
+                                                                ok evidence postgres_image_evidence => match call require_int(got.env_default_count, 3, c, "env-default-count")
+                                                                    failed
+                                                                    ok evidence env_default_count_evidence => match call require_int(got.header_comment_count, 3, c, "header-comment-count")
+                                                                        failed
+                                                                        ok evidence header_comment_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        edge_scope: "m43-e003" => ok test_case("edge/postgres-provision", ["edge", "m43"], [], 120000, [check_ref("shebang"), check_ref("product-name"), check_ref("smoke-tag"), check_ref("disposable-word"), check_ref("network-word"), check_ref("sidecar-word"), check_ref("driver-kind"), check_ref("shell-flags"), check_ref("src-name"), check_ref("src-path"), check_ref("work-name"), check_ref("work-path"), check_ref("database-url-name"), check_ref("postgres-image"), check_ref("env-default-count"), check_ref("header-comment-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m43-e003"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("edge/postgres-provision", ["edge", "m43"], [], 120000, [check_ref("shebang"), check_ref("product-name"), check_ref("smoke-tag"), check_ref("disposable-word"), check_ref("network-word"), check_ref("sidecar-word"), check_ref("driver-kind"), check_ref("shell-flags"), check_ref("src-name"), check_ref("src-path"), check_ref("work-name"), check_ref("work-path"), check_ref("database-url-name"), check_ref("postgres-image"), check_ref("env-default-count"), check_ref("header-comment-count")], callable case_body)
