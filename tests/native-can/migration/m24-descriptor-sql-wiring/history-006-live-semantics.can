@@ -1,0 +1,273 @@
+package m24history006live
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M24 HISTORY-006 "live SQL descriptors: template and row semantics".
+/// Source: tests/integration/sql_descriptors_test.go symbol
+/// TestCurrentSQLDescriptorsLive (L184-282); driver
+/// tests/integration/testdata/sql/descriptors-driver.ts (L60-183)
+/// with sixteen pass legs (L100-165).
+/// Disposition: migrate (this row ports TestCurrentSQLDescriptorsLive to
+/// ordinary Can functions; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): the sixteen live descriptor answers: setup
+/// seed rows, repeat and comment template expansion, search like/
+/// quote/unicode rows, hostile or/stacked values staying inert with
+/// the table surviving, repeat binding once, by-id one/missing,
+/// insert count plus round trip, comment literal rows, bound LIMIT.
+/// ADAPTATION (recorded, with source lines): repeat-expansion pins
+/// the JSON output without spaces while Go spells the source array
+/// with spaces (driver L116); comment-expansion pins without spaces
+/// (driver L121); search and repeat legs pin the bracket-join detail
+/// from assertNames (driver L47-53) while Go spells want arrays with
+/// quotes (driver L126-128/L140/L157); by-id-one pins bare Bob while
+/// Go checks id 4 plus display (driver L142-146); insert-execute pins
+/// count 1 while Go checks added.count (driver L155).
+/// Facet map (driver legs): setup-seed pins 6 rows (L100);
+/// repeat-expansion pins repeated percent-o (L115-119);
+/// comment-expansion pins percent plus 100 (L120-124); search-like
+/// pins Jason and Mason (L126); search-quote pins O'Brien (L127);
+/// search-unicode pins Zoe with diaeresis (L128); injection-or pins
+/// 0 rows (L130-132); injection-stacked pins 0 rows (L133-135);
+/// table-survives pins 6 rows (L136-138); repeat-binds-once pins
+/// five rows (L140); by-id-one pins Bob (L142-146); by-id-missing
+/// pins 0 rows (L147-149); insert-execute pins count 1 (L151-156);
+/// insert-round-trip pins quoted queen (L157); comment-literal pins
+/// 7 rows (L159-161); limit-bound pins 2 rows (L163-165).
+/// The roots-green pin lives in history-006-roots-green.can; the
+/// fd-3 delivery plus run shape lives in
+/// history-006-run-shape.can.
+/// Variants: all sixteen driver legs in Go order (setup, expansion,
+/// search, injection, binding, by-id, insert, comment, limit).
+/// Environment: CAN_BUN_ARCHIVE plus CAN_TEST_POSTGRES_URL gates;
+/// requires can-bun-archive and can-test-postgres-url.
+/// Logical gates SUITE/CAN/PROC/CHILD/DB/WORK/ENV and C/R/N/S/A
+/// identities bind at P23; no live run now. Accept gates P23/QD1
+/// are unmet. Descriptor timeout 240000ms mirrors the Go 4-minute
+/// ctx (sql_descriptors_test.go L205).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QD1 unmet).
+/// Case history/live-descriptors checks: setup-seed,
+/// repeat-expansion, comment-expansion, search-like, search-quote,
+/// search-unicode, injection-or, injection-stacked, table-survives,
+/// repeat-binds-once, by-id-one, by-id-missing, insert-execute,
+/// insert-round-trip, comment-literal, limit-bound.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str setup_seed
+    str repeat_expansion
+    str comment_expansion
+    str search_like
+    str search_quote
+    str search_unicode
+    str injection_or
+    str injection_stacked
+    str table_survives
+    str repeat_binds_once
+    str by_id_one
+    str by_id_missing
+    str insert_execute
+    str insert_round_trip
+    str comment_literal
+    str limit_bound
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/live-descriptors", "default", "", "offline"), "setup-seed" => ok "case history/live-descriptors variant default root setup-seed run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/live-descriptors", "default", "", "offline"), "setup-seed" => ok evidence("setup-seed", "true", "true", true, "case history/live-descriptors variant default root setup-seed run offline")
+        different: false, true, context("history/live-descriptors", "default", "", "offline"), "setup-seed" => failed{"setup-seed"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("history/live-descriptors", "default", "", "offline"), "setup-seed" => ok evidence("setup-seed", "0", "0", true, "case history/live-descriptors variant default root setup-seed run offline")
+        different: 1, 0, context("history/live-descriptors", "default", "", "offline"), "setup-seed" => failed{"setup-seed"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "6 rows", "6 rows", context("history/live-descriptors", "default", "", "offline"), "setup-seed" => ok evidence("setup-seed", "6 rows", "6 rows", true, "case history/live-descriptors variant default root setup-seed run offline")
+        different: "6 rows_2", "6 rows", context("history/live-descriptors", "default", "", "offline"), "setup-seed" => failed{"setup-seed"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        seed_setup_seed: "seed-setup-seed-drift" => ok observation("5 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        seed_repeat_expansion: "seed-repeat-expansion-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",9]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        seed_comment_expansion: "seed-comment-expansion-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",99]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        seed_search_like: "seed-search-like-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        seed_search_quote: "seed-search-quote-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[Bob]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        seed_search_unicode: "seed-search-unicode-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoe]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        seed_injection_or: "seed-injection-or-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "1 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        seed_injection_stacked: "seed-injection-stacked-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "1 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        seed_table_survives: "seed-table-survives-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "5 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        seed_repeat_binds_once: "seed-repeat-binds-once-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        seed_by_id_one: "seed-by-id-one-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Ann", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        seed_by_id_missing: "seed-by-id-missing-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "1 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        seed_insert_execute: "seed-insert-execute-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 0", "[Q'ueen]", "7 rows", "2 rows")
+        seed_insert_round_trip: "seed-insert-round-trip-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Queen]", "7 rows", "2 rows")
+        seed_comment_literal: "seed-comment-literal-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "6 rows", "2 rows")
+        seed_limit_bound: "seed-limit-bound-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "3 rows")
+    match variant_id
+        "seed-setup-seed-drift" => ok observation("5 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        "seed-repeat-expansion-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",9]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        "seed-comment-expansion-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",99]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        "seed-search-like-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        "seed-search-quote-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[Bob]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        "seed-search-unicode-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoe]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        "seed-injection-or-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "1 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        "seed-injection-stacked-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "1 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        "seed-table-survives-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "5 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        "seed-repeat-binds-once-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        "seed-by-id-one-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Ann", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        "seed-by-id-missing-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "1 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+        "seed-insert-execute-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 0", "[Q'ueen]", "7 rows", "2 rows")
+        "seed-insert-round-trip-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Queen]", "7 rows", "2 rows")
+        "seed-comment-literal-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "6 rows", "2 rows")
+        "seed-limit-bound-drift" => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "3 rows")
+        _ => ok observation("6 rows", "[\"%o%\",\"%o%\",10]", "[\"%\",100]", "[Jason, Mason]", "[O'Brien]", "[Zoë]", "0 rows", "0 rows", "6 rows", "[Jason, Mason, Bob, O'Brien, Zoë]", "Bob", "0 rows", "count 1", "[Q'ueen]", "7 rows", "2 rows")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m24_h006: "m24-h006" => ok [check("setup-seed", "setup seed loads six rows"), check("repeat-expansion", "repeat template repeats bound value twice"), check("comment-expansion", "comment template ignores hidden nine"), check("search-like", "search son finds Jason and Mason"), check("search-quote", "search quote finds O'Brien"), check("search-unicode", "search unicode finds Zoe row"), check("injection-or", "injection or matches zero rows"), check("injection-stacked", "stacked injection matches zero rows"), check("table-survives", "table survives injection with six rows"), check("repeat-binds-once", "repeat binds once finds five rows"), check("by-id-one", "by id four returns Bob"), check("by-id-missing", "by id missing returns zero rows"), check("insert-execute", "insert execute reports count one"), check("insert-round-trip", "insert round trip finds queen row"), check("comment-literal", "comment literal scans seven rows"), check("limit-bound", "bound limit returns two rows")]
+        other: "nope" => ok []
+    match scope is "m24-h006"
+        false => ok []
+        true => ok [check("setup-seed", "setup seed loads six rows"), check("repeat-expansion", "repeat template repeats bound value twice"), check("comment-expansion", "comment template ignores hidden nine"), check("search-like", "search son finds Jason and Mason"), check("search-quote", "search quote finds O'Brien"), check("search-unicode", "search unicode finds Zoe row"), check("injection-or", "injection or matches zero rows"), check("injection-stacked", "stacked injection matches zero rows"), check("table-survives", "table survives injection with six rows"), check("repeat-binds-once", "repeat binds once finds five rows"), check("by-id-one", "by id four returns Bob"), check("by-id-missing", "by id missing returns zero rows"), check("insert-execute", "insert execute reports count one"), check("insert-round-trip", "insert round trip finds queen row"), check("comment-literal", "comment literal scans seven rows"), check("limit-bound", "bound limit returns two rows")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/live-descriptors" => ok [expected_check("setup-seed", "6 rows"), expected_check("repeat-expansion", "[\"%o%\",\"%o%\",10]"), expected_check("comment-expansion", "[\"%\",100]"), expected_check("search-like", "[Jason, Mason]"), expected_check("search-quote", "[O'Brien]"), expected_check("search-unicode", "[Zoë]"), expected_check("injection-or", "0 rows"), expected_check("injection-stacked", "0 rows"), expected_check("table-survives", "6 rows"), expected_check("repeat-binds-once", "[Jason, Mason, Bob, O'Brien, Zoë]"), expected_check("by-id-one", "Bob"), expected_check("by-id-missing", "0 rows"), expected_check("insert-execute", "count 1"), expected_check("insert-round-trip", "[Q'ueen]"), expected_check("comment-literal", "7 rows"), expected_check("limit-bound", "2 rows")]
+        unknown: "nope" => ok []
+    match case is "history/live-descriptors"
+        false => ok []
+        true => ok [expected_check("setup-seed", "6 rows"), expected_check("repeat-expansion", "[\"%o%\",\"%o%\",10]"), expected_check("comment-expansion", "[\"%\",100]"), expected_check("search-like", "[Jason, Mason]"), expected_check("search-quote", "[O'Brien]"), expected_check("search-unicode", "[Zoë]"), expected_check("injection-or", "0 rows"), expected_check("injection-stacked", "0 rows"), expected_check("table-survives", "6 rows"), expected_check("repeat-binds-once", "[Jason, Mason, Bob, O'Brien, Zoë]"), expected_check("by-id-one", "Bob"), expected_check("by-id-missing", "0 rows"), expected_check("insert-execute", "count 1"), expected_check("insert-round-trip", "[Q'ueen]"), expected_check("comment-literal", "7 rows"), expected_check("limit-bound", "2 rows")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/live-descriptors", "default", "", "offline") => ok
+        seed_setup_seed: context("history/live-descriptors", "seed-setup-seed-drift", "", "offline") => failed{"setup-seed"}
+        seed_repeat_expansion: context("history/live-descriptors", "seed-repeat-expansion-drift", "", "offline") => failed{"repeat-expansion"}
+        seed_comment_expansion: context("history/live-descriptors", "seed-comment-expansion-drift", "", "offline") => failed{"comment-expansion"}
+        seed_search_like: context("history/live-descriptors", "seed-search-like-drift", "", "offline") => failed{"search-like"}
+        seed_search_quote: context("history/live-descriptors", "seed-search-quote-drift", "", "offline") => failed{"search-quote"}
+        seed_search_unicode: context("history/live-descriptors", "seed-search-unicode-drift", "", "offline") => failed{"search-unicode"}
+        seed_injection_or: context("history/live-descriptors", "seed-injection-or-drift", "", "offline") => failed{"injection-or"}
+        seed_injection_stacked: context("history/live-descriptors", "seed-injection-stacked-drift", "", "offline") => failed{"injection-stacked"}
+        seed_table_survives: context("history/live-descriptors", "seed-table-survives-drift", "", "offline") => failed{"table-survives"}
+        seed_repeat_binds_once: context("history/live-descriptors", "seed-repeat-binds-once-drift", "", "offline") => failed{"repeat-binds-once"}
+        seed_by_id_one: context("history/live-descriptors", "seed-by-id-one-drift", "", "offline") => failed{"by-id-one"}
+        seed_by_id_missing: context("history/live-descriptors", "seed-by-id-missing-drift", "", "offline") => failed{"by-id-missing"}
+        seed_insert_execute: context("history/live-descriptors", "seed-insert-execute-drift", "", "offline") => failed{"insert-execute"}
+        seed_insert_round_trip: context("history/live-descriptors", "seed-insert-round-trip-drift", "", "offline") => failed{"insert-round-trip"}
+        seed_comment_literal: context("history/live-descriptors", "seed-comment-literal-drift", "", "offline") => failed{"comment-literal"}
+        seed_limit_bound: context("history/live-descriptors", "seed-limit-bound-drift", "", "offline") => failed{"limit-bound"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.setup_seed, "6 rows", c, "setup-seed")
+            failed
+            ok evidence setup_seed_evidence => match call require_text(got.repeat_expansion, "[\"%o%\",\"%o%\",10]", c, "repeat-expansion")
+                failed
+                ok evidence repeat_expansion_evidence => match call require_text(got.comment_expansion, "[\"%\",100]", c, "comment-expansion")
+                    failed
+                    ok evidence comment_expansion_evidence => match call require_text(got.search_like, "[Jason, Mason]", c, "search-like")
+                        failed
+                        ok evidence search_like_evidence => match call require_text(got.search_quote, "[O'Brien]", c, "search-quote")
+                            failed
+                            ok evidence search_quote_evidence => match call require_text(got.search_unicode, "[Zoë]", c, "search-unicode")
+                                failed
+                                ok evidence search_unicode_evidence => match call require_text(got.injection_or, "0 rows", c, "injection-or")
+                                    failed
+                                    ok evidence injection_or_evidence => match call require_text(got.injection_stacked, "0 rows", c, "injection-stacked")
+                                        failed
+                                        ok evidence injection_stacked_evidence => match call require_text(got.table_survives, "6 rows", c, "table-survives")
+                                            failed
+                                            ok evidence table_survives_evidence => match call require_text(got.repeat_binds_once, "[Jason, Mason, Bob, O'Brien, Zoë]", c, "repeat-binds-once")
+                                                failed
+                                                ok evidence repeat_binds_once_evidence => match call require_text(got.by_id_one, "Bob", c, "by-id-one")
+                                                    failed
+                                                    ok evidence by_id_one_evidence => match call require_text(got.by_id_missing, "0 rows", c, "by-id-missing")
+                                                        failed
+                                                        ok evidence by_id_missing_evidence => match call require_text(got.insert_execute, "count 1", c, "insert-execute")
+                                                            failed
+                                                            ok evidence insert_execute_evidence => match call require_text(got.insert_round_trip, "[Q'ueen]", c, "insert-round-trip")
+                                                                failed
+                                                                ok evidence insert_round_trip_evidence => match call require_text(got.comment_literal, "7 rows", c, "comment-literal")
+                                                                    failed
+                                                                    ok evidence comment_literal_evidence => match call require_text(got.limit_bound, "2 rows", c, "limit-bound")
+                                                                        failed
+                                                                        ok evidence limit_bound_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m24_h006: "m24-h006" => ok test_case("history/live-descriptors", ["history", "m24"], ["can-bun-archive", "can-test-postgres-url"], 240000, [check_ref("setup-seed"), check_ref("repeat-expansion"), check_ref("comment-expansion"), check_ref("search-like"), check_ref("search-quote"), check_ref("search-unicode"), check_ref("injection-or"), check_ref("injection-stacked"), check_ref("table-survives"), check_ref("repeat-binds-once"), check_ref("by-id-one"), check_ref("by-id-missing"), check_ref("insert-execute"), check_ref("insert-round-trip"), check_ref("comment-literal"), check_ref("limit-bound")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m24-h006"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/live-descriptors", ["history", "m24"], ["can-bun-archive", "can-test-postgres-url"], 240000, [check_ref("setup-seed"), check_ref("repeat-expansion"), check_ref("comment-expansion"), check_ref("search-like"), check_ref("search-quote"), check_ref("search-unicode"), check_ref("injection-or"), check_ref("injection-stacked"), check_ref("table-survives"), check_ref("repeat-binds-once"), check_ref("by-id-one"), check_ref("by-id-missing"), check_ref("insert-execute"), check_ref("insert-round-trip"), check_ref("comment-literal"), check_ref("limit-bound")], callable case_body)
