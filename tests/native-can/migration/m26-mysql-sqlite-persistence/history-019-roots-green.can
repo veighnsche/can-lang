@@ -1,0 +1,274 @@
+package m26history019roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M26 HISTORY-019 "mysql-seed.sql: schema and starting rows".
+/// Source: tests/integration/testdata/sql/mysql-seed.sql
+/// (L02 CREATE leg); named consumer
+/// tests/integration/testdata/sql/mysql-driver.ts (setup
+/// mode applies both statements, then reports serverVersion
+/// and the notes count).
+/// Disposition: retain_fixture (this row keeps the fixture
+/// as data plus Can accountability pins; the .sql file stays
+/// and no driver is ported or deleted here).
+/// Protects (this file): the notes schema (table, columns,
+/// types, keys, verbatim definitions), the definition shape,
+/// and the starting-state assumption (zero notes, no seed
+/// row values).
+/// ADAPTATION (recorded, with source bytes): id-def,
+/// body-def and column-list pin verbatim definition text from
+/// seed L02; col-sep pins the comma-space splitter;
+/// varchar-width pins int 255 from VARCHAR(255); starting-
+/// notes pins int 0 (empty schema, no INSERTs; the Go harness
+/// expects the 0 spelling); seed-rows pins empty (the file
+/// carries no row values).
+/// Facet map (mysql-seed.sql schema): schema-table pins
+/// notes; column-count pins 2; id-column pins id;
+/// body-column pins body; id-type pins BIGINT; body-type pins
+/// VARCHAR(255); id-key pins PRIMARY KEY; body-key pins
+/// UNIQUE; id-def pins the id definition; body-def pins the
+/// body definition; column-list pins the paren body;
+/// col-sep pins comma-space; varchar-width pins 255;
+/// def-open pins (; def-close pins ); starting-notes pins 0;
+/// seed-rows pins empty.
+/// Statement bytes live in history-019-seed-semantics.can;
+/// the fixture identity lives in history-019-run-shape.can.
+/// Variants: none (row lists none).
+/// Environment: none (row lists no gates); requires [] and no
+/// database contact.
+/// Logical gates SUITE/CAN and C/R/N/S/A identities bind at
+/// P23; no live run now. Accept gates P23/QD1/QD2 are unmet.
+/// Descriptor timeout 60000ms is an offline static-check
+/// budget; the row has no live leg and no Go ctx to mirror.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QD1/QD2 unmet).
+/// Case history/mysql-seed-schema checks: schema-table,
+/// column-count, id-column, body-column, id-type, body-type,
+/// id-key, body-key, id-def, body-def, column-list, col-sep,
+/// varchar-width, def-open, def-close, starting-notes,
+/// seed-rows.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str schema_table
+    int column_count
+    str id_column
+    str body_column
+    str id_type
+    str body_type
+    str id_key
+    str body_key
+    str id_def
+    str body_def
+    str column_list
+    str col_sep
+    int varchar_width
+    str def_open
+    str def_close
+    int starting_notes
+    str seed_rows
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/mysql-seed-schema", "default", "", "offline"), "schema-table" => ok "case history/mysql-seed-schema variant default root schema-table run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/mysql-seed-schema", "default", "", "offline"), "schema-table" => ok evidence("schema-table", "true", "true", true, "case history/mysql-seed-schema variant default root schema-table run offline")
+        different: false, true, context("history/mysql-seed-schema", "default", "", "offline"), "schema-table" => failed{"schema-table"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("history/mysql-seed-schema", "default", "", "offline"), "column-count" => ok evidence("column-count", "2", "2", true, "case history/mysql-seed-schema variant default root column-count run offline")
+        different: 3, 2, context("history/mysql-seed-schema", "default", "", "offline"), "column-count" => failed{"column-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "notes", "notes", context("history/mysql-seed-schema", "default", "", "offline"), "schema-table" => ok evidence("schema-table", "notes", "notes", true, "case history/mysql-seed-schema variant default root schema-table run offline")
+        different: "notess", "notes", context("history/mysql-seed-schema", "default", "", "offline"), "schema-table" => failed{"schema-table"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        seed_schema_table: "seed-schema-table-drift" => ok observation("notess", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        seed_column_count: "seed-column-count-drift" => ok observation("notes", 3, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        seed_id_column: "seed-id-column-drift" => ok observation("notes", 2, "ids", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        seed_body_column: "seed-body-column-drift" => ok observation("notes", 2, "id", "bodys", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        seed_id_type: "seed-id-type-drift" => ok observation("notes", 2, "id", "body", "BIGINTS", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        seed_body_type: "seed-body-type-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(256)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        seed_id_key: "seed-id-key-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEYS", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        seed_body_key: "seed-body-key-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUES", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        seed_id_def: "seed-id-def-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEYS", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        seed_body_def: "seed-body-def-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUES", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        seed_column_list: "seed-column-list-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUES", ", ", 255, "(", ")", 0, "")
+        seed_col_sep: "seed-col-sep-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ",", 255, "(", ")", 0, "")
+        seed_varchar_width: "seed-varchar-width-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 256, "(", ")", 0, "")
+        seed_def_open: "seed-def-open-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "((", ")", 0, "")
+        seed_def_close: "seed-def-close-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", "))", 0, "")
+        seed_starting_notes: "seed-starting-notes-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 1, "")
+        seed_seed_rows: "seed-seed-rows-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "app")
+    match variant_id
+        "seed-schema-table-drift" => ok observation("notess", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        "seed-column-count-drift" => ok observation("notes", 3, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        "seed-id-column-drift" => ok observation("notes", 2, "ids", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        "seed-body-column-drift" => ok observation("notes", 2, "id", "bodys", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        "seed-id-type-drift" => ok observation("notes", 2, "id", "body", "BIGINTS", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        "seed-body-type-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(256)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        "seed-id-key-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEYS", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        "seed-body-key-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUES", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        "seed-id-def-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEYS", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        "seed-body-def-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUES", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+        "seed-column-list-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUES", ", ", 255, "(", ")", 0, "")
+        "seed-col-sep-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ",", 255, "(", ")", 0, "")
+        "seed-varchar-width-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 256, "(", ")", 0, "")
+        "seed-def-open-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "((", ")", 0, "")
+        "seed-def-close-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", "))", 0, "")
+        "seed-starting-notes-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 1, "")
+        "seed-seed-rows-drift" => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "app")
+        _ => ok observation("notes", 2, "id", "body", "BIGINT", "VARCHAR(255)", "PRIMARY KEY", "UNIQUE", "id BIGINT PRIMARY KEY", "body VARCHAR(255) UNIQUE", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", ", ", 255, "(", ")", 0, "")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m26_h019: "m26-h019" => ok [check("schema-table", "schema builds the notes table"), check("column-count", "notes holds 2 columns"), check("id-column", "first column is id"), check("body-column", "second column is body"), check("id-type", "id pins BIGINT"), check("body-type", "body pins VARCHAR 255"), check("id-key", "id pins PRIMARY KEY"), check("body-key", "body pins UNIQUE"), check("id-def", "id definition is verbatim"), check("body-def", "body definition is verbatim"), check("column-list", "column list is verbatim"), check("col-sep", "columns split on comma space"), check("varchar-width", "body width pins 255"), check("def-open", "column list opens with paren"), check("def-close", "column list closes with paren"), check("starting-notes", "seed leaves zero notes"), check("seed-rows", "seed carries no row values")]
+        other: "nope" => ok []
+    match scope is "m26-h019"
+        false => ok []
+        true => ok [check("schema-table", "schema builds the notes table"), check("column-count", "notes holds 2 columns"), check("id-column", "first column is id"), check("body-column", "second column is body"), check("id-type", "id pins BIGINT"), check("body-type", "body pins VARCHAR 255"), check("id-key", "id pins PRIMARY KEY"), check("body-key", "body pins UNIQUE"), check("id-def", "id definition is verbatim"), check("body-def", "body definition is verbatim"), check("column-list", "column list is verbatim"), check("col-sep", "columns split on comma space"), check("varchar-width", "body width pins 255"), check("def-open", "column list opens with paren"), check("def-close", "column list closes with paren"), check("starting-notes", "seed leaves zero notes"), check("seed-rows", "seed carries no row values")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/mysql-seed-schema" => ok [expected_check("schema-table", "notes"), expected_check("column-count", "2"), expected_check("id-column", "id"), expected_check("body-column", "body"), expected_check("id-type", "BIGINT"), expected_check("body-type", "VARCHAR(255)"), expected_check("id-key", "PRIMARY KEY"), expected_check("body-key", "UNIQUE"), expected_check("id-def", "id BIGINT PRIMARY KEY"), expected_check("body-def", "body VARCHAR(255) UNIQUE"), expected_check("column-list", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE"), expected_check("col-sep", ", "), expected_check("varchar-width", "255"), expected_check("def-open", "("), expected_check("def-close", ")"), expected_check("starting-notes", "0"), expected_check("seed-rows", "")]
+        unknown: "nope" => ok []
+    match case is "history/mysql-seed-schema"
+        false => ok []
+        true => ok [expected_check("schema-table", "notes"), expected_check("column-count", "2"), expected_check("id-column", "id"), expected_check("body-column", "body"), expected_check("id-type", "BIGINT"), expected_check("body-type", "VARCHAR(255)"), expected_check("id-key", "PRIMARY KEY"), expected_check("body-key", "UNIQUE"), expected_check("id-def", "id BIGINT PRIMARY KEY"), expected_check("body-def", "body VARCHAR(255) UNIQUE"), expected_check("column-list", "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE"), expected_check("col-sep", ", "), expected_check("varchar-width", "255"), expected_check("def-open", "("), expected_check("def-close", ")"), expected_check("starting-notes", "0"), expected_check("seed-rows", "")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/mysql-seed-schema", "default", "", "offline") => ok
+        seed_schema_table: context("history/mysql-seed-schema", "seed-schema-table-drift", "", "offline") => failed{"schema-table"}
+        seed_column_count: context("history/mysql-seed-schema", "seed-column-count-drift", "", "offline") => failed{"column-count"}
+        seed_id_column: context("history/mysql-seed-schema", "seed-id-column-drift", "", "offline") => failed{"id-column"}
+        seed_body_column: context("history/mysql-seed-schema", "seed-body-column-drift", "", "offline") => failed{"body-column"}
+        seed_id_type: context("history/mysql-seed-schema", "seed-id-type-drift", "", "offline") => failed{"id-type"}
+        seed_body_type: context("history/mysql-seed-schema", "seed-body-type-drift", "", "offline") => failed{"body-type"}
+        seed_id_key: context("history/mysql-seed-schema", "seed-id-key-drift", "", "offline") => failed{"id-key"}
+        seed_body_key: context("history/mysql-seed-schema", "seed-body-key-drift", "", "offline") => failed{"body-key"}
+        seed_id_def: context("history/mysql-seed-schema", "seed-id-def-drift", "", "offline") => failed{"id-def"}
+        seed_body_def: context("history/mysql-seed-schema", "seed-body-def-drift", "", "offline") => failed{"body-def"}
+        seed_column_list: context("history/mysql-seed-schema", "seed-column-list-drift", "", "offline") => failed{"column-list"}
+        seed_col_sep: context("history/mysql-seed-schema", "seed-col-sep-drift", "", "offline") => failed{"col-sep"}
+        seed_varchar_width: context("history/mysql-seed-schema", "seed-varchar-width-drift", "", "offline") => failed{"varchar-width"}
+        seed_def_open: context("history/mysql-seed-schema", "seed-def-open-drift", "", "offline") => failed{"def-open"}
+        seed_def_close: context("history/mysql-seed-schema", "seed-def-close-drift", "", "offline") => failed{"def-close"}
+        seed_starting_notes: context("history/mysql-seed-schema", "seed-starting-notes-drift", "", "offline") => failed{"starting-notes"}
+        seed_seed_rows: context("history/mysql-seed-schema", "seed-seed-rows-drift", "", "offline") => failed{"seed-rows"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.schema_table, "notes", c, "schema-table")
+            failed
+            ok evidence schema_table_evidence => match call require_int(got.column_count, 2, c, "column-count")
+                failed
+                ok evidence column_count_evidence => match call require_text(got.id_column, "id", c, "id-column")
+                    failed
+                    ok evidence id_column_evidence => match call require_text(got.body_column, "body", c, "body-column")
+                        failed
+                        ok evidence body_column_evidence => match call require_text(got.id_type, "BIGINT", c, "id-type")
+                            failed
+                            ok evidence id_type_evidence => match call require_text(got.body_type, "VARCHAR(255)", c, "body-type")
+                                failed
+                                ok evidence body_type_evidence => match call require_text(got.id_key, "PRIMARY KEY", c, "id-key")
+                                    failed
+                                    ok evidence id_key_evidence => match call require_text(got.body_key, "UNIQUE", c, "body-key")
+                                        failed
+                                        ok evidence body_key_evidence => match call require_text(got.id_def, "id BIGINT PRIMARY KEY", c, "id-def")
+                                            failed
+                                            ok evidence id_def_evidence => match call require_text(got.body_def, "body VARCHAR(255) UNIQUE", c, "body-def")
+                                                failed
+                                                ok evidence body_def_evidence => match call require_text(got.column_list, "id BIGINT PRIMARY KEY, body VARCHAR(255) UNIQUE", c, "column-list")
+                                                    failed
+                                                    ok evidence column_list_evidence => match call require_text(got.col_sep, ", ", c, "col-sep")
+                                                        failed
+                                                        ok evidence col_sep_evidence => match call require_int(got.varchar_width, 255, c, "varchar-width")
+                                                            failed
+                                                            ok evidence varchar_width_evidence => match call require_text(got.def_open, "(", c, "def-open")
+                                                                failed
+                                                                ok evidence def_open_evidence => match call require_text(got.def_close, ")", c, "def-close")
+                                                                    failed
+                                                                    ok evidence def_close_evidence => match call require_int(got.starting_notes, 0, c, "starting-notes")
+                                                                        failed
+                                                                        ok evidence starting_notes_evidence => match call require_text(got.seed_rows, "", c, "seed-rows")
+                                                                            failed
+                                                                            ok evidence seed_rows_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m26_h019: "m26-h019" => ok test_case("history/mysql-seed-schema", ["history", "m26"], [], 60000, [check_ref("schema-table"), check_ref("column-count"), check_ref("id-column"), check_ref("body-column"), check_ref("id-type"), check_ref("body-type"), check_ref("id-key"), check_ref("body-key"), check_ref("id-def"), check_ref("body-def"), check_ref("column-list"), check_ref("col-sep"), check_ref("varchar-width"), check_ref("def-open"), check_ref("def-close"), check_ref("starting-notes"), check_ref("seed-rows")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m26-h019"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/mysql-seed-schema", ["history", "m26"], [], 60000, [check_ref("schema-table"), check_ref("column-count"), check_ref("id-column"), check_ref("body-column"), check_ref("id-type"), check_ref("body-type"), check_ref("id-key"), check_ref("body-key"), check_ref("id-def"), check_ref("body-def"), check_ref("column-list"), check_ref("col-sep"), check_ref("varchar-width"), check_ref("def-open"), check_ref("def-close"), check_ref("starting-notes"), check_ref("seed-rows")], callable case_body)

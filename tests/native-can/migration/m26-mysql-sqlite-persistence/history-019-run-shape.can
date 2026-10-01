@@ -1,0 +1,277 @@
+package m26history019run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M26 HISTORY-019 "mysql-seed.sql: fixture identity".
+/// Source: tests/integration/testdata/sql/mysql-seed.sql
+/// (fixture bytes); named consumer
+/// tests/integration/testdata/sql/mysql-driver.ts (setup
+/// mode applies both statements, then reports serverVersion
+/// and the notes count).
+/// Disposition: retain_fixture (this row keeps the fixture
+/// as data plus Can accountability pins; the .sql file stays
+/// and no driver is ported or deleted here).
+/// Protects (this file): the fixture identity (path, file,
+/// dialect), the named consumer endpoint (driver, setup mode,
+/// seed arg), and the consumed byte layout (terminator
+/// counts, line spans, statement offsets).
+/// ADAPTATION (recorded, with source bytes): fixture-path,
+/// fixture-dir, fixture-file and fixture-suffix pin the
+/// checked-in path; consumer-file, consumer-mode and seed-var
+/// pin the driver endpoint (setup mode, argv seed path);
+/// apply-count pins the driver [reset, create] pair length;
+/// reset-line-bytes (28) and create-line-bytes (70) pin the
+/// newline-inclusive line spans (28 + 70 = 98); reset-offset
+/// (0) and create-offset (28) pin the statement byte offsets;
+/// fixture-dialect pins mysql (BIGINT, not sqlite INTEGER).
+/// Facet map (fixture identity): fixture-path pins the seed
+/// path; fixture-dir pins the sql dir; fixture-file pins
+/// mysql-seed.sql; fixture-suffix pins .sql; consumer-file
+/// pins mysql-driver.ts; consumer-mode pins setup; seed-var
+/// pins seedPath; apply-count pins 2; semicolon-count pins 2;
+/// newline-count pins 2; table-refs pins 2; reset-line-bytes
+/// pins 28; create-line-bytes pins 70; reset-offset pins 0;
+/// create-offset pins 28; table-word pins TABLE;
+/// fixture-dialect pins mysql.
+/// Statement bytes live in history-019-seed-semantics.can;
+/// the schema pin lives in history-019-roots-green.can.
+/// Variants: none (row lists none).
+/// Environment: none (row lists no gates); requires [] and no
+/// database contact.
+/// Logical gates SUITE/CAN and C/R/N/S/A identities bind at
+/// P23; no live run now. Accept gates P23/QD1/QD2 are unmet.
+/// Descriptor timeout 60000ms is an offline static-check
+/// budget; the row has no live leg and no Go ctx to mirror.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QD1/QD2 unmet).
+/// Case history/mysql-seed-run checks: fixture-path,
+/// fixture-dir, fixture-file, fixture-suffix, consumer-file,
+/// consumer-mode, seed-var, apply-count, semicolon-count,
+/// newline-count, table-refs, reset-line-bytes,
+/// create-line-bytes, reset-offset, create-offset,
+/// table-word, fixture-dialect.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str fixture_path
+    str fixture_dir
+    str fixture_file
+    str fixture_suffix
+    str consumer_file
+    str consumer_mode
+    str seed_var
+    int apply_count
+    int semicolon_count
+    int newline_count
+    int table_refs
+    int reset_line_bytes
+    int create_line_bytes
+    int reset_offset
+    int create_offset
+    str table_word
+    str fixture_dialect
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/mysql-seed-run", "default", "", "offline"), "fixture-path" => ok "case history/mysql-seed-run variant default root fixture-path run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/mysql-seed-run", "default", "", "offline"), "fixture-path" => ok evidence("fixture-path", "true", "true", true, "case history/mysql-seed-run variant default root fixture-path run offline")
+        different: false, true, context("history/mysql-seed-run", "default", "", "offline"), "fixture-path" => failed{"fixture-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("history/mysql-seed-run", "default", "", "offline"), "apply-count" => ok evidence("apply-count", "2", "2", true, "case history/mysql-seed-run variant default root apply-count run offline")
+        different: 3, 2, context("history/mysql-seed-run", "default", "", "offline"), "apply-count" => failed{"apply-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "mysql-seed.sql", "mysql-seed.sql", context("history/mysql-seed-run", "default", "", "offline"), "fixture-file" => ok evidence("fixture-file", "mysql-seed.sql", "mysql-seed.sql", true, "case history/mysql-seed-run variant default root fixture-file run offline")
+        different: "mysql-seed2.sql", "mysql-seed.sql", context("history/mysql-seed-run", "default", "", "offline"), "fixture-file" => failed{"fixture-file"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        seed_fixture_path: "seed-fixture-path-drift" => ok observation("tests/integration/testdata/sql/mysql-seed2.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        seed_fixture_dir: "seed-fixture-dir-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql2", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        seed_fixture_file: "seed-fixture-file-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed2.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        seed_fixture_suffix: "seed-fixture-suffix-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql2", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        seed_consumer_file: "seed-consumer-file-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver2.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        seed_consumer_mode: "seed-consumer-mode-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setups", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        seed_seed_var: "seed-seed-var-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPaths", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        seed_apply_count: "seed-apply-count-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 3, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        seed_semicolon_count: "seed-semicolon-count-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 3, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        seed_newline_count: "seed-newline-count-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 3, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        seed_table_refs: "seed-table-refs-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 3, 28, 70, 0, 28, "TABLE", "mysql")
+        seed_reset_line_bytes: "seed-reset-line-bytes-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 29, 70, 0, 28, "TABLE", "mysql")
+        seed_create_line_bytes: "seed-create-line-bytes-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 71, 0, 28, "TABLE", "mysql")
+        seed_reset_offset: "seed-reset-offset-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 1, 28, "TABLE", "mysql")
+        seed_create_offset: "seed-create-offset-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 29, "TABLE", "mysql")
+        seed_table_word: "seed-table-word-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLES", "mysql")
+        seed_fixture_dialect: "seed-fixture-dialect-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysqls")
+    match variant_id
+        "seed-fixture-path-drift" => ok observation("tests/integration/testdata/sql/mysql-seed2.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        "seed-fixture-dir-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql2", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        "seed-fixture-file-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed2.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        "seed-fixture-suffix-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql2", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        "seed-consumer-file-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver2.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        "seed-consumer-mode-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setups", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        "seed-seed-var-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPaths", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        "seed-apply-count-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 3, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        "seed-semicolon-count-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 3, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        "seed-newline-count-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 3, 2, 28, 70, 0, 28, "TABLE", "mysql")
+        "seed-table-refs-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 3, 28, 70, 0, 28, "TABLE", "mysql")
+        "seed-reset-line-bytes-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 29, 70, 0, 28, "TABLE", "mysql")
+        "seed-create-line-bytes-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 71, 0, 28, "TABLE", "mysql")
+        "seed-reset-offset-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 1, 28, "TABLE", "mysql")
+        "seed-create-offset-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 29, "TABLE", "mysql")
+        "seed-table-word-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLES", "mysql")
+        "seed-fixture-dialect-drift" => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysqls")
+        _ => ok observation("tests/integration/testdata/sql/mysql-seed.sql", "tests/integration/testdata/sql", "mysql-seed.sql", ".sql", "mysql-driver.ts", "setup", "seedPath", 2, 2, 2, 2, 28, 70, 0, 28, "TABLE", "mysql")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m26_h019: "m26-h019" => ok [check("fixture-path", "fixture lives at the seed path"), check("fixture-dir", "fixture lives in the sql dir"), check("fixture-file", "fixture file pins mysql-seed.sql"), check("fixture-suffix", "fixture keeps the sql suffix"), check("consumer-file", "named consumer pins mysql-driver.ts"), check("consumer-mode", "consumer runs the setup mode"), check("seed-var", "consumer reads the seed path arg"), check("apply-count", "consumer applies 2 statements"), check("semicolon-count", "seed holds 2 semicolons"), check("newline-count", "seed holds 2 newlines"), check("table-refs", "seed names notes twice"), check("reset-line-bytes", "reset line spans 28 bytes"), check("create-line-bytes", "create line spans 70 bytes"), check("reset-offset", "reset starts at byte 0"), check("create-offset", "create starts at byte 28"), check("table-word", "both verbs pin TABLE"), check("fixture-dialect", "fixture pins the mysql dialect")]
+        other: "nope" => ok []
+    match scope is "m26-h019"
+        false => ok []
+        true => ok [check("fixture-path", "fixture lives at the seed path"), check("fixture-dir", "fixture lives in the sql dir"), check("fixture-file", "fixture file pins mysql-seed.sql"), check("fixture-suffix", "fixture keeps the sql suffix"), check("consumer-file", "named consumer pins mysql-driver.ts"), check("consumer-mode", "consumer runs the setup mode"), check("seed-var", "consumer reads the seed path arg"), check("apply-count", "consumer applies 2 statements"), check("semicolon-count", "seed holds 2 semicolons"), check("newline-count", "seed holds 2 newlines"), check("table-refs", "seed names notes twice"), check("reset-line-bytes", "reset line spans 28 bytes"), check("create-line-bytes", "create line spans 70 bytes"), check("reset-offset", "reset starts at byte 0"), check("create-offset", "create starts at byte 28"), check("table-word", "both verbs pin TABLE"), check("fixture-dialect", "fixture pins the mysql dialect")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/mysql-seed-run" => ok [expected_check("fixture-path", "tests/integration/testdata/sql/mysql-seed.sql"), expected_check("fixture-dir", "tests/integration/testdata/sql"), expected_check("fixture-file", "mysql-seed.sql"), expected_check("fixture-suffix", ".sql"), expected_check("consumer-file", "mysql-driver.ts"), expected_check("consumer-mode", "setup"), expected_check("seed-var", "seedPath"), expected_check("apply-count", "2"), expected_check("semicolon-count", "2"), expected_check("newline-count", "2"), expected_check("table-refs", "2"), expected_check("reset-line-bytes", "28"), expected_check("create-line-bytes", "70"), expected_check("reset-offset", "0"), expected_check("create-offset", "28"), expected_check("table-word", "TABLE"), expected_check("fixture-dialect", "mysql")]
+        unknown: "nope" => ok []
+    match case is "history/mysql-seed-run"
+        false => ok []
+        true => ok [expected_check("fixture-path", "tests/integration/testdata/sql/mysql-seed.sql"), expected_check("fixture-dir", "tests/integration/testdata/sql"), expected_check("fixture-file", "mysql-seed.sql"), expected_check("fixture-suffix", ".sql"), expected_check("consumer-file", "mysql-driver.ts"), expected_check("consumer-mode", "setup"), expected_check("seed-var", "seedPath"), expected_check("apply-count", "2"), expected_check("semicolon-count", "2"), expected_check("newline-count", "2"), expected_check("table-refs", "2"), expected_check("reset-line-bytes", "28"), expected_check("create-line-bytes", "70"), expected_check("reset-offset", "0"), expected_check("create-offset", "28"), expected_check("table-word", "TABLE"), expected_check("fixture-dialect", "mysql")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/mysql-seed-run", "default", "", "offline") => ok
+        seed_fixture_path: context("history/mysql-seed-run", "seed-fixture-path-drift", "", "offline") => failed{"fixture-path"}
+        seed_fixture_dir: context("history/mysql-seed-run", "seed-fixture-dir-drift", "", "offline") => failed{"fixture-dir"}
+        seed_fixture_file: context("history/mysql-seed-run", "seed-fixture-file-drift", "", "offline") => failed{"fixture-file"}
+        seed_fixture_suffix: context("history/mysql-seed-run", "seed-fixture-suffix-drift", "", "offline") => failed{"fixture-suffix"}
+        seed_consumer_file: context("history/mysql-seed-run", "seed-consumer-file-drift", "", "offline") => failed{"consumer-file"}
+        seed_consumer_mode: context("history/mysql-seed-run", "seed-consumer-mode-drift", "", "offline") => failed{"consumer-mode"}
+        seed_seed_var: context("history/mysql-seed-run", "seed-seed-var-drift", "", "offline") => failed{"seed-var"}
+        seed_apply_count: context("history/mysql-seed-run", "seed-apply-count-drift", "", "offline") => failed{"apply-count"}
+        seed_semicolon_count: context("history/mysql-seed-run", "seed-semicolon-count-drift", "", "offline") => failed{"semicolon-count"}
+        seed_newline_count: context("history/mysql-seed-run", "seed-newline-count-drift", "", "offline") => failed{"newline-count"}
+        seed_table_refs: context("history/mysql-seed-run", "seed-table-refs-drift", "", "offline") => failed{"table-refs"}
+        seed_reset_line_bytes: context("history/mysql-seed-run", "seed-reset-line-bytes-drift", "", "offline") => failed{"reset-line-bytes"}
+        seed_create_line_bytes: context("history/mysql-seed-run", "seed-create-line-bytes-drift", "", "offline") => failed{"create-line-bytes"}
+        seed_reset_offset: context("history/mysql-seed-run", "seed-reset-offset-drift", "", "offline") => failed{"reset-offset"}
+        seed_create_offset: context("history/mysql-seed-run", "seed-create-offset-drift", "", "offline") => failed{"create-offset"}
+        seed_table_word: context("history/mysql-seed-run", "seed-table-word-drift", "", "offline") => failed{"table-word"}
+        seed_fixture_dialect: context("history/mysql-seed-run", "seed-fixture-dialect-drift", "", "offline") => failed{"fixture-dialect"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.fixture_path, "tests/integration/testdata/sql/mysql-seed.sql", c, "fixture-path")
+            failed
+            ok evidence fixture_path_evidence => match call require_text(got.fixture_dir, "tests/integration/testdata/sql", c, "fixture-dir")
+                failed
+                ok evidence fixture_dir_evidence => match call require_text(got.fixture_file, "mysql-seed.sql", c, "fixture-file")
+                    failed
+                    ok evidence fixture_file_evidence => match call require_text(got.fixture_suffix, ".sql", c, "fixture-suffix")
+                        failed
+                        ok evidence fixture_suffix_evidence => match call require_text(got.consumer_file, "mysql-driver.ts", c, "consumer-file")
+                            failed
+                            ok evidence consumer_file_evidence => match call require_text(got.consumer_mode, "setup", c, "consumer-mode")
+                                failed
+                                ok evidence consumer_mode_evidence => match call require_text(got.seed_var, "seedPath", c, "seed-var")
+                                    failed
+                                    ok evidence seed_var_evidence => match call require_int(got.apply_count, 2, c, "apply-count")
+                                        failed
+                                        ok evidence apply_count_evidence => match call require_int(got.semicolon_count, 2, c, "semicolon-count")
+                                            failed
+                                            ok evidence semicolon_count_evidence => match call require_int(got.newline_count, 2, c, "newline-count")
+                                                failed
+                                                ok evidence newline_count_evidence => match call require_int(got.table_refs, 2, c, "table-refs")
+                                                    failed
+                                                    ok evidence table_refs_evidence => match call require_int(got.reset_line_bytes, 28, c, "reset-line-bytes")
+                                                        failed
+                                                        ok evidence reset_line_bytes_evidence => match call require_int(got.create_line_bytes, 70, c, "create-line-bytes")
+                                                            failed
+                                                            ok evidence create_line_bytes_evidence => match call require_int(got.reset_offset, 0, c, "reset-offset")
+                                                                failed
+                                                                ok evidence reset_offset_evidence => match call require_int(got.create_offset, 28, c, "create-offset")
+                                                                    failed
+                                                                    ok evidence create_offset_evidence => match call require_text(got.table_word, "TABLE", c, "table-word")
+                                                                        failed
+                                                                        ok evidence table_word_evidence => match call require_text(got.fixture_dialect, "mysql", c, "fixture-dialect")
+                                                                            failed
+                                                                            ok evidence fixture_dialect_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m26_h019: "m26-h019" => ok test_case("history/mysql-seed-run", ["history", "m26"], [], 60000, [check_ref("fixture-path"), check_ref("fixture-dir"), check_ref("fixture-file"), check_ref("fixture-suffix"), check_ref("consumer-file"), check_ref("consumer-mode"), check_ref("seed-var"), check_ref("apply-count"), check_ref("semicolon-count"), check_ref("newline-count"), check_ref("table-refs"), check_ref("reset-line-bytes"), check_ref("create-line-bytes"), check_ref("reset-offset"), check_ref("create-offset"), check_ref("table-word"), check_ref("fixture-dialect")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m26-h019"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/mysql-seed-run", ["history", "m26"], [], 60000, [check_ref("fixture-path"), check_ref("fixture-dir"), check_ref("fixture-file"), check_ref("fixture-suffix"), check_ref("consumer-file"), check_ref("consumer-mode"), check_ref("seed-var"), check_ref("apply-count"), check_ref("semicolon-count"), check_ref("newline-count"), check_ref("table-refs"), check_ref("reset-line-bytes"), check_ref("create-line-bytes"), check_ref("reset-offset"), check_ref("create-offset"), check_ref("table-word"), check_ref("fixture-dialect")], callable case_body)
