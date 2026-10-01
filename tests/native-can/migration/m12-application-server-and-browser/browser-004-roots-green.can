@@ -1,0 +1,348 @@
+package m12browser004roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M12 BROWSER-004 "live applications: roots green, seed inventory".
+/// Source: tests/integration/applications_test.go symbol
+/// TestApplicationsLive (L601-770); seed helper applicationSeed
+/// (L252-271); snapshot helpers snapshotCredential (L140-144) and
+/// snapshotMap (L145-156); rewrite helpers rewriteEndpoints
+/// (L490-503) and rewriteFixtureEndpoints (L466-488).
+/// Disposition: migrate (this row ports TestApplicationsLive to
+/// ordinary Can functions; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): static live inventory as the green
+/// baseline: the seed SQL plus driver paths, the bun runner, the
+/// setup/teardown modes, the seed row counts, the seed report keys,
+/// the seed database-URL env prefix, the three staged app names,
+/// the snapshot names/keys plus the test-only token, the serve
+/// ports plus ready paths, and the triage endpoint rewrite triple.
+/// ADAPTATION (recorded, with source lines): the Go seed counts are
+/// JSON floats (7.0/3.0/2.0, L623), pinned here as int 7/3/2; the
+/// seed-env-prefix pins the "CAN_TEST_POSTGRES_URL=" assignment
+/// prefix (L258); the triage token pins the dummy test-only value
+/// (L731), never a real credential; the stub provider internals
+/// (paths/bodies ledger, fixtures, auth) belong to BROWSER-003 and
+/// are not pinned here.
+/// Facet map (applications_test.go legs): seed-sql and seed-driver
+/// pin the seed inputs (L254/L255); seed-runner pins runtime/bun
+/// (L256); seed-mode-setup and seed-mode-teardown pin the modes
+/// (L621/L684, reused L690/L712/L718/L756/L762/L768);
+/// seed-accounts/dashboard/triage pin 7/3/2 (L623);
+/// server-version-key pins serverVersion (L622); seed-error-key
+/// pins error (L267); seed-env-prefix pins the URL export (L258);
+/// app-accounts/dashboard/triage pin the staged names
+/// (L629/L697/L727); snapshot-accounts/dashboard/triage keys pin
+/// the credential keys (L631/L699/L731); snapshot-triage-name pins
+/// triage-live (L731); snapshot-token-key/value pin the test token
+/// (L731); port-accounts/dashboard pin 18532/18533 (L632/L700);
+/// ready-accounts/dashboard pin the ready paths (L632/L700);
+/// rewrite-source/fixtures/from pin the endpoint rewrite
+/// (L728/L729).
+/// HTTP semantics live in browser-004-live-semantics.can; the triage
+/// run shape lives in browser-004-run-shape.can.
+/// Variants: none in this file beyond the inventory (default only);
+/// the per-leg HTTP and triage predicates live in the sibling
+/// slices.
+/// Environment: CAN_BUN_ARCHIVE plus CAN_TEST_POSTGRES_URL gates;
+/// requires can-bun-archive and can-test-postgres-url.
+/// Logical gates CAN/BUILD/PROC/WORK/SUITE and C/R/N/S/A identities
+/// bind at P23; no live run now. Descriptor timeout 600000ms
+/// mirrors the Go 10-minute ctx (L611).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case browser/live-roots checks: seed-sql, seed-driver,
+/// seed-runner, seed-mode-setup, seed-mode-teardown, seed-accounts,
+/// seed-dashboard, seed-triage, server-version-key, seed-error-key,
+/// seed-env-prefix, app-accounts, app-dashboard, app-triage,
+/// snapshot-accounts-key, snapshot-dashboard-key,
+/// snapshot-triage-name, snapshot-triage-key, snapshot-token-key,
+/// snapshot-token-value, port-accounts, port-dashboard,
+/// ready-accounts, ready-dashboard, rewrite-source,
+/// rewrite-fixtures, rewrite-from.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str seed_sql
+    str seed_driver
+    str seed_runner
+    str seed_mode_setup
+    str seed_mode_teardown
+    int seed_accounts
+    int seed_dashboard
+    int seed_triage
+    str server_version_key
+    str seed_error_key
+    str seed_env_prefix
+    str app_accounts
+    str app_dashboard
+    str app_triage
+    str snapshot_accounts_key
+    str snapshot_dashboard_key
+    str snapshot_triage_name
+    str snapshot_triage_key
+    str snapshot_token_key
+    str snapshot_token_value
+    int port_accounts
+    int port_dashboard
+    str ready_accounts
+    str ready_dashboard
+    str rewrite_source
+    str rewrite_fixtures
+    str rewrite_from
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("browser/live-roots", "default", "", "offline"), "seed-sql" => ok "case browser/live-roots variant default root seed-sql run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("browser/live-roots", "default", "", "offline"), "seed-sql" => ok evidence("seed-sql", "true", "true", true, "case browser/live-roots variant default root seed-sql run offline")
+        different: false, true, context("browser/live-roots", "default", "", "offline"), "seed-sql" => failed{"seed-sql"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 7, 7, context("browser/live-roots", "default", "", "offline"), "seed-accounts" => ok evidence("seed-accounts", "7", "7", true, "case browser/live-roots variant default root seed-accounts run offline")
+        different: 8, 7, context("browser/live-roots", "default", "", "offline"), "seed-accounts" => failed{"seed-accounts"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed.sql", context("browser/live-roots", "default", "", "offline"), "seed-sql" => ok evidence("seed-sql", "tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed.sql", true, "case browser/live-roots variant default root seed-sql run offline")
+        different: "tests/integration/testdata/applications/seed.sql-2", "tests/integration/testdata/applications/seed.sql", context("browser/live-roots", "default", "", "offline"), "seed-sql" => failed{"seed-sql"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_seed_sql: "seed-seed-sql-drift" => ok observation("tests/integration/testdata/applications/seed2.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_seed_driver: "seed-seed-driver-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver2.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_seed_runner: "seed-seed-runner-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/node", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_seed_mode_setup: "seed-seed-mode-setup-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "init", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_seed_mode_teardown: "seed-seed-mode-teardown-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "destroy", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_seed_accounts: "seed-seed-accounts-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 6, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_seed_dashboard: "seed-seed-dashboard-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 2, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_seed_triage: "seed-seed-triage-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 1, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_server_version_key: "seed-server-version-key-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverversion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_seed_error_key: "seed-seed-error-key-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "failure", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_seed_env_prefix: "seed-seed-env-prefix-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_DSN=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_app_accounts: "seed-app-accounts-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search-2", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_app_dashboard: "seed-app-dashboard-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard-2", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_app_triage: "seed-app-triage-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai-2", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_snapshot_accounts_key: "seed-snapshot-accounts-key-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DATABASE", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_snapshot_dashboard_key: "seed-snapshot-dashboard-key-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DATABASE", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_snapshot_triage_name: "seed-snapshot-triage-name-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-staged", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_snapshot_triage_key: "seed-snapshot-triage-key-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DATABASE", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_snapshot_token_key: "seed-snapshot-token-key-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_KEY", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_snapshot_token_value: "seed-snapshot-token-value-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "prod-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_port_accounts: "seed-port-accounts-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18531, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_port_dashboard: "seed-port-dashboard-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18531, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_ready_accounts: "seed-ready-accounts-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts-ready", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_ready_dashboard: "seed-ready-dashboard-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard-ready", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_rewrite_source: "seed-rewrite-source-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles2.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        seed_rewrite_fixtures: "seed-rewrite-fixtures-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/snapshots", "http://127.0.0.1:1")
+        seed_rewrite_from: "seed-rewrite-from-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:2")
+    match variant_id
+        "seed-seed-sql-drift" => ok observation("tests/integration/testdata/applications/seed2.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-seed-driver-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver2.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-seed-runner-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/node", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-seed-mode-setup-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "init", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-seed-mode-teardown-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "destroy", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-seed-accounts-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 6, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-seed-dashboard-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 2, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-seed-triage-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 1, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-server-version-key-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverversion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-seed-error-key-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "failure", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-seed-env-prefix-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_DSN=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-app-accounts-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search-2", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-app-dashboard-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard-2", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-app-triage-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai-2", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-snapshot-accounts-key-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DATABASE", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-snapshot-dashboard-key-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DATABASE", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-snapshot-triage-name-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-staged", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-snapshot-triage-key-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DATABASE", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-snapshot-token-key-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_KEY", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-snapshot-token-value-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "prod-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-port-accounts-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18531, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-port-dashboard-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18531, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-ready-accounts-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts-ready", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-ready-dashboard-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard-ready", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-rewrite-source-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles2.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+        "seed-rewrite-fixtures-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/snapshots", "http://127.0.0.1:1")
+        "seed-rewrite-from-drift" => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:2")
+        _ => ok observation("tests/integration/testdata/applications/seed.sql", "tests/integration/testdata/applications/seed-driver.ts", "runtime/bun", "setup", "teardown", 7, 3, 2, "serverVersion", "error", "CAN_TEST_POSTGRES_URL=", "account-search", "dashboard", "native-ai", "ACCOUNTS_DB", "DASHBOARD_DB", "triage-live", "TRIAGE_DB", "CAN_I28_TOKEN", "test-only", 18532, 18533, "/accounts", "/dashboard", "src/oracles/oracles.can", "src/oracles/fixtures", "http://127.0.0.1:1")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m12_b004: "m12-b004" => ok [check("seed-sql", "seed reads the live seed SQL"), check("seed-driver", "seed runs the live seed driver"), check("seed-runner", "seed driver runs on runtime/bun"), check("seed-mode-setup", "seed mode setup prepares the database"), check("seed-mode-teardown", "seed mode teardown drops the tables"), check("seed-accounts", "live seed holds 7 accounts"), check("seed-dashboard", "live seed holds 3 dashboard rows"), check("seed-triage", "live seed holds 2 triage rows"), check("server-version-key", "seed report carries the serverVersion key"), check("seed-error-key", "seed report carries the error key"), check("seed-env-prefix", "seed leg exports the database URL"), check("app-accounts", "accounts leg stages account-search"), check("app-dashboard", "dashboard leg stages dashboard"), check("app-triage", "triage leg stages native-ai"), check("snapshot-accounts-key", "accounts snapshot carries ACCOUNTS_DB"), check("snapshot-dashboard-key", "dashboard snapshot carries DASHBOARD_DB"), check("snapshot-triage-name", "triage snapshot stages as triage-live"), check("snapshot-triage-key", "triage snapshot carries TRIAGE_DB"), check("snapshot-token-key", "triage snapshot carries CAN_I28_TOKEN"), check("snapshot-token-value", "triage token pins the test-only value"), check("port-accounts", "accounts leg serves 18532"), check("port-dashboard", "dashboard leg serves 18533"), check("ready-accounts", "accounts leg readies on /accounts"), check("ready-dashboard", "dashboard leg readies on /dashboard"), check("rewrite-source", "triage rewrites the oracles source"), check("rewrite-fixtures", "triage rewrites the oracle fixtures"), check("rewrite-from", "triage rewrites the dummy endpoint")]
+        other: "nope" => ok []
+    match scope is "m12-b004"
+        false => ok []
+        true => ok [check("seed-sql", "seed reads the live seed SQL"), check("seed-driver", "seed runs the live seed driver"), check("seed-runner", "seed driver runs on runtime/bun"), check("seed-mode-setup", "seed mode setup prepares the database"), check("seed-mode-teardown", "seed mode teardown drops the tables"), check("seed-accounts", "live seed holds 7 accounts"), check("seed-dashboard", "live seed holds 3 dashboard rows"), check("seed-triage", "live seed holds 2 triage rows"), check("server-version-key", "seed report carries the serverVersion key"), check("seed-error-key", "seed report carries the error key"), check("seed-env-prefix", "seed leg exports the database URL"), check("app-accounts", "accounts leg stages account-search"), check("app-dashboard", "dashboard leg stages dashboard"), check("app-triage", "triage leg stages native-ai"), check("snapshot-accounts-key", "accounts snapshot carries ACCOUNTS_DB"), check("snapshot-dashboard-key", "dashboard snapshot carries DASHBOARD_DB"), check("snapshot-triage-name", "triage snapshot stages as triage-live"), check("snapshot-triage-key", "triage snapshot carries TRIAGE_DB"), check("snapshot-token-key", "triage snapshot carries CAN_I28_TOKEN"), check("snapshot-token-value", "triage token pins the test-only value"), check("port-accounts", "accounts leg serves 18532"), check("port-dashboard", "dashboard leg serves 18533"), check("ready-accounts", "accounts leg readies on /accounts"), check("ready-dashboard", "dashboard leg readies on /dashboard"), check("rewrite-source", "triage rewrites the oracles source"), check("rewrite-fixtures", "triage rewrites the oracle fixtures"), check("rewrite-from", "triage rewrites the dummy endpoint")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "browser/live-roots" => ok [expected_check("seed-sql", "tests/integration/testdata/applications/seed.sql"), expected_check("seed-driver", "tests/integration/testdata/applications/seed-driver.ts"), expected_check("seed-runner", "runtime/bun"), expected_check("seed-mode-setup", "setup"), expected_check("seed-mode-teardown", "teardown"), expected_check("seed-accounts", "7"), expected_check("seed-dashboard", "3"), expected_check("seed-triage", "2"), expected_check("server-version-key", "serverVersion"), expected_check("seed-error-key", "error"), expected_check("seed-env-prefix", "CAN_TEST_POSTGRES_URL="), expected_check("app-accounts", "account-search"), expected_check("app-dashboard", "dashboard"), expected_check("app-triage", "native-ai"), expected_check("snapshot-accounts-key", "ACCOUNTS_DB"), expected_check("snapshot-dashboard-key", "DASHBOARD_DB"), expected_check("snapshot-triage-name", "triage-live"), expected_check("snapshot-triage-key", "TRIAGE_DB"), expected_check("snapshot-token-key", "CAN_I28_TOKEN"), expected_check("snapshot-token-value", "test-only"), expected_check("port-accounts", "18532"), expected_check("port-dashboard", "18533"), expected_check("ready-accounts", "/accounts"), expected_check("ready-dashboard", "/dashboard"), expected_check("rewrite-source", "src/oracles/oracles.can"), expected_check("rewrite-fixtures", "src/oracles/fixtures"), expected_check("rewrite-from", "http://127.0.0.1:1")]
+        unknown: "nope" => ok []
+    match case is "browser/live-roots"
+        false => ok []
+        true => ok [expected_check("seed-sql", "tests/integration/testdata/applications/seed.sql"), expected_check("seed-driver", "tests/integration/testdata/applications/seed-driver.ts"), expected_check("seed-runner", "runtime/bun"), expected_check("seed-mode-setup", "setup"), expected_check("seed-mode-teardown", "teardown"), expected_check("seed-accounts", "7"), expected_check("seed-dashboard", "3"), expected_check("seed-triage", "2"), expected_check("server-version-key", "serverVersion"), expected_check("seed-error-key", "error"), expected_check("seed-env-prefix", "CAN_TEST_POSTGRES_URL="), expected_check("app-accounts", "account-search"), expected_check("app-dashboard", "dashboard"), expected_check("app-triage", "native-ai"), expected_check("snapshot-accounts-key", "ACCOUNTS_DB"), expected_check("snapshot-dashboard-key", "DASHBOARD_DB"), expected_check("snapshot-triage-name", "triage-live"), expected_check("snapshot-triage-key", "TRIAGE_DB"), expected_check("snapshot-token-key", "CAN_I28_TOKEN"), expected_check("snapshot-token-value", "test-only"), expected_check("port-accounts", "18532"), expected_check("port-dashboard", "18533"), expected_check("ready-accounts", "/accounts"), expected_check("ready-dashboard", "/dashboard"), expected_check("rewrite-source", "src/oracles/oracles.can"), expected_check("rewrite-fixtures", "src/oracles/fixtures"), expected_check("rewrite-from", "http://127.0.0.1:1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("browser/live-roots", "default", "", "offline") => ok
+        seed_seed_sql: context("browser/live-roots", "seed-seed-sql-drift", "", "offline") => failed{"seed-sql"}
+        seed_seed_driver: context("browser/live-roots", "seed-seed-driver-drift", "", "offline") => failed{"seed-driver"}
+        seed_seed_runner: context("browser/live-roots", "seed-seed-runner-drift", "", "offline") => failed{"seed-runner"}
+        seed_seed_mode_setup: context("browser/live-roots", "seed-seed-mode-setup-drift", "", "offline") => failed{"seed-mode-setup"}
+        seed_seed_mode_teardown: context("browser/live-roots", "seed-seed-mode-teardown-drift", "", "offline") => failed{"seed-mode-teardown"}
+        seed_seed_accounts: context("browser/live-roots", "seed-seed-accounts-drift", "", "offline") => failed{"seed-accounts"}
+        seed_seed_dashboard: context("browser/live-roots", "seed-seed-dashboard-drift", "", "offline") => failed{"seed-dashboard"}
+        seed_seed_triage: context("browser/live-roots", "seed-seed-triage-drift", "", "offline") => failed{"seed-triage"}
+        seed_server_version_key: context("browser/live-roots", "seed-server-version-key-drift", "", "offline") => failed{"server-version-key"}
+        seed_seed_error_key: context("browser/live-roots", "seed-seed-error-key-drift", "", "offline") => failed{"seed-error-key"}
+        seed_seed_env_prefix: context("browser/live-roots", "seed-seed-env-prefix-drift", "", "offline") => failed{"seed-env-prefix"}
+        seed_app_accounts: context("browser/live-roots", "seed-app-accounts-drift", "", "offline") => failed{"app-accounts"}
+        seed_app_dashboard: context("browser/live-roots", "seed-app-dashboard-drift", "", "offline") => failed{"app-dashboard"}
+        seed_app_triage: context("browser/live-roots", "seed-app-triage-drift", "", "offline") => failed{"app-triage"}
+        seed_snapshot_accounts_key: context("browser/live-roots", "seed-snapshot-accounts-key-drift", "", "offline") => failed{"snapshot-accounts-key"}
+        seed_snapshot_dashboard_key: context("browser/live-roots", "seed-snapshot-dashboard-key-drift", "", "offline") => failed{"snapshot-dashboard-key"}
+        seed_snapshot_triage_name: context("browser/live-roots", "seed-snapshot-triage-name-drift", "", "offline") => failed{"snapshot-triage-name"}
+        seed_snapshot_triage_key: context("browser/live-roots", "seed-snapshot-triage-key-drift", "", "offline") => failed{"snapshot-triage-key"}
+        seed_snapshot_token_key: context("browser/live-roots", "seed-snapshot-token-key-drift", "", "offline") => failed{"snapshot-token-key"}
+        seed_snapshot_token_value: context("browser/live-roots", "seed-snapshot-token-value-drift", "", "offline") => failed{"snapshot-token-value"}
+        seed_port_accounts: context("browser/live-roots", "seed-port-accounts-drift", "", "offline") => failed{"port-accounts"}
+        seed_port_dashboard: context("browser/live-roots", "seed-port-dashboard-drift", "", "offline") => failed{"port-dashboard"}
+        seed_ready_accounts: context("browser/live-roots", "seed-ready-accounts-drift", "", "offline") => failed{"ready-accounts"}
+        seed_ready_dashboard: context("browser/live-roots", "seed-ready-dashboard-drift", "", "offline") => failed{"ready-dashboard"}
+        seed_rewrite_source: context("browser/live-roots", "seed-rewrite-source-drift", "", "offline") => failed{"rewrite-source"}
+        seed_rewrite_fixtures: context("browser/live-roots", "seed-rewrite-fixtures-drift", "", "offline") => failed{"rewrite-fixtures"}
+        seed_rewrite_from: context("browser/live-roots", "seed-rewrite-from-drift", "", "offline") => failed{"rewrite-from"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.seed_sql, "tests/integration/testdata/applications/seed.sql", c, "seed-sql")
+            failed
+            ok evidence seed_sql_evidence => match call require_text(got.seed_driver, "tests/integration/testdata/applications/seed-driver.ts", c, "seed-driver")
+                failed
+                ok evidence seed_driver_evidence => match call require_text(got.seed_runner, "runtime/bun", c, "seed-runner")
+                    failed
+                    ok evidence seed_runner_evidence => match call require_text(got.seed_mode_setup, "setup", c, "seed-mode-setup")
+                        failed
+                        ok evidence seed_mode_setup_evidence => match call require_text(got.seed_mode_teardown, "teardown", c, "seed-mode-teardown")
+                            failed
+                            ok evidence seed_mode_teardown_evidence => match call require_int(got.seed_accounts, 7, c, "seed-accounts")
+                                failed
+                                ok evidence seed_accounts_evidence => match call require_int(got.seed_dashboard, 3, c, "seed-dashboard")
+                                    failed
+                                    ok evidence seed_dashboard_evidence => match call require_int(got.seed_triage, 2, c, "seed-triage")
+                                        failed
+                                        ok evidence seed_triage_evidence => match call require_text(got.server_version_key, "serverVersion", c, "server-version-key")
+                                            failed
+                                            ok evidence server_version_key_evidence => match call require_text(got.seed_error_key, "error", c, "seed-error-key")
+                                                failed
+                                                ok evidence seed_error_key_evidence => match call require_text(got.seed_env_prefix, "CAN_TEST_POSTGRES_URL=", c, "seed-env-prefix")
+                                                    failed
+                                                    ok evidence seed_env_prefix_evidence => match call require_text(got.app_accounts, "account-search", c, "app-accounts")
+                                                        failed
+                                                        ok evidence app_accounts_evidence => match call require_text(got.app_dashboard, "dashboard", c, "app-dashboard")
+                                                            failed
+                                                            ok evidence app_dashboard_evidence => match call require_text(got.app_triage, "native-ai", c, "app-triage")
+                                                                failed
+                                                                ok evidence app_triage_evidence => match call require_text(got.snapshot_accounts_key, "ACCOUNTS_DB", c, "snapshot-accounts-key")
+                                                                    failed
+                                                                    ok evidence snapshot_accounts_key_evidence => match call require_text(got.snapshot_dashboard_key, "DASHBOARD_DB", c, "snapshot-dashboard-key")
+                                                                        failed
+                                                                        ok evidence snapshot_dashboard_key_evidence => match call require_text(got.snapshot_triage_name, "triage-live", c, "snapshot-triage-name")
+                                                                            failed
+                                                                            ok evidence snapshot_triage_name_evidence => match call require_text(got.snapshot_triage_key, "TRIAGE_DB", c, "snapshot-triage-key")
+                                                                                failed
+                                                                                ok evidence snapshot_triage_key_evidence => match call require_text(got.snapshot_token_key, "CAN_I28_TOKEN", c, "snapshot-token-key")
+                                                                                    failed
+                                                                                    ok evidence snapshot_token_key_evidence => match call require_text(got.snapshot_token_value, "test-only", c, "snapshot-token-value")
+                                                                                        failed
+                                                                                        ok evidence snapshot_token_value_evidence => match call require_int(got.port_accounts, 18532, c, "port-accounts")
+                                                                                            failed
+                                                                                            ok evidence port_accounts_evidence => match call require_int(got.port_dashboard, 18533, c, "port-dashboard")
+                                                                                                failed
+                                                                                                ok evidence port_dashboard_evidence => match call require_text(got.ready_accounts, "/accounts", c, "ready-accounts")
+                                                                                                    failed
+                                                                                                    ok evidence ready_accounts_evidence => match call require_text(got.ready_dashboard, "/dashboard", c, "ready-dashboard")
+                                                                                                        failed
+                                                                                                        ok evidence ready_dashboard_evidence => match call require_text(got.rewrite_source, "src/oracles/oracles.can", c, "rewrite-source")
+                                                                                                            failed
+                                                                                                            ok evidence rewrite_source_evidence => match call require_text(got.rewrite_fixtures, "src/oracles/fixtures", c, "rewrite-fixtures")
+                                                                                                                failed
+                                                                                                                ok evidence rewrite_fixtures_evidence => match call require_text(got.rewrite_from, "http://127.0.0.1:1", c, "rewrite-from")
+                                                                                                                    failed
+                                                                                                                    ok evidence rewrite_from_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m12_b004: "m12-b004" => ok test_case("browser/live-roots", ["browser", "m12"], ["can-bun-archive", "can-test-postgres-url"], 600000, [check_ref("seed-sql"), check_ref("seed-driver"), check_ref("seed-runner"), check_ref("seed-mode-setup"), check_ref("seed-mode-teardown"), check_ref("seed-accounts"), check_ref("seed-dashboard"), check_ref("seed-triage"), check_ref("server-version-key"), check_ref("seed-error-key"), check_ref("seed-env-prefix"), check_ref("app-accounts"), check_ref("app-dashboard"), check_ref("app-triage"), check_ref("snapshot-accounts-key"), check_ref("snapshot-dashboard-key"), check_ref("snapshot-triage-name"), check_ref("snapshot-triage-key"), check_ref("snapshot-token-key"), check_ref("snapshot-token-value"), check_ref("port-accounts"), check_ref("port-dashboard"), check_ref("ready-accounts"), check_ref("ready-dashboard"), check_ref("rewrite-source"), check_ref("rewrite-fixtures"), check_ref("rewrite-from")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m12-b004"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("browser/live-roots", ["browser", "m12"], ["can-bun-archive", "can-test-postgres-url"], 600000, [check_ref("seed-sql"), check_ref("seed-driver"), check_ref("seed-runner"), check_ref("seed-mode-setup"), check_ref("seed-mode-teardown"), check_ref("seed-accounts"), check_ref("seed-dashboard"), check_ref("seed-triage"), check_ref("server-version-key"), check_ref("seed-error-key"), check_ref("seed-env-prefix"), check_ref("app-accounts"), check_ref("app-dashboard"), check_ref("app-triage"), check_ref("snapshot-accounts-key"), check_ref("snapshot-dashboard-key"), check_ref("snapshot-triage-name"), check_ref("snapshot-triage-key"), check_ref("snapshot-token-key"), check_ref("snapshot-token-value"), check_ref("port-accounts"), check_ref("port-dashboard"), check_ref("ready-accounts"), check_ref("ready-dashboard"), check_ref("rewrite-source"), check_ref("rewrite-fixtures"), check_ref("rewrite-from")], callable case_body)
