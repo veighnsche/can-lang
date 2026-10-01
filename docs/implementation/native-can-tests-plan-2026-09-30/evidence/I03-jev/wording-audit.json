@@ -1,0 +1,37 @@
+{
+ "structure": "identical: model jev-latest, one choice question each, same 3 option keys (adapter_held_service, external_n_dispatch, defer_mechanics_inert_facts)",
+ "fact_anchors_verified": [
+  "late.ts",
+  "653 lines",
+  "12 methods",
+  "late.alpha/late.beta",
+  "worker/observer",
+  "fault/use/terminal",
+  "completed/rejected/failed",
+  "16 events",
+  "8 leases",
+  "30/30",
+  "NT-I03",
+  "stale_handle",
+  "late_fault",
+  "slices/i03",
+  "capabilities/i03",
+  "owner-first",
+  "provisional",
+  "sha256",
+  "llease",
+  "wrong-owner",
+  "I01/I02/I04/I11/K05/K06/P09/P11/P14"
+ ],
+ "pairwise_word_jaccard": {
+  "R1xR2": 0.411,
+  "R1xR3": 0.38,
+  "R2xR3": 0.386
+ },
+ "sha256": {
+  "request-1": "dc0559259e5b2f4d",
+  "request-2": "d1cde03b30f109be",
+  "request-3": "fa4a42e093d9cba3"
+ },
+ "verdict": "PASS: same facts/constraints/alternatives/identifiers in all three; all explanatory prose rewritten (Jaccard ~0.35, no shared sentences beyond identifiers)."
+}

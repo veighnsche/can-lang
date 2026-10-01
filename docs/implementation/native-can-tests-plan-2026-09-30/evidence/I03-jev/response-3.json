@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"i03_late_staging_decision":{"type":"choice","choice":"adapter_held_service","confidence":0.66,"probabilities":{"external_n_dispatch":0.03,"adapter_held_service":0.77,"defer_mechanics_inert_facts":0.2}}},"usage":{"input_tokens":1228,"output_tokens":63}}

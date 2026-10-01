@@ -1,0 +1,13 @@
+{
+ "model": "jev-1.13.0",
+ "endpoint": "https://api.typesafe.ai/v1/systemone",
+ "requests": 3,
+ "http": [
+  200,
+  200,
+  200
+ ],
+ "auth": "TYPESAFE_API_KEY env (not stored)",
+ "total_input_tokens": 3844,
+ "total_output_tokens": 185
+}

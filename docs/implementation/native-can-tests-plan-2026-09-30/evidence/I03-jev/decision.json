@@ -1,0 +1,24 @@
+{
+ "decision": "adapter_held_service",
+ "unanimous": true,
+ "responses": {
+  "R1": {
+   "choice": "adapter_held_service",
+   "p": 0.85,
+   "confidence": 0.77
+  },
+  "R2": {
+   "choice": "adapter_held_service",
+   "p": 0.73,
+   "confidence": 0.6
+  },
+  "R3": {
+   "choice": "adapter_held_service",
+   "p": 0.77,
+   "confidence": 0.66
+  }
+ },
+ "dissent_analysis": "No near-split: the winner leads by 0.48+ in all three. The honesty framing (R2) drew the most defer_mechanics sympathy (0.25 vs 0.12/0.20), which correctly reflects that the double-vs-authority confusion risk is real; it is managed by the late:: namespace naming, header documentation stating these are local mechanics, and the separate future P09/P11 authority namespaces \u2014 not by deferring the merge. external_n_dispatch never exceeds 0.03: dispatching deterministic local mechanics to a nonexistent owner is pure loss.",
+ "implementation_shape": "Port late.ts verbatim to runtime/test-support/slices/i03/; adapter owns one LateOccurrenceService; 12 owner-first late:: catalogue operations under NT-I03 with owner elision; wrong-owner/stale-handle/not-found map to test::stale_handle, other rejections to late::late_fault{kind,reason}; Can package with 5 closed vocabularies + per-op wrappers + roundtrip example; provisional until P14.",
+ "advice_not_proof": "Agreement is advice, not proof. The decision still rests on the evidence: K06 header declares local mechanics, I04 sets the adapter-held precedent for doubles, and the confusion risk is contained by naming."
+}
