@@ -1,0 +1,178 @@
+package m10core016run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M10 CORE-016 "distribution ships the browser bundle tool: run shape, gates and build label".
+/// Source: tests/integration/distribution_test.go symbol
+/// TestDistributionShipsBrowserBundleTool (L359-422).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): production run shape of the distribution
+/// leg. Unlike rows with sandbox-exec invocations, this symbol only
+/// builds and reads shipped bytes, so the environment gate, the
+/// darwin/arm64 admission, the build context and the integration label
+/// are pinned verbatim here.
+/// ADAPTATION (recorded, with source lines): per the accepted
+/// CORE-014/019/040 precedent, the shared spellings also used by the
+/// CORE-015 symbol (skip needle L23, target L25-26, timeout L33, label
+/// L35/L39) are pinned verbatim with this row's own source lines
+/// recorded (L361-374); requires carries can-bun-archive only because
+/// no sandbox-exec invocation exists in this symbol.
+/// The manifest binding inventory lives in core-016-roots-green.can;
+/// protocol markers and injection exclusions live in
+/// core-016-bundle-semantics.can.
+/// Variants: gate path (archive present, admitted target) only; the
+/// skip path is pinned as data, never executed.
+/// Environment: CAN_BUN_ARCHIVE pinned archive; requires
+/// can-bun-archive. Logical gates SUITE/BUILD/ARCHIVE/ENV/DIAG and
+/// C/R/N/S/A identities bind at P23; no live run now. Descriptor
+/// timeout 120000ms mirrors the Go 2-minute ctx (L372).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case dist/browser-bundle-run checks: env-name, skip-needle,
+/// target-os, target-arch, target-needle, timeout-expr, build-label.
+/// Facet map (distribution_test.go legs): env-name pins CAN_BUN_ARCHIVE
+/// (L361); skip-needle pins the skip message (L363); target-os and
+/// target-arch pin darwin/arm64 (L365); target-needle pins the admission
+/// diagnostic (L366); timeout-expr pins 2*time.Minute (L372);
+/// build-label pins integration (L374, the distribution.Build label).
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str env_name
+    str skip_needle
+    str target_os
+    str target_arch
+    str target_needle
+    str timeout_expr
+    str build_label
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("dist/browser-bundle-run", "default", "", "offline"), "env-name" => ok "case dist/browser-bundle-run variant default root env-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "CAN_BUN_ARCHIVE", "CAN_BUN_ARCHIVE", context("dist/browser-bundle-run", "default", "", "offline"), "env-name" => ok evidence("env-name", "CAN_BUN_ARCHIVE", "CAN_BUN_ARCHIVE", true, "case dist/browser-bundle-run variant default root env-name run offline")
+        different: "CAN_BUN_ARCHIVE_2", "CAN_BUN_ARCHIVE", context("dist/browser-bundle-run", "default", "", "offline"), "env-name" => failed{"env-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration", "darwin", "arm64", "admitted integration target is macOS arm64", "2*time.Minute", "integration")
+        seed_env_name: "seed-env-name-drift" => ok observation("CAN_BUN_ARCHIVE_2", "set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration", "darwin", "arm64", "admitted integration target is macOS arm64", "2*time.Minute", "integration")
+        seed_skip_needle: "seed-skip-needle-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE to the pinned remote archive to run offline distribution integration", "darwin", "arm64", "admitted integration target is macOS arm64", "2*time.Minute", "integration")
+        seed_target_os: "seed-target-os-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration", "linux", "arm64", "admitted integration target is macOS arm64", "2*time.Minute", "integration")
+        seed_target_arch: "seed-target-arch-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration", "darwin", "amd64", "admitted integration target is macOS arm64", "2*time.Minute", "integration")
+        seed_target_needle: "seed-target-needle-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration", "darwin", "arm64", "admitted integration target is macOS amd64", "2*time.Minute", "integration")
+        seed_timeout_expr: "seed-timeout-expr-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration", "darwin", "arm64", "admitted integration target is macOS arm64", "3*time.Minute", "integration")
+        seed_build_label: "seed-build-label-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration", "darwin", "arm64", "admitted integration target is macOS arm64", "2*time.Minute", "staging")
+    match variant_id
+        "seed-env-name-drift" => ok observation("CAN_BUN_ARCHIVE_2", "set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration", "darwin", "arm64", "admitted integration target is macOS arm64", "2*time.Minute", "integration")
+        "seed-skip-needle-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE to the pinned remote archive to run offline distribution integration", "darwin", "arm64", "admitted integration target is macOS arm64", "2*time.Minute", "integration")
+        "seed-target-os-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration", "linux", "arm64", "admitted integration target is macOS arm64", "2*time.Minute", "integration")
+        "seed-target-arch-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration", "darwin", "amd64", "admitted integration target is macOS arm64", "2*time.Minute", "integration")
+        "seed-target-needle-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration", "darwin", "arm64", "admitted integration target is macOS amd64", "2*time.Minute", "integration")
+        "seed-timeout-expr-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration", "darwin", "arm64", "admitted integration target is macOS arm64", "3*time.Minute", "integration")
+        "seed-build-label-drift" => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration", "darwin", "arm64", "admitted integration target is macOS arm64", "2*time.Minute", "staging")
+        _ => ok observation("CAN_BUN_ARCHIVE", "set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration", "darwin", "arm64", "admitted integration target is macOS arm64", "2*time.Minute", "integration")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m10_016: "m10-016" => ok [check("env-name", "offline distribution requires CAN_BUN_ARCHIVE"), check("skip-needle", "missing archive skips with the pinned-archive needle"), check("target-os", "admitted integration target runs on darwin"), check("target-arch", "admitted integration target runs on arm64"), check("target-needle", "other targets fail with the admitted-target diagnostic"), check("timeout-expr", "distribution build runs under a two-minute context"), check("build-label", "distribution build stamps the integration label")]
+        other: "nope" => ok []
+    match scope is "m10-016"
+        false => ok []
+        true => ok [check("env-name", "offline distribution requires CAN_BUN_ARCHIVE"), check("skip-needle", "missing archive skips with the pinned-archive needle"), check("target-os", "admitted integration target runs on darwin"), check("target-arch", "admitted integration target runs on arm64"), check("target-needle", "other targets fail with the admitted-target diagnostic"), check("timeout-expr", "distribution build runs under a two-minute context"), check("build-label", "distribution build stamps the integration label")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "dist/browser-bundle-run" => ok [expected_check("env-name", "CAN_BUN_ARCHIVE"), expected_check("skip-needle", "set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration"), expected_check("target-os", "darwin"), expected_check("target-arch", "arm64"), expected_check("target-needle", "admitted integration target is macOS arm64"), expected_check("timeout-expr", "2*time.Minute"), expected_check("build-label", "integration")]
+        unknown: "nope" => ok []
+    match case is "dist/browser-bundle-run"
+        false => ok []
+        true => ok [expected_check("env-name", "CAN_BUN_ARCHIVE"), expected_check("skip-needle", "set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration"), expected_check("target-os", "darwin"), expected_check("target-arch", "arm64"), expected_check("target-needle", "admitted integration target is macOS arm64"), expected_check("timeout-expr", "2*time.Minute"), expected_check("build-label", "integration")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("dist/browser-bundle-run", "default", "", "offline") => ok
+        seed_env_name: context("dist/browser-bundle-run", "seed-env-name-drift", "", "offline") => failed{"env-name"}
+        seed_skip_needle: context("dist/browser-bundle-run", "seed-skip-needle-drift", "", "offline") => failed{"skip-needle"}
+        seed_target_os: context("dist/browser-bundle-run", "seed-target-os-drift", "", "offline") => failed{"target-os"}
+        seed_target_arch: context("dist/browser-bundle-run", "seed-target-arch-drift", "", "offline") => failed{"target-arch"}
+        seed_target_needle: context("dist/browser-bundle-run", "seed-target-needle-drift", "", "offline") => failed{"target-needle"}
+        seed_timeout_expr: context("dist/browser-bundle-run", "seed-timeout-expr-drift", "", "offline") => failed{"timeout-expr"}
+        seed_build_label: context("dist/browser-bundle-run", "seed-build-label-drift", "", "offline") => failed{"build-label"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.env_name, "CAN_BUN_ARCHIVE", c, "env-name")
+            failed
+            ok evidence env_name_evidence => match call require_text(got.skip_needle, "set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration", c, "skip-needle")
+                failed
+                ok evidence skip_needle_evidence => match call require_text(got.target_os, "darwin", c, "target-os")
+                    failed
+                    ok evidence target_os_evidence => match call require_text(got.target_arch, "arm64", c, "target-arch")
+                        failed
+                        ok evidence target_arch_evidence => match call require_text(got.target_needle, "admitted integration target is macOS arm64", c, "target-needle")
+                            failed
+                            ok evidence target_needle_evidence => match call require_text(got.timeout_expr, "2*time.Minute", c, "timeout-expr")
+                                failed
+                                ok evidence timeout_expr_evidence => match call require_text(got.build_label, "integration", c, "build-label")
+                                    failed
+                                    ok evidence build_label_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m10_016: "m10-016" => ok test_case("dist/browser-bundle-run", ["dist", "m10"], ["can-bun-archive"], 120000, [check_ref("env-name"), check_ref("skip-needle"), check_ref("target-os"), check_ref("target-arch"), check_ref("target-needle"), check_ref("timeout-expr"), check_ref("build-label")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m10-016"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("dist/browser-bundle-run", ["dist", "m10"], ["can-bun-archive"], 120000, [check_ref("env-name"), check_ref("skip-needle"), check_ref("target-os"), check_ref("target-arch"), check_ref("target-needle"), check_ref("timeout-expr"), check_ref("build-label")], callable case_body)
