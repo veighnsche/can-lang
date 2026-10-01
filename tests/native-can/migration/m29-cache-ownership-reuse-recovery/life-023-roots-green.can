@@ -1,0 +1,310 @@
+package m29life023roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 LIFE-023 "Shared bundle: roots green".
+/// Source: tests/integration/harness_cache_test.go setup
+/// legs of TestHarnessSharedEndToEnd (L175-184 plus guards
+/// L187/L191).
+/// Disposition: consolidate (this row ports
+/// TestHarnessSharedEndToEnd to ordinary Can functions; the old
+/// Go harness stays until the integrator retires it after
+/// every linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the green roots: the archive env
+/// line plus Getenv call plus env name, the empty gate plus
+/// its guard, the Skip line plus call plus wording, the ctx
+/// timeout line plus WithTimeout plus Background plus ten
+/// minutes shape, the defer cancel, the err guard plus Fatal
+/// err legs, the three header comment lines, and the
+/// bundle/err-guard/comment counts.
+/// ADAPTATION (recorded, with source lines): gate-guard
+/// pins archive == "" (L180); timeout-shape pins
+/// 10*time.Minute structurally as str (L183); bundle-count
+/// pins int (2) from the two calls (L186/L190);
+/// errguard-count pins int (2) from the two guards
+/// (L187/L191); comment-count pins int (3) from the header
+/// (L175-177); all call pins pin spellings only (no helper
+/// re-implementation anywhere).
+/// Facet map (static baseline): archive-line pins the env
+/// line (L179); getenv-call pins os.Getenv (L179); env-name
+/// pins CAN_BUN_ARCHIVE (L179); gate-line pins the if line
+/// (L180); gate-guard pins archive == "" (L180); skip-line
+/// pins the full Skip line (L181); skip-call pins t.Skip
+/// (L181); skip-diag pins the skip wording (L181); ctx-line
+/// pins the full ctx line (L183); ctx-call pins
+/// context.WithTimeout (L183); bg-call pins
+/// context.Background() (L183); timeout-shape pins
+/// 10*time.Minute (L183); cancel-line pins defer cancel()
+/// (L184); err-guard pins err != nil (L187/L191); fatal-err
+/// pins t.Fatal(err) (L188/L192); comment-share pins the
+/// sharing line (L175); comment-fill pins the one-fill line
+/// (L176); comment-stage pins the staged-only line (L177);
+/// bundle-count pins 2 (L186/L190); errguard-count pins 2
+/// (L187/L191); comment-count pins 3 (L175-177).
+/// The verdict pins live in life-023-cache-semantics.can; the
+/// run shape plus diagnostics live in life-023-run-shape.can.
+/// Variants: none (row lists zero variants; default plus
+/// seeded drifts only).
+/// Environment: CAN_BUN_ARCHIVE required; requires
+/// can-bun-archive.
+/// Logical gates CAN/FILES/WORK/BUILD/CLOCK bind at P23; no
+/// live run now. Accept gate P23 is unmet. Timeout 600000ms
+/// mirrors the Go 10-minute ctx (L183); binds at P23.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case life/shared-roots checks: archive-line, getenv-call,
+/// env-name, gate-line, gate-guard, skip-line, skip-call,
+/// skip-diag, ctx-line, ctx-call, bg-call, timeout-shape,
+/// cancel-line, err-guard, fatal-err, comment-share,
+/// comment-fill, comment-stage, bundle-count,
+/// errguard-count, comment-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str archive_line
+    str getenv_call
+    str env_name
+    str gate_line
+    str gate_guard
+    str skip_line
+    str skip_call
+    str skip_diag
+    str ctx_line
+    str ctx_call
+    str bg_call
+    str timeout_shape
+    str cancel_line
+    str err_guard
+    str fatal_err
+    str comment_share
+    str comment_fill
+    str comment_stage
+    int bundle_count
+    int errguard_count
+    int comment_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/shared-roots", "default", "", "offline"), "archive-line" => ok "case life/shared-roots variant default root archive-line run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/shared-roots", "default", "", "offline"), "archive-line" => ok evidence("archive-line", "true", "true", true, "case life/shared-roots variant default root archive-line run offline")
+        different: false, true, context("life/shared-roots", "default", "", "offline"), "archive-line" => failed{"archive-line"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("life/shared-roots", "default", "", "offline"), "bundle-count" => ok evidence("bundle-count", "2", "2", true, "case life/shared-roots variant default root bundle-count run offline")
+        different: 1, 2, context("life/shared-roots", "default", "", "offline"), "bundle-count" => failed{"bundle-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", context("life/shared-roots", "default", "", "offline"), "archive-line" => ok evidence("archive-line", "archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", true, "case life/shared-roots variant default root archive-line run offline")
+        different: "archive := os.Getenv(\"CAN_BUN_ARCHIVE\")_2", "archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", context("life/shared-roots", "default", "", "offline"), "archive-line" => failed{"archive-line"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_archive_line: "seed-archive-line-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")_2", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_getenv_call: "seed-getenv-call-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv_2", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_env_name: "seed-env-name-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE_2", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_gate_line: "seed-gate-line-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {_2", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_gate_guard: "seed-gate-guard-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"_2", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_skip_line: "seed-skip-line-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")_2", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_skip_call: "seed-skip-call-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip_2", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_skip_diag: "seed-skip-diag-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof_2", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_ctx_line: "seed-ctx-line-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)_2", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_ctx_call: "seed-ctx-call-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout_2", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_bg_call: "seed-bg-call-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()_2", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_timeout_shape: "seed-timeout-shape-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute_2", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_cancel_line: "seed-cancel-line-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()_2", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_err_guard: "seed-err-guard-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil_2", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_fatal_err: "seed-fatal-err-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)_2", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_comment_share: "seed-comment-share-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle._2", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_comment_fill: "seed-comment-fill-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed._2", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        seed_comment_stage: "seed-comment-stage-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test._2", 2, 2, 3)
+        seed_bundle_count: "seed-bundle-count-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 1, 2, 3)
+        seed_errguard_count: "seed-errguard-count-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 1, 3)
+        seed_comment_count: "seed-comment-count-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 2)
+    match variant_id
+        "seed-archive-line-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")_2", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        "seed-getenv-call-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv_2", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        "seed-env-name-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE_2", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        "seed-gate-line-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {_2", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        "seed-gate-guard-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"_2", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        "seed-skip-line-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")_2", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        "seed-skip-call-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip_2", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        "seed-skip-diag-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof_2", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        "seed-ctx-line-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)_2", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        "seed-ctx-call-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout_2", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        "seed-bg-call-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()_2", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        "seed-timeout-shape-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute_2", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        "seed-cancel-line-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()_2", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        "seed-err-guard-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil_2", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        "seed-fatal-err-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)_2", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        "seed-comment-share-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle._2", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        "seed-comment-fill-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed._2", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+        "seed-comment-stage-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test._2", 2, 2, 3)
+        "seed-bundle-count-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 1, 2, 3)
+        "seed-errguard-count-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 1, 3)
+        "seed-comment-count-drift" => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 2)
+        _ => ok observation("archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", "os.Getenv", "CAN_BUN_ARCHIVE", "if archive == \"\" {", "archive == \"\"", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", "t.Skip", "set CAN_BUN_ARCHIVE for harness sharing proof", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", "context.WithTimeout", "context.Background()", "10*time.Minute", "defer cancel()", "err != nil", "t.Fatal(err)", "// End-to-end sharing proof: two calls use the same suite-owned bundle.", "// Other tests may already have filled it, so at most one new fill is needed.", "// Runs only with the pinned archive, like every other staged test.", 2, 2, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l023: "m29-l023" => ok [check("archive-line", "setup pins the archive env line"), check("getenv-call", "archive pins the Getenv call"), check("env-name", "gate pins the archive env name"), check("gate-line", "setup pins the empty gate line"), check("gate-guard", "unset archive pins the guard"), check("skip-line", "unset archive pins the skip line"), check("skip-call", "gate pins the Skip call"), check("skip-diag", "skip wording is pinned"), check("ctx-line", "setup pins the ctx timeout line"), check("ctx-call", "deadline pins the WithTimeout call"), check("bg-call", "deadline pins the Background call"), check("timeout-shape", "deadline pins ten minutes"), check("cancel-line", "setup pins the defer cancel"), check("err-guard", "bundle legs face the err guard"), check("fatal-err", "err legs refuse with Fatal err"), check("comment-share", "header pins the sharing proof line"), check("comment-fill", "header pins the one-fill line"), check("comment-stage", "header pins the staged-only line"), check("bundle-count", "exactly two bundle calls run"), check("errguard-count", "two legs face the err guard"), check("comment-count", "header holds three lines")]
+        other: "nope" => ok []
+    match scope is "m29-l023"
+        false => ok []
+        true => ok [check("archive-line", "setup pins the archive env line"), check("getenv-call", "archive pins the Getenv call"), check("env-name", "gate pins the archive env name"), check("gate-line", "setup pins the empty gate line"), check("gate-guard", "unset archive pins the guard"), check("skip-line", "unset archive pins the skip line"), check("skip-call", "gate pins the Skip call"), check("skip-diag", "skip wording is pinned"), check("ctx-line", "setup pins the ctx timeout line"), check("ctx-call", "deadline pins the WithTimeout call"), check("bg-call", "deadline pins the Background call"), check("timeout-shape", "deadline pins ten minutes"), check("cancel-line", "setup pins the defer cancel"), check("err-guard", "bundle legs face the err guard"), check("fatal-err", "err legs refuse with Fatal err"), check("comment-share", "header pins the sharing proof line"), check("comment-fill", "header pins the one-fill line"), check("comment-stage", "header pins the staged-only line"), check("bundle-count", "exactly two bundle calls run"), check("errguard-count", "two legs face the err guard"), check("comment-count", "header holds three lines")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/shared-roots" => ok [expected_check("archive-line", "archive := os.Getenv(\"CAN_BUN_ARCHIVE\")"), expected_check("getenv-call", "os.Getenv"), expected_check("env-name", "CAN_BUN_ARCHIVE"), expected_check("gate-line", "if archive == \"\" {"), expected_check("gate-guard", "archive == \"\""), expected_check("skip-line", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")"), expected_check("skip-call", "t.Skip"), expected_check("skip-diag", "set CAN_BUN_ARCHIVE for harness sharing proof"), expected_check("ctx-line", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)"), expected_check("ctx-call", "context.WithTimeout"), expected_check("bg-call", "context.Background()"), expected_check("timeout-shape", "10*time.Minute"), expected_check("cancel-line", "defer cancel()"), expected_check("err-guard", "err != nil"), expected_check("fatal-err", "t.Fatal(err)"), expected_check("comment-share", "// End-to-end sharing proof: two calls use the same suite-owned bundle."), expected_check("comment-fill", "// Other tests may already have filled it, so at most one new fill is needed."), expected_check("comment-stage", "// Runs only with the pinned archive, like every other staged test."), expected_check("bundle-count", "2"), expected_check("errguard-count", "2"), expected_check("comment-count", "3")]
+        unknown: "nope" => ok []
+    match case is "life/shared-roots"
+        false => ok []
+        true => ok [expected_check("archive-line", "archive := os.Getenv(\"CAN_BUN_ARCHIVE\")"), expected_check("getenv-call", "os.Getenv"), expected_check("env-name", "CAN_BUN_ARCHIVE"), expected_check("gate-line", "if archive == \"\" {"), expected_check("gate-guard", "archive == \"\""), expected_check("skip-line", "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")"), expected_check("skip-call", "t.Skip"), expected_check("skip-diag", "set CAN_BUN_ARCHIVE for harness sharing proof"), expected_check("ctx-line", "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)"), expected_check("ctx-call", "context.WithTimeout"), expected_check("bg-call", "context.Background()"), expected_check("timeout-shape", "10*time.Minute"), expected_check("cancel-line", "defer cancel()"), expected_check("err-guard", "err != nil"), expected_check("fatal-err", "t.Fatal(err)"), expected_check("comment-share", "// End-to-end sharing proof: two calls use the same suite-owned bundle."), expected_check("comment-fill", "// Other tests may already have filled it, so at most one new fill is needed."), expected_check("comment-stage", "// Runs only with the pinned archive, like every other staged test."), expected_check("bundle-count", "2"), expected_check("errguard-count", "2"), expected_check("comment-count", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/shared-roots", "default", "", "offline") => ok
+        seed_archive_line: context("life/shared-roots", "seed-archive-line-drift", "", "offline") => failed{"archive-line"}
+        seed_getenv_call: context("life/shared-roots", "seed-getenv-call-drift", "", "offline") => failed{"getenv-call"}
+        seed_env_name: context("life/shared-roots", "seed-env-name-drift", "", "offline") => failed{"env-name"}
+        seed_gate_line: context("life/shared-roots", "seed-gate-line-drift", "", "offline") => failed{"gate-line"}
+        seed_gate_guard: context("life/shared-roots", "seed-gate-guard-drift", "", "offline") => failed{"gate-guard"}
+        seed_skip_line: context("life/shared-roots", "seed-skip-line-drift", "", "offline") => failed{"skip-line"}
+        seed_skip_call: context("life/shared-roots", "seed-skip-call-drift", "", "offline") => failed{"skip-call"}
+        seed_skip_diag: context("life/shared-roots", "seed-skip-diag-drift", "", "offline") => failed{"skip-diag"}
+        seed_ctx_line: context("life/shared-roots", "seed-ctx-line-drift", "", "offline") => failed{"ctx-line"}
+        seed_ctx_call: context("life/shared-roots", "seed-ctx-call-drift", "", "offline") => failed{"ctx-call"}
+        seed_bg_call: context("life/shared-roots", "seed-bg-call-drift", "", "offline") => failed{"bg-call"}
+        seed_timeout_shape: context("life/shared-roots", "seed-timeout-shape-drift", "", "offline") => failed{"timeout-shape"}
+        seed_cancel_line: context("life/shared-roots", "seed-cancel-line-drift", "", "offline") => failed{"cancel-line"}
+        seed_err_guard: context("life/shared-roots", "seed-err-guard-drift", "", "offline") => failed{"err-guard"}
+        seed_fatal_err: context("life/shared-roots", "seed-fatal-err-drift", "", "offline") => failed{"fatal-err"}
+        seed_comment_share: context("life/shared-roots", "seed-comment-share-drift", "", "offline") => failed{"comment-share"}
+        seed_comment_fill: context("life/shared-roots", "seed-comment-fill-drift", "", "offline") => failed{"comment-fill"}
+        seed_comment_stage: context("life/shared-roots", "seed-comment-stage-drift", "", "offline") => failed{"comment-stage"}
+        seed_bundle_count: context("life/shared-roots", "seed-bundle-count-drift", "", "offline") => failed{"bundle-count"}
+        seed_errguard_count: context("life/shared-roots", "seed-errguard-count-drift", "", "offline") => failed{"errguard-count"}
+        seed_comment_count: context("life/shared-roots", "seed-comment-count-drift", "", "offline") => failed{"comment-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.archive_line, "archive := os.Getenv(\"CAN_BUN_ARCHIVE\")", c, "archive-line")
+            failed
+            ok evidence archive_line_evidence => match call require_text(got.getenv_call, "os.Getenv", c, "getenv-call")
+                failed
+                ok evidence getenv_call_evidence => match call require_text(got.env_name, "CAN_BUN_ARCHIVE", c, "env-name")
+                    failed
+                    ok evidence env_name_evidence => match call require_text(got.gate_line, "if archive == \"\" {", c, "gate-line")
+                        failed
+                        ok evidence gate_line_evidence => match call require_text(got.gate_guard, "archive == \"\"", c, "gate-guard")
+                            failed
+                            ok evidence gate_guard_evidence => match call require_text(got.skip_line, "t.Skip(\"set CAN_BUN_ARCHIVE for harness sharing proof\")", c, "skip-line")
+                                failed
+                                ok evidence skip_line_evidence => match call require_text(got.skip_call, "t.Skip", c, "skip-call")
+                                    failed
+                                    ok evidence skip_call_evidence => match call require_text(got.skip_diag, "set CAN_BUN_ARCHIVE for harness sharing proof", c, "skip-diag")
+                                        failed
+                                        ok evidence skip_diag_evidence => match call require_text(got.ctx_line, "ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)", c, "ctx-line")
+                                            failed
+                                            ok evidence ctx_line_evidence => match call require_text(got.ctx_call, "context.WithTimeout", c, "ctx-call")
+                                                failed
+                                                ok evidence ctx_call_evidence => match call require_text(got.bg_call, "context.Background()", c, "bg-call")
+                                                    failed
+                                                    ok evidence bg_call_evidence => match call require_text(got.timeout_shape, "10*time.Minute", c, "timeout-shape")
+                                                        failed
+                                                        ok evidence timeout_shape_evidence => match call require_text(got.cancel_line, "defer cancel()", c, "cancel-line")
+                                                            failed
+                                                            ok evidence cancel_line_evidence => match call require_text(got.err_guard, "err != nil", c, "err-guard")
+                                                                failed
+                                                                ok evidence err_guard_evidence => match call require_text(got.fatal_err, "t.Fatal(err)", c, "fatal-err")
+                                                                    failed
+                                                                    ok evidence fatal_err_evidence => match call require_text(got.comment_share, "// End-to-end sharing proof: two calls use the same suite-owned bundle.", c, "comment-share")
+                                                                        failed
+                                                                        ok evidence comment_share_evidence => match call require_text(got.comment_fill, "// Other tests may already have filled it, so at most one new fill is needed.", c, "comment-fill")
+                                                                            failed
+                                                                            ok evidence comment_fill_evidence => match call require_text(got.comment_stage, "// Runs only with the pinned archive, like every other staged test.", c, "comment-stage")
+                                                                                failed
+                                                                                ok evidence comment_stage_evidence => match call require_int(got.bundle_count, 2, c, "bundle-count")
+                                                                                    failed
+                                                                                    ok evidence bundle_count_evidence => match call require_int(got.errguard_count, 2, c, "errguard-count")
+                                                                                        failed
+                                                                                        ok evidence errguard_count_evidence => match call require_int(got.comment_count, 3, c, "comment-count")
+                                                                                            failed
+                                                                                            ok evidence comment_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l023: "m29-l023" => ok test_case("life/shared-roots", ["life", "m29"], ["can-bun-archive"], 600000, [check_ref("archive-line"), check_ref("getenv-call"), check_ref("env-name"), check_ref("gate-line"), check_ref("gate-guard"), check_ref("skip-line"), check_ref("skip-call"), check_ref("skip-diag"), check_ref("ctx-line"), check_ref("ctx-call"), check_ref("bg-call"), check_ref("timeout-shape"), check_ref("cancel-line"), check_ref("err-guard"), check_ref("fatal-err"), check_ref("comment-share"), check_ref("comment-fill"), check_ref("comment-stage"), check_ref("bundle-count"), check_ref("errguard-count"), check_ref("comment-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-l023"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/shared-roots", ["life", "m29"], ["can-bun-archive"], 600000, [check_ref("archive-line"), check_ref("getenv-call"), check_ref("env-name"), check_ref("gate-line"), check_ref("gate-guard"), check_ref("skip-line"), check_ref("skip-call"), check_ref("skip-diag"), check_ref("ctx-line"), check_ref("ctx-call"), check_ref("bg-call"), check_ref("timeout-shape"), check_ref("cancel-line"), check_ref("err-guard"), check_ref("fatal-err"), check_ref("comment-share"), check_ref("comment-fill"), check_ref("comment-stage"), check_ref("bundle-count"), check_ref("errguard-count"), check_ref("comment-count")], callable case_body)

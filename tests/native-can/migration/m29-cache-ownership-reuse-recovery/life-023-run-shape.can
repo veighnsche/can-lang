@@ -1,0 +1,247 @@
+package m29life023run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 LIFE-023 "Shared bundle: run shape".
+/// Source: tests/integration/harness_cache_test.go symbol
+/// TestHarnessSharedEndToEnd (L175-200): comment trio
+/// (L175-177); env gate (L179-182); ctx setup (L183-184);
+/// before leg (L185); bundle legs (L186-193); identity
+/// check (L194-196); fill check (L197-199).
+/// Disposition: consolidate (this row ports
+/// TestHarnessSharedEndToEnd to ordinary Can functions; the old
+/// Go harness stays until the integrator retires it after
+/// every linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the live run shape: the test name,
+/// the full signature, the before leg, the two bundle legs,
+/// the identity if line, the diverged-paths Fatalf leg, the
+/// fill if line, the fills Fatalf leg, the Fatalf call, and
+/// the bundle/Fatalf counts.
+/// ADAPTATION (recorded, with source lines): sig-line pins
+/// the full L178 spelling; identity-line pins the full L194
+/// spelling; fatalf-share pins the full L195 spelling;
+/// fill-line pins the full L197 spelling; fatalf-fill pins
+/// the full L198 spelling; bundle-count pins int (2) from
+/// the two legs (L186/L190); fatalf-count pins int (2) from
+/// the two refusals (L195/L198).
+/// Facet map (launch plus diagnostics): test-name pins
+/// TestHarnessSharedEndToEnd (L178); sig-line pins the full
+/// signature (L178); before-leg pins the before leg (L185);
+/// first-leg pins the first leg (L186); second-leg pins the
+/// repeat leg (L190); identity-line pins the identity line
+/// (L194); fatalf-share pins the diverged leg (L195);
+/// fill-line pins the fill line (L197); fatalf-fill pins the
+/// fills leg (L198); fatalf-call pins t.Fatalf (L195/L198);
+/// bundle-count pins 2 (L186/L190); fatalf-count pins 2
+/// (L195/L198).
+/// The verdict pins live in life-023-cache-semantics.can; the
+/// roots-green pin lives in life-023-roots-green.can.
+/// Variants: none (row lists zero variants; default plus
+/// seeded drifts only).
+/// Environment: CAN_BUN_ARCHIVE required; requires
+/// can-bun-archive.
+/// Logical gates CAN/FILES/WORK/BUILD/CLOCK bind at P23; no
+/// live run now. Accept gate P23 is unmet. Timeout 600000ms
+/// mirrors the Go 10-minute ctx (L183); binds at P23.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case life/shared-run checks: test-name, sig-line,
+/// before-leg, first-leg, second-leg, identity-line,
+/// fatalf-share, fill-line, fatalf-fill, fatalf-call,
+/// bundle-count, fatalf-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str test_name
+    str sig_line
+    str before_leg
+    str first_leg
+    str second_leg
+    str identity_line
+    str fatalf_share
+    str fill_line
+    str fatalf_fill
+    str fatalf_call
+    int bundle_count
+    int fatalf_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/shared-run", "default", "", "offline"), "test-name" => ok "case life/shared-run variant default root test-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/shared-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "true", "true", true, "case life/shared-run variant default root test-name run offline")
+        different: false, true, context("life/shared-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("life/shared-run", "default", "", "offline"), "bundle-count" => ok evidence("bundle-count", "2", "2", true, "case life/shared-run variant default root bundle-count run offline")
+        different: 1, 2, context("life/shared-run", "default", "", "offline"), "bundle-count" => failed{"bundle-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "TestHarnessSharedEndToEnd", "TestHarnessSharedEndToEnd", context("life/shared-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "TestHarnessSharedEndToEnd", "TestHarnessSharedEndToEnd", true, "case life/shared-run variant default root test-name run offline")
+        different: "TestHarnessSharedEndToEnd_2", "TestHarnessSharedEndToEnd", context("life/shared-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+        seed_test_name: "seed-test-name-drift" => ok observation("TestHarnessSharedEndToEnd_2", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+        seed_sig_line: "seed-sig-line-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {_2", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+        seed_before_leg: "seed-before-leg-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()_2", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+        seed_first_leg: "seed-first-leg-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)_2", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+        seed_second_leg: "seed-second-leg-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)_2", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+        seed_identity_line: "seed-identity-line-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {_2", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+        seed_fatalf_share: "seed-fatalf-share-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)_2", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+        seed_fill_line: "seed-fill-line-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {_2", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+        seed_fatalf_fill: "seed-fatalf-fill-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)_2", "t.Fatalf", 2, 2)
+        seed_fatalf_call: "seed-fatalf-call-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf_2", 2, 2)
+        seed_bundle_count: "seed-bundle-count-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 1, 2)
+        seed_fatalf_count: "seed-fatalf-count-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 1)
+    match variant_id
+        "seed-test-name-drift" => ok observation("TestHarnessSharedEndToEnd_2", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+        "seed-sig-line-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {_2", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+        "seed-before-leg-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()_2", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+        "seed-first-leg-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)_2", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+        "seed-second-leg-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)_2", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+        "seed-identity-line-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {_2", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+        "seed-fatalf-share-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)_2", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+        "seed-fill-line-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {_2", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+        "seed-fatalf-fill-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)_2", "t.Fatalf", 2, 2)
+        "seed-fatalf-call-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf_2", 2, 2)
+        "seed-bundle-count-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 1, 2)
+        "seed-fatalf-count-drift" => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 1)
+        _ => ok observation("TestHarnessSharedEndToEnd", "func TestHarnessSharedEndToEnd(t *testing.T) {", "before := harnessBuilds.Load()", "first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "if first != second {", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", "if got := harnessBuilds.Load() - before; got > 1 {", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", "t.Fatalf", 2, 2)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l023: "m29-l023" => ok [check("test-name", "row pins the SharedEndToEnd test name"), check("sig-line", "row pins the full test signature"), check("before-leg", "run pins the before counter leg"), check("first-leg", "run pins the first bundle leg"), check("second-leg", "run pins the second bundle leg"), check("identity-line", "run pins the identity if line"), check("fatalf-share", "diverged paths refuse on the Fatalf leg"), check("fill-line", "run pins the fill if line"), check("fatalf-fill", "extra fills refuse on the Fatalf leg"), check("fatalf-call", "refusals pin the Fatalf call"), check("bundle-count", "exactly two bundle legs run"), check("fatalf-count", "exactly two Fatalf legs run")]
+        other: "nope" => ok []
+    match scope is "m29-l023"
+        false => ok []
+        true => ok [check("test-name", "row pins the SharedEndToEnd test name"), check("sig-line", "row pins the full test signature"), check("before-leg", "run pins the before counter leg"), check("first-leg", "run pins the first bundle leg"), check("second-leg", "run pins the second bundle leg"), check("identity-line", "run pins the identity if line"), check("fatalf-share", "diverged paths refuse on the Fatalf leg"), check("fill-line", "run pins the fill if line"), check("fatalf-fill", "extra fills refuse on the Fatalf leg"), check("fatalf-call", "refusals pin the Fatalf call"), check("bundle-count", "exactly two bundle legs run"), check("fatalf-count", "exactly two Fatalf legs run")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/shared-run" => ok [expected_check("test-name", "TestHarnessSharedEndToEnd"), expected_check("sig-line", "func TestHarnessSharedEndToEnd(t *testing.T) {"), expected_check("before-leg", "before := harnessBuilds.Load()"), expected_check("first-leg", "first, err := harnessBundle(t, ctx, archive)"), expected_check("second-leg", "second, err := harnessBundle(t, ctx, archive)"), expected_check("identity-line", "if first != second {"), expected_check("fatalf-share", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)"), expected_check("fill-line", "if got := harnessBuilds.Load() - before; got > 1 {"), expected_check("fatalf-fill", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)"), expected_check("fatalf-call", "t.Fatalf"), expected_check("bundle-count", "2"), expected_check("fatalf-count", "2")]
+        unknown: "nope" => ok []
+    match case is "life/shared-run"
+        false => ok []
+        true => ok [expected_check("test-name", "TestHarnessSharedEndToEnd"), expected_check("sig-line", "func TestHarnessSharedEndToEnd(t *testing.T) {"), expected_check("before-leg", "before := harnessBuilds.Load()"), expected_check("first-leg", "first, err := harnessBundle(t, ctx, archive)"), expected_check("second-leg", "second, err := harnessBundle(t, ctx, archive)"), expected_check("identity-line", "if first != second {"), expected_check("fatalf-share", "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)"), expected_check("fill-line", "if got := harnessBuilds.Load() - before; got > 1 {"), expected_check("fatalf-fill", "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)"), expected_check("fatalf-call", "t.Fatalf"), expected_check("bundle-count", "2"), expected_check("fatalf-count", "2")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/shared-run", "default", "", "offline") => ok
+        seed_test_name: context("life/shared-run", "seed-test-name-drift", "", "offline") => failed{"test-name"}
+        seed_sig_line: context("life/shared-run", "seed-sig-line-drift", "", "offline") => failed{"sig-line"}
+        seed_before_leg: context("life/shared-run", "seed-before-leg-drift", "", "offline") => failed{"before-leg"}
+        seed_first_leg: context("life/shared-run", "seed-first-leg-drift", "", "offline") => failed{"first-leg"}
+        seed_second_leg: context("life/shared-run", "seed-second-leg-drift", "", "offline") => failed{"second-leg"}
+        seed_identity_line: context("life/shared-run", "seed-identity-line-drift", "", "offline") => failed{"identity-line"}
+        seed_fatalf_share: context("life/shared-run", "seed-fatalf-share-drift", "", "offline") => failed{"fatalf-share"}
+        seed_fill_line: context("life/shared-run", "seed-fill-line-drift", "", "offline") => failed{"fill-line"}
+        seed_fatalf_fill: context("life/shared-run", "seed-fatalf-fill-drift", "", "offline") => failed{"fatalf-fill"}
+        seed_fatalf_call: context("life/shared-run", "seed-fatalf-call-drift", "", "offline") => failed{"fatalf-call"}
+        seed_bundle_count: context("life/shared-run", "seed-bundle-count-drift", "", "offline") => failed{"bundle-count"}
+        seed_fatalf_count: context("life/shared-run", "seed-fatalf-count-drift", "", "offline") => failed{"fatalf-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.test_name, "TestHarnessSharedEndToEnd", c, "test-name")
+            failed
+            ok evidence test_name_evidence => match call require_text(got.sig_line, "func TestHarnessSharedEndToEnd(t *testing.T) {", c, "sig-line")
+                failed
+                ok evidence sig_line_evidence => match call require_text(got.before_leg, "before := harnessBuilds.Load()", c, "before-leg")
+                    failed
+                    ok evidence before_leg_evidence => match call require_text(got.first_leg, "first, err := harnessBundle(t, ctx, archive)", c, "first-leg")
+                        failed
+                        ok evidence first_leg_evidence => match call require_text(got.second_leg, "second, err := harnessBundle(t, ctx, archive)", c, "second-leg")
+                            failed
+                            ok evidence second_leg_evidence => match call require_text(got.identity_line, "if first != second {", c, "identity-line")
+                                failed
+                                ok evidence identity_line_evidence => match call require_text(got.fatalf_share, "t.Fatalf(\"shared bundle paths differ: %q vs %q\", first, second)", c, "fatalf-share")
+                                    failed
+                                    ok evidence fatalf_share_evidence => match call require_text(got.fill_line, "if got := harnessBuilds.Load() - before; got > 1 {", c, "fill-line")
+                                        failed
+                                        ok evidence fill_line_evidence => match call require_text(got.fatalf_fill, "t.Fatalf(\"two shared-bundle calls performed %d fills, want at most 1\", got)", c, "fatalf-fill")
+                                            failed
+                                            ok evidence fatalf_fill_evidence => match call require_text(got.fatalf_call, "t.Fatalf", c, "fatalf-call")
+                                                failed
+                                                ok evidence fatalf_call_evidence => match call require_int(got.bundle_count, 2, c, "bundle-count")
+                                                    failed
+                                                    ok evidence bundle_count_evidence => match call require_int(got.fatalf_count, 2, c, "fatalf-count")
+                                                        failed
+                                                        ok evidence fatalf_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l023: "m29-l023" => ok test_case("life/shared-run", ["life", "m29"], ["can-bun-archive"], 600000, [check_ref("test-name"), check_ref("sig-line"), check_ref("before-leg"), check_ref("first-leg"), check_ref("second-leg"), check_ref("identity-line"), check_ref("fatalf-share"), check_ref("fill-line"), check_ref("fatalf-fill"), check_ref("fatalf-call"), check_ref("bundle-count"), check_ref("fatalf-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-l023"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/shared-run", ["life", "m29"], ["can-bun-archive"], 600000, [check_ref("test-name"), check_ref("sig-line"), check_ref("before-leg"), check_ref("first-leg"), check_ref("second-leg"), check_ref("identity-line"), check_ref("fatalf-share"), check_ref("fill-line"), check_ref("fatalf-fill"), check_ref("fatalf-call"), check_ref("bundle-count"), check_ref("fatalf-count")], callable case_body)

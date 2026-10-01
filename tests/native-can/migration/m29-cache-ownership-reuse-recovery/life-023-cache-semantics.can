@@ -1,0 +1,275 @@
+package m29life023cache
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 LIFE-023 "Shared bundle: cache semantics".
+/// Source: tests/integration/harness_cache_test.go symbol
+/// TestHarnessSharedEndToEnd (L175-200).
+/// Disposition: consolidate (this row ports
+/// TestHarnessSharedEndToEnd to ordinary Can functions; the old
+/// Go harness stays until the integrator retires it after
+/// every linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the two bundle request legs plus
+/// their helper and args, the shared-identity comparison
+/// (compare spelling plus not-equal op), the before line,
+/// the fill line plus minus-before shape plus guard, the
+/// two Fatalf refusal wordings, the shared verdict, the
+/// two-request count, and the one-fill bound.
+/// ADAPTATION (recorded, with source lines): identity-cmp
+/// pins first != second (L194) as the identity comparison
+/// (no path re-hash anywhere); identity-op pins != (L194);
+/// fill-expr pins the minus-before shape (L197) as the fill
+/// counting logic (no counter re-implementation); fill-guard
+/// pins got > 1 (L197); fill-bound pins int (1) from the
+/// guard and wording (L197-198); shared-same pins bool
+/// (true) from the protects facet; request-count pins int
+/// (2) from the two request legs (L186/L190).
+/// Facet map (Go verdict legs): first-leg pins the first
+/// call (L186); second-leg pins the repeat call (L190);
+/// bundle-call pins harnessBundle (L186/L190); bundle-args
+/// pins (t, ctx, archive) (L186/L190); identity-cmp pins
+/// first != second (L194); identity-op pins != (L194);
+/// before-line pins the before line (L185); builds-call pins
+/// harnessBuilds.Load() (L185/L197); fill-line pins the full
+/// if line (L197); fill-expr pins the minus-before shape
+/// (L197); fill-guard pins got > 1 (L197); fatal-share pins
+/// the diverged-paths wording (L195); fatal-fill pins the
+/// fills wording (L198); shared-same pins true (protects
+/// facet); request-count pins 2 (L186/L190); fill-bound
+/// pins 1 (L197-198).
+/// The roots-green pin lives in life-023-roots-green.can; the
+/// run shape plus diagnostics live in life-023-run-shape.can.
+/// Variants: none (row lists zero variants; default plus
+/// seeded drifts only).
+/// Environment: CAN_BUN_ARCHIVE required; requires
+/// can-bun-archive.
+/// Logical gates CAN/FILES/WORK/BUILD/CLOCK bind at P23; no
+/// live run now. Accept gate P23 is unmet. Timeout 600000ms
+/// mirrors the Go 10-minute ctx (L183); binds at P23.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case life/shared-semantics checks: first-leg,
+/// second-leg, bundle-call, bundle-args, identity-cmp,
+/// identity-op, before-line, builds-call, fill-line,
+/// fill-expr, fill-guard, fatal-share, fatal-fill,
+/// shared-same, request-count, fill-bound.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str first_leg
+    str second_leg
+    str bundle_call
+    str bundle_args
+    str identity_cmp
+    str identity_op
+    str before_line
+    str builds_call
+    str fill_line
+    str fill_expr
+    str fill_guard
+    str fatal_share
+    str fatal_fill
+    bool shared_same
+    int request_count
+    int fill_bound
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/shared-semantics", "default", "", "offline"), "first-leg" => ok "case life/shared-semantics variant default root first-leg run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/shared-semantics", "default", "", "offline"), "first-leg" => ok evidence("first-leg", "true", "true", true, "case life/shared-semantics variant default root first-leg run offline")
+        different: false, true, context("life/shared-semantics", "default", "", "offline"), "first-leg" => failed{"first-leg"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("life/shared-semantics", "default", "", "offline"), "request-count" => ok evidence("request-count", "2", "2", true, "case life/shared-semantics variant default root request-count run offline")
+        different: 1, 2, context("life/shared-semantics", "default", "", "offline"), "request-count" => failed{"request-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "first, err := harnessBundle(t, ctx, archive)", "first, err := harnessBundle(t, ctx, archive)", context("life/shared-semantics", "default", "", "offline"), "first-leg" => ok evidence("first-leg", "first, err := harnessBundle(t, ctx, archive)", "first, err := harnessBundle(t, ctx, archive)", true, "case life/shared-semantics variant default root first-leg run offline")
+        different: "first, err := harnessBundle(t, ctx, archive)_2", "first, err := harnessBundle(t, ctx, archive)", context("life/shared-semantics", "default", "", "offline"), "first-leg" => failed{"first-leg"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        seed_first_leg: "seed-first-leg-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)_2", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        seed_second_leg: "seed-second-leg-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)_2", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        seed_bundle_call: "seed-bundle-call-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle_2", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        seed_bundle_args: "seed-bundle-args-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)_2", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        seed_identity_cmp: "seed-identity-cmp-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second_2", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        seed_identity_op: "seed-identity-op-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=_2", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        seed_before_line: "seed-before-line-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()_2", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        seed_builds_call: "seed-builds-call-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()_2", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        seed_fill_line: "seed-fill-line-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {_2", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        seed_fill_expr: "seed-fill-expr-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before_2", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        seed_fill_guard: "seed-fill-guard-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1_2", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        seed_fatal_share: "seed-fatal-share-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q_2", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        seed_fatal_fill: "seed-fatal-fill-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1_2", true, 2, 1)
+        seed_shared_same: "seed-shared-same-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", false, 2, 1)
+        seed_request_count: "seed-request-count-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 1, 1)
+        seed_fill_bound: "seed-fill-bound-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 0)
+    match variant_id
+        "seed-first-leg-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)_2", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        "seed-second-leg-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)_2", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        "seed-bundle-call-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle_2", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        "seed-bundle-args-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)_2", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        "seed-identity-cmp-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second_2", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        "seed-identity-op-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=_2", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        "seed-before-line-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()_2", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        "seed-builds-call-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()_2", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        "seed-fill-line-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {_2", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        "seed-fill-expr-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before_2", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        "seed-fill-guard-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1_2", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        "seed-fatal-share-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q_2", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+        "seed-fatal-fill-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1_2", true, 2, 1)
+        "seed-shared-same-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", false, 2, 1)
+        "seed-request-count-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 1, 1)
+        "seed-fill-bound-drift" => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 0)
+        _ => ok observation("first, err := harnessBundle(t, ctx, archive)", "second, err := harnessBundle(t, ctx, archive)", "harnessBundle", "(t, ctx, archive)", "first != second", "!=", "before := harnessBuilds.Load()", "harnessBuilds.Load()", "if got := harnessBuilds.Load() - before; got > 1 {", "harnessBuilds.Load() - before", "got > 1", "shared bundle paths differ: %q vs %q", "two shared-bundle calls performed %d fills, want at most 1", true, 2, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l023: "m29-l023" => ok [check("first-leg", "first leg pins the first bundle call"), check("second-leg", "second leg pins the repeat bundle call"), check("bundle-call", "both request legs call the helper"), check("bundle-args", "request legs pass t ctx archive"), check("identity-cmp", "identity pins the compare spelling"), check("identity-op", "same path pins the not-equal op"), check("before-line", "fill count pins the before line"), check("builds-call", "counter pins the builds Load call"), check("fill-line", "fill check pins the full if line"), check("fill-expr", "new fills pin the minus-before shape"), check("fill-guard", "at most one pins the guard"), check("fatal-share", "diverged paths refuse with wording"), check("fatal-fill", "extra fills refuse with wording"), check("shared-same", "two requests share one artifact"), check("request-count", "exactly two bundle requests run"), check("fill-bound", "at most one new fill runs")]
+        other: "nope" => ok []
+    match scope is "m29-l023"
+        false => ok []
+        true => ok [check("first-leg", "first leg pins the first bundle call"), check("second-leg", "second leg pins the repeat bundle call"), check("bundle-call", "both request legs call the helper"), check("bundle-args", "request legs pass t ctx archive"), check("identity-cmp", "identity pins the compare spelling"), check("identity-op", "same path pins the not-equal op"), check("before-line", "fill count pins the before line"), check("builds-call", "counter pins the builds Load call"), check("fill-line", "fill check pins the full if line"), check("fill-expr", "new fills pin the minus-before shape"), check("fill-guard", "at most one pins the guard"), check("fatal-share", "diverged paths refuse with wording"), check("fatal-fill", "extra fills refuse with wording"), check("shared-same", "two requests share one artifact"), check("request-count", "exactly two bundle requests run"), check("fill-bound", "at most one new fill runs")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/shared-semantics" => ok [expected_check("first-leg", "first, err := harnessBundle(t, ctx, archive)"), expected_check("second-leg", "second, err := harnessBundle(t, ctx, archive)"), expected_check("bundle-call", "harnessBundle"), expected_check("bundle-args", "(t, ctx, archive)"), expected_check("identity-cmp", "first != second"), expected_check("identity-op", "!="), expected_check("before-line", "before := harnessBuilds.Load()"), expected_check("builds-call", "harnessBuilds.Load()"), expected_check("fill-line", "if got := harnessBuilds.Load() - before; got > 1 {"), expected_check("fill-expr", "harnessBuilds.Load() - before"), expected_check("fill-guard", "got > 1"), expected_check("fatal-share", "shared bundle paths differ: %q vs %q"), expected_check("fatal-fill", "two shared-bundle calls performed %d fills, want at most 1"), expected_check("shared-same", "true"), expected_check("request-count", "2"), expected_check("fill-bound", "1")]
+        unknown: "nope" => ok []
+    match case is "life/shared-semantics"
+        false => ok []
+        true => ok [expected_check("first-leg", "first, err := harnessBundle(t, ctx, archive)"), expected_check("second-leg", "second, err := harnessBundle(t, ctx, archive)"), expected_check("bundle-call", "harnessBundle"), expected_check("bundle-args", "(t, ctx, archive)"), expected_check("identity-cmp", "first != second"), expected_check("identity-op", "!="), expected_check("before-line", "before := harnessBuilds.Load()"), expected_check("builds-call", "harnessBuilds.Load()"), expected_check("fill-line", "if got := harnessBuilds.Load() - before; got > 1 {"), expected_check("fill-expr", "harnessBuilds.Load() - before"), expected_check("fill-guard", "got > 1"), expected_check("fatal-share", "shared bundle paths differ: %q vs %q"), expected_check("fatal-fill", "two shared-bundle calls performed %d fills, want at most 1"), expected_check("shared-same", "true"), expected_check("request-count", "2"), expected_check("fill-bound", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/shared-semantics", "default", "", "offline") => ok
+        seed_first_leg: context("life/shared-semantics", "seed-first-leg-drift", "", "offline") => failed{"first-leg"}
+        seed_second_leg: context("life/shared-semantics", "seed-second-leg-drift", "", "offline") => failed{"second-leg"}
+        seed_bundle_call: context("life/shared-semantics", "seed-bundle-call-drift", "", "offline") => failed{"bundle-call"}
+        seed_bundle_args: context("life/shared-semantics", "seed-bundle-args-drift", "", "offline") => failed{"bundle-args"}
+        seed_identity_cmp: context("life/shared-semantics", "seed-identity-cmp-drift", "", "offline") => failed{"identity-cmp"}
+        seed_identity_op: context("life/shared-semantics", "seed-identity-op-drift", "", "offline") => failed{"identity-op"}
+        seed_before_line: context("life/shared-semantics", "seed-before-line-drift", "", "offline") => failed{"before-line"}
+        seed_builds_call: context("life/shared-semantics", "seed-builds-call-drift", "", "offline") => failed{"builds-call"}
+        seed_fill_line: context("life/shared-semantics", "seed-fill-line-drift", "", "offline") => failed{"fill-line"}
+        seed_fill_expr: context("life/shared-semantics", "seed-fill-expr-drift", "", "offline") => failed{"fill-expr"}
+        seed_fill_guard: context("life/shared-semantics", "seed-fill-guard-drift", "", "offline") => failed{"fill-guard"}
+        seed_fatal_share: context("life/shared-semantics", "seed-fatal-share-drift", "", "offline") => failed{"fatal-share"}
+        seed_fatal_fill: context("life/shared-semantics", "seed-fatal-fill-drift", "", "offline") => failed{"fatal-fill"}
+        seed_shared_same: context("life/shared-semantics", "seed-shared-same-drift", "", "offline") => failed{"shared-same"}
+        seed_request_count: context("life/shared-semantics", "seed-request-count-drift", "", "offline") => failed{"request-count"}
+        seed_fill_bound: context("life/shared-semantics", "seed-fill-bound-drift", "", "offline") => failed{"fill-bound"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.first_leg, "first, err := harnessBundle(t, ctx, archive)", c, "first-leg")
+            failed
+            ok evidence first_leg_evidence => match call require_text(got.second_leg, "second, err := harnessBundle(t, ctx, archive)", c, "second-leg")
+                failed
+                ok evidence second_leg_evidence => match call require_text(got.bundle_call, "harnessBundle", c, "bundle-call")
+                    failed
+                    ok evidence bundle_call_evidence => match call require_text(got.bundle_args, "(t, ctx, archive)", c, "bundle-args")
+                        failed
+                        ok evidence bundle_args_evidence => match call require_text(got.identity_cmp, "first != second", c, "identity-cmp")
+                            failed
+                            ok evidence identity_cmp_evidence => match call require_text(got.identity_op, "!=", c, "identity-op")
+                                failed
+                                ok evidence identity_op_evidence => match call require_text(got.before_line, "before := harnessBuilds.Load()", c, "before-line")
+                                    failed
+                                    ok evidence before_line_evidence => match call require_text(got.builds_call, "harnessBuilds.Load()", c, "builds-call")
+                                        failed
+                                        ok evidence builds_call_evidence => match call require_text(got.fill_line, "if got := harnessBuilds.Load() - before; got > 1 {", c, "fill-line")
+                                            failed
+                                            ok evidence fill_line_evidence => match call require_text(got.fill_expr, "harnessBuilds.Load() - before", c, "fill-expr")
+                                                failed
+                                                ok evidence fill_expr_evidence => match call require_text(got.fill_guard, "got > 1", c, "fill-guard")
+                                                    failed
+                                                    ok evidence fill_guard_evidence => match call require_text(got.fatal_share, "shared bundle paths differ: %q vs %q", c, "fatal-share")
+                                                        failed
+                                                        ok evidence fatal_share_evidence => match call require_text(got.fatal_fill, "two shared-bundle calls performed %d fills, want at most 1", c, "fatal-fill")
+                                                            failed
+                                                            ok evidence fatal_fill_evidence => match call require_bool(got.shared_same, true, c, "shared-same")
+                                                                failed
+                                                                ok evidence shared_same_evidence => match call require_int(got.request_count, 2, c, "request-count")
+                                                                    failed
+                                                                    ok evidence request_count_evidence => match call require_int(got.fill_bound, 1, c, "fill-bound")
+                                                                        failed
+                                                                        ok evidence fill_bound_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l023: "m29-l023" => ok test_case("life/shared-semantics", ["life", "m29"], ["can-bun-archive"], 600000, [check_ref("first-leg"), check_ref("second-leg"), check_ref("bundle-call"), check_ref("bundle-args"), check_ref("identity-cmp"), check_ref("identity-op"), check_ref("before-line"), check_ref("builds-call"), check_ref("fill-line"), check_ref("fill-expr"), check_ref("fill-guard"), check_ref("fatal-share"), check_ref("fatal-fill"), check_ref("shared-same"), check_ref("request-count"), check_ref("fill-bound")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-l023"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/shared-semantics", ["life", "m29"], ["can-bun-archive"], 600000, [check_ref("first-leg"), check_ref("second-leg"), check_ref("bundle-call"), check_ref("bundle-args"), check_ref("identity-cmp"), check_ref("identity-op"), check_ref("before-line"), check_ref("builds-call"), check_ref("fill-line"), check_ref("fill-expr"), check_ref("fill-guard"), check_ref("fatal-share"), check_ref("fatal-fill"), check_ref("shared-same"), check_ref("request-count"), check_ref("fill-bound")], callable case_body)
