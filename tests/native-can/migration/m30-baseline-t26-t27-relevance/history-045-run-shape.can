@@ -1,0 +1,288 @@
+package m30history045run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-045 "Guide cover: run shape".
+/// Source: tests/baseline/t26_product_guide_test.go symbol
+/// TestT26ProductGuideCoversContracts (L30-130): guide
+/// load (L31-36); required loop (L80-84); anchor loops
+/// (L118-129).
+/// Disposition: historical_candidate (this row pins the
+/// TestT26ProductGuideCoversContracts offline pact as
+/// reviewable Can facts; the old Go check stays until
+/// the integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the live run shape: the test
+/// name, the guide const name plus file, the four loader
+/// calls, the two refusal calls, the three refusal
+/// wordings in Go order, and the four totals.
+/// ADAPTATION (recorded, with source lines): test-name
+/// pins TestT26ProductGuideCoversContracts (L30);
+/// guide-const pins t26Guide (L18); guide-path pins the
+/// guide file (L18); root-call pins repoRoot (L31);
+/// read-call pins os.ReadFile (L32); join-call pins
+/// filepath.Join (L32); contains-call pins
+/// strings.Contains (L81); fatal-call pins t.Fatal (L34);
+/// error-call pins t.Errorf (L82); error-guide-missing
+/// pins the missing inner bytes (L82);
+/// error-anchor-unreadable pins the unreadable inner
+/// bytes (L121); error-anchor-contains pins the drifted
+/// inner bytes (L126); required-count pins int (34)
+/// from L37-79; anchor-file-count pins int (8) from
+/// L87-117; anchor-marker-count pins int (13) from
+/// L87-117; error-site-count pins int (4) from
+/// L34/L82/L121/L126.
+/// Facet map (launch plus diagnostics): test-name pins
+/// CoversContracts (L30); guide-const pins const (L18);
+/// guide-path pins file (L18); root-call pins root
+/// (L31); read-call pins read (L32); join-call pins
+/// join (L32); contains-call pins search (L81);
+/// fatal-call pins Fatal (L34); error-call pins Errorf
+/// (L82); error-guide-missing pins missing plus quoted
+/// phrase (L82); error-anchor-unreadable pins file plus
+/// err (L121); error-anchor-contains pins file plus
+/// quoted phrase (L126); required-count pins 34;
+/// anchor-file-count pins 8; anchor-marker-count pins
+/// 13; error-site-count pins 4.
+/// The guide phrases live in
+/// history-045-base-semantics.can; the roots-green pin
+/// lives in history-045-roots-green.can.
+/// Variants: none (row lists zero variants; default
+/// plus seeded drifts only).
+/// Environment: one gate (Bun/Go/Git for T01 smoke or
+/// generator when applicable); binds at P23, requires
+/// [] now (offline only).
+/// Logical gates SUITE/DOC/FILES/PROC/BUILD/WORK bind
+/// at P23; no live run now. Accept gate P23 is unmet.
+/// Timeout 120000ms is the offline default bound (no
+/// Go timeout in this row; binds at P23 like the M11
+/// no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23
+/// unmet).
+/// Case history/t26-guide-run checks: test-name, guide-const,
+/// guide-path, root-call, read-call, join-call,
+/// contains-call, fatal-call, error-call,
+/// error-guide-missing, error-anchor-unreadable,
+/// error-anchor-contains, required-count, anchor-file-count,
+/// anchor-marker-count, error-site-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str test_name
+    str guide_const
+    str guide_path
+    str root_call
+    str read_call
+    str join_call
+    str contains_call
+    str fatal_call
+    str error_call
+    str error_guide_missing
+    str error_anchor_unreadable
+    str error_anchor_contains
+    int required_count
+    int anchor_file_count
+    int anchor_marker_count
+    int error_site_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/t26-guide-run", "default", "", "offline"), "test-name" => ok "case history/t26-guide-run variant default root test-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/t26-guide-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "true", "true", true, "case history/t26-guide-run variant default root test-name run offline")
+        different: false, true, context("history/t26-guide-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 34, 34, context("history/t26-guide-run", "default", "", "offline"), "required-count" => ok evidence("required-count", "34", "34", true, "case history/t26-guide-run variant default root required-count run offline")
+        different: 33, 34, context("history/t26-guide-run", "default", "", "offline"), "required-count" => failed{"required-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "TestT26ProductGuideCoversContracts", "TestT26ProductGuideCoversContracts", context("history/t26-guide-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "TestT26ProductGuideCoversContracts", "TestT26ProductGuideCoversContracts", true, "case history/t26-guide-run variant default root test-name run offline")
+        different: "TestT26ProductGuideCoversContracts_2", "TestT26ProductGuideCoversContracts", context("history/t26-guide-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        seed_test_name: "seed-test-name-drift" => ok observation("TestT26ProductGuideCoversContracts_2", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        seed_guide_const: "seed-guide-const-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide_2", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        seed_guide_path: "seed-guide-path-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md_2", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        seed_root_call: "seed-root-call-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot_2", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        seed_read_call: "seed-read-call-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile_2", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        seed_join_call: "seed-join-call-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join_2", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        seed_contains_call: "seed-contains-call-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains_2", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        seed_fatal_call: "seed-fatal-call-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal_2", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        seed_error_call: "seed-error-call-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf_2", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        seed_error_guide_missing: "seed-error-guide-missing-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q_2", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        seed_error_anchor_unreadable: "seed-error-anchor-unreadable-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v_2", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        seed_error_anchor_contains: "seed-error-anchor-contains-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q_2", 34, 8, 13, 4)
+        seed_required_count: "seed-required-count-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 33, 8, 13, 4)
+        seed_anchor_file_count: "seed-anchor-file-count-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 7, 13, 4)
+        seed_anchor_marker_count: "seed-anchor-marker-count-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 12, 4)
+        seed_error_site_count: "seed-error-site-count-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 3)
+    match variant_id
+        "seed-test-name-drift" => ok observation("TestT26ProductGuideCoversContracts_2", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        "seed-guide-const-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide_2", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        "seed-guide-path-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md_2", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        "seed-root-call-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot_2", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        "seed-read-call-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile_2", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        "seed-join-call-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join_2", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        "seed-contains-call-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains_2", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        "seed-fatal-call-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal_2", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        "seed-error-call-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf_2", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        "seed-error-guide-missing-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q_2", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        "seed-error-anchor-unreadable-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v_2", "anchor %s no longer contains %q", 34, 8, 13, 4)
+        "seed-error-anchor-contains-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q_2", 34, 8, 13, 4)
+        "seed-required-count-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 33, 8, 13, 4)
+        "seed-anchor-file-count-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 7, 13, 4)
+        "seed-anchor-marker-count-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 12, 4)
+        "seed-error-site-count-drift" => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 3)
+        _ => ok observation("TestT26ProductGuideCoversContracts", "t26Guide", "docs/syntax-taste/t26-product-guide-2026-09-24.md", "repoRoot", "os.ReadFile", "filepath.Join", "strings.Contains", "t.Fatal", "t.Errorf", "guide %s omits required phrase %q", "anchor %s unreadable: %v", "anchor %s no longer contains %q", 34, 8, 13, 4)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h045: "m30-h045" => ok [check("test-name", "row pins the CoversContracts name"), check("guide-const", "guide const keeps its name"), check("guide-path", "guide const pins its file"), check("root-call", "root resolves with repoRoot"), check("read-call", "guide loads with ReadFile"), check("join-call", "paths join with Join"), check("contains-call", "legs search with Contains"), check("fatal-call", "missing guide refuses with Fatal"), check("error-call", "missing phrases refuse with Errorf"), check("error-guide-missing", "missing phrase wording is pinned"), check("error-anchor-unreadable", "unreadable anchor wording is pinned"), check("error-anchor-contains", "drifted anchor wording is pinned"), check("required-count", "thirty-four required phrases exist"), check("anchor-file-count", "eight anchor files exist"), check("anchor-marker-count", "thirteen anchor markers exist"), check("error-site-count", "four refusal sites exist")]
+        other: "nope" => ok []
+    match scope is "m30-h045"
+        false => ok []
+        true => ok [check("test-name", "row pins the CoversContracts name"), check("guide-const", "guide const keeps its name"), check("guide-path", "guide const pins its file"), check("root-call", "root resolves with repoRoot"), check("read-call", "guide loads with ReadFile"), check("join-call", "paths join with Join"), check("contains-call", "legs search with Contains"), check("fatal-call", "missing guide refuses with Fatal"), check("error-call", "missing phrases refuse with Errorf"), check("error-guide-missing", "missing phrase wording is pinned"), check("error-anchor-unreadable", "unreadable anchor wording is pinned"), check("error-anchor-contains", "drifted anchor wording is pinned"), check("required-count", "thirty-four required phrases exist"), check("anchor-file-count", "eight anchor files exist"), check("anchor-marker-count", "thirteen anchor markers exist"), check("error-site-count", "four refusal sites exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/t26-guide-run" => ok [expected_check("test-name", "TestT26ProductGuideCoversContracts"), expected_check("guide-const", "t26Guide"), expected_check("guide-path", "docs/syntax-taste/t26-product-guide-2026-09-24.md"), expected_check("root-call", "repoRoot"), expected_check("read-call", "os.ReadFile"), expected_check("join-call", "filepath.Join"), expected_check("contains-call", "strings.Contains"), expected_check("fatal-call", "t.Fatal"), expected_check("error-call", "t.Errorf"), expected_check("error-guide-missing", "guide %s omits required phrase %q"), expected_check("error-anchor-unreadable", "anchor %s unreadable: %v"), expected_check("error-anchor-contains", "anchor %s no longer contains %q"), expected_check("required-count", "34"), expected_check("anchor-file-count", "8"), expected_check("anchor-marker-count", "13"), expected_check("error-site-count", "4")]
+        unknown: "nope" => ok []
+    match case is "history/t26-guide-run"
+        false => ok []
+        true => ok [expected_check("test-name", "TestT26ProductGuideCoversContracts"), expected_check("guide-const", "t26Guide"), expected_check("guide-path", "docs/syntax-taste/t26-product-guide-2026-09-24.md"), expected_check("root-call", "repoRoot"), expected_check("read-call", "os.ReadFile"), expected_check("join-call", "filepath.Join"), expected_check("contains-call", "strings.Contains"), expected_check("fatal-call", "t.Fatal"), expected_check("error-call", "t.Errorf"), expected_check("error-guide-missing", "guide %s omits required phrase %q"), expected_check("error-anchor-unreadable", "anchor %s unreadable: %v"), expected_check("error-anchor-contains", "anchor %s no longer contains %q"), expected_check("required-count", "34"), expected_check("anchor-file-count", "8"), expected_check("anchor-marker-count", "13"), expected_check("error-site-count", "4")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/t26-guide-run", "default", "", "offline") => ok
+        seed_test_name: context("history/t26-guide-run", "seed-test-name-drift", "", "offline") => failed{"test-name"}
+        seed_guide_const: context("history/t26-guide-run", "seed-guide-const-drift", "", "offline") => failed{"guide-const"}
+        seed_guide_path: context("history/t26-guide-run", "seed-guide-path-drift", "", "offline") => failed{"guide-path"}
+        seed_root_call: context("history/t26-guide-run", "seed-root-call-drift", "", "offline") => failed{"root-call"}
+        seed_read_call: context("history/t26-guide-run", "seed-read-call-drift", "", "offline") => failed{"read-call"}
+        seed_join_call: context("history/t26-guide-run", "seed-join-call-drift", "", "offline") => failed{"join-call"}
+        seed_contains_call: context("history/t26-guide-run", "seed-contains-call-drift", "", "offline") => failed{"contains-call"}
+        seed_fatal_call: context("history/t26-guide-run", "seed-fatal-call-drift", "", "offline") => failed{"fatal-call"}
+        seed_error_call: context("history/t26-guide-run", "seed-error-call-drift", "", "offline") => failed{"error-call"}
+        seed_error_guide_missing: context("history/t26-guide-run", "seed-error-guide-missing-drift", "", "offline") => failed{"error-guide-missing"}
+        seed_error_anchor_unreadable: context("history/t26-guide-run", "seed-error-anchor-unreadable-drift", "", "offline") => failed{"error-anchor-unreadable"}
+        seed_error_anchor_contains: context("history/t26-guide-run", "seed-error-anchor-contains-drift", "", "offline") => failed{"error-anchor-contains"}
+        seed_required_count: context("history/t26-guide-run", "seed-required-count-drift", "", "offline") => failed{"required-count"}
+        seed_anchor_file_count: context("history/t26-guide-run", "seed-anchor-file-count-drift", "", "offline") => failed{"anchor-file-count"}
+        seed_anchor_marker_count: context("history/t26-guide-run", "seed-anchor-marker-count-drift", "", "offline") => failed{"anchor-marker-count"}
+        seed_error_site_count: context("history/t26-guide-run", "seed-error-site-count-drift", "", "offline") => failed{"error-site-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.test_name, "TestT26ProductGuideCoversContracts", c, "test-name")
+            failed
+            ok evidence test_name_evidence => match call require_text(got.guide_const, "t26Guide", c, "guide-const")
+                failed
+                ok evidence guide_const_evidence => match call require_text(got.guide_path, "docs/syntax-taste/t26-product-guide-2026-09-24.md", c, "guide-path")
+                    failed
+                    ok evidence guide_path_evidence => match call require_text(got.root_call, "repoRoot", c, "root-call")
+                        failed
+                        ok evidence root_call_evidence => match call require_text(got.read_call, "os.ReadFile", c, "read-call")
+                            failed
+                            ok evidence read_call_evidence => match call require_text(got.join_call, "filepath.Join", c, "join-call")
+                                failed
+                                ok evidence join_call_evidence => match call require_text(got.contains_call, "strings.Contains", c, "contains-call")
+                                    failed
+                                    ok evidence contains_call_evidence => match call require_text(got.fatal_call, "t.Fatal", c, "fatal-call")
+                                        failed
+                                        ok evidence fatal_call_evidence => match call require_text(got.error_call, "t.Errorf", c, "error-call")
+                                            failed
+                                            ok evidence error_call_evidence => match call require_text(got.error_guide_missing, "guide %s omits required phrase %q", c, "error-guide-missing")
+                                                failed
+                                                ok evidence error_guide_missing_evidence => match call require_text(got.error_anchor_unreadable, "anchor %s unreadable: %v", c, "error-anchor-unreadable")
+                                                    failed
+                                                    ok evidence error_anchor_unreadable_evidence => match call require_text(got.error_anchor_contains, "anchor %s no longer contains %q", c, "error-anchor-contains")
+                                                        failed
+                                                        ok evidence error_anchor_contains_evidence => match call require_int(got.required_count, 34, c, "required-count")
+                                                            failed
+                                                            ok evidence required_count_evidence => match call require_int(got.anchor_file_count, 8, c, "anchor-file-count")
+                                                                failed
+                                                                ok evidence anchor_file_count_evidence => match call require_int(got.anchor_marker_count, 13, c, "anchor-marker-count")
+                                                                    failed
+                                                                    ok evidence anchor_marker_count_evidence => match call require_int(got.error_site_count, 4, c, "error-site-count")
+                                                                        failed
+                                                                        ok evidence error_site_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h045: "m30-h045" => ok test_case("history/t26-guide-run", ["history", "m30"], [], 120000, [check_ref("test-name"), check_ref("guide-const"), check_ref("guide-path"), check_ref("root-call"), check_ref("read-call"), check_ref("join-call"), check_ref("contains-call"), check_ref("fatal-call"), check_ref("error-call"), check_ref("error-guide-missing"), check_ref("error-anchor-unreadable"), check_ref("error-anchor-contains"), check_ref("required-count"), check_ref("anchor-file-count"), check_ref("anchor-marker-count"), check_ref("error-site-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h045"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/t26-guide-run", ["history", "m30"], [], 120000, [check_ref("test-name"), check_ref("guide-const"), check_ref("guide-path"), check_ref("root-call"), check_ref("read-call"), check_ref("join-call"), check_ref("contains-call"), check_ref("fatal-call"), check_ref("error-call"), check_ref("error-guide-missing"), check_ref("error-anchor-unreadable"), check_ref("error-anchor-contains"), check_ref("required-count"), check_ref("anchor-file-count"), check_ref("anchor-marker-count"), check_ref("error-site-count")], callable case_body)

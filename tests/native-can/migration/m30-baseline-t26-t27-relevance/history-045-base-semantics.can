@@ -1,0 +1,434 @@
+package m30history045base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-045 "Guide coverage: required phrases".
+/// Source: tests/baseline/t26_product_guide_test.go symbol
+/// TestT26ProductGuideCoversContracts (L30-130) plus
+/// t26Guide const (L18).
+/// Disposition: historical_candidate (this row pins the
+/// TestT26ProductGuideCoversContracts offline pact as
+/// reviewable Can facts; the old Go check stays until
+/// the integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the guide coverage facts in
+/// Go order: the eight platform names, the ten action
+/// recipe names plus limits, the four SQL promise
+/// names, the two race plus shutdown names, the four
+/// owner plus replay names, the two offline limit
+/// phrases, the four stream plus deferral plus
+/// comparison names, and the required total.
+/// ADAPTATION (recorded, with source lines): each
+/// phrase pins its Go literal inner bytes; counts pin
+/// ints tallied from the required list. phrase-bun-darwin
+/// pins darwin bundle (L39); phrase-bun-linux pins linux
+/// bundle (L40); phrase-debian pins Debian 13 (L41);
+/// phrase-glibc pins glibc 2.41 (L42); phrase-chromium
+/// pins chromium 140 (L43); phrase-webkit pins webkit 26
+/// (L44); phrase-firefox pins firefox (L45);
+/// phrase-postgres pins PostgreSQL 17.11 (L46);
+/// phrase-save-invoice pins save_invoice (L48);
+/// phrase-save-invoice-form pins save_invoice_form (L49);
+/// phrase-load-invoice pins load_invoice (L50);
+/// phrase-8192 pins 8192 (L51); phrase-64-row pins
+/// 64-row (L52); phrase-2048 pins 2048 (L53);
+/// phrase-lines-order pins lines_order (L54);
+/// phrase-serve-form-action pins serve_form_action (L55);
+/// phrase-422 pins 422 (L56); phrase-allow pins allow
+/// (L57); phrase-libpg-query pins libpg_query (L59);
+/// phrase-row-limit pins row_limit_parameter (L60);
+/// phrase-commit-unknown pins commit_unknown (L61);
+/// phrase-sql-unsafe pins sql.unsafe (L62);
+/// phrase-exactly-once pins exactly once (L64);
+/// phrase-resource-state pins resource_state (L65);
+/// phrase-owner-record pins owner record (L67);
+/// phrase-owner-only pins owner-only (L68);
+/// phrase-invoice-replay pins invoice_replay (L69);
+/// phrase-operation-id pins operation_id (L70);
+/// phrase-no-reload pins no reload durability (L72);
+/// phrase-no-queue pins no automatic queue (L73);
+/// phrase-close-reader pins close_reader (L75);
+/// phrase-primary-error pins primary error (L76);
+/// phrase-di-17 pins DI-17 (L77);
+/// phrase-no-significance pins no significance is claimed
+/// (L78); required-count pins int (34) from L37-79.
+/// Facet map (guide phrases in Go order):
+/// phrase-bun-darwin, phrase-bun-linux, phrase-debian,
+/// phrase-glibc, phrase-chromium, phrase-webkit,
+/// phrase-firefox, phrase-postgres, phrase-save-invoice,
+/// phrase-save-invoice-form, phrase-load-invoice,
+/// phrase-8192, phrase-64-row, phrase-2048,
+/// phrase-lines-order, phrase-serve-form-action, phrase-422,
+/// phrase-allow, phrase-libpg-query, phrase-row-limit,
+/// phrase-commit-unknown, phrase-sql-unsafe,
+/// phrase-exactly-once, phrase-resource-state,
+/// phrase-owner-record, phrase-owner-only,
+/// phrase-invoice-replay, phrase-operation-id,
+/// phrase-no-reload, phrase-no-queue, phrase-close-reader,
+/// phrase-primary-error, phrase-di-17,
+/// phrase-no-significance, required-count.
+/// The roots-green pin lives in
+/// history-045-roots-green.can; the run shape plus
+/// diagnostics live in history-045-run-shape.can.
+/// Variants: none (row lists zero variants; default
+/// plus seeded drifts only).
+/// Environment: one gate (Bun/Go/Git for T01 smoke or
+/// generator when applicable); binds at P23, requires
+/// [] now (offline only).
+/// Logical gates SUITE/DOC/FILES/PROC/BUILD/WORK bind
+/// at P23; no live run now. Accept gate P23 is unmet.
+/// Timeout 120000ms is the offline default bound (no
+/// Go timeout in this row; binds at P23 like the M11
+/// no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23
+/// unmet).
+/// Case history/t26-guide-base checks: phrase-bun-darwin,
+/// phrase-bun-linux, phrase-debian, phrase-glibc,
+/// phrase-chromium, phrase-webkit, phrase-firefox,
+/// phrase-postgres, phrase-save-invoice,
+/// phrase-save-invoice-form, phrase-load-invoice,
+/// phrase-8192, phrase-64-row, phrase-2048,
+/// phrase-lines-order, phrase-serve-form-action, phrase-422,
+/// phrase-allow, phrase-libpg-query, phrase-row-limit,
+/// phrase-commit-unknown, phrase-sql-unsafe,
+/// phrase-exactly-once, phrase-resource-state,
+/// phrase-owner-record, phrase-owner-only,
+/// phrase-invoice-replay, phrase-operation-id,
+/// phrase-no-reload, phrase-no-queue, phrase-close-reader,
+/// phrase-primary-error, phrase-di-17,
+/// phrase-no-significance, required-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str phrase_bun_darwin
+    str phrase_bun_linux
+    str phrase_debian
+    str phrase_glibc
+    str phrase_chromium
+    str phrase_webkit
+    str phrase_firefox
+    str phrase_postgres
+    str phrase_save_invoice
+    str phrase_save_invoice_form
+    str phrase_load_invoice
+    str phrase_8192
+    str phrase_64_row
+    str phrase_2048
+    str phrase_lines_order
+    str phrase_serve_form_action
+    str phrase_422
+    str phrase_allow
+    str phrase_libpg_query
+    str phrase_row_limit
+    str phrase_commit_unknown
+    str phrase_sql_unsafe
+    str phrase_exactly_once
+    str phrase_resource_state
+    str phrase_owner_record
+    str phrase_owner_only
+    str phrase_invoice_replay
+    str phrase_operation_id
+    str phrase_no_reload
+    str phrase_no_queue
+    str phrase_close_reader
+    str phrase_primary_error
+    str phrase_di_17
+    str phrase_no_significance
+    int required_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/t26-guide-base", "default", "", "offline"), "phrase-bun-darwin" => ok "case history/t26-guide-base variant default root phrase-bun-darwin run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/t26-guide-base", "default", "", "offline"), "phrase-bun-darwin" => ok evidence("phrase-bun-darwin", "true", "true", true, "case history/t26-guide-base variant default root phrase-bun-darwin run offline")
+        different: false, true, context("history/t26-guide-base", "default", "", "offline"), "phrase-bun-darwin" => failed{"phrase-bun-darwin"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 34, 34, context("history/t26-guide-base", "default", "", "offline"), "required-count" => ok evidence("required-count", "34", "34", true, "case history/t26-guide-base variant default root required-count run offline")
+        different: 33, 34, context("history/t26-guide-base", "default", "", "offline"), "required-count" => failed{"required-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-darwin-arm64-v1", context("history/t26-guide-base", "default", "", "offline"), "phrase-bun-darwin" => ok evidence("phrase-bun-darwin", "bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-darwin-arm64-v1", true, "case history/t26-guide-base variant default root phrase-bun-darwin run offline")
+        different: "bun-1.4.2-darwin-arm64-v1_2", "bun-1.4.2-darwin-arm64-v1", context("history/t26-guide-base", "default", "", "offline"), "phrase-bun-darwin" => failed{"phrase-bun-darwin"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_bun_darwin: "seed-phrase-bun-darwin-drift" => ok observation("bun-1.4.2-darwin-arm64-v1_2", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_bun_linux: "seed-phrase-bun-linux-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1_2", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_debian: "seed-phrase-debian-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13_2", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_glibc: "seed-phrase-glibc-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41_2", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_chromium: "seed-phrase-chromium-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140_2", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_webkit: "seed-phrase-webkit-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26_2", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_firefox: "seed-phrase-firefox-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox_2", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_postgres: "seed-phrase-postgres-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11_2", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_save_invoice: "seed-phrase-save-invoice-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice_2", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_save_invoice_form: "seed-phrase-save-invoice-form-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form_2", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_load_invoice: "seed-phrase-load-invoice-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice_2", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_8192: "seed-phrase-8192-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192_2", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_64_row: "seed-phrase-64-row-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row_2", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_2048: "seed-phrase-2048-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048_2", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_lines_order: "seed-phrase-lines-order-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order_2", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_serve_form_action: "seed-phrase-serve-form-action-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action_2", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_422: "seed-phrase-422-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422_2", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_allow: "seed-phrase-allow-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow_2", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_libpg_query: "seed-phrase-libpg-query-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query_2", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_row_limit: "seed-phrase-row-limit-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter_2", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_commit_unknown: "seed-phrase-commit-unknown-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown_2", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_sql_unsafe: "seed-phrase-sql-unsafe-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe_2", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_exactly_once: "seed-phrase-exactly-once-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once_2", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_resource_state: "seed-phrase-resource-state-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state_2", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_owner_record: "seed-phrase-owner-record-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record_2", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_owner_only: "seed-phrase-owner-only-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only_2", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_invoice_replay: "seed-phrase-invoice-replay-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay_2", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_operation_id: "seed-phrase-operation-id-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id_2", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_no_reload: "seed-phrase-no-reload-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability_2", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_no_queue: "seed-phrase-no-queue-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue_2", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_close_reader: "seed-phrase-close-reader-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader_2", "primary error", "DI-17", "no significance is claimed", 34)
+        seed_phrase_primary_error: "seed-phrase-primary-error-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error_2", "DI-17", "no significance is claimed", 34)
+        seed_phrase_di_17: "seed-phrase-di-17-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17_2", "no significance is claimed", 34)
+        seed_phrase_no_significance: "seed-phrase-no-significance-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed_2", 34)
+        seed_required_count: "seed-required-count-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 33)
+    match variant_id
+        "seed-phrase-bun-darwin-drift" => ok observation("bun-1.4.2-darwin-arm64-v1_2", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-bun-linux-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1_2", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-debian-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13_2", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-glibc-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41_2", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-chromium-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140_2", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-webkit-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26_2", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-firefox-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox_2", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-postgres-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11_2", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-save-invoice-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice_2", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-save-invoice-form-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form_2", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-load-invoice-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice_2", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-8192-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192_2", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-64-row-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row_2", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-2048-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048_2", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-lines-order-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order_2", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-serve-form-action-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action_2", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-422-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422_2", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-allow-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow_2", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-libpg-query-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query_2", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-row-limit-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter_2", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-commit-unknown-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown_2", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-sql-unsafe-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe_2", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-exactly-once-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once_2", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-resource-state-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state_2", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-owner-record-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record_2", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-owner-only-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only_2", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-invoice-replay-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay_2", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-operation-id-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id_2", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-no-reload-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability_2", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-no-queue-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue_2", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-close-reader-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader_2", "primary error", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-primary-error-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error_2", "DI-17", "no significance is claimed", 34)
+        "seed-phrase-di-17-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17_2", "no significance is claimed", 34)
+        "seed-phrase-no-significance-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed_2", 34)
+        "seed-required-count-drift" => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 33)
+        _ => ok observation("bun-1.4.2-darwin-arm64-v1", "bun-1.4.2-linux-amd64-v1", "Debian 13", "glibc 2.41", "chromium 140", "webkit 26", "firefox", "PostgreSQL 17.11", "save_invoice", "save_invoice_form", "load_invoice", "8192", "64-row", "2048", "lines_order", "serve_form_action", "422", "allow", "libpg_query", "row_limit_parameter", "commit_unknown", "sql.unsafe", "exactly once", "resource_state", "owner record", "owner-only", "invoice_replay", "operation_id", "no reload durability", "no automatic queue", "close_reader", "primary error", "DI-17", "no significance is claimed", 34)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h045: "m30-h045" => ok [check("phrase-bun-darwin", "guide names the darwin bundle"), check("phrase-bun-linux", "guide names the linux bundle"), check("phrase-debian", "guide names Debian 13"), check("phrase-glibc", "guide names glibc 2.41"), check("phrase-chromium", "guide names chromium 140"), check("phrase-webkit", "guide names webkit 26"), check("phrase-firefox", "guide names firefox"), check("phrase-postgres", "guide names PostgreSQL 17.11"), check("phrase-save-invoice", "guide names save_invoice"), check("phrase-save-invoice-form", "guide names save_invoice_form"), check("phrase-load-invoice", "guide names load_invoice"), check("phrase-8192", "guide names 8192"), check("phrase-64-row", "guide names 64-row"), check("phrase-2048", "guide names 2048"), check("phrase-lines-order", "guide names lines_order"), check("phrase-serve-form-action", "guide names serve_form_action"), check("phrase-422", "guide names 422"), check("phrase-allow", "guide names allow"), check("phrase-libpg-query", "guide names libpg_query"), check("phrase-row-limit", "guide names row_limit_parameter"), check("phrase-commit-unknown", "guide names commit_unknown"), check("phrase-sql-unsafe", "guide names sql.unsafe"), check("phrase-exactly-once", "guide names exactly once"), check("phrase-resource-state", "guide names resource_state"), check("phrase-owner-record", "guide names owner record"), check("phrase-owner-only", "guide names owner-only"), check("phrase-invoice-replay", "guide names invoice_replay"), check("phrase-operation-id", "guide names operation_id"), check("phrase-no-reload", "guide names no reload durability"), check("phrase-no-queue", "guide names no automatic queue"), check("phrase-close-reader", "guide names close_reader"), check("phrase-primary-error", "guide names primary error"), check("phrase-di-17", "guide names DI-17"), check("phrase-no-significance", "guide names no significance is claimed"), check("required-count", "thirty-four required phrases exist")]
+        other: "nope" => ok []
+    match scope is "m30-h045"
+        false => ok []
+        true => ok [check("phrase-bun-darwin", "guide names the darwin bundle"), check("phrase-bun-linux", "guide names the linux bundle"), check("phrase-debian", "guide names Debian 13"), check("phrase-glibc", "guide names glibc 2.41"), check("phrase-chromium", "guide names chromium 140"), check("phrase-webkit", "guide names webkit 26"), check("phrase-firefox", "guide names firefox"), check("phrase-postgres", "guide names PostgreSQL 17.11"), check("phrase-save-invoice", "guide names save_invoice"), check("phrase-save-invoice-form", "guide names save_invoice_form"), check("phrase-load-invoice", "guide names load_invoice"), check("phrase-8192", "guide names 8192"), check("phrase-64-row", "guide names 64-row"), check("phrase-2048", "guide names 2048"), check("phrase-lines-order", "guide names lines_order"), check("phrase-serve-form-action", "guide names serve_form_action"), check("phrase-422", "guide names 422"), check("phrase-allow", "guide names allow"), check("phrase-libpg-query", "guide names libpg_query"), check("phrase-row-limit", "guide names row_limit_parameter"), check("phrase-commit-unknown", "guide names commit_unknown"), check("phrase-sql-unsafe", "guide names sql.unsafe"), check("phrase-exactly-once", "guide names exactly once"), check("phrase-resource-state", "guide names resource_state"), check("phrase-owner-record", "guide names owner record"), check("phrase-owner-only", "guide names owner-only"), check("phrase-invoice-replay", "guide names invoice_replay"), check("phrase-operation-id", "guide names operation_id"), check("phrase-no-reload", "guide names no reload durability"), check("phrase-no-queue", "guide names no automatic queue"), check("phrase-close-reader", "guide names close_reader"), check("phrase-primary-error", "guide names primary error"), check("phrase-di-17", "guide names DI-17"), check("phrase-no-significance", "guide names no significance is claimed"), check("required-count", "thirty-four required phrases exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/t26-guide-base" => ok [expected_check("phrase-bun-darwin", "bun-1.4.2-darwin-arm64-v1"), expected_check("phrase-bun-linux", "bun-1.4.2-linux-amd64-v1"), expected_check("phrase-debian", "Debian 13"), expected_check("phrase-glibc", "glibc 2.41"), expected_check("phrase-chromium", "chromium 140"), expected_check("phrase-webkit", "webkit 26"), expected_check("phrase-firefox", "firefox"), expected_check("phrase-postgres", "PostgreSQL 17.11"), expected_check("phrase-save-invoice", "save_invoice"), expected_check("phrase-save-invoice-form", "save_invoice_form"), expected_check("phrase-load-invoice", "load_invoice"), expected_check("phrase-8192", "8192"), expected_check("phrase-64-row", "64-row"), expected_check("phrase-2048", "2048"), expected_check("phrase-lines-order", "lines_order"), expected_check("phrase-serve-form-action", "serve_form_action"), expected_check("phrase-422", "422"), expected_check("phrase-allow", "allow"), expected_check("phrase-libpg-query", "libpg_query"), expected_check("phrase-row-limit", "row_limit_parameter"), expected_check("phrase-commit-unknown", "commit_unknown"), expected_check("phrase-sql-unsafe", "sql.unsafe"), expected_check("phrase-exactly-once", "exactly once"), expected_check("phrase-resource-state", "resource_state"), expected_check("phrase-owner-record", "owner record"), expected_check("phrase-owner-only", "owner-only"), expected_check("phrase-invoice-replay", "invoice_replay"), expected_check("phrase-operation-id", "operation_id"), expected_check("phrase-no-reload", "no reload durability"), expected_check("phrase-no-queue", "no automatic queue"), expected_check("phrase-close-reader", "close_reader"), expected_check("phrase-primary-error", "primary error"), expected_check("phrase-di-17", "DI-17"), expected_check("phrase-no-significance", "no significance is claimed"), expected_check("required-count", "34")]
+        unknown: "nope" => ok []
+    match case is "history/t26-guide-base"
+        false => ok []
+        true => ok [expected_check("phrase-bun-darwin", "bun-1.4.2-darwin-arm64-v1"), expected_check("phrase-bun-linux", "bun-1.4.2-linux-amd64-v1"), expected_check("phrase-debian", "Debian 13"), expected_check("phrase-glibc", "glibc 2.41"), expected_check("phrase-chromium", "chromium 140"), expected_check("phrase-webkit", "webkit 26"), expected_check("phrase-firefox", "firefox"), expected_check("phrase-postgres", "PostgreSQL 17.11"), expected_check("phrase-save-invoice", "save_invoice"), expected_check("phrase-save-invoice-form", "save_invoice_form"), expected_check("phrase-load-invoice", "load_invoice"), expected_check("phrase-8192", "8192"), expected_check("phrase-64-row", "64-row"), expected_check("phrase-2048", "2048"), expected_check("phrase-lines-order", "lines_order"), expected_check("phrase-serve-form-action", "serve_form_action"), expected_check("phrase-422", "422"), expected_check("phrase-allow", "allow"), expected_check("phrase-libpg-query", "libpg_query"), expected_check("phrase-row-limit", "row_limit_parameter"), expected_check("phrase-commit-unknown", "commit_unknown"), expected_check("phrase-sql-unsafe", "sql.unsafe"), expected_check("phrase-exactly-once", "exactly once"), expected_check("phrase-resource-state", "resource_state"), expected_check("phrase-owner-record", "owner record"), expected_check("phrase-owner-only", "owner-only"), expected_check("phrase-invoice-replay", "invoice_replay"), expected_check("phrase-operation-id", "operation_id"), expected_check("phrase-no-reload", "no reload durability"), expected_check("phrase-no-queue", "no automatic queue"), expected_check("phrase-close-reader", "close_reader"), expected_check("phrase-primary-error", "primary error"), expected_check("phrase-di-17", "DI-17"), expected_check("phrase-no-significance", "no significance is claimed"), expected_check("required-count", "34")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/t26-guide-base", "default", "", "offline") => ok
+        seed_phrase_bun_darwin: context("history/t26-guide-base", "seed-phrase-bun-darwin-drift", "", "offline") => failed{"phrase-bun-darwin"}
+        seed_phrase_bun_linux: context("history/t26-guide-base", "seed-phrase-bun-linux-drift", "", "offline") => failed{"phrase-bun-linux"}
+        seed_phrase_debian: context("history/t26-guide-base", "seed-phrase-debian-drift", "", "offline") => failed{"phrase-debian"}
+        seed_phrase_glibc: context("history/t26-guide-base", "seed-phrase-glibc-drift", "", "offline") => failed{"phrase-glibc"}
+        seed_phrase_chromium: context("history/t26-guide-base", "seed-phrase-chromium-drift", "", "offline") => failed{"phrase-chromium"}
+        seed_phrase_webkit: context("history/t26-guide-base", "seed-phrase-webkit-drift", "", "offline") => failed{"phrase-webkit"}
+        seed_phrase_firefox: context("history/t26-guide-base", "seed-phrase-firefox-drift", "", "offline") => failed{"phrase-firefox"}
+        seed_phrase_postgres: context("history/t26-guide-base", "seed-phrase-postgres-drift", "", "offline") => failed{"phrase-postgres"}
+        seed_phrase_save_invoice: context("history/t26-guide-base", "seed-phrase-save-invoice-drift", "", "offline") => failed{"phrase-save-invoice"}
+        seed_phrase_save_invoice_form: context("history/t26-guide-base", "seed-phrase-save-invoice-form-drift", "", "offline") => failed{"phrase-save-invoice-form"}
+        seed_phrase_load_invoice: context("history/t26-guide-base", "seed-phrase-load-invoice-drift", "", "offline") => failed{"phrase-load-invoice"}
+        seed_phrase_8192: context("history/t26-guide-base", "seed-phrase-8192-drift", "", "offline") => failed{"phrase-8192"}
+        seed_phrase_64_row: context("history/t26-guide-base", "seed-phrase-64-row-drift", "", "offline") => failed{"phrase-64-row"}
+        seed_phrase_2048: context("history/t26-guide-base", "seed-phrase-2048-drift", "", "offline") => failed{"phrase-2048"}
+        seed_phrase_lines_order: context("history/t26-guide-base", "seed-phrase-lines-order-drift", "", "offline") => failed{"phrase-lines-order"}
+        seed_phrase_serve_form_action: context("history/t26-guide-base", "seed-phrase-serve-form-action-drift", "", "offline") => failed{"phrase-serve-form-action"}
+        seed_phrase_422: context("history/t26-guide-base", "seed-phrase-422-drift", "", "offline") => failed{"phrase-422"}
+        seed_phrase_allow: context("history/t26-guide-base", "seed-phrase-allow-drift", "", "offline") => failed{"phrase-allow"}
+        seed_phrase_libpg_query: context("history/t26-guide-base", "seed-phrase-libpg-query-drift", "", "offline") => failed{"phrase-libpg-query"}
+        seed_phrase_row_limit: context("history/t26-guide-base", "seed-phrase-row-limit-drift", "", "offline") => failed{"phrase-row-limit"}
+        seed_phrase_commit_unknown: context("history/t26-guide-base", "seed-phrase-commit-unknown-drift", "", "offline") => failed{"phrase-commit-unknown"}
+        seed_phrase_sql_unsafe: context("history/t26-guide-base", "seed-phrase-sql-unsafe-drift", "", "offline") => failed{"phrase-sql-unsafe"}
+        seed_phrase_exactly_once: context("history/t26-guide-base", "seed-phrase-exactly-once-drift", "", "offline") => failed{"phrase-exactly-once"}
+        seed_phrase_resource_state: context("history/t26-guide-base", "seed-phrase-resource-state-drift", "", "offline") => failed{"phrase-resource-state"}
+        seed_phrase_owner_record: context("history/t26-guide-base", "seed-phrase-owner-record-drift", "", "offline") => failed{"phrase-owner-record"}
+        seed_phrase_owner_only: context("history/t26-guide-base", "seed-phrase-owner-only-drift", "", "offline") => failed{"phrase-owner-only"}
+        seed_phrase_invoice_replay: context("history/t26-guide-base", "seed-phrase-invoice-replay-drift", "", "offline") => failed{"phrase-invoice-replay"}
+        seed_phrase_operation_id: context("history/t26-guide-base", "seed-phrase-operation-id-drift", "", "offline") => failed{"phrase-operation-id"}
+        seed_phrase_no_reload: context("history/t26-guide-base", "seed-phrase-no-reload-drift", "", "offline") => failed{"phrase-no-reload"}
+        seed_phrase_no_queue: context("history/t26-guide-base", "seed-phrase-no-queue-drift", "", "offline") => failed{"phrase-no-queue"}
+        seed_phrase_close_reader: context("history/t26-guide-base", "seed-phrase-close-reader-drift", "", "offline") => failed{"phrase-close-reader"}
+        seed_phrase_primary_error: context("history/t26-guide-base", "seed-phrase-primary-error-drift", "", "offline") => failed{"phrase-primary-error"}
+        seed_phrase_di_17: context("history/t26-guide-base", "seed-phrase-di-17-drift", "", "offline") => failed{"phrase-di-17"}
+        seed_phrase_no_significance: context("history/t26-guide-base", "seed-phrase-no-significance-drift", "", "offline") => failed{"phrase-no-significance"}
+        seed_required_count: context("history/t26-guide-base", "seed-required-count-drift", "", "offline") => failed{"required-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.phrase_bun_darwin, "bun-1.4.2-darwin-arm64-v1", c, "phrase-bun-darwin")
+            failed
+            ok evidence phrase_bun_darwin_evidence => match call require_text(got.phrase_bun_linux, "bun-1.4.2-linux-amd64-v1", c, "phrase-bun-linux")
+                failed
+                ok evidence phrase_bun_linux_evidence => match call require_text(got.phrase_debian, "Debian 13", c, "phrase-debian")
+                    failed
+                    ok evidence phrase_debian_evidence => match call require_text(got.phrase_glibc, "glibc 2.41", c, "phrase-glibc")
+                        failed
+                        ok evidence phrase_glibc_evidence => match call require_text(got.phrase_chromium, "chromium 140", c, "phrase-chromium")
+                            failed
+                            ok evidence phrase_chromium_evidence => match call require_text(got.phrase_webkit, "webkit 26", c, "phrase-webkit")
+                                failed
+                                ok evidence phrase_webkit_evidence => match call require_text(got.phrase_firefox, "firefox", c, "phrase-firefox")
+                                    failed
+                                    ok evidence phrase_firefox_evidence => match call require_text(got.phrase_postgres, "PostgreSQL 17.11", c, "phrase-postgres")
+                                        failed
+                                        ok evidence phrase_postgres_evidence => match call require_text(got.phrase_save_invoice, "save_invoice", c, "phrase-save-invoice")
+                                            failed
+                                            ok evidence phrase_save_invoice_evidence => match call require_text(got.phrase_save_invoice_form, "save_invoice_form", c, "phrase-save-invoice-form")
+                                                failed
+                                                ok evidence phrase_save_invoice_form_evidence => match call require_text(got.phrase_load_invoice, "load_invoice", c, "phrase-load-invoice")
+                                                    failed
+                                                    ok evidence phrase_load_invoice_evidence => match call require_text(got.phrase_8192, "8192", c, "phrase-8192")
+                                                        failed
+                                                        ok evidence phrase_8192_evidence => match call require_text(got.phrase_64_row, "64-row", c, "phrase-64-row")
+                                                            failed
+                                                            ok evidence phrase_64_row_evidence => match call require_text(got.phrase_2048, "2048", c, "phrase-2048")
+                                                                failed
+                                                                ok evidence phrase_2048_evidence => match call require_text(got.phrase_lines_order, "lines_order", c, "phrase-lines-order")
+                                                                    failed
+                                                                    ok evidence phrase_lines_order_evidence => match call require_text(got.phrase_serve_form_action, "serve_form_action", c, "phrase-serve-form-action")
+                                                                        failed
+                                                                        ok evidence phrase_serve_form_action_evidence => match call require_text(got.phrase_422, "422", c, "phrase-422")
+                                                                            failed
+                                                                            ok evidence phrase_422_evidence => match call require_text(got.phrase_allow, "allow", c, "phrase-allow")
+                                                                                failed
+                                                                                ok evidence phrase_allow_evidence => match call require_text(got.phrase_libpg_query, "libpg_query", c, "phrase-libpg-query")
+                                                                                    failed
+                                                                                    ok evidence phrase_libpg_query_evidence => match call require_text(got.phrase_row_limit, "row_limit_parameter", c, "phrase-row-limit")
+                                                                                        failed
+                                                                                        ok evidence phrase_row_limit_evidence => match call require_text(got.phrase_commit_unknown, "commit_unknown", c, "phrase-commit-unknown")
+                                                                                            failed
+                                                                                            ok evidence phrase_commit_unknown_evidence => match call require_text(got.phrase_sql_unsafe, "sql.unsafe", c, "phrase-sql-unsafe")
+                                                                                                failed
+                                                                                                ok evidence phrase_sql_unsafe_evidence => match call require_text(got.phrase_exactly_once, "exactly once", c, "phrase-exactly-once")
+                                                                                                    failed
+                                                                                                    ok evidence phrase_exactly_once_evidence => match call require_text(got.phrase_resource_state, "resource_state", c, "phrase-resource-state")
+                                                                                                        failed
+                                                                                                        ok evidence phrase_resource_state_evidence => match call require_text(got.phrase_owner_record, "owner record", c, "phrase-owner-record")
+                                                                                                            failed
+                                                                                                            ok evidence phrase_owner_record_evidence => match call require_text(got.phrase_owner_only, "owner-only", c, "phrase-owner-only")
+                                                                                                                failed
+                                                                                                                ok evidence phrase_owner_only_evidence => match call require_text(got.phrase_invoice_replay, "invoice_replay", c, "phrase-invoice-replay")
+                                                                                                                    failed
+                                                                                                                    ok evidence phrase_invoice_replay_evidence => match call require_text(got.phrase_operation_id, "operation_id", c, "phrase-operation-id")
+                                                                                                                        failed
+                                                                                                                        ok evidence phrase_operation_id_evidence => match call require_text(got.phrase_no_reload, "no reload durability", c, "phrase-no-reload")
+                                                                                                                            failed
+                                                                                                                            ok evidence phrase_no_reload_evidence => match call require_text(got.phrase_no_queue, "no automatic queue", c, "phrase-no-queue")
+                                                                                                                                failed
+                                                                                                                                ok evidence phrase_no_queue_evidence => match call require_text(got.phrase_close_reader, "close_reader", c, "phrase-close-reader")
+                                                                                                                                    failed
+                                                                                                                                    ok evidence phrase_close_reader_evidence => match call require_text(got.phrase_primary_error, "primary error", c, "phrase-primary-error")
+                                                                                                                                        failed
+                                                                                                                                        ok evidence phrase_primary_error_evidence => match call require_text(got.phrase_di_17, "DI-17", c, "phrase-di-17")
+                                                                                                                                            failed
+                                                                                                                                            ok evidence phrase_di_17_evidence => match call require_text(got.phrase_no_significance, "no significance is claimed", c, "phrase-no-significance")
+                                                                                                                                                failed
+                                                                                                                                                ok evidence phrase_no_significance_evidence => match call require_int(got.required_count, 34, c, "required-count")
+                                                                                                                                                    failed
+                                                                                                                                                    ok evidence required_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h045: "m30-h045" => ok test_case("history/t26-guide-base", ["history", "m30"], [], 120000, [check_ref("phrase-bun-darwin"), check_ref("phrase-bun-linux"), check_ref("phrase-debian"), check_ref("phrase-glibc"), check_ref("phrase-chromium"), check_ref("phrase-webkit"), check_ref("phrase-firefox"), check_ref("phrase-postgres"), check_ref("phrase-save-invoice"), check_ref("phrase-save-invoice-form"), check_ref("phrase-load-invoice"), check_ref("phrase-8192"), check_ref("phrase-64-row"), check_ref("phrase-2048"), check_ref("phrase-lines-order"), check_ref("phrase-serve-form-action"), check_ref("phrase-422"), check_ref("phrase-allow"), check_ref("phrase-libpg-query"), check_ref("phrase-row-limit"), check_ref("phrase-commit-unknown"), check_ref("phrase-sql-unsafe"), check_ref("phrase-exactly-once"), check_ref("phrase-resource-state"), check_ref("phrase-owner-record"), check_ref("phrase-owner-only"), check_ref("phrase-invoice-replay"), check_ref("phrase-operation-id"), check_ref("phrase-no-reload"), check_ref("phrase-no-queue"), check_ref("phrase-close-reader"), check_ref("phrase-primary-error"), check_ref("phrase-di-17"), check_ref("phrase-no-significance"), check_ref("required-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h045"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/t26-guide-base", ["history", "m30"], [], 120000, [check_ref("phrase-bun-darwin"), check_ref("phrase-bun-linux"), check_ref("phrase-debian"), check_ref("phrase-glibc"), check_ref("phrase-chromium"), check_ref("phrase-webkit"), check_ref("phrase-firefox"), check_ref("phrase-postgres"), check_ref("phrase-save-invoice"), check_ref("phrase-save-invoice-form"), check_ref("phrase-load-invoice"), check_ref("phrase-8192"), check_ref("phrase-64-row"), check_ref("phrase-2048"), check_ref("phrase-lines-order"), check_ref("phrase-serve-form-action"), check_ref("phrase-422"), check_ref("phrase-allow"), check_ref("phrase-libpg-query"), check_ref("phrase-row-limit"), check_ref("phrase-commit-unknown"), check_ref("phrase-sql-unsafe"), check_ref("phrase-exactly-once"), check_ref("phrase-resource-state"), check_ref("phrase-owner-record"), check_ref("phrase-owner-only"), check_ref("phrase-invoice-replay"), check_ref("phrase-operation-id"), check_ref("phrase-no-reload"), check_ref("phrase-no-queue"), check_ref("phrase-close-reader"), check_ref("phrase-primary-error"), check_ref("phrase-di-17"), check_ref("phrase-no-significance"), check_ref("required-count")], callable case_body)
