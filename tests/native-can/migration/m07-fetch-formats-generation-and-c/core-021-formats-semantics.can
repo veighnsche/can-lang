@@ -1,0 +1,248 @@
+package m07core021formats
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M07 CORE-021 "formats documents: live semantics, exact outputs, faults".
+/// Source: tests/integration/formats_test.go symbol
+/// TestCurrentFormatsDocuments (L49-156).
+/// Related fixture: tests/integration/testdata/formats/main.can (the fmt_cli
+/// entry dispatch L123-211 plus the toml/yaml/json5/jsonl readers) with the
+/// six staged documents in the Go formatsDocuments map (L18-25).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): the live document semantics. The compiled CLI
+/// parses TOML, YAML, JSON5 and JSONL documents with exact stdout,
+/// including the 64-bit JSONL number above float precision and the blank
+/// line plus CRLF the JSONL count still tolerates; the usage paths print
+/// the exact usage strings; the absent file and the malformed TOML/JSONL
+/// inputs yield the exact domain errors (Go L145-154).
+/// The 9-root green pin lives in core-021-roots-green.can; the ok/fault
+/// production process shape lives in core-021-run-shape.can.
+/// Variants: usage nil/bogus/toml (Go L145-147); valid svc.toml,
+/// point.yaml, point.json5, points.jsonl (L148-151); missing TOML,
+/// duplicate-key TOML, truncated JSONL (L152-154).
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23; no live run now. Descriptor timeout
+/// 360000ms mirrors the Go 6-minute ctx (L55).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case formats/documents-semantics checks: usage-nil, usage-bogus,
+/// usage-arity, toml-output, yaml-output, json5-output, jsonl-output,
+/// jsonl-bigint, jsonl-blank, missing-file, malformed-toml,
+/// malformed-jsonl.
+/// Facet map (formats_test.go legs): usage-nil pins the nil-args path
+/// (L145: ok(nil, "usage: toml <path> | yaml <path> | json5 <path> |
+/// jsonl <path>")); usage-bogus pins the unknown-command path (L146:
+/// ok(["bogus"], the same full usage)); usage-arity pins the missing-path
+/// path (L147: ok(["toml"], "usage: toml <path>")); toml-output pins the
+/// TOML read (L148: ok(["toml", svc.toml], "8080")); yaml-output pins the
+/// YAML read (L149: ok(["yaml", point.yaml], "7")); json5-output pins the
+/// JSON5 read (L150: ok(["json5", point.json5], "7")); jsonl-output pins
+/// the JSONL count (L151: ok(["jsonl", points.jsonl], "3"));
+/// jsonl-bigint pins the exact 64-bit value (L22: points.jsonl carries
+/// 9007199254740993, above float precision); jsonl-blank pins the
+/// tolerated separators (L22: points.jsonl carries a blank line and a
+/// CRLF line ending, yet the count is still 3); missing-file pins the
+/// absent-file error (L152: fault(absent.toml, "files::not_found"));
+/// malformed-toml pins the duplicate-key error (L153: fault(bad.toml,
+/// "codec::invalid_data")); malformed-jsonl pins the truncated-input
+/// error (L154: fault(truncated.jsonl, "codec::invalid_data")). Every ok
+/// leg also requires empty stderr and every fault leg empty stdout plus
+/// the `"error":"..."` stderr fragment (L133/L141); those process-shape
+/// halves live in the run-shape file.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str usage_nil
+    str usage_bogus
+    str usage_arity
+    str toml_output
+    str yaml_output
+    str json5_output
+    str jsonl_output
+    int jsonl_bigint
+    bool jsonl_blank
+    str missing_file
+    str malformed_toml
+    str malformed_jsonl
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("formats/documents-semantics", "default", "", "offline"), "usage-nil" => ok "case formats/documents-semantics variant default root usage-nil run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("formats/documents-semantics", "default", "", "offline"), "jsonl-blank" => ok evidence("jsonl-blank", "true", "true", true, "case formats/documents-semantics variant default root jsonl-blank run offline")
+        different: false, true, context("formats/documents-semantics", "default", "", "offline"), "jsonl-blank" => failed{"jsonl-blank"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 9007199254740993, 9007199254740993, context("formats/documents-semantics", "default", "", "offline"), "jsonl-bigint" => ok evidence("jsonl-bigint", "9007199254740993", "9007199254740993", true, "case formats/documents-semantics variant default root jsonl-bigint run offline")
+        different: 9007199254740992, 9007199254740993, context("formats/documents-semantics", "default", "", "offline"), "jsonl-bigint" => failed{"jsonl-bigint"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "8080", "8080", context("formats/documents-semantics", "default", "", "offline"), "toml-output" => ok evidence("toml-output", "8080", "8080", true, "case formats/documents-semantics variant default root toml-output run offline")
+        different: "8081", "8080", context("formats/documents-semantics", "default", "", "offline"), "toml-output" => failed{"toml-output"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "7", "3", 9007199254740993, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        seed_usage_nil_drift: "seed-usage-nil-drift" => ok observation("usage: toml <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "7", "3", 9007199254740993, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        seed_usage_bogus_drift: "seed-usage-bogus-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "usage: toml <path>", "8080", "7", "7", "3", 9007199254740993, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        seed_usage_arity_drift: "seed-usage-arity-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: yaml <path>", "8080", "7", "7", "3", 9007199254740993, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        seed_toml_drift: "seed-toml-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8081", "7", "7", "3", 9007199254740993, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        seed_yaml_drift: "seed-yaml-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "8", "7", "3", 9007199254740993, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        seed_json5_drift: "seed-json5-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "8", "3", 9007199254740993, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        seed_jsonl_drift: "seed-jsonl-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "7", "2", 9007199254740993, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        seed_bigint_short: "seed-bigint-short" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "7", "3", 9007199254740992, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        seed_blank_red: "seed-blank-red" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "7", "3", 9007199254740993, false, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        seed_missing_drift: "seed-missing-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "7", "3", 9007199254740993, true, "files::denied", "codec::invalid_data", "codec::invalid_data")
+        seed_toml_malformed_drift: "seed-toml-malformed-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "7", "3", 9007199254740993, true, "files::not_found", "files::io_error", "codec::invalid_data")
+        seed_jsonl_malformed_drift: "seed-jsonl-malformed-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "7", "3", 9007199254740993, true, "files::not_found", "codec::invalid_data", "files::io_error")
+    match variant_id
+        "seed-usage-nil-drift" => ok observation("usage: toml <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "7", "3", 9007199254740993, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        "seed-usage-bogus-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "usage: toml <path>", "8080", "7", "7", "3", 9007199254740993, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        "seed-usage-arity-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: yaml <path>", "8080", "7", "7", "3", 9007199254740993, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        "seed-toml-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8081", "7", "7", "3", 9007199254740993, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        "seed-yaml-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "8", "7", "3", 9007199254740993, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        "seed-json5-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "8", "3", 9007199254740993, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        "seed-jsonl-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "7", "2", 9007199254740993, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        "seed-bigint-short" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "7", "3", 9007199254740992, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        "seed-blank-red" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "7", "3", 9007199254740993, false, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+        "seed-missing-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "7", "3", 9007199254740993, true, "files::denied", "codec::invalid_data", "codec::invalid_data")
+        "seed-toml-malformed-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "7", "3", 9007199254740993, true, "files::not_found", "files::io_error", "codec::invalid_data")
+        "seed-jsonl-malformed-drift" => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "7", "3", 9007199254740993, true, "files::not_found", "codec::invalid_data", "files::io_error")
+        _ => ok observation("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", "usage: toml <path>", "8080", "7", "7", "3", 9007199254740993, true, "files::not_found", "codec::invalid_data", "codec::invalid_data")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m07_021: "m07-021" => ok [check("usage-nil", "nil args print the full four-command usage"), check("usage-bogus", "unknown command prints the full four-command usage"), check("usage-arity", "toml without a path prints usage: toml <path>"), check("toml-output", "svc.toml prints 8080"), check("yaml-output", "point.yaml prints 7"), check("json5-output", "point.json5 prints 7"), check("jsonl-output", "points.jsonl prints 3"), check("jsonl-bigint", "points.jsonl pins exact 9007199254740993"), check("jsonl-blank", "points.jsonl blank line and CRLF are tolerated"), check("missing-file", "absent file yields files::not_found"), check("malformed-toml", "duplicate-key TOML yields codec::invalid_data"), check("malformed-jsonl", "truncated JSONL yields codec::invalid_data")]
+        other: "nope" => ok []
+    match scope is "m07-021"
+        false => ok []
+        true => ok [check("usage-nil", "nil args print the full four-command usage"), check("usage-bogus", "unknown command prints the full four-command usage"), check("usage-arity", "toml without a path prints usage: toml <path>"), check("toml-output", "svc.toml prints 8080"), check("yaml-output", "point.yaml prints 7"), check("json5-output", "point.json5 prints 7"), check("jsonl-output", "points.jsonl prints 3"), check("jsonl-bigint", "points.jsonl pins exact 9007199254740993"), check("jsonl-blank", "points.jsonl blank line and CRLF are tolerated"), check("missing-file", "absent file yields files::not_found"), check("malformed-toml", "duplicate-key TOML yields codec::invalid_data"), check("malformed-jsonl", "truncated JSONL yields codec::invalid_data")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "formats/documents-semantics" => ok [expected_check("usage-nil", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>"), expected_check("usage-bogus", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>"), expected_check("usage-arity", "usage: toml <path>"), expected_check("toml-output", "8080"), expected_check("yaml-output", "7"), expected_check("json5-output", "7"), expected_check("jsonl-output", "3"), expected_check("jsonl-bigint", "9007199254740993"), expected_check("jsonl-blank", "true"), expected_check("missing-file", "files::not_found"), expected_check("malformed-toml", "codec::invalid_data"), expected_check("malformed-jsonl", "codec::invalid_data")]
+        unknown: "nope" => ok []
+    match case is "formats/documents-semantics"
+        false => ok []
+        true => ok [expected_check("usage-nil", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>"), expected_check("usage-bogus", "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>"), expected_check("usage-arity", "usage: toml <path>"), expected_check("toml-output", "8080"), expected_check("yaml-output", "7"), expected_check("json5-output", "7"), expected_check("jsonl-output", "3"), expected_check("jsonl-bigint", "9007199254740993"), expected_check("jsonl-blank", "true"), expected_check("missing-file", "files::not_found"), expected_check("malformed-toml", "codec::invalid_data"), expected_check("malformed-jsonl", "codec::invalid_data")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("formats/documents-semantics", "default", "", "offline") => ok
+        seed_usage_nil_drift: context("formats/documents-semantics", "seed-usage-nil-drift", "", "offline") => failed{"usage-nil"}
+        seed_usage_bogus_drift: context("formats/documents-semantics", "seed-usage-bogus-drift", "", "offline") => failed{"usage-bogus"}
+        seed_usage_arity_drift: context("formats/documents-semantics", "seed-usage-arity-drift", "", "offline") => failed{"usage-arity"}
+        seed_toml_drift: context("formats/documents-semantics", "seed-toml-drift", "", "offline") => failed{"toml-output"}
+        seed_yaml_drift: context("formats/documents-semantics", "seed-yaml-drift", "", "offline") => failed{"yaml-output"}
+        seed_json5_drift: context("formats/documents-semantics", "seed-json5-drift", "", "offline") => failed{"json5-output"}
+        seed_jsonl_drift: context("formats/documents-semantics", "seed-jsonl-drift", "", "offline") => failed{"jsonl-output"}
+        seed_bigint_short: context("formats/documents-semantics", "seed-bigint-short", "", "offline") => failed{"jsonl-bigint"}
+        seed_blank_red: context("formats/documents-semantics", "seed-blank-red", "", "offline") => failed{"jsonl-blank"}
+        seed_missing_drift: context("formats/documents-semantics", "seed-missing-drift", "", "offline") => failed{"missing-file"}
+        seed_toml_malformed_drift: context("formats/documents-semantics", "seed-toml-malformed-drift", "", "offline") => failed{"malformed-toml"}
+        seed_jsonl_malformed_drift: context("formats/documents-semantics", "seed-jsonl-malformed-drift", "", "offline") => failed{"malformed-jsonl"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.usage_nil, "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", c, "usage-nil")
+            failed
+            ok evidence usage_nil_evidence => match call require_text(got.usage_bogus, "usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>", c, "usage-bogus")
+                failed
+                ok evidence usage_bogus_evidence => match call require_text(got.usage_arity, "usage: toml <path>", c, "usage-arity")
+                    failed
+                    ok evidence usage_arity_evidence => match call require_text(got.toml_output, "8080", c, "toml-output")
+                        failed
+                        ok evidence toml_evidence => match call require_text(got.yaml_output, "7", c, "yaml-output")
+                            failed
+                            ok evidence yaml_evidence => match call require_text(got.json5_output, "7", c, "json5-output")
+                                failed
+                                ok evidence json5_evidence => match call require_text(got.jsonl_output, "3", c, "jsonl-output")
+                                    failed
+                                    ok evidence jsonl_evidence => match call require_int(got.jsonl_bigint, 9007199254740993, c, "jsonl-bigint")
+                                        failed
+                                        ok evidence bigint_evidence => match call require_bool(got.jsonl_blank, true, c, "jsonl-blank")
+                                            failed
+                                            ok evidence blank_evidence => match call require_text(got.missing_file, "files::not_found", c, "missing-file")
+                                                failed
+                                                ok evidence missing_evidence => match call require_text(got.malformed_toml, "codec::invalid_data", c, "malformed-toml")
+                                                    failed
+                                                    ok evidence toml_malformed_evidence => match call require_text(got.malformed_jsonl, "codec::invalid_data", c, "malformed-jsonl")
+                                                        failed
+                                                        ok evidence jsonl_malformed_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m07_021: "m07-021" => ok test_case("formats/documents-semantics", ["formats", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 360000, [check_ref("usage-nil"), check_ref("usage-bogus"), check_ref("usage-arity"), check_ref("toml-output"), check_ref("yaml-output"), check_ref("json5-output"), check_ref("jsonl-output"), check_ref("jsonl-bigint"), check_ref("jsonl-blank"), check_ref("missing-file"), check_ref("malformed-toml"), check_ref("malformed-jsonl")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m07-021"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("formats/documents-semantics", ["formats", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 360000, [check_ref("usage-nil"), check_ref("usage-bogus"), check_ref("usage-arity"), check_ref("toml-output"), check_ref("yaml-output"), check_ref("json5-output"), check_ref("jsonl-output"), check_ref("jsonl-bigint"), check_ref("jsonl-blank"), check_ref("missing-file"), check_ref("malformed-toml"), check_ref("malformed-jsonl")], callable case_body)

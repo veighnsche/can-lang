@@ -1,0 +1,219 @@
+package m07core021run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M07 CORE-021 "formats documents: run shape, ok/fault process split".
+/// Source: tests/integration/formats_test.go symbol
+/// TestCurrentFormatsDocuments (L49-156).
+/// Related fixture: tests/integration/testdata/formats/main.can main entry
+/// (L123-211); the live run helper (L105-127) executes the built entry.ts
+/// with an empty fd-3 environment snapshot (L101-104) while assert/build
+/// go through the sandboxed offline helpers (L70/L74).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): production process shape of the live formats
+/// runs. Unlike rows with a silent entry, formats main emits document
+/// output by design (the formats-semantics file pins every stdout
+/// verbatim: usage strings, 8080, 7, 7, 3), so the silence pins land
+/// where silence holds: ok runs exit 0 with empty stderr, fault runs
+/// exit 1 with empty stdout. The entry also loads under the empty fd-3
+/// snapshot and the live build reports a directory.
+/// The 9-root green pin lives in core-021-roots-green.can; live document
+/// outputs, the 64-bit number, blank-line tolerance and the exact domain
+/// errors live in core-021-formats-semantics.can.
+/// Variants: ok path (usage, toml, yaml, json5, jsonl) and fault path
+/// (missing file, malformed TOML, malformed JSONL); the Go test carries
+/// no optional strict-tsc leg, so none is pinned here.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23; no live run now. Descriptor timeout
+/// 360000ms mirrors the Go 6-minute ctx (L55).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case formats/documents-run checks: run-exit, run-stderr-empty,
+/// fault-exit, fault-stdout-empty, snapshot-empty, sandbox-profile,
+/// offline-env, build-ok.
+/// Facet map (formats_test.go legs): run-exit pins exit 0 on the ok path
+/// (L133: status 0 or ok() fatals); run-stderr-empty pins empty stderr
+/// on the ok path (L133: diag must be ""); fault-exit pins exit 1 on the
+/// fault path (L141: status 1 or fault() fatals); fault-stdout-empty
+/// pins empty stdout on the fault path (L141: out must be "");
+/// snapshot-empty pins the empty fd-3 snapshot (L102: snapshot.json
+/// holds "{}"; L107-115: passed as fd 3 to the bun entry);
+/// sandbox-profile pins the offline invocation shape (L74: "(version
+/// 1)(allow default)(deny network*)" verbatim on the build; the assert
+/// leg shares it via canlcOffline); offline-env pins the cleared
+/// environment (L76/L114: PATH=/nonexistent; HOME set); build-ok pins
+/// the live build (L78-86: the sandboxed build exits 0 and its report
+/// carries a directory).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int run_exit
+    bool run_stderr_empty
+    int fault_exit
+    bool fault_stdout_empty
+    str snapshot_empty
+    str sandbox_profile
+    str offline_env
+    bool build_ok
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("formats/documents-run", "default", "", "offline"), "run-exit" => ok "case formats/documents-run variant default root run-exit run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("formats/documents-run", "default", "", "offline"), "run-stderr-empty" => ok evidence("run-stderr-empty", "true", "true", true, "case formats/documents-run variant default root run-stderr-empty run offline")
+        different: false, true, context("formats/documents-run", "default", "", "offline"), "run-stderr-empty" => failed{"run-stderr-empty"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("formats/documents-run", "default", "", "offline"), "run-exit" => ok evidence("run-exit", "0", "0", true, "case formats/documents-run variant default root run-exit run offline")
+        different: 1, 0, context("formats/documents-run", "default", "", "offline"), "run-exit" => failed{"run-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "(version 1)(allow default)(deny network*)", "(version 1)(allow default)(deny network*)", context("formats/documents-run", "default", "", "offline"), "sandbox-profile" => ok evidence("sandbox-profile", "(version 1)(allow default)(deny network*)", "(version 1)(allow default)(deny network*)", true, "case formats/documents-run variant default root sandbox-profile run offline")
+        different: "(version 1)(allow default)", "(version 1)(allow default)(deny network*)", context("formats/documents-run", "default", "", "offline"), "sandbox-profile" => failed{"sandbox-profile"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(0, true, 1, true, "{}", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true)
+        seed_run_red: "seed-run-red" => ok observation(1, true, 1, true, "{}", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true)
+        seed_stderr_noisy: "seed-stderr-noisy" => ok observation(0, false, 1, true, "{}", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true)
+        seed_fault_green: "seed-fault-green" => ok observation(0, true, 0, true, "{}", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true)
+        seed_fault_noisy: "seed-fault-noisy" => ok observation(0, true, 1, false, "{}", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true)
+        seed_snapshot_drift: "seed-snapshot-drift" => ok observation(0, true, 1, true, "[]", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true)
+        seed_profile_drift: "seed-profile-drift" => ok observation(0, true, 1, true, "{}", "(version 1)(allow default)", "PATH=/nonexistent", true)
+        seed_env_drift: "seed-env-drift" => ok observation(0, true, 1, true, "{}", "(version 1)(allow default)(deny network*)", "PATH=/usr/bin", true)
+        seed_build_fail: "seed-build-fail" => ok observation(0, true, 1, true, "{}", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", false)
+    match variant_id
+        "seed-run-red" => ok observation(1, true, 1, true, "{}", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true)
+        "seed-stderr-noisy" => ok observation(0, false, 1, true, "{}", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true)
+        "seed-fault-green" => ok observation(0, true, 0, true, "{}", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true)
+        "seed-fault-noisy" => ok observation(0, true, 1, false, "{}", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true)
+        "seed-snapshot-drift" => ok observation(0, true, 1, true, "[]", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true)
+        "seed-profile-drift" => ok observation(0, true, 1, true, "{}", "(version 1)(allow default)", "PATH=/nonexistent", true)
+        "seed-env-drift" => ok observation(0, true, 1, true, "{}", "(version 1)(allow default)(deny network*)", "PATH=/usr/bin", true)
+        "seed-build-fail" => ok observation(0, true, 1, true, "{}", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", false)
+        _ => ok observation(0, true, 1, true, "{}", "(version 1)(allow default)(deny network*)", "PATH=/nonexistent", true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m07_021: "m07-021" => ok [check("run-exit", "live ok runs exit 0"), check("run-stderr-empty", "live ok runs keep stderr empty"), check("fault-exit", "live fault runs exit 1"), check("fault-stdout-empty", "live fault runs keep stdout empty"), check("snapshot-empty", "entries consume the empty fd-3 snapshot"), check("sandbox-profile", "offline invocations pin the deny-network sandbox profile"), check("offline-env", "run/build invocations clear PATH"), check("build-ok", "live sandboxed build reports a directory")]
+        other: "nope" => ok []
+    match scope is "m07-021"
+        false => ok []
+        true => ok [check("run-exit", "live ok runs exit 0"), check("run-stderr-empty", "live ok runs keep stderr empty"), check("fault-exit", "live fault runs exit 1"), check("fault-stdout-empty", "live fault runs keep stdout empty"), check("snapshot-empty", "entries consume the empty fd-3 snapshot"), check("sandbox-profile", "offline invocations pin the deny-network sandbox profile"), check("offline-env", "run/build invocations clear PATH"), check("build-ok", "live sandboxed build reports a directory")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "formats/documents-run" => ok [expected_check("run-exit", "0"), expected_check("run-stderr-empty", "true"), expected_check("fault-exit", "1"), expected_check("fault-stdout-empty", "true"), expected_check("snapshot-empty", "{}"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("offline-env", "PATH=/nonexistent"), expected_check("build-ok", "true")]
+        unknown: "nope" => ok []
+    match case is "formats/documents-run"
+        false => ok []
+        true => ok [expected_check("run-exit", "0"), expected_check("run-stderr-empty", "true"), expected_check("fault-exit", "1"), expected_check("fault-stdout-empty", "true"), expected_check("snapshot-empty", "{}"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("offline-env", "PATH=/nonexistent"), expected_check("build-ok", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("formats/documents-run", "default", "", "offline") => ok
+        seed_run_red: context("formats/documents-run", "seed-run-red", "", "offline") => failed{"run-exit"}
+        seed_stderr_noisy: context("formats/documents-run", "seed-stderr-noisy", "", "offline") => failed{"run-stderr-empty"}
+        seed_fault_green: context("formats/documents-run", "seed-fault-green", "", "offline") => failed{"fault-exit"}
+        seed_fault_noisy: context("formats/documents-run", "seed-fault-noisy", "", "offline") => failed{"fault-stdout-empty"}
+        seed_snapshot_drift: context("formats/documents-run", "seed-snapshot-drift", "", "offline") => failed{"snapshot-empty"}
+        seed_profile_drift: context("formats/documents-run", "seed-profile-drift", "", "offline") => failed{"sandbox-profile"}
+        seed_env_drift: context("formats/documents-run", "seed-env-drift", "", "offline") => failed{"offline-env"}
+        seed_build_fail: context("formats/documents-run", "seed-build-fail", "", "offline") => failed{"build-ok"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.run_exit, 0, c, "run-exit")
+            failed
+            ok evidence exit_evidence => match call require_bool(got.run_stderr_empty, true, c, "run-stderr-empty")
+                failed
+                ok evidence stderr_evidence => match call require_int(got.fault_exit, 1, c, "fault-exit")
+                    failed
+                    ok evidence fault_evidence => match call require_bool(got.fault_stdout_empty, true, c, "fault-stdout-empty")
+                        failed
+                        ok evidence stdout_evidence => match call require_text(got.snapshot_empty, "{}", c, "snapshot-empty")
+                            failed
+                            ok evidence snapshot_evidence => match call require_text(got.sandbox_profile, "(version 1)(allow default)(deny network*)", c, "sandbox-profile")
+                                failed
+                                ok evidence profile_evidence => match call require_text(got.offline_env, "PATH=/nonexistent", c, "offline-env")
+                                    failed
+                                    ok evidence env_evidence => match call require_bool(got.build_ok, true, c, "build-ok")
+                                        failed
+                                        ok evidence build_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m07_021: "m07-021" => ok test_case("formats/documents-run", ["formats", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 360000, [check_ref("run-exit"), check_ref("run-stderr-empty"), check_ref("fault-exit"), check_ref("fault-stdout-empty"), check_ref("snapshot-empty"), check_ref("sandbox-profile"), check_ref("offline-env"), check_ref("build-ok")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m07-021"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("formats/documents-run", ["formats", "m07"], ["can-bun-archive", "macos-sandbox-exec"], 360000, [check_ref("run-exit"), check_ref("run-stderr-empty"), check_ref("fault-exit"), check_ref("fault-stdout-empty"), check_ref("snapshot-empty"), check_ref("sandbox-profile"), check_ref("offline-env"), check_ref("build-ok")], callable case_body)
