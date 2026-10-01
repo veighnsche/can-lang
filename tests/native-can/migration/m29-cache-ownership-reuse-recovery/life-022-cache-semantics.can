@@ -1,0 +1,276 @@
+package m29life022cache
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 LIFE-022 "Slot cap: policy semantics".
+/// Source: tests/integration/harness_cache_test.go symbol
+/// TestHeavySlotCap (L158-173).
+/// Disposition: consolidate (this row ports
+/// TestHeavySlotCap to ordinary Can functions; the old
+/// Go harness stays until the integrator retires it after
+/// every linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the three slot-cap legs in Go
+/// order (empty default vs 7 override vs 0 invalid), the
+/// env name, the 3 default cap, the accepted 7 override,
+/// the rejected 0 override falling back to 3, the !=
+/// guard spelling, the got binding, the three Fatal
+/// wordings with exact want values, and the
+/// setenv/call/fatal counts.
+/// ADAPTATION (recorded, with source lines): default-value
+/// pins the empty inner bytes (L161); override-value pins
+/// the 7 inner bytes (L165); invalid-value pins the 0
+/// inner bytes (L169); default-cap pins int (3) from the
+/// empty-env leg (L162); override-cap pins int (7) from
+/// the 7 leg (L166); invalid-cap pins int (3) from the
+/// fallback leg (L170); compare-op pins != (L162) as the
+/// refusal guard (no semaphore re-implementation
+/// anywhere); default-fatal pins the default inner bytes
+/// (L163); override-fatal pins the override inner bytes
+/// (L167); invalid-fatal pins the invalid inner bytes
+/// (L171); setenv-count pins int (3) from the three legs
+/// (L161/L165/L169); cap-call-count pins int (3) from the
+/// three probes (L162/L166/L170); fatal-count pins int
+/// (3) from the Fatal legs (L163/L167/L171).
+/// Facet map (Go policy legs): env-name pins
+/// CAN_TEST_HEAVY_SLOTS (L161); default-value pins empty
+/// (L161); override-value pins 7 (L165); invalid-value
+/// pins 0 (L169); default-fatal pins default heavy cap
+/// plus want 3 (L163); override-fatal pins override heavy
+/// cap plus want 7 (L167); invalid-fatal pins invalid
+/// heavy cap plus want default 3 (L171); compare-op pins
+/// != (L162); got-name pins got (L162); default-cap pins 3
+/// (L162); override-cap pins 7 (L166); invalid-cap pins 3
+/// (L170); setenv-count pins 3 (L161/L165/L169);
+/// cap-call-count pins 3 (L162/L166/L170); fatal-count
+/// pins 3 (L163/L167/L171).
+/// The roots-green pin lives in life-022-roots-green.can;
+/// the run shape plus diagnostics live in
+/// life-022-run-shape.can.
+/// Variants: none (row lists zero variants; default plus
+/// seeded drifts only).
+/// Environment: none (no gates; requires []).
+/// Logical gates WORK/BUILD/CHILD/CLOCK bind at P23; no
+/// live run now. Accept gate P23 is unmet. Timeout 120000ms
+/// is the offline default bound (no Go timeout in this row;
+/// binds at P23 like the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case life/slot-cap checks: env-name, default-value,
+/// override-value, invalid-value, default-fatal,
+/// override-fatal, invalid-fatal, compare-op, got-name,
+/// default-cap, override-cap, invalid-cap, setenv-count,
+/// cap-call-count, fatal-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str env_name
+    str default_value
+    str override_value
+    str invalid_value
+    str default_fatal
+    str override_fatal
+    str invalid_fatal
+    str compare_op
+    str got_name
+    int default_cap
+    int override_cap
+    int invalid_cap
+    int setenv_count
+    int cap_call_count
+    int fatal_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/slot-cap", "default", "", "offline"), "env-name" => ok "case life/slot-cap variant default root env-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/slot-cap", "default", "", "offline"), "env-name" => ok evidence("env-name", "true", "true", true, "case life/slot-cap variant default root env-name run offline")
+        different: false, true, context("life/slot-cap", "default", "", "offline"), "env-name" => failed{"env-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("life/slot-cap", "default", "", "offline"), "default-cap" => ok evidence("default-cap", "3", "3", true, "case life/slot-cap variant default root default-cap run offline")
+        different: 2, 3, context("life/slot-cap", "default", "", "offline"), "default-cap" => failed{"default-cap"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "CAN_TEST_HEAVY_SLOTS", "CAN_TEST_HEAVY_SLOTS", context("life/slot-cap", "default", "", "offline"), "env-name" => ok evidence("env-name", "CAN_TEST_HEAVY_SLOTS", "CAN_TEST_HEAVY_SLOTS", true, "case life/slot-cap variant default root env-name run offline")
+        different: "CAN_TEST_HEAVY_SLOTS_2", "CAN_TEST_HEAVY_SLOTS", context("life/slot-cap", "default", "", "offline"), "env-name" => failed{"env-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 3, 3)
+        seed_env_name: "seed-env-name-drift" => ok observation("CAN_TEST_HEAVY_SLOTS_2", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 3, 3)
+        seed_default_value: "seed-default-value-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "_2", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 3, 3)
+        seed_override_value: "seed-override-value-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7_2", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 3, 3)
+        seed_invalid_value: "seed-invalid-value-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0_2", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 3, 3)
+        seed_default_fatal: "seed-default-fatal-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3_2", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 3, 3)
+        seed_override_fatal: "seed-override-fatal-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7_2", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 3, 3)
+        seed_invalid_fatal: "seed-invalid-fatal-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3_2", "!=", "got", 3, 7, 3, 3, 3, 3)
+        seed_compare_op: "seed-compare-op-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=_2", "got", 3, 7, 3, 3, 3, 3)
+        seed_got_name: "seed-got-name-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got_2", 3, 7, 3, 3, 3, 3)
+        seed_default_cap: "seed-default-cap-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 2, 7, 3, 3, 3, 3)
+        seed_override_cap: "seed-override-cap-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 6, 3, 3, 3, 3)
+        seed_invalid_cap: "seed-invalid-cap-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 2, 3, 3, 3)
+        seed_setenv_count: "seed-setenv-count-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 2, 3, 3)
+        seed_cap_call_count: "seed-cap-call-count-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 2, 3)
+        seed_fatal_count: "seed-fatal-count-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 3, 2)
+    match variant_id
+        "seed-env-name-drift" => ok observation("CAN_TEST_HEAVY_SLOTS_2", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 3, 3)
+        "seed-default-value-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "_2", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 3, 3)
+        "seed-override-value-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7_2", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 3, 3)
+        "seed-invalid-value-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0_2", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 3, 3)
+        "seed-default-fatal-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3_2", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 3, 3)
+        "seed-override-fatal-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7_2", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 3, 3)
+        "seed-invalid-fatal-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3_2", "!=", "got", 3, 7, 3, 3, 3, 3)
+        "seed-compare-op-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=_2", "got", 3, 7, 3, 3, 3, 3)
+        "seed-got-name-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got_2", 3, 7, 3, 3, 3, 3)
+        "seed-default-cap-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 2, 7, 3, 3, 3, 3)
+        "seed-override-cap-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 6, 3, 3, 3, 3)
+        "seed-invalid-cap-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 2, 3, 3, 3)
+        "seed-setenv-count-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 2, 3, 3)
+        "seed-cap-call-count-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 2, 3)
+        "seed-fatal-count-drift" => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 3, 2)
+        _ => ok observation("CAN_TEST_HEAVY_SLOTS", "", "7", "0", "default heavy cap %d, want 3", "override heavy cap %d, want 7", "invalid heavy cap %d, want default 3", "!=", "got", 3, 7, 3, 3, 3, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l022: "m29-l022" => ok [check("env-name", "legs pin the heavy-slots env name"), check("default-value", "default leg pins the empty value"), check("override-value", "override leg pins the 7 value"), check("invalid-value", "invalid leg pins the 0 value"), check("default-fatal", "default leg refusal wording is pinned"), check("override-fatal", "override leg refusal wording is pinned"), check("invalid-fatal", "invalid leg refusal wording is pinned"), check("compare-op", "legs pin the not-equal guard"), check("got-name", "probe binding is named got"), check("default-cap", "empty env yields cap 3"), check("override-cap", "7 override yields cap 7"), check("invalid-cap", "0 override falls back to cap 3"), check("setenv-count", "exactly three Setenv legs run"), check("cap-call-count", "exactly three cap probes run"), check("fatal-count", "three legs face the Fatal refusal")]
+        other: "nope" => ok []
+    match scope is "m29-l022"
+        false => ok []
+        true => ok [check("env-name", "legs pin the heavy-slots env name"), check("default-value", "default leg pins the empty value"), check("override-value", "override leg pins the 7 value"), check("invalid-value", "invalid leg pins the 0 value"), check("default-fatal", "default leg refusal wording is pinned"), check("override-fatal", "override leg refusal wording is pinned"), check("invalid-fatal", "invalid leg refusal wording is pinned"), check("compare-op", "legs pin the not-equal guard"), check("got-name", "probe binding is named got"), check("default-cap", "empty env yields cap 3"), check("override-cap", "7 override yields cap 7"), check("invalid-cap", "0 override falls back to cap 3"), check("setenv-count", "exactly three Setenv legs run"), check("cap-call-count", "exactly three cap probes run"), check("fatal-count", "three legs face the Fatal refusal")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/slot-cap" => ok [expected_check("env-name", "CAN_TEST_HEAVY_SLOTS"), expected_check("default-value", ""), expected_check("override-value", "7"), expected_check("invalid-value", "0"), expected_check("default-fatal", "default heavy cap %d, want 3"), expected_check("override-fatal", "override heavy cap %d, want 7"), expected_check("invalid-fatal", "invalid heavy cap %d, want default 3"), expected_check("compare-op", "!="), expected_check("got-name", "got"), expected_check("default-cap", "3"), expected_check("override-cap", "7"), expected_check("invalid-cap", "3"), expected_check("setenv-count", "3"), expected_check("cap-call-count", "3"), expected_check("fatal-count", "3")]
+        unknown: "nope" => ok []
+    match case is "life/slot-cap"
+        false => ok []
+        true => ok [expected_check("env-name", "CAN_TEST_HEAVY_SLOTS"), expected_check("default-value", ""), expected_check("override-value", "7"), expected_check("invalid-value", "0"), expected_check("default-fatal", "default heavy cap %d, want 3"), expected_check("override-fatal", "override heavy cap %d, want 7"), expected_check("invalid-fatal", "invalid heavy cap %d, want default 3"), expected_check("compare-op", "!="), expected_check("got-name", "got"), expected_check("default-cap", "3"), expected_check("override-cap", "7"), expected_check("invalid-cap", "3"), expected_check("setenv-count", "3"), expected_check("cap-call-count", "3"), expected_check("fatal-count", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/slot-cap", "default", "", "offline") => ok
+        seed_env_name: context("life/slot-cap", "seed-env-name-drift", "", "offline") => failed{"env-name"}
+        seed_default_value: context("life/slot-cap", "seed-default-value-drift", "", "offline") => failed{"default-value"}
+        seed_override_value: context("life/slot-cap", "seed-override-value-drift", "", "offline") => failed{"override-value"}
+        seed_invalid_value: context("life/slot-cap", "seed-invalid-value-drift", "", "offline") => failed{"invalid-value"}
+        seed_default_fatal: context("life/slot-cap", "seed-default-fatal-drift", "", "offline") => failed{"default-fatal"}
+        seed_override_fatal: context("life/slot-cap", "seed-override-fatal-drift", "", "offline") => failed{"override-fatal"}
+        seed_invalid_fatal: context("life/slot-cap", "seed-invalid-fatal-drift", "", "offline") => failed{"invalid-fatal"}
+        seed_compare_op: context("life/slot-cap", "seed-compare-op-drift", "", "offline") => failed{"compare-op"}
+        seed_got_name: context("life/slot-cap", "seed-got-name-drift", "", "offline") => failed{"got-name"}
+        seed_default_cap: context("life/slot-cap", "seed-default-cap-drift", "", "offline") => failed{"default-cap"}
+        seed_override_cap: context("life/slot-cap", "seed-override-cap-drift", "", "offline") => failed{"override-cap"}
+        seed_invalid_cap: context("life/slot-cap", "seed-invalid-cap-drift", "", "offline") => failed{"invalid-cap"}
+        seed_setenv_count: context("life/slot-cap", "seed-setenv-count-drift", "", "offline") => failed{"setenv-count"}
+        seed_cap_call_count: context("life/slot-cap", "seed-cap-call-count-drift", "", "offline") => failed{"cap-call-count"}
+        seed_fatal_count: context("life/slot-cap", "seed-fatal-count-drift", "", "offline") => failed{"fatal-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.env_name, "CAN_TEST_HEAVY_SLOTS", c, "env-name")
+            failed
+            ok evidence env_name_evidence => match call require_text(got.default_value, "", c, "default-value")
+                failed
+                ok evidence default_value_evidence => match call require_text(got.override_value, "7", c, "override-value")
+                    failed
+                    ok evidence override_value_evidence => match call require_text(got.invalid_value, "0", c, "invalid-value")
+                        failed
+                        ok evidence invalid_value_evidence => match call require_text(got.default_fatal, "default heavy cap %d, want 3", c, "default-fatal")
+                            failed
+                            ok evidence default_fatal_evidence => match call require_text(got.override_fatal, "override heavy cap %d, want 7", c, "override-fatal")
+                                failed
+                                ok evidence override_fatal_evidence => match call require_text(got.invalid_fatal, "invalid heavy cap %d, want default 3", c, "invalid-fatal")
+                                    failed
+                                    ok evidence invalid_fatal_evidence => match call require_text(got.compare_op, "!=", c, "compare-op")
+                                        failed
+                                        ok evidence compare_op_evidence => match call require_text(got.got_name, "got", c, "got-name")
+                                            failed
+                                            ok evidence got_name_evidence => match call require_int(got.default_cap, 3, c, "default-cap")
+                                                failed
+                                                ok evidence default_cap_evidence => match call require_int(got.override_cap, 7, c, "override-cap")
+                                                    failed
+                                                    ok evidence override_cap_evidence => match call require_int(got.invalid_cap, 3, c, "invalid-cap")
+                                                        failed
+                                                        ok evidence invalid_cap_evidence => match call require_int(got.setenv_count, 3, c, "setenv-count")
+                                                            failed
+                                                            ok evidence setenv_count_evidence => match call require_int(got.cap_call_count, 3, c, "cap-call-count")
+                                                                failed
+                                                                ok evidence cap_call_count_evidence => match call require_int(got.fatal_count, 3, c, "fatal-count")
+                                                                    failed
+                                                                    ok evidence fatal_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l022: "m29-l022" => ok test_case("life/slot-cap", ["life", "m29"], [], 120000, [check_ref("env-name"), check_ref("default-value"), check_ref("override-value"), check_ref("invalid-value"), check_ref("default-fatal"), check_ref("override-fatal"), check_ref("invalid-fatal"), check_ref("compare-op"), check_ref("got-name"), check_ref("default-cap"), check_ref("override-cap"), check_ref("invalid-cap"), check_ref("setenv-count"), check_ref("cap-call-count"), check_ref("fatal-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-l022"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/slot-cap", ["life", "m29"], [], 120000, [check_ref("env-name"), check_ref("default-value"), check_ref("override-value"), check_ref("invalid-value"), check_ref("default-fatal"), check_ref("override-fatal"), check_ref("invalid-fatal"), check_ref("compare-op"), check_ref("got-name"), check_ref("default-cap"), check_ref("override-cap"), check_ref("invalid-cap"), check_ref("setenv-count"), check_ref("cap-call-count"), check_ref("fatal-count")], callable case_body)

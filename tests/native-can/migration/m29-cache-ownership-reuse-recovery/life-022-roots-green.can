@@ -1,0 +1,273 @@
+package m29life022roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 LIFE-022 "Slot cap: roots green".
+/// Source: tests/integration/harness_test.go helper
+/// heavySlotCap (L71-80) plus the semaphore init (L68).
+/// Disposition: consolidate (this row ports
+/// TestHeavySlotCap to ordinary Can functions; the old
+/// Go harness stays until the integrator retires it after
+/// every linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the static slot-cap baseline as
+/// the green root: the helper name plus int return, the
+/// raw name, the Getenv env read, the empty guard, the
+/// Atoi parse plus n/err bindings, the ok guard plus
+/// minimum 1, the return-n plus return-3 spellings, and
+/// the param/call-site counts.
+/// ADAPTATION (recorded, with source lines): return-type
+/// pins int (L73); raw-name pins raw (L74); getenv-call
+/// pins os.Getenv (L74); empty-guard pins the full raw
+/// not-empty spelling (L74); atoi-call pins strconv.Atoi
+/// (L75); n-name pins n (L75); err-name pins err (L75);
+/// ok-guard pins the full err-nil plus at-least-1
+/// spelling (L75); min-cap pins int (1) from the lower
+/// bound (L75); default-returns pins return 3 (L79);
+/// override-returns pins return n (L76); param-count pins
+/// int (0) from the empty param list (L73);
+/// call-site-count pins int (4) from the semaphore init
+/// (H L68) plus the three test legs (L162/L166/L170); all
+/// call pins pin spellings only (no semaphore
+/// re-implementation anywhere).
+/// Facet map (static baseline): helper-name pins
+/// heavySlotCap (L73); return-type pins int (L73);
+/// raw-name pins raw (L74); getenv-call pins os.Getenv
+/// (L74); env-name pins CAN_TEST_HEAVY_SLOTS (L74);
+/// empty-guard pins raw not-empty (L74); atoi-call pins
+/// strconv.Atoi (L75); n-name pins n (L75); err-name pins
+/// err (L75); ok-guard pins err-nil plus at-least-1
+/// (L75); default-returns pins return 3 (L79);
+/// override-returns pins return n (L76); min-cap pins 1
+/// (L75); param-count pins 0 (L73); call-site-count pins
+/// 4 (H L68 plus L162/L166/L170).
+/// The policy pins live in life-022-cache-semantics.can;
+/// the run shape plus diagnostics live in
+/// life-022-run-shape.can.
+/// Variants: none (row lists zero variants; default plus
+/// seeded drifts only).
+/// Environment: none (no gates; requires []).
+/// Logical gates WORK/BUILD/CHILD/CLOCK bind at P23; no
+/// live run now. Accept gate P23 is unmet. Timeout 120000ms
+/// is the offline default bound (no Go timeout in this row;
+/// binds at P23 like the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case life/slot-roots checks: helper-name, return-type,
+/// raw-name, getenv-call, env-name, empty-guard,
+/// atoi-call, n-name, err-name, ok-guard,
+/// default-returns, override-returns, min-cap,
+/// param-count, call-site-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str helper_name
+    str return_type
+    str raw_name
+    str getenv_call
+    str env_name
+    str empty_guard
+    str atoi_call
+    str n_name
+    str err_name
+    str ok_guard
+    str default_returns
+    str override_returns
+    int min_cap
+    int param_count
+    int call_site_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/slot-roots", "default", "", "offline"), "helper-name" => ok "case life/slot-roots variant default root helper-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/slot-roots", "default", "", "offline"), "helper-name" => ok evidence("helper-name", "true", "true", true, "case life/slot-roots variant default root helper-name run offline")
+        different: false, true, context("life/slot-roots", "default", "", "offline"), "helper-name" => failed{"helper-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("life/slot-roots", "default", "", "offline"), "min-cap" => ok evidence("min-cap", "1", "1", true, "case life/slot-roots variant default root min-cap run offline")
+        different: 0, 1, context("life/slot-roots", "default", "", "offline"), "min-cap" => failed{"min-cap"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "heavySlotCap", "heavySlotCap", context("life/slot-roots", "default", "", "offline"), "helper-name" => ok evidence("helper-name", "heavySlotCap", "heavySlotCap", true, "case life/slot-roots variant default root helper-name run offline")
+        different: "heavySlotCap_2", "heavySlotCap", context("life/slot-roots", "default", "", "offline"), "helper-name" => failed{"helper-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        seed_helper_name: "seed-helper-name-drift" => ok observation("heavySlotCap_2", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        seed_return_type: "seed-return-type-drift" => ok observation("heavySlotCap", "int_2", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        seed_raw_name: "seed-raw-name-drift" => ok observation("heavySlotCap", "int", "raw_2", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        seed_getenv_call: "seed-getenv-call-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv_2", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        seed_env_name: "seed-env-name-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS_2", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        seed_empty_guard: "seed-empty-guard-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"_2", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        seed_atoi_call: "seed-atoi-call-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi_2", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        seed_n_name: "seed-n-name-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n_2", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        seed_err_name: "seed-err-name-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err_2", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        seed_ok_guard: "seed-ok-guard-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1_2", "return 3", "return n", 1, 0, 4)
+        seed_default_returns: "seed-default-returns-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3_2", "return n", 1, 0, 4)
+        seed_override_returns: "seed-override-returns-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n_2", 1, 0, 4)
+        seed_min_cap: "seed-min-cap-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 0, 0, 4)
+        seed_param_count: "seed-param-count-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 1, 4)
+        seed_call_site_count: "seed-call-site-count-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 3)
+    match variant_id
+        "seed-helper-name-drift" => ok observation("heavySlotCap_2", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        "seed-return-type-drift" => ok observation("heavySlotCap", "int_2", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        "seed-raw-name-drift" => ok observation("heavySlotCap", "int", "raw_2", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        "seed-getenv-call-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv_2", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        "seed-env-name-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS_2", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        "seed-empty-guard-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"_2", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        "seed-atoi-call-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi_2", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        "seed-n-name-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n_2", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        "seed-err-name-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err_2", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+        "seed-ok-guard-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1_2", "return 3", "return n", 1, 0, 4)
+        "seed-default-returns-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3_2", "return n", 1, 0, 4)
+        "seed-override-returns-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n_2", 1, 0, 4)
+        "seed-min-cap-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 0, 0, 4)
+        "seed-param-count-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 1, 4)
+        "seed-call-site-count-drift" => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 3)
+        _ => ok observation("heavySlotCap", "int", "raw", "os.Getenv", "CAN_TEST_HEAVY_SLOTS", "raw != \"\"", "strconv.Atoi", "n", "err", "err == nil && n >= 1", "return 3", "return n", 1, 0, 4)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l022: "m29-l022" => ok [check("helper-name", "helper is named heavySlotCap"), check("return-type", "helper returns int"), check("raw-name", "env bytes are named raw"), check("getenv-call", "env loads with Getenv"), check("env-name", "helper pins the env name"), check("empty-guard", "nonempty env faces the empty guard"), check("atoi-call", "parse pins the Atoi call"), check("n-name", "parsed value is named n"), check("err-name", "parse error is named err"), check("ok-guard", "override faces the ok guard"), check("default-returns", "default path returns 3"), check("override-returns", "override path returns n"), check("min-cap", "override minimum is 1"), check("param-count", "helper takes zero params"), check("call-site-count", "four call sites pin the helper")]
+        other: "nope" => ok []
+    match scope is "m29-l022"
+        false => ok []
+        true => ok [check("helper-name", "helper is named heavySlotCap"), check("return-type", "helper returns int"), check("raw-name", "env bytes are named raw"), check("getenv-call", "env loads with Getenv"), check("env-name", "helper pins the env name"), check("empty-guard", "nonempty env faces the empty guard"), check("atoi-call", "parse pins the Atoi call"), check("n-name", "parsed value is named n"), check("err-name", "parse error is named err"), check("ok-guard", "override faces the ok guard"), check("default-returns", "default path returns 3"), check("override-returns", "override path returns n"), check("min-cap", "override minimum is 1"), check("param-count", "helper takes zero params"), check("call-site-count", "four call sites pin the helper")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/slot-roots" => ok [expected_check("helper-name", "heavySlotCap"), expected_check("return-type", "int"), expected_check("raw-name", "raw"), expected_check("getenv-call", "os.Getenv"), expected_check("env-name", "CAN_TEST_HEAVY_SLOTS"), expected_check("empty-guard", "raw != \"\""), expected_check("atoi-call", "strconv.Atoi"), expected_check("n-name", "n"), expected_check("err-name", "err"), expected_check("ok-guard", "err == nil && n >= 1"), expected_check("default-returns", "return 3"), expected_check("override-returns", "return n"), expected_check("min-cap", "1"), expected_check("param-count", "0"), expected_check("call-site-count", "4")]
+        unknown: "nope" => ok []
+    match case is "life/slot-roots"
+        false => ok []
+        true => ok [expected_check("helper-name", "heavySlotCap"), expected_check("return-type", "int"), expected_check("raw-name", "raw"), expected_check("getenv-call", "os.Getenv"), expected_check("env-name", "CAN_TEST_HEAVY_SLOTS"), expected_check("empty-guard", "raw != \"\""), expected_check("atoi-call", "strconv.Atoi"), expected_check("n-name", "n"), expected_check("err-name", "err"), expected_check("ok-guard", "err == nil && n >= 1"), expected_check("default-returns", "return 3"), expected_check("override-returns", "return n"), expected_check("min-cap", "1"), expected_check("param-count", "0"), expected_check("call-site-count", "4")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/slot-roots", "default", "", "offline") => ok
+        seed_helper_name: context("life/slot-roots", "seed-helper-name-drift", "", "offline") => failed{"helper-name"}
+        seed_return_type: context("life/slot-roots", "seed-return-type-drift", "", "offline") => failed{"return-type"}
+        seed_raw_name: context("life/slot-roots", "seed-raw-name-drift", "", "offline") => failed{"raw-name"}
+        seed_getenv_call: context("life/slot-roots", "seed-getenv-call-drift", "", "offline") => failed{"getenv-call"}
+        seed_env_name: context("life/slot-roots", "seed-env-name-drift", "", "offline") => failed{"env-name"}
+        seed_empty_guard: context("life/slot-roots", "seed-empty-guard-drift", "", "offline") => failed{"empty-guard"}
+        seed_atoi_call: context("life/slot-roots", "seed-atoi-call-drift", "", "offline") => failed{"atoi-call"}
+        seed_n_name: context("life/slot-roots", "seed-n-name-drift", "", "offline") => failed{"n-name"}
+        seed_err_name: context("life/slot-roots", "seed-err-name-drift", "", "offline") => failed{"err-name"}
+        seed_ok_guard: context("life/slot-roots", "seed-ok-guard-drift", "", "offline") => failed{"ok-guard"}
+        seed_default_returns: context("life/slot-roots", "seed-default-returns-drift", "", "offline") => failed{"default-returns"}
+        seed_override_returns: context("life/slot-roots", "seed-override-returns-drift", "", "offline") => failed{"override-returns"}
+        seed_min_cap: context("life/slot-roots", "seed-min-cap-drift", "", "offline") => failed{"min-cap"}
+        seed_param_count: context("life/slot-roots", "seed-param-count-drift", "", "offline") => failed{"param-count"}
+        seed_call_site_count: context("life/slot-roots", "seed-call-site-count-drift", "", "offline") => failed{"call-site-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.helper_name, "heavySlotCap", c, "helper-name")
+            failed
+            ok evidence helper_name_evidence => match call require_text(got.return_type, "int", c, "return-type")
+                failed
+                ok evidence return_type_evidence => match call require_text(got.raw_name, "raw", c, "raw-name")
+                    failed
+                    ok evidence raw_name_evidence => match call require_text(got.getenv_call, "os.Getenv", c, "getenv-call")
+                        failed
+                        ok evidence getenv_call_evidence => match call require_text(got.env_name, "CAN_TEST_HEAVY_SLOTS", c, "env-name")
+                            failed
+                            ok evidence env_name_evidence => match call require_text(got.empty_guard, "raw != \"\"", c, "empty-guard")
+                                failed
+                                ok evidence empty_guard_evidence => match call require_text(got.atoi_call, "strconv.Atoi", c, "atoi-call")
+                                    failed
+                                    ok evidence atoi_call_evidence => match call require_text(got.n_name, "n", c, "n-name")
+                                        failed
+                                        ok evidence n_name_evidence => match call require_text(got.err_name, "err", c, "err-name")
+                                            failed
+                                            ok evidence err_name_evidence => match call require_text(got.ok_guard, "err == nil && n >= 1", c, "ok-guard")
+                                                failed
+                                                ok evidence ok_guard_evidence => match call require_text(got.default_returns, "return 3", c, "default-returns")
+                                                    failed
+                                                    ok evidence default_returns_evidence => match call require_text(got.override_returns, "return n", c, "override-returns")
+                                                        failed
+                                                        ok evidence override_returns_evidence => match call require_int(got.min_cap, 1, c, "min-cap")
+                                                            failed
+                                                            ok evidence min_cap_evidence => match call require_int(got.param_count, 0, c, "param-count")
+                                                                failed
+                                                                ok evidence param_count_evidence => match call require_int(got.call_site_count, 4, c, "call-site-count")
+                                                                    failed
+                                                                    ok evidence call_site_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l022: "m29-l022" => ok test_case("life/slot-roots", ["life", "m29"], [], 120000, [check_ref("helper-name"), check_ref("return-type"), check_ref("raw-name"), check_ref("getenv-call"), check_ref("env-name"), check_ref("empty-guard"), check_ref("atoi-call"), check_ref("n-name"), check_ref("err-name"), check_ref("ok-guard"), check_ref("default-returns"), check_ref("override-returns"), check_ref("min-cap"), check_ref("param-count"), check_ref("call-site-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-l022"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/slot-roots", ["life", "m29"], [], 120000, [check_ref("helper-name"), check_ref("return-type"), check_ref("raw-name"), check_ref("getenv-call"), check_ref("env-name"), check_ref("empty-guard"), check_ref("atoi-call"), check_ref("n-name"), check_ref("err-name"), check_ref("ok-guard"), check_ref("default-returns"), check_ref("override-returns"), check_ref("min-cap"), check_ref("param-count"), check_ref("call-site-count")], callable case_body)
