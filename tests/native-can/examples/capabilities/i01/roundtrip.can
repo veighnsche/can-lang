@@ -1,0 +1,61 @@
+package i01_example
+    provides [native_demo, bits_demo]
+    uses [i01, native, option, test]
+
+/// Tiny typed I01 example: both helper flows end to end. native_demo runs
+/// open->observe->close through the composed projections and returns the
+/// close facts; bits_demo runs open->observe over an f64 cell and returns
+/// the exact classification. Rows are offline/provisional asserts (static
+/// until qualified execution). One internal make means the demo close
+/// releases exactly one handle.
+
+/// Full text flow: open a session, observe one text lexeme, then close.
+/// The close facts carry released 1 (the observer's internal cell).
+fn i01::close_facts native_demo
+    emits {}
+    given
+        test::owner owner
+        str runtime
+        str observer
+        str scope
+        native::limits limits
+        native::inert_literal payload
+        native::observe_bounds b
+        native::deadline deadline
+    asserts
+        greeting: "bun", "observer-a", "run-1", native::limits(1, 8, 8, 64, 65536, 4, 4), native::inert_literal("text", option::none(), option::none(), option::some("hi"), option::none(), option::none()), native::observe_bounds(64, 65536), native::deadline("wall-utc", 5000) => ok i01::close_facts(1, 0, [], false)
+        farewell: "bun", "observer-a", "run-2", native::limits(1, 8, 8, 64, 65536, 4, 4), native::inert_literal("text", option::none(), option::none(), option::some("bye"), option::none(), option::none()), native::observe_bounds(64, 65536), native::deadline("wall-utc", 5000) => ok i01::close_facts(1, 0, [], false)
+    match call i01::open_session(owner, runtime, observer, scope, limits)
+        when
+            greeting: owner, runtime, observer, scope, limits => ok
+            farewell: owner, runtime, observer, scope, limits => ok
+        ok native::session s => match call i01::observe_lexeme(s, payload, b)
+            when
+                greeting: s, payload, b => ok native::observation_result(option::none(), option::none(), option::none(), option::none(), option::none(), option::some("text"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::some("hi"), option::none(), option::none())
+                farewell: s, payload, b => ok native::observation_result(option::none(), option::none(), option::none(), option::none(), option::none(), option::some("text"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::some("bye"), option::none(), option::none())
+            ok => match call i01::close_session_facts(s, deadline)
+                when
+                    greeting: s, deadline => ok i01::close_facts(1, 0, [], false)
+                    farewell: s, deadline => ok i01::close_facts(1, 0, [], false)
+                ok i01::close_facts shut => ok shut
+/// Bits flow: open a session and read back the exact f64 classification
+/// of a one-valued cell (normal, sign 0, exponent 1023, zero mantissa).
+fn native::observation_result bits_demo
+    emits {}
+    given
+        test::owner owner
+        str runtime
+        str observer
+        str scope
+        native::limits limits
+        native::inert_literal payload
+        native::observe_bounds b
+    asserts
+        one: "bun", "observer-a", "run-3", native::limits(1, 8, 8, 64, 65536, 4, 4), native::inert_literal("f64_bits", option::some(1071644672), option::some(0), option::none(), option::none(), option::none()), native::observe_bounds(64, 65536) => ok native::observation_result(option::none(), option::none(), option::none(), option::none(), option::none(), option::some("f64_bits"), option::some(1071644672), option::some(0), option::some("normal"), option::some(0), option::some(1023), option::some(0), option::some(0), option::none(), option::none(), option::none(), option::none())
+    match call i01::open_session(owner, runtime, observer, scope, limits)
+        when
+            one: owner, runtime, observer, scope, limits => ok
+        ok native::session s => match call i01::observe_ieee_bits(s, payload, b)
+            when
+                one: s, payload, b => ok native::observation_result(option::none(), option::none(), option::none(), option::none(), option::none(), option::some("f64_bits"), option::some(1071644672), option::some(0), option::some("normal"), option::some(0), option::some(1023), option::some(0), option::some(0), option::none(), option::none(), option::none(), option::none())
+            ok native::observation_result seen => ok seen

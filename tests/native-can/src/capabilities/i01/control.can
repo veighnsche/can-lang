@@ -1,0 +1,79 @@
+package i01
+    provides [close_facts, close_session_facts, native_roundtrip, run_native_roundtrip]
+    uses [native, option, test]
+
+/// Native session close and the composed roundtrip (I01). Close receipts
+/// pin every K02 registry field except the transport-minted session id,
+/// which no row can know; the when-stub id is check-time-only scaffolding.
+/// run_native_roundtrip threads open->make->observe->close through one
+/// body and projects only transport-independent fields. Rows are
+/// offline/provisional asserts, static until qualified execution.
+
+/// Closed-over session receipt: the Can-readable close fields. The minted
+/// session id is transport-dependent and cellsReleased is wire-case
+/// (unspellable in Can); neither is projected.
+record close_facts
+    int released
+    int remaining
+    str[] forced
+    bool joined
+/// Close one session and project the receipt. A fresh scope holds no
+/// handles, so released is 0, nothing is forced, and the close is the
+/// first (joined false).
+fn close_facts close_session_facts
+    emits {}
+    given
+        native::session s
+        native::deadline deadline
+    asserts
+        fresh: native::deadline("wall-utc", 5000) => ok close_facts(0, 0, [], false)
+        monotonic: native::deadline("n-monotonic", 100) => ok close_facts(0, 0, [], false)
+    match call native::close(s, deadline)
+        when
+            fresh: s, deadline => ok native::close_receipt("stub-session", 0, 0, [], false, 0)
+            monotonic: s, deadline => ok native::close_receipt("stub-session", 0, 0, [], false, 0)
+        ok native::close_receipt got => ok close_facts(got.released, got.remaining, got.forced, got.joined)
+/// Observed outcome of one native roundtrip: the observed text and the
+/// handles the close released.
+record native_roundtrip
+    option::value<str> text
+    int released
+/// Full flow: open a session, make one text cell, observe its lexeme,
+/// then close. One make means the close releases exactly one handle.
+fn native_roundtrip run_native_roundtrip
+    emits {}
+    given
+        test::owner owner
+        str runtime
+        str observer
+        str scope
+        native::limits limits
+        native::inert_literal payload
+        native::observe_bounds b
+        native::deadline deadline
+    asserts
+        greeting: "bun", "observer-a", "run-1", native::limits(1, 8, 8, 64, 65536, 4, 4), native::inert_literal("text", option::none(), option::none(), option::some("hi"), option::none(), option::none()), native::observe_bounds(64, 65536), native::deadline("wall-utc", 5000) => ok native_roundtrip(option::some("hi"), 1)
+        farewell: "bun", "observer-a", "run-2", native::limits(1, 8, 8, 64, 65536, 4, 4), native::inert_literal("text", option::none(), option::none(), option::some("bye"), option::none(), option::none()), native::observe_bounds(64, 65536), native::deadline("wall-utc", 5000) => ok native_roundtrip(option::some("bye"), 1)
+    match call native::open(owner, runtime, observer, scope, limits)
+        when
+            greeting: owner, runtime, observer, scope, limits => ok
+            farewell: owner, runtime, observer, scope, limits => ok
+        ok native::session s => match call native::make(s, "text", payload)
+            when
+                greeting: s, "text", payload => ok
+                farewell: s, "text", payload => ok
+            ok native::value_handle h => do
+                native::value_handle[] hs = [h]
+                match call native::observe(s, hs, "lexeme", b)
+                    when
+                        greeting: s, hs, "lexeme", b => ok native::inert_facts("lexeme", [native::observation("stub-handle", "cell1", native::observation_result(option::none(), option::none(), option::none(), option::none(), option::none(), option::some("text"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::some("hi"), option::none(), option::none()))], option::none(), option::none())
+                        farewell: s, hs, "lexeme", b => ok native::inert_facts("lexeme", [native::observation("stub-handle", "cell1", native::observation_result(option::none(), option::none(), option::none(), option::none(), option::none(), option::some("text"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::some("bye"), option::none(), option::none()))], option::none(), option::none())
+                    ok native::inert_facts seen => do
+                        native::observation[] obs = seen.observations
+                        native::observation first = obs[0]
+                        native::observation_result res = first.result
+                        match call native::close(s, deadline)
+                            when
+                                greeting: s, deadline => ok native::close_receipt("stub-session", 1, 0, [], false, 1)
+                                farewell: s, deadline => ok native::close_receipt("stub-session", 1, 0, [], false, 1)
+                            ok native::close_receipt shut => ok native_roundtrip(res.text, shut.released)

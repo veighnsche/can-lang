@@ -1,0 +1,247 @@
+package i01
+    provides [observe_scalar_tag, observe_ieee_bits, observe_lexeme, observe_descriptor, observe_entries, observe_identity, observe_counters, observe_ieee_gap, observe_lexeme_of_bits, observe_entries_of_entries, observe_lexeme_of_hostile]
+    uses [native, option, test]
+
+/// Native value observers (I01): one composed make+observe projection per
+/// observe kind. Rows cannot name value handles (opaque, and the service
+/// rejects empty handle lists), so each wrapper makes its own cell from
+/// the row-supplied payload and returns the first observation result (or
+/// the counters option): whole values, no dead match arms. Pins are the
+/// exact K02 observeOne/lexemeOf/entriesOf outputs under a fresh scope
+/// (first cell is cell1). When-stub handle strings are check-time-only
+/// scaffolding ("stub-handle" never executes); live ids are minted by the
+/// future N transport. Rows are offline/provisional asserts, static until
+/// qualified execution.
+
+/// Observe the scalar tag of a text cell: exactly "text".
+fn native::observation_result observe_scalar_tag
+    emits {}
+    given
+        native::session s
+        native::inert_literal payload
+        native::observe_bounds b
+    asserts
+        greeting: native::inert_literal("text", option::none(), option::none(), option::some("hi"), option::none(), option::none()), native::observe_bounds(64, 65536) => ok native::observation_result(option::some("text"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none())
+    match call native::make(s, "text", payload)
+        when
+            greeting: s, "text", payload => ok
+        ok native::value_handle h => do
+            native::value_handle[] hs = [h]
+            match call native::observe(s, hs, "scalar_tag", b)
+                when
+                    greeting: s, hs, "scalar_tag", b => ok native::inert_facts("scalar_tag", [native::observation("stub-handle", "cell1", native::observation_result(option::some("text"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none()))], option::none(), option::none())
+                ok native::inert_facts got => do
+                    native::observation[] obs = got.observations
+                    native::observation first = obs[0]
+                    ok first.result
+/// Observe the exact f64 bits of a bits cell: construction words plus the
+/// K02 classification (1.0 is normal, sign 0, exponent 1023, zero mantissa).
+fn native::observation_result observe_ieee_bits
+    emits {}
+    given
+        native::session s
+        native::inert_literal payload
+        native::observe_bounds b
+    asserts
+        one: native::inert_literal("f64_bits", option::some(1071644672), option::some(0), option::none(), option::none(), option::none()), native::observe_bounds(64, 65536) => ok native::observation_result(option::none(), option::none(), option::none(), option::none(), option::none(), option::some("f64_bits"), option::some(1071644672), option::some(0), option::some("normal"), option::some(0), option::some(1023), option::some(0), option::some(0), option::none(), option::none(), option::none(), option::none())
+    match call native::make(s, "primitive_bits", payload)
+        when
+            one: s, "primitive_bits", payload => ok
+        ok native::value_handle h => do
+            native::value_handle[] hs = [h]
+            match call native::observe(s, hs, "ieee_bits", b)
+                when
+                    one: s, hs, "ieee_bits", b => ok native::inert_facts("ieee_bits", [native::observation("stub-handle", "cell1", native::observation_result(option::none(), option::none(), option::none(), option::none(), option::none(), option::some("f64_bits"), option::some(1071644672), option::some(0), option::some("normal"), option::some(0), option::some(1023), option::some(0), option::some(0), option::none(), option::none(), option::none(), option::none()))], option::none(), option::none())
+                ok native::inert_facts got => do
+                    native::observation[] obs = got.observations
+                    native::observation first = obs[0]
+                    ok first.result
+/// Observe the lexeme of a text cell: tag text with the exact string.
+fn native::observation_result observe_lexeme
+    emits {}
+    given
+        native::session s
+        native::inert_literal payload
+        native::observe_bounds b
+    asserts
+        greeting: native::inert_literal("text", option::none(), option::none(), option::some("hi"), option::none(), option::none()), native::observe_bounds(64, 65536) => ok native::observation_result(option::none(), option::none(), option::none(), option::none(), option::none(), option::some("text"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::some("hi"), option::none(), option::none())
+    match call native::make(s, "text", payload)
+        when
+            greeting: s, "text", payload => ok
+        ok native::value_handle h => do
+            native::value_handle[] hs = [h]
+            match call native::observe(s, hs, "lexeme", b)
+                when
+                    greeting: s, hs, "lexeme", b => ok native::inert_facts("lexeme", [native::observation("stub-handle", "cell1", native::observation_result(option::none(), option::none(), option::none(), option::none(), option::none(), option::some("text"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::some("hi"), option::none(), option::none()))], option::none(), option::none())
+                ok native::inert_facts got => do
+                    native::observation[] obs = got.observations
+                    native::observation first = obs[0]
+                    ok first.result
+/// Observe the descriptor of a text cell: scalar tag plus byte length.
+fn native::observation_result observe_descriptor
+    emits {}
+    given
+        native::session s
+        native::inert_literal payload
+        native::observe_bounds b
+    asserts
+        greeting: native::inert_literal("text", option::none(), option::none(), option::some("hi"), option::none(), option::none()), native::observe_bounds(64, 65536) => ok native::observation_result(option::some("text"), option::none(), option::some(2), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none())
+    match call native::make(s, "text", payload)
+        when
+            greeting: s, "text", payload => ok
+        ok native::value_handle h => do
+            native::value_handle[] hs = [h]
+            match call native::observe(s, hs, "descriptor", b)
+                when
+                    greeting: s, hs, "descriptor", b => ok native::inert_facts("descriptor", [native::observation("stub-handle", "cell1", native::observation_result(option::some("text"), option::none(), option::some(2), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none()))], option::none(), option::none())
+                ok native::inert_facts got => do
+                    native::observation[] obs = got.observations
+                    native::observation first = obs[0]
+                    ok first.result
+/// Observe entries of a text cell: not-entries gap with the scalar tag.
+fn native::observation_result observe_entries
+    emits {}
+    given
+        native::session s
+        native::inert_literal payload
+        native::observe_bounds b
+    asserts
+        greeting: native::inert_literal("text", option::none(), option::none(), option::some("hi"), option::none(), option::none()), native::observe_bounds(64, 65536) => ok native::observation_result(option::some("text"), option::none(), option::none(), option::none(), option::some("not-entries"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none())
+    match call native::make(s, "text", payload)
+        when
+            greeting: s, "text", payload => ok
+        ok native::value_handle h => do
+            native::value_handle[] hs = [h]
+            match call native::observe(s, hs, "entries", b)
+                when
+                    greeting: s, hs, "entries", b => ok native::inert_facts("entries", [native::observation("stub-handle", "cell1", native::observation_result(option::some("text"), option::none(), option::none(), option::none(), option::some("not-entries"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none()))], option::none(), option::none())
+                ok native::inert_facts got => do
+                    native::observation[] obs = got.observations
+                    native::observation first = obs[0]
+                    ok first.result
+/// Observe the identity of a text cell: the deterministic first cell id.
+fn native::observation_result observe_identity
+    emits {}
+    given
+        native::session s
+        native::inert_literal payload
+        native::observe_bounds b
+    asserts
+        greeting: native::inert_literal("text", option::none(), option::none(), option::some("hi"), option::none(), option::none()), native::observe_bounds(64, 65536) => ok native::observation_result(option::none(), option::none(), option::none(), option::some("cell1"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none())
+    match call native::make(s, "text", payload)
+        when
+            greeting: s, "text", payload => ok
+        ok native::value_handle h => do
+            native::value_handle[] hs = [h]
+            match call native::observe(s, hs, "identity", b)
+                when
+                    greeting: s, hs, "identity", b => ok native::inert_facts("identity", [native::observation("stub-handle", "cell1", native::observation_result(option::none(), option::none(), option::none(), option::some("cell1"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none()))], option::some([]), option::none())
+                ok native::inert_facts got => do
+                    native::observation[] obs = got.observations
+                    native::observation first = obs[0]
+                    ok first.result
+/// Observe the session counters after one make: exactly one make, no
+/// aliases, observations, reads or hostile touches, unsealed.
+fn option::value<native::observe_counters> observe_counters
+    emits {}
+    given
+        native::session s
+        native::inert_literal payload
+        native::observe_bounds b
+    asserts
+        greeting: native::inert_literal("text", option::none(), option::none(), option::some("hi"), option::none(), option::none()), native::observe_bounds(64, 65536) => ok option::some(native::observe_counters(1, 0, 0, 0, false, 0, 0, 0))
+    match call native::make(s, "text", payload)
+        when
+            greeting: s, "text", payload => ok
+        ok native::value_handle h => do
+            native::value_handle[] hs = [h]
+            match call native::observe(s, hs, "counters", b)
+                when
+                    greeting: s, hs, "counters", b => ok native::inert_facts("counters", [native::observation("stub-handle", "cell1", native::observation_result(option::none(), option::none(), option::none(), option::some("cell1"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none()))], option::none(), option::some(native::observe_counters(1, 0, 0, 0, false, 0, 0, 0)))
+                ok native::inert_facts got => ok got.counters
+/// Observe f64 bits of a text cell: the not-a-float gap plus the scalar.
+fn native::observation_result observe_ieee_gap
+    emits {}
+    given
+        native::session s
+        native::inert_literal payload
+        native::observe_bounds b
+    asserts
+        greeting: native::inert_literal("text", option::none(), option::none(), option::some("hi"), option::none(), option::none()), native::observe_bounds(64, 65536) => ok native::observation_result(option::some("text"), option::none(), option::none(), option::none(), option::some("not-a-float"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none())
+    match call native::make(s, "text", payload)
+        when
+            greeting: s, "text", payload => ok
+        ok native::value_handle h => do
+            native::value_handle[] hs = [h]
+            match call native::observe(s, hs, "ieee_bits", b)
+                when
+                    greeting: s, hs, "ieee_bits", b => ok native::inert_facts("ieee_bits", [native::observation("stub-handle", "cell1", native::observation_result(option::some("text"), option::none(), option::none(), option::none(), option::some("not-a-float"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none()))], option::none(), option::none())
+                ok native::inert_facts got => do
+                    native::observation[] obs = got.observations
+                    native::observation first = obs[0]
+                    ok first.result
+/// Observe the lexeme of an integer-valued f64 cell: tag integer with the
+/// exact decimal lexeme (1.0 renders "1").
+fn native::observation_result observe_lexeme_of_bits
+    emits {}
+    given
+        native::session s
+        native::inert_literal payload
+        native::observe_bounds b
+    asserts
+        one: native::inert_literal("f64_bits", option::some(1071644672), option::some(0), option::none(), option::none(), option::none()), native::observe_bounds(64, 65536) => ok native::observation_result(option::none(), option::none(), option::none(), option::none(), option::none(), option::some("integer"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::some("1"), option::none(), option::none(), option::none())
+    match call native::make(s, "primitive_bits", payload)
+        when
+            one: s, "primitive_bits", payload => ok
+        ok native::value_handle h => do
+            native::value_handle[] hs = [h]
+            match call native::observe(s, hs, "lexeme", b)
+                when
+                    one: s, hs, "lexeme", b => ok native::inert_facts("lexeme", [native::observation("stub-handle", "cell1", native::observation_result(option::none(), option::none(), option::none(), option::none(), option::none(), option::some("integer"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::some("1"), option::none(), option::none(), option::none()))], option::none(), option::none())
+                ok native::inert_facts got => do
+                    native::observation[] obs = got.observations
+                    native::observation first = obs[0]
+                    ok first.result
+/// Observe entries of an empty entries cell: an empty tagged list, no gap.
+fn native::observation_result observe_entries_of_entries
+    emits {}
+    given
+        native::session s
+        native::inert_literal payload
+        native::observe_bounds b
+    asserts
+        empty: native::inert_literal("entries", option::none(), option::none(), option::none(), option::some([]), option::none()), native::observe_bounds(64, 65536) => ok native::observation_result(option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::some([]))
+    match call native::make(s, "ordered_entries", payload)
+        when
+            empty: s, "ordered_entries", payload => ok
+        ok native::value_handle h => do
+            native::value_handle[] hs = [h]
+            match call native::observe(s, hs, "entries", b)
+                when
+                    empty: s, hs, "entries", b => ok native::inert_facts("entries", [native::observation("stub-handle", "cell1", native::observation_result(option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::some([])))], option::none(), option::none())
+                ok native::inert_facts got => do
+                    native::observation[] obs = got.observations
+                    native::observation first = obs[0]
+                    ok first.result
+/// Observe the lexeme of a hostile cell: the effectful gap with the scalar
+/// and the stored descriptor. Reading the tag touches nothing effectful.
+fn native::observation_result observe_lexeme_of_hostile
+    emits {}
+    given
+        native::session s
+        native::inert_literal payload
+        native::observe_bounds b
+    asserts
+        proxy: native::inert_literal("hostile", option::none(), option::none(), option::none(), option::none(), option::some("revoked_proxy")), native::observe_bounds(64, 65536) => ok native::observation_result(option::some("hostile"), option::some("revoked_proxy"), option::none(), option::none(), option::some("effectful"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none())
+    match call native::make(s, "hostile_descriptor", payload)
+        when
+            proxy: s, "hostile_descriptor", payload => ok
+        ok native::value_handle h => do
+            native::value_handle[] hs = [h]
+            match call native::observe(s, hs, "lexeme", b)
+                when
+                    proxy: s, hs, "lexeme", b => ok native::inert_facts("lexeme", [native::observation("stub-handle", "cell1", native::observation_result(option::some("hostile"), option::some("revoked_proxy"), option::none(), option::none(), option::some("effectful"), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none(), option::none()))], option::none(), option::none())
+                ok native::inert_facts got => do
+                    native::observation[] obs = got.observations
+                    native::observation first = obs[0]
+                    ok first.result
