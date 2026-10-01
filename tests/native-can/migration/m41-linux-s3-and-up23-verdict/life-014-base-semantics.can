@@ -1,0 +1,381 @@
+package m41life014base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M41 LIFE-014 TestCurrentS3Objects
+/// crud plus range plus stream plus size
+/// slice.
+/// Source: tests/integration/s3_test.go
+/// symbol TestCurrentS3Objects (L44-348):
+/// each CLI call opens its own client,
+/// so bytes put by one process read back
+/// in the next process (L239-241).
+/// Disposition: migrate (this row owns
+/// the S3 matrix as reviewable Can
+/// facts; the old go check stays until
+/// the integrator retires it after every
+/// linked row, variant, environment and
+/// control has accepted proof).
+/// Protects (this file): facet two (put,
+/// get, stat, exists, range, stream,
+/// bounded wide-object refusal and
+/// invalid UTF-8 payload): the six crud
+/// verbs, the short-put usage want, the
+/// hello round trip wants, the repeat
+/// unit, the over-limit and invalid-data
+/// fault codes, the doc and wide leaf
+/// names, and the eight size tallies.
+/// ADAPTATION (recorded, with source
+/// lines): cmd pins hold CLI verbs (W
+/// word counts); want pins hold exact
+/// stdout wants (Q quoted counts); leaf
+/// pins hold key file names (L242,
+/// L251); fault pins hold fault codes
+/// (L258, L337); count pins hold ints
+/// recomputed from lengths and calls.
+/// cmd-put pins put W9/9 (L235, L238x2,
+/// L244, L253, L262, L296, L301, L334);
+/// cmd-get pins get W10/10 (L235, L245,
+/// L255, L258, L288, L303, L320, L324,
+/// L331, L337); cmd-stat pins stat
+/// W10/10 (L208, L211, L214, L217, L235,
+/// L246, L254, L332, L336, L339);
+/// cmd-exists pins exists W4/4 (L235,
+/// L247, L328, L330); cmd-range pins
+/// range W6/6 (L172, L235, L248, L259,
+/// L333, L343, counts two go keywords);
+/// cmd-stream pins stream W2/2 (L235,
+/// L249); want-put-usage pins the short
+/// usage want S2/2 (L235, L238);
+/// want-hello pins hello Q5/5 (L244,
+/// L245, L249, L287, L324); want-five
+/// pins 5 Q3/3 (L244, L246, L323);
+/// want-true pins true Q1/1 (L247);
+/// want-ell pins ell Q1/1 (L248);
+/// repeat-unit pins the hex chunk S1/1
+/// (L250); want-over-limit pins
+/// s3::over_limit S1/1 (L258);
+/// want-invalid-data pins
+/// codec::invalid_data S1/1 (L337);
+/// doc-leaf pins doc.txt S1/1 (L242);
+/// wide-leaf pins wide.txt S1/1 (L251);
+/// crud-cmd-count pins int (6) verbs;
+/// hello-size pins int (5) len hello;
+/// range-offset pins int (1) from L248;
+/// range-length pins int (3) from L248;
+/// repeat-count pins int (16384) from
+/// L250; wide-size pins int (262144)
+/// from L253 as 16 times 16384;
+/// get-cap pins int (65536) from the
+/// L255 bound note; payload-size pins
+/// int (8192) from L107 and L336.
+/// Facet map (pin order): cmd-put,
+/// cmd-get, cmd-stat, cmd-exists,
+/// cmd-range, cmd-stream,
+/// want-put-usage, want-hello,
+/// want-five, want-true, want-ell,
+/// repeat-unit, want-over-limit,
+/// want-invalid-data, doc-leaf,
+/// wide-leaf, crud-cmd-count,
+/// hello-size, range-offset,
+/// range-length, repeat-count,
+/// wide-size, get-cap, payload-size.
+/// The listing plus sign plus fault legs
+/// live in life-014-roots-green.can;
+/// the offline plus env plus run shape
+/// lives in life-014-run-shape.can.
+/// Variants: crud, range, stream, size;
+/// default plus seeded drifts only here.
+/// Environment: staged bundle plus S3
+/// gates (row lists three gates; bind at
+/// P23; no live run now).
+/// Logical gates QHTTP plus QStore plus
+/// QF1 bind at P23; no live run now.
+/// Timeout 120000ms is the offline
+/// default bound (the live six minute
+/// hold is pinned in the run slice;
+/// binds at P23 like the M38 no-run
+/// rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// plus QHTTP plus QStore plus QF1
+/// accept gates unmet).
+/// Case life/s3-crud-base checks:
+/// cmd-put, cmd-get, cmd-stat,
+/// cmd-exists, cmd-range, cmd-stream,
+/// want-put-usage, want-hello,
+/// want-five, want-true, want-ell,
+/// repeat-unit, want-over-limit,
+/// want-invalid-data, doc-leaf,
+/// wide-leaf, crud-cmd-count,
+/// hello-size, range-offset,
+/// range-length, repeat-count,
+/// wide-size, get-cap, payload-size.
+/// Shared old files untouched;
+/// retirement is a later integrator
+/// decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str cmd_put
+    str cmd_get
+    str cmd_stat
+    str cmd_exists
+    str cmd_range
+    str cmd_stream
+    str want_put_usage
+    str want_hello
+    str want_five
+    str want_true
+    str want_ell
+    str repeat_unit
+    str want_over_limit
+    str want_invalid_data
+    str doc_leaf
+    str wide_leaf
+    int crud_cmd_count
+    int hello_size
+    int range_offset
+    int range_length
+    int repeat_count
+    int wide_size
+    int get_cap
+    int payload_size
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/s3-crud-base", "default", "", "offline"), "cmd-put" => ok "case life/s3-crud-base variant default root cmd-put run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/s3-crud-base", "default", "", "offline"), "cmd-put" => ok evidence("cmd-put", "true", "true", true, "case life/s3-crud-base variant default root cmd-put run offline")
+        different: false, true, context("life/s3-crud-base", "default", "", "offline"), "cmd-put" => failed{"cmd-put"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 6, 6, context("life/s3-crud-base", "default", "", "offline"), "crud-cmd-count" => ok evidence("crud-cmd-count", "6", "6", true, "case life/s3-crud-base variant default root crud-cmd-count run offline")
+        different: 5, 6, context("life/s3-crud-base", "default", "", "offline"), "crud-cmd-count" => failed{"crud-cmd-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "put", "put", context("life/s3-crud-base", "default", "", "offline"), "cmd-put" => ok evidence("cmd-put", "put", "put", true, "case life/s3-crud-base variant default root cmd-put run offline")
+        different: "put_2", "put", context("life/s3-crud-base", "default", "", "offline"), "cmd-put" => failed{"cmd-put"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_cmd_put: "seed-cmd-put-drift" => ok observation("put_2", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_cmd_get: "seed-cmd-get-drift" => ok observation("put", "get_2", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_cmd_stat: "seed-cmd-stat-drift" => ok observation("put", "get", "stat_2", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_cmd_exists: "seed-cmd-exists-drift" => ok observation("put", "get", "stat", "exists_2", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_cmd_range: "seed-cmd-range-drift" => ok observation("put", "get", "stat", "exists", "range_2", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_cmd_stream: "seed-cmd-stream-drift" => ok observation("put", "get", "stat", "exists", "range", "stream_2", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_want_put_usage: "seed-want-put-usage-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>_2", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_want_hello: "seed-want-hello-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello_2", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_want_five: "seed-want-five-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5_2", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_want_true: "seed-want-true-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true_2", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_want_ell: "seed-want-ell-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell_2", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_repeat_unit: "seed-repeat-unit-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef_2", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_want_over_limit: "seed-want-over-limit-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit_2", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_want_invalid_data: "seed-want-invalid-data-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data_2", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_doc_leaf: "seed-doc-leaf-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt_2", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_wide_leaf: "seed-wide-leaf-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt_2", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_crud_cmd_count: "seed-crud-cmd-count-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 5, 5, 1, 3, 16384, 262144, 65536, 8192)
+        seed_hello_size: "seed-hello-size-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 4, 1, 3, 16384, 262144, 65536, 8192)
+        seed_range_offset: "seed-range-offset-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 0, 3, 16384, 262144, 65536, 8192)
+        seed_range_length: "seed-range-length-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 2, 16384, 262144, 65536, 8192)
+        seed_repeat_count: "seed-repeat-count-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16383, 262144, 65536, 8192)
+        seed_wide_size: "seed-wide-size-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262143, 65536, 8192)
+        seed_get_cap: "seed-get-cap-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65535, 8192)
+        seed_payload_size: "seed-payload-size-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8191)
+    match variant_id
+        "seed-cmd-put-drift" => ok observation("put_2", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-cmd-get-drift" => ok observation("put", "get_2", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-cmd-stat-drift" => ok observation("put", "get", "stat_2", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-cmd-exists-drift" => ok observation("put", "get", "stat", "exists_2", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-cmd-range-drift" => ok observation("put", "get", "stat", "exists", "range_2", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-cmd-stream-drift" => ok observation("put", "get", "stat", "exists", "range", "stream_2", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-want-put-usage-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>_2", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-want-hello-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello_2", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-want-five-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5_2", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-want-true-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true_2", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-want-ell-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell_2", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-repeat-unit-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef_2", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-want-over-limit-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit_2", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-want-invalid-data-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data_2", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-doc-leaf-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt_2", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-wide-leaf-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt_2", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-crud-cmd-count-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 5, 5, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-hello-size-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 4, 1, 3, 16384, 262144, 65536, 8192)
+        "seed-range-offset-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 0, 3, 16384, 262144, 65536, 8192)
+        "seed-range-length-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 2, 16384, 262144, 65536, 8192)
+        "seed-repeat-count-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16383, 262144, 65536, 8192)
+        "seed-wide-size-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262143, 65536, 8192)
+        "seed-get-cap-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65535, 8192)
+        "seed-payload-size-drift" => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8191)
+        _ => ok observation("put", "get", "stat", "exists", "range", "stream", "usage: put <key> <body>", "hello", "5", "true", "ell", "0123456789abcdef", "s3::over_limit", "codec::invalid_data", "doc.txt", "wide.txt", 6, 5, 1, 3, 16384, 262144, 65536, 8192)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m41_l014: "m41-l014" => ok [check("cmd-put", "put keeps its command word"), check("cmd-get", "get keeps its command word"), check("cmd-stat", "stat keeps its command word"), check("cmd-exists", "exists keeps its command word"), check("cmd-range", "range keeps its command word"), check("cmd-stream", "stream keeps its command word"), check("want-put-usage", "short put keeps its usage want"), check("want-hello", "doc round trip keeps its hello want"), check("want-five", "five byte size keeps its want"), check("want-true", "present key keeps its true want"), check("want-ell", "byte range keeps its ell want"), check("repeat-unit", "wide body keeps its repeat unit"), check("want-over-limit", "wide get keeps its over limit fault"), check("want-invalid-data", "binary get keeps its invalid data fault"), check("doc-leaf", "doc key keeps its leaf name"), check("wide-leaf", "wide key keeps its leaf name"), check("crud-cmd-count", "six crud commands exist"), check("hello-size", "hello spans five bytes"), check("range-offset", "range starts at one"), check("range-length", "range spans three bytes"), check("repeat-count", "repeat count pins 16384"), check("wide-size", "wide body spans 262144 bytes"), check("get-cap", "small get caps at 65536 bytes"), check("payload-size", "seed payload spans 8192 bytes")]
+        other: "zzz-unknown" => ok []
+    match scope is "m41-l014"
+        false => ok []
+        true => ok [check("cmd-put", "put keeps its command word"), check("cmd-get", "get keeps its command word"), check("cmd-stat", "stat keeps its command word"), check("cmd-exists", "exists keeps its command word"), check("cmd-range", "range keeps its command word"), check("cmd-stream", "stream keeps its command word"), check("want-put-usage", "short put keeps its usage want"), check("want-hello", "doc round trip keeps its hello want"), check("want-five", "five byte size keeps its want"), check("want-true", "present key keeps its true want"), check("want-ell", "byte range keeps its ell want"), check("repeat-unit", "wide body keeps its repeat unit"), check("want-over-limit", "wide get keeps its over limit fault"), check("want-invalid-data", "binary get keeps its invalid data fault"), check("doc-leaf", "doc key keeps its leaf name"), check("wide-leaf", "wide key keeps its leaf name"), check("crud-cmd-count", "six crud commands exist"), check("hello-size", "hello spans five bytes"), check("range-offset", "range starts at one"), check("range-length", "range spans three bytes"), check("repeat-count", "repeat count pins 16384"), check("wide-size", "wide body spans 262144 bytes"), check("get-cap", "small get caps at 65536 bytes"), check("payload-size", "seed payload spans 8192 bytes")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/s3-crud-base" => ok [expected_check("cmd-put", "put"), expected_check("cmd-get", "get"), expected_check("cmd-stat", "stat"), expected_check("cmd-exists", "exists"), expected_check("cmd-range", "range"), expected_check("cmd-stream", "stream"), expected_check("want-put-usage", "usage: put <key> <body>"), expected_check("want-hello", "hello"), expected_check("want-five", "5"), expected_check("want-true", "true"), expected_check("want-ell", "ell"), expected_check("repeat-unit", "0123456789abcdef"), expected_check("want-over-limit", "s3::over_limit"), expected_check("want-invalid-data", "codec::invalid_data"), expected_check("doc-leaf", "doc.txt"), expected_check("wide-leaf", "wide.txt"), expected_check("crud-cmd-count", "6"), expected_check("hello-size", "5"), expected_check("range-offset", "1"), expected_check("range-length", "3"), expected_check("repeat-count", "16384"), expected_check("wide-size", "262144"), expected_check("get-cap", "65536"), expected_check("payload-size", "8192")]
+        unknown: "zzz-unknown" => ok []
+    match case is "life/s3-crud-base"
+        false => ok []
+        true => ok [expected_check("cmd-put", "put"), expected_check("cmd-get", "get"), expected_check("cmd-stat", "stat"), expected_check("cmd-exists", "exists"), expected_check("cmd-range", "range"), expected_check("cmd-stream", "stream"), expected_check("want-put-usage", "usage: put <key> <body>"), expected_check("want-hello", "hello"), expected_check("want-five", "5"), expected_check("want-true", "true"), expected_check("want-ell", "ell"), expected_check("repeat-unit", "0123456789abcdef"), expected_check("want-over-limit", "s3::over_limit"), expected_check("want-invalid-data", "codec::invalid_data"), expected_check("doc-leaf", "doc.txt"), expected_check("wide-leaf", "wide.txt"), expected_check("crud-cmd-count", "6"), expected_check("hello-size", "5"), expected_check("range-offset", "1"), expected_check("range-length", "3"), expected_check("repeat-count", "16384"), expected_check("wide-size", "262144"), expected_check("get-cap", "65536"), expected_check("payload-size", "8192")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/s3-crud-base", "default", "", "offline") => ok
+        seed_cmd_put: context("life/s3-crud-base", "seed-cmd-put-drift", "", "offline") => failed{"cmd-put"}
+        seed_cmd_get: context("life/s3-crud-base", "seed-cmd-get-drift", "", "offline") => failed{"cmd-get"}
+        seed_cmd_stat: context("life/s3-crud-base", "seed-cmd-stat-drift", "", "offline") => failed{"cmd-stat"}
+        seed_cmd_exists: context("life/s3-crud-base", "seed-cmd-exists-drift", "", "offline") => failed{"cmd-exists"}
+        seed_cmd_range: context("life/s3-crud-base", "seed-cmd-range-drift", "", "offline") => failed{"cmd-range"}
+        seed_cmd_stream: context("life/s3-crud-base", "seed-cmd-stream-drift", "", "offline") => failed{"cmd-stream"}
+        seed_want_put_usage: context("life/s3-crud-base", "seed-want-put-usage-drift", "", "offline") => failed{"want-put-usage"}
+        seed_want_hello: context("life/s3-crud-base", "seed-want-hello-drift", "", "offline") => failed{"want-hello"}
+        seed_want_five: context("life/s3-crud-base", "seed-want-five-drift", "", "offline") => failed{"want-five"}
+        seed_want_true: context("life/s3-crud-base", "seed-want-true-drift", "", "offline") => failed{"want-true"}
+        seed_want_ell: context("life/s3-crud-base", "seed-want-ell-drift", "", "offline") => failed{"want-ell"}
+        seed_repeat_unit: context("life/s3-crud-base", "seed-repeat-unit-drift", "", "offline") => failed{"repeat-unit"}
+        seed_want_over_limit: context("life/s3-crud-base", "seed-want-over-limit-drift", "", "offline") => failed{"want-over-limit"}
+        seed_want_invalid_data: context("life/s3-crud-base", "seed-want-invalid-data-drift", "", "offline") => failed{"want-invalid-data"}
+        seed_doc_leaf: context("life/s3-crud-base", "seed-doc-leaf-drift", "", "offline") => failed{"doc-leaf"}
+        seed_wide_leaf: context("life/s3-crud-base", "seed-wide-leaf-drift", "", "offline") => failed{"wide-leaf"}
+        seed_crud_cmd_count: context("life/s3-crud-base", "seed-crud-cmd-count-drift", "", "offline") => failed{"crud-cmd-count"}
+        seed_hello_size: context("life/s3-crud-base", "seed-hello-size-drift", "", "offline") => failed{"hello-size"}
+        seed_range_offset: context("life/s3-crud-base", "seed-range-offset-drift", "", "offline") => failed{"range-offset"}
+        seed_range_length: context("life/s3-crud-base", "seed-range-length-drift", "", "offline") => failed{"range-length"}
+        seed_repeat_count: context("life/s3-crud-base", "seed-repeat-count-drift", "", "offline") => failed{"repeat-count"}
+        seed_wide_size: context("life/s3-crud-base", "seed-wide-size-drift", "", "offline") => failed{"wide-size"}
+        seed_get_cap: context("life/s3-crud-base", "seed-get-cap-drift", "", "offline") => failed{"get-cap"}
+        seed_payload_size: context("life/s3-crud-base", "seed-payload-size-drift", "", "offline") => failed{"payload-size"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.cmd_put, "put", c, "cmd-put")
+            failed
+            ok evidence cmd_put_evidence => match call require_text(got.cmd_get, "get", c, "cmd-get")
+                failed
+                ok evidence cmd_get_evidence => match call require_text(got.cmd_stat, "stat", c, "cmd-stat")
+                    failed
+                    ok evidence cmd_stat_evidence => match call require_text(got.cmd_exists, "exists", c, "cmd-exists")
+                        failed
+                        ok evidence cmd_exists_evidence => match call require_text(got.cmd_range, "range", c, "cmd-range")
+                            failed
+                            ok evidence cmd_range_evidence => match call require_text(got.cmd_stream, "stream", c, "cmd-stream")
+                                failed
+                                ok evidence cmd_stream_evidence => match call require_text(got.want_put_usage, "usage: put <key> <body>", c, "want-put-usage")
+                                    failed
+                                    ok evidence want_put_usage_evidence => match call require_text(got.want_hello, "hello", c, "want-hello")
+                                        failed
+                                        ok evidence want_hello_evidence => match call require_text(got.want_five, "5", c, "want-five")
+                                            failed
+                                            ok evidence want_five_evidence => match call require_text(got.want_true, "true", c, "want-true")
+                                                failed
+                                                ok evidence want_true_evidence => match call require_text(got.want_ell, "ell", c, "want-ell")
+                                                    failed
+                                                    ok evidence want_ell_evidence => match call require_text(got.repeat_unit, "0123456789abcdef", c, "repeat-unit")
+                                                        failed
+                                                        ok evidence repeat_unit_evidence => match call require_text(got.want_over_limit, "s3::over_limit", c, "want-over-limit")
+                                                            failed
+                                                            ok evidence want_over_limit_evidence => match call require_text(got.want_invalid_data, "codec::invalid_data", c, "want-invalid-data")
+                                                                failed
+                                                                ok evidence want_invalid_data_evidence => match call require_text(got.doc_leaf, "doc.txt", c, "doc-leaf")
+                                                                    failed
+                                                                    ok evidence doc_leaf_evidence => match call require_text(got.wide_leaf, "wide.txt", c, "wide-leaf")
+                                                                        failed
+                                                                        ok evidence wide_leaf_evidence => match call require_int(got.crud_cmd_count, 6, c, "crud-cmd-count")
+                                                                            failed
+                                                                            ok evidence crud_cmd_count_evidence => match call require_int(got.hello_size, 5, c, "hello-size")
+                                                                                failed
+                                                                                ok evidence hello_size_evidence => match call require_int(got.range_offset, 1, c, "range-offset")
+                                                                                    failed
+                                                                                    ok evidence range_offset_evidence => match call require_int(got.range_length, 3, c, "range-length")
+                                                                                        failed
+                                                                                        ok evidence range_length_evidence => match call require_int(got.repeat_count, 16384, c, "repeat-count")
+                                                                                            failed
+                                                                                            ok evidence repeat_count_evidence => match call require_int(got.wide_size, 262144, c, "wide-size")
+                                                                                                failed
+                                                                                                ok evidence wide_size_evidence => match call require_int(got.get_cap, 65536, c, "get-cap")
+                                                                                                    failed
+                                                                                                    ok evidence get_cap_evidence => match call require_int(got.payload_size, 8192, c, "payload-size")
+                                                                                                        failed
+                                                                                                        ok evidence payload_size_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m41_l014: "m41-l014" => ok test_case("life/s3-crud-base", ["life", "m41"], [], 120000, [check_ref("cmd-put"), check_ref("cmd-get"), check_ref("cmd-stat"), check_ref("cmd-exists"), check_ref("cmd-range"), check_ref("cmd-stream"), check_ref("want-put-usage"), check_ref("want-hello"), check_ref("want-five"), check_ref("want-true"), check_ref("want-ell"), check_ref("repeat-unit"), check_ref("want-over-limit"), check_ref("want-invalid-data"), check_ref("doc-leaf"), check_ref("wide-leaf"), check_ref("crud-cmd-count"), check_ref("hello-size"), check_ref("range-offset"), check_ref("range-length"), check_ref("repeat-count"), check_ref("wide-size"), check_ref("get-cap"), check_ref("payload-size")], callable case_body)
+        other: "zzz-unknown" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m41-l014"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/s3-crud-base", ["life", "m41"], [], 120000, [check_ref("cmd-put"), check_ref("cmd-get"), check_ref("cmd-stat"), check_ref("cmd-exists"), check_ref("cmd-range"), check_ref("cmd-stream"), check_ref("want-put-usage"), check_ref("want-hello"), check_ref("want-five"), check_ref("want-true"), check_ref("want-ell"), check_ref("repeat-unit"), check_ref("want-over-limit"), check_ref("want-invalid-data"), check_ref("doc-leaf"), check_ref("wide-leaf"), check_ref("crud-cmd-count"), check_ref("hello-size"), check_ref("range-offset"), check_ref("range-length"), check_ref("repeat-count"), check_ref("wide-size"), check_ref("get-cap"), check_ref("payload-size")], callable case_body)
