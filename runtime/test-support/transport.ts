@@ -11,6 +11,7 @@ import { failure, success, type AssertionContext, type Completion } from "../com
 import { record, recordIdentity } from "../data.ts";
 import { byteLength, type Bytes } from "../bytes.ts";
 import { createDomainRuntime } from "../domain.ts";
+import { createTestEvidence, type TestEvidenceErrors } from "./evidence.ts";
 import {
   createTestOwner,
   ownerTag,
@@ -18,6 +19,8 @@ import {
   type TestOwner,
   type TestOwnerErrors,
 } from "./owner.ts";
+import { createTestTools, type TestToolsErrors, type ToolTable } from "./tools.ts";
+import { createTestWorkspace, type TestWorkspaceErrors } from "./workspace.ts";
 
 const channelBrand = Symbol("can.test.channel");
 export type ChannelHandle = Readonly<{ readonly [channelBrand]: number }>;
@@ -194,20 +197,30 @@ export function createTestTransport(
 
 export type TestTransport = ReturnType<typeof createTestTransport>;
 
-export type TestSupportErrors = TestOwnerErrors & TestTransportErrors;
+export type TestSupportErrors = TestOwnerErrors &
+  TestTransportErrors &
+  TestWorkspaceErrors &
+  TestToolsErrors &
+  TestEvidenceErrors;
 
-// createTestSupport composes the owner and transport adapters into the one
-// $canTest contribution the emitter wires: a single owner table shared by
-// every channel, with the JSON value codec for envelope framing.
+// createTestSupport composes the owner, transport, workspace, tools and
+// evidence adapters into the one $canTest contribution the emitter
+// wires: a single owner table shared by every handle, with the JSON
+// value codec for envelope framing and the owner-registered tool table
+// for keyed dispatch.
 export function createTestSupport(
   domain: ReturnType<typeof createDomainRuntime>,
   errors: TestSupportErrors,
   codec: EnvelopeCodec,
   jsonObjectIdentity: string,
+  tools: ToolTable,
 ) {
   const owner = createTestOwner(domain, errors);
   const transport = createTestTransport(domain, errors, codec, owner, jsonObjectIdentity);
-  return Object.freeze({ owner, transport });
+  const workspace = createTestWorkspace(domain, errors, owner);
+  const toolRunner = createTestTools(domain, errors, owner, tools);
+  const evidence = createTestEvidence(domain, errors, owner);
+  return Object.freeze({ owner, transport, workspace, tools: toolRunner, evidence });
 }
 
 export type TestSupport = ReturnType<typeof createTestSupport>;

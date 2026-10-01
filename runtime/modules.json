@@ -855,16 +855,50 @@
       "./numbers.ts",
       "./document.ts"
     ],
+    "test-support/evidence.ts": [
+      "node:crypto",
+      "../completion.ts",
+      "../bytes.ts",
+      "../data.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "./owner.ts"
+    ],
     "test-support/owner.ts": [
       "../completion.ts",
       "../data.ts",
       "../domain.ts"
+    ],
+    "test-support/tools.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "../platform/process/spawn.ts",
+      "./owner.ts"
     ],
     "test-support/transport.ts": [
       "../completion.ts",
       "../data.ts",
       "../bytes.ts",
       "../domain.ts",
+      "./evidence.ts",
+      "./owner.ts",
+      "./tools.ts",
+      "./workspace.ts"
+    ],
+    "test-support/workspace.ts": [
+      "node:fs",
+      "node:os",
+      "node:path",
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "../owner.ts",
+      "../platform/files/directory.ts",
+      "../platform/files/read.ts",
+      "../platform/files/write.ts",
       "./owner.ts"
     ]
   }

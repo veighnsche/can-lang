@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 5fe532169d9319a382b98f98583e5cb84739662c0ebaf9ad2b24bbc47dfefd9d.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 18f3816bb7a5f3a89a266e61d28261a055580ba0ad7b1aecfba1694d308a8a16.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -174,6 +174,10 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | codec::json_member | record |  | str name, codec::json_value value | true |
 | test::owner | opaque |  |  | false |
 | test::channel | opaque |  | read-only: str kind | false |
+| test::workspace | opaque |  |  | false |
+| test::tool_result | record |  | bytes::buffer stdout, bytes::buffer stderr, int code, str signal | true |
+| test::evidence | opaque |  |  | false |
+| test::evidence_receipt | record |  | str digest, str kind, int bytes, int entries | true |
 
 ## Domain errors
 
@@ -299,6 +303,9 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | test::channel_empty | can.std.test@1::channel_empty |  | str handle |
 | test::invalid_grant | can.std.test@1::invalid_grant |  | str reason |
 | test::invalid_kind | can.std.test@1::invalid_kind |  | str kind |
+| test::unknown_tool | can.std.test@1::unknown_tool |  | str key |
+| test::invalid_path | can.std.test@1::invalid_path |  | str path, str reason |
+| test::invalid_name | can.std.test@1::invalid_name |  | str name, str reason |
 
 ## Operations
 
@@ -623,6 +630,15 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | test::channel_recv | test::channel handle → codec::json_object | {test::stale_handle, test::closed_handle, test::detached_transport, test::channel_empty, test::transport_failure} |  | Map, TextDecoder, JSON.parse, domain.create | test transport adapter (runtime/test-support/transport.ts) | real | NT-P28 / NT-P28 |
 | test::channel_close | test::channel handle → void | {} |  | Map | test transport adapter (runtime/test-support/transport.ts) | real | NT-P28 / NT-P28 |
 | test::channel_pending | test::channel handle → int | {test::stale_handle} |  | Map | test transport adapter (runtime/test-support/transport.ts) | real | NT-P28 / NT-P28 |
+| test::workspace_open | test::owner handle → test::workspace | {test::stale_handle} |  | node:fs.mkdtempSync | test workspace adapter (runtime/test-support/workspace.ts) | real | NT-P28 / NT-P28 |
+| test::workspace_mkdir | test::workspace ws, str path, bool recursive → void | {test::stale_handle, test::closed_handle, test::invalid_path, files::not_found, files::already_exists, files::denied, files::io_error} |  | node:fs.mkdirSync | test workspace adapter (runtime/test-support/workspace.ts) | real | NT-P28 / NT-P28 |
+| test::workspace_write_text | test::workspace ws, str path, str value, bool overwrite → void | {test::stale_handle, test::closed_handle, test::invalid_path, files::not_found, files::already_exists, files::denied, files::io_error} |  | TextEncoder, node:fs.writeFileSync | test workspace adapter (runtime/test-support/workspace.ts) | real | NT-P28 / NT-P28 |
+| test::workspace_read_text | test::workspace ws, str path, int max_bytes → str | {test::stale_handle, test::closed_handle, test::invalid_path, files::not_found, files::denied, files::unexpected_kind, files::limit_exceeded, codec::invalid_data, files::io_error} |  | Bun.file, TextDecoder | test workspace adapter (runtime/test-support/workspace.ts) | real | NT-P28 / NT-P28 |
+| test::workspace_close | test::workspace ws → void | {} |  | node:fs.rmSync | idempotent seal + scheduled removal; test workspace adapter (runtime/test-support/workspace.ts) | real | NT-P28 / NT-P28 |
+| test::run_tool | test::owner handle, str key, str[] args, process::options options → test::tool_result | {test::stale_handle, test::unknown_tool, process::spawn_failed, process::timeout, process::output_limit, process::io_error, process::invalid_config, files::not_found, files::denied} |  | Bun.spawn | keyed dispatch: tool record resolved by table lookup pre-spawn, then the process::run discipline (no shell, detached group, caps/deadline/grace, reaping); test tools adapter (runtime/test-support/tools.ts) | real | NT-P28 / NT-P28 |
+| test::evidence_open | test::owner handle → test::evidence | {test::stale_handle} |  | Map | test evidence adapter (runtime/test-support/evidence.ts) | real | NT-P28 / NT-P28 |
+| test::evidence_append | test::evidence ev, str name, bytes::buffer data → void | {test::stale_handle, test::closed_handle, test::invalid_name} |  | Map | test evidence adapter (runtime/test-support/evidence.ts) | real | NT-P28 / NT-P28 |
+| test::evidence_seal | test::evidence ev, str kind → test::evidence_receipt | {test::stale_handle, test::closed_handle, test::invalid_kind} |  | SubtleCrypto.digest | sha256 over length-framed entries; kinds are qualified-report, n-receipt, cleanup-receipt; test evidence adapter (runtime/test-support/evidence.ts) | real | NT-P28 / NT-P28 |
 
 ## Native declaration profiles
 

@@ -1,0 +1,93 @@
+package test_workspace
+    provides []
+    uses [bytes, checks, codec, files, process, test]
+fn str stage_read
+    emits {test::invalid_grant, test::stale_handle, test::closed_handle, test::invalid_path, files::not_found, files::already_exists, files::denied, files::unexpected_kind, files::limit_exceeded, codec::invalid_data, files::io_error, test::invalid_name, test::invalid_kind}
+    given
+        str grant
+    asserts
+        probe: "ng1-0123456789abcdef0123456789abcdef" => ok "staged"
+    match chain
+        call test::grant_admit(grant) as test::owner owner
+        call test::workspace_open(owner) as test::workspace ws
+        call test::workspace_mkdir(ws, "stage", false)
+        call test::workspace_write_text(ws, "stage/note.txt", "staged", false)
+        call test::workspace_read_text(ws, "stage/note.txt", 100) as str back
+        call test::workspace_close(ws)
+        call test::evidence_open(owner) as test::evidence ev
+        call bytes::from_utf8(back) as bytes::buffer note
+        call test::evidence_append(ev, "note", note)
+        call test::evidence_seal(ev, "n-receipt") as test::evidence_receipt receipt
+        call test::grant_release(owner)
+        test::invalid_grant
+        test::stale_handle
+        test::closed_handle
+        test::invalid_path
+        files::not_found
+        files::already_exists
+        files::denied
+        files::unexpected_kind
+        files::limit_exceeded
+        codec::invalid_data
+        files::io_error
+        test::invalid_name
+        test::invalid_kind
+        ok => ok back
+fn test::tool_result missing_tool
+    emits {test::invalid_grant, test::stale_handle, test::unknown_tool, process::spawn_failed, process::timeout, process::output_limit, process::io_error, process::invalid_config, files::not_found, files::denied}
+    given
+        str grant
+    asserts
+        missing: "ng1-0123456789abcdef0123456789abcdef" => test::unknown_tool{"missing"}
+    bytes::buffer empty = call bytes::empty()
+    process::options opts = process::options("", false, [], empty, 1000, 1000, 0, 100)
+    match chain
+        call test::grant_admit(grant) as test::owner owner
+        call test::run_tool(owner, "missing", [], opts) as test::tool_result got
+        test::invalid_grant
+        test::stale_handle
+        test::unknown_tool
+        process::spawn_failed
+        process::timeout
+        process::output_limit
+        process::io_error
+        process::invalid_config
+        files::not_found
+        files::denied
+        ok => ok got
+fn void main
+    emits {test::invalid_grant, test::stale_handle, test::closed_handle, test::invalid_path, files::not_found, files::already_exists, files::denied, files::unexpected_kind, files::limit_exceeded, codec::invalid_data, files::io_error, test::invalid_name, test::invalid_kind, test::unknown_tool, process::spawn_failed, process::timeout, process::output_limit, process::io_error, process::invalid_config, checks::failed}
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match call missing_tool("ng1-0123456789abcdef0123456789abcdef")
+        test::invalid_grant
+        test::stale_handle
+        process::spawn_failed
+        process::timeout
+        process::output_limit
+        process::io_error
+        process::invalid_config
+        files::not_found
+        files::denied
+        test::unknown_tool => match call stage_read("ng1-0123456789abcdef0123456789abcdef")
+            test::invalid_grant
+            test::stale_handle
+            test::closed_handle
+            test::invalid_path
+            files::not_found
+            files::already_exists
+            files::denied
+            files::unexpected_kind
+            files::limit_exceeded
+            codec::invalid_data
+            files::io_error
+            test::invalid_name
+            test::invalid_kind
+            ok str back => match call checks::require(back is "staged", "expected staged note")
+                checks::failed
+                ok => ok
+        ok test::tool_result got => match call checks::require(got.code is -999, "tool unexpectedly registered")
+            checks::failed
+            ok => ok

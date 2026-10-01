@@ -95,3 +95,113 @@ func TestOwnerTransportCatalogueContract(t *testing.T) {
 		}
 	}
 }
+
+// TestWorkspaceProcessEvidenceCatalogueContract pins the NT-P28 S1c
+// surface: owner-scoped workspace directories with relative-path file
+// operations, keyed tool dispatch (no paths in calls), and sealed
+// evidence bundles with closed-vocabulary receipt kinds. Handles stay
+// opaque and non-constructible; results and receipts are transparent
+// records mirroring process::result.
+func TestWorkspaceProcessEvidenceCatalogueContract(t *testing.T) {
+	c := Builtin()
+	target, revision := c.Inventory().TargetID, c.Inventory().Revision
+	operation := func(name string) Operation {
+		t.Helper()
+		op, err := c.Operation(name, target, revision)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return op
+	}
+	workspace, ok := c.Type("test::workspace")
+	if !ok || workspace.Kind != "opaque" || workspace.Constructible || len(workspace.Projections) != 0 {
+		t.Fatalf("test::workspace marker differs: %+v", workspace)
+	}
+	evidence, ok := c.Type("test::evidence")
+	if !ok || evidence.Kind != "opaque" || evidence.Constructible || len(evidence.Projections) != 0 {
+		t.Fatalf("test::evidence marker differs: %+v", evidence)
+	}
+	if err := c.CheckConstructor("test::workspace"); err == nil {
+		t.Fatal("test::workspace admits a public constructor")
+	}
+	if err := c.CheckConstructor("test::evidence"); err == nil {
+		t.Fatal("test::evidence admits a public constructor")
+	}
+	toolResult, ok := c.Type("test::tool_result")
+	if !ok || toolResult.Kind != "record" || !toolResult.Constructible {
+		t.Fatalf("test::tool_result marker differs: %+v", toolResult)
+	}
+	receipt, ok := c.Type("test::evidence_receipt")
+	if !ok || receipt.Kind != "record" || !receipt.Constructible {
+		t.Fatalf("test::evidence_receipt marker differs: %+v", receipt)
+	}
+	wsOpen := operation("test::workspace_open")
+	if wsOpen.Result != "test::workspace" || len(wsOpen.Inputs) != 1 || wsOpen.Inputs[0].Type != "test::owner" {
+		t.Fatalf("test::workspace_open descriptor differs: %+v", wsOpen)
+	}
+	if !reflect.DeepEqual(wsOpen.Emits, []string{"test::stale_handle"}) {
+		t.Fatalf("test::workspace_open bound differs: %+v", wsOpen.Emits)
+	}
+	mkdir := operation("test::workspace_mkdir")
+	if mkdir.Result != "void" || len(mkdir.Inputs) != 3 || mkdir.Inputs[0].Type != "test::workspace" || mkdir.Inputs[1].Type != "str" || mkdir.Inputs[2].Type != "bool" {
+		t.Fatalf("test::workspace_mkdir descriptor differs: %+v", mkdir)
+	}
+	if !reflect.DeepEqual(mkdir.Emits, []string{"test::stale_handle", "test::closed_handle", "test::invalid_path", "files::not_found", "files::already_exists", "files::denied", "files::io_error"}) {
+		t.Fatalf("test::workspace_mkdir bound differs: %+v", mkdir.Emits)
+	}
+	write := operation("test::workspace_write_text")
+	if write.Result != "void" || len(write.Inputs) != 4 || write.Inputs[0].Type != "test::workspace" || write.Inputs[1].Type != "str" || write.Inputs[2].Type != "str" || write.Inputs[3].Type != "bool" {
+		t.Fatalf("test::workspace_write_text descriptor differs: %+v", write)
+	}
+	if !reflect.DeepEqual(write.Emits, []string{"test::stale_handle", "test::closed_handle", "test::invalid_path", "files::not_found", "files::already_exists", "files::denied", "files::io_error"}) {
+		t.Fatalf("test::workspace_write_text bound differs: %+v", write.Emits)
+	}
+	read := operation("test::workspace_read_text")
+	if read.Result != "str" || len(read.Inputs) != 3 || read.Inputs[0].Type != "test::workspace" || read.Inputs[1].Type != "str" || read.Inputs[2].Type != "int" {
+		t.Fatalf("test::workspace_read_text descriptor differs: %+v", read)
+	}
+	if !reflect.DeepEqual(read.Emits, []string{"test::stale_handle", "test::closed_handle", "test::invalid_path", "files::not_found", "files::denied", "files::unexpected_kind", "files::limit_exceeded", "codec::invalid_data", "files::io_error"}) {
+		t.Fatalf("test::workspace_read_text bound differs: %+v", read.Emits)
+	}
+	wsClose := operation("test::workspace_close")
+	if wsClose.Result != "void" || len(wsClose.Inputs) != 1 || wsClose.Inputs[0].Type != "test::workspace" || len(wsClose.Emits) != 0 {
+		t.Fatalf("test::workspace_close descriptor differs: %+v", wsClose)
+	}
+	runTool := operation("test::run_tool")
+	if runTool.Result != "test::tool_result" || len(runTool.Inputs) != 4 || runTool.Inputs[0].Type != "test::owner" || runTool.Inputs[1].Type != "str" || runTool.Inputs[2].Type != "str[]" || runTool.Inputs[3].Type != "process::options" {
+		t.Fatalf("test::run_tool descriptor differs: %+v", runTool)
+	}
+	if !reflect.DeepEqual(runTool.Emits, []string{"test::stale_handle", "test::unknown_tool", "process::spawn_failed", "process::timeout", "process::output_limit", "process::io_error", "process::invalid_config", "files::not_found", "files::denied"}) {
+		t.Fatalf("test::run_tool bound differs: %+v", runTool.Emits)
+	}
+	evOpen := operation("test::evidence_open")
+	if evOpen.Result != "test::evidence" || len(evOpen.Inputs) != 1 || evOpen.Inputs[0].Type != "test::owner" {
+		t.Fatalf("test::evidence_open descriptor differs: %+v", evOpen)
+	}
+	if !reflect.DeepEqual(evOpen.Emits, []string{"test::stale_handle"}) {
+		t.Fatalf("test::evidence_open bound differs: %+v", evOpen.Emits)
+	}
+	append := operation("test::evidence_append")
+	if append.Result != "void" || len(append.Inputs) != 3 || append.Inputs[0].Type != "test::evidence" || append.Inputs[1].Type != "str" || append.Inputs[2].Type != "bytes::buffer" {
+		t.Fatalf("test::evidence_append descriptor differs: %+v", append)
+	}
+	if !reflect.DeepEqual(append.Emits, []string{"test::stale_handle", "test::closed_handle", "test::invalid_name"}) {
+		t.Fatalf("test::evidence_append bound differs: %+v", append.Emits)
+	}
+	seal := operation("test::evidence_seal")
+	if seal.Result != "test::evidence_receipt" || len(seal.Inputs) != 2 || seal.Inputs[0].Type != "test::evidence" || seal.Inputs[1].Type != "str" {
+		t.Fatalf("test::evidence_seal descriptor differs: %+v", seal)
+	}
+	if !reflect.DeepEqual(seal.Emits, []string{"test::stale_handle", "test::closed_handle", "test::invalid_kind"}) {
+		t.Fatalf("test::evidence_seal bound differs: %+v", seal.Emits)
+	}
+	for _, name := range []string{"test::workspace_open", "test::workspace_mkdir", "test::workspace_write_text", "test::workspace_read_text", "test::workspace_close", "test::run_tool", "test::evidence_open", "test::evidence_append", "test::evidence_seal"} {
+		op := operation(name)
+		if op.Lowering.Task != "NT-P28" || !reflect.DeepEqual(op.Refs, []string{"NT-P28"}) || op.Assertion != "real" {
+			t.Fatalf("%s traceability differs: task=%q refs=%v assertion=%q", name, op.Lowering.Task, op.Refs, op.Assertion)
+		}
+		if len(op.Lowering.Native) == 0 || op.Lowering.Adapter == "" {
+			t.Fatalf("%s names no native recipe", name)
+		}
+	}
+}

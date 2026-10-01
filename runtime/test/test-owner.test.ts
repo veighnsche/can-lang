@@ -35,36 +35,54 @@ const scalar = (name: string): FailureShape => ({
   errors: [],
 });
 const text = scalar("str");
+const integer = scalar("int");
 const declarations = catalogue.errors.filter((error) => error.name.startsWith("test::"));
 const codecDecl = catalogue.errors.find((error) => error.name === "codec::invalid_data");
 if (codecDecl === undefined) throw Error("codec::invalid_data missing from catalogue");
-const shapeOf = (name: string, id: string, fields: readonly string[]): FailureShape => ({
+const S1C_ERRORS = [
+  "files::not_found",
+  "files::already_exists",
+  "files::denied",
+  "files::unexpected_kind",
+  "files::limit_exceeded",
+  "files::io_error",
+  "process::spawn_failed",
+  "process::timeout",
+  "process::output_limit",
+  "process::invalid_config",
+  "process::io_error",
+];
+const s1cDecls = S1C_ERRORS.map((name) => {
+  const found = catalogue.errors.find((error) => error.name === name);
+  if (found === undefined) throw Error(`${name} missing from catalogue`);
+  return found;
+});
+const shapeOf = (id: string, fields: readonly { name: string; type: string }[]): FailureShape => ({
   identity: identity("error", id),
   kind: "error",
   declaration: id,
   arguments: [],
-  fields: fields.map((field) => ({ name: field, type: text.identity })),
+  fields: fields.map((field) => ({
+    name: field.name,
+    type: field.type === "int" ? integer.identity : text.identity,
+  })),
   leaves: [],
   inputs: [],
   errors: [],
 });
 const errorShapes: Map<string, FailureShape> = new Map(
-  [...declarations, codecDecl].map((error) => [
+  [...declarations, codecDecl, ...s1cDecls].map((error) => [
     error.name,
-    shapeOf(
-      error.name,
-      error.identity,
-      error.fields.map((field) => field.name),
-    ),
+    shapeOf(error.identity, error.fields),
   ]),
 );
 const domain = createDomainRuntime({
-  declarations: [...declarations, codecDecl].map((error) => ({
+  declarations: [...declarations, codecDecl, ...s1cDecls].map((error) => ({
     identity: error.identity,
     name: error.name,
     parameters: 0,
   })),
-  shapes: [text, ...errorShapes.values()],
+  shapes: [text, integer, ...errorShapes.values()],
 });
 const err = (name: string): string => {
   const shape = errorShapes.get(name);
@@ -320,9 +338,27 @@ test("createTestSupport composes one shared owner table for $canTest", async () 
       detachedTransport: err("test::detached_transport"),
       channelEmpty: err("test::channel_empty"),
       invalidKind: err("test::invalid_kind"),
+      unknownTool: err("test::unknown_tool"),
+      invalidPath: err("test::invalid_path"),
+      invalidName: err("test::invalid_name"),
+      notFound: err("files::not_found"),
+      alreadyExists: err("files::already_exists"),
+      denied: err("files::denied"),
+      unexpectedKind: err("files::unexpected_kind"),
+      limitExceeded: err("files::limit_exceeded"),
+      invalidData: err("codec::invalid_data"),
+      ioError: err("files::io_error"),
+      spawnFailed: err("process::spawn_failed"),
+      timeout: err("process::timeout"),
+      outputLimit: err("process::output_limit"),
+      invalidConfig: err("process::invalid_config"),
+      processIoError: err("process::io_error"),
+      toolResult: "test:tool_result",
+      receipt: "test:evidence_receipt",
     },
     codec,
     ids.object,
+    new Map(),
   );
   expect(Object.isFrozen(support)).toBe(true);
   const handle = value(await support.owner.admitGrant(GRANT));

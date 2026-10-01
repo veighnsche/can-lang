@@ -119,7 +119,10 @@
     "test::detached_transport",
     "test::channel_empty",
     "test::invalid_grant",
-    "test::invalid_kind"
+    "test::invalid_kind",
+    "test::unknown_tool",
+    "test::invalid_path",
+    "test::invalid_name"
   ],
   "retired": []
 }

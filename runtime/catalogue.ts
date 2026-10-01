@@ -7,15104 +7,15582 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "5fe532169d9319a382b98f98583e5cb84739662c0ebaf9ad2b24bbc47dfefd9d";
+export const catalogueSHA256 = "18f3816bb7a5f3a89a266e61d28261a055580ba0ad7b1aecfba1694d308a8a16";
 export const catalogue = freeze({
-  "schemaVersion": 1,
-  "revision": 1,
-  "targetId": "bun-1.4.2-darwin-arm64-v1",
-  "packages": [
+ "schemaVersion": 1,
+ "revision": 1,
+ "targetId": "bun-1.4.2-darwin-arm64-v1",
+ "packages": [
+  {
+   "name": "ai",
+   "identity": "can.std.ai@1"
+  },
+  {
+   "name": "asset",
+   "identity": "can.std.asset@1"
+  },
+  {
+   "name": "bytes",
+   "identity": "can.std.bytes@1"
+  },
+  {
+   "name": "browser",
+   "identity": "can.std.browser@1"
+  },
+  {
+   "name": "checks",
+   "identity": "can.std.checks@1"
+  },
+  {
+   "name": "cli",
+   "identity": "can.std.cli@1"
+  },
+  {
+   "name": "clock",
+   "identity": "can.std.clock@1"
+  },
+  {
+   "name": "codec",
+   "identity": "can.std.codec@1"
+  },
+  {
+   "name": "collections",
+   "identity": "can.std.collections@1"
+  },
+  {
+   "name": "cookie",
+   "identity": "can.std.cookie@1"
+  },
+  {
+   "name": "crypto",
+   "identity": "can.std.crypto@1"
+  },
+  {
+   "name": "csrf",
+   "identity": "can.std.csrf@1"
+  },
+  {
+   "name": "env",
+   "identity": "can.std.env@1"
+  },
+  {
+   "name": "files",
+   "identity": "can.std.files@1"
+  },
+  {
+   "name": "form",
+   "identity": "can.std.form@1"
+  },
+  {
+   "name": "html",
+   "identity": "can.std.html@1"
+  },
+  {
+   "name": "htmx",
+   "identity": "can.std.htmx@1"
+  },
+  {
+   "name": "http",
+   "identity": "can.std.http@1"
+  },
+  {
+   "name": "image",
+   "identity": "can.std.image@1"
+  },
+  {
+   "name": "io",
+   "identity": "can.std.io@1"
+  },
+  {
+   "name": "json",
+   "identity": "can.std.json@1"
+  },
+  {
+   "name": "llm",
+   "identity": "can.std.llm@1"
+  },
+  {
+   "name": "log",
+   "identity": "can.std.log@1"
+  },
+  {
+   "name": "number",
+   "identity": "can.std.number@1"
+  },
+  {
+   "name": "option",
+   "identity": "can.std.option@1"
+  },
+  {
+   "name": "password",
+   "identity": "can.std.password@1"
+  },
+  {
+   "name": "path",
+   "identity": "can.std.path@1"
+  },
+  {
+   "name": "process",
+   "identity": "can.std.process@1"
+  },
+  {
+   "name": "random",
+   "identity": "can.std.random@1"
+  },
+  {
+   "name": "s3",
+   "identity": "can.std.s3@1"
+  },
+  {
+   "name": "sql",
+   "identity": "can.std.sql@1"
+  },
+  {
+   "name": "stream",
+   "identity": "can.std.stream@1"
+  },
+  {
+   "name": "text",
+   "identity": "can.std.text@1"
+  },
+  {
+   "name": "time",
+   "identity": "can.std.time@1"
+  },
+  {
+   "name": "url",
+   "identity": "can.std.url@1"
+  },
+  {
+   "name": "ws",
+   "identity": "can.std.ws@1"
+  },
+  {
+   "name": "markdown",
+   "identity": "can.std.markdown@1"
+  },
+  {
+   "name": "action",
+   "identity": "can.std.action@1"
+  },
+  {
+   "name": "test",
+   "identity": "can.std.test@1"
+  }
+ ],
+ "prelude": [
+  "append",
+  "choice_option",
+  "all_failed",
+  "standard_failure"
+ ],
+ "standardFailures": [
+  "arithmetic",
+  "bounds",
+  "resource_state",
+  "assertion",
+  "native_exception",
+  "cleanup"
+ ],
+ "types": [
+  {
+   "name": "choice_option",
+   "identity": "can.prelude@1::choice_option",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
     {
-      "name": "ai",
-      "identity": "can.std.ai@1"
+     "name": "key",
+     "type": "str"
     },
     {
-      "name": "asset",
-      "identity": "can.std.asset@1"
-    },
-    {
-      "name": "bytes",
-      "identity": "can.std.bytes@1"
-    },
-    {
-      "name": "browser",
-      "identity": "can.std.browser@1"
-    },
-    {
-      "name": "checks",
-      "identity": "can.std.checks@1"
-    },
-    {
-      "name": "cli",
-      "identity": "can.std.cli@1"
-    },
-    {
-      "name": "clock",
-      "identity": "can.std.clock@1"
-    },
-    {
-      "name": "codec",
-      "identity": "can.std.codec@1"
-    },
-    {
-      "name": "collections",
-      "identity": "can.std.collections@1"
-    },
-    {
-      "name": "cookie",
-      "identity": "can.std.cookie@1"
-    },
-    {
-      "name": "crypto",
-      "identity": "can.std.crypto@1"
-    },
-    {
-      "name": "csrf",
-      "identity": "can.std.csrf@1"
-    },
-    {
-      "name": "env",
-      "identity": "can.std.env@1"
-    },
-    {
-      "name": "files",
-      "identity": "can.std.files@1"
-    },
-    {
-      "name": "form",
-      "identity": "can.std.form@1"
-    },
-    {
-      "name": "html",
-      "identity": "can.std.html@1"
-    },
-    {
-      "name": "htmx",
-      "identity": "can.std.htmx@1"
-    },
-    {
-      "name": "http",
-      "identity": "can.std.http@1"
-    },
-    {
-      "name": "image",
-      "identity": "can.std.image@1"
-    },
-    {
-      "name": "io",
-      "identity": "can.std.io@1"
-    },
-    {
-      "name": "json",
-      "identity": "can.std.json@1"
-    },
-    {
-      "name": "llm",
-      "identity": "can.std.llm@1"
-    },
-    {
-      "name": "log",
-      "identity": "can.std.log@1"
-    },
-    {
-      "name": "number",
-      "identity": "can.std.number@1"
-    },
-    {
-      "name": "option",
-      "identity": "can.std.option@1"
-    },
-    {
-      "name": "password",
-      "identity": "can.std.password@1"
-    },
-    {
-      "name": "path",
-      "identity": "can.std.path@1"
-    },
-    {
-      "name": "process",
-      "identity": "can.std.process@1"
-    },
-    {
-      "name": "random",
-      "identity": "can.std.random@1"
-    },
-    {
-      "name": "s3",
-      "identity": "can.std.s3@1"
-    },
-    {
-      "name": "sql",
-      "identity": "can.std.sql@1"
-    },
-    {
-      "name": "stream",
-      "identity": "can.std.stream@1"
-    },
-    {
-      "name": "text",
-      "identity": "can.std.text@1"
-    },
-    {
-      "name": "time",
-      "identity": "can.std.time@1"
-    },
-    {
-      "name": "url",
-      "identity": "can.std.url@1"
-    },
-    {
-      "name": "ws",
-      "identity": "can.std.ws@1"
-    },
-    {
-      "name": "markdown",
-      "identity": "can.std.markdown@1"
-    },
-    {
-      "name": "action",
-      "identity": "can.std.action@1"
-    },
-    {
-      "name": "test",
-      "identity": "can.std.test@1"
+     "name": "description",
+     "type": "str"
     }
-  ],
-  "prelude": [
-    "append",
-    "choice_option",
-    "all_failed",
-    "standard_failure"
-  ],
-  "standardFailures": [
-    "arithmetic",
-    "bounds",
-    "resource_state",
-    "assertion",
-    "native_exception",
-    "cleanup"
-  ],
-  "types": [
-    {
-      "name": "choice_option",
-      "identity": "can.prelude@1::choice_option",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "key",
-          "type": "str"
-        },
-        {
-          "name": "description",
-          "type": "str"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "standard_failure",
-      "identity": "can.prelude@1::standard_failure",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [
-        {
-          "name": "occurrence_id",
-          "type": "int"
-        },
-        {
-          "name": "kind",
-          "type": "str"
-        },
-        {
-          "name": "message",
-          "type": "str"
-        }
-      ],
-      "constructible": false
-    },
-    {
-      "name": "option::none",
-      "identity": "can.std.option@1::none",
-      "kind": "record",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "option::some",
-      "identity": "can.std.option@1::some",
-      "kind": "record",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "fields": [
-        {
-          "name": "value",
-          "type": "T"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "option::value",
-      "identity": "can.std.option@1::value",
-      "kind": "variant",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "fields": [],
-      "leaves": [
-        "option::none",
-        "option::some<T>"
-      ],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "number::division",
-      "identity": "can.std.number@1::division",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "quotient",
-          "type": "int"
-        },
-        {
-          "name": "remainder",
-          "type": "int"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "number::rounded",
-      "identity": "can.std.number@1::rounded",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "value",
-          "type": "int"
-        },
-        {
-          "name": "remainder_numerator",
-          "type": "int"
-        },
-        {
-          "name": "denominator",
-          "type": "int"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "collections::entry",
-      "identity": "can.std.collections@1::entry",
-      "kind": "record",
-      "parameters": [
-        {
-          "name": "K",
-          "constraint": "map_key"
-        },
-        {
-          "name": "V",
-          "constraint": "data"
-        }
-      ],
-      "fields": [
-        {
-          "name": "key",
-          "type": "K"
-        },
-        {
-          "name": "value",
-          "type": "V"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "collections::map",
-      "identity": "can.std.collections@1::map",
-      "kind": "opaque",
-      "parameters": [
-        {
-          "name": "K",
-          "constraint": "map_key"
-        },
-        {
-          "name": "V",
-          "constraint": "data"
-        }
-      ],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "collections::set",
-      "identity": "can.std.collections@1::set",
-      "kind": "opaque",
-      "parameters": [
-        {
-          "name": "K",
-          "constraint": "map_key"
-        }
-      ],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "http::header",
-      "identity": "can.std.http@1::header",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "name",
-          "type": "str"
-        },
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "http::sse_event",
-      "identity": "can.std.http@1::sse_event",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "data",
-          "type": "str"
-        },
-        {
-          "name": "event",
-          "type": "str"
-        },
-        {
-          "name": "id",
-          "type": "str"
-        },
-        {
-          "name": "retry",
-          "type": "str"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "http::multipart_form",
-      "identity": "can.std.http@1::multipart_form",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "fields",
-          "type": "http::multipart_field[]"
-        },
-        {
-          "name": "files",
-          "type": "http::multipart_file[]"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "http::multipart_field",
-      "identity": "can.std.http@1::multipart_field",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "name",
-          "type": "str"
-        },
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "http::multipart_file",
-      "identity": "can.std.http@1::multipart_file",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "name",
-          "type": "str"
-        },
-        {
-          "name": "filename",
-          "type": "str"
-        },
-        {
-          "name": "content_type",
-          "type": "str"
-        },
-        {
-          "name": "content",
-          "type": "bytes::buffer"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "http::response",
-      "identity": "can.std.http@1::response",
-      "kind": "record",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "fields": [
-        {
-          "name": "status",
-          "type": "int"
-        },
-        {
-          "name": "headers",
-          "type": "http::header[]"
-        },
-        {
-          "name": "body",
-          "type": "T"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "http::failure_detail",
-      "identity": "can.std.http@1::failure_detail",
-      "kind": "variant",
-      "parameters": [],
-      "fields": [],
-      "leaves": [
-        "http::invalid_request",
-        "http::credentials_missing",
-        "http::transport_failed",
-        "http::timeout",
-        "http::body_limit",
-        "http::status_error",
-        "codec::invalid_data"
-      ],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "bytes::buffer",
-      "identity": "can.std.bytes@1::buffer",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "form::rows",
-      "identity": "can.std.form@1::rows",
-      "kind": "record",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "fields": [
-        {
-          "name": "order",
-          "type": "str[]"
-        },
-        {
-          "name": "items",
-          "type": "form::row_item<T>[]"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "form::row_item",
-      "identity": "can.std.form@1::row_item",
-      "kind": "record",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "fields": [
-        {
-          "name": "key",
-          "type": "str"
-        },
-        {
-          "name": "value",
-          "type": "T"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "form::rejected",
-      "identity": "can.std.form@1::rejected",
-      "kind": "record",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "fields": [
-        {
-          "name": "raw",
-          "type": "form::raw_entry[]"
-        },
-        {
-          "name": "issues",
-          "type": "form::issue[]"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "form::raw_entry",
-      "identity": "can.std.form@1::raw_entry",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "name",
-          "type": "str"
-        },
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "form::issue",
-      "identity": "can.std.form@1::issue",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "name",
-          "type": "str"
-        },
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "form::collection",
-      "identity": "can.std.form@1::collection",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "form::row",
-      "identity": "can.std.form@1::row",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "form::field",
-      "identity": "can.std.form@1::field",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "html::node",
-      "identity": "can.std.html@1::node",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "html::safe",
-      "identity": "can.std.html@1::safe",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "html::url",
-      "identity": "can.std.html@1::url",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "html::attribute",
-      "identity": "can.std.html@1::attribute",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "html::tag",
-      "identity": "can.std.html@1::tag",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "htmx::target",
-      "identity": "can.std.htmx@1::target",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "htmx::swap",
-      "identity": "can.std.htmx@1::swap",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "http::request",
-      "identity": "can.std.http@1::request",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "http::server_response",
-      "identity": "can.std.http@1::server_response",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "http::status",
-      "identity": "can.std.http@1::status",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "http::body_status",
-      "identity": "can.std.http@1::body_status",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "http::server_headers",
-      "identity": "can.std.http@1::server_headers",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "http::route",
-      "identity": "can.std.http@1::route",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "http::router",
-      "identity": "can.std.http@1::router",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "http::server",
-      "identity": "can.std.http@1::server",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "http::server_config",
-      "identity": "can.std.http@1::server_config",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "http::tls_config",
-      "identity": "can.std.http@1::tls_config",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "sql::pool",
-      "identity": "can.std.sql@1::pool",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "sql::transaction",
-      "identity": "can.std.sql@1::transaction",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "sql::sqlite_file_options",
-      "identity": "can.std.sql@1::sqlite_file_options",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "mode",
-          "type": "str"
-        },
-        {
-          "name": "busy_timeout_ms",
-          "type": "int"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "sql::commit",
-      "identity": "can.std.sql@1::commit",
-      "kind": "record",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "fields": [
-        {
-          "name": "value",
-          "type": "T"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "sql::rollback",
-      "identity": "can.std.sql@1::rollback",
-      "kind": "record",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "fields": [
-        {
-          "name": "value",
-          "type": "T"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "sql::decision",
-      "identity": "can.std.sql@1::decision",
-      "kind": "variant",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "fields": [],
-      "leaves": [
-        "sql::commit<T>",
-        "sql::rollback<T>"
-      ],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "files::file_info",
-      "identity": "can.std.files@1::file_info",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "kind",
-          "type": "str"
-        },
-        {
-          "name": "size",
-          "type": "int"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "files::entry",
-      "identity": "can.std.files@1::entry",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "kind",
-          "type": "str"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "process::options",
-      "identity": "can.std.process@1::options",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "cwd",
-          "type": "str"
-        },
-        {
-          "name": "inherit_env",
-          "type": "bool"
-        },
-        {
-          "name": "env",
-          "type": "str[]"
-        },
-        {
-          "name": "stdin",
-          "type": "bytes::buffer"
-        },
-        {
-          "name": "stdout_limit",
-          "type": "int"
-        },
-        {
-          "name": "stderr_limit",
-          "type": "int"
-        },
-        {
-          "name": "deadline_ms",
-          "type": "int"
-        },
-        {
-          "name": "grace_ms",
-          "type": "int"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "process::result",
-      "identity": "can.std.process@1::result",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "stdout",
-          "type": "bytes::buffer"
-        },
-        {
-          "name": "stderr",
-          "type": "bytes::buffer"
-        },
-        {
-          "name": "code",
-          "type": "int"
-        },
-        {
-          "name": "signal",
-          "type": "str"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "stream::reader",
-      "identity": "can.std.stream@1::reader",
-      "kind": "opaque",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "stream::writer",
-      "identity": "can.std.stream@1::writer",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "crypto::key",
-      "identity": "can.std.crypto@1::key",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "crypto::keypair",
-      "identity": "can.std.crypto@1::keypair",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "private_key",
-          "type": "crypto::key"
-        },
-        {
-          "name": "public_key",
-          "type": "crypto::key"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "crypto::sealed",
-      "identity": "can.std.crypto@1::sealed",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "nonce",
-          "type": "bytes::buffer"
-        },
-        {
-          "name": "ciphertext",
-          "type": "bytes::buffer"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "url::parts",
-      "identity": "can.std.url@1::parts",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "scheme",
-          "type": "str"
-        },
-        {
-          "name": "host",
-          "type": "str"
-        },
-        {
-          "name": "port",
-          "type": "int"
-        },
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "query",
-          "type": "str"
-        },
-        {
-          "name": "fragment",
-          "type": "str"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "url::query_pair",
-      "identity": "can.std.url@1::query_pair",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "name",
-          "type": "str"
-        },
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "text::regex",
-      "identity": "can.std.text@1::regex",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "text::regex_match",
-      "identity": "can.std.text@1::regex_match",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "text",
-          "type": "str"
-        },
-        {
-          "name": "start",
-          "type": "int"
-        },
-        {
-          "name": "end",
-          "type": "int"
-        },
-        {
-          "name": "groups",
-          "type": "str[]"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "time::instant",
-      "identity": "can.std.time@1::instant",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "time::civil",
-      "identity": "can.std.time@1::civil",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "year",
-          "type": "int"
-        },
-        {
-          "name": "month",
-          "type": "int"
-        },
-        {
-          "name": "day",
-          "type": "int"
-        },
-        {
-          "name": "hour",
-          "type": "int"
-        },
-        {
-          "name": "minute",
-          "type": "int"
-        },
-        {
-          "name": "second",
-          "type": "int"
-        },
-        {
-          "name": "millisecond",
-          "type": "int"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "ws::session",
-      "identity": "can.std.ws@1::session",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "ws::connection",
-      "identity": "can.std.ws@1::connection",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "session",
-          "type": "ws::session"
-        },
-        {
-          "name": "events",
-          "type": "stream::reader<ws::event>"
-        },
-        {
-          "name": "protocol",
-          "type": "str"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "ws::event",
-      "identity": "can.std.ws@1::event",
-      "kind": "variant",
-      "parameters": [],
-      "fields": [],
-      "leaves": [
-        "ws::text",
-        "ws::binary",
-        "ws::drain",
-        "ws::closed"
-      ],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "ws::text",
-      "identity": "can.std.ws@1::text",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "text",
-          "type": "str"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "ws::binary",
-      "identity": "can.std.ws@1::binary",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "data",
-          "type": "bytes::buffer"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "ws::drain",
-      "identity": "can.std.ws@1::drain",
-      "kind": "record",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "ws::closed",
-      "identity": "can.std.ws@1::closed",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "code",
-          "type": "int"
-        },
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "cookie::attributes",
-      "identity": "can.std.cookie@1::attributes",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "domain",
-          "type": "option::value<str>"
-        },
-        {
-          "name": "secure",
-          "type": "bool"
-        },
-        {
-          "name": "http_only",
-          "type": "bool"
-        },
-        {
-          "name": "same_site",
-          "type": "cookie::same_site"
-        },
-        {
-          "name": "max_age",
-          "type": "option::value<int>"
-        },
-        {
-          "name": "expires_ms",
-          "type": "option::value<int>"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "cookie::same_site",
-      "identity": "can.std.cookie@1::same_site",
-      "kind": "variant",
-      "parameters": [],
-      "fields": [],
-      "leaves": [
-        "cookie::strict",
-        "cookie::lax",
-        "cookie::none"
-      ],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "cookie::strict",
-      "identity": "can.std.cookie@1::strict",
-      "kind": "record",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "cookie::lax",
-      "identity": "can.std.cookie@1::lax",
-      "kind": "record",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "cookie::none",
-      "identity": "can.std.cookie@1::none",
-      "kind": "record",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "cookie::cookie",
-      "identity": "can.std.cookie@1::cookie",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "cookie::collection",
-      "identity": "can.std.cookie@1::collection",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "pairs",
-          "type": "cookie::pair[]"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "cookie::pair",
-      "identity": "can.std.cookie@1::pair",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "name",
-          "type": "str"
-        },
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "s3::client",
-      "identity": "can.std.s3@1::client",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "s3::metadata",
-      "identity": "can.std.s3@1::metadata",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "size",
-          "type": "int"
-        },
-        {
-          "name": "etag",
-          "type": "str"
-        },
-        {
-          "name": "content_type",
-          "type": "str"
-        },
-        {
-          "name": "last_modified",
-          "type": "time::instant"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "s3::entry",
-      "identity": "can.std.s3@1::entry",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "key",
-          "type": "str"
-        },
-        {
-          "name": "size",
-          "type": "int"
-        },
-        {
-          "name": "etag",
-          "type": "str"
-        },
-        {
-          "name": "last_modified",
-          "type": "time::instant"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "s3::page",
-      "identity": "can.std.s3@1::page",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "entries",
-          "type": "s3::entry[]"
-        },
-        {
-          "name": "prefixes",
-          "type": "str[]"
-        },
-        {
-          "name": "truncated",
-          "type": "bool"
-        },
-        {
-          "name": "continuation",
-          "type": "option::value<s3::continuation>"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "s3::continuation",
-      "identity": "can.std.s3@1::continuation",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "s3::upload",
-      "identity": "can.std.s3@1::upload",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "s3::presigned",
-      "identity": "can.std.s3@1::presigned",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "s3::presigned_info",
-      "identity": "can.std.s3@1::presigned_info",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "url",
-          "type": "str"
-        },
-        {
-          "name": "method",
-          "type": "s3::method"
-        },
-        {
-          "name": "expires_at",
-          "type": "time::instant"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "s3::method",
-      "identity": "can.std.s3@1::method",
-      "kind": "variant",
-      "parameters": [],
-      "fields": [],
-      "leaves": [
-        "s3::method_get",
-        "s3::method_put",
-        "s3::method_delete",
-        "s3::method_head"
-      ],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "s3::method_get",
-      "identity": "can.std.s3@1::method_get",
-      "kind": "record",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "s3::method_put",
-      "identity": "can.std.s3@1::method_put",
-      "kind": "record",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "s3::method_delete",
-      "identity": "can.std.s3@1::method_delete",
-      "kind": "record",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "s3::method_head",
-      "identity": "can.std.s3@1::method_head",
-      "kind": "record",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "s3::write_options",
-      "identity": "can.std.s3@1::write_options",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "content_type",
-          "type": "option::value<str>"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "s3::upload_options",
-      "identity": "can.std.s3@1::upload_options",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "content_type",
-          "type": "option::value<str>"
-        },
-        {
-          "name": "part_size",
-          "type": "option::value<int>"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "s3::list_options",
-      "identity": "can.std.s3@1::list_options",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "prefix",
-          "type": "str"
-        },
-        {
-          "name": "limit",
-          "type": "int"
-        },
-        {
-          "name": "delimiter",
-          "type": "option::value<str>"
-        },
-        {
-          "name": "continuation",
-          "type": "option::value<s3::continuation>"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "browser::app",
-      "identity": "can.std.browser@1::app",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "browser::view",
-      "identity": "can.std.browser@1::view",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "browser::node",
-      "identity": "can.std.browser@1::node",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "browser::state",
-      "identity": "can.std.browser@1::state",
-      "kind": "opaque",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "browser::snapshot",
-      "identity": "can.std.browser@1::snapshot",
-      "kind": "record",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "fields": [
-        {
-          "name": "version",
-          "type": "int"
-        },
-        {
-          "name": "value",
-          "type": "T"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "browser::event",
-      "identity": "can.std.browser@1::event",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "kind",
-          "type": "str"
-        },
-        {
-          "name": "target",
-          "type": "str"
-        },
-        {
-          "name": "value",
-          "type": "str"
-        },
-        {
-          "name": "key",
-          "type": "str"
-        },
-        {
-          "name": "checked",
-          "type": "bool"
-        },
-        {
-          "name": "selected",
-          "type": "str[]"
-        },
-        {
-          "name": "files",
-          "type": "browser::file[]"
-        },
-        {
-          "name": "modifiers",
-          "type": "browser::modifiers"
-        },
-        {
-          "name": "composing",
-          "type": "bool"
-        },
-        {
-          "name": "selection",
-          "type": "browser::selection"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "browser::modifiers",
-      "identity": "can.std.browser@1::modifiers",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "alt",
-          "type": "bool"
-        },
-        {
-          "name": "ctrl",
-          "type": "bool"
-        },
-        {
-          "name": "meta",
-          "type": "bool"
-        },
-        {
-          "name": "shift",
-          "type": "bool"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "browser::selection",
-      "identity": "can.std.browser@1::selection",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "start",
-          "type": "int"
-        },
-        {
-          "name": "end",
-          "type": "int"
-        },
-        {
-          "name": "direction",
-          "type": "str"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "browser::file",
-      "identity": "can.std.browser@1::file",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "name",
-          "type": "str"
-        },
-        {
-          "name": "size",
-          "type": "int"
-        },
-        {
-          "name": "mime",
-          "type": "str"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "action::declaration",
-      "identity": "can.std.action@1::declaration",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "image::metadata",
-      "identity": "can.std.image@1::metadata",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "format",
-          "type": "str"
-        },
-        {
-          "name": "width",
-          "type": "int"
-        },
-        {
-          "name": "height",
-          "type": "int"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "codec::json_value",
-      "identity": "can.std.codec@1::json_value",
-      "kind": "variant",
-      "parameters": [],
-      "fields": [],
-      "leaves": [
-        "codec::json_null",
-        "codec::json_bool",
-        "codec::json_int",
-        "codec::json_float",
-        "codec::json_string",
-        "codec::json_array",
-        "codec::json_object"
-      ],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "codec::json_null",
-      "identity": "can.std.codec@1::json_null",
-      "kind": "record",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "codec::json_bool",
-      "identity": "can.std.codec@1::json_bool",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "value",
-          "type": "bool"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "codec::json_int",
-      "identity": "can.std.codec@1::json_int",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "value",
-          "type": "int"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "codec::json_float",
-      "identity": "can.std.codec@1::json_float",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "value",
-          "type": "float"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "codec::json_string",
-      "identity": "can.std.codec@1::json_string",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "codec::json_array",
-      "identity": "can.std.codec@1::json_array",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "values",
-          "type": "codec::json_value[]"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "codec::json_object",
-      "identity": "can.std.codec@1::json_object",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "members",
-          "type": "codec::json_member[]"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "codec::json_member",
-      "identity": "can.std.codec@1::json_member",
-      "kind": "record",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "name",
-          "type": "str"
-        },
-        {
-          "name": "value",
-          "type": "codec::json_value"
-        }
-      ],
-      "leaves": [],
-      "projections": [],
-      "constructible": true
-    },
-    {
-      "name": "test::owner",
-      "identity": "can.std.test@1::owner",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [],
-      "constructible": false
-    },
-    {
-      "name": "test::channel",
-      "identity": "can.std.test@1::channel",
-      "kind": "opaque",
-      "parameters": [],
-      "fields": [],
-      "leaves": [],
-      "projections": [
-        {
-          "name": "kind",
-          "type": "str"
-        }
-      ],
-      "constructible": false
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "standard_failure",
+   "identity": "can.prelude@1::standard_failure",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [
+    {
+     "name": "occurrence_id",
+     "type": "int"
+    },
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "message",
+     "type": "str"
     }
-  ],
-  "errors": [
-    {
-      "name": "all_failed",
-      "identity": "can.prelude@1::all_failed",
-      "parameters": [
-        {
-          "name": "F",
-          "constraint": "failure_variant"
-        }
-      ],
-      "fields": [
-        {
-          "name": "failures",
-          "type": "F[]"
-        }
-      ]
-    },
-    {
-      "name": "number::inexact",
-      "identity": "can.std.number@1::inexact",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "text::invalid_number",
-      "identity": "can.std.text@1::invalid_number",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "input",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "text::invalid_bool",
-      "identity": "can.std.text@1::invalid_bool",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "input",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "number::invalid_bool",
-      "identity": "can.std.number@1::invalid_bool",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "value",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "text::empty_separator",
-      "identity": "can.std.text@1::empty_separator",
-      "parameters": [],
-      "fields": []
-    },
-    {
-      "name": "text::empty_pattern",
-      "identity": "can.std.text@1::empty_pattern",
-      "parameters": [],
-      "fields": []
-    },
-    {
-      "name": "text::invalid_unicode",
-      "identity": "can.std.text@1::invalid_unicode",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "collections::key_absent",
-      "identity": "can.std.collections@1::key_absent",
-      "parameters": [],
-      "fields": []
-    },
-    {
-      "name": "collections::key_exists",
-      "identity": "can.std.collections@1::key_exists",
-      "parameters": [],
-      "fields": []
-    },
-    {
-      "name": "number::zero_divisor",
-      "identity": "can.std.number@1::zero_divisor",
-      "parameters": [],
-      "fields": []
-    },
-    {
-      "name": "checks::failed",
-      "identity": "can.std.checks@1::failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "http::invalid_request",
-      "identity": "can.std.http@1::invalid_request",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "http::credentials_missing",
-      "identity": "can.std.http@1::credentials_missing",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "variable",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "http::transport_failed",
-      "identity": "can.std.http@1::transport_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "phase",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "http::timeout",
-      "identity": "can.std.http@1::timeout",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "timeout_ms",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "http::body_limit",
-      "identity": "can.std.http@1::body_limit",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "limit",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "http::status_error",
-      "identity": "can.std.http@1::status_error",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "status",
-          "type": "int"
-        },
-        {
-          "name": "headers",
-          "type": "http::header[]"
-        }
-      ]
-    },
-    {
-      "name": "http::request_failed",
-      "identity": "can.std.http@1::request_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "detail",
-          "type": "http::failure_detail"
-        }
-      ]
-    },
-    {
-      "name": "codec::invalid_data",
-      "identity": "can.std.codec@1::invalid_data",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "ai::invalid_question",
-      "identity": "can.std.ai@1::invalid_question",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "ai::invalid_answer",
-      "identity": "can.std.ai@1::invalid_answer",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "question",
-          "type": "str"
-        },
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "llm::refused",
-      "identity": "can.std.llm@1::refused",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "llm::truncated",
-      "identity": "can.std.llm@1::truncated",
-      "parameters": [],
-      "fields": []
-    },
-    {
-      "name": "llm::invalid_response",
-      "identity": "can.std.llm@1::invalid_response",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "io::read_failed",
-      "identity": "can.std.io@1::read_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "operation",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "io::write_failed",
-      "identity": "can.std.io@1::write_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "operation",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "io::limit_exceeded",
-      "identity": "can.std.io@1::limit_exceeded",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "limit",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "form::unknown_field",
-      "identity": "can.std.form@1::unknown_field",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "name",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "form::invalid_name",
-      "identity": "can.std.form@1::invalid_name",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "name",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "html::invalid_structure",
-      "identity": "can.std.html@1::invalid_structure",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "html::invalid_url",
-      "identity": "can.std.html@1::invalid_url",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "htmx::invalid_target",
-      "identity": "can.std.htmx@1::invalid_target",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "htmx::invalid_interval",
-      "identity": "can.std.htmx@1::invalid_interval",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "milliseconds",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "http::invalid_route",
-      "identity": "can.std.http@1::invalid_route",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "http::duplicate_route",
-      "identity": "can.std.http@1::duplicate_route",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "method",
-          "type": "str"
-        },
-        {
-          "name": "path",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "http::ambiguous_route",
-      "identity": "can.std.http@1::ambiguous_route",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "first",
-          "type": "str"
-        },
-        {
-          "name": "second",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "http::invalid_server_config",
-      "identity": "can.std.http@1::invalid_server_config",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "http::bind_failed",
-      "identity": "can.std.http@1::bind_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "address",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "http::shutdown_failed",
-      "identity": "can.std.http@1::shutdown_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "phase",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "sql::connection_failed",
-      "identity": "can.std.sql@1::connection_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "phase",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "sql::query_failed",
-      "identity": "can.std.sql@1::query_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "operation",
-          "type": "str"
-        },
-        {
-          "name": "code",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "sql::row_missing",
-      "identity": "can.std.sql@1::row_missing",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "query",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "sql::row_count",
-      "identity": "can.std.sql@1::row_count",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "query",
-          "type": "str"
-        },
-        {
-          "name": "actual",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "sql::schema_mismatch",
-      "identity": "can.std.sql@1::schema_mismatch",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "sql::constraint_failed",
-      "identity": "can.std.sql@1::constraint_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "constraint",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "sql::transaction_failed",
-      "identity": "can.std.sql@1::transaction_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "phase",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "sql::commit_unknown",
-      "identity": "can.std.sql@1::commit_unknown",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "transaction_id",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "sql::close_failed",
-      "identity": "can.std.sql@1::close_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "sql::row_limit",
-      "identity": "can.std.sql@1::row_limit",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "limit",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "sql::unsupported_value",
-      "identity": "can.std.sql@1::unsupported_value",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "clock::invalid_duration",
-      "identity": "can.std.clock@1::invalid_duration",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "milliseconds",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "random::invalid_length",
-      "identity": "can.std.random@1::invalid_length",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "length",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "env::invalid_name",
-      "identity": "can.std.env@1::invalid_name",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "name",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "log::write_failed",
-      "identity": "can.std.log@1::write_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "level",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "files::not_found",
-      "identity": "can.std.files@1::not_found",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "path",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "files::denied",
-      "identity": "can.std.files@1::denied",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "operation",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "files::already_exists",
-      "identity": "can.std.files@1::already_exists",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "path",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "files::invalid_path",
-      "identity": "can.std.files@1::invalid_path",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "files::io_error",
-      "identity": "can.std.files@1::io_error",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "operation",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "files::limit_exceeded",
-      "identity": "can.std.files@1::limit_exceeded",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "limit",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "files::not_empty",
-      "identity": "can.std.files@1::not_empty",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "path",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "files::cross_device",
-      "identity": "can.std.files@1::cross_device",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "source",
-          "type": "str"
-        },
-        {
-          "name": "destination",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "files::unexpected_kind",
-      "identity": "can.std.files@1::unexpected_kind",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "operation",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "process::spawn_failed",
-      "identity": "can.std.process@1::spawn_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "executable",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "process::timeout",
-      "identity": "can.std.process@1::timeout",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "deadline_ms",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "process::output_limit",
-      "identity": "can.std.process@1::output_limit",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "stream",
-          "type": "str"
-        },
-        {
-          "name": "limit",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "process::nonzero",
-      "identity": "can.std.process@1::nonzero",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "code",
-          "type": "int"
-        },
-        {
-          "name": "signal",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "process::invalid_config",
-      "identity": "can.std.process@1::invalid_config",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "field",
-          "type": "str"
-        },
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "process::io_error",
-      "identity": "can.std.process@1::io_error",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "operation",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "stream::read_failed",
-      "identity": "can.std.stream@1::read_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "stream::write_failed",
-      "identity": "can.std.stream@1::write_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "stream::cancelled",
-      "identity": "can.std.stream@1::cancelled",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "stream::close_failed",
-      "identity": "can.std.stream@1::close_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "password::cost_rejected",
-      "identity": "can.std.password@1::cost_rejected",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "profile",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "password::invalid_hash",
-      "identity": "can.std.password@1::invalid_hash",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "crypto::invalid_key",
-      "identity": "can.std.crypto@1::invalid_key",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "crypto::invalid_nonce",
-      "identity": "can.std.crypto@1::invalid_nonce",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "length",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "crypto::key_misuse",
-      "identity": "can.std.crypto@1::key_misuse",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "operation",
-          "type": "str"
-        },
-        {
-          "name": "algorithm",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "crypto::decrypt_failed",
-      "identity": "can.std.crypto@1::decrypt_failed",
-      "parameters": [],
-      "fields": []
-    },
-    {
-      "name": "url::invalid_url",
-      "identity": "can.std.url@1::invalid_url",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "text::invalid_regex",
-      "identity": "can.std.text@1::invalid_regex",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "text::invalid_limit",
-      "identity": "can.std.text@1::invalid_limit",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "limit",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "time::out_of_range",
-      "identity": "can.std.time@1::out_of_range",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "millis",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "time::invalid_zone",
-      "identity": "can.std.time@1::invalid_zone",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "zone",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "time::nonexistent_time",
-      "identity": "can.std.time@1::nonexistent_time",
-      "parameters": [],
-      "fields": []
-    },
-    {
-      "name": "time::invalid_option",
-      "identity": "can.std.time@1::invalid_option",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "ws::connect_failed",
-      "identity": "can.std.ws@1::connect_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "ws::upgrade_failed",
-      "identity": "can.std.ws@1::upgrade_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "ws::unsupported_protocol",
-      "identity": "can.std.ws@1::unsupported_protocol",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "protocol",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "ws::send_failed",
-      "identity": "can.std.ws@1::send_failed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "ws::invalid_close",
-      "identity": "can.std.ws@1::invalid_close",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "ws::limit_exceeded",
-      "identity": "can.std.ws@1::limit_exceeded",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "limit",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "ws::invalid_url",
-      "identity": "can.std.ws@1::invalid_url",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "ws::invalid_protocol",
-      "identity": "can.std.ws@1::invalid_protocol",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "protocol",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "cookie::invalid_cookie",
-      "identity": "can.std.cookie@1::invalid_cookie",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "csrf::invalid_config",
-      "identity": "can.std.csrf@1::invalid_config",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "s3::invalid_config",
-      "identity": "can.std.s3@1::invalid_config",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "s3::missing_key",
-      "identity": "can.std.s3@1::missing_key",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "key",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "s3::access_denied",
-      "identity": "can.std.s3@1::access_denied",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "operation",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "s3::service_error",
-      "identity": "can.std.s3@1::service_error",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "code",
-          "type": "str"
-        },
-        {
-          "name": "operation",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "s3::upload_closed",
-      "identity": "can.std.s3@1::upload_closed",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "operation",
-          "type": "str"
-        },
-        {
-          "name": "state",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "s3::over_limit",
-      "identity": "can.std.s3@1::over_limit",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "limit",
-          "type": "int"
-        },
-        {
-          "name": "size",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "markdown::over_limit",
-      "identity": "can.std.markdown@1::over_limit",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "limit",
-          "type": "int"
-        },
-        {
-          "name": "size",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "browser::missing_root",
-      "identity": "can.std.browser@1::missing_root",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "root",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "browser::disposed",
-      "identity": "can.std.browser@1::disposed",
-      "parameters": [],
-      "fields": []
-    },
-    {
-      "name": "browser::rejected",
-      "identity": "can.std.browser@1::rejected",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "browser::stale_version",
-      "identity": "can.std.browser@1::stale_version",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "expected",
-          "type": "int"
-        },
-        {
-          "name": "actual",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "browser::invalid_query",
-      "identity": "can.std.browser@1::invalid_query",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "key",
-          "type": "str"
-        },
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "action::invalid_path",
-      "identity": "can.std.action@1::invalid_path",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "image::invalid_image",
-      "identity": "can.std.image@1::invalid_image",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "test::wrong_owner",
-      "identity": "can.std.test@1::wrong_owner",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "handle",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "test::stale_handle",
-      "identity": "can.std.test@1::stale_handle",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "handle",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "test::closed_handle",
-      "identity": "can.std.test@1::closed_handle",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "handle",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "test::transport_failure",
-      "identity": "can.std.test@1::transport_failure",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "test::channel_full",
-      "identity": "can.std.test@1::channel_full",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "handle",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "test::detached_transport",
-      "identity": "can.std.test@1::detached_transport",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "handle",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "test::channel_empty",
-      "identity": "can.std.test@1::channel_empty",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "handle",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "test::invalid_grant",
-      "identity": "can.std.test@1::invalid_grant",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ]
-    },
-    {
-      "name": "test::invalid_kind",
-      "identity": "can.std.test@1::invalid_kind",
-      "parameters": [],
-      "fields": [
-        {
-          "name": "kind",
-          "type": "str"
-        }
-      ]
+   ],
+   "constructible": false
+  },
+  {
+   "name": "option::none",
+   "identity": "can.std.option@1::none",
+   "kind": "record",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "option::some",
+   "identity": "can.std.option@1::some",
+   "kind": "record",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
     }
-  ],
-  "operations": [
-    {
-      "name": "text::from_int",
-      "identity": "can.std.text@1::from_int",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String"
-        ],
-        "adapter": "Native formatting without coercion at source boundaries.",
-        "task": "I22"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6"
-      ]
-    },
-    {
-      "name": "text::from_float",
-      "identity": "can.std.text@1::from_float",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "float"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String"
-        ],
-        "adapter": "Native formatting without coercion at source boundaries.",
-        "task": "I22"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6"
-      ]
-    },
-    {
-      "name": "text::from_bool",
-      "identity": "can.std.text@1::from_bool",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "bool"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String"
-        ],
-        "adapter": "Native formatting without coercion at source boundaries.",
-        "task": "I22"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6"
-      ]
-    },
-    {
-      "name": "number::int_to_float",
-      "identity": "can.std.number@1::int_to_float",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "float",
-      "callbacks": [],
-      "emits": [
-        "number::inexact"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Number",
-          "BigInt"
-        ],
-        "adapter": "Validate exactness, finiteness or the 0/1 boolean range before conversion.",
-        "task": "I22"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6"
-      ]
-    },
-    {
-      "name": "number::float_to_int",
-      "identity": "can.std.number@1::float_to_int",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "float"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [
-        "number::inexact"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Number",
-          "BigInt"
-        ],
-        "adapter": "Validate exactness, finiteness or the 0/1 boolean range before conversion.",
-        "task": "I22"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6"
-      ]
-    },
-    {
-      "name": "number::bool_to_int",
-      "identity": "can.std.number@1::bool_to_int",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "bool"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Number",
-          "BigInt"
-        ],
-        "adapter": "Validate exactness, finiteness or the 0/1 boolean range before conversion.",
-        "task": "I22"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6"
-      ]
-    },
-    {
-      "name": "number::int_to_bool",
-      "identity": "can.std.number@1::int_to_bool",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bool",
-      "callbacks": [],
-      "emits": [
-        "number::invalid_bool"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Number",
-          "BigInt"
-        ],
-        "adapter": "Validate exactness, finiteness or the 0/1 boolean range before conversion.",
-        "task": "I22"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6"
-      ]
-    },
-    {
-      "name": "number::floor",
-      "identity": "can.std.number@1::floor",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "float"
-        }
-      ],
-      "staticInputs": [],
-      "result": "float",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Math.floor"
-        ],
-        "adapter": "Preserve native IEEE outcomes and signed zero.",
-        "task": "I22"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6"
-      ]
-    },
-    {
-      "name": "number::ceil",
-      "identity": "can.std.number@1::ceil",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "float"
-        }
-      ],
-      "staticInputs": [],
-      "result": "float",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Math.ceil"
-        ],
-        "adapter": "Preserve native IEEE outcomes and signed zero.",
-        "task": "I22"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6"
-      ]
-    },
-    {
-      "name": "number::trunc",
-      "identity": "can.std.number@1::trunc",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "float"
-        }
-      ],
-      "staticInputs": [],
-      "result": "float",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Math.trunc"
-        ],
-        "adapter": "Preserve native IEEE outcomes and signed zero.",
-        "task": "I22"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6"
-      ]
-    },
-    {
-      "name": "number::round",
-      "identity": "can.std.number@1::round",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "float"
-        }
-      ],
-      "staticInputs": [],
-      "result": "float",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Math.round"
-        ],
-        "adapter": "Preserve native IEEE outcomes and signed zero.",
-        "task": "I22"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6"
-      ]
-    },
-    {
-      "name": "number::is_finite",
-      "identity": "can.std.number@1::is_finite",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "float"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bool",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Number.isFinite"
-        ],
-        "adapter": "Preserve native IEEE outcomes and signed zero.",
-        "task": "I22"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6"
-      ]
-    },
-    {
-      "name": "number::is_nan",
-      "identity": "can.std.number@1::is_nan",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "float"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bool",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Number.isNaN"
-        ],
-        "adapter": "Preserve native IEEE outcomes and signed zero.",
-        "task": "I22"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6"
-      ]
-    },
-    {
-      "name": "text::to_int",
-      "identity": "can.std.text@1::to_int",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [
-        "text::invalid_number"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "BigInt"
-        ],
-        "adapter": "Full-match the specified grammar; reject nonfinite parsed floats.",
-        "task": "I22"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6"
-      ]
-    },
-    {
-      "name": "text::to_float",
-      "identity": "can.std.text@1::to_float",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "float",
-      "callbacks": [],
-      "emits": [
-        "text::invalid_number"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Number"
-        ],
-        "adapter": "Full-match the specified grammar; reject nonfinite parsed floats.",
-        "task": "I22"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6"
-      ]
-    },
-    {
-      "name": "text::to_bool",
-      "identity": "can.std.text@1::to_bool",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bool",
-      "callbacks": [],
-      "emits": [
-        "text::invalid_bool"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "==="
-        ],
-        "adapter": "Full-match the specified grammar; reject nonfinite parsed floats.",
-        "task": "I22"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6"
-      ]
-    },
-    {
-      "name": "array.map",
-      "identity": "can.intrinsic.array@1::map",
-      "kind": "method",
-      "receiver": "T[]",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        },
-        {
-          "name": "U",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [],
-      "result": "U[]",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "T"
-          ],
-          "result": "U",
-          "deriveErrors": true,
-          "emits": []
-        }
-      ],
-      "emits": [],
-      "callbackErrors": [
-        "callback"
-      ],
-      "lowering": {
-        "native": [
-          "Array.fromAsync",
-          "Array.prototype.keys",
-          "Array.prototype.map"
-        ],
-        "adapter": "Iterate indices sequentially, box callback output, then unwrap synchronously.",
-        "task": "I21"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "array.filter",
-      "identity": "can.intrinsic.array@1::filter",
-      "kind": "method",
-      "receiver": "T[]",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [],
-      "result": "T[]",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "T"
-          ],
-          "result": "bool",
-          "deriveErrors": true,
-          "emits": []
-        }
-      ],
-      "emits": [],
-      "callbackErrors": [
-        "callback"
-      ],
-      "lowering": {
-        "native": [
-          "Array.fromAsync",
-          "Array.prototype.filter"
-        ],
-        "adapter": "Collect ordered boolean decisions before native filtering.",
-        "task": "I21"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "array.for_each",
-      "identity": "can.intrinsic.array@1::for_each",
-      "kind": "method",
-      "receiver": "T[]",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "T"
-          ],
-          "result": "void",
-          "deriveErrors": true,
-          "emits": []
-        }
-      ],
-      "emits": [],
-      "callbackErrors": [
-        "callback"
-      ],
-      "lowering": {
-        "native": [
-          "Array.prototype.reduce"
-        ],
-        "adapter": "Await each callback through a native reduce chain, stopping on failure.",
-        "task": "I21"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "array.fold",
-      "identity": "can.intrinsic.array@1::fold",
-      "kind": "method",
-      "receiver": "T[]",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        },
-        {
-          "name": "U",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "initial",
-          "type": "U"
-        },
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [],
-      "result": "U",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "U",
-            "T"
-          ],
-          "result": "U",
-          "deriveErrors": true,
-          "emits": []
-        }
-      ],
-      "emits": [],
-      "callbackErrors": [
-        "callback"
-      ],
-      "lowering": {
-        "native": [
-          "Array.prototype.reduce"
-        ],
-        "adapter": "Box and await each accumulator with the explicit initial value.",
-        "task": "I21"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "array.find",
-      "identity": "can.intrinsic.array@1::find",
-      "kind": "method",
-      "receiver": "T[]",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [],
-      "result": "option::value<T>",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "T"
-          ],
-          "result": "bool",
-          "deriveErrors": true,
-          "emits": []
-        }
-      ],
-      "emits": [],
-      "callbackErrors": [
-        "callback"
-      ],
-      "lowering": {
-        "native": [
-          "Array.prototype.values"
-        ],
-        "adapter": "Bounded ascending await adapter stops on the first true predicate.",
-        "task": "I21"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "array.some",
-      "identity": "can.intrinsic.array@1::some",
-      "kind": "method",
-      "receiver": "T[]",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bool",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "T"
-          ],
-          "result": "bool",
-          "deriveErrors": true,
-          "emits": []
-        }
-      ],
-      "emits": [],
-      "callbackErrors": [
-        "callback"
-      ],
-      "lowering": {
-        "native": [
-          "Array.prototype.values"
-        ],
-        "adapter": "Bounded ascending await adapter stops on true; empty returns false.",
-        "task": "I21"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "array.every",
-      "identity": "can.intrinsic.array@1::every",
-      "kind": "method",
-      "receiver": "T[]",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bool",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "T"
-          ],
-          "result": "bool",
-          "deriveErrors": true,
-          "emits": []
-        }
-      ],
-      "emits": [],
-      "callbackErrors": [
-        "callback"
-      ],
-      "lowering": {
-        "native": [
-          "Array.prototype.values"
-        ],
-        "adapter": "Bounded ascending await adapter stops on false; empty returns true.",
-        "task": "I21"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "array.sort_by",
-      "identity": "can.intrinsic.array@1::sort_by",
-      "kind": "method",
-      "receiver": "T[]",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        },
-        {
-          "name": "K",
-          "constraint": "sort_key"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [],
-      "result": "T[]",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "T"
-          ],
-          "result": "K",
-          "deriveErrors": true,
-          "emits": []
-        }
-      ],
-      "emits": [],
-      "callbackErrors": [
-        "callback"
-      ],
-      "lowering": {
-        "native": [
-          "Array.fromAsync",
-          "Array.prototype.toSorted"
-        ],
-        "adapter": "Evaluate each key once, reject nonfinite keys, compare native keys with index tie-break.",
-        "task": "I21"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "array.slice",
-      "identity": "can.intrinsic.array@1::slice",
-      "kind": "method",
-      "receiver": "T[]",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "start",
-          "type": "int"
-        },
-        {
-          "name": "end",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "T[]",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Array.prototype.slice"
-        ],
-        "adapter": "Normalize slice bounds in bigint; return immutable native copies.",
-        "task": "I21"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6",
-        "C7"
-      ]
-    },
-    {
-      "name": "array.concat",
-      "identity": "can.intrinsic.array@1::concat",
-      "kind": "method",
-      "receiver": "T[]",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "other",
-          "type": "T[]"
-        }
-      ],
-      "staticInputs": [],
-      "result": "T[]",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Array.prototype.concat"
-        ],
-        "adapter": "Normalize slice bounds in bigint; return immutable native copies.",
-        "task": "I21"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6",
-        "C7"
-      ]
-    },
-    {
-      "name": "array.to_reversed",
-      "identity": "can.intrinsic.array@1::to_reversed",
-      "kind": "method",
-      "receiver": "T[]",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "T[]",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Array.prototype.toReversed"
-        ],
-        "adapter": "Normalize slice bounds in bigint; return immutable native copies.",
-        "task": "I21"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6",
-        "C7"
-      ]
-    },
-    {
-      "name": "append",
-      "identity": "can.prelude@1::append",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "items",
-          "type": "T[]"
-        },
-        {
-          "name": "value",
-          "type": "T"
-        }
-      ],
-      "staticInputs": [],
-      "result": "T[]",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "array spread"
-        ],
-        "adapter": "Copy the source and append one value without mutation.",
-        "task": "I21"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "str.includes",
-      "identity": "can.intrinsic.str@1::includes",
-      "kind": "method",
-      "receiver": "str",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bool",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String.prototype.includes"
-        ],
-        "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
-        "task": "I24"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6",
-        "C7"
-      ]
-    },
-    {
-      "name": "str.starts_with",
-      "identity": "can.intrinsic.str@1::starts_with",
-      "kind": "method",
-      "receiver": "str",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bool",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String.prototype.startsWith"
-        ],
-        "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
-        "task": "I24"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6",
-        "C7"
-      ]
-    },
-    {
-      "name": "str.ends_with",
-      "identity": "can.intrinsic.str@1::ends_with",
-      "kind": "method",
-      "receiver": "str",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bool",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String.prototype.endsWith"
-        ],
-        "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
-        "task": "I24"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6",
-        "C7"
-      ]
-    },
-    {
-      "name": "str.to_lower_case",
-      "identity": "can.intrinsic.str@1::to_lower_case",
-      "kind": "method",
-      "receiver": "str",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String.prototype.toLowerCase"
-        ],
-        "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
-        "task": "I24"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6",
-        "C7"
-      ]
-    },
-    {
-      "name": "str.to_upper_case",
-      "identity": "can.intrinsic.str@1::to_upper_case",
-      "kind": "method",
-      "receiver": "str",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String.prototype.toUpperCase"
-        ],
-        "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
-        "task": "I24"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6",
-        "C7"
-      ]
-    },
-    {
-      "name": "str.trim",
-      "identity": "can.intrinsic.str@1::trim",
-      "kind": "method",
-      "receiver": "str",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String.prototype.trim"
-        ],
-        "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
-        "task": "I24"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6",
-        "C7"
-      ]
-    },
-    {
-      "name": "str.slice",
-      "identity": "can.intrinsic.str@1::slice",
-      "kind": "method",
-      "receiver": "str",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "start",
-          "type": "int"
-        },
-        {
-          "name": "end",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String.prototype.slice"
-        ],
-        "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
-        "task": "I24"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6",
-        "C7"
-      ]
-    },
-    {
-      "name": "str.split",
-      "identity": "can.intrinsic.str@1::split",
-      "kind": "method",
-      "receiver": "str",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "separator",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str[]",
-      "callbacks": [],
-      "emits": [
-        "text::empty_separator"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String.prototype.split"
-        ],
-        "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
-        "task": "I24"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6",
-        "C7"
-      ]
-    },
-    {
-      "name": "str.replace_all",
-      "identity": "can.intrinsic.str@1::replace_all",
-      "kind": "method",
-      "receiver": "str",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "search",
-          "type": "str"
-        },
-        {
-          "name": "replacement",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [
-        "text::empty_pattern"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String.prototype.replaceAll"
-        ],
-        "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
-        "task": "I24"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6",
-        "C7"
-      ]
-    },
-    {
-      "name": "text::join",
-      "identity": "can.std.text@1::join",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "items",
-          "type": "str[]"
-        },
-        {
-          "name": "separator",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Array.prototype.join"
-        ],
-        "adapter": "Native join with explicit separator.",
-        "task": "I24"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "text::scalars",
-      "identity": "can.std.text@1::scalars",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int[]",
-      "callbacks": [],
-      "emits": [
-        "text::invalid_unicode"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String.prototype.Symbol.iterator",
-          "String.prototype.codePointAt"
-        ],
-        "adapter": "Validate scalar values; chunk bulk code points; use locale und for graphemes and NFC for normalization.",
-        "task": "I24"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "text::from_scalars",
-      "identity": "can.std.text@1::from_scalars",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "int[]"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [
-        "text::invalid_unicode"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String.fromCodePoint"
-        ],
-        "adapter": "Validate scalar values; chunk bulk code points; use locale und for graphemes and NFC for normalization.",
-        "task": "I24"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "text::graphemes",
-      "identity": "can.std.text@1::graphemes",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str[]",
-      "callbacks": [],
-      "emits": [
-        "text::invalid_unicode"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Intl.Segmenter"
-        ],
-        "adapter": "Validate scalar values; chunk bulk code points; use locale und for graphemes and NFC for normalization.",
-        "task": "I24"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "text::normalize_nfc",
-      "identity": "can.std.text@1::normalize_nfc",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [
-        "text::invalid_unicode"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String.prototype.normalize"
-        ],
-        "adapter": "Validate scalar values; chunk bulk code points; use locale und for graphemes and NFC for normalization.",
-        "task": "I24"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "text::compile_regex",
-      "identity": "can.std.text@1::compile_regex",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "pattern",
-          "type": "str"
-        },
-        {
-          "name": "flags",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "text::regex",
-      "callbacks": [],
-      "emits": [
-        "text::invalid_regex"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "RegExp"
-        ],
-        "adapter": "Compile validated patterns with i/m/s/u/v flags into opaque handles; other flags and bad patterns reject; execute in ordinary assertions.",
-        "task": "B1-13"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-13"
-      ]
-    },
-    {
-      "name": "text::matches",
-      "identity": "can.std.text@1::matches",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "regex",
-          "type": "text::regex"
-        },
-        {
-          "name": "text",
-          "type": "str"
-        },
-        {
-          "name": "limit",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "text::regex_match[]",
-      "callbacks": [],
-      "emits": [
-        "text::invalid_limit"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "RegExp"
-        ],
-        "adapter": "Scan with a fresh global pass per call (no shared lastIndex), UTF-16 offsets, empty-match advancement, absent captures as empty; execute in ordinary assertions.",
-        "task": "B1-13"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-13"
-      ]
-    },
-    {
-      "name": "collections::empty_map",
-      "identity": "can.std.collections@1::empty_map",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "K",
-          "constraint": "map_key"
-        },
-        {
-          "name": "V",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "collections::map<K,V>",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Map"
-        ],
-        "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
-        "task": "I25"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "collections::empty_set",
-      "identity": "can.std.collections@1::empty_set",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "K",
-          "constraint": "map_key"
-        }
-      ],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "collections::set<K>",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Set"
-        ],
-        "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
-        "task": "I25"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "collections::build_map",
-      "identity": "can.std.collections@1::build_map",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "K",
-          "constraint": "map_key"
-        },
-        {
-          "name": "V",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "entries",
-          "type": "collections::entry<K,V>[]"
-        }
-      ],
-      "staticInputs": [],
-      "result": "collections::map<K,V>",
-      "callbacks": [],
-      "emits": [
-        "collections::key_exists"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Map"
-        ],
-        "adapter": "Bulk construction: validate keys in order; the first duplicate key fails the whole build; single immutable publication in first-occurrence order.",
-        "task": "A05"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "collections::build_set",
-      "identity": "can.std.collections@1::build_set",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "K",
-          "constraint": "map_key"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "values",
-          "type": "K[]"
-        }
-      ],
-      "staticInputs": [],
-      "result": "collections::set<K>",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Set"
-        ],
-        "adapter": "Bulk construction: validate keys in order and dedupe; single immutable publication in first-occurrence order.",
-        "task": "A05"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "collections::get",
-      "identity": "can.std.collections@1::get",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "K",
-          "constraint": "map_key"
-        },
-        {
-          "name": "V",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "map",
-          "type": "collections::map<K,V>"
-        },
-        {
-          "name": "key",
-          "type": "K"
-        }
-      ],
-      "staticInputs": [],
-      "result": "V",
-      "callbacks": [],
-      "emits": [
-        "collections::key_absent"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Map.prototype.has",
-          "Map.prototype.get"
-        ],
-        "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
-        "task": "I25"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "collections::insert",
-      "identity": "can.std.collections@1::insert",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "K",
-          "constraint": "map_key"
-        },
-        {
-          "name": "V",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "map",
-          "type": "collections::map<K,V>"
-        },
-        {
-          "name": "key",
-          "type": "K"
-        },
-        {
-          "name": "value",
-          "type": "V"
-        }
-      ],
-      "staticInputs": [],
-      "result": "collections::map<K,V>",
-      "callbacks": [],
-      "emits": [
-        "collections::key_exists"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Map",
-          "Map.prototype.set"
-        ],
-        "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
-        "task": "I25"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "collections::replace",
-      "identity": "can.std.collections@1::replace",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "K",
-          "constraint": "map_key"
-        },
-        {
-          "name": "V",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "map",
-          "type": "collections::map<K,V>"
-        },
-        {
-          "name": "key",
-          "type": "K"
-        },
-        {
-          "name": "value",
-          "type": "V"
-        }
-      ],
-      "staticInputs": [],
-      "result": "collections::map<K,V>",
-      "callbacks": [],
-      "emits": [
-        "collections::key_absent"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Map",
-          "Map.prototype.set"
-        ],
-        "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
-        "task": "I25"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "collections::remove",
-      "identity": "can.std.collections@1::remove",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "K",
-          "constraint": "map_key"
-        },
-        {
-          "name": "V",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "map",
-          "type": "collections::map<K,V>"
-        },
-        {
-          "name": "key",
-          "type": "K"
-        }
-      ],
-      "staticInputs": [],
-      "result": "collections::map<K,V>",
-      "callbacks": [],
-      "emits": [
-        "collections::key_absent"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Map",
-          "Map.prototype.delete"
-        ],
-        "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
-        "task": "I25"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "collections::entries",
-      "identity": "can.std.collections@1::entries",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "K",
-          "constraint": "map_key"
-        },
-        {
-          "name": "V",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "map",
-          "type": "collections::map<K,V>"
-        }
-      ],
-      "staticInputs": [],
-      "result": "collections::entry<K,V>[]",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Map.prototype.entries",
-          "Array.from"
-        ],
-        "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
-        "task": "I25"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "collections::contains",
-      "identity": "can.std.collections@1::contains",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "K",
-          "constraint": "map_key"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "set",
-          "type": "collections::set<K>"
-        },
-        {
-          "name": "key",
-          "type": "K"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bool",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Set.prototype.has"
-        ],
-        "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
-        "task": "I25"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "collections::add",
-      "identity": "can.std.collections@1::add",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "K",
-          "constraint": "map_key"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "set",
-          "type": "collections::set<K>"
-        },
-        {
-          "name": "key",
-          "type": "K"
-        }
-      ],
-      "staticInputs": [],
-      "result": "collections::set<K>",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Set",
-          "Set.prototype.add"
-        ],
-        "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
-        "task": "I25"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "collections::union",
-      "identity": "can.std.collections@1::union",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "K",
-          "constraint": "map_key"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "left",
-          "type": "collections::set<K>"
-        },
-        {
-          "name": "right",
-          "type": "collections::set<K>"
-        }
-      ],
-      "staticInputs": [],
-      "result": "collections::set<K>",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Set.prototype.union"
-        ],
-        "adapter": "Intersection/difference filter the left iteration order; union retains left then unseen right keys.",
-        "task": "I25"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "collections::intersection",
-      "identity": "can.std.collections@1::intersection",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "K",
-          "constraint": "map_key"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "left",
-          "type": "collections::set<K>"
-        },
-        {
-          "name": "right",
-          "type": "collections::set<K>"
-        }
-      ],
-      "staticInputs": [],
-      "result": "collections::set<K>",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Set",
-          "Set.prototype.has",
-          "Array.prototype.filter"
-        ],
-        "adapter": "Intersection/difference filter the left iteration order; union retains left then unseen right keys.",
-        "task": "I25"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "collections::difference",
-      "identity": "can.std.collections@1::difference",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "K",
-          "constraint": "map_key"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "left",
-          "type": "collections::set<K>"
-        },
-        {
-          "name": "right",
-          "type": "collections::set<K>"
-        }
-      ],
-      "staticInputs": [],
-      "result": "collections::set<K>",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Set",
-          "Set.prototype.has",
-          "Array.prototype.filter"
-        ],
-        "adapter": "Intersection/difference filter the left iteration order; union retains left then unseen right keys.",
-        "task": "I25"
-      },
-      "assertion": "real",
-      "refs": [
-        "C7"
-      ]
-    },
-    {
-      "name": "number::divmod",
-      "identity": "can.std.number@1::divmod",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "numerator",
-          "type": "int"
-        },
-        {
-          "name": "denominator",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "number::division",
-      "callbacks": [],
-      "emits": [
-        "number::zero_divisor"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "bigint /",
-          "bigint %",
-          "bigint comparisons"
-        ],
-        "adapter": "Apply only C8 sign normalization and finite half-even remainder adjustment.",
-        "task": "I23"
-      },
-      "assertion": "real",
-      "refs": [
-        "C8"
-      ]
-    },
-    {
-      "name": "number::euclidean_divmod",
-      "identity": "can.std.number@1::euclidean_divmod",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "numerator",
-          "type": "int"
-        },
-        {
-          "name": "denominator",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "number::division",
-      "callbacks": [],
-      "emits": [
-        "number::zero_divisor"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "bigint /",
-          "bigint %",
-          "bigint comparisons"
-        ],
-        "adapter": "Apply only C8 sign normalization and finite half-even remainder adjustment.",
-        "task": "I23"
-      },
-      "assertion": "real",
-      "refs": [
-        "C8"
-      ]
-    },
-    {
-      "name": "number::round_ratio_half_even",
-      "identity": "can.std.number@1::round_ratio_half_even",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "numerator",
-          "type": "int"
-        },
-        {
-          "name": "denominator",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "number::rounded",
-      "callbacks": [],
-      "emits": [
-        "number::zero_divisor"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "bigint /",
-          "bigint %",
-          "bigint comparisons"
-        ],
-        "adapter": "Apply only C8 sign normalization and finite half-even remainder adjustment.",
-        "task": "I23"
-      },
-      "assertion": "real",
-      "refs": [
-        "C8"
-      ]
-    },
-    {
-      "name": "bytes::empty",
-      "identity": "can.std.bytes@1::empty",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Uint8Array"
-        ],
-        "adapter": "Validate provenance, byte range and scalar text; copy buffers; decode UTF-8 fatally.",
-        "task": "I13"
-      },
-      "assertion": "real",
-      "refs": [
-        "A2"
-      ]
-    },
-    {
-      "name": "bytes::from_ints",
-      "identity": "can.std.bytes@1::from_ints",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "values",
-          "type": "int[]"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Uint8Array.from"
-        ],
-        "adapter": "Validate provenance, byte range and scalar text; copy buffers; decode UTF-8 fatally.",
-        "task": "I13"
-      },
-      "assertion": "real",
-      "refs": [
-        "A2"
-      ]
-    },
-    {
-      "name": "bytes::to_ints",
-      "identity": "can.std.bytes@1::to_ints",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "buffer",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int[]",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Array.from"
-        ],
-        "adapter": "Validate provenance, byte range and scalar text; copy buffers; decode UTF-8 fatally.",
-        "task": "I13"
-      },
-      "assertion": "real",
-      "refs": [
-        "A2"
-      ]
-    },
-    {
-      "name": "bytes::from_utf8",
-      "identity": "can.std.bytes@1::from_utf8",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "TextEncoder"
-        ],
-        "adapter": "Validate provenance, byte range and scalar text; copy buffers; decode UTF-8 fatally.",
-        "task": "I13"
-      },
-      "assertion": "real",
-      "refs": [
-        "A2"
-      ]
-    },
-    {
-      "name": "bytes::to_utf8",
-      "identity": "can.std.bytes@1::to_utf8",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "buffer",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "TextDecoder"
-        ],
-        "adapter": "Validate provenance, byte range and scalar text; copy buffers; decode UTF-8 fatally.",
-        "task": "I13"
-      },
-      "assertion": "real",
-      "refs": [
-        "A2"
-      ]
-    },
-    {
-      "name": "bytes::encode_base64",
-      "identity": "can.std.bytes@1::encode_base64",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "buffer",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Buffer"
-        ],
-        "adapter": "Encode standard base64 with padding; execute in ordinary assertions.",
-        "task": "B1-13"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-13"
-      ]
-    },
-    {
-      "name": "bytes::decode_base64",
-      "identity": "can.std.bytes@1::decode_base64",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "text",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Buffer"
-        ],
-        "adapter": "Decode standard base64 only after strict alphabet/padding gates; malformed text rejects, never truncates; execute in ordinary assertions.",
-        "task": "B1-13"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-13"
-      ]
-    },
-    {
-      "name": "bytes::encode_hex",
-      "identity": "can.std.bytes@1::encode_hex",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "buffer",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Buffer"
-        ],
-        "adapter": "Encode lowercase hex; execute in ordinary assertions.",
-        "task": "B1-13"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-13"
-      ]
-    },
-    {
-      "name": "bytes::decode_hex",
-      "identity": "can.std.bytes@1::decode_hex",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "text",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Buffer"
-        ],
-        "adapter": "Decode hex only after strict even-length alphabet gates; malformed text rejects, never truncates; execute in ordinary assertions.",
-        "task": "B1-13"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-13"
-      ]
-    },
-    {
-      "name": "codec::encode_json",
-      "identity": "can.std.codec@1::encode_json",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "wire"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "T"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "JSON.parse",
-          "JSON.rawJSON",
-          "JSON.stringify",
-          "TextEncoder",
-          "TextDecoder"
-        ],
-        "adapter": "Derive nominal schema; preserve numeric tokens; guard duplicates, scalar text, cycles and A6 budgets.",
-        "task": "I14"
-      },
-      "assertion": "real",
-      "refs": [
-        "A2",
-        "A6"
-      ]
-    },
-    {
-      "name": "codec::decode_json",
-      "identity": "can.std.codec@1::decode_json",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "wire"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "buffer",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "T",
-      "callbacks": [],
-      "emits": [
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "JSON.parse",
-          "JSON.rawJSON",
-          "JSON.stringify",
-          "TextEncoder",
-          "TextDecoder"
-        ],
-        "adapter": "Derive nominal schema; preserve numeric tokens; guard duplicates, scalar text, cycles and A6 budgets.",
-        "task": "I14"
-      },
-      "assertion": "real",
-      "refs": [
-        "A2",
-        "A6"
-      ]
-    },
-    {
-      "name": "array.length",
-      "identity": "can.intrinsic.array@1::length",
-      "kind": "property",
-      "receiver": "T[]",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Array.prototype.length",
-          "BigInt"
-        ],
-        "adapter": "Exact native length widened to bigint; validate opaque bytes before access.",
-        "task": "I07"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6",
-        "A2"
-      ]
-    },
-    {
-      "name": "str.length",
-      "identity": "can.intrinsic.str@1::length",
-      "kind": "property",
-      "receiver": "str",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String.prototype.length",
-          "BigInt"
-        ],
-        "adapter": "Exact native length widened to bigint; validate opaque bytes before access.",
-        "task": "I07"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6",
-        "A2"
-      ]
-    },
-    {
-      "name": "bytes.length",
-      "identity": "can.intrinsic.bytes@1::length",
-      "kind": "property",
-      "receiver": "bytes::buffer",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Uint8Array.prototype.byteLength",
-          "BigInt"
-        ],
-        "adapter": "Exact native length widened to bigint; validate opaque bytes before access.",
-        "task": "I13"
-      },
-      "assertion": "real",
-      "refs": [
-        "C6",
-        "A2"
-      ]
-    },
-    {
-      "name": "io::stdin_bytes",
-      "identity": "can.std.io@1::stdin_bytes",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "max_bytes",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [
-        "io::limit_exceeded",
-        "io::read_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.stdin"
-        ],
-        "adapter": "Reject negative limits before input; count incrementally as bigint, cancel on overflow, preserve immutable bytes and fatal BOM-preserving UTF-8. Map only expected native I/O errors.",
-        "task": "I29"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P8"
-      ]
-    },
-    {
-      "name": "io::stdin_text",
-      "identity": "can.std.io@1::stdin_text",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "max_bytes",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [
-        "io::limit_exceeded",
-        "io::read_failed",
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.stdin",
-          "TextDecoder"
-        ],
-        "adapter": "Reject negative limits before input; count incrementally as bigint, cancel on overflow, preserve immutable bytes and fatal BOM-preserving UTF-8. Map only expected native I/O errors.",
-        "task": "I29"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P8"
-      ]
-    },
-    {
-      "name": "io::stdout_write",
-      "identity": "can.std.io@1::stdout_write",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "buffer",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [
-        "io::write_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.write",
-          "Bun.stdout"
-        ],
-        "adapter": "Await write and return exact byte count.",
-        "task": "I29"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P8"
-      ]
-    },
-    {
-      "name": "io::stderr_write",
-      "identity": "can.std.io@1::stderr_write",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "buffer",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [
-        "io::write_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.write",
-          "Bun.stderr"
-        ],
-        "adapter": "Await write and return exact byte count.",
-        "task": "I29"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P8"
-      ]
-    },
-    {
-      "name": "clock::wall_millis",
-      "identity": "can.std.clock@1::wall_millis",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Date.now",
-          "BigInt"
-        ],
-        "adapter": "Return native epoch milliseconds exactly as bigint; supplied assertion boundary.",
-        "task": "I30"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P8"
-      ]
-    },
-    {
-      "name": "clock::monotonic_millis",
-      "identity": "can.std.clock@1::monotonic_millis",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "float",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "performance.now"
-        ],
-        "adapter": "Return native monotonic milliseconds as float; supplied assertion boundary.",
-        "task": "I30"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P8"
-      ]
-    },
-    {
-      "name": "clock::sleep_millis",
-      "identity": "can.std.clock@1::sleep_millis",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "milliseconds",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "clock::invalid_duration"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.sleep"
-        ],
-        "adapter": "Validate bigint milliseconds in 0--2147483647 before Number conversion and await Bun.sleep; supplied assertion boundary.",
-        "task": "I30"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P8"
-      ]
-    },
-    {
-      "name": "random::secure_bytes",
-      "identity": "can.std.random@1::secure_bytes",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "length",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [
-        "random::invalid_length"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "crypto.getRandomValues",
-          "Uint8Array"
-        ],
-        "adapter": "Validate bigint length in 0--65536 before allocation; fill a fresh native array and preserve immutable byte ownership; supplied assertion boundary.",
-        "task": "I30"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P8"
-      ]
-    },
-    {
-      "name": "random::uuid_v4",
-      "identity": "can.std.random@1::uuid_v4",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "crypto.randomUUID"
-        ],
-        "adapter": "Return native crypto.randomUUID; supplied assertion boundary.",
-        "task": "I30"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P8"
-      ]
-    },
-    {
-      "name": "password::hash",
-      "identity": "can.std.password@1::hash",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "password",
-          "type": "str"
-        },
-        {
-          "name": "profile",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [
-        "password::cost_rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.password"
-        ],
-        "adapter": "Hash with async Bun.password (argon2id) under fixed preset 0..2 (fast 8MiB/1 pass, balanced 64MiB/2 passes, secure 256MiB/3 passes); other profiles reject; supplied assertion boundary.",
-        "task": "B1-08"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-08"
-      ]
-    },
-    {
-      "name": "password::verify",
-      "identity": "can.std.password@1::verify",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "password",
-          "type": "str"
-        },
-        {
-          "name": "encoded",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bool",
-      "callbacks": [],
-      "emits": [
-        "password::invalid_hash"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.password"
-        ],
-        "adapter": "Gate the qualified argon2id envelope (version 19, memory 8 KiB..1 GiB, time 1..32, parallelism 1..4, 32-byte salt and hash) before native verify; malformed hashes reject while wrong passwords read false; execute in ordinary assertions.",
-        "task": "B1-08"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-08"
-      ]
-    },
-    {
-      "name": "crypto::sha256",
-      "identity": "can.std.crypto@1::sha256",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "buffer",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.CryptoHasher"
-        ],
-        "adapter": "Hash copied immutable bytes with a fresh Bun.CryptoHasher and return owned digest bytes; execute in ordinary assertions.",
-        "task": "I30"
-      },
-      "assertion": "real",
-      "refs": [
-        "P8"
-      ]
-    },
-    {
-      "name": "crypto::hmac_sha256",
-      "identity": "can.std.crypto@1::hmac_sha256",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "key",
-          "type": "bytes::buffer"
-        },
-        {
-          "name": "message",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [
-        "crypto::invalid_key"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "crypto.subtle"
-        ],
-        "adapter": "Import the raw HMAC/SHA-256 key per call and sign; empty keys reject; execute in ordinary assertions.",
-        "task": "B1-08"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-08"
-      ]
-    },
-    {
-      "name": "crypto::generate_aes_key",
-      "identity": "can.std.crypto@1::generate_aes_key",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "crypto::key",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "crypto.subtle"
-        ],
-        "adapter": "Generate a native-nonextractable AES-256-GCM encrypt/decrypt handle; supplied assertion boundary.",
-        "task": "B1-08"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-08"
-      ]
-    },
-    {
-      "name": "crypto::generate_ed25519_keypair",
-      "identity": "can.std.crypto@1::generate_ed25519_keypair",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "crypto::keypair",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "crypto.subtle"
-        ],
-        "adapter": "Generate sign-only private plus verify-only public handles; supplied assertion boundary.",
-        "task": "B1-08"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-08"
-      ]
-    },
-    {
-      "name": "crypto::import_ed25519_public",
-      "identity": "can.std.crypto@1::import_ed25519_public",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "public",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "crypto::key",
-      "callbacks": [],
-      "emits": [
-        "crypto::invalid_key"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "crypto.subtle"
-        ],
-        "adapter": "Admit 32-byte verify-only Ed25519 public keys; other lengths reject; execute in ordinary assertions.",
-        "task": "B1-08"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-08"
-      ]
-    },
-    {
-      "name": "crypto::export_ed25519_public",
-      "identity": "can.std.crypto@1::export_ed25519_public",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "key",
-          "type": "crypto::key"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [
-        "crypto::key_misuse"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "crypto.subtle"
-        ],
-        "adapter": "Export raw bytes only from verify-only Ed25519 handles; sign-capable and AES handles misuse; execute in ordinary assertions.",
-        "task": "B1-08"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-08"
-      ]
-    },
-    {
-      "name": "crypto::encrypt_aes_gcm",
-      "identity": "can.std.crypto@1::encrypt_aes_gcm",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "key",
-          "type": "crypto::key"
-        },
-        {
-          "name": "nonce",
-          "type": "bytes::buffer"
-        },
-        {
-          "name": "plaintext",
-          "type": "bytes::buffer"
-        },
-        {
-          "name": "associated_data",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [
-        "crypto::invalid_nonce",
-        "crypto::key_misuse"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "crypto.subtle"
-        ],
-        "adapter": "Encrypt with a fixed 12-byte nonce and 128-bit tag through usage-checked handles; execute in ordinary assertions.",
-        "task": "B1-08"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-08"
-      ]
-    },
-    {
-      "name": "crypto::encrypt_aes_gcm_sealed",
-      "identity": "can.std.crypto@1::encrypt_aes_gcm_sealed",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "key",
-          "type": "crypto::key"
-        },
-        {
-          "name": "plaintext",
-          "type": "bytes::buffer"
-        },
-        {
-          "name": "associated_data",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "crypto::sealed",
-      "callbacks": [],
-      "emits": [
-        "crypto::key_misuse"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "crypto.subtle"
-        ],
-        "adapter": "Mint a native-random 12-byte nonce and return it with the ciphertext; generation is randomness, not a guarantee of caller nonce discipline; supplied assertion boundary.",
-        "task": "B1-08"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-08"
-      ]
-    },
-    {
-      "name": "crypto::decrypt_aes_gcm",
-      "identity": "can.std.crypto@1::decrypt_aes_gcm",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "key",
-          "type": "crypto::key"
-        },
-        {
-          "name": "nonce",
-          "type": "bytes::buffer"
-        },
-        {
-          "name": "ciphertext",
-          "type": "bytes::buffer"
-        },
-        {
-          "name": "associated_data",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [
-        "crypto::invalid_nonce",
-        "crypto::key_misuse",
-        "crypto::decrypt_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "crypto.subtle"
-        ],
-        "adapter": "Decrypt with a fixed 12-byte nonce and 128-bit tag; tampering, wrong keys, and associated-data mismatch collapse to decrypt_failed; execute in ordinary assertions.",
-        "task": "B1-08"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-08"
-      ]
-    },
-    {
-      "name": "crypto::sign_ed25519",
-      "identity": "can.std.crypto@1::sign_ed25519",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "key",
-          "type": "crypto::key"
-        },
-        {
-          "name": "message",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [
-        "crypto::key_misuse"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "crypto.subtle"
-        ],
-        "adapter": "Sign through sign-capable handles; deterministic 64-byte signatures; execute in ordinary assertions.",
-        "task": "B1-08"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-08"
-      ]
-    },
-    {
-      "name": "crypto::verify_ed25519",
-      "identity": "can.std.crypto@1::verify_ed25519",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "key",
-          "type": "crypto::key"
-        },
-        {
-          "name": "message",
-          "type": "bytes::buffer"
-        },
-        {
-          "name": "signature",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bool",
-      "callbacks": [],
-      "emits": [
-        "crypto::key_misuse"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "crypto.subtle"
-        ],
-        "adapter": "Verify through verify-capable handles; mismatch reads false; execute in ordinary assertions.",
-        "task": "B1-08"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-08"
-      ]
-    },
-    {
-      "name": "env::required",
-      "identity": "can.std.env@1::required",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "name",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [
-        "env::invalid_name",
-        "http::credentials_missing"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.env"
-        ],
-        "adapter": "Validate uppercase environment names before exact caller-snapshot lookup. Absence is distinct from a present empty string; assertion execution requires supplied completions.",
-        "task": "I29"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P8"
-      ]
-    },
-    {
-      "name": "env::optional",
-      "identity": "can.std.env@1::optional",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "name",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "option::value<str>",
-      "callbacks": [],
-      "emits": [
-        "env::invalid_name"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.env"
-        ],
-        "adapter": "Validate uppercase environment names before exact caller-snapshot lookup. Absence is distinct from a present empty string; assertion execution requires supplied completions.",
-        "task": "I29"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P8"
-      ]
-    },
-    {
-      "name": "log::write_info",
-      "identity": "can.std.log@1::write_info",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "message",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "log::write_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "JSON.stringify",
-          "Bun.write"
-        ],
-        "adapter": "Serialize exactly level/info and message string fields with native JSON.stringify, append newline, await stderr; map serialization and expected I/O failures to a level-only payload; supplied assertion boundary.",
-        "task": "I30"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P8"
-      ]
-    },
-    {
-      "name": "log::write_error",
-      "identity": "can.std.log@1::write_error",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "message",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "log::write_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "JSON.stringify",
-          "Bun.write"
-        ],
-        "adapter": "Serialize exactly level/error and message string fields with native JSON.stringify, append newline, await stderr; map serialization and expected I/O failures to a level-only payload; supplied assertion boundary.",
-        "task": "I30"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P8"
-      ]
-    },
-    {
-      "name": "form::named_collection",
-      "identity": "can.std.form@1::named_collection",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "Wire",
-          "constraint": "form"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "name",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [
-        "name"
-      ],
-      "result": "form::collection",
-      "callbacks": [],
-      "emits": [
-        "form::unknown_field"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String match"
-        ],
-        "adapter": "Check the static name against the wire record's keyed-row collections and mint the collection token.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "form::named_field",
-      "identity": "can.std.form@1::named_field",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "Row",
-          "constraint": "form"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "name",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [
-        "name"
-      ],
-      "result": "form::field",
-      "callbacks": [],
-      "emits": [
-        "form::unknown_field"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String match"
-        ],
-        "adapter": "Check the static name against the row record's scalar fields and mint the field token.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "form::row_key",
-      "identity": "can.std.form@1::row_key",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "name",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "form::row",
-      "callbacks": [],
-      "emits": [
-        "form::invalid_name"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String match"
-        ],
-        "adapter": "Validate a dynamic row key against the keyed-row grammar and mint the row token.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "form::order_name",
-      "identity": "can.std.form@1::order_name",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "collection",
-          "type": "form::collection"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String concat"
-        ],
-        "adapter": "Render the collection's exact order field name.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "form::input_name",
-      "identity": "can.std.form@1::input_name",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "collection",
-          "type": "form::collection"
-        },
-        {
-          "name": "row",
-          "type": "form::row"
-        },
-        {
-          "name": "field",
-          "type": "form::field"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String concat"
-        ],
-        "adapter": "Render one keyed-row input name from checked tokens.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "form::field_name",
-      "identity": "can.std.form@1::field_name",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "field",
-          "type": "form::field"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String identity"
-        ],
-        "adapter": "Render one checked scalar field name.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "html::make_tag",
-      "identity": "can.std.html@1::make_tag",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "name",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::tag",
-      "callbacks": [],
-      "emits": [
-        "html::invalid_structure"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Set.prototype.has"
-        ],
-        "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P6",
-        "P9"
-      ]
-    },
-    {
-      "name": "html::text",
-      "identity": "can.std.html@1::text",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::node",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.escapeHTML"
-        ],
-        "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P6",
-        "P9"
-      ]
-    },
-    {
-      "name": "html::parse_url",
-      "identity": "can.std.html@1::parse_url",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::url",
-      "callbacks": [],
-      "emits": [
-        "html::invalid_url"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URL"
-        ],
-        "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P6",
-        "P9"
-      ]
-    },
-    {
-      "name": "html::text_attribute",
-      "identity": "can.std.html@1::text_attribute",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "name",
-          "type": "str"
-        },
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::attribute",
-      "callbacks": [],
-      "emits": [
-        "html::invalid_structure"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.escapeHTML"
-        ],
-        "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P6",
-        "P9"
-      ]
-    },
-    {
-      "name": "html::email_href",
-      "identity": "can.std.html@1::email_href",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "address",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::attribute",
-      "callbacks": [],
-      "emits": [
-        "html::invalid_url"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.escapeHTML"
-        ],
-        "adapter": "Validate one simple ASCII mailbox and construct an opaque anchor-only mailto href attribute.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P6",
-        "P9"
-      ]
-    },
-    {
-      "name": "html::url_attribute",
-      "identity": "can.std.html@1::url_attribute",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "name",
-          "type": "str"
-        },
-        {
-          "name": "url",
-          "type": "html::url"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::attribute",
-      "callbacks": [],
-      "emits": [
-        "html::invalid_structure"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.escapeHTML"
-        ],
-        "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P6",
-        "P9"
-      ]
-    },
-    {
-      "name": "html::element",
-      "identity": "can.std.html@1::element",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "tag",
-          "type": "html::tag"
-        },
-        {
-          "name": "attributes",
-          "type": "html::attribute[]"
-        },
-        {
-          "name": "children",
-          "type": "html::node[]"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::node",
-      "callbacks": [],
-      "emits": [
-        "html::invalid_structure"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Array.prototype.join",
-          "Bun.escapeHTML"
-        ],
-        "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P6",
-        "P9"
-      ]
-    },
-    {
-      "name": "html::fragment",
-      "identity": "can.std.html@1::fragment",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "nodes",
-          "type": "html::node[]"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::safe",
-      "callbacks": [],
-      "emits": [
-        "html::invalid_structure"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Array.prototype.join"
-        ],
-        "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P6",
-        "P9"
-      ]
-    },
-    {
-      "name": "html::text_fragment",
-      "identity": "can.std.html@1::text_fragment",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::safe",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.escapeHTML"
-        ],
-        "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P6",
-        "P9"
-      ]
-    },
-    {
-      "name": "html::stylesheet",
-      "identity": "can.std.html@1::stylesheet",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "url",
-          "type": "html::url"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::node",
-      "callbacks": [],
-      "emits": [
-        "html::invalid_url"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.escapeHTML"
-        ],
-        "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P6",
-        "P9"
-      ]
-    },
-    {
-      "name": "html::meta_viewport",
-      "identity": "can.std.html@1::meta_viewport",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "html::node",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "string literal"
-        ],
-        "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P6",
-        "P9"
-      ]
-    },
-    {
-      "name": "html::document",
-      "identity": "can.std.html@1::document",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "title",
-          "type": "str"
-        },
-        {
-          "name": "head",
-          "type": "html::node[]"
-        },
-        {
-          "name": "body",
-          "type": "html::node[]"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::safe",
-      "callbacks": [],
-      "emits": [
-        "html::invalid_structure"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.escapeHTML",
-          "Array.prototype.join"
-        ],
-        "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P6",
-        "P9"
-      ]
-    },
-    {
-      "name": "htmx::get",
-      "identity": "can.std.htmx@1::get",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "url",
-          "type": "html::url"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::attribute",
-      "callbacks": [],
-      "emits": [
-        "html::invalid_url"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.escapeHTML"
-        ],
-        "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P6",
-        "P9"
-      ]
-    },
-    {
-      "name": "htmx::post",
-      "identity": "can.std.htmx@1::post",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "url",
-          "type": "html::url"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::attribute",
-      "callbacks": [],
-      "emits": [
-        "html::invalid_url"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.escapeHTML"
-        ],
-        "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P6",
-        "P9"
-      ]
-    },
-    {
-      "name": "htmx::target_id",
-      "identity": "can.std.htmx@1::target_id",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "id",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "htmx::target",
-      "callbacks": [],
-      "emits": [
-        "htmx::invalid_target"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String.prototype.match"
-        ],
-        "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P6",
-        "P9"
-      ]
-    },
-    {
-      "name": "htmx::target_attribute",
-      "identity": "can.std.htmx@1::target_attribute",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "target",
-          "type": "htmx::target"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::attribute",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.escapeHTML"
-        ],
-        "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P6",
-        "P9"
-      ]
-    },
-    {
-      "name": "htmx::indicator_id",
-      "identity": "can.std.htmx@1::indicator_id",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "id",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::attribute",
-      "callbacks": [],
-      "emits": [
-        "htmx::invalid_target"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.escapeHTML"
-        ],
-        "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P6",
-        "P9"
-      ]
-    },
-    {
-      "name": "htmx::swap_inner",
-      "identity": "can.std.htmx@1::swap_inner",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "html::attribute",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "string literal"
-        ],
-        "adapter": "Construct only the fixed P9 HTMX attribute.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P9"
-      ]
-    },
-    {
-      "name": "htmx::swap_outer",
-      "identity": "can.std.htmx@1::swap_outer",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "html::attribute",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "string literal"
-        ],
-        "adapter": "Construct only the fixed P9 HTMX attribute.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P9"
-      ]
-    },
-    {
-      "name": "htmx::trigger_change",
-      "identity": "can.std.htmx@1::trigger_change",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "html::attribute",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "string literal"
-        ],
-        "adapter": "Construct only the fixed P9 HTMX attribute.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P9"
-      ]
-    },
-    {
-      "name": "htmx::disable_this",
-      "identity": "can.std.htmx@1::disable_this",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "html::attribute",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "string literal"
-        ],
-        "adapter": "Construct only the fixed P9 HTMX attribute.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P9"
-      ]
-    },
-    {
-      "name": "htmx::trigger_input_changed",
-      "identity": "can.std.htmx@1::trigger_input_changed",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "delay_ms",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::attribute",
-      "callbacks": [],
-      "emits": [
-        "htmx::invalid_interval"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String"
-        ],
-        "adapter": "Validate P9 interval bounds and construct the fixed trigger.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P9"
-      ]
-    },
-    {
-      "name": "htmx::trigger_every",
-      "identity": "can.std.htmx@1::trigger_every",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "interval_ms",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::attribute",
-      "callbacks": [],
-      "emits": [
-        "htmx::invalid_interval"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "String"
-        ],
-        "adapter": "Validate P9 interval bounds and construct the fixed trigger.",
-        "task": "I31"
-      },
-      "assertion": "real",
-      "refs": [
-        "P9"
-      ]
-    },
-    {
-      "name": "htmx::runtime_head",
-      "identity": "can.std.htmx@1::runtime_head",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "html::node",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "string literal"
-        ],
-        "adapter": "Emit only the pinned P11 local HTMX script and fixed response/config policy.",
-        "task": "I34"
-      },
-      "assertion": "real",
-      "refs": [
-        "P9",
-        "P11"
-      ]
-    },
-    {
-      "name": "asset::url",
-      "identity": "can.std.asset@1::url",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "name",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [
-        "name"
-      ],
-      "result": "html::url",
-      "callbacks": [],
-      "emits": [
-        "html::invalid_url"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URL"
-        ],
-        "adapter": "Resolve a static declared asset to its validated build-manifest URL.",
-        "task": "I34"
-      },
-      "assertion": "real",
-      "refs": [
-        "P11"
-      ]
-    },
-    {
-      "name": "http::request_method",
-      "identity": "can.std.http@1::request_method",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "request",
-          "type": "http::request"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Request",
-          "URL",
-          "Headers"
-        ],
-        "adapter": "Read the immutable request snapshot and expose copied Can data.",
-        "task": "I32"
-      },
-      "assertion": "scoped",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::request_path",
-      "identity": "can.std.http@1::request_path",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "request",
-          "type": "http::request"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Request",
-          "URL",
-          "Headers"
-        ],
-        "adapter": "Read the immutable request snapshot and expose copied Can data.",
-        "task": "I32"
-      },
-      "assertion": "scoped",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::peer_address",
-      "identity": "can.std.http@1::peer_address",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "request",
-          "type": "http::request"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [
-        "http::invalid_request"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.Server.requestIP",
-          "Request"
-        ],
-        "adapter": "Return only Bun's connected socket address; missing peers fail closed and forwarding headers are ignored.",
-        "task": "I32"
-      },
-      "assertion": "scoped",
-      "refs": [
-        "P05"
-      ]
-    },
-    {
-      "name": "http::request_headers",
-      "identity": "can.std.http@1::request_headers",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "request",
-          "type": "http::request"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::header[]",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Request",
-          "URL",
-          "Headers"
-        ],
-        "adapter": "Read the immutable request snapshot and expose copied Can data.",
-        "task": "I32"
-      },
-      "assertion": "scoped",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::query_one",
-      "identity": "can.std.http@1::query_one",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "request",
-          "type": "http::request"
-        },
-        {
-          "name": "name",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [
-        "http::invalid_request"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URLSearchParams"
-        ],
-        "adapter": "Check missing/repeated single query values; preserve repeated order.",
-        "task": "I32"
-      },
-      "assertion": "scoped",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::query_all",
-      "identity": "can.std.http@1::query_all",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "request",
-          "type": "http::request"
-        },
-        {
-          "name": "name",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str[]",
-      "callbacks": [],
-      "emits": [
-        "http::invalid_request"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URLSearchParams"
-        ],
-        "adapter": "Check missing/repeated single query values; preserve repeated order.",
-        "task": "I32"
-      },
-      "assertion": "scoped",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::request_body",
-      "identity": "can.std.http@1::request_body",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "request",
-          "type": "http::request"
-        },
-        {
-          "name": "max_bytes",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [
-        "http::body_limit"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Request",
-          "URLSearchParams",
-          "JSON.parse",
-          "TextDecoder"
-        ],
-        "adapter": "Read cached bounded bytes; apply the declared media/percent/UTF-8/typed codec policy.",
-        "task": "I32"
-      },
-      "assertion": "scoped",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::request_json",
-      "identity": "can.std.http@1::request_json",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "wire"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "request",
-          "type": "http::request"
-        },
-        {
-          "name": "max_bytes",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "T",
-      "callbacks": [],
-      "emits": [
-        "http::body_limit",
-        "http::invalid_request",
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Request",
-          "URLSearchParams",
-          "JSON.parse",
-          "TextDecoder"
-        ],
-        "adapter": "Read cached bounded bytes; apply the declared media/percent/UTF-8/typed codec policy.",
-        "task": "I32"
-      },
-      "assertion": "scoped",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::request_form",
-      "identity": "can.std.http@1::request_form",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "form"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "request",
-          "type": "http::request"
-        },
-        {
-          "name": "max_bytes",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "T",
-      "callbacks": [],
-      "emits": [
-        "http::body_limit",
-        "http::invalid_request",
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Request",
-          "URLSearchParams",
-          "JSON.parse",
-          "TextDecoder"
-        ],
-        "adapter": "Read cached bounded bytes; apply the declared media/percent/UTF-8/typed codec policy.",
-        "task": "I32"
-      },
-      "assertion": "scoped",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::request_multipart",
-      "identity": "can.std.http@1::request_multipart",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "request",
-          "type": "http::request"
-        },
-        {
-          "name": "max_bytes",
-          "type": "int"
-        },
-        {
-          "name": "max_file_bytes",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::multipart_form",
-      "callbacks": [],
-      "emits": [
-        "http::body_limit",
-        "http::invalid_request",
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "TextDecoder"
-        ],
-        "adapter": "Parse bounded flat multipart into generic field/file records.",
-        "task": "B1-06"
-      },
-      "assertion": "scoped",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::make_status",
-      "identity": "can.std.http@1::make_status",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "status",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::status",
-      "callbacks": [],
-      "emits": [
-        "http::invalid_request"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Number"
-        ],
-        "adapter": "Admit 200\u2013599; body status additionally excludes 204, 205 and 304.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::make_body_status",
-      "identity": "can.std.http@1::make_body_status",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "status",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::body_status",
-      "callbacks": [],
-      "emits": [
-        "http::invalid_request"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Number"
-        ],
-        "adapter": "Admit 200\u2013599; body status additionally excludes 204, 205 and 304.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::status_ok",
-      "identity": "can.std.http@1::status_ok",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "http::body_status",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Number"
-        ],
-        "adapter": "Construct the corresponding fixed validated status.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::status_unprocessable",
-      "identity": "can.std.http@1::status_unprocessable",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "http::body_status",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Number"
-        ],
-        "adapter": "Construct the corresponding fixed validated status.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::status_internal",
-      "identity": "can.std.http@1::status_internal",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "http::body_status",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Number"
-        ],
-        "adapter": "Construct the corresponding fixed validated status.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::status_unavailable",
-      "identity": "can.std.http@1::status_unavailable",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "http::body_status",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Number"
-        ],
-        "adapter": "Construct the corresponding fixed validated status.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::make_server_headers",
-      "identity": "can.std.http@1::make_server_headers",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "headers",
-          "type": "http::header[]"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::server_headers",
-      "callbacks": [],
-      "emits": [
-        "http::invalid_request"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Headers"
-        ],
-        "adapter": "Validate names/values and reject forbidden content/hop-by-hop fields.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::empty_server_headers",
-      "identity": "can.std.http@1::empty_server_headers",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "http::server_headers",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Headers"
-        ],
-        "adapter": "Create the empty immutable header set.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::response_empty",
-      "identity": "can.std.http@1::response_empty",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "status",
-          "type": "http::status"
-        },
-        {
-          "name": "headers",
-          "type": "http::server_headers"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::server_response",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Response",
-          "Headers",
-          "TextEncoder"
-        ],
-        "adapter": "Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::response_bytes",
-      "identity": "can.std.http@1::response_bytes",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "status",
-          "type": "http::body_status"
-        },
-        {
-          "name": "headers",
-          "type": "http::server_headers"
-        },
-        {
-          "name": "body",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::server_response",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Response",
-          "Headers",
-          "TextEncoder"
-        ],
-        "adapter": "Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::response_json_bytes",
-      "identity": "can.std.http@1::response_json_bytes",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "status",
-          "type": "http::body_status"
-        },
-        {
-          "name": "headers",
-          "type": "http::server_headers"
-        },
-        {
-          "name": "body",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::server_response",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Response",
-          "Headers",
-          "TextEncoder"
-        ],
-        "adapter": "Serve pre-encoded JSON bytes without parsing or re-encoding; fixed application/json; charset=utf-8, nosniff and immutable body snapshot.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::response_text",
-      "identity": "can.std.http@1::response_text",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "status",
-          "type": "http::body_status"
-        },
-        {
-          "name": "headers",
-          "type": "http::server_headers"
-        },
-        {
-          "name": "body",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::server_response",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Response",
-          "Headers",
-          "TextEncoder"
-        ],
-        "adapter": "Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::response_html",
-      "identity": "can.std.http@1::response_html",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "status",
-          "type": "http::body_status"
-        },
-        {
-          "name": "headers",
-          "type": "http::server_headers"
-        },
-        {
-          "name": "body",
-          "type": "html::safe"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::server_response",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Response",
-          "Headers",
-          "TextEncoder"
-        ],
-        "adapter": "Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::response_image",
-      "identity": "can.std.http@1::response_image",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "status",
-          "type": "http::body_status"
-        },
-        {
-          "name": "headers",
-          "type": "http::server_headers"
-        },
-        {
-          "name": "body",
-          "type": "bytes::buffer"
-        },
-        {
-          "name": "media_type",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::server_response",
-      "callbacks": [],
-      "emits": [
-        "http::invalid_request"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Response",
-          "Headers"
-        ],
-        "adapter": "Validated raster allowlist (image/png, image/jpeg, image/webp) with immutable byte snapshot and nosniff; any other media type emits http::invalid_request.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::response_json",
-      "identity": "can.std.http@1::response_json",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "wire"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "status",
-          "type": "http::body_status"
-        },
-        {
-          "name": "headers",
-          "type": "http::server_headers"
-        },
-        {
-          "name": "body",
-          "type": "T"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::server_response",
-      "callbacks": [],
-      "emits": [
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Response",
-          "Headers",
-          "JSON.stringify"
-        ],
-        "adapter": "Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::response_stream",
-      "identity": "can.std.http@1::response_stream",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "status",
-          "type": "http::body_status"
-        },
-        {
-          "name": "headers",
-          "type": "http::server_headers"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::server_response",
-      "callbacks": [],
-      "emits": [
-        "http::invalid_request"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "ReadableStream"
-        ],
-        "adapter": "Build a pending response whose bounded queue the vended writer fills.",
-        "task": "B1-06"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::response_writer",
-      "identity": "can.std.http@1::response_writer",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "response",
-          "type": "http::server_response"
-        }
-      ],
-      "staticInputs": [],
-      "result": "stream::writer",
-      "callbacks": [],
-      "emits": [
-        "http::invalid_request"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "ReadableStream"
-        ],
-        "adapter": "Vend the pending response writer exactly once for short-write production.",
-        "task": "B1-06"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::response_sse",
-      "identity": "can.std.http@1::response_sse",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "status",
-          "type": "http::body_status"
-        },
-        {
-          "name": "headers",
-          "type": "http::server_headers"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::server_response",
-      "callbacks": [],
-      "emits": [
-        "http::invalid_request"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "ReadableStream"
-        ],
-        "adapter": "Build a pending event-stream response for validated SSE production.",
-        "task": "B1-06"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::sse_send",
-      "identity": "can.std.http@1::sse_send",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "writer",
-          "type": "stream::writer"
-        },
-        {
-          "name": "event",
-          "type": "http::sse_event"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [
-        "http::invalid_request",
-        "http::body_limit",
-        "stream::write_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "ReadableStream",
-          "TextEncoder"
-        ],
-        "adapter": "Validate one event frame and append it atomically to the queue.",
-        "task": "B1-06"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::sse_comment",
-      "identity": "can.std.http@1::sse_comment",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "writer",
-          "type": "stream::writer"
-        },
-        {
-          "name": "text",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [
-        "http::invalid_request",
-        "http::body_limit",
-        "stream::write_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "ReadableStream",
-          "TextEncoder"
-        ],
-        "adapter": "Validate one comment line and append it atomically to the queue.",
-        "task": "B1-06"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::route_get",
-      "identity": "can.std.http@1::route_get",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [
-        "path"
-      ],
-      "result": "http::route",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "http::request"
-          ],
-          "result": "http::server_response",
-          "deriveErrors": false,
-          "emits": []
-        }
-      ],
-      "emits": [
-        "http::invalid_route"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URL"
-        ],
-        "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::route_post",
-      "identity": "can.std.http@1::route_post",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [
-        "path"
-      ],
-      "result": "http::route",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "http::request"
-          ],
-          "result": "http::server_response",
-          "deriveErrors": false,
-          "emits": []
-        }
-      ],
-      "emits": [
-        "http::invalid_route"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URL"
-        ],
-        "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::route_put",
-      "identity": "can.std.http@1::route_put",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [
-        "path"
-      ],
-      "result": "http::route",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "http::request"
-          ],
-          "result": "http::server_response",
-          "deriveErrors": false,
-          "emits": []
-        }
-      ],
-      "emits": [
-        "http::invalid_route"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URL"
-        ],
-        "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
-        "task": "B1-06"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::route_patch",
-      "identity": "can.std.http@1::route_patch",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [
-        "path"
-      ],
-      "result": "http::route",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "http::request"
-          ],
-          "result": "http::server_response",
-          "deriveErrors": false,
-          "emits": []
-        }
-      ],
-      "emits": [
-        "http::invalid_route"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URL"
-        ],
-        "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
-        "task": "B1-06"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::route_delete",
-      "identity": "can.std.http@1::route_delete",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [
-        "path"
-      ],
-      "result": "http::route",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "http::request"
-          ],
-          "result": "http::server_response",
-          "deriveErrors": false,
-          "emits": []
-        }
-      ],
-      "emits": [
-        "http::invalid_route"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URL"
-        ],
-        "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
-        "task": "B1-06"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::route_options",
-      "identity": "can.std.http@1::route_options",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [
-        "path"
-      ],
-      "result": "http::route",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "http::request"
-          ],
-          "result": "http::server_response",
-          "deriveErrors": false,
-          "emits": []
-        }
-      ],
-      "emits": [
-        "http::invalid_route"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URL"
-        ],
-        "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
-        "task": "B1-06"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::route_head",
-      "identity": "can.std.http@1::route_head",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [
-        "path"
-      ],
-      "result": "http::route",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "http::request"
-          ],
-          "result": "http::server_response",
-          "deriveErrors": false,
-          "emits": []
-        }
-      ],
-      "emits": [
-        "http::invalid_route"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URL"
-        ],
-        "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
-        "task": "B1-06"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::make_router",
-      "identity": "can.std.http@1::make_router",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "routes",
-          "type": "http::route[]"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::router",
-      "callbacks": [],
-      "emits": [
-        "http::duplicate_route",
-        "http::ambiguous_route"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Map"
-        ],
-        "adapter": "Closed exact dispatch with 404/405/Allow, no implicit HEAD.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::route_stream",
-      "identity": "can.std.http@1::route_stream",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "route",
-          "type": "http::route"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::route",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Map"
-        ],
-        "adapter": "Mark a route for lazy bodies consumed once through a stream reader.",
-        "task": "B1-06"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::serve_form_action",
-      "identity": "can.std.http@1::serve_form_action",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "Result",
-          "constraint": "data"
-        },
-        {
-          "name": "Wire",
-          "constraint": "form"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "action",
-          "type": "str"
-        },
-        {
-          "name": "outcome",
-          "type": "$outcome"
-        },
-        {
-          "name": "structural",
-          "type": "$structural"
-        }
-      ],
-      "staticInputs": [
-        "action"
-      ],
-      "result": "http::route",
-      "callbacks": [
-        {
-          "name": "outcome",
-          "inputs": [
-            "Result"
-          ],
-          "result": "html::safe",
-          "deriveErrors": false,
-          "emits": []
-        },
-        {
-          "name": "structural",
-          "inputs": [
-            "form::rejected<Wire>"
-          ],
-          "result": "html::safe",
-          "deriveErrors": false,
-          "emits": []
-        }
-      ],
-      "emits": [
-        "http::invalid_route"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Request",
-          "URLSearchParams",
-          "FormData",
-          "TextDecoder"
-        ],
-        "adapter": "Bind one form action's handler, outcome renderer and structural-422 renderer into a mounted route; decode the body through a single native parse and map result leaves to case statuses.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::fetch_json_get",
-      "identity": "can.std.http@1::fetch_json_get",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "Result",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "action",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [
-        "action"
-      ],
-      "result": "Result",
-      "callbacks": [],
-      "emits": [
-        "http::transport_failed",
-        "http::invalid_request",
-        "http::status_error",
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "fetch",
-          "Request",
-          "Response",
-          "TextDecoder"
-        ],
-        "adapter": "Resolve the static action name against the checked JSON table, build the canonical same-origin URL from the path captures, issue a bodyless GET through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound.",
-        "task": "T23"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::fetch_json_post",
-      "identity": "can.std.http@1::fetch_json_post",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "Result",
-          "constraint": "data"
-        },
-        {
-          "name": "Wire",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "action",
-          "type": "str"
-        },
-        {
-          "name": "body",
-          "type": "Wire"
-        }
-      ],
-      "staticInputs": [
-        "action"
-      ],
-      "result": "Result",
-      "callbacks": [],
-      "emits": [
-        "http::transport_failed",
-        "http::invalid_request",
-        "http::body_limit",
-        "http::status_error",
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "fetch",
-          "Request",
-          "Response",
-          "TextDecoder"
-        ],
-        "adapter": "Resolve the static action name against the checked JSON table, build the canonical same-origin URL from the path captures, encode the wire body under the shared exact codec within the wire limit, POST through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound.",
-        "task": "T23"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::request_body_stream",
-      "identity": "can.std.http@1::request_body_stream",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "request",
-          "type": "http::request"
-        },
-        {
-          "name": "max_chunk",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "stream::reader<bytes::buffer>",
-      "callbacks": [],
-      "emits": [
-        "http::body_limit",
-        "http::invalid_request"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "ReadableStream"
-        ],
-        "adapter": "Open the one-shot body reader: live wire bytes or replayed buffered bytes.",
-        "task": "B1-06"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::make_server_config",
-      "identity": "can.std.http@1::make_server_config",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "host",
-          "type": "str"
-        },
-        {
-          "name": "port",
-          "type": "int"
-        },
-        {
-          "name": "body_limit",
-          "type": "int"
-        },
-        {
-          "name": "shutdown_ms",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::server_config",
-      "callbacks": [],
-      "emits": [
-        "http::invalid_server_config"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Number"
-        ],
-        "adapter": "Validate bounded config before server start.",
-        "task": "I33"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::server_start",
-      "identity": "can.std.http@1::server_start",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "config",
-          "type": "http::server_config"
-        },
-        {
-          "name": "router",
-          "type": "http::router"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::server",
-      "callbacks": [],
-      "emits": [
-        "http::bind_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.serve"
-        ],
-        "adapter": "Register ownership; await each Can callback and sanitize standard failures.",
-        "task": "I33"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P6",
-        "P10"
-      ]
-    },
-    {
-      "name": "http::make_tls_config",
-      "identity": "can.std.http@1::make_tls_config",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "cert",
-          "type": "bytes::buffer"
-        },
-        {
-          "name": "key",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::tls_config",
-      "callbacks": [],
-      "emits": [
-        "http::invalid_server_config"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "TextDecoder"
-        ],
-        "adapter": "Validate PEM certificate chain and private key structure before server start.",
-        "task": "B1-06"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "http::server_start_tls",
-      "identity": "can.std.http@1::server_start_tls",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "config",
-          "type": "http::server_config"
-        },
-        {
-          "name": "router",
-          "type": "http::router"
-        },
-        {
-          "name": "tls",
-          "type": "http::tls_config"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::server",
-      "callbacks": [],
-      "emits": [
-        "http::bind_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.serve"
-        ],
-        "adapter": "Register ownership; serve TLS with the validated material and sanitize standard failures.",
-        "task": "B1-06"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P6",
-        "P10"
-      ]
-    },
-    {
-      "name": "http::server_wait",
-      "identity": "can.std.http@1::server_wait",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "server",
-          "type": "http::server"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "http::shutdown_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.Server.stop",
-          "process.on"
-        ],
-        "adapter": "Wait for graceful stop(false), native stop and leases; timeout does not revoke ownership.",
-        "task": "I33"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P6",
-        "P10"
-      ]
-    },
-    {
-      "name": "http::server_stop",
-      "identity": "can.std.http@1::server_stop",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "server",
-          "type": "http::server"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "http::shutdown_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.Server.stop",
-          "process.on"
-        ],
-        "adapter": "Wait for graceful stop(false), native stop and leases; timeout does not revoke ownership.",
-        "task": "I33"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P6",
-        "P10"
-      ]
-    },
-    {
-      "name": "sql::pool_open",
-      "identity": "can.std.sql@1::pool_open",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "connection_variable",
-          "type": "str"
-        },
-        {
-          "name": "max_connections",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "sql::pool",
-      "callbacks": [],
-      "emits": [
-        "http::credentials_missing",
-        "sql::connection_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.SQL"
-        ],
-        "adapter": "Read selected credential; open PostgreSQL with bigint:true and validated max.",
-        "task": "I35"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P12"
-      ]
-    },
-    {
-      "name": "sql::pool_close",
-      "identity": "can.std.sql@1::pool_close",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "pool",
-          "type": "sql::pool"
-        },
-        {
-          "name": "timeout_ms",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "sql::close_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.SQL.close"
-        ],
-        "adapter": "Drain leases then close with remaining deadline; leave timed-out close owned.",
-        "task": "I35"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P6",
-        "P12"
-      ]
-    },
-    {
-      "name": "sql::sqlite_open_memory",
-      "identity": "can.std.sql@1::sqlite_open_memory",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "sql::pool",
-      "callbacks": [],
-      "emits": [
-        "sql::connection_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.SQL"
-        ],
-        "adapter": "Open in-memory SQLite with safeIntegers:true; the database lives while the pool is open.",
-        "task": "B1-02"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-02"
-      ]
-    },
-    {
-      "name": "sql::sqlite_open_file",
-      "identity": "can.std.sql@1::sqlite_open_file",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "options",
-          "type": "sql::sqlite_file_options"
-        }
-      ],
-      "staticInputs": [],
-      "result": "sql::pool",
-      "callbacks": [],
-      "emits": [
-        "sql::connection_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.SQL"
-        ],
-        "adapter": "Open file SQLite with safeIntegers:true; mode is ro, rw or rwc and busy_timeout_ms bounds lock waits.",
-        "task": "B1-02"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-02"
-      ]
-    },
-    {
-      "name": "sql::mysql_open",
-      "identity": "can.std.sql@1::mysql_open",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "connection_variable",
-          "type": "str"
-        },
-        {
-          "name": "max_connections",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "sql::pool",
-      "callbacks": [],
-      "emits": [
-        "http::credentials_missing",
-        "sql::connection_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.SQL"
-        ],
-        "adapter": "Read selected credential; open MySQL with bigint:true, forced TLS, validated max, and a pinned UTC session.",
-        "task": "B1-03"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-03"
-      ]
-    },
-    {
-      "name": "sql::query_one",
-      "identity": "can.std.sql@1::query_one",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "P",
-          "constraint": "sql_parameters"
-        },
-        {
-          "name": "R",
-          "constraint": "sql_row"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "handle",
-          "type": "sql::pool"
-        },
-        {
-          "name": "descriptor",
-          "type": "str"
-        },
-        {
-          "name": "parameters",
-          "type": "P"
-        }
-      ],
-      "staticInputs": [
-        "descriptor"
-      ],
-      "result": "R",
-      "callbacks": [],
-      "emits": [
-        "sql::unsupported_value",
-        "sql::connection_failed",
-        "sql::query_failed",
-        "sql::constraint_failed",
-        "sql::row_missing",
-        "sql::row_count",
-        "sql::schema_mismatch"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.SQL tagged template"
-        ],
-        "adapter": "Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1.",
-        "task": "I35"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P12"
-      ]
-    },
-    {
-      "name": "sql::query_optional",
-      "identity": "can.std.sql@1::query_optional",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "P",
-          "constraint": "sql_parameters"
-        },
-        {
-          "name": "R",
-          "constraint": "sql_row"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "handle",
-          "type": "sql::pool"
-        },
-        {
-          "name": "descriptor",
-          "type": "str"
-        },
-        {
-          "name": "parameters",
-          "type": "P"
-        }
-      ],
-      "staticInputs": [
-        "descriptor"
-      ],
-      "result": "option::value<R>",
-      "callbacks": [],
-      "emits": [
-        "sql::unsupported_value",
-        "sql::connection_failed",
-        "sql::query_failed",
-        "sql::constraint_failed",
-        "sql::row_count",
-        "sql::schema_mismatch"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.SQL tagged template"
-        ],
-        "adapter": "Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1.",
-        "task": "I35"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P12"
-      ]
-    },
-    {
-      "name": "sql::query_rows",
-      "identity": "can.std.sql@1::query_rows",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "P",
-          "constraint": "sql_parameters"
-        },
-        {
-          "name": "R",
-          "constraint": "sql_row"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "handle",
-          "type": "sql::pool"
-        },
-        {
-          "name": "descriptor",
-          "type": "str"
-        },
-        {
-          "name": "parameters",
-          "type": "P"
-        },
-        {
-          "name": "max_rows",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [
-        "descriptor"
-      ],
-      "result": "R[]",
-      "callbacks": [],
-      "emits": [
-        "sql::unsupported_value",
-        "sql::connection_failed",
-        "sql::query_failed",
-        "sql::constraint_failed",
-        "sql::row_limit",
-        "sql::schema_mismatch"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.SQL tagged template"
-        ],
-        "adapter": "Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1.",
-        "task": "I35"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P12"
-      ]
-    },
-    {
-      "name": "sql::execute",
-      "identity": "can.std.sql@1::execute",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "P",
-          "constraint": "sql_parameters"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "handle",
-          "type": "sql::pool"
-        },
-        {
-          "name": "descriptor",
-          "type": "str"
-        },
-        {
-          "name": "parameters",
-          "type": "P"
-        }
-      ],
-      "staticInputs": [
-        "descriptor"
-      ],
-      "result": "int",
-      "callbacks": [],
-      "emits": [
-        "sql::unsupported_value",
-        "sql::connection_failed",
-        "sql::query_failed",
-        "sql::constraint_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.SQL tagged template"
-        ],
-        "adapter": "Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1.",
-        "task": "I35"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P12"
-      ]
-    },
-    {
-      "name": "sql::transaction_query_one",
-      "identity": "can.std.sql@1::transaction_query_one",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "P",
-          "constraint": "sql_parameters"
-        },
-        {
-          "name": "R",
-          "constraint": "sql_row"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "handle",
-          "type": "sql::transaction"
-        },
-        {
-          "name": "descriptor",
-          "type": "str"
-        },
-        {
-          "name": "parameters",
-          "type": "P"
-        }
-      ],
-      "staticInputs": [
-        "descriptor"
-      ],
-      "result": "R",
-      "callbacks": [],
-      "emits": [
-        "sql::unsupported_value",
-        "sql::query_failed",
-        "sql::constraint_failed",
-        "sql::row_missing",
-        "sql::row_count",
-        "sql::schema_mismatch"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.SQL tagged template"
-        ],
-        "adapter": "Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1.",
-        "task": "I35"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P12"
-      ]
-    },
-    {
-      "name": "sql::transaction_query_optional",
-      "identity": "can.std.sql@1::transaction_query_optional",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "P",
-          "constraint": "sql_parameters"
-        },
-        {
-          "name": "R",
-          "constraint": "sql_row"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "handle",
-          "type": "sql::transaction"
-        },
-        {
-          "name": "descriptor",
-          "type": "str"
-        },
-        {
-          "name": "parameters",
-          "type": "P"
-        }
-      ],
-      "staticInputs": [
-        "descriptor"
-      ],
-      "result": "option::value<R>",
-      "callbacks": [],
-      "emits": [
-        "sql::unsupported_value",
-        "sql::query_failed",
-        "sql::constraint_failed",
-        "sql::row_count",
-        "sql::schema_mismatch"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.SQL tagged template"
-        ],
-        "adapter": "Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1.",
-        "task": "I35"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P12"
-      ]
-    },
-    {
-      "name": "sql::transaction_query_rows",
-      "identity": "can.std.sql@1::transaction_query_rows",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "P",
-          "constraint": "sql_parameters"
-        },
-        {
-          "name": "R",
-          "constraint": "sql_row"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "handle",
-          "type": "sql::transaction"
-        },
-        {
-          "name": "descriptor",
-          "type": "str"
-        },
-        {
-          "name": "parameters",
-          "type": "P"
-        },
-        {
-          "name": "max_rows",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [
-        "descriptor"
-      ],
-      "result": "R[]",
-      "callbacks": [],
-      "emits": [
-        "sql::unsupported_value",
-        "sql::query_failed",
-        "sql::constraint_failed",
-        "sql::row_limit",
-        "sql::schema_mismatch"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.SQL tagged template"
-        ],
-        "adapter": "Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1.",
-        "task": "I35"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P12"
-      ]
-    },
-    {
-      "name": "sql::transaction_execute",
-      "identity": "can.std.sql@1::transaction_execute",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "P",
-          "constraint": "sql_parameters"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "handle",
-          "type": "sql::transaction"
-        },
-        {
-          "name": "descriptor",
-          "type": "str"
-        },
-        {
-          "name": "parameters",
-          "type": "P"
-        }
-      ],
-      "staticInputs": [
-        "descriptor"
-      ],
-      "result": "int",
-      "callbacks": [],
-      "emits": [
-        "sql::unsupported_value",
-        "sql::query_failed",
-        "sql::constraint_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.SQL tagged template"
-        ],
-        "adapter": "Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1.",
-        "task": "I35"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "P12"
-      ]
-    },
-    {
-      "name": "sql::with_transaction",
-      "identity": "can.std.sql@1::with_transaction",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "pool",
-          "type": "sql::pool"
-        },
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [],
-      "result": "T",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "sql::transaction"
-          ],
-          "result": "sql::decision<T>",
-          "deriveErrors": false,
-          "emits": []
-        }
-      ],
-      "emits": [
-        "sql::connection_failed",
-        "sql::transaction_failed",
-        "sql::commit_unknown"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.SQL.begin"
-        ],
-        "adapter": "Drain scoped leases; private rollback sentinel; retain commit uncertainty and original standard failures.",
-        "task": "I38"
-      },
-      "assertion": "scoped",
-      "refs": [
-        "P6",
-        "P12"
-      ]
-    },
-    {
-      "name": "checks::require",
-      "identity": "can.std.checks@1::require",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "condition",
-          "type": "bool"
-        },
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "checks::failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Boolean branch",
-          "domain.create"
-        ],
-        "adapter": "Evaluate condition then reason once each; false produces checks::failed with the exact authored reason. Record the call-site span and invocation path in private occurrence metadata.",
-        "task": "LF08"
-      },
-      "assertion": "real",
-      "refs": [
-        "C9.2"
-      ]
-    },
-    {
-      "name": "files::read_bytes",
-      "identity": "can.std.files@1::read_bytes",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "max_bytes",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [
-        "files::not_found",
-        "files::denied",
-        "files::invalid_path",
-        "files::unexpected_kind",
-        "files::limit_exceeded",
-        "files::io_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.file"
-        ],
-        "adapter": "Reject empty/NUL paths and negative limits before input; stream Bun.file chunks counting bigint bytes before retaining, copy each native view, cancel and release on overflow; map EISDIR to unexpected_kind; supplied assertion boundary.",
-        "task": "B1-01"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-01"
-      ]
-    },
-    {
-      "name": "files::read_text",
-      "identity": "can.std.files@1::read_text",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "max_bytes",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [
-        "files::not_found",
-        "files::denied",
-        "files::invalid_path",
-        "files::unexpected_kind",
-        "files::limit_exceeded",
-        "codec::invalid_data",
-        "files::io_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.file",
-          "TextDecoder"
-        ],
-        "adapter": "Bounded read_bytes then fatal UTF-8 decode; undecodable input is codec::invalid_data with the read path; supplied assertion boundary.",
-        "task": "B1-01"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-01"
-      ]
-    },
-    {
-      "name": "files::write_bytes",
-      "identity": "can.std.files@1::write_bytes",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "value",
-          "type": "bytes::buffer"
-        },
-        {
-          "name": "overwrite",
-          "type": "bool"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "files::not_found",
-        "files::already_exists",
-        "files::denied",
-        "files::invalid_path",
-        "files::io_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "node:fs/promises.writeFile"
-        ],
-        "adapter": "Copy Can bytes out; write with flag wx when overwrite is false so exclusive creation is atomic; never auto-create missing parents; supplied assertion boundary.",
-        "task": "B1-01"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-01"
-      ]
-    },
-    {
-      "name": "files::write_text",
-      "identity": "can.std.files@1::write_text",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "value",
-          "type": "str"
-        },
-        {
-          "name": "overwrite",
-          "type": "bool"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "files::not_found",
-        "files::already_exists",
-        "files::denied",
-        "files::invalid_path",
-        "files::io_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "TextEncoder",
-          "node:fs/promises.writeFile"
-        ],
-        "adapter": "Encode UTF-8 then the write_bytes contract; supplied assertion boundary.",
-        "task": "B1-01"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-01"
-      ]
-    },
-    {
-      "name": "files::stat",
-      "identity": "can.std.files@1::stat",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "follow_symlinks",
-          "type": "bool"
-        }
-      ],
-      "staticInputs": [],
-      "result": "files::file_info",
-      "callbacks": [],
-      "emits": [
-        "files::not_found",
-        "files::denied",
-        "files::invalid_path",
-        "files::io_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "node:fs/promises.stat",
-          "node:fs/promises.lstat"
-        ],
-        "adapter": "Use stat when following and lstat otherwise; project kind file/directory/symlink/other with exact bigint size; supplied assertion boundary.",
-        "task": "B1-01"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-01"
-      ]
-    },
-    {
-      "name": "files::exists",
-      "identity": "can.std.files@1::exists",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bool",
-      "callbacks": [],
-      "emits": [
-        "files::denied",
-        "files::invalid_path",
-        "files::io_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "node:fs/promises.lstat"
-        ],
-        "adapter": "Report true for any entry kind including dangling symlinks; only missing paths report false, never permission failures; supplied assertion boundary.",
-        "task": "B1-01"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-01"
-      ]
-    },
-    {
-      "name": "files::list",
-      "identity": "can.std.files@1::list",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "max_entries",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "files::entry[]",
-      "callbacks": [],
-      "emits": [
-        "files::not_found",
-        "files::denied",
-        "files::invalid_path",
-        "files::unexpected_kind",
-        "files::limit_exceeded",
-        "files::io_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "node:fs/promises.readdir",
-          "node:path.resolve",
-          "node:path.join"
-        ],
-        "adapter": "Read typed entries once, resolve each child to an absolute path, sort lexically, and reject over-limit directories instead of truncating; supplied assertion boundary.",
-        "task": "B1-01"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-01"
-      ]
-    },
-    {
-      "name": "files::mkdir",
-      "identity": "can.std.files@1::mkdir",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "recursive",
-          "type": "bool"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "files::not_found",
-        "files::already_exists",
-        "files::denied",
-        "files::invalid_path",
-        "files::io_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "node:fs/promises.mkdir"
-        ],
-        "adapter": "Create one directory or a recursive chain; an existing path fails only when recursive is false; supplied assertion boundary.",
-        "task": "B1-01"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-01"
-      ]
-    },
-    {
-      "name": "files::copy",
-      "identity": "can.std.files@1::copy",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "source",
-          "type": "str"
-        },
-        {
-          "name": "destination",
-          "type": "str"
-        },
-        {
-          "name": "overwrite",
-          "type": "bool"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "files::not_found",
-        "files::already_exists",
-        "files::denied",
-        "files::invalid_path",
-        "files::unexpected_kind",
-        "files::io_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "node:fs/promises.copyFile"
-        ],
-        "adapter": "Copy bytes with COPYFILE_EXCL unless overwrite; attribute missing-path failures to the absent side best-effort; supplied assertion boundary.",
-        "task": "B1-01"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-01"
-      ]
-    },
-    {
-      "name": "files::move",
-      "identity": "can.std.files@1::move",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "source",
-          "type": "str"
-        },
-        {
-          "name": "destination",
-          "type": "str"
-        },
-        {
-          "name": "overwrite",
-          "type": "bool"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "files::not_found",
-        "files::already_exists",
-        "files::denied",
-        "files::invalid_path",
-        "files::unexpected_kind",
-        "files::not_empty",
-        "files::cross_device",
-        "files::io_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "node:fs/promises.rename"
-        ],
-        "adapter": "Rename without copy fallback; cross-device moves fail explicitly and never silently lose atomicity; supplied assertion boundary.",
-        "task": "B1-01"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-01"
-      ]
-    },
-    {
-      "name": "files::remove",
-      "identity": "can.std.files@1::remove",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "recursive",
-          "type": "bool"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "files::not_found",
-        "files::denied",
-        "files::invalid_path",
-        "files::not_empty",
-        "files::io_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "node:fs/promises.rm",
-          "node:fs/promises.rmdir",
-          "node:fs/promises.unlink"
-        ],
-        "adapter": "Remove one file/symlink/empty directory, or a recursive tree only when requested; a non-empty directory without recursion is not_empty; supplied assertion boundary.",
-        "task": "B1-01"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-01"
-      ]
-    },
-    {
-      "name": "files::glob",
-      "identity": "can.std.files@1::glob",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "base",
-          "type": "str"
-        },
-        {
-          "name": "pattern",
-          "type": "str"
-        },
-        {
-          "name": "follow_symlinks",
-          "type": "bool"
-        },
-        {
-          "name": "max_entries",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str[]",
-      "callbacks": [],
-      "emits": [
-        "files::not_found",
-        "files::denied",
-        "files::invalid_path",
-        "files::limit_exceeded",
-        "files::io_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.Glob"
-        ],
-        "adapter": "Enumerate natively with the entry cap enforced during iteration, return absolute sorted paths including directories, and never silently truncate; supplied assertion boundary.",
-        "task": "B1-01"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-01"
-      ]
-    },
-    {
-      "name": "path::resolve",
-      "identity": "can.std.path@1::resolve",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "base",
-          "type": "str"
-        },
-        {
-          "name": "parts",
-          "type": "str[]"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "node:path.resolve"
-        ],
-        "adapter": "Resolve parts against the base with native normalization; pure computation.",
-        "task": "B1-01"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-01"
-      ]
-    },
-    {
-      "name": "path::join",
-      "identity": "can.std.path@1::join",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "parts",
-          "type": "str[]"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "node:path.join"
-        ],
-        "adapter": "Join segments with native normalization; pure computation.",
-        "task": "B1-01"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-01"
-      ]
-    },
-    {
-      "name": "path::basename",
-      "identity": "can.std.path@1::basename",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "node:path.basename"
-        ],
-        "adapter": "Return the final segment natively; pure computation.",
-        "task": "B1-01"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-01"
-      ]
-    },
-    {
-      "name": "path::extension",
-      "identity": "can.std.path@1::extension",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "node:path.extname"
-        ],
-        "adapter": "Return the native extension including the leading dot, or empty; pure computation.",
-        "task": "B1-01"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-01"
-      ]
-    },
-    {
-      "name": "process::run",
-      "identity": "can.std.process@1::run",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "executable",
-          "type": "str"
-        },
-        {
-          "name": "args",
-          "type": "str[]"
-        },
-        {
-          "name": "options",
-          "type": "process::options"
-        }
-      ],
-      "staticInputs": [],
-      "result": "process::result",
-      "callbacks": [],
-      "emits": [
-        "files::not_found",
-        "files::denied",
-        "process::spawn_failed",
-        "process::timeout",
-        "process::output_limit",
-        "process::invalid_config",
-        "process::io_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.spawn"
-        ],
-        "adapter": "Spawn detached in its own process group with piped stdio, no shell; drain both streams concurrently under caps, enforce the deadline, and terminate the group SIGTERM-then-SIGKILL with a grace before escalation; reap every child and register the run as an owned resource so scope drain kills survivors; supplied assertion boundary.",
-        "task": "B1-04"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-04"
-      ]
-    },
-    {
-      "name": "process::require_success",
-      "identity": "can.std.process@1::require_success",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "process::result"
-        }
-      ],
-      "staticInputs": [],
-      "result": "process::result",
-      "callbacks": [],
-      "emits": [
-        "process::nonzero"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "domain.create"
-        ],
-        "adapter": "Return the result unchanged when it exited zero, else nonzero with the observed code and signal; pure computation.",
-        "task": "B1-04"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-04"
-      ]
-    },
-    {
-      "name": "process::which",
-      "identity": "can.std.process@1::which",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "name",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [
-        "files::not_found",
-        "process::invalid_config"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.which"
-        ],
-        "adapter": "Resolve the executable natively; an unresolvable name is files::not_found and an empty name is invalid_config; supplied assertion boundary.",
-        "task": "B1-04"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-04"
-      ]
-    },
-    {
-      "name": "stream::read_many",
-      "identity": "can.std.stream@1::read_many",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "reader",
-          "type": "stream::reader<T>"
-        },
-        {
-          "name": "max_items",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "T[]",
-      "callbacks": [],
-      "emits": [
-        "stream::read_failed",
-        "stream::cancelled",
-        "files::limit_exceeded"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "ReadableStreamDefaultReader.read"
-        ],
-        "adapter": "One native pull per batch step with no prefetch queue; empty batch is the normal end; bytes items split at max_chunk with copied views, text items \\n-framed with fatal UTF-8; interrupted reads report cancelled and deliver nothing; failures are terminal; use-after-close/foreign-owner throw standard resource-state.",
-        "task": "B1-05"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-05"
-      ]
-    },
-    {
-      "name": "stream::write_some",
-      "identity": "can.std.stream@1::write_some",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "writer",
-          "type": "stream::writer"
-        },
-        {
-          "name": "chunk",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [
-        "stream::write_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "FileSink.write"
-        ],
-        "adapter": "Copy payload bytes out of immutable values, report accepted count, leave short-write retries to the caller; no coalescing queue.",
-        "task": "B1-05"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-05"
-      ]
-    },
-    {
-      "name": "stream::close_reader",
-      "identity": "can.std.stream@1::close_reader",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "reader",
-          "type": "stream::reader<T>"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "stream::close_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "ReadableStreamDefaultReader.cancel"
-        ],
-        "adapter": "Terminal owner close with bounded shutdown; cancels the native reader and releases the lock exactly once; close twice throws standard resource-state.",
-        "task": "B1-05"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-05"
-      ]
-    },
-    {
-      "name": "stream::close_writer",
-      "identity": "can.std.stream@1::close_writer",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "writer",
-          "type": "stream::writer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "stream::close_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "FileSink.end"
-        ],
-        "adapter": "Terminal owner close with bounded shutdown; flushes and ends the sink exactly once; close twice throws standard resource-state.",
-        "task": "B1-05"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-05"
-      ]
-    },
-    {
-      "name": "stream::cancel_reader",
-      "identity": "can.std.stream@1::cancel_reader",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "reader",
-          "type": "stream::reader<T>"
-        },
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "stream::close_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "ReadableStreamDefaultReader.cancel"
-        ],
-        "adapter": "Record the reason, then terminal owner close; an in-flight read reports cancelled instead of partial items.",
-        "task": "B1-05"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-05"
-      ]
-    },
-    {
-      "name": "stream::cancel_writer",
-      "identity": "can.std.stream@1::cancel_writer",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "writer",
-          "type": "stream::writer"
-        },
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "stream::close_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "FileSink.end"
-        ],
-        "adapter": "Record the reason, then terminal owner close; racing writes complete under their lease.",
-        "task": "B1-05"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-05"
-      ]
-    },
-    {
-      "name": "files::read_stream",
-      "identity": "can.std.files@1::read_stream",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "max_chunk",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "stream::reader<bytes::buffer>",
-      "callbacks": [],
-      "emits": [
-        "files::not_found",
-        "files::denied",
-        "files::invalid_path",
-        "files::unexpected_kind",
-        "files::limit_exceeded",
-        "files::io_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.file"
-        ],
-        "adapter": "Stat at open for acquisition errors, then lazy streaming pulls; later filesystem changes fail reads, not the open.",
-        "task": "B1-05"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-05"
-      ]
-    },
-    {
-      "name": "files::read_lines_stream",
-      "identity": "can.std.files@1::read_lines_stream",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "max_line",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "stream::reader<str>",
-      "callbacks": [],
-      "emits": [
-        "files::not_found",
-        "files::denied",
-        "files::invalid_path",
-        "files::unexpected_kind",
-        "files::limit_exceeded",
-        "files::io_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.file",
-          "TextDecoder"
-        ],
-        "adapter": "Stat at open for acquisition errors, then fatal streaming UTF-8 decode with \\n framing, CR tolerance, trailing segment delivery and line caps.",
-        "task": "B1-05"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-05"
-      ]
-    },
-    {
-      "name": "files::write_stream",
-      "identity": "can.std.files@1::write_stream",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "path",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "stream::writer",
-      "callbacks": [],
-      "emits": [
-        "files::not_found",
-        "files::denied",
-        "files::invalid_path",
-        "files::unexpected_kind",
-        "files::io_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "FileSink"
-        ],
-        "adapter": "Create or truncate at open with acquisition errors, then lazy accepted-count writes; write-after-end is unreachable through owner close.",
-        "task": "B1-05"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-05"
-      ]
-    },
-    {
-      "name": "url::parse",
-      "identity": "can.std.url@1::parse",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "text",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "url::parts",
-      "callbacks": [],
-      "emits": [
-        "url::invalid_url"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URL"
-        ],
-        "adapter": "Parse absolute http/https URLs into immutable part records; other schemes and malformed text reject, userinfo never projects; execute in ordinary assertions.",
-        "task": "B1-13"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-13"
-      ]
-    },
-    {
-      "name": "url::resolve",
-      "identity": "can.std.url@1::resolve",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "base",
-          "type": "str"
-        },
-        {
-          "name": "input",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "url::parts",
-      "callbacks": [],
-      "emits": [
-        "url::invalid_url"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URL"
-        ],
-        "adapter": "Resolve relative references against absolute http/https bases per WHATWG URL; execute in ordinary assertions.",
-        "task": "B1-13"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-13"
-      ]
-    },
-    {
-      "name": "url::to_string",
-      "identity": "can.std.url@1::to_string",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "url",
-          "type": "url::parts"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [
-        "url::invalid_url"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URL"
-        ],
-        "adapter": "Serialize part records back to href form; execute in ordinary assertions.",
-        "task": "B1-13"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-13"
-      ]
-    },
-    {
-      "name": "url::query_all",
-      "identity": "can.std.url@1::query_all",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "url",
-          "type": "url::parts"
-        },
-        {
-          "name": "name",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str[]",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URLSearchParams"
-        ],
-        "adapter": "Read every form-decoded value for one query key in document order; execute in ordinary assertions.",
-        "task": "B1-13"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-13"
-      ]
-    },
-    {
-      "name": "url::query_pairs",
-      "identity": "can.std.url@1::query_pairs",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "url",
-          "type": "url::parts"
-        }
-      ],
-      "staticInputs": [],
-      "result": "url::query_pair[]",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URLSearchParams"
-        ],
-        "adapter": "Project every form-decoded query pair in document order, duplicates kept; execute in ordinary assertions.",
-        "task": "B1-13"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-13"
-      ]
-    },
-    {
-      "name": "url::with_query",
-      "identity": "can.std.url@1::with_query",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "url",
-          "type": "url::parts"
-        },
-        {
-          "name": "pairs",
-          "type": "url::query_pair[]"
-        }
-      ],
-      "staticInputs": [],
-      "result": "url::parts",
-      "callbacks": [],
-      "emits": [
-        "url::invalid_url"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URL",
-          "URLSearchParams"
-        ],
-        "adapter": "Rebuild the query string from ordered pairs with form encoding, keeping fragment and parts; execute in ordinary assertions.",
-        "task": "B1-13"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-13"
-      ]
-    },
-    {
-      "name": "time::instant_from_epoch_millis",
-      "identity": "can.std.time@1::instant_from_epoch_millis",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "millis",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "time::instant",
-      "callbacks": [],
-      "emits": [
-        "time::out_of_range"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Date"
-        ],
-        "adapter": "Admit epoch milliseconds inside the native Date span as opaque instants; execute in ordinary assertions.",
-        "task": "B1-13"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-13"
-      ]
-    },
-    {
-      "name": "time::instant_epoch_millis",
-      "identity": "can.std.time@1::instant_epoch_millis",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "instant",
-          "type": "time::instant"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "BigInt"
-        ],
-        "adapter": "Project the exact epoch milliseconds from an instant; execute in ordinary assertions.",
-        "task": "B1-13"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-13"
-      ]
-    },
-    {
-      "name": "time::format_in_zone",
-      "identity": "can.std.time@1::format_in_zone",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "instant",
-          "type": "time::instant"
-        },
-        {
-          "name": "locale",
-          "type": "str"
-        },
-        {
-          "name": "zone",
-          "type": "str"
-        },
-        {
-          "name": "date_style",
-          "type": "str"
-        },
-        {
-          "name": "time_style",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [
-        "time::invalid_zone",
-        "time::invalid_option"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Intl.DateTimeFormat"
-        ],
-        "adapter": "Format with explicit locale, IANA zone, and full/long/medium/short/none styles; execute in ordinary assertions.",
-        "task": "B1-13"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-13"
-      ]
-    },
-    {
-      "name": "time::resolve_zoned_time",
-      "identity": "can.std.time@1::resolve_zoned_time",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "civil",
-          "type": "time::civil"
-        },
-        {
-          "name": "zone",
-          "type": "str"
-        },
-        {
-          "name": "policy",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "time::instant",
-      "callbacks": [],
-      "emits": [
-        "time::invalid_zone",
-        "time::nonexistent_time",
-        "time::invalid_option"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Date",
-          "Intl.DateTimeFormat"
-        ],
-        "adapter": "Resolve civil time in a zone with explicit earlier(0)/later(1) DST policy; gaps reject after round-trip verification; execute in ordinary assertions.",
-        "task": "B1-13"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-13"
-      ]
-    },
-    {
-      "name": "ws::connect",
-      "identity": "can.std.ws@1::connect",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "url",
-          "type": "str"
-        },
-        {
-          "name": "protocols",
-          "type": "str[]"
-        },
-        {
-          "name": "max_message_bytes",
-          "type": "int"
-        },
-        {
-          "name": "max_queued_events",
-          "type": "int"
-        },
-        {
-          "name": "max_send_bytes",
-          "type": "int"
-        },
-        {
-          "name": "deadline_ms",
-          "type": "int"
-        },
-        {
-          "name": "insecure_tls",
-          "type": "bool"
-        }
-      ],
-      "staticInputs": [],
-      "result": "ws::connection",
-      "callbacks": [],
-      "emits": [
-        "ws::connect_failed",
-        "ws::invalid_url",
-        "ws::invalid_protocol",
-        "ws::limit_exceeded"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "WebSocket"
-        ],
-        "adapter": "Open a client session, wait for the handshake under the caller deadline, and vend the session with its event reader.",
-        "task": "B1-07"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-07"
-      ]
-    },
-    {
-      "name": "ws::accept",
-      "identity": "can.std.ws@1::accept",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "request",
-          "type": "http::request"
-        },
-        {
-          "name": "protocol",
-          "type": "str"
-        },
-        {
-          "name": "max_message_bytes",
-          "type": "int"
-        },
-        {
-          "name": "max_queued_events",
-          "type": "int"
-        },
-        {
-          "name": "max_send_bytes",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "ws::connection",
-      "callbacks": [],
-      "emits": [
-        "ws::upgrade_failed",
-        "ws::unsupported_protocol",
-        "ws::invalid_protocol",
-        "ws::limit_exceeded"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.serve",
-          "Request"
-        ],
-        "adapter": "Upgrade a routed request after handler authentication and vend the session with its event reader.",
-        "task": "B1-07"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-07"
-      ]
-    },
-    {
-      "name": "ws::send_text",
-      "identity": "can.std.ws@1::send_text",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "session",
-          "type": "ws::session"
-        },
-        {
-          "name": "text",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [
-        "ws::send_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "WebSocket",
-          "Bun.serve"
-        ],
-        "adapter": "Queue one text message; server saturation fails so the caller retries after drain.",
-        "task": "B1-07"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-07"
-      ]
-    },
-    {
-      "name": "ws::send_bytes",
-      "identity": "can.std.ws@1::send_bytes",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "session",
-          "type": "ws::session"
-        },
-        {
-          "name": "data",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [
-        "ws::send_failed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "WebSocket",
-          "Bun.serve"
-        ],
-        "adapter": "Queue one binary message; server saturation fails so the caller retries after drain.",
-        "task": "B1-07"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-07"
-      ]
-    },
-    {
-      "name": "ws::close",
-      "identity": "can.std.ws@1::close",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "session",
-          "type": "ws::session"
-        },
-        {
-          "name": "code",
-          "type": "int"
-        },
-        {
-          "name": "reason",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "ws::invalid_close"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "WebSocket",
-          "Bun.serve"
-        ],
-        "adapter": "Validate the close code and reason on both sides, send the frame, and terminally close the session.",
-        "task": "B1-07"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-07"
-      ]
-    },
-    {
-      "name": "cookie::parse",
-      "identity": "can.std.cookie@1::parse",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "header",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "cookie::collection",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "CookieMap"
-        ],
-        "adapter": "Parse a Cookie header into first-wins lookup over the retained ordered pair list.",
-        "task": "B1-09"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-09"
-      ]
-    },
-    {
-      "name": "cookie::get",
-      "identity": "can.std.cookie@1::get",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "collection",
-          "type": "cookie::collection"
-        },
-        {
-          "name": "name",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "option::value<str>",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "CookieMap"
-        ],
-        "adapter": "Return the first pair value for the name, or none when absent.",
-        "task": "B1-09"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-09"
-      ]
-    },
-    {
-      "name": "cookie::make",
-      "identity": "can.std.cookie@1::make",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "name",
-          "type": "str"
-        },
-        {
-          "name": "value",
-          "type": "str"
-        },
-        {
-          "name": "attributes",
-          "type": "cookie::attributes"
-        }
-      ],
-      "staticInputs": [],
-      "result": "cookie::cookie",
-      "callbacks": [],
-      "emits": [
-        "cookie::invalid_cookie"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Cookie"
-        ],
-        "adapter": "Validate the name and expiry, then wrap a native cookie.",
-        "task": "B1-09"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-09"
-      ]
-    },
-    {
-      "name": "cookie::serialize",
-      "identity": "can.std.cookie@1::serialize",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "cookie",
-          "type": "cookie::cookie"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Cookie"
-        ],
-        "adapter": "Render one Set-Cookie field value from a validated cookie.",
-        "task": "B1-09"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-09"
-      ]
-    },
-    {
-      "name": "cookie::expire",
-      "identity": "can.std.cookie@1::expire",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "name",
-          "type": "str"
-        },
-        {
-          "name": "path",
-          "type": "str"
-        },
-        {
-          "name": "domain",
-          "type": "option::value<str>"
-        }
-      ],
-      "staticInputs": [],
-      "result": "cookie::cookie",
-      "callbacks": [],
-      "emits": [
-        "cookie::invalid_cookie"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "CookieMap"
-        ],
-        "adapter": "Build an epoch-expiry tombstone scoped to the matching path and domain.",
-        "task": "B1-09"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-09"
-      ]
-    },
-    {
-      "name": "csrf::generate",
-      "identity": "can.std.csrf@1::generate",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "secret",
-          "type": "str"
-        },
-        {
-          "name": "session_id",
-          "type": "str"
-        },
-        {
-          "name": "expires_in_ms",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [
-        "csrf::invalid_config"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "CSRF"
-        ],
-        "adapter": "Mint a session-bound token with explicit secret and fixed base64url/sha256.",
-        "task": "B1-09"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-09"
-      ]
-    },
-    {
-      "name": "csrf::verify",
-      "identity": "can.std.csrf@1::verify",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "secret",
-          "type": "str"
-        },
-        {
-          "name": "session_id",
-          "type": "str"
-        },
-        {
-          "name": "token",
-          "type": "str"
-        },
-        {
-          "name": "max_age_ms",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bool",
-      "callbacks": [],
-      "emits": [
-        "csrf::invalid_config"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "CSRF"
-        ],
-        "adapter": "Verify a token against explicit secret, session and age; token faults answer false.",
-        "task": "B1-09"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-09"
-      ]
-    },
-    {
-      "name": "s3::client_open",
-      "identity": "can.std.s3@1::client_open",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "endpoint",
-          "type": "str"
-        },
-        {
-          "name": "region",
-          "type": "str"
-        },
-        {
-          "name": "bucket",
-          "type": "str"
-        },
-        {
-          "name": "access_key",
-          "type": "str"
-        },
-        {
-          "name": "secret_key",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "s3::client",
-      "callbacks": [],
-      "emits": [
-        "s3::invalid_config"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "S3Client"
-        ],
-        "adapter": "Validate endpoint, region, bucket and credentials, then bind a native client. No I/O; credentials never enter diagnostics.",
-        "task": "B1-10"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-10"
-      ]
-    },
-    {
-      "name": "s3::read_bytes",
-      "identity": "can.std.s3@1::read_bytes",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "client",
-          "type": "s3::client"
-        },
-        {
-          "name": "key",
-          "type": "str"
-        },
-        {
-          "name": "max_bytes",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [
-        "s3::invalid_config",
-        "s3::missing_key",
-        "s3::access_denied",
-        "s3::service_error",
-        "s3::over_limit"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "S3Client",
-          "S3File"
-        ],
-        "adapter": "Stat first; fail over_limit without downloading when the object exceeds max_bytes, else return a copy of the bytes.",
-        "task": "B1-10"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-10"
-      ]
-    },
-    {
-      "name": "s3::read_range",
-      "identity": "can.std.s3@1::read_range",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "client",
-          "type": "s3::client"
-        },
-        {
-          "name": "key",
-          "type": "str"
-        },
-        {
-          "name": "offset",
-          "type": "int"
-        },
-        {
-          "name": "length",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [
-        "s3::invalid_config",
-        "s3::missing_key",
-        "s3::access_denied",
-        "s3::service_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "S3Client",
-          "S3File"
-        ],
-        "adapter": "Download one byte range. Zero length answers empty without a wire call; negative offset or length fails invalid_config.",
-        "task": "B1-10"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-10"
-      ]
-    },
-    {
-      "name": "s3::read_stream",
-      "identity": "can.std.s3@1::read_stream",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "client",
-          "type": "s3::client"
-        },
-        {
-          "name": "key",
-          "type": "str"
-        },
-        {
-          "name": "max_bytes",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "stream::reader<bytes::buffer>",
-      "callbacks": [],
-      "emits": [
-        "s3::invalid_config",
-        "s3::missing_key",
-        "s3::access_denied",
-        "s3::service_error",
-        "s3::over_limit"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "S3Client",
-          "S3File"
-        ],
-        "adapter": "Stat eagerly, then open a bounded byte reader over the download stream; cancelling the reader cancels the download.",
-        "task": "B1-10"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-10"
-      ]
-    },
-    {
-      "name": "s3::write_bytes",
-      "identity": "can.std.s3@1::write_bytes",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "client",
-          "type": "s3::client"
-        },
-        {
-          "name": "key",
-          "type": "str"
-        },
-        {
-          "name": "body",
-          "type": "bytes::buffer"
-        },
-        {
-          "name": "options",
-          "type": "s3::write_options"
-        }
-      ],
-      "staticInputs": [],
-      "result": "s3::metadata",
-      "callbacks": [],
-      "emits": [
-        "s3::invalid_config",
-        "s3::access_denied",
-        "s3::service_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "S3Client",
-          "S3File"
-        ],
-        "adapter": "Store one object with an optional content type, then stat it for immutable metadata.",
-        "task": "B1-10"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-10"
-      ]
-    },
-    {
-      "name": "s3::write_stream",
-      "identity": "can.std.s3@1::write_stream",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "client",
-          "type": "s3::client"
-        },
-        {
-          "name": "key",
-          "type": "str"
-        },
-        {
-          "name": "reader",
-          "type": "stream::reader<bytes::buffer>"
-        },
-        {
-          "name": "options",
-          "type": "s3::write_options"
-        },
-        {
-          "name": "max_bytes",
-          "type": "int"
-        },
-        {
-          "name": "deadline_ms",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "s3::metadata",
-      "callbacks": [],
-      "emits": [
-        "s3::invalid_config",
-        "s3::access_denied",
-        "s3::service_error",
-        "s3::over_limit",
-        "stream::read_failed",
-        "stream::cancelled"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "S3Client",
-          "S3File"
-        ],
-        "adapter": "Pump a byte reader into a multipart upload under byte and deadline budgets; the deadline remainder bounds every pump await (read, write, flush, end, stat) through cancel-absent races, and expiry answers service_error/timeout while the native stays owned; timeouts and reader failure discard the upload destructively and propagate.",
-        "task": "B1-10"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-10",
-        "E08"
-      ]
-    },
-    {
-      "name": "s3::stat",
-      "identity": "can.std.s3@1::stat",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "client",
-          "type": "s3::client"
-        },
-        {
-          "name": "key",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "s3::metadata",
-      "callbacks": [],
-      "emits": [
-        "s3::invalid_config",
-        "s3::missing_key",
-        "s3::access_denied",
-        "s3::service_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "S3Client",
-          "S3File"
-        ],
-        "adapter": "Read immutable object metadata with an opaque last-modified instant.",
-        "task": "B1-10"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-10"
-      ]
-    },
-    {
-      "name": "s3::exists",
-      "identity": "can.std.s3@1::exists",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "client",
-          "type": "s3::client"
-        },
-        {
-          "name": "key",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bool",
-      "callbacks": [],
-      "emits": [
-        "s3::invalid_config",
-        "s3::access_denied",
-        "s3::service_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "S3Client",
-          "S3File"
-        ],
-        "adapter": "Answer false for absent keys only; denied credentials and service faults still fail.",
-        "task": "B1-10"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-10"
-      ]
-    },
-    {
-      "name": "s3::delete",
-      "identity": "can.std.s3@1::delete",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "client",
-          "type": "s3::client"
-        },
-        {
-          "name": "key",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "s3::invalid_config",
-        "s3::access_denied",
-        "s3::service_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "S3Client",
-          "S3File"
-        ],
-        "adapter": "Delete idempotently; deleting a missing key succeeds.",
-        "task": "B1-10"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-10"
-      ]
-    },
-    {
-      "name": "s3::list",
-      "identity": "can.std.s3@1::list",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "client",
-          "type": "s3::client"
-        },
-        {
-          "name": "options",
-          "type": "s3::list_options"
-        }
-      ],
-      "staticInputs": [],
-      "result": "s3::page",
-      "callbacks": [],
-      "emits": [
-        "s3::invalid_config",
-        "s3::access_denied",
-        "s3::service_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "S3Client",
-          "S3File"
-        ],
-        "adapter": "List one page with immutable entries, grouped prefixes and an opaque continuation; never collects a whole bucket.",
-        "task": "B1-10"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-10"
-      ]
-    },
-    {
-      "name": "s3::presign",
-      "identity": "can.std.s3@1::presign",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "client",
-          "type": "s3::client"
-        },
-        {
-          "name": "method",
-          "type": "s3::method"
-        },
-        {
-          "name": "key",
-          "type": "str"
-        },
-        {
-          "name": "expires_in",
-          "type": "int"
-        },
-        {
-          "name": "content_type",
-          "type": "option::value<str>"
-        }
-      ],
-      "staticInputs": [],
-      "result": "s3::presigned",
-      "callbacks": [],
-      "emits": [
-        "s3::invalid_config"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "S3Client",
-          "S3File"
-        ],
-        "adapter": "Mint a signed URL locally with method and expiry metadata. The URL stays inside the opaque handle until described.",
-        "task": "B1-10"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-10"
-      ]
-    },
-    {
-      "name": "s3::describe",
-      "identity": "can.std.s3@1::describe",
-      "kind": "method",
-      "receiver": "s3::presigned",
-      "parameters": [],
-      "inputs": [],
-      "staticInputs": [],
-      "result": "s3::presigned_info",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "S3Client",
-          "S3File"
-        ],
-        "adapter": "Reveal the signed URL with its required method and expiry.",
-        "task": "B1-10"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-10"
-      ]
-    },
-    {
-      "name": "s3::begin_upload",
-      "identity": "can.std.s3@1::begin_upload",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "client",
-          "type": "s3::client"
-        },
-        {
-          "name": "key",
-          "type": "str"
-        },
-        {
-          "name": "options",
-          "type": "s3::upload_options"
-        }
-      ],
-      "staticInputs": [],
-      "result": "s3::upload",
-      "callbacks": [],
-      "emits": [
-        "s3::invalid_config"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "S3Client",
-          "S3File",
-          "NetworkSink"
-        ],
-        "adapter": "Open a multipart upload handle with optional content type and part size. No I/O until the first write.",
-        "task": "B1-10"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-10"
-      ]
-    },
-    {
-      "name": "s3::upload_write",
-      "identity": "can.std.s3@1::upload_write",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "upload",
-          "type": "s3::upload"
-        },
-        {
-          "name": "chunk",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [
-        "s3::upload_closed",
-        "s3::access_denied",
-        "s3::service_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "NetworkSink"
-        ],
-        "adapter": "Append one chunk to an open upload and report accepted bytes; use after finish or discard fails upload_closed; a timed-out chunk poisons the handle to discarded with deferred scrub on settlement.",
-        "task": "B1-10"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-10",
-        "E08"
-      ]
-    },
-    {
-      "name": "s3::upload_finish",
-      "identity": "can.std.s3@1::upload_finish",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "upload",
-          "type": "s3::upload"
-        }
-      ],
-      "staticInputs": [],
-      "result": "s3::metadata",
-      "callbacks": [],
-      "emits": [
-        "s3::upload_closed",
-        "s3::access_denied",
-        "s3::service_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "NetworkSink"
-        ],
-        "adapter": "Complete the upload and return immutable metadata of the stored object; a timed-out finish poisons the handle to discarded with deferred scrub on settlement.",
-        "task": "B1-10"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-10"
-      ]
-    },
-    {
-      "name": "s3::discard_upload",
-      "identity": "can.std.s3@1::discard_upload",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "upload",
-          "type": "s3::upload"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "s3::upload_closed",
-        "s3::access_denied",
-        "s3::service_error"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "NetworkSink"
-        ],
-        "adapter": "Destructively retire an open handle: complete the pending upload (transiently visible to concurrent readers; overwrites any pre-existing key) then delete the key; failed cleanup awaits surface as service errors, and a failed completion may strand multipart state for the operator abort recipe.",
-        "task": "B1-10"
-      },
-      "assertion": "supplied",
-      "refs": [
-        "B1-10",
-        "E08"
-      ]
-    },
-    {
-      "name": "codec::decode_toml",
-      "identity": "can.std.codec@1::decode_toml",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "wire"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "buffer",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "T",
-      "callbacks": [],
-      "emits": [
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.TOML.parse",
-          "TextDecoder"
-        ],
-        "adapter": "Native TOML table parse; duplicate keys and unsafe integers fail natively; Temporal dates reject; project onto the nominal schema with A6 budgets.",
-        "task": "B1-11"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-11"
-      ]
-    },
-    {
-      "name": "codec::decode_yaml",
-      "identity": "can.std.codec@1::decode_yaml",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "wire"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "buffer",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "T",
-      "callbacks": [],
-      "emits": [
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.YAML.parse",
-          "TextDecoder"
-        ],
-        "adapter": "Native YAML 1.2 core parse; duplicate keys resolve last-wins and rounded integers project as parsed values (documented); cycles and non-plain objects reject; project onto the nominal schema with A6 budgets.",
-        "task": "B1-11"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-11"
-      ]
-    },
-    {
-      "name": "codec::decode_json5",
-      "identity": "can.std.codec@1::decode_json5",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "wire"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "buffer",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "T",
-      "callbacks": [],
-      "emits": [
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.JSON5.parse",
-          "TextDecoder"
-        ],
-        "adapter": "Native JSON5 parse; duplicate keys resolve last-wins and rounded integers project as parsed values (documented); project onto the nominal schema with A6 budgets.",
-        "task": "B1-11"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-11"
-      ]
-    },
-    {
-      "name": "codec::decode_jsonl",
-      "identity": "can.std.codec@1::decode_jsonl",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "wire"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "buffer",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "T[]",
-      "callbacks": [],
-      "emits": [
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "JSON.parse",
-          "JSON.rawJSON",
-          "TextDecoder"
-        ],
-        "adapter": "Strict bounded line framing (blank lines skipped, CRLF and unterminated final line accepted, multi-line records rejected) with the exact per-record JSON decode path; unsafe integers preserved; truncated tails fail.",
-        "task": "B1-11"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-11"
-      ]
-    },
-    {
-      "name": "codec::consume_jsonl",
-      "identity": "can.std.codec@1::consume_jsonl",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "wire"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "reader",
-          "type": "stream::reader<bytes::buffer>"
-        },
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "T"
-          ],
-          "result": "void",
-          "deriveErrors": false,
-          "emits": []
-        }
-      ],
-      "emits": [
-        "codec::invalid_data",
-        "stream::read_failed",
-        "stream::cancelled"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "ReadableStreamDefaultReader.read",
-          "JSON.parse",
-          "JSON.rawJSON",
-          "TextDecoder"
-        ],
-        "adapter": "Incremental bounded line framing over a byte reader with fatal UTF-8; each record projects through the exact JSON path and awaits a total handler; shared node budget bounds the pump; cancellation stops reads; returns the record count.",
-        "task": "B1-11"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-11"
-      ]
-    },
-    {
-      "name": "markdown::render_text_html",
-      "identity": "can.std.markdown@1::render_text_html",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "source",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [
-        "markdown::over_limit"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.markdown.html"
-        ],
-        "adapter": "Fixed standaloneBytes input/output ceilings; default native options preserve raw HTML, so the result stays an ordinary str and never converts into html::safe.",
-        "task": "B1-12"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-12"
-      ]
-    },
-    {
-      "name": "markdown::render_safe",
-      "identity": "can.std.markdown@1::render_safe",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "source",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "html::safe",
-      "callbacks": [],
-      "emits": [
-        "markdown::over_limit",
-        "html::invalid_url"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.markdown.render"
-        ],
-        "adapter": "Two-phase trusted construction: synchronous private callbacks capture tag trees over a NUL-token alphabet the parser keeps unforgeable (text arrives unescaped with newlines intact; NUL fails closed), then async assembly reuses the html factory (text, makeTag, textAttribute, element, parseURL, urlAttribute, fragment). Parser options fix tables/strikethrough/tasklists on, heading ids on, raw HTML demoted to text via noHtmlBlocks/noHtmlSpans, and wikiLinks/underline/latexMath/autolinks off. Lists (with task checkboxes and ordered start), tables (with cell align), headings, quotes, spans, code, links and images render fully; hard breaks normalize to soft newlines; info strings outside [A-Za-z0-9_-] lose their language class; href/src rejections propagate html::invalid_url; node count is capped at maxNodes and bytes at standaloneBytes.",
-        "task": "B1-12"
-      },
-      "assertion": "real",
-      "refs": [
-        "B1-12"
-      ]
-    },
-    {
-      "name": "browser::mount",
-      "identity": "can.std.browser@1::mount",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "root",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "browser::app",
-      "callbacks": [],
-      "emits": [
-        "browser::missing_root"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Document.getElementById"
-        ],
-        "adapter": "Resolve the mount root by id; a missing document or element fails closed as browser::missing_root naming the requested root.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::root",
-      "identity": "can.std.browser@1::root",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "app",
-          "type": "browser::app"
-        }
-      ],
-      "staticInputs": [],
-      "result": "browser::node",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Element"
-        ],
-        "adapter": "Project the mounted root element as an append anchor; the root never detaches implicitly.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::open_view",
-      "identity": "can.std.browser@1::open_view",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "app",
-          "type": "browser::app"
-        }
-      ],
-      "staticInputs": [],
-      "result": "browser::view",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "AbortController"
-        ],
-        "adapter": "Open a disposal scope sharing the app registry; the scope owns one AbortController for its listeners.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::dispose_view",
-      "identity": "can.std.browser@1::dispose_view",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "view",
-          "type": "browser::view"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "AbortController.abort",
-          "clearTimeout",
-          "ChildNode.remove"
-        ],
-        "adapter": "Abort the view listeners, clear its pending timers, detach its nodes and poison its handles; idempotent.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::dispose_app",
-      "identity": "can.std.browser@1::dispose_app",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "app",
-          "type": "browser::app"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "AbortController.abort",
-          "clearTimeout",
-          "ChildNode.remove"
-        ],
-        "adapter": "Dispose every open view, then poison the app; the mounted root element stays in the document; idempotent.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::create_element",
-      "identity": "can.std.browser@1::create_element",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "view",
-          "type": "browser::view"
-        },
-        {
-          "name": "tag",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "browser::node",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed",
-        "browser::rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Document.createElement"
-        ],
-        "adapter": "Create a detached element after admitting the tag against the shared author vocabulary; dynamic names re-check at runtime.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::create_text",
-      "identity": "can.std.browser@1::create_text",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "view",
-          "type": "browser::view"
-        },
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "browser::node",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Document.createTextNode"
-        ],
-        "adapter": "Create a detached text node; native text construction carries no markup parsing.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::set_text",
-      "identity": "can.std.browser@1::set_text",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "node",
-          "type": "browser::node"
-        },
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Node.textContent"
-        ],
-        "adapter": "Replace rendered text through the native text setter, which never parses markup.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::set_attribute",
-      "identity": "can.std.browser@1::set_attribute",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "node",
-          "type": "browser::node"
-        },
-        {
-          "name": "name",
-          "type": "str"
-        },
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed",
-        "browser::rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Element.setAttribute"
-        ],
-        "adapter": "Admit the attribute name against the bounded vocabulary, same-origin/https-check URL attributes, then set natively.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::remove_attribute",
-      "identity": "can.std.browser@1::remove_attribute",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "node",
-          "type": "browser::node"
-        },
-        {
-          "name": "name",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed",
-        "browser::rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Element.removeAttribute"
-        ],
-        "adapter": "Admit the attribute name, then remove natively; absent attributes succeed.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::append_child",
-      "identity": "can.std.browser@1::append_child",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "parent",
-          "type": "browser::node"
-        },
-        {
-          "name": "child",
-          "type": "browser::node"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed",
-        "browser::rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Node.appendChild"
-        ],
-        "adapter": "Require one live view scope for both handles, reject ancestor cycles, then append natively (native adoption moves already-parented nodes).",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::remove_node",
-      "identity": "can.std.browser@1::remove_node",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "node",
-          "type": "browser::node"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed",
-        "browser::rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "ChildNode.remove"
-        ],
-        "adapter": "Detach a non-root node natively; the handle stays live for re-append; the root anchor is rejected.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::focus",
-      "identity": "can.std.browser@1::focus",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "node",
-          "type": "browser::node"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "HTMLElement.focus"
-        ],
-        "adapter": "Move focus natively; non-focusable nodes are a native no-op, never a failure.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::on_event",
-      "identity": "can.std.browser@1::on_event",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "view",
-          "type": "browser::view"
-        },
-        {
-          "name": "node",
-          "type": "browser::node"
-        },
-        {
-          "name": "kind",
-          "type": "str"
-        },
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "browser::event"
-          ],
-          "result": "void",
-          "deriveErrors": false,
-          "emits": []
-        }
-      ],
-      "emits": [
-        "browser::disposed",
-        "browser::rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "EventTarget.addEventListener",
-          "AbortController"
-        ],
-        "adapter": "Admit the event kind, snapshot kind/target/value/key synchronously at dispatch, and bind the named Can handler to the view AbortController; a failed handler completion ends that dispatch without affecting later events.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::set_timeout",
-      "identity": "can.std.browser@1::set_timeout",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "view",
-          "type": "browser::view"
-        },
-        {
-          "name": "delay_ms",
-          "type": "int"
-        },
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [],
-          "result": "void",
-          "deriveErrors": false,
-          "emits": []
-        }
-      ],
-      "emits": [
-        "browser::disposed",
-        "browser::rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "setTimeout",
-          "clearTimeout"
-        ],
-        "adapter": "Schedule the named Can handler once within the setTimeout range; firing unregisters, disposal clears pending timers; a failed handler completion ends that firing.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::create_state",
-      "identity": "can.std.browser@1::create_state",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "view",
-          "type": "browser::view"
-        },
-        {
-          "name": "value",
-          "type": "T"
-        }
-      ],
-      "staticInputs": [],
-      "result": "browser::state<T>",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Object.freeze"
-        ],
-        "adapter": "Mint a versioned cell at version 0 holding the immutable value; the cell belongs to its view scope.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::read_state",
-      "identity": "can.std.browser@1::read_state",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "state",
-          "type": "browser::state<T>"
-        }
-      ],
-      "staticInputs": [],
-      "result": "browser::snapshot<T>",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Object.freeze"
-        ],
-        "adapter": "Copy the live version and value atomically into an immutable snapshot record.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::replace_state",
-      "identity": "can.std.browser@1::replace_state",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "T",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "state",
-          "type": "browser::state<T>"
-        },
-        {
-          "name": "expected",
-          "type": "int"
-        },
-        {
-          "name": "value",
-          "type": "T"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed",
-        "browser::stale_version"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Object.is"
-        ],
-        "adapter": "Compare-and-swap the cell: matching versions install the value and return the next version, mismatches fail with browser::stale_version carrying expected and actual.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::query_parameter",
-      "identity": "can.std.browser@1::query_parameter",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "key",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [
-        "key"
-      ],
-      "result": "option::value<str>",
-      "callbacks": [],
-      "emits": [
-        "browser::invalid_query"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URLSearchParams",
-          "decodeURIComponent"
-        ],
-        "adapter": "Read one literal query key from location.search under strict budgets: scan every raw pair with decodeURIComponent after plus-to-space, reject malformed escapes, invalid UTF-8, oversized or duplicate values as browser::invalid_query, return none for zero and some for one.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::on_cancel_key",
-      "identity": "can.std.browser@1::on_cancel_key",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "view",
-          "type": "browser::view"
-        },
-        {
-          "name": "node",
-          "type": "browser::node"
-        },
-        {
-          "name": "kind",
-          "type": "str"
-        },
-        {
-          "name": "key",
-          "type": "str"
-        },
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "browser::event"
-          ],
-          "result": "void",
-          "deriveErrors": false,
-          "emits": []
-        }
-      ],
-      "emits": [
-        "browser::disposed",
-        "browser::rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "EventTarget.addEventListener",
-          "AbortController"
-        ],
-        "adapter": "Register a cancel-policy key listener: admit only keydown or keyup with a nonempty exact key, preventDefault synchronously for matching cancelable events before dispatching one immutable snapshot; mismatched or noncancelable events still dispatch once without cancellation.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::on_cancel_event",
-      "identity": "can.std.browser@1::on_cancel_event",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "view",
-          "type": "browser::view"
-        },
-        {
-          "name": "node",
-          "type": "browser::node"
-        },
-        {
-          "name": "kind",
-          "type": "str"
-        },
-        {
-          "name": "callback",
-          "type": "$callback"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [
-        {
-          "name": "callback",
-          "inputs": [
-            "browser::event"
-          ],
-          "result": "void",
-          "deriveErrors": false,
-          "emits": []
-        }
-      ],
-      "emits": [
-        "browser::disposed",
-        "browser::rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "EventTarget.addEventListener",
-          "AbortController"
-        ],
-        "adapter": "Register a cancel-policy event listener: initially admit only submit, preventDefault synchronously for matching cancelable events before dispatching one immutable snapshot; otherwise dispatch once without cancellation.",
-        "task": "T22"
-      },
-      "assertion": "real",
-      "refs": [
-        "T22"
-      ]
-    },
-    {
-      "name": "browser::set_value",
-      "identity": "can.std.browser@1::set_value",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "node",
-          "type": "browser::node"
-        },
-        {
-          "name": "value",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed",
-        "browser::rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Element.value"
-        ],
-        "adapter": "Admit elements carrying a string value IDL, then assign the live value natively; text nodes and IDL-less controls reject, and no event is dispatched.",
-        "task": "C02"
-      },
-      "assertion": "real",
-      "refs": [
-        "C02"
-      ]
-    },
-    {
-      "name": "browser::set_checked",
-      "identity": "can.std.browser@1::set_checked",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "node",
-          "type": "browser::node"
-        },
-        {
-          "name": "checked",
-          "type": "bool"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed",
-        "browser::rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "HTMLInputElement.checked"
-        ],
-        "adapter": "Admit elements carrying a boolean checked IDL, then assign the live state natively; text nodes and IDL-less controls reject, and no event is dispatched.",
-        "task": "C02"
-      },
-      "assertion": "real",
-      "refs": [
-        "C02"
-      ]
-    },
-    {
-      "name": "browser::set_selected",
-      "identity": "can.std.browser@1::set_selected",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "node",
-          "type": "browser::node"
-        },
-        {
-          "name": "values",
-          "type": "str[]"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed",
-        "browser::rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "HTMLOptionElement.selected"
-        ],
-        "adapter": "Admit select elements, then mark selected exactly the options whose value appears in the input; unknown values match nothing and no event is dispatched.",
-        "task": "C02"
-      },
-      "assertion": "real",
-      "refs": [
-        "C02"
-      ]
-    },
-    {
-      "name": "browser::set_selection",
-      "identity": "can.std.browser@1::set_selection",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "node",
-          "type": "browser::node"
-        },
-        {
-          "name": "start",
-          "type": "int"
-        },
-        {
-          "name": "end",
-          "type": "int"
-        },
-        {
-          "name": "direction",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed",
-        "browser::rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "HTMLInputElement.setSelectionRange"
-        ],
-        "adapter": "Admit the forward/backward/none direction and 0 <= start <= end <= value length, then set the caret natively; out-of-range bounds and selection-less controls reject instead of clamping.",
-        "task": "C02"
-      },
-      "assertion": "real",
-      "refs": [
-        "C02"
-      ]
-    },
-    {
-      "name": "browser::read_value",
-      "identity": "can.std.browser@1::read_value",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "node",
-          "type": "browser::node"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed",
-        "browser::rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Element.value"
-        ],
-        "adapter": "Admit elements carrying a string value IDL, then read the live value natively; text nodes and IDL-less controls reject.",
-        "task": "C02"
-      },
-      "assertion": "real",
-      "refs": [
-        "C02"
-      ]
-    },
-    {
-      "name": "browser::read_checked",
-      "identity": "can.std.browser@1::read_checked",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "node",
-          "type": "browser::node"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bool",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed",
-        "browser::rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "HTMLInputElement.checked"
-        ],
-        "adapter": "Admit elements carrying a boolean checked IDL, then read the live state natively; text nodes and IDL-less controls reject.",
-        "task": "C02"
-      },
-      "assertion": "real",
-      "refs": [
-        "C02"
-      ]
-    },
-    {
-      "name": "browser::read_selected",
-      "identity": "can.std.browser@1::read_selected",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "node",
-          "type": "browser::node"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str[]",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed",
-        "browser::rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "HTMLSelectElement.options"
-        ],
-        "adapter": "Admit select elements, then copy the selected option values into a fresh immutable array; non-select controls reject.",
-        "task": "C02"
-      },
-      "assertion": "real",
-      "refs": [
-        "C02"
-      ]
-    },
-    {
-      "name": "browser::read_selection",
-      "identity": "can.std.browser@1::read_selection",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "node",
-          "type": "browser::node"
-        }
-      ],
-      "staticInputs": [],
-      "result": "browser::selection",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "HTMLInputElement.selectionStart",
-          "HTMLInputElement.selectionEnd",
-          "HTMLInputElement.selectionDirection"
-        ],
-        "adapter": "Project the live caret like event snapshots: text controls read start/end/direction natively, and controls without a text selection read the neutral -1/-1/none record.",
-        "task": "C02"
-      },
-      "assertion": "real",
-      "refs": [
-        "C02"
-      ]
-    },
-    {
-      "name": "browser::read_files",
-      "identity": "can.std.browser@1::read_files",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "node",
-          "type": "browser::node"
-        }
-      ],
-      "staticInputs": [],
-      "result": "browser::file[]",
-      "callbacks": [],
-      "emits": [
-        "browser::disposed",
-        "browser::rejected"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "HTMLInputElement.files"
-        ],
-        "adapter": "Admit file-carrying inputs, then copy at most the first 128 name/size/mime entries into fresh immutable records; bytes never cross and other controls reject.",
-        "task": "C02"
-      },
-      "assertion": "real",
-      "refs": [
-        "C02"
-      ]
-    },
-    {
-      "name": "action::mount",
-      "identity": "can.std.action@1::mount",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "action",
-          "type": "action::declaration"
-        }
-      ],
-      "staticInputs": [],
-      "result": "http::route",
-      "callbacks": [],
-      "emits": [
-        "http::invalid_route"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URL",
-          "Request",
-          "Response"
-        ],
-        "adapter": "Bind one action symbol plus its exact checked callables into a mounted route: one request-first handler for JSON actions, plus the normal and structural-422 renderers for HTML actions; decode through the declared codec and map result leaves to case statuses.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "action::url",
-      "identity": "can.std.action@1::url",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "action",
-          "type": "action::declaration"
-        }
-      ],
-      "staticInputs": [],
-      "result": "str",
-      "callbacks": [],
-      "emits": [
-        "action::invalid_path"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "URL",
-          "encodeURIComponent"
-        ],
-        "adapter": "Render the canonical action path from the symbol route template and the typed captures record; strict single-segment captures fail as action::invalid_path.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "action::request",
-      "identity": "can.std.action@1::request",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "Result",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "action",
-          "type": "action::declaration"
-        }
-      ],
-      "staticInputs": [],
-      "result": "Result",
-      "callbacks": [],
-      "emits": [
-        "http::transport_failed",
-        "http::invalid_request",
-        "http::status_error",
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "fetch",
-          "Request",
-          "Response",
-          "TextDecoder"
-        ],
-        "adapter": "Resolve the action symbol against the checked JSON table, build the canonical same-origin URL from the typed captures record, issue a bodyless GET through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "action::post",
-      "identity": "can.std.action@1::post",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [
-        {
-          "name": "Result",
-          "constraint": "data"
-        },
-        {
-          "name": "Wire",
-          "constraint": "data"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "action",
-          "type": "action::declaration"
-        }
-      ],
-      "staticInputs": [],
-      "result": "Result",
-      "callbacks": [],
-      "emits": [
-        "http::transport_failed",
-        "http::invalid_request",
-        "http::body_limit",
-        "http::status_error",
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "fetch",
-          "Request",
-          "Response",
-          "TextDecoder"
-        ],
-        "adapter": "Resolve the action symbol against the checked JSON table, build the canonical same-origin URL from the typed captures record, encode the exact wire body under the shared codec within the wire limit, POST through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound.",
-        "task": "I32"
-      },
-      "assertion": "real",
-      "refs": [
-        "P10"
-      ]
-    },
-    {
-      "name": "image::inspect",
-      "identity": "can.std.image@1::inspect",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "bytes",
-          "type": "bytes::buffer"
-        },
-        {
-          "name": "max_pixels",
-          "type": "int"
-        }
-      ],
-      "staticInputs": [],
-      "result": "image::metadata",
-      "callbacks": [],
-      "emits": [
-        "image::invalid_image"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Bun.Image",
-          "Bun.Image.prototype.metadata"
-        ],
-        "adapter": "Sniff actual JPEG/PNG/WebP bytes and read dimensions using Bun metadata bounded by max_pixels; reject animated WebP (VP8X animation flag or ANIM/ANMF chunks), APNG (acTL), malformed and unsupported image data.",
-        "task": "I13"
-      },
-      "assertion": "real",
-      "refs": [
-        "A2"
-      ]
-    },
-    {
-      "name": "codec::decode_json_value",
-      "identity": "can.std.codec@1::decode_json_value",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "buffer",
-          "type": "bytes::buffer"
-        }
-      ],
-      "staticInputs": [],
-      "result": "codec::json_value",
-      "callbacks": [],
-      "emits": [
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "JSON.parse",
-          "JSON.rawJSON",
-          "JSON.stringify",
-          "TextEncoder",
-          "TextDecoder"
-        ],
-        "adapter": "Bounded immutable JSON values; integer-spelled tokens use exact ints, fraction/exponent tokens use finite floats; reject duplicate names, invalid scalar text and cycles.",
-        "task": "I14"
-      },
-      "assertion": "real",
-      "refs": [
-        "A2",
-        "A6"
-      ]
-    },
-    {
-      "name": "codec::encode_json_value",
-      "identity": "can.std.codec@1::encode_json_value",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "value",
-          "type": "codec::json_value"
-        }
-      ],
-      "staticInputs": [],
-      "result": "bytes::buffer",
-      "callbacks": [],
-      "emits": [
-        "codec::invalid_data"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "JSON.parse",
-          "JSON.rawJSON",
-          "JSON.stringify",
-          "TextEncoder",
-          "TextDecoder"
-        ],
-        "adapter": "Bounded immutable JSON values; integer-spelled tokens use exact ints, fraction/exponent tokens use finite floats; reject duplicate names, invalid scalar text and cycles.",
-        "task": "I14"
-      },
-      "assertion": "real",
-      "refs": [
-        "A2",
-        "A6"
-      ]
-    },
-    {
-      "name": "test::grant_admit",
-      "identity": "can.std.test@1::grant_admit",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "grant",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "test::owner",
-      "callbacks": [],
-      "emits": [
-        "test::invalid_grant"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Map",
-          "domain.create"
-        ],
-        "adapter": "test owner adapter (runtime/test-support/owner.ts)",
-        "task": "NT-P28"
-      },
-      "assertion": "real",
-      "refs": [
-        "NT-P28"
-      ]
-    },
-    {
-      "name": "test::grant_release",
-      "identity": "can.std.test@1::grant_release",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "handle",
-          "type": "test::owner"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Map"
-        ],
-        "adapter": "test owner adapter (runtime/test-support/owner.ts)",
-        "task": "NT-P28"
-      },
-      "assertion": "real",
-      "refs": [
-        "NT-P28"
-      ]
-    },
-    {
-      "name": "test::channel_open",
-      "identity": "can.std.test@1::channel_open",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "handle",
-          "type": "test::owner"
-        },
-        {
-          "name": "kind",
-          "type": "str"
-        }
-      ],
-      "staticInputs": [],
-      "result": "test::channel",
-      "callbacks": [],
-      "emits": [
-        "test::stale_handle",
-        "test::invalid_kind"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Map",
-          "domain.create"
-        ],
-        "adapter": "test transport adapter (runtime/test-support/transport.ts)",
-        "task": "NT-P28"
-      },
-      "assertion": "real",
-      "refs": [
-        "NT-P28"
-      ]
-    },
-    {
-      "name": "test::channel_send",
-      "identity": "can.std.test@1::channel_send",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "handle",
-          "type": "test::channel"
-        },
-        {
-          "name": "envelope",
-          "type": "codec::json_object"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [
-        "test::stale_handle",
-        "test::closed_handle",
-        "test::channel_full",
-        "test::detached_transport",
-        "test::transport_failure"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Map",
-          "JSON.stringify",
-          "TextEncoder",
-          "domain.create"
-        ],
-        "adapter": "test transport adapter (runtime/test-support/transport.ts)",
-        "task": "NT-P28"
-      },
-      "assertion": "real",
-      "refs": [
-        "NT-P28"
-      ]
-    },
-    {
-      "name": "test::channel_recv",
-      "identity": "can.std.test@1::channel_recv",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "handle",
-          "type": "test::channel"
-        }
-      ],
-      "staticInputs": [],
-      "result": "codec::json_object",
-      "callbacks": [],
-      "emits": [
-        "test::stale_handle",
-        "test::closed_handle",
-        "test::detached_transport",
-        "test::channel_empty",
-        "test::transport_failure"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Map",
-          "TextDecoder",
-          "JSON.parse",
-          "domain.create"
-        ],
-        "adapter": "test transport adapter (runtime/test-support/transport.ts)",
-        "task": "NT-P28"
-      },
-      "assertion": "real",
-      "refs": [
-        "NT-P28"
-      ]
-    },
-    {
-      "name": "test::channel_close",
-      "identity": "can.std.test@1::channel_close",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "handle",
-          "type": "test::channel"
-        }
-      ],
-      "staticInputs": [],
-      "result": "void",
-      "callbacks": [],
-      "emits": [],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Map"
-        ],
-        "adapter": "test transport adapter (runtime/test-support/transport.ts)",
-        "task": "NT-P28"
-      },
-      "assertion": "real",
-      "refs": [
-        "NT-P28"
-      ]
-    },
-    {
-      "name": "test::channel_pending",
-      "identity": "can.std.test@1::channel_pending",
-      "kind": "function",
-      "receiver": "",
-      "parameters": [],
-      "inputs": [
-        {
-          "name": "handle",
-          "type": "test::channel"
-        }
-      ],
-      "staticInputs": [],
-      "result": "int",
-      "callbacks": [],
-      "emits": [
-        "test::stale_handle"
-      ],
-      "callbackErrors": [],
-      "lowering": {
-        "native": [
-          "Map"
-        ],
-        "adapter": "test transport adapter (runtime/test-support/transport.ts)",
-        "task": "NT-P28"
-      },
-      "assertion": "real",
-      "refs": [
-        "NT-P28"
-      ]
+   ],
+   "fields": [
+    {
+     "name": "value",
+     "type": "T"
     }
-  ],
-  "nativeDeclarations": [
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "option::value",
+   "identity": "can.std.option@1::value",
+   "kind": "variant",
+   "parameters": [
     {
-      "name": "noul",
-      "emits": [
-        "ai::invalid_question",
-        "ai::invalid_answer"
-      ],
-      "conditionalEmits": [],
-      "unionBounds": [
-        "handlers"
-      ],
-      "task": "I27",
-      "refs": [
-        "A2",
-        "A3"
-      ],
-      "assertion": "real"
-    },
-    {
-      "name": "choice",
-      "emits": [
-        "ai::invalid_question",
-        "ai::invalid_answer"
-      ],
-      "conditionalEmits": [],
-      "unionBounds": [
-        "handlers"
-      ],
-      "task": "I27",
-      "refs": [
-        "A2",
-        "A3"
-      ],
-      "assertion": "real"
-    },
-    {
-      "name": "record_choice",
-      "emits": [
-        "ai::invalid_question",
-        "ai::invalid_answer"
-      ],
-      "conditionalEmits": [],
-      "unionBounds": [
-        "handlers"
-      ],
-      "task": "I27",
-      "refs": [
-        "A2",
-        "A3"
-      ],
-      "assertion": "real"
-    },
-    {
-      "name": "score",
-      "emits": [
-        "ai::invalid_question",
-        "ai::invalid_answer"
-      ],
-      "conditionalEmits": [],
-      "unionBounds": [
-        "handlers"
-      ],
-      "task": "I27",
-      "refs": [
-        "A2",
-        "A3"
-      ],
-      "assertion": "real"
-    },
-    {
-      "name": "record_score",
-      "emits": [
-        "ai::invalid_question",
-        "ai::invalid_answer"
-      ],
-      "conditionalEmits": [],
-      "unionBounds": [
-        "handlers"
-      ],
-      "task": "I27",
-      "refs": [
-        "A2",
-        "A3"
-      ],
-      "assertion": "real"
-    },
-    {
-      "name": "choice_arm",
-      "emits": [],
-      "conditionalEmits": [],
-      "unionBounds": [
-        "body"
-      ],
-      "task": "I27",
-      "refs": [
-        "A2",
-        "A3"
-      ],
-      "assertion": "real"
-    },
-    {
-      "name": "judge",
-      "emits": [
-        "http::request_failed",
-        "ai::invalid_question",
-        "ai::invalid_answer"
-      ],
-      "conditionalEmits": [],
-      "unionBounds": [
-        "questions",
-        "handlers",
-        "continuation"
-      ],
-      "task": "LF10",
-      "refs": [
-        "A2.4"
-      ],
-      "assertion": "raw-provider"
-    },
-    {
-      "name": "fetch_body",
-      "emits": [
-        "http::request_failed"
-      ],
-      "conditionalEmits": [],
-      "unionBounds": [],
-      "task": "LF10",
-      "refs": [
-        "A2.4"
-      ],
-      "assertion": "raw-provider"
-    },
-    {
-      "name": "fetch_envelope",
-      "emits": [
-        "http::request_failed"
-      ],
-      "conditionalEmits": [],
-      "unionBounds": [],
-      "task": "LF10",
-      "refs": [
-        "A2.4"
-      ],
-      "assertion": "raw-provider"
-    },
-    {
-      "name": "llm",
-      "emits": [
-        "http::invalid_request",
-        "http::transport_failed",
-        "http::timeout",
-        "http::body_limit",
-        "http::status_error",
-        "codec::invalid_data",
-        "llm::refused",
-        "llm::truncated",
-        "llm::invalid_response"
-      ],
-      "conditionalEmits": [
-        {
-          "condition": "authenticated",
-          "emits": [
-            "http::credentials_missing"
-          ]
-        }
-      ],
-      "unionBounds": [],
-      "task": "I28",
-      "refs": [
-        "A2",
-        "A3"
-      ],
-      "assertion": "raw-provider"
+     "name": "T",
+     "constraint": "data"
     }
-  ]
+   ],
+   "fields": [],
+   "leaves": [
+    "option::none",
+    "option::some<T>"
+   ],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "number::division",
+   "identity": "can.std.number@1::division",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "quotient",
+     "type": "int"
+    },
+    {
+     "name": "remainder",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "number::rounded",
+   "identity": "can.std.number@1::rounded",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "value",
+     "type": "int"
+    },
+    {
+     "name": "remainder_numerator",
+     "type": "int"
+    },
+    {
+     "name": "denominator",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "collections::entry",
+   "identity": "can.std.collections@1::entry",
+   "kind": "record",
+   "parameters": [
+    {
+     "name": "K",
+     "constraint": "map_key"
+    },
+    {
+     "name": "V",
+     "constraint": "data"
+    }
+   ],
+   "fields": [
+    {
+     "name": "key",
+     "type": "K"
+    },
+    {
+     "name": "value",
+     "type": "V"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "collections::map",
+   "identity": "can.std.collections@1::map",
+   "kind": "opaque",
+   "parameters": [
+    {
+     "name": "K",
+     "constraint": "map_key"
+    },
+    {
+     "name": "V",
+     "constraint": "data"
+    }
+   ],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "collections::set",
+   "identity": "can.std.collections@1::set",
+   "kind": "opaque",
+   "parameters": [
+    {
+     "name": "K",
+     "constraint": "map_key"
+    }
+   ],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "http::header",
+   "identity": "can.std.http@1::header",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http::sse_event",
+   "identity": "can.std.http@1::sse_event",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "data",
+     "type": "str"
+    },
+    {
+     "name": "event",
+     "type": "str"
+    },
+    {
+     "name": "id",
+     "type": "str"
+    },
+    {
+     "name": "retry",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http::multipart_form",
+   "identity": "can.std.http@1::multipart_form",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "fields",
+     "type": "http::multipart_field[]"
+    },
+    {
+     "name": "files",
+     "type": "http::multipart_file[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http::multipart_field",
+   "identity": "can.std.http@1::multipart_field",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http::multipart_file",
+   "identity": "can.std.http@1::multipart_file",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "filename",
+     "type": "str"
+    },
+    {
+     "name": "content_type",
+     "type": "str"
+    },
+    {
+     "name": "content",
+     "type": "bytes::buffer"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http::response",
+   "identity": "can.std.http@1::response",
+   "kind": "record",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "fields": [
+    {
+     "name": "status",
+     "type": "int"
+    },
+    {
+     "name": "headers",
+     "type": "http::header[]"
+    },
+    {
+     "name": "body",
+     "type": "T"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http::failure_detail",
+   "identity": "can.std.http@1::failure_detail",
+   "kind": "variant",
+   "parameters": [],
+   "fields": [],
+   "leaves": [
+    "http::invalid_request",
+    "http::credentials_missing",
+    "http::transport_failed",
+    "http::timeout",
+    "http::body_limit",
+    "http::status_error",
+    "codec::invalid_data"
+   ],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "bytes::buffer",
+   "identity": "can.std.bytes@1::buffer",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "form::rows",
+   "identity": "can.std.form@1::rows",
+   "kind": "record",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "fields": [
+    {
+     "name": "order",
+     "type": "str[]"
+    },
+    {
+     "name": "items",
+     "type": "form::row_item<T>[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "form::row_item",
+   "identity": "can.std.form@1::row_item",
+   "kind": "record",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "fields": [
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "T"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "form::rejected",
+   "identity": "can.std.form@1::rejected",
+   "kind": "record",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "fields": [
+    {
+     "name": "raw",
+     "type": "form::raw_entry[]"
+    },
+    {
+     "name": "issues",
+     "type": "form::issue[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "form::raw_entry",
+   "identity": "can.std.form@1::raw_entry",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "form::issue",
+   "identity": "can.std.form@1::issue",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "form::collection",
+   "identity": "can.std.form@1::collection",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "form::row",
+   "identity": "can.std.form@1::row",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "form::field",
+   "identity": "can.std.form@1::field",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "html::node",
+   "identity": "can.std.html@1::node",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "html::safe",
+   "identity": "can.std.html@1::safe",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "html::url",
+   "identity": "can.std.html@1::url",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "html::attribute",
+   "identity": "can.std.html@1::attribute",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "html::tag",
+   "identity": "can.std.html@1::tag",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "htmx::target",
+   "identity": "can.std.htmx@1::target",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "htmx::swap",
+   "identity": "can.std.htmx@1::swap",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "http::request",
+   "identity": "can.std.http@1::request",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "http::server_response",
+   "identity": "can.std.http@1::server_response",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "http::status",
+   "identity": "can.std.http@1::status",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "http::body_status",
+   "identity": "can.std.http@1::body_status",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "http::server_headers",
+   "identity": "can.std.http@1::server_headers",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "http::route",
+   "identity": "can.std.http@1::route",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "http::router",
+   "identity": "can.std.http@1::router",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "http::server",
+   "identity": "can.std.http@1::server",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "http::server_config",
+   "identity": "can.std.http@1::server_config",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "http::tls_config",
+   "identity": "can.std.http@1::tls_config",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "sql::pool",
+   "identity": "can.std.sql@1::pool",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "sql::transaction",
+   "identity": "can.std.sql@1::transaction",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "sql::sqlite_file_options",
+   "identity": "can.std.sql@1::sqlite_file_options",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "mode",
+     "type": "str"
+    },
+    {
+     "name": "busy_timeout_ms",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "sql::commit",
+   "identity": "can.std.sql@1::commit",
+   "kind": "record",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "fields": [
+    {
+     "name": "value",
+     "type": "T"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "sql::rollback",
+   "identity": "can.std.sql@1::rollback",
+   "kind": "record",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "fields": [
+    {
+     "name": "value",
+     "type": "T"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "sql::decision",
+   "identity": "can.std.sql@1::decision",
+   "kind": "variant",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "fields": [],
+   "leaves": [
+    "sql::commit<T>",
+    "sql::rollback<T>"
+   ],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "files::file_info",
+   "identity": "can.std.files@1::file_info",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "size",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "files::entry",
+   "identity": "can.std.files@1::entry",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "kind",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "process::options",
+   "identity": "can.std.process@1::options",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "cwd",
+     "type": "str"
+    },
+    {
+     "name": "inherit_env",
+     "type": "bool"
+    },
+    {
+     "name": "env",
+     "type": "str[]"
+    },
+    {
+     "name": "stdin",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "stdout_limit",
+     "type": "int"
+    },
+    {
+     "name": "stderr_limit",
+     "type": "int"
+    },
+    {
+     "name": "deadline_ms",
+     "type": "int"
+    },
+    {
+     "name": "grace_ms",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "process::result",
+   "identity": "can.std.process@1::result",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "stdout",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "stderr",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "code",
+     "type": "int"
+    },
+    {
+     "name": "signal",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "stream::reader",
+   "identity": "can.std.stream@1::reader",
+   "kind": "opaque",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "stream::writer",
+   "identity": "can.std.stream@1::writer",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "crypto::key",
+   "identity": "can.std.crypto@1::key",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "crypto::keypair",
+   "identity": "can.std.crypto@1::keypair",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "private_key",
+     "type": "crypto::key"
+    },
+    {
+     "name": "public_key",
+     "type": "crypto::key"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "crypto::sealed",
+   "identity": "can.std.crypto@1::sealed",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "nonce",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "ciphertext",
+     "type": "bytes::buffer"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "url::parts",
+   "identity": "can.std.url@1::parts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "scheme",
+     "type": "str"
+    },
+    {
+     "name": "host",
+     "type": "str"
+    },
+    {
+     "name": "port",
+     "type": "int"
+    },
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "query",
+     "type": "str"
+    },
+    {
+     "name": "fragment",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "url::query_pair",
+   "identity": "can.std.url@1::query_pair",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "text::regex",
+   "identity": "can.std.text@1::regex",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "text::regex_match",
+   "identity": "can.std.text@1::regex_match",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "text",
+     "type": "str"
+    },
+    {
+     "name": "start",
+     "type": "int"
+    },
+    {
+     "name": "end",
+     "type": "int"
+    },
+    {
+     "name": "groups",
+     "type": "str[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "time::instant",
+   "identity": "can.std.time@1::instant",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "time::civil",
+   "identity": "can.std.time@1::civil",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "year",
+     "type": "int"
+    },
+    {
+     "name": "month",
+     "type": "int"
+    },
+    {
+     "name": "day",
+     "type": "int"
+    },
+    {
+     "name": "hour",
+     "type": "int"
+    },
+    {
+     "name": "minute",
+     "type": "int"
+    },
+    {
+     "name": "second",
+     "type": "int"
+    },
+    {
+     "name": "millisecond",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "ws::session",
+   "identity": "can.std.ws@1::session",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "ws::connection",
+   "identity": "can.std.ws@1::connection",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "session",
+     "type": "ws::session"
+    },
+    {
+     "name": "events",
+     "type": "stream::reader<ws::event>"
+    },
+    {
+     "name": "protocol",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "ws::event",
+   "identity": "can.std.ws@1::event",
+   "kind": "variant",
+   "parameters": [],
+   "fields": [],
+   "leaves": [
+    "ws::text",
+    "ws::binary",
+    "ws::drain",
+    "ws::closed"
+   ],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "ws::text",
+   "identity": "can.std.ws@1::text",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "text",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "ws::binary",
+   "identity": "can.std.ws@1::binary",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "data",
+     "type": "bytes::buffer"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "ws::drain",
+   "identity": "can.std.ws@1::drain",
+   "kind": "record",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "ws::closed",
+   "identity": "can.std.ws@1::closed",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "code",
+     "type": "int"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "cookie::attributes",
+   "identity": "can.std.cookie@1::attributes",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "domain",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "secure",
+     "type": "bool"
+    },
+    {
+     "name": "http_only",
+     "type": "bool"
+    },
+    {
+     "name": "same_site",
+     "type": "cookie::same_site"
+    },
+    {
+     "name": "max_age",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "expires_ms",
+     "type": "option::value<int>"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "cookie::same_site",
+   "identity": "can.std.cookie@1::same_site",
+   "kind": "variant",
+   "parameters": [],
+   "fields": [],
+   "leaves": [
+    "cookie::strict",
+    "cookie::lax",
+    "cookie::none"
+   ],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "cookie::strict",
+   "identity": "can.std.cookie@1::strict",
+   "kind": "record",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "cookie::lax",
+   "identity": "can.std.cookie@1::lax",
+   "kind": "record",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "cookie::none",
+   "identity": "can.std.cookie@1::none",
+   "kind": "record",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "cookie::cookie",
+   "identity": "can.std.cookie@1::cookie",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "cookie::collection",
+   "identity": "can.std.cookie@1::collection",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "pairs",
+     "type": "cookie::pair[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "cookie::pair",
+   "identity": "can.std.cookie@1::pair",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "s3::client",
+   "identity": "can.std.s3@1::client",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "s3::metadata",
+   "identity": "can.std.s3@1::metadata",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "size",
+     "type": "int"
+    },
+    {
+     "name": "etag",
+     "type": "str"
+    },
+    {
+     "name": "content_type",
+     "type": "str"
+    },
+    {
+     "name": "last_modified",
+     "type": "time::instant"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "s3::entry",
+   "identity": "can.std.s3@1::entry",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "size",
+     "type": "int"
+    },
+    {
+     "name": "etag",
+     "type": "str"
+    },
+    {
+     "name": "last_modified",
+     "type": "time::instant"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "s3::page",
+   "identity": "can.std.s3@1::page",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "entries",
+     "type": "s3::entry[]"
+    },
+    {
+     "name": "prefixes",
+     "type": "str[]"
+    },
+    {
+     "name": "truncated",
+     "type": "bool"
+    },
+    {
+     "name": "continuation",
+     "type": "option::value<s3::continuation>"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "s3::continuation",
+   "identity": "can.std.s3@1::continuation",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "s3::upload",
+   "identity": "can.std.s3@1::upload",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "s3::presigned",
+   "identity": "can.std.s3@1::presigned",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "s3::presigned_info",
+   "identity": "can.std.s3@1::presigned_info",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "url",
+     "type": "str"
+    },
+    {
+     "name": "method",
+     "type": "s3::method"
+    },
+    {
+     "name": "expires_at",
+     "type": "time::instant"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "s3::method",
+   "identity": "can.std.s3@1::method",
+   "kind": "variant",
+   "parameters": [],
+   "fields": [],
+   "leaves": [
+    "s3::method_get",
+    "s3::method_put",
+    "s3::method_delete",
+    "s3::method_head"
+   ],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "s3::method_get",
+   "identity": "can.std.s3@1::method_get",
+   "kind": "record",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "s3::method_put",
+   "identity": "can.std.s3@1::method_put",
+   "kind": "record",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "s3::method_delete",
+   "identity": "can.std.s3@1::method_delete",
+   "kind": "record",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "s3::method_head",
+   "identity": "can.std.s3@1::method_head",
+   "kind": "record",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "s3::write_options",
+   "identity": "can.std.s3@1::write_options",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "content_type",
+     "type": "option::value<str>"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "s3::upload_options",
+   "identity": "can.std.s3@1::upload_options",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "content_type",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "part_size",
+     "type": "option::value<int>"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "s3::list_options",
+   "identity": "can.std.s3@1::list_options",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "prefix",
+     "type": "str"
+    },
+    {
+     "name": "limit",
+     "type": "int"
+    },
+    {
+     "name": "delimiter",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "continuation",
+     "type": "option::value<s3::continuation>"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "browser::app",
+   "identity": "can.std.browser@1::app",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "browser::view",
+   "identity": "can.std.browser@1::view",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "browser::node",
+   "identity": "can.std.browser@1::node",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "browser::state",
+   "identity": "can.std.browser@1::state",
+   "kind": "opaque",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "browser::snapshot",
+   "identity": "can.std.browser@1::snapshot",
+   "kind": "record",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "fields": [
+    {
+     "name": "version",
+     "type": "int"
+    },
+    {
+     "name": "value",
+     "type": "T"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "browser::event",
+   "identity": "can.std.browser@1::event",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "target",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "str"
+    },
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "checked",
+     "type": "bool"
+    },
+    {
+     "name": "selected",
+     "type": "str[]"
+    },
+    {
+     "name": "files",
+     "type": "browser::file[]"
+    },
+    {
+     "name": "modifiers",
+     "type": "browser::modifiers"
+    },
+    {
+     "name": "composing",
+     "type": "bool"
+    },
+    {
+     "name": "selection",
+     "type": "browser::selection"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "browser::modifiers",
+   "identity": "can.std.browser@1::modifiers",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "alt",
+     "type": "bool"
+    },
+    {
+     "name": "ctrl",
+     "type": "bool"
+    },
+    {
+     "name": "meta",
+     "type": "bool"
+    },
+    {
+     "name": "shift",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "browser::selection",
+   "identity": "can.std.browser@1::selection",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "start",
+     "type": "int"
+    },
+    {
+     "name": "end",
+     "type": "int"
+    },
+    {
+     "name": "direction",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "browser::file",
+   "identity": "can.std.browser@1::file",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "size",
+     "type": "int"
+    },
+    {
+     "name": "mime",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "action::declaration",
+   "identity": "can.std.action@1::declaration",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "image::metadata",
+   "identity": "can.std.image@1::metadata",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "format",
+     "type": "str"
+    },
+    {
+     "name": "width",
+     "type": "int"
+    },
+    {
+     "name": "height",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "codec::json_value",
+   "identity": "can.std.codec@1::json_value",
+   "kind": "variant",
+   "parameters": [],
+   "fields": [],
+   "leaves": [
+    "codec::json_null",
+    "codec::json_bool",
+    "codec::json_int",
+    "codec::json_float",
+    "codec::json_string",
+    "codec::json_array",
+    "codec::json_object"
+   ],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "codec::json_null",
+   "identity": "can.std.codec@1::json_null",
+   "kind": "record",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "codec::json_bool",
+   "identity": "can.std.codec@1::json_bool",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "value",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "codec::json_int",
+   "identity": "can.std.codec@1::json_int",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "value",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "codec::json_float",
+   "identity": "can.std.codec@1::json_float",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "value",
+     "type": "float"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "codec::json_string",
+   "identity": "can.std.codec@1::json_string",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "codec::json_array",
+   "identity": "can.std.codec@1::json_array",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "values",
+     "type": "codec::json_value[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "codec::json_object",
+   "identity": "can.std.codec@1::json_object",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "members",
+     "type": "codec::json_member[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "codec::json_member",
+   "identity": "can.std.codec@1::json_member",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "codec::json_value"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "test::owner",
+   "identity": "can.std.test@1::owner",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "test::channel",
+   "identity": "can.std.test@1::channel",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [
+    {
+     "name": "kind",
+     "type": "str"
+    }
+   ],
+   "constructible": false
+  },
+  {
+   "name": "test::workspace",
+   "identity": "can.std.test@1::workspace",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "test::tool_result",
+   "identity": "can.std.test@1::tool_result",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "stdout",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "stderr",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "code",
+     "type": "int"
+    },
+    {
+     "name": "signal",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "test::evidence",
+   "identity": "can.std.test@1::evidence",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "test::evidence_receipt",
+   "identity": "can.std.test@1::evidence_receipt",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "digest",
+     "type": "str"
+    },
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "bytes",
+     "type": "int"
+    },
+    {
+     "name": "entries",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  }
+ ],
+ "errors": [
+  {
+   "name": "all_failed",
+   "identity": "can.prelude@1::all_failed",
+   "parameters": [
+    {
+     "name": "F",
+     "constraint": "failure_variant"
+    }
+   ],
+   "fields": [
+    {
+     "name": "failures",
+     "type": "F[]"
+    }
+   ]
+  },
+  {
+   "name": "number::inexact",
+   "identity": "can.std.number@1::inexact",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "text::invalid_number",
+   "identity": "can.std.text@1::invalid_number",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "input",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "text::invalid_bool",
+   "identity": "can.std.text@1::invalid_bool",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "input",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "number::invalid_bool",
+   "identity": "can.std.number@1::invalid_bool",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "value",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "text::empty_separator",
+   "identity": "can.std.text@1::empty_separator",
+   "parameters": [],
+   "fields": []
+  },
+  {
+   "name": "text::empty_pattern",
+   "identity": "can.std.text@1::empty_pattern",
+   "parameters": [],
+   "fields": []
+  },
+  {
+   "name": "text::invalid_unicode",
+   "identity": "can.std.text@1::invalid_unicode",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "collections::key_absent",
+   "identity": "can.std.collections@1::key_absent",
+   "parameters": [],
+   "fields": []
+  },
+  {
+   "name": "collections::key_exists",
+   "identity": "can.std.collections@1::key_exists",
+   "parameters": [],
+   "fields": []
+  },
+  {
+   "name": "number::zero_divisor",
+   "identity": "can.std.number@1::zero_divisor",
+   "parameters": [],
+   "fields": []
+  },
+  {
+   "name": "checks::failed",
+   "identity": "can.std.checks@1::failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "http::invalid_request",
+   "identity": "can.std.http@1::invalid_request",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "http::credentials_missing",
+   "identity": "can.std.http@1::credentials_missing",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "variable",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "http::transport_failed",
+   "identity": "can.std.http@1::transport_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "phase",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "http::timeout",
+   "identity": "can.std.http@1::timeout",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "timeout_ms",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "http::body_limit",
+   "identity": "can.std.http@1::body_limit",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "limit",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "http::status_error",
+   "identity": "can.std.http@1::status_error",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "status",
+     "type": "int"
+    },
+    {
+     "name": "headers",
+     "type": "http::header[]"
+    }
+   ]
+  },
+  {
+   "name": "http::request_failed",
+   "identity": "can.std.http@1::request_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "detail",
+     "type": "http::failure_detail"
+    }
+   ]
+  },
+  {
+   "name": "codec::invalid_data",
+   "identity": "can.std.codec@1::invalid_data",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "ai::invalid_question",
+   "identity": "can.std.ai@1::invalid_question",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "ai::invalid_answer",
+   "identity": "can.std.ai@1::invalid_answer",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "question",
+     "type": "str"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "llm::refused",
+   "identity": "can.std.llm@1::refused",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "llm::truncated",
+   "identity": "can.std.llm@1::truncated",
+   "parameters": [],
+   "fields": []
+  },
+  {
+   "name": "llm::invalid_response",
+   "identity": "can.std.llm@1::invalid_response",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "io::read_failed",
+   "identity": "can.std.io@1::read_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "operation",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "io::write_failed",
+   "identity": "can.std.io@1::write_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "operation",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "io::limit_exceeded",
+   "identity": "can.std.io@1::limit_exceeded",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "limit",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "form::unknown_field",
+   "identity": "can.std.form@1::unknown_field",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "name",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "form::invalid_name",
+   "identity": "can.std.form@1::invalid_name",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "name",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "html::invalid_structure",
+   "identity": "can.std.html@1::invalid_structure",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "html::invalid_url",
+   "identity": "can.std.html@1::invalid_url",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "htmx::invalid_target",
+   "identity": "can.std.htmx@1::invalid_target",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "htmx::invalid_interval",
+   "identity": "can.std.htmx@1::invalid_interval",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "milliseconds",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "http::invalid_route",
+   "identity": "can.std.http@1::invalid_route",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "http::duplicate_route",
+   "identity": "can.std.http@1::duplicate_route",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "method",
+     "type": "str"
+    },
+    {
+     "name": "path",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "http::ambiguous_route",
+   "identity": "can.std.http@1::ambiguous_route",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "first",
+     "type": "str"
+    },
+    {
+     "name": "second",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "http::invalid_server_config",
+   "identity": "can.std.http@1::invalid_server_config",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "http::bind_failed",
+   "identity": "can.std.http@1::bind_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "address",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "http::shutdown_failed",
+   "identity": "can.std.http@1::shutdown_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "phase",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "sql::connection_failed",
+   "identity": "can.std.sql@1::connection_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "phase",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "sql::query_failed",
+   "identity": "can.std.sql@1::query_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "operation",
+     "type": "str"
+    },
+    {
+     "name": "code",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "sql::row_missing",
+   "identity": "can.std.sql@1::row_missing",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "query",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "sql::row_count",
+   "identity": "can.std.sql@1::row_count",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "query",
+     "type": "str"
+    },
+    {
+     "name": "actual",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "sql::schema_mismatch",
+   "identity": "can.std.sql@1::schema_mismatch",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "sql::constraint_failed",
+   "identity": "can.std.sql@1::constraint_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "constraint",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "sql::transaction_failed",
+   "identity": "can.std.sql@1::transaction_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "phase",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "sql::commit_unknown",
+   "identity": "can.std.sql@1::commit_unknown",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "transaction_id",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "sql::close_failed",
+   "identity": "can.std.sql@1::close_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "sql::row_limit",
+   "identity": "can.std.sql@1::row_limit",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "limit",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "sql::unsupported_value",
+   "identity": "can.std.sql@1::unsupported_value",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "clock::invalid_duration",
+   "identity": "can.std.clock@1::invalid_duration",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "milliseconds",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "random::invalid_length",
+   "identity": "can.std.random@1::invalid_length",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "length",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "env::invalid_name",
+   "identity": "can.std.env@1::invalid_name",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "name",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "log::write_failed",
+   "identity": "can.std.log@1::write_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "level",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "files::not_found",
+   "identity": "can.std.files@1::not_found",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "path",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "files::denied",
+   "identity": "can.std.files@1::denied",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "operation",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "files::already_exists",
+   "identity": "can.std.files@1::already_exists",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "path",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "files::invalid_path",
+   "identity": "can.std.files@1::invalid_path",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "files::io_error",
+   "identity": "can.std.files@1::io_error",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "operation",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "files::limit_exceeded",
+   "identity": "can.std.files@1::limit_exceeded",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "limit",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "files::not_empty",
+   "identity": "can.std.files@1::not_empty",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "path",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "files::cross_device",
+   "identity": "can.std.files@1::cross_device",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "source",
+     "type": "str"
+    },
+    {
+     "name": "destination",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "files::unexpected_kind",
+   "identity": "can.std.files@1::unexpected_kind",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "operation",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "process::spawn_failed",
+   "identity": "can.std.process@1::spawn_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "executable",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "process::timeout",
+   "identity": "can.std.process@1::timeout",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "deadline_ms",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "process::output_limit",
+   "identity": "can.std.process@1::output_limit",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "stream",
+     "type": "str"
+    },
+    {
+     "name": "limit",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "process::nonzero",
+   "identity": "can.std.process@1::nonzero",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "code",
+     "type": "int"
+    },
+    {
+     "name": "signal",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "process::invalid_config",
+   "identity": "can.std.process@1::invalid_config",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "field",
+     "type": "str"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "process::io_error",
+   "identity": "can.std.process@1::io_error",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "operation",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "stream::read_failed",
+   "identity": "can.std.stream@1::read_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "stream::write_failed",
+   "identity": "can.std.stream@1::write_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "stream::cancelled",
+   "identity": "can.std.stream@1::cancelled",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "stream::close_failed",
+   "identity": "can.std.stream@1::close_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "password::cost_rejected",
+   "identity": "can.std.password@1::cost_rejected",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "profile",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "password::invalid_hash",
+   "identity": "can.std.password@1::invalid_hash",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "crypto::invalid_key",
+   "identity": "can.std.crypto@1::invalid_key",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "crypto::invalid_nonce",
+   "identity": "can.std.crypto@1::invalid_nonce",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "length",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "crypto::key_misuse",
+   "identity": "can.std.crypto@1::key_misuse",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "operation",
+     "type": "str"
+    },
+    {
+     "name": "algorithm",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "crypto::decrypt_failed",
+   "identity": "can.std.crypto@1::decrypt_failed",
+   "parameters": [],
+   "fields": []
+  },
+  {
+   "name": "url::invalid_url",
+   "identity": "can.std.url@1::invalid_url",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "text::invalid_regex",
+   "identity": "can.std.text@1::invalid_regex",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "text::invalid_limit",
+   "identity": "can.std.text@1::invalid_limit",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "limit",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "time::out_of_range",
+   "identity": "can.std.time@1::out_of_range",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "millis",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "time::invalid_zone",
+   "identity": "can.std.time@1::invalid_zone",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "zone",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "time::nonexistent_time",
+   "identity": "can.std.time@1::nonexistent_time",
+   "parameters": [],
+   "fields": []
+  },
+  {
+   "name": "time::invalid_option",
+   "identity": "can.std.time@1::invalid_option",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "ws::connect_failed",
+   "identity": "can.std.ws@1::connect_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "ws::upgrade_failed",
+   "identity": "can.std.ws@1::upgrade_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "ws::unsupported_protocol",
+   "identity": "can.std.ws@1::unsupported_protocol",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "protocol",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "ws::send_failed",
+   "identity": "can.std.ws@1::send_failed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "ws::invalid_close",
+   "identity": "can.std.ws@1::invalid_close",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "ws::limit_exceeded",
+   "identity": "can.std.ws@1::limit_exceeded",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "limit",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "ws::invalid_url",
+   "identity": "can.std.ws@1::invalid_url",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "ws::invalid_protocol",
+   "identity": "can.std.ws@1::invalid_protocol",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "protocol",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "cookie::invalid_cookie",
+   "identity": "can.std.cookie@1::invalid_cookie",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "csrf::invalid_config",
+   "identity": "can.std.csrf@1::invalid_config",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "s3::invalid_config",
+   "identity": "can.std.s3@1::invalid_config",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "s3::missing_key",
+   "identity": "can.std.s3@1::missing_key",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "key",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "s3::access_denied",
+   "identity": "can.std.s3@1::access_denied",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "operation",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "s3::service_error",
+   "identity": "can.std.s3@1::service_error",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "code",
+     "type": "str"
+    },
+    {
+     "name": "operation",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "s3::upload_closed",
+   "identity": "can.std.s3@1::upload_closed",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "operation",
+     "type": "str"
+    },
+    {
+     "name": "state",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "s3::over_limit",
+   "identity": "can.std.s3@1::over_limit",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "limit",
+     "type": "int"
+    },
+    {
+     "name": "size",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "markdown::over_limit",
+   "identity": "can.std.markdown@1::over_limit",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "limit",
+     "type": "int"
+    },
+    {
+     "name": "size",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "browser::missing_root",
+   "identity": "can.std.browser@1::missing_root",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "root",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "browser::disposed",
+   "identity": "can.std.browser@1::disposed",
+   "parameters": [],
+   "fields": []
+  },
+  {
+   "name": "browser::rejected",
+   "identity": "can.std.browser@1::rejected",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "browser::stale_version",
+   "identity": "can.std.browser@1::stale_version",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "expected",
+     "type": "int"
+    },
+    {
+     "name": "actual",
+     "type": "int"
+    }
+   ]
+  },
+  {
+   "name": "browser::invalid_query",
+   "identity": "can.std.browser@1::invalid_query",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "action::invalid_path",
+   "identity": "can.std.action@1::invalid_path",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "image::invalid_image",
+   "identity": "can.std.image@1::invalid_image",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "test::wrong_owner",
+   "identity": "can.std.test@1::wrong_owner",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "handle",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "test::stale_handle",
+   "identity": "can.std.test@1::stale_handle",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "handle",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "test::closed_handle",
+   "identity": "can.std.test@1::closed_handle",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "handle",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "test::transport_failure",
+   "identity": "can.std.test@1::transport_failure",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "test::channel_full",
+   "identity": "can.std.test@1::channel_full",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "handle",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "test::detached_transport",
+   "identity": "can.std.test@1::detached_transport",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "handle",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "test::channel_empty",
+   "identity": "can.std.test@1::channel_empty",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "handle",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "test::invalid_grant",
+   "identity": "can.std.test@1::invalid_grant",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "test::invalid_kind",
+   "identity": "can.std.test@1::invalid_kind",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "kind",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "test::unknown_tool",
+   "identity": "can.std.test@1::unknown_tool",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "key",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "test::invalid_path",
+   "identity": "can.std.test@1::invalid_path",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "test::invalid_name",
+   "identity": "can.std.test@1::invalid_name",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  }
+ ],
+ "operations": [
+  {
+   "name": "text::from_int",
+   "identity": "can.std.text@1::from_int",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String"
+    ],
+    "adapter": "Native formatting without coercion at source boundaries.",
+    "task": "I22"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6"
+   ]
+  },
+  {
+   "name": "text::from_float",
+   "identity": "can.std.text@1::from_float",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "float"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String"
+    ],
+    "adapter": "Native formatting without coercion at source boundaries.",
+    "task": "I22"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6"
+   ]
+  },
+  {
+   "name": "text::from_bool",
+   "identity": "can.std.text@1::from_bool",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "bool"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String"
+    ],
+    "adapter": "Native formatting without coercion at source boundaries.",
+    "task": "I22"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6"
+   ]
+  },
+  {
+   "name": "number::int_to_float",
+   "identity": "can.std.number@1::int_to_float",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "float",
+   "callbacks": [],
+   "emits": [
+    "number::inexact"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Number",
+     "BigInt"
+    ],
+    "adapter": "Validate exactness, finiteness or the 0/1 boolean range before conversion.",
+    "task": "I22"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6"
+   ]
+  },
+  {
+   "name": "number::float_to_int",
+   "identity": "can.std.number@1::float_to_int",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "float"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [
+    "number::inexact"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Number",
+     "BigInt"
+    ],
+    "adapter": "Validate exactness, finiteness or the 0/1 boolean range before conversion.",
+    "task": "I22"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6"
+   ]
+  },
+  {
+   "name": "number::bool_to_int",
+   "identity": "can.std.number@1::bool_to_int",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "bool"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Number",
+     "BigInt"
+    ],
+    "adapter": "Validate exactness, finiteness or the 0/1 boolean range before conversion.",
+    "task": "I22"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6"
+   ]
+  },
+  {
+   "name": "number::int_to_bool",
+   "identity": "can.std.number@1::int_to_bool",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [],
+   "emits": [
+    "number::invalid_bool"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Number",
+     "BigInt"
+    ],
+    "adapter": "Validate exactness, finiteness or the 0/1 boolean range before conversion.",
+    "task": "I22"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6"
+   ]
+  },
+  {
+   "name": "number::floor",
+   "identity": "can.std.number@1::floor",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "float"
+    }
+   ],
+   "staticInputs": [],
+   "result": "float",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Math.floor"
+    ],
+    "adapter": "Preserve native IEEE outcomes and signed zero.",
+    "task": "I22"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6"
+   ]
+  },
+  {
+   "name": "number::ceil",
+   "identity": "can.std.number@1::ceil",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "float"
+    }
+   ],
+   "staticInputs": [],
+   "result": "float",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Math.ceil"
+    ],
+    "adapter": "Preserve native IEEE outcomes and signed zero.",
+    "task": "I22"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6"
+   ]
+  },
+  {
+   "name": "number::trunc",
+   "identity": "can.std.number@1::trunc",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "float"
+    }
+   ],
+   "staticInputs": [],
+   "result": "float",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Math.trunc"
+    ],
+    "adapter": "Preserve native IEEE outcomes and signed zero.",
+    "task": "I22"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6"
+   ]
+  },
+  {
+   "name": "number::round",
+   "identity": "can.std.number@1::round",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "float"
+    }
+   ],
+   "staticInputs": [],
+   "result": "float",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Math.round"
+    ],
+    "adapter": "Preserve native IEEE outcomes and signed zero.",
+    "task": "I22"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6"
+   ]
+  },
+  {
+   "name": "number::is_finite",
+   "identity": "can.std.number@1::is_finite",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "float"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Number.isFinite"
+    ],
+    "adapter": "Preserve native IEEE outcomes and signed zero.",
+    "task": "I22"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6"
+   ]
+  },
+  {
+   "name": "number::is_nan",
+   "identity": "can.std.number@1::is_nan",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "float"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Number.isNaN"
+    ],
+    "adapter": "Preserve native IEEE outcomes and signed zero.",
+    "task": "I22"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6"
+   ]
+  },
+  {
+   "name": "text::to_int",
+   "identity": "can.std.text@1::to_int",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [
+    "text::invalid_number"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "BigInt"
+    ],
+    "adapter": "Full-match the specified grammar; reject nonfinite parsed floats.",
+    "task": "I22"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6"
+   ]
+  },
+  {
+   "name": "text::to_float",
+   "identity": "can.std.text@1::to_float",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "float",
+   "callbacks": [],
+   "emits": [
+    "text::invalid_number"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Number"
+    ],
+    "adapter": "Full-match the specified grammar; reject nonfinite parsed floats.",
+    "task": "I22"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6"
+   ]
+  },
+  {
+   "name": "text::to_bool",
+   "identity": "can.std.text@1::to_bool",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [],
+   "emits": [
+    "text::invalid_bool"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "==="
+    ],
+    "adapter": "Full-match the specified grammar; reject nonfinite parsed floats.",
+    "task": "I22"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6"
+   ]
+  },
+  {
+   "name": "array.map",
+   "identity": "can.intrinsic.array@1::map",
+   "kind": "method",
+   "receiver": "T[]",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    },
+    {
+     "name": "U",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [],
+   "result": "U[]",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "T"
+     ],
+     "result": "U",
+     "deriveErrors": true,
+     "emits": []
+    }
+   ],
+   "emits": [],
+   "callbackErrors": [
+    "callback"
+   ],
+   "lowering": {
+    "native": [
+     "Array.fromAsync",
+     "Array.prototype.keys",
+     "Array.prototype.map"
+    ],
+    "adapter": "Iterate indices sequentially, box callback output, then unwrap synchronously.",
+    "task": "I21"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "array.filter",
+   "identity": "can.intrinsic.array@1::filter",
+   "kind": "method",
+   "receiver": "T[]",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [],
+   "result": "T[]",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "T"
+     ],
+     "result": "bool",
+     "deriveErrors": true,
+     "emits": []
+    }
+   ],
+   "emits": [],
+   "callbackErrors": [
+    "callback"
+   ],
+   "lowering": {
+    "native": [
+     "Array.fromAsync",
+     "Array.prototype.filter"
+    ],
+    "adapter": "Collect ordered boolean decisions before native filtering.",
+    "task": "I21"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "array.for_each",
+   "identity": "can.intrinsic.array@1::for_each",
+   "kind": "method",
+   "receiver": "T[]",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "T"
+     ],
+     "result": "void",
+     "deriveErrors": true,
+     "emits": []
+    }
+   ],
+   "emits": [],
+   "callbackErrors": [
+    "callback"
+   ],
+   "lowering": {
+    "native": [
+     "Array.prototype.reduce"
+    ],
+    "adapter": "Await each callback through a native reduce chain, stopping on failure.",
+    "task": "I21"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "array.fold",
+   "identity": "can.intrinsic.array@1::fold",
+   "kind": "method",
+   "receiver": "T[]",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    },
+    {
+     "name": "U",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "initial",
+     "type": "U"
+    },
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [],
+   "result": "U",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "U",
+      "T"
+     ],
+     "result": "U",
+     "deriveErrors": true,
+     "emits": []
+    }
+   ],
+   "emits": [],
+   "callbackErrors": [
+    "callback"
+   ],
+   "lowering": {
+    "native": [
+     "Array.prototype.reduce"
+    ],
+    "adapter": "Box and await each accumulator with the explicit initial value.",
+    "task": "I21"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "array.find",
+   "identity": "can.intrinsic.array@1::find",
+   "kind": "method",
+   "receiver": "T[]",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [],
+   "result": "option::value<T>",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "T"
+     ],
+     "result": "bool",
+     "deriveErrors": true,
+     "emits": []
+    }
+   ],
+   "emits": [],
+   "callbackErrors": [
+    "callback"
+   ],
+   "lowering": {
+    "native": [
+     "Array.prototype.values"
+    ],
+    "adapter": "Bounded ascending await adapter stops on the first true predicate.",
+    "task": "I21"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "array.some",
+   "identity": "can.intrinsic.array@1::some",
+   "kind": "method",
+   "receiver": "T[]",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "T"
+     ],
+     "result": "bool",
+     "deriveErrors": true,
+     "emits": []
+    }
+   ],
+   "emits": [],
+   "callbackErrors": [
+    "callback"
+   ],
+   "lowering": {
+    "native": [
+     "Array.prototype.values"
+    ],
+    "adapter": "Bounded ascending await adapter stops on true; empty returns false.",
+    "task": "I21"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "array.every",
+   "identity": "can.intrinsic.array@1::every",
+   "kind": "method",
+   "receiver": "T[]",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "T"
+     ],
+     "result": "bool",
+     "deriveErrors": true,
+     "emits": []
+    }
+   ],
+   "emits": [],
+   "callbackErrors": [
+    "callback"
+   ],
+   "lowering": {
+    "native": [
+     "Array.prototype.values"
+    ],
+    "adapter": "Bounded ascending await adapter stops on false; empty returns true.",
+    "task": "I21"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "array.sort_by",
+   "identity": "can.intrinsic.array@1::sort_by",
+   "kind": "method",
+   "receiver": "T[]",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    },
+    {
+     "name": "K",
+     "constraint": "sort_key"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [],
+   "result": "T[]",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "T"
+     ],
+     "result": "K",
+     "deriveErrors": true,
+     "emits": []
+    }
+   ],
+   "emits": [],
+   "callbackErrors": [
+    "callback"
+   ],
+   "lowering": {
+    "native": [
+     "Array.fromAsync",
+     "Array.prototype.toSorted"
+    ],
+    "adapter": "Evaluate each key once, reject nonfinite keys, compare native keys with index tie-break.",
+    "task": "I21"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "array.slice",
+   "identity": "can.intrinsic.array@1::slice",
+   "kind": "method",
+   "receiver": "T[]",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "start",
+     "type": "int"
+    },
+    {
+     "name": "end",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "T[]",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.slice"
+    ],
+    "adapter": "Normalize slice bounds in bigint; return immutable native copies.",
+    "task": "I21"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6",
+    "C7"
+   ]
+  },
+  {
+   "name": "array.concat",
+   "identity": "can.intrinsic.array@1::concat",
+   "kind": "method",
+   "receiver": "T[]",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "other",
+     "type": "T[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "T[]",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.concat"
+    ],
+    "adapter": "Normalize slice bounds in bigint; return immutable native copies.",
+    "task": "I21"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6",
+    "C7"
+   ]
+  },
+  {
+   "name": "array.to_reversed",
+   "identity": "can.intrinsic.array@1::to_reversed",
+   "kind": "method",
+   "receiver": "T[]",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "T[]",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.toReversed"
+    ],
+    "adapter": "Normalize slice bounds in bigint; return immutable native copies.",
+    "task": "I21"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6",
+    "C7"
+   ]
+  },
+  {
+   "name": "append",
+   "identity": "can.prelude@1::append",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "items",
+     "type": "T[]"
+    },
+    {
+     "name": "value",
+     "type": "T"
+    }
+   ],
+   "staticInputs": [],
+   "result": "T[]",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "array spread"
+    ],
+    "adapter": "Copy the source and append one value without mutation.",
+    "task": "I21"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "str.includes",
+   "identity": "can.intrinsic.str@1::includes",
+   "kind": "method",
+   "receiver": "str",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String.prototype.includes"
+    ],
+    "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
+    "task": "I24"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6",
+    "C7"
+   ]
+  },
+  {
+   "name": "str.starts_with",
+   "identity": "can.intrinsic.str@1::starts_with",
+   "kind": "method",
+   "receiver": "str",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String.prototype.startsWith"
+    ],
+    "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
+    "task": "I24"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6",
+    "C7"
+   ]
+  },
+  {
+   "name": "str.ends_with",
+   "identity": "can.intrinsic.str@1::ends_with",
+   "kind": "method",
+   "receiver": "str",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String.prototype.endsWith"
+    ],
+    "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
+    "task": "I24"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6",
+    "C7"
+   ]
+  },
+  {
+   "name": "str.to_lower_case",
+   "identity": "can.intrinsic.str@1::to_lower_case",
+   "kind": "method",
+   "receiver": "str",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String.prototype.toLowerCase"
+    ],
+    "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
+    "task": "I24"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6",
+    "C7"
+   ]
+  },
+  {
+   "name": "str.to_upper_case",
+   "identity": "can.intrinsic.str@1::to_upper_case",
+   "kind": "method",
+   "receiver": "str",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String.prototype.toUpperCase"
+    ],
+    "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
+    "task": "I24"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6",
+    "C7"
+   ]
+  },
+  {
+   "name": "str.trim",
+   "identity": "can.intrinsic.str@1::trim",
+   "kind": "method",
+   "receiver": "str",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String.prototype.trim"
+    ],
+    "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
+    "task": "I24"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6",
+    "C7"
+   ]
+  },
+  {
+   "name": "str.slice",
+   "identity": "can.intrinsic.str@1::slice",
+   "kind": "method",
+   "receiver": "str",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "start",
+     "type": "int"
+    },
+    {
+     "name": "end",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String.prototype.slice"
+    ],
+    "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
+    "task": "I24"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6",
+    "C7"
+   ]
+  },
+  {
+   "name": "str.split",
+   "identity": "can.intrinsic.str@1::split",
+   "kind": "method",
+   "receiver": "str",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "separator",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str[]",
+   "callbacks": [],
+   "emits": [
+    "text::empty_separator"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String.prototype.split"
+    ],
+    "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
+    "task": "I24"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6",
+    "C7"
+   ]
+  },
+  {
+   "name": "str.replace_all",
+   "identity": "can.intrinsic.str@1::replace_all",
+   "kind": "method",
+   "receiver": "str",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "search",
+     "type": "str"
+    },
+    {
+     "name": "replacement",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "text::empty_pattern"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String.prototype.replaceAll"
+    ],
+    "adapter": "Use C6 bigint slice normalization; reject empty split/search; replace via a function for literal dollars.",
+    "task": "I24"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6",
+    "C7"
+   ]
+  },
+  {
+   "name": "text::join",
+   "identity": "can.std.text@1::join",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "items",
+     "type": "str[]"
+    },
+    {
+     "name": "separator",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.join"
+    ],
+    "adapter": "Native join with explicit separator.",
+    "task": "I24"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "text::scalars",
+   "identity": "can.std.text@1::scalars",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int[]",
+   "callbacks": [],
+   "emits": [
+    "text::invalid_unicode"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String.prototype.Symbol.iterator",
+     "String.prototype.codePointAt"
+    ],
+    "adapter": "Validate scalar values; chunk bulk code points; use locale und for graphemes and NFC for normalization.",
+    "task": "I24"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "text::from_scalars",
+   "identity": "can.std.text@1::from_scalars",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "int[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "text::invalid_unicode"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String.fromCodePoint"
+    ],
+    "adapter": "Validate scalar values; chunk bulk code points; use locale und for graphemes and NFC for normalization.",
+    "task": "I24"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "text::graphemes",
+   "identity": "can.std.text@1::graphemes",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str[]",
+   "callbacks": [],
+   "emits": [
+    "text::invalid_unicode"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Intl.Segmenter"
+    ],
+    "adapter": "Validate scalar values; chunk bulk code points; use locale und for graphemes and NFC for normalization.",
+    "task": "I24"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "text::normalize_nfc",
+   "identity": "can.std.text@1::normalize_nfc",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "text::invalid_unicode"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String.prototype.normalize"
+    ],
+    "adapter": "Validate scalar values; chunk bulk code points; use locale und for graphemes and NFC for normalization.",
+    "task": "I24"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "text::compile_regex",
+   "identity": "can.std.text@1::compile_regex",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "pattern",
+     "type": "str"
+    },
+    {
+     "name": "flags",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "text::regex",
+   "callbacks": [],
+   "emits": [
+    "text::invalid_regex"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "RegExp"
+    ],
+    "adapter": "Compile validated patterns with i/m/s/u/v flags into opaque handles; other flags and bad patterns reject; execute in ordinary assertions.",
+    "task": "B1-13"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-13"
+   ]
+  },
+  {
+   "name": "text::matches",
+   "identity": "can.std.text@1::matches",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "regex",
+     "type": "text::regex"
+    },
+    {
+     "name": "text",
+     "type": "str"
+    },
+    {
+     "name": "limit",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "text::regex_match[]",
+   "callbacks": [],
+   "emits": [
+    "text::invalid_limit"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "RegExp"
+    ],
+    "adapter": "Scan with a fresh global pass per call (no shared lastIndex), UTF-16 offsets, empty-match advancement, absent captures as empty; execute in ordinary assertions.",
+    "task": "B1-13"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-13"
+   ]
+  },
+  {
+   "name": "collections::empty_map",
+   "identity": "can.std.collections@1::empty_map",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "K",
+     "constraint": "map_key"
+    },
+    {
+     "name": "V",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "collections::map<K,V>",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map"
+    ],
+    "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
+    "task": "I25"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "collections::empty_set",
+   "identity": "can.std.collections@1::empty_set",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "K",
+     "constraint": "map_key"
+    }
+   ],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "collections::set<K>",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Set"
+    ],
+    "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
+    "task": "I25"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "collections::build_map",
+   "identity": "can.std.collections@1::build_map",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "K",
+     "constraint": "map_key"
+    },
+    {
+     "name": "V",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "entries",
+     "type": "collections::entry<K,V>[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "collections::map<K,V>",
+   "callbacks": [],
+   "emits": [
+    "collections::key_exists"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map"
+    ],
+    "adapter": "Bulk construction: validate keys in order; the first duplicate key fails the whole build; single immutable publication in first-occurrence order.",
+    "task": "A05"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "collections::build_set",
+   "identity": "can.std.collections@1::build_set",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "K",
+     "constraint": "map_key"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "values",
+     "type": "K[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "collections::set<K>",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Set"
+    ],
+    "adapter": "Bulk construction: validate keys in order and dedupe; single immutable publication in first-occurrence order.",
+    "task": "A05"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "collections::get",
+   "identity": "can.std.collections@1::get",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "K",
+     "constraint": "map_key"
+    },
+    {
+     "name": "V",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "map",
+     "type": "collections::map<K,V>"
+    },
+    {
+     "name": "key",
+     "type": "K"
+    }
+   ],
+   "staticInputs": [],
+   "result": "V",
+   "callbacks": [],
+   "emits": [
+    "collections::key_absent"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.has",
+     "Map.prototype.get"
+    ],
+    "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
+    "task": "I25"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "collections::insert",
+   "identity": "can.std.collections@1::insert",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "K",
+     "constraint": "map_key"
+    },
+    {
+     "name": "V",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "map",
+     "type": "collections::map<K,V>"
+    },
+    {
+     "name": "key",
+     "type": "K"
+    },
+    {
+     "name": "value",
+     "type": "V"
+    }
+   ],
+   "staticInputs": [],
+   "result": "collections::map<K,V>",
+   "callbacks": [],
+   "emits": [
+    "collections::key_exists"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "Map.prototype.set"
+    ],
+    "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
+    "task": "I25"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "collections::replace",
+   "identity": "can.std.collections@1::replace",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "K",
+     "constraint": "map_key"
+    },
+    {
+     "name": "V",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "map",
+     "type": "collections::map<K,V>"
+    },
+    {
+     "name": "key",
+     "type": "K"
+    },
+    {
+     "name": "value",
+     "type": "V"
+    }
+   ],
+   "staticInputs": [],
+   "result": "collections::map<K,V>",
+   "callbacks": [],
+   "emits": [
+    "collections::key_absent"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "Map.prototype.set"
+    ],
+    "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
+    "task": "I25"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "collections::remove",
+   "identity": "can.std.collections@1::remove",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "K",
+     "constraint": "map_key"
+    },
+    {
+     "name": "V",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "map",
+     "type": "collections::map<K,V>"
+    },
+    {
+     "name": "key",
+     "type": "K"
+    }
+   ],
+   "staticInputs": [],
+   "result": "collections::map<K,V>",
+   "callbacks": [],
+   "emits": [
+    "collections::key_absent"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "Map.prototype.delete"
+    ],
+    "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
+    "task": "I25"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "collections::entries",
+   "identity": "can.std.collections@1::entries",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "K",
+     "constraint": "map_key"
+    },
+    {
+     "name": "V",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "map",
+     "type": "collections::map<K,V>"
+    }
+   ],
+   "staticInputs": [],
+   "result": "collections::entry<K,V>[]",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.entries",
+     "Array.from"
+    ],
+    "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
+    "task": "I25"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "collections::contains",
+   "identity": "can.std.collections@1::contains",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "K",
+     "constraint": "map_key"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "set",
+     "type": "collections::set<K>"
+    },
+    {
+     "name": "key",
+     "type": "K"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Set.prototype.has"
+    ],
+    "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
+    "task": "I25"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "collections::add",
+   "identity": "can.std.collections@1::add",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "K",
+     "constraint": "map_key"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "set",
+     "type": "collections::set<K>"
+    },
+    {
+     "name": "key",
+     "type": "K"
+    }
+   ],
+   "staticInputs": [],
+   "result": "collections::set<K>",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Set",
+     "Set.prototype.add"
+    ],
+    "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
+    "task": "I25"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "collections::union",
+   "identity": "can.std.collections@1::union",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "K",
+     "constraint": "map_key"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "left",
+     "type": "collections::set<K>"
+    },
+    {
+     "name": "right",
+     "type": "collections::set<K>"
+    }
+   ],
+   "staticInputs": [],
+   "result": "collections::set<K>",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Set.prototype.union"
+    ],
+    "adapter": "Intersection/difference filter the left iteration order; union retains left then unseen right keys.",
+    "task": "I25"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "collections::intersection",
+   "identity": "can.std.collections@1::intersection",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "K",
+     "constraint": "map_key"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "left",
+     "type": "collections::set<K>"
+    },
+    {
+     "name": "right",
+     "type": "collections::set<K>"
+    }
+   ],
+   "staticInputs": [],
+   "result": "collections::set<K>",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Set",
+     "Set.prototype.has",
+     "Array.prototype.filter"
+    ],
+    "adapter": "Intersection/difference filter the left iteration order; union retains left then unseen right keys.",
+    "task": "I25"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "collections::difference",
+   "identity": "can.std.collections@1::difference",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "K",
+     "constraint": "map_key"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "left",
+     "type": "collections::set<K>"
+    },
+    {
+     "name": "right",
+     "type": "collections::set<K>"
+    }
+   ],
+   "staticInputs": [],
+   "result": "collections::set<K>",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Set",
+     "Set.prototype.has",
+     "Array.prototype.filter"
+    ],
+    "adapter": "Intersection/difference filter the left iteration order; union retains left then unseen right keys.",
+    "task": "I25"
+   },
+   "assertion": "real",
+   "refs": [
+    "C7"
+   ]
+  },
+  {
+   "name": "number::divmod",
+   "identity": "can.std.number@1::divmod",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "numerator",
+     "type": "int"
+    },
+    {
+     "name": "denominator",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "number::division",
+   "callbacks": [],
+   "emits": [
+    "number::zero_divisor"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "bigint /",
+     "bigint %",
+     "bigint comparisons"
+    ],
+    "adapter": "Apply only C8 sign normalization and finite half-even remainder adjustment.",
+    "task": "I23"
+   },
+   "assertion": "real",
+   "refs": [
+    "C8"
+   ]
+  },
+  {
+   "name": "number::euclidean_divmod",
+   "identity": "can.std.number@1::euclidean_divmod",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "numerator",
+     "type": "int"
+    },
+    {
+     "name": "denominator",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "number::division",
+   "callbacks": [],
+   "emits": [
+    "number::zero_divisor"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "bigint /",
+     "bigint %",
+     "bigint comparisons"
+    ],
+    "adapter": "Apply only C8 sign normalization and finite half-even remainder adjustment.",
+    "task": "I23"
+   },
+   "assertion": "real",
+   "refs": [
+    "C8"
+   ]
+  },
+  {
+   "name": "number::round_ratio_half_even",
+   "identity": "can.std.number@1::round_ratio_half_even",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "numerator",
+     "type": "int"
+    },
+    {
+     "name": "denominator",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "number::rounded",
+   "callbacks": [],
+   "emits": [
+    "number::zero_divisor"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "bigint /",
+     "bigint %",
+     "bigint comparisons"
+    ],
+    "adapter": "Apply only C8 sign normalization and finite half-even remainder adjustment.",
+    "task": "I23"
+   },
+   "assertion": "real",
+   "refs": [
+    "C8"
+   ]
+  },
+  {
+   "name": "bytes::empty",
+   "identity": "can.std.bytes@1::empty",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Uint8Array"
+    ],
+    "adapter": "Validate provenance, byte range and scalar text; copy buffers; decode UTF-8 fatally.",
+    "task": "I13"
+   },
+   "assertion": "real",
+   "refs": [
+    "A2"
+   ]
+  },
+  {
+   "name": "bytes::from_ints",
+   "identity": "can.std.bytes@1::from_ints",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "values",
+     "type": "int[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Uint8Array.from"
+    ],
+    "adapter": "Validate provenance, byte range and scalar text; copy buffers; decode UTF-8 fatally.",
+    "task": "I13"
+   },
+   "assertion": "real",
+   "refs": [
+    "A2"
+   ]
+  },
+  {
+   "name": "bytes::to_ints",
+   "identity": "can.std.bytes@1::to_ints",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "buffer",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int[]",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.from"
+    ],
+    "adapter": "Validate provenance, byte range and scalar text; copy buffers; decode UTF-8 fatally.",
+    "task": "I13"
+   },
+   "assertion": "real",
+   "refs": [
+    "A2"
+   ]
+  },
+  {
+   "name": "bytes::from_utf8",
+   "identity": "can.std.bytes@1::from_utf8",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "TextEncoder"
+    ],
+    "adapter": "Validate provenance, byte range and scalar text; copy buffers; decode UTF-8 fatally.",
+    "task": "I13"
+   },
+   "assertion": "real",
+   "refs": [
+    "A2"
+   ]
+  },
+  {
+   "name": "bytes::to_utf8",
+   "identity": "can.std.bytes@1::to_utf8",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "buffer",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "TextDecoder"
+    ],
+    "adapter": "Validate provenance, byte range and scalar text; copy buffers; decode UTF-8 fatally.",
+    "task": "I13"
+   },
+   "assertion": "real",
+   "refs": [
+    "A2"
+   ]
+  },
+  {
+   "name": "bytes::encode_base64",
+   "identity": "can.std.bytes@1::encode_base64",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "buffer",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Buffer"
+    ],
+    "adapter": "Encode standard base64 with padding; execute in ordinary assertions.",
+    "task": "B1-13"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-13"
+   ]
+  },
+  {
+   "name": "bytes::decode_base64",
+   "identity": "can.std.bytes@1::decode_base64",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "text",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Buffer"
+    ],
+    "adapter": "Decode standard base64 only after strict alphabet/padding gates; malformed text rejects, never truncates; execute in ordinary assertions.",
+    "task": "B1-13"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-13"
+   ]
+  },
+  {
+   "name": "bytes::encode_hex",
+   "identity": "can.std.bytes@1::encode_hex",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "buffer",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Buffer"
+    ],
+    "adapter": "Encode lowercase hex; execute in ordinary assertions.",
+    "task": "B1-13"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-13"
+   ]
+  },
+  {
+   "name": "bytes::decode_hex",
+   "identity": "can.std.bytes@1::decode_hex",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "text",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Buffer"
+    ],
+    "adapter": "Decode hex only after strict even-length alphabet gates; malformed text rejects, never truncates; execute in ordinary assertions.",
+    "task": "B1-13"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-13"
+   ]
+  },
+  {
+   "name": "codec::encode_json",
+   "identity": "can.std.codec@1::encode_json",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "wire"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "T"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.parse",
+     "JSON.rawJSON",
+     "JSON.stringify",
+     "TextEncoder",
+     "TextDecoder"
+    ],
+    "adapter": "Derive nominal schema; preserve numeric tokens; guard duplicates, scalar text, cycles and A6 budgets.",
+    "task": "I14"
+   },
+   "assertion": "real",
+   "refs": [
+    "A2",
+    "A6"
+   ]
+  },
+  {
+   "name": "codec::decode_json",
+   "identity": "can.std.codec@1::decode_json",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "wire"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "buffer",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "T",
+   "callbacks": [],
+   "emits": [
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.parse",
+     "JSON.rawJSON",
+     "JSON.stringify",
+     "TextEncoder",
+     "TextDecoder"
+    ],
+    "adapter": "Derive nominal schema; preserve numeric tokens; guard duplicates, scalar text, cycles and A6 budgets.",
+    "task": "I14"
+   },
+   "assertion": "real",
+   "refs": [
+    "A2",
+    "A6"
+   ]
+  },
+  {
+   "name": "array.length",
+   "identity": "can.intrinsic.array@1::length",
+   "kind": "property",
+   "receiver": "T[]",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.length",
+     "BigInt"
+    ],
+    "adapter": "Exact native length widened to bigint; validate opaque bytes before access.",
+    "task": "I07"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6",
+    "A2"
+   ]
+  },
+  {
+   "name": "str.length",
+   "identity": "can.intrinsic.str@1::length",
+   "kind": "property",
+   "receiver": "str",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String.prototype.length",
+     "BigInt"
+    ],
+    "adapter": "Exact native length widened to bigint; validate opaque bytes before access.",
+    "task": "I07"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6",
+    "A2"
+   ]
+  },
+  {
+   "name": "bytes.length",
+   "identity": "can.intrinsic.bytes@1::length",
+   "kind": "property",
+   "receiver": "bytes::buffer",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Uint8Array.prototype.byteLength",
+     "BigInt"
+    ],
+    "adapter": "Exact native length widened to bigint; validate opaque bytes before access.",
+    "task": "I13"
+   },
+   "assertion": "real",
+   "refs": [
+    "C6",
+    "A2"
+   ]
+  },
+  {
+   "name": "io::stdin_bytes",
+   "identity": "can.std.io@1::stdin_bytes",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "max_bytes",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [
+    "io::limit_exceeded",
+    "io::read_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.stdin"
+    ],
+    "adapter": "Reject negative limits before input; count incrementally as bigint, cancel on overflow, preserve immutable bytes and fatal BOM-preserving UTF-8. Map only expected native I/O errors.",
+    "task": "I29"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P8"
+   ]
+  },
+  {
+   "name": "io::stdin_text",
+   "identity": "can.std.io@1::stdin_text",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "max_bytes",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "io::limit_exceeded",
+    "io::read_failed",
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.stdin",
+     "TextDecoder"
+    ],
+    "adapter": "Reject negative limits before input; count incrementally as bigint, cancel on overflow, preserve immutable bytes and fatal BOM-preserving UTF-8. Map only expected native I/O errors.",
+    "task": "I29"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P8"
+   ]
+  },
+  {
+   "name": "io::stdout_write",
+   "identity": "can.std.io@1::stdout_write",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "buffer",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [
+    "io::write_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.write",
+     "Bun.stdout"
+    ],
+    "adapter": "Await write and return exact byte count.",
+    "task": "I29"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P8"
+   ]
+  },
+  {
+   "name": "io::stderr_write",
+   "identity": "can.std.io@1::stderr_write",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "buffer",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [
+    "io::write_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.write",
+     "Bun.stderr"
+    ],
+    "adapter": "Await write and return exact byte count.",
+    "task": "I29"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P8"
+   ]
+  },
+  {
+   "name": "clock::wall_millis",
+   "identity": "can.std.clock@1::wall_millis",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Date.now",
+     "BigInt"
+    ],
+    "adapter": "Return native epoch milliseconds exactly as bigint; supplied assertion boundary.",
+    "task": "I30"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P8"
+   ]
+  },
+  {
+   "name": "clock::monotonic_millis",
+   "identity": "can.std.clock@1::monotonic_millis",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "float",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "performance.now"
+    ],
+    "adapter": "Return native monotonic milliseconds as float; supplied assertion boundary.",
+    "task": "I30"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P8"
+   ]
+  },
+  {
+   "name": "clock::sleep_millis",
+   "identity": "can.std.clock@1::sleep_millis",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "milliseconds",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "clock::invalid_duration"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.sleep"
+    ],
+    "adapter": "Validate bigint milliseconds in 0--2147483647 before Number conversion and await Bun.sleep; supplied assertion boundary.",
+    "task": "I30"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P8"
+   ]
+  },
+  {
+   "name": "random::secure_bytes",
+   "identity": "can.std.random@1::secure_bytes",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "length",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [
+    "random::invalid_length"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "crypto.getRandomValues",
+     "Uint8Array"
+    ],
+    "adapter": "Validate bigint length in 0--65536 before allocation; fill a fresh native array and preserve immutable byte ownership; supplied assertion boundary.",
+    "task": "I30"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P8"
+   ]
+  },
+  {
+   "name": "random::uuid_v4",
+   "identity": "can.std.random@1::uuid_v4",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "crypto.randomUUID"
+    ],
+    "adapter": "Return native crypto.randomUUID; supplied assertion boundary.",
+    "task": "I30"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P8"
+   ]
+  },
+  {
+   "name": "password::hash",
+   "identity": "can.std.password@1::hash",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "password",
+     "type": "str"
+    },
+    {
+     "name": "profile",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "password::cost_rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.password"
+    ],
+    "adapter": "Hash with async Bun.password (argon2id) under fixed preset 0..2 (fast 8MiB/1 pass, balanced 64MiB/2 passes, secure 256MiB/3 passes); other profiles reject; supplied assertion boundary.",
+    "task": "B1-08"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-08"
+   ]
+  },
+  {
+   "name": "password::verify",
+   "identity": "can.std.password@1::verify",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "password",
+     "type": "str"
+    },
+    {
+     "name": "encoded",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [],
+   "emits": [
+    "password::invalid_hash"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.password"
+    ],
+    "adapter": "Gate the qualified argon2id envelope (version 19, memory 8 KiB..1 GiB, time 1..32, parallelism 1..4, 32-byte salt and hash) before native verify; malformed hashes reject while wrong passwords read false; execute in ordinary assertions.",
+    "task": "B1-08"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-08"
+   ]
+  },
+  {
+   "name": "crypto::sha256",
+   "identity": "can.std.crypto@1::sha256",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "buffer",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.CryptoHasher"
+    ],
+    "adapter": "Hash copied immutable bytes with a fresh Bun.CryptoHasher and return owned digest bytes; execute in ordinary assertions.",
+    "task": "I30"
+   },
+   "assertion": "real",
+   "refs": [
+    "P8"
+   ]
+  },
+  {
+   "name": "crypto::hmac_sha256",
+   "identity": "can.std.crypto@1::hmac_sha256",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "key",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "message",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [
+    "crypto::invalid_key"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "crypto.subtle"
+    ],
+    "adapter": "Import the raw HMAC/SHA-256 key per call and sign; empty keys reject; execute in ordinary assertions.",
+    "task": "B1-08"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-08"
+   ]
+  },
+  {
+   "name": "crypto::generate_aes_key",
+   "identity": "can.std.crypto@1::generate_aes_key",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "crypto::key",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "crypto.subtle"
+    ],
+    "adapter": "Generate a native-nonextractable AES-256-GCM encrypt/decrypt handle; supplied assertion boundary.",
+    "task": "B1-08"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-08"
+   ]
+  },
+  {
+   "name": "crypto::generate_ed25519_keypair",
+   "identity": "can.std.crypto@1::generate_ed25519_keypair",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "crypto::keypair",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "crypto.subtle"
+    ],
+    "adapter": "Generate sign-only private plus verify-only public handles; supplied assertion boundary.",
+    "task": "B1-08"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-08"
+   ]
+  },
+  {
+   "name": "crypto::import_ed25519_public",
+   "identity": "can.std.crypto@1::import_ed25519_public",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "public",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "crypto::key",
+   "callbacks": [],
+   "emits": [
+    "crypto::invalid_key"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "crypto.subtle"
+    ],
+    "adapter": "Admit 32-byte verify-only Ed25519 public keys; other lengths reject; execute in ordinary assertions.",
+    "task": "B1-08"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-08"
+   ]
+  },
+  {
+   "name": "crypto::export_ed25519_public",
+   "identity": "can.std.crypto@1::export_ed25519_public",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "key",
+     "type": "crypto::key"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [
+    "crypto::key_misuse"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "crypto.subtle"
+    ],
+    "adapter": "Export raw bytes only from verify-only Ed25519 handles; sign-capable and AES handles misuse; execute in ordinary assertions.",
+    "task": "B1-08"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-08"
+   ]
+  },
+  {
+   "name": "crypto::encrypt_aes_gcm",
+   "identity": "can.std.crypto@1::encrypt_aes_gcm",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "key",
+     "type": "crypto::key"
+    },
+    {
+     "name": "nonce",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "plaintext",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "associated_data",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [
+    "crypto::invalid_nonce",
+    "crypto::key_misuse"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "crypto.subtle"
+    ],
+    "adapter": "Encrypt with a fixed 12-byte nonce and 128-bit tag through usage-checked handles; execute in ordinary assertions.",
+    "task": "B1-08"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-08"
+   ]
+  },
+  {
+   "name": "crypto::encrypt_aes_gcm_sealed",
+   "identity": "can.std.crypto@1::encrypt_aes_gcm_sealed",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "key",
+     "type": "crypto::key"
+    },
+    {
+     "name": "plaintext",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "associated_data",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "crypto::sealed",
+   "callbacks": [],
+   "emits": [
+    "crypto::key_misuse"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "crypto.subtle"
+    ],
+    "adapter": "Mint a native-random 12-byte nonce and return it with the ciphertext; generation is randomness, not a guarantee of caller nonce discipline; supplied assertion boundary.",
+    "task": "B1-08"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-08"
+   ]
+  },
+  {
+   "name": "crypto::decrypt_aes_gcm",
+   "identity": "can.std.crypto@1::decrypt_aes_gcm",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "key",
+     "type": "crypto::key"
+    },
+    {
+     "name": "nonce",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "ciphertext",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "associated_data",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [
+    "crypto::invalid_nonce",
+    "crypto::key_misuse",
+    "crypto::decrypt_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "crypto.subtle"
+    ],
+    "adapter": "Decrypt with a fixed 12-byte nonce and 128-bit tag; tampering, wrong keys, and associated-data mismatch collapse to decrypt_failed; execute in ordinary assertions.",
+    "task": "B1-08"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-08"
+   ]
+  },
+  {
+   "name": "crypto::sign_ed25519",
+   "identity": "can.std.crypto@1::sign_ed25519",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "key",
+     "type": "crypto::key"
+    },
+    {
+     "name": "message",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [
+    "crypto::key_misuse"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "crypto.subtle"
+    ],
+    "adapter": "Sign through sign-capable handles; deterministic 64-byte signatures; execute in ordinary assertions.",
+    "task": "B1-08"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-08"
+   ]
+  },
+  {
+   "name": "crypto::verify_ed25519",
+   "identity": "can.std.crypto@1::verify_ed25519",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "key",
+     "type": "crypto::key"
+    },
+    {
+     "name": "message",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "signature",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [],
+   "emits": [
+    "crypto::key_misuse"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "crypto.subtle"
+    ],
+    "adapter": "Verify through verify-capable handles; mismatch reads false; execute in ordinary assertions.",
+    "task": "B1-08"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-08"
+   ]
+  },
+  {
+   "name": "env::required",
+   "identity": "can.std.env@1::required",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "name",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "env::invalid_name",
+    "http::credentials_missing"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.env"
+    ],
+    "adapter": "Validate uppercase environment names before exact caller-snapshot lookup. Absence is distinct from a present empty string; assertion execution requires supplied completions.",
+    "task": "I29"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P8"
+   ]
+  },
+  {
+   "name": "env::optional",
+   "identity": "can.std.env@1::optional",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "name",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "option::value<str>",
+   "callbacks": [],
+   "emits": [
+    "env::invalid_name"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.env"
+    ],
+    "adapter": "Validate uppercase environment names before exact caller-snapshot lookup. Absence is distinct from a present empty string; assertion execution requires supplied completions.",
+    "task": "I29"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P8"
+   ]
+  },
+  {
+   "name": "log::write_info",
+   "identity": "can.std.log@1::write_info",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "message",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "log::write_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "Bun.write"
+    ],
+    "adapter": "Serialize exactly level/info and message string fields with native JSON.stringify, append newline, await stderr; map serialization and expected I/O failures to a level-only payload; supplied assertion boundary.",
+    "task": "I30"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P8"
+   ]
+  },
+  {
+   "name": "log::write_error",
+   "identity": "can.std.log@1::write_error",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "message",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "log::write_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "Bun.write"
+    ],
+    "adapter": "Serialize exactly level/error and message string fields with native JSON.stringify, append newline, await stderr; map serialization and expected I/O failures to a level-only payload; supplied assertion boundary.",
+    "task": "I30"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P8"
+   ]
+  },
+  {
+   "name": "form::named_collection",
+   "identity": "can.std.form@1::named_collection",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "Wire",
+     "constraint": "form"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "name",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [
+    "name"
+   ],
+   "result": "form::collection",
+   "callbacks": [],
+   "emits": [
+    "form::unknown_field"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String match"
+    ],
+    "adapter": "Check the static name against the wire record's keyed-row collections and mint the collection token.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "form::named_field",
+   "identity": "can.std.form@1::named_field",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "Row",
+     "constraint": "form"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "name",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [
+    "name"
+   ],
+   "result": "form::field",
+   "callbacks": [],
+   "emits": [
+    "form::unknown_field"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String match"
+    ],
+    "adapter": "Check the static name against the row record's scalar fields and mint the field token.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "form::row_key",
+   "identity": "can.std.form@1::row_key",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "name",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "form::row",
+   "callbacks": [],
+   "emits": [
+    "form::invalid_name"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String match"
+    ],
+    "adapter": "Validate a dynamic row key against the keyed-row grammar and mint the row token.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "form::order_name",
+   "identity": "can.std.form@1::order_name",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "collection",
+     "type": "form::collection"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String concat"
+    ],
+    "adapter": "Render the collection's exact order field name.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "form::input_name",
+   "identity": "can.std.form@1::input_name",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "collection",
+     "type": "form::collection"
+    },
+    {
+     "name": "row",
+     "type": "form::row"
+    },
+    {
+     "name": "field",
+     "type": "form::field"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String concat"
+    ],
+    "adapter": "Render one keyed-row input name from checked tokens.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "form::field_name",
+   "identity": "can.std.form@1::field_name",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "field",
+     "type": "form::field"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String identity"
+    ],
+    "adapter": "Render one checked scalar field name.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "html::make_tag",
+   "identity": "can.std.html@1::make_tag",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "name",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::tag",
+   "callbacks": [],
+   "emits": [
+    "html::invalid_structure"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Set.prototype.has"
+    ],
+    "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P6",
+    "P9"
+   ]
+  },
+  {
+   "name": "html::text",
+   "identity": "can.std.html@1::text",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::node",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.escapeHTML"
+    ],
+    "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P6",
+    "P9"
+   ]
+  },
+  {
+   "name": "html::parse_url",
+   "identity": "can.std.html@1::parse_url",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::url",
+   "callbacks": [],
+   "emits": [
+    "html::invalid_url"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URL"
+    ],
+    "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P6",
+    "P9"
+   ]
+  },
+  {
+   "name": "html::text_attribute",
+   "identity": "can.std.html@1::text_attribute",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::attribute",
+   "callbacks": [],
+   "emits": [
+    "html::invalid_structure"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.escapeHTML"
+    ],
+    "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P6",
+    "P9"
+   ]
+  },
+  {
+   "name": "html::email_href",
+   "identity": "can.std.html@1::email_href",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "address",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::attribute",
+   "callbacks": [],
+   "emits": [
+    "html::invalid_url"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.escapeHTML"
+    ],
+    "adapter": "Validate one simple ASCII mailbox and construct an opaque anchor-only mailto href attribute.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P6",
+    "P9"
+   ]
+  },
+  {
+   "name": "html::url_attribute",
+   "identity": "can.std.html@1::url_attribute",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "url",
+     "type": "html::url"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::attribute",
+   "callbacks": [],
+   "emits": [
+    "html::invalid_structure"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.escapeHTML"
+    ],
+    "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P6",
+    "P9"
+   ]
+  },
+  {
+   "name": "html::element",
+   "identity": "can.std.html@1::element",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "tag",
+     "type": "html::tag"
+    },
+    {
+     "name": "attributes",
+     "type": "html::attribute[]"
+    },
+    {
+     "name": "children",
+     "type": "html::node[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::node",
+   "callbacks": [],
+   "emits": [
+    "html::invalid_structure"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.join",
+     "Bun.escapeHTML"
+    ],
+    "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P6",
+    "P9"
+   ]
+  },
+  {
+   "name": "html::fragment",
+   "identity": "can.std.html@1::fragment",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "nodes",
+     "type": "html::node[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::safe",
+   "callbacks": [],
+   "emits": [
+    "html::invalid_structure"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.join"
+    ],
+    "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P6",
+    "P9"
+   ]
+  },
+  {
+   "name": "html::text_fragment",
+   "identity": "can.std.html@1::text_fragment",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::safe",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.escapeHTML"
+    ],
+    "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P6",
+    "P9"
+   ]
+  },
+  {
+   "name": "html::stylesheet",
+   "identity": "can.std.html@1::stylesheet",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "url",
+     "type": "html::url"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::node",
+   "callbacks": [],
+   "emits": [
+    "html::invalid_url"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.escapeHTML"
+    ],
+    "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P6",
+    "P9"
+   ]
+  },
+  {
+   "name": "html::meta_viewport",
+   "identity": "can.std.html@1::meta_viewport",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "html::node",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "string literal"
+    ],
+    "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P6",
+    "P9"
+   ]
+  },
+  {
+   "name": "html::document",
+   "identity": "can.std.html@1::document",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "title",
+     "type": "str"
+    },
+    {
+     "name": "head",
+     "type": "html::node[]"
+    },
+    {
+     "name": "body",
+     "type": "html::node[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::safe",
+   "callbacks": [],
+   "emits": [
+    "html::invalid_structure"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.escapeHTML",
+     "Array.prototype.join"
+    ],
+    "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P6",
+    "P9"
+   ]
+  },
+  {
+   "name": "htmx::get",
+   "identity": "can.std.htmx@1::get",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "url",
+     "type": "html::url"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::attribute",
+   "callbacks": [],
+   "emits": [
+    "html::invalid_url"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.escapeHTML"
+    ],
+    "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P6",
+    "P9"
+   ]
+  },
+  {
+   "name": "htmx::post",
+   "identity": "can.std.htmx@1::post",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "url",
+     "type": "html::url"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::attribute",
+   "callbacks": [],
+   "emits": [
+    "html::invalid_url"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.escapeHTML"
+    ],
+    "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P6",
+    "P9"
+   ]
+  },
+  {
+   "name": "htmx::target_id",
+   "identity": "can.std.htmx@1::target_id",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "id",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "htmx::target",
+   "callbacks": [],
+   "emits": [
+    "htmx::invalid_target"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String.prototype.match"
+    ],
+    "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P6",
+    "P9"
+   ]
+  },
+  {
+   "name": "htmx::target_attribute",
+   "identity": "can.std.htmx@1::target_attribute",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "target",
+     "type": "htmx::target"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::attribute",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.escapeHTML"
+    ],
+    "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P6",
+    "P9"
+   ]
+  },
+  {
+   "name": "htmx::indicator_id",
+   "identity": "can.std.htmx@1::indicator_id",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "id",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::attribute",
+   "callbacks": [],
+   "emits": [
+    "htmx::invalid_target"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.escapeHTML"
+    ],
+    "adapter": "Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P6",
+    "P9"
+   ]
+  },
+  {
+   "name": "htmx::swap_inner",
+   "identity": "can.std.htmx@1::swap_inner",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "html::attribute",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "string literal"
+    ],
+    "adapter": "Construct only the fixed P9 HTMX attribute.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P9"
+   ]
+  },
+  {
+   "name": "htmx::swap_outer",
+   "identity": "can.std.htmx@1::swap_outer",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "html::attribute",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "string literal"
+    ],
+    "adapter": "Construct only the fixed P9 HTMX attribute.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P9"
+   ]
+  },
+  {
+   "name": "htmx::trigger_change",
+   "identity": "can.std.htmx@1::trigger_change",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "html::attribute",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "string literal"
+    ],
+    "adapter": "Construct only the fixed P9 HTMX attribute.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P9"
+   ]
+  },
+  {
+   "name": "htmx::disable_this",
+   "identity": "can.std.htmx@1::disable_this",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "html::attribute",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "string literal"
+    ],
+    "adapter": "Construct only the fixed P9 HTMX attribute.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P9"
+   ]
+  },
+  {
+   "name": "htmx::trigger_input_changed",
+   "identity": "can.std.htmx@1::trigger_input_changed",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "delay_ms",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::attribute",
+   "callbacks": [],
+   "emits": [
+    "htmx::invalid_interval"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String"
+    ],
+    "adapter": "Validate P9 interval bounds and construct the fixed trigger.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P9"
+   ]
+  },
+  {
+   "name": "htmx::trigger_every",
+   "identity": "can.std.htmx@1::trigger_every",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "interval_ms",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::attribute",
+   "callbacks": [],
+   "emits": [
+    "htmx::invalid_interval"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String"
+    ],
+    "adapter": "Validate P9 interval bounds and construct the fixed trigger.",
+    "task": "I31"
+   },
+   "assertion": "real",
+   "refs": [
+    "P9"
+   ]
+  },
+  {
+   "name": "htmx::runtime_head",
+   "identity": "can.std.htmx@1::runtime_head",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "html::node",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "string literal"
+    ],
+    "adapter": "Emit only the pinned P11 local HTMX script and fixed response/config policy.",
+    "task": "I34"
+   },
+   "assertion": "real",
+   "refs": [
+    "P9",
+    "P11"
+   ]
+  },
+  {
+   "name": "asset::url",
+   "identity": "can.std.asset@1::url",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "name",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [
+    "name"
+   ],
+   "result": "html::url",
+   "callbacks": [],
+   "emits": [
+    "html::invalid_url"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URL"
+    ],
+    "adapter": "Resolve a static declared asset to its validated build-manifest URL.",
+    "task": "I34"
+   },
+   "assertion": "real",
+   "refs": [
+    "P11"
+   ]
+  },
+  {
+   "name": "http::request_method",
+   "identity": "can.std.http@1::request_method",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "request",
+     "type": "http::request"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Request",
+     "URL",
+     "Headers"
+    ],
+    "adapter": "Read the immutable request snapshot and expose copied Can data.",
+    "task": "I32"
+   },
+   "assertion": "scoped",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::request_path",
+   "identity": "can.std.http@1::request_path",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "request",
+     "type": "http::request"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Request",
+     "URL",
+     "Headers"
+    ],
+    "adapter": "Read the immutable request snapshot and expose copied Can data.",
+    "task": "I32"
+   },
+   "assertion": "scoped",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::peer_address",
+   "identity": "can.std.http@1::peer_address",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "request",
+     "type": "http::request"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "http::invalid_request"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.Server.requestIP",
+     "Request"
+    ],
+    "adapter": "Return only Bun's connected socket address; missing peers fail closed and forwarding headers are ignored.",
+    "task": "I32"
+   },
+   "assertion": "scoped",
+   "refs": [
+    "P05"
+   ]
+  },
+  {
+   "name": "http::request_headers",
+   "identity": "can.std.http@1::request_headers",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "request",
+     "type": "http::request"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::header[]",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Request",
+     "URL",
+     "Headers"
+    ],
+    "adapter": "Read the immutable request snapshot and expose copied Can data.",
+    "task": "I32"
+   },
+   "assertion": "scoped",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::query_one",
+   "identity": "can.std.http@1::query_one",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "request",
+     "type": "http::request"
+    },
+    {
+     "name": "name",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "http::invalid_request"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URLSearchParams"
+    ],
+    "adapter": "Check missing/repeated single query values; preserve repeated order.",
+    "task": "I32"
+   },
+   "assertion": "scoped",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::query_all",
+   "identity": "can.std.http@1::query_all",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "request",
+     "type": "http::request"
+    },
+    {
+     "name": "name",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str[]",
+   "callbacks": [],
+   "emits": [
+    "http::invalid_request"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URLSearchParams"
+    ],
+    "adapter": "Check missing/repeated single query values; preserve repeated order.",
+    "task": "I32"
+   },
+   "assertion": "scoped",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::request_body",
+   "identity": "can.std.http@1::request_body",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "request",
+     "type": "http::request"
+    },
+    {
+     "name": "max_bytes",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [
+    "http::body_limit"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Request",
+     "URLSearchParams",
+     "JSON.parse",
+     "TextDecoder"
+    ],
+    "adapter": "Read cached bounded bytes; apply the declared media/percent/UTF-8/typed codec policy.",
+    "task": "I32"
+   },
+   "assertion": "scoped",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::request_json",
+   "identity": "can.std.http@1::request_json",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "wire"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "request",
+     "type": "http::request"
+    },
+    {
+     "name": "max_bytes",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "T",
+   "callbacks": [],
+   "emits": [
+    "http::body_limit",
+    "http::invalid_request",
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Request",
+     "URLSearchParams",
+     "JSON.parse",
+     "TextDecoder"
+    ],
+    "adapter": "Read cached bounded bytes; apply the declared media/percent/UTF-8/typed codec policy.",
+    "task": "I32"
+   },
+   "assertion": "scoped",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::request_form",
+   "identity": "can.std.http@1::request_form",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "form"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "request",
+     "type": "http::request"
+    },
+    {
+     "name": "max_bytes",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "T",
+   "callbacks": [],
+   "emits": [
+    "http::body_limit",
+    "http::invalid_request",
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Request",
+     "URLSearchParams",
+     "JSON.parse",
+     "TextDecoder"
+    ],
+    "adapter": "Read cached bounded bytes; apply the declared media/percent/UTF-8/typed codec policy.",
+    "task": "I32"
+   },
+   "assertion": "scoped",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::request_multipart",
+   "identity": "can.std.http@1::request_multipart",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "request",
+     "type": "http::request"
+    },
+    {
+     "name": "max_bytes",
+     "type": "int"
+    },
+    {
+     "name": "max_file_bytes",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::multipart_form",
+   "callbacks": [],
+   "emits": [
+    "http::body_limit",
+    "http::invalid_request",
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "TextDecoder"
+    ],
+    "adapter": "Parse bounded flat multipart into generic field/file records.",
+    "task": "B1-06"
+   },
+   "assertion": "scoped",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::make_status",
+   "identity": "can.std.http@1::make_status",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "status",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::status",
+   "callbacks": [],
+   "emits": [
+    "http::invalid_request"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Number"
+    ],
+    "adapter": "Admit 200\u2013599; body status additionally excludes 204, 205 and 304.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::make_body_status",
+   "identity": "can.std.http@1::make_body_status",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "status",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::body_status",
+   "callbacks": [],
+   "emits": [
+    "http::invalid_request"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Number"
+    ],
+    "adapter": "Admit 200\u2013599; body status additionally excludes 204, 205 and 304.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::status_ok",
+   "identity": "can.std.http@1::status_ok",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "http::body_status",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Number"
+    ],
+    "adapter": "Construct the corresponding fixed validated status.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::status_unprocessable",
+   "identity": "can.std.http@1::status_unprocessable",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "http::body_status",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Number"
+    ],
+    "adapter": "Construct the corresponding fixed validated status.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::status_internal",
+   "identity": "can.std.http@1::status_internal",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "http::body_status",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Number"
+    ],
+    "adapter": "Construct the corresponding fixed validated status.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::status_unavailable",
+   "identity": "can.std.http@1::status_unavailable",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "http::body_status",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Number"
+    ],
+    "adapter": "Construct the corresponding fixed validated status.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::make_server_headers",
+   "identity": "can.std.http@1::make_server_headers",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "headers",
+     "type": "http::header[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::server_headers",
+   "callbacks": [],
+   "emits": [
+    "http::invalid_request"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Headers"
+    ],
+    "adapter": "Validate names/values and reject forbidden content/hop-by-hop fields.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::empty_server_headers",
+   "identity": "can.std.http@1::empty_server_headers",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "http::server_headers",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Headers"
+    ],
+    "adapter": "Create the empty immutable header set.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::response_empty",
+   "identity": "can.std.http@1::response_empty",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "status",
+     "type": "http::status"
+    },
+    {
+     "name": "headers",
+     "type": "http::server_headers"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::server_response",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Response",
+     "Headers",
+     "TextEncoder"
+    ],
+    "adapter": "Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::response_bytes",
+   "identity": "can.std.http@1::response_bytes",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "status",
+     "type": "http::body_status"
+    },
+    {
+     "name": "headers",
+     "type": "http::server_headers"
+    },
+    {
+     "name": "body",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::server_response",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Response",
+     "Headers",
+     "TextEncoder"
+    ],
+    "adapter": "Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::response_json_bytes",
+   "identity": "can.std.http@1::response_json_bytes",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "status",
+     "type": "http::body_status"
+    },
+    {
+     "name": "headers",
+     "type": "http::server_headers"
+    },
+    {
+     "name": "body",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::server_response",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Response",
+     "Headers",
+     "TextEncoder"
+    ],
+    "adapter": "Serve pre-encoded JSON bytes without parsing or re-encoding; fixed application/json; charset=utf-8, nosniff and immutable body snapshot.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::response_text",
+   "identity": "can.std.http@1::response_text",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "status",
+     "type": "http::body_status"
+    },
+    {
+     "name": "headers",
+     "type": "http::server_headers"
+    },
+    {
+     "name": "body",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::server_response",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Response",
+     "Headers",
+     "TextEncoder"
+    ],
+    "adapter": "Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::response_html",
+   "identity": "can.std.http@1::response_html",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "status",
+     "type": "http::body_status"
+    },
+    {
+     "name": "headers",
+     "type": "http::server_headers"
+    },
+    {
+     "name": "body",
+     "type": "html::safe"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::server_response",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Response",
+     "Headers",
+     "TextEncoder"
+    ],
+    "adapter": "Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::response_image",
+   "identity": "can.std.http@1::response_image",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "status",
+     "type": "http::body_status"
+    },
+    {
+     "name": "headers",
+     "type": "http::server_headers"
+    },
+    {
+     "name": "body",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "media_type",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::server_response",
+   "callbacks": [],
+   "emits": [
+    "http::invalid_request"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Response",
+     "Headers"
+    ],
+    "adapter": "Validated raster allowlist (image/png, image/jpeg, image/webp) with immutable byte snapshot and nosniff; any other media type emits http::invalid_request.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::response_json",
+   "identity": "can.std.http@1::response_json",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "wire"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "status",
+     "type": "http::body_status"
+    },
+    {
+     "name": "headers",
+     "type": "http::server_headers"
+    },
+    {
+     "name": "body",
+     "type": "T"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::server_response",
+   "callbacks": [],
+   "emits": [
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Response",
+     "Headers",
+     "JSON.stringify"
+    ],
+    "adapter": "Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::response_stream",
+   "identity": "can.std.http@1::response_stream",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "status",
+     "type": "http::body_status"
+    },
+    {
+     "name": "headers",
+     "type": "http::server_headers"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::server_response",
+   "callbacks": [],
+   "emits": [
+    "http::invalid_request"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "ReadableStream"
+    ],
+    "adapter": "Build a pending response whose bounded queue the vended writer fills.",
+    "task": "B1-06"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::response_writer",
+   "identity": "can.std.http@1::response_writer",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "response",
+     "type": "http::server_response"
+    }
+   ],
+   "staticInputs": [],
+   "result": "stream::writer",
+   "callbacks": [],
+   "emits": [
+    "http::invalid_request"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "ReadableStream"
+    ],
+    "adapter": "Vend the pending response writer exactly once for short-write production.",
+    "task": "B1-06"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::response_sse",
+   "identity": "can.std.http@1::response_sse",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "status",
+     "type": "http::body_status"
+    },
+    {
+     "name": "headers",
+     "type": "http::server_headers"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::server_response",
+   "callbacks": [],
+   "emits": [
+    "http::invalid_request"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "ReadableStream"
+    ],
+    "adapter": "Build a pending event-stream response for validated SSE production.",
+    "task": "B1-06"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::sse_send",
+   "identity": "can.std.http@1::sse_send",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "writer",
+     "type": "stream::writer"
+    },
+    {
+     "name": "event",
+     "type": "http::sse_event"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [
+    "http::invalid_request",
+    "http::body_limit",
+    "stream::write_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "ReadableStream",
+     "TextEncoder"
+    ],
+    "adapter": "Validate one event frame and append it atomically to the queue.",
+    "task": "B1-06"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::sse_comment",
+   "identity": "can.std.http@1::sse_comment",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "writer",
+     "type": "stream::writer"
+    },
+    {
+     "name": "text",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [
+    "http::invalid_request",
+    "http::body_limit",
+    "stream::write_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "ReadableStream",
+     "TextEncoder"
+    ],
+    "adapter": "Validate one comment line and append it atomically to the queue.",
+    "task": "B1-06"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::route_get",
+   "identity": "can.std.http@1::route_get",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [
+    "path"
+   ],
+   "result": "http::route",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "http::request"
+     ],
+     "result": "http::server_response",
+     "deriveErrors": false,
+     "emits": []
+    }
+   ],
+   "emits": [
+    "http::invalid_route"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URL"
+    ],
+    "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::route_post",
+   "identity": "can.std.http@1::route_post",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [
+    "path"
+   ],
+   "result": "http::route",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "http::request"
+     ],
+     "result": "http::server_response",
+     "deriveErrors": false,
+     "emits": []
+    }
+   ],
+   "emits": [
+    "http::invalid_route"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URL"
+    ],
+    "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::route_put",
+   "identity": "can.std.http@1::route_put",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [
+    "path"
+   ],
+   "result": "http::route",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "http::request"
+     ],
+     "result": "http::server_response",
+     "deriveErrors": false,
+     "emits": []
+    }
+   ],
+   "emits": [
+    "http::invalid_route"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URL"
+    ],
+    "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
+    "task": "B1-06"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::route_patch",
+   "identity": "can.std.http@1::route_patch",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [
+    "path"
+   ],
+   "result": "http::route",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "http::request"
+     ],
+     "result": "http::server_response",
+     "deriveErrors": false,
+     "emits": []
+    }
+   ],
+   "emits": [
+    "http::invalid_route"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URL"
+    ],
+    "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
+    "task": "B1-06"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::route_delete",
+   "identity": "can.std.http@1::route_delete",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [
+    "path"
+   ],
+   "result": "http::route",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "http::request"
+     ],
+     "result": "http::server_response",
+     "deriveErrors": false,
+     "emits": []
+    }
+   ],
+   "emits": [
+    "http::invalid_route"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URL"
+    ],
+    "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
+    "task": "B1-06"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::route_options",
+   "identity": "can.std.http@1::route_options",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [
+    "path"
+   ],
+   "result": "http::route",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "http::request"
+     ],
+     "result": "http::server_response",
+     "deriveErrors": false,
+     "emits": []
+    }
+   ],
+   "emits": [
+    "http::invalid_route"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URL"
+    ],
+    "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
+    "task": "B1-06"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::route_head",
+   "identity": "can.std.http@1::route_head",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [
+    "path"
+   ],
+   "result": "http::route",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "http::request"
+     ],
+     "result": "http::server_response",
+     "deriveErrors": false,
+     "emits": []
+    }
+   ],
+   "emits": [
+    "http::invalid_route"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URL"
+    ],
+    "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
+    "task": "B1-06"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::make_router",
+   "identity": "can.std.http@1::make_router",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "routes",
+     "type": "http::route[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::router",
+   "callbacks": [],
+   "emits": [
+    "http::duplicate_route",
+    "http::ambiguous_route"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map"
+    ],
+    "adapter": "Closed exact dispatch with 404/405/Allow, no implicit HEAD.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::route_stream",
+   "identity": "can.std.http@1::route_stream",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "route",
+     "type": "http::route"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::route",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map"
+    ],
+    "adapter": "Mark a route for lazy bodies consumed once through a stream reader.",
+    "task": "B1-06"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::serve_form_action",
+   "identity": "can.std.http@1::serve_form_action",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "Result",
+     "constraint": "data"
+    },
+    {
+     "name": "Wire",
+     "constraint": "form"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "action",
+     "type": "str"
+    },
+    {
+     "name": "outcome",
+     "type": "$outcome"
+    },
+    {
+     "name": "structural",
+     "type": "$structural"
+    }
+   ],
+   "staticInputs": [
+    "action"
+   ],
+   "result": "http::route",
+   "callbacks": [
+    {
+     "name": "outcome",
+     "inputs": [
+      "Result"
+     ],
+     "result": "html::safe",
+     "deriveErrors": false,
+     "emits": []
+    },
+    {
+     "name": "structural",
+     "inputs": [
+      "form::rejected<Wire>"
+     ],
+     "result": "html::safe",
+     "deriveErrors": false,
+     "emits": []
+    }
+   ],
+   "emits": [
+    "http::invalid_route"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Request",
+     "URLSearchParams",
+     "FormData",
+     "TextDecoder"
+    ],
+    "adapter": "Bind one form action's handler, outcome renderer and structural-422 renderer into a mounted route; decode the body through a single native parse and map result leaves to case statuses.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::fetch_json_get",
+   "identity": "can.std.http@1::fetch_json_get",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "Result",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "action",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [
+    "action"
+   ],
+   "result": "Result",
+   "callbacks": [],
+   "emits": [
+    "http::transport_failed",
+    "http::invalid_request",
+    "http::status_error",
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "fetch",
+     "Request",
+     "Response",
+     "TextDecoder"
+    ],
+    "adapter": "Resolve the static action name against the checked JSON table, build the canonical same-origin URL from the path captures, issue a bodyless GET through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound.",
+    "task": "T23"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::fetch_json_post",
+   "identity": "can.std.http@1::fetch_json_post",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "Result",
+     "constraint": "data"
+    },
+    {
+     "name": "Wire",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "action",
+     "type": "str"
+    },
+    {
+     "name": "body",
+     "type": "Wire"
+    }
+   ],
+   "staticInputs": [
+    "action"
+   ],
+   "result": "Result",
+   "callbacks": [],
+   "emits": [
+    "http::transport_failed",
+    "http::invalid_request",
+    "http::body_limit",
+    "http::status_error",
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "fetch",
+     "Request",
+     "Response",
+     "TextDecoder"
+    ],
+    "adapter": "Resolve the static action name against the checked JSON table, build the canonical same-origin URL from the path captures, encode the wire body under the shared exact codec within the wire limit, POST through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound.",
+    "task": "T23"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::request_body_stream",
+   "identity": "can.std.http@1::request_body_stream",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "request",
+     "type": "http::request"
+    },
+    {
+     "name": "max_chunk",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "stream::reader<bytes::buffer>",
+   "callbacks": [],
+   "emits": [
+    "http::body_limit",
+    "http::invalid_request"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "ReadableStream"
+    ],
+    "adapter": "Open the one-shot body reader: live wire bytes or replayed buffered bytes.",
+    "task": "B1-06"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::make_server_config",
+   "identity": "can.std.http@1::make_server_config",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "host",
+     "type": "str"
+    },
+    {
+     "name": "port",
+     "type": "int"
+    },
+    {
+     "name": "body_limit",
+     "type": "int"
+    },
+    {
+     "name": "shutdown_ms",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::server_config",
+   "callbacks": [],
+   "emits": [
+    "http::invalid_server_config"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Number"
+    ],
+    "adapter": "Validate bounded config before server start.",
+    "task": "I33"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::server_start",
+   "identity": "can.std.http@1::server_start",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "config",
+     "type": "http::server_config"
+    },
+    {
+     "name": "router",
+     "type": "http::router"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::server",
+   "callbacks": [],
+   "emits": [
+    "http::bind_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.serve"
+    ],
+    "adapter": "Register ownership; await each Can callback and sanitize standard failures.",
+    "task": "I33"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P6",
+    "P10"
+   ]
+  },
+  {
+   "name": "http::make_tls_config",
+   "identity": "can.std.http@1::make_tls_config",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "cert",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "key",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::tls_config",
+   "callbacks": [],
+   "emits": [
+    "http::invalid_server_config"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "TextDecoder"
+    ],
+    "adapter": "Validate PEM certificate chain and private key structure before server start.",
+    "task": "B1-06"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "http::server_start_tls",
+   "identity": "can.std.http@1::server_start_tls",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "config",
+     "type": "http::server_config"
+    },
+    {
+     "name": "router",
+     "type": "http::router"
+    },
+    {
+     "name": "tls",
+     "type": "http::tls_config"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::server",
+   "callbacks": [],
+   "emits": [
+    "http::bind_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.serve"
+    ],
+    "adapter": "Register ownership; serve TLS with the validated material and sanitize standard failures.",
+    "task": "B1-06"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P6",
+    "P10"
+   ]
+  },
+  {
+   "name": "http::server_wait",
+   "identity": "can.std.http@1::server_wait",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "server",
+     "type": "http::server"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "http::shutdown_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.Server.stop",
+     "process.on"
+    ],
+    "adapter": "Wait for graceful stop(false), native stop and leases; timeout does not revoke ownership.",
+    "task": "I33"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P6",
+    "P10"
+   ]
+  },
+  {
+   "name": "http::server_stop",
+   "identity": "can.std.http@1::server_stop",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "server",
+     "type": "http::server"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "http::shutdown_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.Server.stop",
+     "process.on"
+    ],
+    "adapter": "Wait for graceful stop(false), native stop and leases; timeout does not revoke ownership.",
+    "task": "I33"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P6",
+    "P10"
+   ]
+  },
+  {
+   "name": "sql::pool_open",
+   "identity": "can.std.sql@1::pool_open",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "connection_variable",
+     "type": "str"
+    },
+    {
+     "name": "max_connections",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "sql::pool",
+   "callbacks": [],
+   "emits": [
+    "http::credentials_missing",
+    "sql::connection_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.SQL"
+    ],
+    "adapter": "Read selected credential; open PostgreSQL with bigint:true and validated max.",
+    "task": "I35"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P12"
+   ]
+  },
+  {
+   "name": "sql::pool_close",
+   "identity": "can.std.sql@1::pool_close",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "pool",
+     "type": "sql::pool"
+    },
+    {
+     "name": "timeout_ms",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "sql::close_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.SQL.close"
+    ],
+    "adapter": "Drain leases then close with remaining deadline; leave timed-out close owned.",
+    "task": "I35"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P6",
+    "P12"
+   ]
+  },
+  {
+   "name": "sql::sqlite_open_memory",
+   "identity": "can.std.sql@1::sqlite_open_memory",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "sql::pool",
+   "callbacks": [],
+   "emits": [
+    "sql::connection_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.SQL"
+    ],
+    "adapter": "Open in-memory SQLite with safeIntegers:true; the database lives while the pool is open.",
+    "task": "B1-02"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-02"
+   ]
+  },
+  {
+   "name": "sql::sqlite_open_file",
+   "identity": "can.std.sql@1::sqlite_open_file",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "options",
+     "type": "sql::sqlite_file_options"
+    }
+   ],
+   "staticInputs": [],
+   "result": "sql::pool",
+   "callbacks": [],
+   "emits": [
+    "sql::connection_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.SQL"
+    ],
+    "adapter": "Open file SQLite with safeIntegers:true; mode is ro, rw or rwc and busy_timeout_ms bounds lock waits.",
+    "task": "B1-02"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-02"
+   ]
+  },
+  {
+   "name": "sql::mysql_open",
+   "identity": "can.std.sql@1::mysql_open",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "connection_variable",
+     "type": "str"
+    },
+    {
+     "name": "max_connections",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "sql::pool",
+   "callbacks": [],
+   "emits": [
+    "http::credentials_missing",
+    "sql::connection_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.SQL"
+    ],
+    "adapter": "Read selected credential; open MySQL with bigint:true, forced TLS, validated max, and a pinned UTC session.",
+    "task": "B1-03"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-03"
+   ]
+  },
+  {
+   "name": "sql::query_one",
+   "identity": "can.std.sql@1::query_one",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "P",
+     "constraint": "sql_parameters"
+    },
+    {
+     "name": "R",
+     "constraint": "sql_row"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "handle",
+     "type": "sql::pool"
+    },
+    {
+     "name": "descriptor",
+     "type": "str"
+    },
+    {
+     "name": "parameters",
+     "type": "P"
+    }
+   ],
+   "staticInputs": [
+    "descriptor"
+   ],
+   "result": "R",
+   "callbacks": [],
+   "emits": [
+    "sql::unsupported_value",
+    "sql::connection_failed",
+    "sql::query_failed",
+    "sql::constraint_failed",
+    "sql::row_missing",
+    "sql::row_count",
+    "sql::schema_mismatch"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.SQL tagged template"
+    ],
+    "adapter": "Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1.",
+    "task": "I35"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P12"
+   ]
+  },
+  {
+   "name": "sql::query_optional",
+   "identity": "can.std.sql@1::query_optional",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "P",
+     "constraint": "sql_parameters"
+    },
+    {
+     "name": "R",
+     "constraint": "sql_row"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "handle",
+     "type": "sql::pool"
+    },
+    {
+     "name": "descriptor",
+     "type": "str"
+    },
+    {
+     "name": "parameters",
+     "type": "P"
+    }
+   ],
+   "staticInputs": [
+    "descriptor"
+   ],
+   "result": "option::value<R>",
+   "callbacks": [],
+   "emits": [
+    "sql::unsupported_value",
+    "sql::connection_failed",
+    "sql::query_failed",
+    "sql::constraint_failed",
+    "sql::row_count",
+    "sql::schema_mismatch"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.SQL tagged template"
+    ],
+    "adapter": "Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1.",
+    "task": "I35"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P12"
+   ]
+  },
+  {
+   "name": "sql::query_rows",
+   "identity": "can.std.sql@1::query_rows",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "P",
+     "constraint": "sql_parameters"
+    },
+    {
+     "name": "R",
+     "constraint": "sql_row"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "handle",
+     "type": "sql::pool"
+    },
+    {
+     "name": "descriptor",
+     "type": "str"
+    },
+    {
+     "name": "parameters",
+     "type": "P"
+    },
+    {
+     "name": "max_rows",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [
+    "descriptor"
+   ],
+   "result": "R[]",
+   "callbacks": [],
+   "emits": [
+    "sql::unsupported_value",
+    "sql::connection_failed",
+    "sql::query_failed",
+    "sql::constraint_failed",
+    "sql::row_limit",
+    "sql::schema_mismatch"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.SQL tagged template"
+    ],
+    "adapter": "Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1.",
+    "task": "I35"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P12"
+   ]
+  },
+  {
+   "name": "sql::execute",
+   "identity": "can.std.sql@1::execute",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "P",
+     "constraint": "sql_parameters"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "handle",
+     "type": "sql::pool"
+    },
+    {
+     "name": "descriptor",
+     "type": "str"
+    },
+    {
+     "name": "parameters",
+     "type": "P"
+    }
+   ],
+   "staticInputs": [
+    "descriptor"
+   ],
+   "result": "int",
+   "callbacks": [],
+   "emits": [
+    "sql::unsupported_value",
+    "sql::connection_failed",
+    "sql::query_failed",
+    "sql::constraint_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.SQL tagged template"
+    ],
+    "adapter": "Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1.",
+    "task": "I35"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P12"
+   ]
+  },
+  {
+   "name": "sql::transaction_query_one",
+   "identity": "can.std.sql@1::transaction_query_one",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "P",
+     "constraint": "sql_parameters"
+    },
+    {
+     "name": "R",
+     "constraint": "sql_row"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "handle",
+     "type": "sql::transaction"
+    },
+    {
+     "name": "descriptor",
+     "type": "str"
+    },
+    {
+     "name": "parameters",
+     "type": "P"
+    }
+   ],
+   "staticInputs": [
+    "descriptor"
+   ],
+   "result": "R",
+   "callbacks": [],
+   "emits": [
+    "sql::unsupported_value",
+    "sql::query_failed",
+    "sql::constraint_failed",
+    "sql::row_missing",
+    "sql::row_count",
+    "sql::schema_mismatch"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.SQL tagged template"
+    ],
+    "adapter": "Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1.",
+    "task": "I35"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P12"
+   ]
+  },
+  {
+   "name": "sql::transaction_query_optional",
+   "identity": "can.std.sql@1::transaction_query_optional",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "P",
+     "constraint": "sql_parameters"
+    },
+    {
+     "name": "R",
+     "constraint": "sql_row"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "handle",
+     "type": "sql::transaction"
+    },
+    {
+     "name": "descriptor",
+     "type": "str"
+    },
+    {
+     "name": "parameters",
+     "type": "P"
+    }
+   ],
+   "staticInputs": [
+    "descriptor"
+   ],
+   "result": "option::value<R>",
+   "callbacks": [],
+   "emits": [
+    "sql::unsupported_value",
+    "sql::query_failed",
+    "sql::constraint_failed",
+    "sql::row_count",
+    "sql::schema_mismatch"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.SQL tagged template"
+    ],
+    "adapter": "Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1.",
+    "task": "I35"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P12"
+   ]
+  },
+  {
+   "name": "sql::transaction_query_rows",
+   "identity": "can.std.sql@1::transaction_query_rows",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "P",
+     "constraint": "sql_parameters"
+    },
+    {
+     "name": "R",
+     "constraint": "sql_row"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "handle",
+     "type": "sql::transaction"
+    },
+    {
+     "name": "descriptor",
+     "type": "str"
+    },
+    {
+     "name": "parameters",
+     "type": "P"
+    },
+    {
+     "name": "max_rows",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [
+    "descriptor"
+   ],
+   "result": "R[]",
+   "callbacks": [],
+   "emits": [
+    "sql::unsupported_value",
+    "sql::query_failed",
+    "sql::constraint_failed",
+    "sql::row_limit",
+    "sql::schema_mismatch"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.SQL tagged template"
+    ],
+    "adapter": "Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1.",
+    "task": "I35"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P12"
+   ]
+  },
+  {
+   "name": "sql::transaction_execute",
+   "identity": "can.std.sql@1::transaction_execute",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "P",
+     "constraint": "sql_parameters"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "handle",
+     "type": "sql::transaction"
+    },
+    {
+     "name": "descriptor",
+     "type": "str"
+    },
+    {
+     "name": "parameters",
+     "type": "P"
+    }
+   ],
+   "staticInputs": [
+    "descriptor"
+   ],
+   "result": "int",
+   "callbacks": [],
+   "emits": [
+    "sql::unsupported_value",
+    "sql::query_failed",
+    "sql::constraint_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.SQL tagged template"
+    ],
+    "adapter": "Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1.",
+    "task": "I35"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "P12"
+   ]
+  },
+  {
+   "name": "sql::with_transaction",
+   "identity": "can.std.sql@1::with_transaction",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "pool",
+     "type": "sql::pool"
+    },
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [],
+   "result": "T",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "sql::transaction"
+     ],
+     "result": "sql::decision<T>",
+     "deriveErrors": false,
+     "emits": []
+    }
+   ],
+   "emits": [
+    "sql::connection_failed",
+    "sql::transaction_failed",
+    "sql::commit_unknown"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.SQL.begin"
+    ],
+    "adapter": "Drain scoped leases; private rollback sentinel; retain commit uncertainty and original standard failures.",
+    "task": "I38"
+   },
+   "assertion": "scoped",
+   "refs": [
+    "P6",
+    "P12"
+   ]
+  },
+  {
+   "name": "checks::require",
+   "identity": "can.std.checks@1::require",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "condition",
+     "type": "bool"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "checks::failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Boolean branch",
+     "domain.create"
+    ],
+    "adapter": "Evaluate condition then reason once each; false produces checks::failed with the exact authored reason. Record the call-site span and invocation path in private occurrence metadata.",
+    "task": "LF08"
+   },
+   "assertion": "real",
+   "refs": [
+    "C9.2"
+   ]
+  },
+  {
+   "name": "files::read_bytes",
+   "identity": "can.std.files@1::read_bytes",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "max_bytes",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [
+    "files::not_found",
+    "files::denied",
+    "files::invalid_path",
+    "files::unexpected_kind",
+    "files::limit_exceeded",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.file"
+    ],
+    "adapter": "Reject empty/NUL paths and negative limits before input; stream Bun.file chunks counting bigint bytes before retaining, copy each native view, cancel and release on overflow; map EISDIR to unexpected_kind; supplied assertion boundary.",
+    "task": "B1-01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-01"
+   ]
+  },
+  {
+   "name": "files::read_text",
+   "identity": "can.std.files@1::read_text",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "max_bytes",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "files::not_found",
+    "files::denied",
+    "files::invalid_path",
+    "files::unexpected_kind",
+    "files::limit_exceeded",
+    "codec::invalid_data",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.file",
+     "TextDecoder"
+    ],
+    "adapter": "Bounded read_bytes then fatal UTF-8 decode; undecodable input is codec::invalid_data with the read path; supplied assertion boundary.",
+    "task": "B1-01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-01"
+   ]
+  },
+  {
+   "name": "files::write_bytes",
+   "identity": "can.std.files@1::write_bytes",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "overwrite",
+     "type": "bool"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "files::not_found",
+    "files::already_exists",
+    "files::denied",
+    "files::invalid_path",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "node:fs/promises.writeFile"
+    ],
+    "adapter": "Copy Can bytes out; write with flag wx when overwrite is false so exclusive creation is atomic; never auto-create missing parents; supplied assertion boundary.",
+    "task": "B1-01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-01"
+   ]
+  },
+  {
+   "name": "files::write_text",
+   "identity": "can.std.files@1::write_text",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "str"
+    },
+    {
+     "name": "overwrite",
+     "type": "bool"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "files::not_found",
+    "files::already_exists",
+    "files::denied",
+    "files::invalid_path",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "TextEncoder",
+     "node:fs/promises.writeFile"
+    ],
+    "adapter": "Encode UTF-8 then the write_bytes contract; supplied assertion boundary.",
+    "task": "B1-01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-01"
+   ]
+  },
+  {
+   "name": "files::stat",
+   "identity": "can.std.files@1::stat",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "follow_symlinks",
+     "type": "bool"
+    }
+   ],
+   "staticInputs": [],
+   "result": "files::file_info",
+   "callbacks": [],
+   "emits": [
+    "files::not_found",
+    "files::denied",
+    "files::invalid_path",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "node:fs/promises.stat",
+     "node:fs/promises.lstat"
+    ],
+    "adapter": "Use stat when following and lstat otherwise; project kind file/directory/symlink/other with exact bigint size; supplied assertion boundary.",
+    "task": "B1-01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-01"
+   ]
+  },
+  {
+   "name": "files::exists",
+   "identity": "can.std.files@1::exists",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [],
+   "emits": [
+    "files::denied",
+    "files::invalid_path",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "node:fs/promises.lstat"
+    ],
+    "adapter": "Report true for any entry kind including dangling symlinks; only missing paths report false, never permission failures; supplied assertion boundary.",
+    "task": "B1-01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-01"
+   ]
+  },
+  {
+   "name": "files::list",
+   "identity": "can.std.files@1::list",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "max_entries",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "files::entry[]",
+   "callbacks": [],
+   "emits": [
+    "files::not_found",
+    "files::denied",
+    "files::invalid_path",
+    "files::unexpected_kind",
+    "files::limit_exceeded",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "node:fs/promises.readdir",
+     "node:path.resolve",
+     "node:path.join"
+    ],
+    "adapter": "Read typed entries once, resolve each child to an absolute path, sort lexically, and reject over-limit directories instead of truncating; supplied assertion boundary.",
+    "task": "B1-01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-01"
+   ]
+  },
+  {
+   "name": "files::mkdir",
+   "identity": "can.std.files@1::mkdir",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "recursive",
+     "type": "bool"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "files::not_found",
+    "files::already_exists",
+    "files::denied",
+    "files::invalid_path",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "node:fs/promises.mkdir"
+    ],
+    "adapter": "Create one directory or a recursive chain; an existing path fails only when recursive is false; supplied assertion boundary.",
+    "task": "B1-01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-01"
+   ]
+  },
+  {
+   "name": "files::copy",
+   "identity": "can.std.files@1::copy",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "source",
+     "type": "str"
+    },
+    {
+     "name": "destination",
+     "type": "str"
+    },
+    {
+     "name": "overwrite",
+     "type": "bool"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "files::not_found",
+    "files::already_exists",
+    "files::denied",
+    "files::invalid_path",
+    "files::unexpected_kind",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "node:fs/promises.copyFile"
+    ],
+    "adapter": "Copy bytes with COPYFILE_EXCL unless overwrite; attribute missing-path failures to the absent side best-effort; supplied assertion boundary.",
+    "task": "B1-01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-01"
+   ]
+  },
+  {
+   "name": "files::move",
+   "identity": "can.std.files@1::move",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "source",
+     "type": "str"
+    },
+    {
+     "name": "destination",
+     "type": "str"
+    },
+    {
+     "name": "overwrite",
+     "type": "bool"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "files::not_found",
+    "files::already_exists",
+    "files::denied",
+    "files::invalid_path",
+    "files::unexpected_kind",
+    "files::not_empty",
+    "files::cross_device",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "node:fs/promises.rename"
+    ],
+    "adapter": "Rename without copy fallback; cross-device moves fail explicitly and never silently lose atomicity; supplied assertion boundary.",
+    "task": "B1-01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-01"
+   ]
+  },
+  {
+   "name": "files::remove",
+   "identity": "can.std.files@1::remove",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "recursive",
+     "type": "bool"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "files::not_found",
+    "files::denied",
+    "files::invalid_path",
+    "files::not_empty",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "node:fs/promises.rm",
+     "node:fs/promises.rmdir",
+     "node:fs/promises.unlink"
+    ],
+    "adapter": "Remove one file/symlink/empty directory, or a recursive tree only when requested; a non-empty directory without recursion is not_empty; supplied assertion boundary.",
+    "task": "B1-01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-01"
+   ]
+  },
+  {
+   "name": "files::glob",
+   "identity": "can.std.files@1::glob",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "base",
+     "type": "str"
+    },
+    {
+     "name": "pattern",
+     "type": "str"
+    },
+    {
+     "name": "follow_symlinks",
+     "type": "bool"
+    },
+    {
+     "name": "max_entries",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str[]",
+   "callbacks": [],
+   "emits": [
+    "files::not_found",
+    "files::denied",
+    "files::invalid_path",
+    "files::limit_exceeded",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.Glob"
+    ],
+    "adapter": "Enumerate natively with the entry cap enforced during iteration, return absolute sorted paths including directories, and never silently truncate; supplied assertion boundary.",
+    "task": "B1-01"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-01"
+   ]
+  },
+  {
+   "name": "path::resolve",
+   "identity": "can.std.path@1::resolve",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "base",
+     "type": "str"
+    },
+    {
+     "name": "parts",
+     "type": "str[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "node:path.resolve"
+    ],
+    "adapter": "Resolve parts against the base with native normalization; pure computation.",
+    "task": "B1-01"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-01"
+   ]
+  },
+  {
+   "name": "path::join",
+   "identity": "can.std.path@1::join",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "parts",
+     "type": "str[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "node:path.join"
+    ],
+    "adapter": "Join segments with native normalization; pure computation.",
+    "task": "B1-01"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-01"
+   ]
+  },
+  {
+   "name": "path::basename",
+   "identity": "can.std.path@1::basename",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "node:path.basename"
+    ],
+    "adapter": "Return the final segment natively; pure computation.",
+    "task": "B1-01"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-01"
+   ]
+  },
+  {
+   "name": "path::extension",
+   "identity": "can.std.path@1::extension",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "node:path.extname"
+    ],
+    "adapter": "Return the native extension including the leading dot, or empty; pure computation.",
+    "task": "B1-01"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-01"
+   ]
+  },
+  {
+   "name": "process::run",
+   "identity": "can.std.process@1::run",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "executable",
+     "type": "str"
+    },
+    {
+     "name": "args",
+     "type": "str[]"
+    },
+    {
+     "name": "options",
+     "type": "process::options"
+    }
+   ],
+   "staticInputs": [],
+   "result": "process::result",
+   "callbacks": [],
+   "emits": [
+    "files::not_found",
+    "files::denied",
+    "process::spawn_failed",
+    "process::timeout",
+    "process::output_limit",
+    "process::invalid_config",
+    "process::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.spawn"
+    ],
+    "adapter": "Spawn detached in its own process group with piped stdio, no shell; drain both streams concurrently under caps, enforce the deadline, and terminate the group SIGTERM-then-SIGKILL with a grace before escalation; reap every child and register the run as an owned resource so scope drain kills survivors; supplied assertion boundary.",
+    "task": "B1-04"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-04"
+   ]
+  },
+  {
+   "name": "process::require_success",
+   "identity": "can.std.process@1::require_success",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "process::result"
+    }
+   ],
+   "staticInputs": [],
+   "result": "process::result",
+   "callbacks": [],
+   "emits": [
+    "process::nonzero"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "domain.create"
+    ],
+    "adapter": "Return the result unchanged when it exited zero, else nonzero with the observed code and signal; pure computation.",
+    "task": "B1-04"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-04"
+   ]
+  },
+  {
+   "name": "process::which",
+   "identity": "can.std.process@1::which",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "name",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "files::not_found",
+    "process::invalid_config"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.which"
+    ],
+    "adapter": "Resolve the executable natively; an unresolvable name is files::not_found and an empty name is invalid_config; supplied assertion boundary.",
+    "task": "B1-04"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-04"
+   ]
+  },
+  {
+   "name": "stream::read_many",
+   "identity": "can.std.stream@1::read_many",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "reader",
+     "type": "stream::reader<T>"
+    },
+    {
+     "name": "max_items",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "T[]",
+   "callbacks": [],
+   "emits": [
+    "stream::read_failed",
+    "stream::cancelled",
+    "files::limit_exceeded"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "ReadableStreamDefaultReader.read"
+    ],
+    "adapter": "One native pull per batch step with no prefetch queue; empty batch is the normal end; bytes items split at max_chunk with copied views, text items \\n-framed with fatal UTF-8; interrupted reads report cancelled and deliver nothing; failures are terminal; use-after-close/foreign-owner throw standard resource-state.",
+    "task": "B1-05"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-05"
+   ]
+  },
+  {
+   "name": "stream::write_some",
+   "identity": "can.std.stream@1::write_some",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "writer",
+     "type": "stream::writer"
+    },
+    {
+     "name": "chunk",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [
+    "stream::write_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "FileSink.write"
+    ],
+    "adapter": "Copy payload bytes out of immutable values, report accepted count, leave short-write retries to the caller; no coalescing queue.",
+    "task": "B1-05"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-05"
+   ]
+  },
+  {
+   "name": "stream::close_reader",
+   "identity": "can.std.stream@1::close_reader",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "reader",
+     "type": "stream::reader<T>"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "stream::close_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "ReadableStreamDefaultReader.cancel"
+    ],
+    "adapter": "Terminal owner close with bounded shutdown; cancels the native reader and releases the lock exactly once; close twice throws standard resource-state.",
+    "task": "B1-05"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-05"
+   ]
+  },
+  {
+   "name": "stream::close_writer",
+   "identity": "can.std.stream@1::close_writer",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "writer",
+     "type": "stream::writer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "stream::close_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "FileSink.end"
+    ],
+    "adapter": "Terminal owner close with bounded shutdown; flushes and ends the sink exactly once; close twice throws standard resource-state.",
+    "task": "B1-05"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-05"
+   ]
+  },
+  {
+   "name": "stream::cancel_reader",
+   "identity": "can.std.stream@1::cancel_reader",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "reader",
+     "type": "stream::reader<T>"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "stream::close_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "ReadableStreamDefaultReader.cancel"
+    ],
+    "adapter": "Record the reason, then terminal owner close; an in-flight read reports cancelled instead of partial items.",
+    "task": "B1-05"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-05"
+   ]
+  },
+  {
+   "name": "stream::cancel_writer",
+   "identity": "can.std.stream@1::cancel_writer",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "writer",
+     "type": "stream::writer"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "stream::close_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "FileSink.end"
+    ],
+    "adapter": "Record the reason, then terminal owner close; racing writes complete under their lease.",
+    "task": "B1-05"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-05"
+   ]
+  },
+  {
+   "name": "files::read_stream",
+   "identity": "can.std.files@1::read_stream",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "max_chunk",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "stream::reader<bytes::buffer>",
+   "callbacks": [],
+   "emits": [
+    "files::not_found",
+    "files::denied",
+    "files::invalid_path",
+    "files::unexpected_kind",
+    "files::limit_exceeded",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.file"
+    ],
+    "adapter": "Stat at open for acquisition errors, then lazy streaming pulls; later filesystem changes fail reads, not the open.",
+    "task": "B1-05"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-05"
+   ]
+  },
+  {
+   "name": "files::read_lines_stream",
+   "identity": "can.std.files@1::read_lines_stream",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "max_line",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "stream::reader<str>",
+   "callbacks": [],
+   "emits": [
+    "files::not_found",
+    "files::denied",
+    "files::invalid_path",
+    "files::unexpected_kind",
+    "files::limit_exceeded",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.file",
+     "TextDecoder"
+    ],
+    "adapter": "Stat at open for acquisition errors, then fatal streaming UTF-8 decode with \\n framing, CR tolerance, trailing segment delivery and line caps.",
+    "task": "B1-05"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-05"
+   ]
+  },
+  {
+   "name": "files::write_stream",
+   "identity": "can.std.files@1::write_stream",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "path",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "stream::writer",
+   "callbacks": [],
+   "emits": [
+    "files::not_found",
+    "files::denied",
+    "files::invalid_path",
+    "files::unexpected_kind",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "FileSink"
+    ],
+    "adapter": "Create or truncate at open with acquisition errors, then lazy accepted-count writes; write-after-end is unreachable through owner close.",
+    "task": "B1-05"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-05"
+   ]
+  },
+  {
+   "name": "url::parse",
+   "identity": "can.std.url@1::parse",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "text",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "url::parts",
+   "callbacks": [],
+   "emits": [
+    "url::invalid_url"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URL"
+    ],
+    "adapter": "Parse absolute http/https URLs into immutable part records; other schemes and malformed text reject, userinfo never projects; execute in ordinary assertions.",
+    "task": "B1-13"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-13"
+   ]
+  },
+  {
+   "name": "url::resolve",
+   "identity": "can.std.url@1::resolve",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "base",
+     "type": "str"
+    },
+    {
+     "name": "input",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "url::parts",
+   "callbacks": [],
+   "emits": [
+    "url::invalid_url"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URL"
+    ],
+    "adapter": "Resolve relative references against absolute http/https bases per WHATWG URL; execute in ordinary assertions.",
+    "task": "B1-13"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-13"
+   ]
+  },
+  {
+   "name": "url::to_string",
+   "identity": "can.std.url@1::to_string",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "url",
+     "type": "url::parts"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "url::invalid_url"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URL"
+    ],
+    "adapter": "Serialize part records back to href form; execute in ordinary assertions.",
+    "task": "B1-13"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-13"
+   ]
+  },
+  {
+   "name": "url::query_all",
+   "identity": "can.std.url@1::query_all",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "url",
+     "type": "url::parts"
+    },
+    {
+     "name": "name",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str[]",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URLSearchParams"
+    ],
+    "adapter": "Read every form-decoded value for one query key in document order; execute in ordinary assertions.",
+    "task": "B1-13"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-13"
+   ]
+  },
+  {
+   "name": "url::query_pairs",
+   "identity": "can.std.url@1::query_pairs",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "url",
+     "type": "url::parts"
+    }
+   ],
+   "staticInputs": [],
+   "result": "url::query_pair[]",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URLSearchParams"
+    ],
+    "adapter": "Project every form-decoded query pair in document order, duplicates kept; execute in ordinary assertions.",
+    "task": "B1-13"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-13"
+   ]
+  },
+  {
+   "name": "url::with_query",
+   "identity": "can.std.url@1::with_query",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "url",
+     "type": "url::parts"
+    },
+    {
+     "name": "pairs",
+     "type": "url::query_pair[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "url::parts",
+   "callbacks": [],
+   "emits": [
+    "url::invalid_url"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URL",
+     "URLSearchParams"
+    ],
+    "adapter": "Rebuild the query string from ordered pairs with form encoding, keeping fragment and parts; execute in ordinary assertions.",
+    "task": "B1-13"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-13"
+   ]
+  },
+  {
+   "name": "time::instant_from_epoch_millis",
+   "identity": "can.std.time@1::instant_from_epoch_millis",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "millis",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "time::instant",
+   "callbacks": [],
+   "emits": [
+    "time::out_of_range"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Date"
+    ],
+    "adapter": "Admit epoch milliseconds inside the native Date span as opaque instants; execute in ordinary assertions.",
+    "task": "B1-13"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-13"
+   ]
+  },
+  {
+   "name": "time::instant_epoch_millis",
+   "identity": "can.std.time@1::instant_epoch_millis",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "instant",
+     "type": "time::instant"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "BigInt"
+    ],
+    "adapter": "Project the exact epoch milliseconds from an instant; execute in ordinary assertions.",
+    "task": "B1-13"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-13"
+   ]
+  },
+  {
+   "name": "time::format_in_zone",
+   "identity": "can.std.time@1::format_in_zone",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "instant",
+     "type": "time::instant"
+    },
+    {
+     "name": "locale",
+     "type": "str"
+    },
+    {
+     "name": "zone",
+     "type": "str"
+    },
+    {
+     "name": "date_style",
+     "type": "str"
+    },
+    {
+     "name": "time_style",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "time::invalid_zone",
+    "time::invalid_option"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Intl.DateTimeFormat"
+    ],
+    "adapter": "Format with explicit locale, IANA zone, and full/long/medium/short/none styles; execute in ordinary assertions.",
+    "task": "B1-13"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-13"
+   ]
+  },
+  {
+   "name": "time::resolve_zoned_time",
+   "identity": "can.std.time@1::resolve_zoned_time",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "civil",
+     "type": "time::civil"
+    },
+    {
+     "name": "zone",
+     "type": "str"
+    },
+    {
+     "name": "policy",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "time::instant",
+   "callbacks": [],
+   "emits": [
+    "time::invalid_zone",
+    "time::nonexistent_time",
+    "time::invalid_option"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Date",
+     "Intl.DateTimeFormat"
+    ],
+    "adapter": "Resolve civil time in a zone with explicit earlier(0)/later(1) DST policy; gaps reject after round-trip verification; execute in ordinary assertions.",
+    "task": "B1-13"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-13"
+   ]
+  },
+  {
+   "name": "ws::connect",
+   "identity": "can.std.ws@1::connect",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "url",
+     "type": "str"
+    },
+    {
+     "name": "protocols",
+     "type": "str[]"
+    },
+    {
+     "name": "max_message_bytes",
+     "type": "int"
+    },
+    {
+     "name": "max_queued_events",
+     "type": "int"
+    },
+    {
+     "name": "max_send_bytes",
+     "type": "int"
+    },
+    {
+     "name": "deadline_ms",
+     "type": "int"
+    },
+    {
+     "name": "insecure_tls",
+     "type": "bool"
+    }
+   ],
+   "staticInputs": [],
+   "result": "ws::connection",
+   "callbacks": [],
+   "emits": [
+    "ws::connect_failed",
+    "ws::invalid_url",
+    "ws::invalid_protocol",
+    "ws::limit_exceeded"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "WebSocket"
+    ],
+    "adapter": "Open a client session, wait for the handshake under the caller deadline, and vend the session with its event reader.",
+    "task": "B1-07"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-07"
+   ]
+  },
+  {
+   "name": "ws::accept",
+   "identity": "can.std.ws@1::accept",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "request",
+     "type": "http::request"
+    },
+    {
+     "name": "protocol",
+     "type": "str"
+    },
+    {
+     "name": "max_message_bytes",
+     "type": "int"
+    },
+    {
+     "name": "max_queued_events",
+     "type": "int"
+    },
+    {
+     "name": "max_send_bytes",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "ws::connection",
+   "callbacks": [],
+   "emits": [
+    "ws::upgrade_failed",
+    "ws::unsupported_protocol",
+    "ws::invalid_protocol",
+    "ws::limit_exceeded"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.serve",
+     "Request"
+    ],
+    "adapter": "Upgrade a routed request after handler authentication and vend the session with its event reader.",
+    "task": "B1-07"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-07"
+   ]
+  },
+  {
+   "name": "ws::send_text",
+   "identity": "can.std.ws@1::send_text",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "session",
+     "type": "ws::session"
+    },
+    {
+     "name": "text",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [
+    "ws::send_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "WebSocket",
+     "Bun.serve"
+    ],
+    "adapter": "Queue one text message; server saturation fails so the caller retries after drain.",
+    "task": "B1-07"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-07"
+   ]
+  },
+  {
+   "name": "ws::send_bytes",
+   "identity": "can.std.ws@1::send_bytes",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "session",
+     "type": "ws::session"
+    },
+    {
+     "name": "data",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [
+    "ws::send_failed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "WebSocket",
+     "Bun.serve"
+    ],
+    "adapter": "Queue one binary message; server saturation fails so the caller retries after drain.",
+    "task": "B1-07"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-07"
+   ]
+  },
+  {
+   "name": "ws::close",
+   "identity": "can.std.ws@1::close",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "session",
+     "type": "ws::session"
+    },
+    {
+     "name": "code",
+     "type": "int"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "ws::invalid_close"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "WebSocket",
+     "Bun.serve"
+    ],
+    "adapter": "Validate the close code and reason on both sides, send the frame, and terminally close the session.",
+    "task": "B1-07"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-07"
+   ]
+  },
+  {
+   "name": "cookie::parse",
+   "identity": "can.std.cookie@1::parse",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "header",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "cookie::collection",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "CookieMap"
+    ],
+    "adapter": "Parse a Cookie header into first-wins lookup over the retained ordered pair list.",
+    "task": "B1-09"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-09"
+   ]
+  },
+  {
+   "name": "cookie::get",
+   "identity": "can.std.cookie@1::get",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "collection",
+     "type": "cookie::collection"
+    },
+    {
+     "name": "name",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "option::value<str>",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "CookieMap"
+    ],
+    "adapter": "Return the first pair value for the name, or none when absent.",
+    "task": "B1-09"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-09"
+   ]
+  },
+  {
+   "name": "cookie::make",
+   "identity": "can.std.cookie@1::make",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "str"
+    },
+    {
+     "name": "attributes",
+     "type": "cookie::attributes"
+    }
+   ],
+   "staticInputs": [],
+   "result": "cookie::cookie",
+   "callbacks": [],
+   "emits": [
+    "cookie::invalid_cookie"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Cookie"
+    ],
+    "adapter": "Validate the name and expiry, then wrap a native cookie.",
+    "task": "B1-09"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-09"
+   ]
+  },
+  {
+   "name": "cookie::serialize",
+   "identity": "can.std.cookie@1::serialize",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "cookie",
+     "type": "cookie::cookie"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Cookie"
+    ],
+    "adapter": "Render one Set-Cookie field value from a validated cookie.",
+    "task": "B1-09"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-09"
+   ]
+  },
+  {
+   "name": "cookie::expire",
+   "identity": "can.std.cookie@1::expire",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "domain",
+     "type": "option::value<str>"
+    }
+   ],
+   "staticInputs": [],
+   "result": "cookie::cookie",
+   "callbacks": [],
+   "emits": [
+    "cookie::invalid_cookie"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "CookieMap"
+    ],
+    "adapter": "Build an epoch-expiry tombstone scoped to the matching path and domain.",
+    "task": "B1-09"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-09"
+   ]
+  },
+  {
+   "name": "csrf::generate",
+   "identity": "can.std.csrf@1::generate",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "secret",
+     "type": "str"
+    },
+    {
+     "name": "session_id",
+     "type": "str"
+    },
+    {
+     "name": "expires_in_ms",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "csrf::invalid_config"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "CSRF"
+    ],
+    "adapter": "Mint a session-bound token with explicit secret and fixed base64url/sha256.",
+    "task": "B1-09"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-09"
+   ]
+  },
+  {
+   "name": "csrf::verify",
+   "identity": "can.std.csrf@1::verify",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "secret",
+     "type": "str"
+    },
+    {
+     "name": "session_id",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    },
+    {
+     "name": "max_age_ms",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [],
+   "emits": [
+    "csrf::invalid_config"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "CSRF"
+    ],
+    "adapter": "Verify a token against explicit secret, session and age; token faults answer false.",
+    "task": "B1-09"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-09"
+   ]
+  },
+  {
+   "name": "s3::client_open",
+   "identity": "can.std.s3@1::client_open",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "endpoint",
+     "type": "str"
+    },
+    {
+     "name": "region",
+     "type": "str"
+    },
+    {
+     "name": "bucket",
+     "type": "str"
+    },
+    {
+     "name": "access_key",
+     "type": "str"
+    },
+    {
+     "name": "secret_key",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "s3::client",
+   "callbacks": [],
+   "emits": [
+    "s3::invalid_config"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "S3Client"
+    ],
+    "adapter": "Validate endpoint, region, bucket and credentials, then bind a native client. No I/O; credentials never enter diagnostics.",
+    "task": "B1-10"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-10"
+   ]
+  },
+  {
+   "name": "s3::read_bytes",
+   "identity": "can.std.s3@1::read_bytes",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "client",
+     "type": "s3::client"
+    },
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "max_bytes",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [
+    "s3::invalid_config",
+    "s3::missing_key",
+    "s3::access_denied",
+    "s3::service_error",
+    "s3::over_limit"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "S3Client",
+     "S3File"
+    ],
+    "adapter": "Stat first; fail over_limit without downloading when the object exceeds max_bytes, else return a copy of the bytes.",
+    "task": "B1-10"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-10"
+   ]
+  },
+  {
+   "name": "s3::read_range",
+   "identity": "can.std.s3@1::read_range",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "client",
+     "type": "s3::client"
+    },
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "offset",
+     "type": "int"
+    },
+    {
+     "name": "length",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [
+    "s3::invalid_config",
+    "s3::missing_key",
+    "s3::access_denied",
+    "s3::service_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "S3Client",
+     "S3File"
+    ],
+    "adapter": "Download one byte range. Zero length answers empty without a wire call; negative offset or length fails invalid_config.",
+    "task": "B1-10"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-10"
+   ]
+  },
+  {
+   "name": "s3::read_stream",
+   "identity": "can.std.s3@1::read_stream",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "client",
+     "type": "s3::client"
+    },
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "max_bytes",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "stream::reader<bytes::buffer>",
+   "callbacks": [],
+   "emits": [
+    "s3::invalid_config",
+    "s3::missing_key",
+    "s3::access_denied",
+    "s3::service_error",
+    "s3::over_limit"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "S3Client",
+     "S3File"
+    ],
+    "adapter": "Stat eagerly, then open a bounded byte reader over the download stream; cancelling the reader cancels the download.",
+    "task": "B1-10"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-10"
+   ]
+  },
+  {
+   "name": "s3::write_bytes",
+   "identity": "can.std.s3@1::write_bytes",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "client",
+     "type": "s3::client"
+    },
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "body",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "options",
+     "type": "s3::write_options"
+    }
+   ],
+   "staticInputs": [],
+   "result": "s3::metadata",
+   "callbacks": [],
+   "emits": [
+    "s3::invalid_config",
+    "s3::access_denied",
+    "s3::service_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "S3Client",
+     "S3File"
+    ],
+    "adapter": "Store one object with an optional content type, then stat it for immutable metadata.",
+    "task": "B1-10"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-10"
+   ]
+  },
+  {
+   "name": "s3::write_stream",
+   "identity": "can.std.s3@1::write_stream",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "client",
+     "type": "s3::client"
+    },
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "reader",
+     "type": "stream::reader<bytes::buffer>"
+    },
+    {
+     "name": "options",
+     "type": "s3::write_options"
+    },
+    {
+     "name": "max_bytes",
+     "type": "int"
+    },
+    {
+     "name": "deadline_ms",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "s3::metadata",
+   "callbacks": [],
+   "emits": [
+    "s3::invalid_config",
+    "s3::access_denied",
+    "s3::service_error",
+    "s3::over_limit",
+    "stream::read_failed",
+    "stream::cancelled"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "S3Client",
+     "S3File"
+    ],
+    "adapter": "Pump a byte reader into a multipart upload under byte and deadline budgets; the deadline remainder bounds every pump await (read, write, flush, end, stat) through cancel-absent races, and expiry answers service_error/timeout while the native stays owned; timeouts and reader failure discard the upload destructively and propagate.",
+    "task": "B1-10"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-10",
+    "E08"
+   ]
+  },
+  {
+   "name": "s3::stat",
+   "identity": "can.std.s3@1::stat",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "client",
+     "type": "s3::client"
+    },
+    {
+     "name": "key",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "s3::metadata",
+   "callbacks": [],
+   "emits": [
+    "s3::invalid_config",
+    "s3::missing_key",
+    "s3::access_denied",
+    "s3::service_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "S3Client",
+     "S3File"
+    ],
+    "adapter": "Read immutable object metadata with an opaque last-modified instant.",
+    "task": "B1-10"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-10"
+   ]
+  },
+  {
+   "name": "s3::exists",
+   "identity": "can.std.s3@1::exists",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "client",
+     "type": "s3::client"
+    },
+    {
+     "name": "key",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [],
+   "emits": [
+    "s3::invalid_config",
+    "s3::access_denied",
+    "s3::service_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "S3Client",
+     "S3File"
+    ],
+    "adapter": "Answer false for absent keys only; denied credentials and service faults still fail.",
+    "task": "B1-10"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-10"
+   ]
+  },
+  {
+   "name": "s3::delete",
+   "identity": "can.std.s3@1::delete",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "client",
+     "type": "s3::client"
+    },
+    {
+     "name": "key",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "s3::invalid_config",
+    "s3::access_denied",
+    "s3::service_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "S3Client",
+     "S3File"
+    ],
+    "adapter": "Delete idempotently; deleting a missing key succeeds.",
+    "task": "B1-10"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-10"
+   ]
+  },
+  {
+   "name": "s3::list",
+   "identity": "can.std.s3@1::list",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "client",
+     "type": "s3::client"
+    },
+    {
+     "name": "options",
+     "type": "s3::list_options"
+    }
+   ],
+   "staticInputs": [],
+   "result": "s3::page",
+   "callbacks": [],
+   "emits": [
+    "s3::invalid_config",
+    "s3::access_denied",
+    "s3::service_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "S3Client",
+     "S3File"
+    ],
+    "adapter": "List one page with immutable entries, grouped prefixes and an opaque continuation; never collects a whole bucket.",
+    "task": "B1-10"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-10"
+   ]
+  },
+  {
+   "name": "s3::presign",
+   "identity": "can.std.s3@1::presign",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "client",
+     "type": "s3::client"
+    },
+    {
+     "name": "method",
+     "type": "s3::method"
+    },
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "expires_in",
+     "type": "int"
+    },
+    {
+     "name": "content_type",
+     "type": "option::value<str>"
+    }
+   ],
+   "staticInputs": [],
+   "result": "s3::presigned",
+   "callbacks": [],
+   "emits": [
+    "s3::invalid_config"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "S3Client",
+     "S3File"
+    ],
+    "adapter": "Mint a signed URL locally with method and expiry metadata. The URL stays inside the opaque handle until described.",
+    "task": "B1-10"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-10"
+   ]
+  },
+  {
+   "name": "s3::describe",
+   "identity": "can.std.s3@1::describe",
+   "kind": "method",
+   "receiver": "s3::presigned",
+   "parameters": [],
+   "inputs": [],
+   "staticInputs": [],
+   "result": "s3::presigned_info",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "S3Client",
+     "S3File"
+    ],
+    "adapter": "Reveal the signed URL with its required method and expiry.",
+    "task": "B1-10"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-10"
+   ]
+  },
+  {
+   "name": "s3::begin_upload",
+   "identity": "can.std.s3@1::begin_upload",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "client",
+     "type": "s3::client"
+    },
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "options",
+     "type": "s3::upload_options"
+    }
+   ],
+   "staticInputs": [],
+   "result": "s3::upload",
+   "callbacks": [],
+   "emits": [
+    "s3::invalid_config"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "S3Client",
+     "S3File",
+     "NetworkSink"
+    ],
+    "adapter": "Open a multipart upload handle with optional content type and part size. No I/O until the first write.",
+    "task": "B1-10"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-10"
+   ]
+  },
+  {
+   "name": "s3::upload_write",
+   "identity": "can.std.s3@1::upload_write",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "upload",
+     "type": "s3::upload"
+    },
+    {
+     "name": "chunk",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [
+    "s3::upload_closed",
+    "s3::access_denied",
+    "s3::service_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "NetworkSink"
+    ],
+    "adapter": "Append one chunk to an open upload and report accepted bytes; use after finish or discard fails upload_closed; a timed-out chunk poisons the handle to discarded with deferred scrub on settlement.",
+    "task": "B1-10"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-10",
+    "E08"
+   ]
+  },
+  {
+   "name": "s3::upload_finish",
+   "identity": "can.std.s3@1::upload_finish",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "upload",
+     "type": "s3::upload"
+    }
+   ],
+   "staticInputs": [],
+   "result": "s3::metadata",
+   "callbacks": [],
+   "emits": [
+    "s3::upload_closed",
+    "s3::access_denied",
+    "s3::service_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "NetworkSink"
+    ],
+    "adapter": "Complete the upload and return immutable metadata of the stored object; a timed-out finish poisons the handle to discarded with deferred scrub on settlement.",
+    "task": "B1-10"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-10"
+   ]
+  },
+  {
+   "name": "s3::discard_upload",
+   "identity": "can.std.s3@1::discard_upload",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "upload",
+     "type": "s3::upload"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "s3::upload_closed",
+    "s3::access_denied",
+    "s3::service_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "NetworkSink"
+    ],
+    "adapter": "Destructively retire an open handle: complete the pending upload (transiently visible to concurrent readers; overwrites any pre-existing key) then delete the key; failed cleanup awaits surface as service errors, and a failed completion may strand multipart state for the operator abort recipe.",
+    "task": "B1-10"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "B1-10",
+    "E08"
+   ]
+  },
+  {
+   "name": "codec::decode_toml",
+   "identity": "can.std.codec@1::decode_toml",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "wire"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "buffer",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "T",
+   "callbacks": [],
+   "emits": [
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.TOML.parse",
+     "TextDecoder"
+    ],
+    "adapter": "Native TOML table parse; duplicate keys and unsafe integers fail natively; Temporal dates reject; project onto the nominal schema with A6 budgets.",
+    "task": "B1-11"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-11"
+   ]
+  },
+  {
+   "name": "codec::decode_yaml",
+   "identity": "can.std.codec@1::decode_yaml",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "wire"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "buffer",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "T",
+   "callbacks": [],
+   "emits": [
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.YAML.parse",
+     "TextDecoder"
+    ],
+    "adapter": "Native YAML 1.2 core parse; duplicate keys resolve last-wins and rounded integers project as parsed values (documented); cycles and non-plain objects reject; project onto the nominal schema with A6 budgets.",
+    "task": "B1-11"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-11"
+   ]
+  },
+  {
+   "name": "codec::decode_json5",
+   "identity": "can.std.codec@1::decode_json5",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "wire"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "buffer",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "T",
+   "callbacks": [],
+   "emits": [
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.JSON5.parse",
+     "TextDecoder"
+    ],
+    "adapter": "Native JSON5 parse; duplicate keys resolve last-wins and rounded integers project as parsed values (documented); project onto the nominal schema with A6 budgets.",
+    "task": "B1-11"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-11"
+   ]
+  },
+  {
+   "name": "codec::decode_jsonl",
+   "identity": "can.std.codec@1::decode_jsonl",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "wire"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "buffer",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "T[]",
+   "callbacks": [],
+   "emits": [
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.parse",
+     "JSON.rawJSON",
+     "TextDecoder"
+    ],
+    "adapter": "Strict bounded line framing (blank lines skipped, CRLF and unterminated final line accepted, multi-line records rejected) with the exact per-record JSON decode path; unsafe integers preserved; truncated tails fail.",
+    "task": "B1-11"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-11"
+   ]
+  },
+  {
+   "name": "codec::consume_jsonl",
+   "identity": "can.std.codec@1::consume_jsonl",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "wire"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "reader",
+     "type": "stream::reader<bytes::buffer>"
+    },
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "T"
+     ],
+     "result": "void",
+     "deriveErrors": false,
+     "emits": []
+    }
+   ],
+   "emits": [
+    "codec::invalid_data",
+    "stream::read_failed",
+    "stream::cancelled"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "ReadableStreamDefaultReader.read",
+     "JSON.parse",
+     "JSON.rawJSON",
+     "TextDecoder"
+    ],
+    "adapter": "Incremental bounded line framing over a byte reader with fatal UTF-8; each record projects through the exact JSON path and awaits a total handler; shared node budget bounds the pump; cancellation stops reads; returns the record count.",
+    "task": "B1-11"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-11"
+   ]
+  },
+  {
+   "name": "markdown::render_text_html",
+   "identity": "can.std.markdown@1::render_text_html",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "source",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "markdown::over_limit"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.markdown.html"
+    ],
+    "adapter": "Fixed standaloneBytes input/output ceilings; default native options preserve raw HTML, so the result stays an ordinary str and never converts into html::safe.",
+    "task": "B1-12"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-12"
+   ]
+  },
+  {
+   "name": "markdown::render_safe",
+   "identity": "can.std.markdown@1::render_safe",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "source",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "html::safe",
+   "callbacks": [],
+   "emits": [
+    "markdown::over_limit",
+    "html::invalid_url"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.markdown.render"
+    ],
+    "adapter": "Two-phase trusted construction: synchronous private callbacks capture tag trees over a NUL-token alphabet the parser keeps unforgeable (text arrives unescaped with newlines intact; NUL fails closed), then async assembly reuses the html factory (text, makeTag, textAttribute, element, parseURL, urlAttribute, fragment). Parser options fix tables/strikethrough/tasklists on, heading ids on, raw HTML demoted to text via noHtmlBlocks/noHtmlSpans, and wikiLinks/underline/latexMath/autolinks off. Lists (with task checkboxes and ordered start), tables (with cell align), headings, quotes, spans, code, links and images render fully; hard breaks normalize to soft newlines; info strings outside [A-Za-z0-9_-] lose their language class; href/src rejections propagate html::invalid_url; node count is capped at maxNodes and bytes at standaloneBytes.",
+    "task": "B1-12"
+   },
+   "assertion": "real",
+   "refs": [
+    "B1-12"
+   ]
+  },
+  {
+   "name": "browser::mount",
+   "identity": "can.std.browser@1::mount",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "root",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "browser::app",
+   "callbacks": [],
+   "emits": [
+    "browser::missing_root"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Document.getElementById"
+    ],
+    "adapter": "Resolve the mount root by id; a missing document or element fails closed as browser::missing_root naming the requested root.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::root",
+   "identity": "can.std.browser@1::root",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "app",
+     "type": "browser::app"
+    }
+   ],
+   "staticInputs": [],
+   "result": "browser::node",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Element"
+    ],
+    "adapter": "Project the mounted root element as an append anchor; the root never detaches implicitly.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::open_view",
+   "identity": "can.std.browser@1::open_view",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "app",
+     "type": "browser::app"
+    }
+   ],
+   "staticInputs": [],
+   "result": "browser::view",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "AbortController"
+    ],
+    "adapter": "Open a disposal scope sharing the app registry; the scope owns one AbortController for its listeners.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::dispose_view",
+   "identity": "can.std.browser@1::dispose_view",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "view",
+     "type": "browser::view"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "AbortController.abort",
+     "clearTimeout",
+     "ChildNode.remove"
+    ],
+    "adapter": "Abort the view listeners, clear its pending timers, detach its nodes and poison its handles; idempotent.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::dispose_app",
+   "identity": "can.std.browser@1::dispose_app",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "app",
+     "type": "browser::app"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "AbortController.abort",
+     "clearTimeout",
+     "ChildNode.remove"
+    ],
+    "adapter": "Dispose every open view, then poison the app; the mounted root element stays in the document; idempotent.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::create_element",
+   "identity": "can.std.browser@1::create_element",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "view",
+     "type": "browser::view"
+    },
+    {
+     "name": "tag",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "browser::node",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed",
+    "browser::rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Document.createElement"
+    ],
+    "adapter": "Create a detached element after admitting the tag against the shared author vocabulary; dynamic names re-check at runtime.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::create_text",
+   "identity": "can.std.browser@1::create_text",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "view",
+     "type": "browser::view"
+    },
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "browser::node",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Document.createTextNode"
+    ],
+    "adapter": "Create a detached text node; native text construction carries no markup parsing.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::set_text",
+   "identity": "can.std.browser@1::set_text",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "node",
+     "type": "browser::node"
+    },
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Node.textContent"
+    ],
+    "adapter": "Replace rendered text through the native text setter, which never parses markup.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::set_attribute",
+   "identity": "can.std.browser@1::set_attribute",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "node",
+     "type": "browser::node"
+    },
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed",
+    "browser::rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Element.setAttribute"
+    ],
+    "adapter": "Admit the attribute name against the bounded vocabulary, same-origin/https-check URL attributes, then set natively.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::remove_attribute",
+   "identity": "can.std.browser@1::remove_attribute",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "node",
+     "type": "browser::node"
+    },
+    {
+     "name": "name",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed",
+    "browser::rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Element.removeAttribute"
+    ],
+    "adapter": "Admit the attribute name, then remove natively; absent attributes succeed.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::append_child",
+   "identity": "can.std.browser@1::append_child",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "parent",
+     "type": "browser::node"
+    },
+    {
+     "name": "child",
+     "type": "browser::node"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed",
+    "browser::rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Node.appendChild"
+    ],
+    "adapter": "Require one live view scope for both handles, reject ancestor cycles, then append natively (native adoption moves already-parented nodes).",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::remove_node",
+   "identity": "can.std.browser@1::remove_node",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "node",
+     "type": "browser::node"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed",
+    "browser::rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "ChildNode.remove"
+    ],
+    "adapter": "Detach a non-root node natively; the handle stays live for re-append; the root anchor is rejected.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::focus",
+   "identity": "can.std.browser@1::focus",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "node",
+     "type": "browser::node"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "HTMLElement.focus"
+    ],
+    "adapter": "Move focus natively; non-focusable nodes are a native no-op, never a failure.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::on_event",
+   "identity": "can.std.browser@1::on_event",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "view",
+     "type": "browser::view"
+    },
+    {
+     "name": "node",
+     "type": "browser::node"
+    },
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "browser::event"
+     ],
+     "result": "void",
+     "deriveErrors": false,
+     "emits": []
+    }
+   ],
+   "emits": [
+    "browser::disposed",
+    "browser::rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "EventTarget.addEventListener",
+     "AbortController"
+    ],
+    "adapter": "Admit the event kind, snapshot kind/target/value/key synchronously at dispatch, and bind the named Can handler to the view AbortController; a failed handler completion ends that dispatch without affecting later events.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::set_timeout",
+   "identity": "can.std.browser@1::set_timeout",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "view",
+     "type": "browser::view"
+    },
+    {
+     "name": "delay_ms",
+     "type": "int"
+    },
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [],
+     "result": "void",
+     "deriveErrors": false,
+     "emits": []
+    }
+   ],
+   "emits": [
+    "browser::disposed",
+    "browser::rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "setTimeout",
+     "clearTimeout"
+    ],
+    "adapter": "Schedule the named Can handler once within the setTimeout range; firing unregisters, disposal clears pending timers; a failed handler completion ends that firing.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::create_state",
+   "identity": "can.std.browser@1::create_state",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "view",
+     "type": "browser::view"
+    },
+    {
+     "name": "value",
+     "type": "T"
+    }
+   ],
+   "staticInputs": [],
+   "result": "browser::state<T>",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Object.freeze"
+    ],
+    "adapter": "Mint a versioned cell at version 0 holding the immutable value; the cell belongs to its view scope.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::read_state",
+   "identity": "can.std.browser@1::read_state",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "state",
+     "type": "browser::state<T>"
+    }
+   ],
+   "staticInputs": [],
+   "result": "browser::snapshot<T>",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Object.freeze"
+    ],
+    "adapter": "Copy the live version and value atomically into an immutable snapshot record.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::replace_state",
+   "identity": "can.std.browser@1::replace_state",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "T",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "state",
+     "type": "browser::state<T>"
+    },
+    {
+     "name": "expected",
+     "type": "int"
+    },
+    {
+     "name": "value",
+     "type": "T"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed",
+    "browser::stale_version"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Object.is"
+    ],
+    "adapter": "Compare-and-swap the cell: matching versions install the value and return the next version, mismatches fail with browser::stale_version carrying expected and actual.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::query_parameter",
+   "identity": "can.std.browser@1::query_parameter",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "key",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [
+    "key"
+   ],
+   "result": "option::value<str>",
+   "callbacks": [],
+   "emits": [
+    "browser::invalid_query"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URLSearchParams",
+     "decodeURIComponent"
+    ],
+    "adapter": "Read one literal query key from location.search under strict budgets: scan every raw pair with decodeURIComponent after plus-to-space, reject malformed escapes, invalid UTF-8, oversized or duplicate values as browser::invalid_query, return none for zero and some for one.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::on_cancel_key",
+   "identity": "can.std.browser@1::on_cancel_key",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "view",
+     "type": "browser::view"
+    },
+    {
+     "name": "node",
+     "type": "browser::node"
+    },
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "browser::event"
+     ],
+     "result": "void",
+     "deriveErrors": false,
+     "emits": []
+    }
+   ],
+   "emits": [
+    "browser::disposed",
+    "browser::rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "EventTarget.addEventListener",
+     "AbortController"
+    ],
+    "adapter": "Register a cancel-policy key listener: admit only keydown or keyup with a nonempty exact key, preventDefault synchronously for matching cancelable events before dispatching one immutable snapshot; mismatched or noncancelable events still dispatch once without cancellation.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::on_cancel_event",
+   "identity": "can.std.browser@1::on_cancel_event",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "view",
+     "type": "browser::view"
+    },
+    {
+     "name": "node",
+     "type": "browser::node"
+    },
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "callback",
+     "type": "$callback"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [
+    {
+     "name": "callback",
+     "inputs": [
+      "browser::event"
+     ],
+     "result": "void",
+     "deriveErrors": false,
+     "emits": []
+    }
+   ],
+   "emits": [
+    "browser::disposed",
+    "browser::rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "EventTarget.addEventListener",
+     "AbortController"
+    ],
+    "adapter": "Register a cancel-policy event listener: initially admit only submit, preventDefault synchronously for matching cancelable events before dispatching one immutable snapshot; otherwise dispatch once without cancellation.",
+    "task": "T22"
+   },
+   "assertion": "real",
+   "refs": [
+    "T22"
+   ]
+  },
+  {
+   "name": "browser::set_value",
+   "identity": "can.std.browser@1::set_value",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "node",
+     "type": "browser::node"
+    },
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed",
+    "browser::rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Element.value"
+    ],
+    "adapter": "Admit elements carrying a string value IDL, then assign the live value natively; text nodes and IDL-less controls reject, and no event is dispatched.",
+    "task": "C02"
+   },
+   "assertion": "real",
+   "refs": [
+    "C02"
+   ]
+  },
+  {
+   "name": "browser::set_checked",
+   "identity": "can.std.browser@1::set_checked",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "node",
+     "type": "browser::node"
+    },
+    {
+     "name": "checked",
+     "type": "bool"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed",
+    "browser::rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "HTMLInputElement.checked"
+    ],
+    "adapter": "Admit elements carrying a boolean checked IDL, then assign the live state natively; text nodes and IDL-less controls reject, and no event is dispatched.",
+    "task": "C02"
+   },
+   "assertion": "real",
+   "refs": [
+    "C02"
+   ]
+  },
+  {
+   "name": "browser::set_selected",
+   "identity": "can.std.browser@1::set_selected",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "node",
+     "type": "browser::node"
+    },
+    {
+     "name": "values",
+     "type": "str[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed",
+    "browser::rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "HTMLOptionElement.selected"
+    ],
+    "adapter": "Admit select elements, then mark selected exactly the options whose value appears in the input; unknown values match nothing and no event is dispatched.",
+    "task": "C02"
+   },
+   "assertion": "real",
+   "refs": [
+    "C02"
+   ]
+  },
+  {
+   "name": "browser::set_selection",
+   "identity": "can.std.browser@1::set_selection",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "node",
+     "type": "browser::node"
+    },
+    {
+     "name": "start",
+     "type": "int"
+    },
+    {
+     "name": "end",
+     "type": "int"
+    },
+    {
+     "name": "direction",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed",
+    "browser::rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "HTMLInputElement.setSelectionRange"
+    ],
+    "adapter": "Admit the forward/backward/none direction and 0 <= start <= end <= value length, then set the caret natively; out-of-range bounds and selection-less controls reject instead of clamping.",
+    "task": "C02"
+   },
+   "assertion": "real",
+   "refs": [
+    "C02"
+   ]
+  },
+  {
+   "name": "browser::read_value",
+   "identity": "can.std.browser@1::read_value",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "node",
+     "type": "browser::node"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed",
+    "browser::rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Element.value"
+    ],
+    "adapter": "Admit elements carrying a string value IDL, then read the live value natively; text nodes and IDL-less controls reject.",
+    "task": "C02"
+   },
+   "assertion": "real",
+   "refs": [
+    "C02"
+   ]
+  },
+  {
+   "name": "browser::read_checked",
+   "identity": "can.std.browser@1::read_checked",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "node",
+     "type": "browser::node"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed",
+    "browser::rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "HTMLInputElement.checked"
+    ],
+    "adapter": "Admit elements carrying a boolean checked IDL, then read the live state natively; text nodes and IDL-less controls reject.",
+    "task": "C02"
+   },
+   "assertion": "real",
+   "refs": [
+    "C02"
+   ]
+  },
+  {
+   "name": "browser::read_selected",
+   "identity": "can.std.browser@1::read_selected",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "node",
+     "type": "browser::node"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str[]",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed",
+    "browser::rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "HTMLSelectElement.options"
+    ],
+    "adapter": "Admit select elements, then copy the selected option values into a fresh immutable array; non-select controls reject.",
+    "task": "C02"
+   },
+   "assertion": "real",
+   "refs": [
+    "C02"
+   ]
+  },
+  {
+   "name": "browser::read_selection",
+   "identity": "can.std.browser@1::read_selection",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "node",
+     "type": "browser::node"
+    }
+   ],
+   "staticInputs": [],
+   "result": "browser::selection",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "HTMLInputElement.selectionStart",
+     "HTMLInputElement.selectionEnd",
+     "HTMLInputElement.selectionDirection"
+    ],
+    "adapter": "Project the live caret like event snapshots: text controls read start/end/direction natively, and controls without a text selection read the neutral -1/-1/none record.",
+    "task": "C02"
+   },
+   "assertion": "real",
+   "refs": [
+    "C02"
+   ]
+  },
+  {
+   "name": "browser::read_files",
+   "identity": "can.std.browser@1::read_files",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "node",
+     "type": "browser::node"
+    }
+   ],
+   "staticInputs": [],
+   "result": "browser::file[]",
+   "callbacks": [],
+   "emits": [
+    "browser::disposed",
+    "browser::rejected"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "HTMLInputElement.files"
+    ],
+    "adapter": "Admit file-carrying inputs, then copy at most the first 128 name/size/mime entries into fresh immutable records; bytes never cross and other controls reject.",
+    "task": "C02"
+   },
+   "assertion": "real",
+   "refs": [
+    "C02"
+   ]
+  },
+  {
+   "name": "action::mount",
+   "identity": "can.std.action@1::mount",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "action",
+     "type": "action::declaration"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::route",
+   "callbacks": [],
+   "emits": [
+    "http::invalid_route"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URL",
+     "Request",
+     "Response"
+    ],
+    "adapter": "Bind one action symbol plus its exact checked callables into a mounted route: one request-first handler for JSON actions, plus the normal and structural-422 renderers for HTML actions; decode through the declared codec and map result leaves to case statuses.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "action::url",
+   "identity": "can.std.action@1::url",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "action",
+     "type": "action::declaration"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "action::invalid_path"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "URL",
+     "encodeURIComponent"
+    ],
+    "adapter": "Render the canonical action path from the symbol route template and the typed captures record; strict single-segment captures fail as action::invalid_path.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "action::request",
+   "identity": "can.std.action@1::request",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "Result",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "action",
+     "type": "action::declaration"
+    }
+   ],
+   "staticInputs": [],
+   "result": "Result",
+   "callbacks": [],
+   "emits": [
+    "http::transport_failed",
+    "http::invalid_request",
+    "http::status_error",
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "fetch",
+     "Request",
+     "Response",
+     "TextDecoder"
+    ],
+    "adapter": "Resolve the action symbol against the checked JSON table, build the canonical same-origin URL from the typed captures record, issue a bodyless GET through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "action::post",
+   "identity": "can.std.action@1::post",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [
+    {
+     "name": "Result",
+     "constraint": "data"
+    },
+    {
+     "name": "Wire",
+     "constraint": "data"
+    }
+   ],
+   "inputs": [
+    {
+     "name": "action",
+     "type": "action::declaration"
+    }
+   ],
+   "staticInputs": [],
+   "result": "Result",
+   "callbacks": [],
+   "emits": [
+    "http::transport_failed",
+    "http::invalid_request",
+    "http::body_limit",
+    "http::status_error",
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "fetch",
+     "Request",
+     "Response",
+     "TextDecoder"
+    ],
+    "adapter": "Resolve the action symbol against the checked JSON table, build the canonical same-origin URL from the typed captures record, encode the exact wire body under the shared codec within the wire limit, POST through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound.",
+    "task": "I32"
+   },
+   "assertion": "real",
+   "refs": [
+    "P10"
+   ]
+  },
+  {
+   "name": "image::inspect",
+   "identity": "can.std.image@1::inspect",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "bytes",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "max_pixels",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "image::metadata",
+   "callbacks": [],
+   "emits": [
+    "image::invalid_image"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.Image",
+     "Bun.Image.prototype.metadata"
+    ],
+    "adapter": "Sniff actual JPEG/PNG/WebP bytes and read dimensions using Bun metadata bounded by max_pixels; reject animated WebP (VP8X animation flag or ANIM/ANMF chunks), APNG (acTL), malformed and unsupported image data.",
+    "task": "I13"
+   },
+   "assertion": "real",
+   "refs": [
+    "A2"
+   ]
+  },
+  {
+   "name": "codec::decode_json_value",
+   "identity": "can.std.codec@1::decode_json_value",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "buffer",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "codec::json_value",
+   "callbacks": [],
+   "emits": [
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.parse",
+     "JSON.rawJSON",
+     "JSON.stringify",
+     "TextEncoder",
+     "TextDecoder"
+    ],
+    "adapter": "Bounded immutable JSON values; integer-spelled tokens use exact ints, fraction/exponent tokens use finite floats; reject duplicate names, invalid scalar text and cycles.",
+    "task": "I14"
+   },
+   "assertion": "real",
+   "refs": [
+    "A2",
+    "A6"
+   ]
+  },
+  {
+   "name": "codec::encode_json_value",
+   "identity": "can.std.codec@1::encode_json_value",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "value",
+     "type": "codec::json_value"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bytes::buffer",
+   "callbacks": [],
+   "emits": [
+    "codec::invalid_data"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.parse",
+     "JSON.rawJSON",
+     "JSON.stringify",
+     "TextEncoder",
+     "TextDecoder"
+    ],
+    "adapter": "Bounded immutable JSON values; integer-spelled tokens use exact ints, fraction/exponent tokens use finite floats; reject duplicate names, invalid scalar text and cycles.",
+    "task": "I14"
+   },
+   "assertion": "real",
+   "refs": [
+    "A2",
+    "A6"
+   ]
+  },
+  {
+   "name": "test::grant_admit",
+   "identity": "can.std.test@1::grant_admit",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "grant",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "test::owner",
+   "callbacks": [],
+   "emits": [
+    "test::invalid_grant"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "test owner adapter (runtime/test-support/owner.ts)",
+    "task": "NT-P28"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-P28"
+   ]
+  },
+  {
+   "name": "test::grant_release",
+   "identity": "can.std.test@1::grant_release",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "handle",
+     "type": "test::owner"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map"
+    ],
+    "adapter": "test owner adapter (runtime/test-support/owner.ts)",
+    "task": "NT-P28"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-P28"
+   ]
+  },
+  {
+   "name": "test::channel_open",
+   "identity": "can.std.test@1::channel_open",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "handle",
+     "type": "test::owner"
+    },
+    {
+     "name": "kind",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "test::channel",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::invalid_kind"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "domain.create"
+    ],
+    "adapter": "test transport adapter (runtime/test-support/transport.ts)",
+    "task": "NT-P28"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-P28"
+   ]
+  },
+  {
+   "name": "test::channel_send",
+   "identity": "can.std.test@1::channel_send",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "handle",
+     "type": "test::channel"
+    },
+    {
+     "name": "envelope",
+     "type": "codec::json_object"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "test::channel_full",
+    "test::detached_transport",
+    "test::transport_failure"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "JSON.stringify",
+     "TextEncoder",
+     "domain.create"
+    ],
+    "adapter": "test transport adapter (runtime/test-support/transport.ts)",
+    "task": "NT-P28"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-P28"
+   ]
+  },
+  {
+   "name": "test::channel_recv",
+   "identity": "can.std.test@1::channel_recv",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "handle",
+     "type": "test::channel"
+    }
+   ],
+   "staticInputs": [],
+   "result": "codec::json_object",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "test::detached_transport",
+    "test::channel_empty",
+    "test::transport_failure"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map",
+     "TextDecoder",
+     "JSON.parse",
+     "domain.create"
+    ],
+    "adapter": "test transport adapter (runtime/test-support/transport.ts)",
+    "task": "NT-P28"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-P28"
+   ]
+  },
+  {
+   "name": "test::channel_close",
+   "identity": "can.std.test@1::channel_close",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "handle",
+     "type": "test::channel"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map"
+    ],
+    "adapter": "test transport adapter (runtime/test-support/transport.ts)",
+    "task": "NT-P28"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-P28"
+   ]
+  },
+  {
+   "name": "test::channel_pending",
+   "identity": "can.std.test@1::channel_pending",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "handle",
+     "type": "test::channel"
+    }
+   ],
+   "staticInputs": [],
+   "result": "int",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map"
+    ],
+    "adapter": "test transport adapter (runtime/test-support/transport.ts)",
+    "task": "NT-P28"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-P28"
+   ]
+  },
+  {
+   "name": "test::workspace_open",
+   "identity": "can.std.test@1::workspace_open",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "handle",
+     "type": "test::owner"
+    }
+   ],
+   "staticInputs": [],
+   "result": "test::workspace",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "node:fs.mkdtempSync"
+    ],
+    "adapter": "test workspace adapter (runtime/test-support/workspace.ts)",
+    "task": "NT-P28"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-P28"
+   ]
+  },
+  {
+   "name": "test::workspace_mkdir",
+   "identity": "can.std.test@1::workspace_mkdir",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "ws",
+     "type": "test::workspace"
+    },
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "recursive",
+     "type": "bool"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "test::invalid_path",
+    "files::not_found",
+    "files::already_exists",
+    "files::denied",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "node:fs.mkdirSync"
+    ],
+    "adapter": "test workspace adapter (runtime/test-support/workspace.ts)",
+    "task": "NT-P28"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-P28"
+   ]
+  },
+  {
+   "name": "test::workspace_write_text",
+   "identity": "can.std.test@1::workspace_write_text",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "ws",
+     "type": "test::workspace"
+    },
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "str"
+    },
+    {
+     "name": "overwrite",
+     "type": "bool"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "test::invalid_path",
+    "files::not_found",
+    "files::already_exists",
+    "files::denied",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "TextEncoder",
+     "node:fs.writeFileSync"
+    ],
+    "adapter": "test workspace adapter (runtime/test-support/workspace.ts)",
+    "task": "NT-P28"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-P28"
+   ]
+  },
+  {
+   "name": "test::workspace_read_text",
+   "identity": "can.std.test@1::workspace_read_text",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "ws",
+     "type": "test::workspace"
+    },
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "max_bytes",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "test::invalid_path",
+    "files::not_found",
+    "files::denied",
+    "files::unexpected_kind",
+    "files::limit_exceeded",
+    "codec::invalid_data",
+    "files::io_error"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.file",
+     "TextDecoder"
+    ],
+    "adapter": "test workspace adapter (runtime/test-support/workspace.ts)",
+    "task": "NT-P28"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-P28"
+   ]
+  },
+  {
+   "name": "test::workspace_close",
+   "identity": "can.std.test@1::workspace_close",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "ws",
+     "type": "test::workspace"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "node:fs.rmSync"
+    ],
+    "adapter": "idempotent seal + scheduled removal; test workspace adapter (runtime/test-support/workspace.ts)",
+    "task": "NT-P28"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-P28"
+   ]
+  },
+  {
+   "name": "test::run_tool",
+   "identity": "can.std.test@1::run_tool",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "handle",
+     "type": "test::owner"
+    },
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "args",
+     "type": "str[]"
+    },
+    {
+     "name": "options",
+     "type": "process::options"
+    }
+   ],
+   "staticInputs": [],
+   "result": "test::tool_result",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::unknown_tool",
+    "process::spawn_failed",
+    "process::timeout",
+    "process::output_limit",
+    "process::io_error",
+    "process::invalid_config",
+    "files::not_found",
+    "files::denied"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Bun.spawn"
+    ],
+    "adapter": "keyed dispatch: tool record resolved by table lookup pre-spawn, then the process::run discipline (no shell, detached group, caps/deadline/grace, reaping); test tools adapter (runtime/test-support/tools.ts)",
+    "task": "NT-P28"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-P28"
+   ]
+  },
+  {
+   "name": "test::evidence_open",
+   "identity": "can.std.test@1::evidence_open",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "handle",
+     "type": "test::owner"
+    }
+   ],
+   "staticInputs": [],
+   "result": "test::evidence",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map"
+    ],
+    "adapter": "test evidence adapter (runtime/test-support/evidence.ts)",
+    "task": "NT-P28"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-P28"
+   ]
+  },
+  {
+   "name": "test::evidence_append",
+   "identity": "can.std.test@1::evidence_append",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "ev",
+     "type": "test::evidence"
+    },
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "data",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "test::invalid_name"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map"
+    ],
+    "adapter": "test evidence adapter (runtime/test-support/evidence.ts)",
+    "task": "NT-P28"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-P28"
+   ]
+  },
+  {
+   "name": "test::evidence_seal",
+   "identity": "can.std.test@1::evidence_seal",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "ev",
+     "type": "test::evidence"
+    },
+    {
+     "name": "kind",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "test::evidence_receipt",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "test::invalid_kind"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "SubtleCrypto.digest"
+    ],
+    "adapter": "sha256 over length-framed entries; kinds are qualified-report, n-receipt, cleanup-receipt; test evidence adapter (runtime/test-support/evidence.ts)",
+    "task": "NT-P28"
+   },
+   "assertion": "real",
+   "refs": [
+    "NT-P28"
+   ]
+  }
+ ],
+ "nativeDeclarations": [
+  {
+   "name": "noul",
+   "emits": [
+    "ai::invalid_question",
+    "ai::invalid_answer"
+   ],
+   "conditionalEmits": [],
+   "unionBounds": [
+    "handlers"
+   ],
+   "task": "I27",
+   "refs": [
+    "A2",
+    "A3"
+   ],
+   "assertion": "real"
+  },
+  {
+   "name": "choice",
+   "emits": [
+    "ai::invalid_question",
+    "ai::invalid_answer"
+   ],
+   "conditionalEmits": [],
+   "unionBounds": [
+    "handlers"
+   ],
+   "task": "I27",
+   "refs": [
+    "A2",
+    "A3"
+   ],
+   "assertion": "real"
+  },
+  {
+   "name": "record_choice",
+   "emits": [
+    "ai::invalid_question",
+    "ai::invalid_answer"
+   ],
+   "conditionalEmits": [],
+   "unionBounds": [
+    "handlers"
+   ],
+   "task": "I27",
+   "refs": [
+    "A2",
+    "A3"
+   ],
+   "assertion": "real"
+  },
+  {
+   "name": "score",
+   "emits": [
+    "ai::invalid_question",
+    "ai::invalid_answer"
+   ],
+   "conditionalEmits": [],
+   "unionBounds": [
+    "handlers"
+   ],
+   "task": "I27",
+   "refs": [
+    "A2",
+    "A3"
+   ],
+   "assertion": "real"
+  },
+  {
+   "name": "record_score",
+   "emits": [
+    "ai::invalid_question",
+    "ai::invalid_answer"
+   ],
+   "conditionalEmits": [],
+   "unionBounds": [
+    "handlers"
+   ],
+   "task": "I27",
+   "refs": [
+    "A2",
+    "A3"
+   ],
+   "assertion": "real"
+  },
+  {
+   "name": "choice_arm",
+   "emits": [],
+   "conditionalEmits": [],
+   "unionBounds": [
+    "body"
+   ],
+   "task": "I27",
+   "refs": [
+    "A2",
+    "A3"
+   ],
+   "assertion": "real"
+  },
+  {
+   "name": "judge",
+   "emits": [
+    "http::request_failed",
+    "ai::invalid_question",
+    "ai::invalid_answer"
+   ],
+   "conditionalEmits": [],
+   "unionBounds": [
+    "questions",
+    "handlers",
+    "continuation"
+   ],
+   "task": "LF10",
+   "refs": [
+    "A2.4"
+   ],
+   "assertion": "raw-provider"
+  },
+  {
+   "name": "fetch_body",
+   "emits": [
+    "http::request_failed"
+   ],
+   "conditionalEmits": [],
+   "unionBounds": [],
+   "task": "LF10",
+   "refs": [
+    "A2.4"
+   ],
+   "assertion": "raw-provider"
+  },
+  {
+   "name": "fetch_envelope",
+   "emits": [
+    "http::request_failed"
+   ],
+   "conditionalEmits": [],
+   "unionBounds": [],
+   "task": "LF10",
+   "refs": [
+    "A2.4"
+   ],
+   "assertion": "raw-provider"
+  },
+  {
+   "name": "llm",
+   "emits": [
+    "http::invalid_request",
+    "http::transport_failed",
+    "http::timeout",
+    "http::body_limit",
+    "http::status_error",
+    "codec::invalid_data",
+    "llm::refused",
+    "llm::truncated",
+    "llm::invalid_response"
+   ],
+   "conditionalEmits": [
+    {
+     "condition": "authenticated",
+     "emits": [
+      "http::credentials_missing"
+     ]
+    }
+   ],
+   "unionBounds": [],
+   "task": "I28",
+   "refs": [
+    "A2",
+    "A3"
+   ],
+   "assertion": "raw-provider"
+  }
+ ]
 } as const);
 export const catalogueTypeShapes = freeze([
   {
@@ -17520,6 +17998,96 @@ export const catalogueTypeShapes = freeze([
     "leaves": []
   },
   {
+    "name": "test::workspace",
+    "identity": "can.std.test@1::workspace",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "test::tool_result",
+    "identity": "can.std.test@1::tool_result",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "stdout",
+        "type": {
+          "name": "bytes::buffer",
+          "arguments": null
+        }
+      },
+      {
+        "name": "stderr",
+        "type": {
+          "name": "bytes::buffer",
+          "arguments": null
+        }
+      },
+      {
+        "name": "code",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "signal",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "test::evidence",
+    "identity": "can.std.test@1::evidence",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "test::evidence_receipt",
+    "identity": "can.std.test@1::evidence_receipt",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "kind",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "entries",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
     "name": "all_failed",
     "identity": "can.prelude@1::all_failed",
     "kind": "error",
@@ -19542,6 +20110,68 @@ export const catalogueTypeShapes = freeze([
     "fields": [
       {
         "name": "kind",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "test::unknown_tool",
+    "identity": "can.std.test@1::unknown_tool",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "key",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "test::invalid_path",
+    "identity": "can.std.test@1::invalid_path",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "path",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "test::invalid_name",
+    "identity": "can.std.test@1::invalid_name",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "name",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
         "type": {
           "name": "str",
           "arguments": null
