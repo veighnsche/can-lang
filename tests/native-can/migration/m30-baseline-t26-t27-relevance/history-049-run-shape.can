@@ -1,0 +1,297 @@
+package m30history049run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-049 "T27 accepted map: run".
+/// Source: tests/baseline/
+/// t27_release_audit_test.go symbol
+/// TestT27AcceptedItemsMapToTestsAndDocs
+/// (L83-161): audit leg (L86-88); anchor legs
+/// (L142-149); suite legs (L150-160).
+/// Disposition: consolidate (this row ports
+/// TestT27AcceptedItemsMapToTestsAndDocs to
+/// ordinary Can functions; the old Go harness stays
+/// until the integrator retires it after every
+/// linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the live run shape: the
+/// test name, the three refusal wordings in Go
+/// order, the seven call pins, the three guard pins,
+/// the error call, and the error/diagnostic counts.
+/// ADAPTATION (recorded, with source lines):
+/// test-name pins TestT27AcceptedItemsMapToTestsAndDocs
+/// (L83); audit-wording pins the audit inner bytes
+/// (L87); anchor-wording pins the anchor inner
+/// bytes (L146); suite-wording pins the suite inner
+/// bytes (L158); root-call pins repoRoot(t) (L84);
+/// read-call pins readRepoFile (L85); contains-call
+/// pins strings.Contains (L86); stat-call pins
+/// os.Stat (L156); join-call pins filepath.Join
+/// (L156); slash-call pins filepath.FromSlash
+/// (L156); size-call pins info.Size() (L157);
+/// audit-guard pins the negated audit guard (L86);
+/// phrase-guard pins the phrase guard (L145);
+/// suite-guard pins the err/size guard (L157);
+/// error-call pins t.Errorf (L87); error-leg-count
+/// pins int (3) from the three legs (L87/L146/L158);
+/// diagnostic-count pins int (3) as three errors
+/// plus zero fatals.
+/// Facet map (launch plus diagnostics): test-name
+/// pins the test (L83); audit-wording pins audit
+/// plus tests (L87); anchor-wording pins anchor
+/// plus quoted phrase (L146); suite-wording pins
+/// suite plus err (L158); root-call pins repoRoot
+/// (L84); read-call pins readRepoFile (L85);
+/// contains-call pins Contains (L86); stat-call pins
+/// os.Stat (L156); join-call pins Join (L156);
+/// slash-call pins FromSlash (L156); size-call pins
+/// Size (L157); audit-guard pins negated audit
+/// (L86); phrase-guard pins phrase (L145);
+/// suite-guard pins err/size (L157); error-call pins
+/// t.Errorf (L87); error-leg-count pins 3;
+/// diagnostic-count pins 3.
+/// The base facts live in
+/// history-049-base-semantics.can; the roots-green pin
+/// lives in history-049-roots-green.can.
+/// Variants: none (row lists zero variants; default
+/// plus seeded drifts only).
+/// Environment: none (no gates; requires []).
+/// Logical gates WORK/BUILD/CHILD/CLOCK bind at P23;
+/// no live run now. Accept gate P23 is unmet. Timeout
+/// 120000ms is the offline default bound (no Go
+/// timeout in this row; binds at P23 like the M11
+/// no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23
+/// unmet).
+/// Case history/t27-accepted-map-run checks:
+/// test-name, audit-wording, anchor-wording,
+/// suite-wording, root-call, read-call,
+/// contains-call, stat-call, join-call, slash-call,
+/// size-call, audit-guard, phrase-guard, suite-guard,
+/// error-call, error-leg-count, diagnostic-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str test_name
+    str audit_wording
+    str anchor_wording
+    str suite_wording
+    str root_call
+    str read_call
+    str contains_call
+    str stat_call
+    str join_call
+    str slash_call
+    str size_call
+    str audit_guard
+    str phrase_guard
+    str suite_guard
+    str error_call
+    int error_leg_count
+    int diagnostic_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/t27-accepted-map-run", "default", "", "offline"), "test-name" => ok "case history/t27-accepted-map-run variant default root test-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/t27-accepted-map-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "true", "true", true, "case history/t27-accepted-map-run variant default root test-name run offline")
+        different: false, true, context("history/t27-accepted-map-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("history/t27-accepted-map-run", "default", "", "offline"), "error-leg-count" => ok evidence("error-leg-count", "3", "3", true, "case history/t27-accepted-map-run variant default root error-leg-count run offline")
+        different: 2, 3, context("history/t27-accepted-map-run", "default", "", "offline"), "error-leg-count" => failed{"error-leg-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "TestT27AcceptedItemsMapToTestsAndDocs", "TestT27AcceptedItemsMapToTestsAndDocs", context("history/t27-accepted-map-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "TestT27AcceptedItemsMapToTestsAndDocs", "TestT27AcceptedItemsMapToTestsAndDocs", true, "case history/t27-accepted-map-run variant default root test-name run offline")
+        different: "TestT27AcceptedItemsMapToTestsAndDocs_2", "TestT27AcceptedItemsMapToTestsAndDocs", context("history/t27-accepted-map-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        seed_test_name: "seed-test-name-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs_2", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        seed_audit_wording: "seed-audit-wording-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests_2", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        seed_anchor_wording: "seed-anchor-wording-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q_2", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        seed_suite_wording: "seed-suite-wording-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v_2", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        seed_root_call: "seed-root-call-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)_2", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        seed_read_call: "seed-read-call-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile_2", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        seed_contains_call: "seed-contains-call-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains_2", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        seed_stat_call: "seed-stat-call-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat_2", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        seed_join_call: "seed-join-call-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join_2", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        seed_slash_call: "seed-slash-call-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash_2", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        seed_size_call: "seed-size-call-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()_2", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        seed_audit_guard: "seed-audit-guard-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit_2", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        seed_phrase_guard: "seed-phrase-guard-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)_2", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        seed_suite_guard: "seed-suite-guard-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0_2", "t.Errorf", 3, 3)
+        seed_error_call: "seed-error-call-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf_2", 3, 3)
+        seed_error_leg_count: "seed-error-leg-count-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 2, 3)
+        seed_diagnostic_count: "seed-diagnostic-count-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 2)
+    match variant_id
+        "seed-test-name-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs_2", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        "seed-audit-wording-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests_2", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        "seed-anchor-wording-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q_2", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        "seed-suite-wording-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v_2", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        "seed-root-call-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)_2", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        "seed-read-call-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile_2", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        "seed-contains-call-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains_2", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        "seed-stat-call-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat_2", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        "seed-join-call-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join_2", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        "seed-slash-call-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash_2", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        "seed-size-call-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()_2", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        "seed-audit-guard-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit_2", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        "seed-phrase-guard-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)_2", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+        "seed-suite-guard-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0_2", "t.Errorf", 3, 3)
+        "seed-error-call-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf_2", 3, 3)
+        "seed-error-leg-count-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 2, 3)
+        "seed-diagnostic-count-drift" => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 2)
+        _ => ok observation("TestT27AcceptedItemsMapToTestsAndDocs", "audit does not map accepted items to tests", "anchor %s no longer contains %q", "runtime suite %s missing or empty: %v", "repoRoot(t)", "readRepoFile", "strings.Contains", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size()", "!strings.Contains(audit", "!strings.Contains(raw, phrase)", "err != nil || info.Size() == 0", "t.Errorf", 3, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h049: "m30-h049" => ok [check("test-name", "run pins the test name"), check("audit-wording", "refusal pins the audit wording"), check("anchor-wording", "refusal pins the anchor wording"), check("suite-wording", "refusal pins the suite wording"), check("root-call", "run pins the root call"), check("read-call", "run pins the read call"), check("contains-call", "run pins the contains call"), check("stat-call", "run pins the stat call"), check("join-call", "run pins the join call"), check("slash-call", "run pins the slash call"), check("size-call", "run pins the size call"), check("audit-guard", "run pins the audit guard"), check("phrase-guard", "run pins the phrase guard"), check("suite-guard", "run pins the suite guard"), check("error-call", "run pins the error call"), check("error-leg-count", "run covers three legs"), check("diagnostic-count", "three errors plus zero fatals")]
+        other: "nope" => ok []
+    match scope is "m30-h049"
+        false => ok []
+        true => ok [check("test-name", "run pins the test name"), check("audit-wording", "refusal pins the audit wording"), check("anchor-wording", "refusal pins the anchor wording"), check("suite-wording", "refusal pins the suite wording"), check("root-call", "run pins the root call"), check("read-call", "run pins the read call"), check("contains-call", "run pins the contains call"), check("stat-call", "run pins the stat call"), check("join-call", "run pins the join call"), check("slash-call", "run pins the slash call"), check("size-call", "run pins the size call"), check("audit-guard", "run pins the audit guard"), check("phrase-guard", "run pins the phrase guard"), check("suite-guard", "run pins the suite guard"), check("error-call", "run pins the error call"), check("error-leg-count", "run covers three legs"), check("diagnostic-count", "three errors plus zero fatals")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/t27-accepted-map-run" => ok [expected_check("test-name", "TestT27AcceptedItemsMapToTestsAndDocs"), expected_check("audit-wording", "audit does not map accepted items to tests"), expected_check("anchor-wording", "anchor %s no longer contains %q"), expected_check("suite-wording", "runtime suite %s missing or empty: %v"), expected_check("root-call", "repoRoot(t)"), expected_check("read-call", "readRepoFile"), expected_check("contains-call", "strings.Contains"), expected_check("stat-call", "os.Stat"), expected_check("join-call", "filepath.Join"), expected_check("slash-call", "filepath.FromSlash"), expected_check("size-call", "info.Size()"), expected_check("audit-guard", "!strings.Contains(audit"), expected_check("phrase-guard", "!strings.Contains(raw, phrase)"), expected_check("suite-guard", "err != nil || info.Size() == 0"), expected_check("error-call", "t.Errorf"), expected_check("error-leg-count", "3"), expected_check("diagnostic-count", "3")]
+        unknown: "nope" => ok []
+    match case is "history/t27-accepted-map-run"
+        false => ok []
+        true => ok [expected_check("test-name", "TestT27AcceptedItemsMapToTestsAndDocs"), expected_check("audit-wording", "audit does not map accepted items to tests"), expected_check("anchor-wording", "anchor %s no longer contains %q"), expected_check("suite-wording", "runtime suite %s missing or empty: %v"), expected_check("root-call", "repoRoot(t)"), expected_check("read-call", "readRepoFile"), expected_check("contains-call", "strings.Contains"), expected_check("stat-call", "os.Stat"), expected_check("join-call", "filepath.Join"), expected_check("slash-call", "filepath.FromSlash"), expected_check("size-call", "info.Size()"), expected_check("audit-guard", "!strings.Contains(audit"), expected_check("phrase-guard", "!strings.Contains(raw, phrase)"), expected_check("suite-guard", "err != nil || info.Size() == 0"), expected_check("error-call", "t.Errorf"), expected_check("error-leg-count", "3"), expected_check("diagnostic-count", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/t27-accepted-map-run", "default", "", "offline") => ok
+        seed_test_name: context("history/t27-accepted-map-run", "seed-test-name-drift", "", "offline") => failed{"test-name"}
+        seed_audit_wording: context("history/t27-accepted-map-run", "seed-audit-wording-drift", "", "offline") => failed{"audit-wording"}
+        seed_anchor_wording: context("history/t27-accepted-map-run", "seed-anchor-wording-drift", "", "offline") => failed{"anchor-wording"}
+        seed_suite_wording: context("history/t27-accepted-map-run", "seed-suite-wording-drift", "", "offline") => failed{"suite-wording"}
+        seed_root_call: context("history/t27-accepted-map-run", "seed-root-call-drift", "", "offline") => failed{"root-call"}
+        seed_read_call: context("history/t27-accepted-map-run", "seed-read-call-drift", "", "offline") => failed{"read-call"}
+        seed_contains_call: context("history/t27-accepted-map-run", "seed-contains-call-drift", "", "offline") => failed{"contains-call"}
+        seed_stat_call: context("history/t27-accepted-map-run", "seed-stat-call-drift", "", "offline") => failed{"stat-call"}
+        seed_join_call: context("history/t27-accepted-map-run", "seed-join-call-drift", "", "offline") => failed{"join-call"}
+        seed_slash_call: context("history/t27-accepted-map-run", "seed-slash-call-drift", "", "offline") => failed{"slash-call"}
+        seed_size_call: context("history/t27-accepted-map-run", "seed-size-call-drift", "", "offline") => failed{"size-call"}
+        seed_audit_guard: context("history/t27-accepted-map-run", "seed-audit-guard-drift", "", "offline") => failed{"audit-guard"}
+        seed_phrase_guard: context("history/t27-accepted-map-run", "seed-phrase-guard-drift", "", "offline") => failed{"phrase-guard"}
+        seed_suite_guard: context("history/t27-accepted-map-run", "seed-suite-guard-drift", "", "offline") => failed{"suite-guard"}
+        seed_error_call: context("history/t27-accepted-map-run", "seed-error-call-drift", "", "offline") => failed{"error-call"}
+        seed_error_leg_count: context("history/t27-accepted-map-run", "seed-error-leg-count-drift", "", "offline") => failed{"error-leg-count"}
+        seed_diagnostic_count: context("history/t27-accepted-map-run", "seed-diagnostic-count-drift", "", "offline") => failed{"diagnostic-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.test_name, "TestT27AcceptedItemsMapToTestsAndDocs", c, "test-name")
+            failed
+            ok evidence test_name_evidence => match call require_text(got.audit_wording, "audit does not map accepted items to tests", c, "audit-wording")
+                failed
+                ok evidence audit_wording_evidence => match call require_text(got.anchor_wording, "anchor %s no longer contains %q", c, "anchor-wording")
+                    failed
+                    ok evidence anchor_wording_evidence => match call require_text(got.suite_wording, "runtime suite %s missing or empty: %v", c, "suite-wording")
+                        failed
+                        ok evidence suite_wording_evidence => match call require_text(got.root_call, "repoRoot(t)", c, "root-call")
+                            failed
+                            ok evidence root_call_evidence => match call require_text(got.read_call, "readRepoFile", c, "read-call")
+                                failed
+                                ok evidence read_call_evidence => match call require_text(got.contains_call, "strings.Contains", c, "contains-call")
+                                    failed
+                                    ok evidence contains_call_evidence => match call require_text(got.stat_call, "os.Stat", c, "stat-call")
+                                        failed
+                                        ok evidence stat_call_evidence => match call require_text(got.join_call, "filepath.Join", c, "join-call")
+                                            failed
+                                            ok evidence join_call_evidence => match call require_text(got.slash_call, "filepath.FromSlash", c, "slash-call")
+                                                failed
+                                                ok evidence slash_call_evidence => match call require_text(got.size_call, "info.Size()", c, "size-call")
+                                                    failed
+                                                    ok evidence size_call_evidence => match call require_text(got.audit_guard, "!strings.Contains(audit", c, "audit-guard")
+                                                        failed
+                                                        ok evidence audit_guard_evidence => match call require_text(got.phrase_guard, "!strings.Contains(raw, phrase)", c, "phrase-guard")
+                                                            failed
+                                                            ok evidence phrase_guard_evidence => match call require_text(got.suite_guard, "err != nil || info.Size() == 0", c, "suite-guard")
+                                                                failed
+                                                                ok evidence suite_guard_evidence => match call require_text(got.error_call, "t.Errorf", c, "error-call")
+                                                                    failed
+                                                                    ok evidence error_call_evidence => match call require_int(got.error_leg_count, 3, c, "error-leg-count")
+                                                                        failed
+                                                                        ok evidence error_leg_count_evidence => match call require_int(got.diagnostic_count, 3, c, "diagnostic-count")
+                                                                            failed
+                                                                            ok evidence diagnostic_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h049: "m30-h049" => ok test_case("history/t27-accepted-map-run", ["history", "m30"], [], 120000, [check_ref("test-name"), check_ref("audit-wording"), check_ref("anchor-wording"), check_ref("suite-wording"), check_ref("root-call"), check_ref("read-call"), check_ref("contains-call"), check_ref("stat-call"), check_ref("join-call"), check_ref("slash-call"), check_ref("size-call"), check_ref("audit-guard"), check_ref("phrase-guard"), check_ref("suite-guard"), check_ref("error-call"), check_ref("error-leg-count"), check_ref("diagnostic-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h049"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/t27-accepted-map-run", ["history", "m30"], [], 120000, [check_ref("test-name"), check_ref("audit-wording"), check_ref("anchor-wording"), check_ref("suite-wording"), check_ref("root-call"), check_ref("read-call"), check_ref("contains-call"), check_ref("stat-call"), check_ref("join-call"), check_ref("slash-call"), check_ref("size-call"), check_ref("audit-guard"), check_ref("phrase-guard"), check_ref("suite-guard"), check_ref("error-call"), check_ref("error-leg-count"), check_ref("diagnostic-count")], callable case_body)
