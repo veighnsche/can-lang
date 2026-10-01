@@ -1,0 +1,387 @@
+package m44edge013base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M44 EDGE-013 "qualification
+/// prerequisites plus browser-path
+/// preflight" caller pact.
+/// Source: distribution/h12/
+/// window-check.sh
+/// symbol "qualification
+/// prerequisites plus browser-path
+/// preflight" (L1-65): pinned script
+/// identity plus verdict helpers plus
+/// host plus emulation probes.
+/// Disposition: rewire (this row owns the
+/// caller pact as reviewable Can
+/// facts; old shell call stays until
+/// integrator rewires it after each linked
+/// row, variant, plus gate has accepted
+/// proof).
+/// Protects (this file): the script head
+/// plus helper defs plus host probes
+/// (L19-39) plus emulation probes
+/// (L41-65) plus tallies that bound the
+/// head.
+/// ADAPTATION (noted, plus source lines):
+/// name pins hold caller spellings; probe
+/// pins hold shell probe bytes; count pins
+/// hold ints tallied from L6 plus L15-17
+/// plus L19 plus L41.
+/// shebang-line pins #!/bin/sh (L1);
+/// window-tag pins H12 UP25 (L2);
+/// usage-name pins window-check.sh (L7);
+/// target-path pins
+/// distribution/target-linux-amd64.json
+/// (L11); fail-init pins fail=0 (L12);
+/// warn-init pins warn=0 (L13);
+/// pass-body pins PASS: $1 (L15);
+/// block-body pins BLOCKED: $1 (L16);
+/// note-body pins warn=$((warn + 1))
+/// (L17); arch-probe pins uname -m (L20
+/// plus L21, three hits); arch-want pins
+/// x86_64 (L21 twice plus L42);
+/// os-release-path pins /etc/os-release
+/// (L22 plus L24 plus L33); version-id-name
+/// pins VERSION_ID (L25 twice plus L27
+/// plus L28 twice); major-name pins MAJOR
+/// (L27 plus L28); debian-floor pins -ge 13
+/// (L28); glibc-probe pins getconf
+/// GNU_LIBC_VERSION (L35 plus L36 plus
+/// L38); qemu-name pins qemu-x86_64 (L42);
+/// qemu-glob pins /usr/bin/qemu-* (L42);
+/// docker-probe pins docker ps --format
+/// (L48); emu-platform pins linux/amd64
+/// (L41 plus L48 plus L49 plus L51);
+/// dockerenv-path pins /.dockerenv (L56
+/// plus L57); pid1-environ pins
+/// /proc/1/environ (L61); container-needle
+/// pins container= (L61); helper-count pins
+/// int (3) from L15-17; banner-count pins
+/// int (2) from L19 plus L41; env-name-count
+/// pins int (2) from L6.
+/// Facet map (head then probe order):
+/// shebang-line, window-tag,
+/// usage-name, target-path, fail-init,
+/// warn-init, pass-body, block-body,
+/// note-body, arch-probe, arch-want,
+/// os-release-path, version-id-name,
+/// major-name, debian-floor, glibc-probe,
+/// qemu-name, qemu-glob, docker-probe,
+/// emu-platform, dockerenv-path,
+/// pid1-environ, container-needle,
+/// helper-count, banner-count,
+/// env-name-count.
+/// The toolchain plus archive roots live in
+/// edge-013-roots-green.can; the verdict
+/// shape plus summaries live in
+/// edge-013-run-shape.can.
+/// Variants: none listed (row lists zero
+/// variants; one default run).
+/// Environment: none listed (row lists
+/// zero gates; bind at P23; no live run
+/// now).
+/// Logical gates SUITE/BUILD/B1/ENV/WORK
+/// bind at P23; no live run now.
+/// Timeout 120000ms is the offline default
+/// bound (binds at P23 like the M37
+/// no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// accept gate unmet).
+/// Intended consumed report: none exists
+/// (no P23-qualified Can report yet; P23
+/// unmet).
+/// Rewire stays blocked; window-check.sh
+/// intact; no call retired.
+/// Case edge/preflight-host
+/// checks: shebang-line, window-tag,
+/// usage-name, target-path, fail-init,
+/// warn-init, pass-body, block-body,
+/// note-body, arch-probe, arch-want,
+/// os-release-path, version-id-name,
+/// major-name, debian-floor, glibc-probe,
+/// qemu-name, qemu-glob, docker-probe,
+/// emu-platform, dockerenv-path,
+/// pid1-environ, container-needle,
+/// helper-count, banner-count,
+/// env-name-count.
+/// Shared old files intact; retirement is a
+/// later integrator choice.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str shebang_line
+    str window_tag
+    str usage_name
+    str target_path
+    str fail_init
+    str warn_init
+    str pass_body
+    str block_body
+    str note_body
+    str arch_probe
+    str arch_want
+    str os_release_path
+    str version_id_name
+    str major_name
+    str debian_floor
+    str glibc_probe
+    str qemu_name
+    str qemu_glob
+    str docker_probe
+    str emu_platform
+    str dockerenv_path
+    str pid1_environ
+    str container_needle
+    int helper_count
+    int banner_count
+    int env_name_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("edge/preflight-host", "default", "", "offline"), "shebang-line" => ok "case edge/preflight-host variant default root shebang-line run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("edge/preflight-host", "default", "", "offline"), "shebang-line" => ok evidence("shebang-line", "true", "true", true, "case edge/preflight-host variant default root shebang-line run offline")
+        different: false, true, context("edge/preflight-host", "default", "", "offline"), "shebang-line" => failed{"shebang-line"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("edge/preflight-host", "default", "", "offline"), "helper-count" => ok evidence("helper-count", "3", "3", true, "case edge/preflight-host variant default root helper-count run offline")
+        different: 2, 3, context("edge/preflight-host", "default", "", "offline"), "helper-count" => failed{"helper-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "#!/bin/sh", "#!/bin/sh", context("edge/preflight-host", "default", "", "offline"), "shebang-line" => ok evidence("shebang-line", "#!/bin/sh", "#!/bin/sh", true, "case edge/preflight-host variant default root shebang-line run offline")
+        different: "#!/bin/sh_2", "#!/bin/sh", context("edge/preflight-host", "default", "", "offline"), "shebang-line" => failed{"shebang-line"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_shebang_line: "seed-shebang-line-drift" => ok observation("#!/bin/sh_2", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_window_tag: "seed-window-tag-drift" => ok observation("#!/bin/sh", "H12 UP25_2", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_usage_name: "seed-usage-name-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh_2", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_target_path: "seed-target-path-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json_2", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_fail_init: "seed-fail-init-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0_2", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_warn_init: "seed-warn-init-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0_2", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_pass_body: "seed-pass-body-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1_2", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_block_body: "seed-block-body-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1_2", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_note_body: "seed-note-body-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))_2", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_arch_probe: "seed-arch-probe-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m_2", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_arch_want: "seed-arch-want-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64_2", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_os_release_path: "seed-os-release-path-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release_2", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_version_id_name: "seed-version-id-name-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID_2", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_major_name: "seed-major-name-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR_2", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_debian_floor: "seed-debian-floor-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13_2", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_glibc_probe: "seed-glibc-probe-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION_2", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_qemu_name: "seed-qemu-name-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64_2", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_qemu_glob: "seed-qemu-glob-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*_2", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_docker_probe: "seed-docker-probe-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format_2", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_emu_platform: "seed-emu-platform-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64_2", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_dockerenv_path: "seed-dockerenv-path-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv_2", "/proc/1/environ", "container=", 3, 2, 2)
+        seed_pid1_environ: "seed-pid1-environ-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ_2", "container=", 3, 2, 2)
+        seed_container_needle: "seed-container-needle-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=_2", 3, 2, 2)
+        seed_helper_count: "seed-helper-count-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 2, 2, 2)
+        seed_banner_count: "seed-banner-count-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 1, 2)
+        seed_env_name_count: "seed-env-name-count-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 1)
+    match variant_id
+        "seed-shebang-line-drift" => ok observation("#!/bin/sh_2", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-window-tag-drift" => ok observation("#!/bin/sh", "H12 UP25_2", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-usage-name-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh_2", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-target-path-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json_2", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-fail-init-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0_2", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-warn-init-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0_2", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-pass-body-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1_2", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-block-body-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1_2", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-note-body-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))_2", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-arch-probe-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m_2", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-arch-want-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64_2", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-os-release-path-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release_2", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-version-id-name-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID_2", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-major-name-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR_2", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-debian-floor-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13_2", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-glibc-probe-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION_2", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-qemu-name-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64_2", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-qemu-glob-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*_2", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-docker-probe-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format_2", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-emu-platform-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64_2", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-dockerenv-path-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv_2", "/proc/1/environ", "container=", 3, 2, 2)
+        "seed-pid1-environ-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ_2", "container=", 3, 2, 2)
+        "seed-container-needle-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=_2", 3, 2, 2)
+        "seed-helper-count-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 2, 2, 2)
+        "seed-banner-count-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 1, 2)
+        "seed-env-name-count-drift" => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 1)
+        _ => ok observation("#!/bin/sh", "H12 UP25", "window-check.sh", "distribution/target-linux-amd64.json", "fail=0", "warn=0", "PASS: $1", "BLOCKED: $1", "warn=$((warn + 1))", "uname -m", "x86_64", "/etc/os-release", "VERSION_ID", "MAJOR", "-ge 13", "getconf GNU_LIBC_VERSION", "qemu-x86_64", "/usr/bin/qemu-*", "docker ps --format", "linux/amd64", "/.dockerenv", "/proc/1/environ", "container=", 3, 2, 2)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e013: "m44-e013" => ok [check("shebang-line", "shebang keeps its bytes"), check("window-tag", "window tag keeps its bytes"), check("usage-name", "usage name keeps its bytes"), check("target-path", "target path keeps its bytes"), check("fail-init", "fail start keeps its bytes"), check("warn-init", "warn start keeps its bytes"), check("pass-body", "pass body keeps its bytes"), check("block-body", "block body keeps its bytes"), check("note-body", "note body keeps its bytes"), check("arch-probe", "arch probe keeps its bytes"), check("arch-want", "arch want keeps its spelling"), check("os-release-path", "os release path keeps its bytes"), check("version-id-name", "version id name keeps its spelling"), check("major-name", "major name keeps its spelling"), check("debian-floor", "debian floor keeps its bytes"), check("glibc-probe", "glibc probe keeps its bytes"), check("qemu-name", "qemu name keeps its bytes"), check("qemu-glob", "qemu glob keeps its bytes"), check("docker-probe", "docker probe keeps its bytes"), check("emu-platform", "emu platform keeps its bytes"), check("dockerenv-path", "dockerenv path keeps its bytes"), check("pid1-environ", "pid one environ keeps its bytes"), check("container-needle", "container needle keeps its bytes"), check("helper-count", "three helpers exist"), check("banner-count", "two banners exist"), check("env-name-count", "two env names exist")]
+        other: "nope" => ok []
+    match scope is "m44-e013"
+        false => ok []
+        true => ok [check("shebang-line", "shebang keeps its bytes"), check("window-tag", "window tag keeps its bytes"), check("usage-name", "usage name keeps its bytes"), check("target-path", "target path keeps its bytes"), check("fail-init", "fail start keeps its bytes"), check("warn-init", "warn start keeps its bytes"), check("pass-body", "pass body keeps its bytes"), check("block-body", "block body keeps its bytes"), check("note-body", "note body keeps its bytes"), check("arch-probe", "arch probe keeps its bytes"), check("arch-want", "arch want keeps its spelling"), check("os-release-path", "os release path keeps its bytes"), check("version-id-name", "version id name keeps its spelling"), check("major-name", "major name keeps its spelling"), check("debian-floor", "debian floor keeps its bytes"), check("glibc-probe", "glibc probe keeps its bytes"), check("qemu-name", "qemu name keeps its bytes"), check("qemu-glob", "qemu glob keeps its bytes"), check("docker-probe", "docker probe keeps its bytes"), check("emu-platform", "emu platform keeps its bytes"), check("dockerenv-path", "dockerenv path keeps its bytes"), check("pid1-environ", "pid one environ keeps its bytes"), check("container-needle", "container needle keeps its bytes"), check("helper-count", "three helpers exist"), check("banner-count", "two banners exist"), check("env-name-count", "two env names exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "edge/preflight-host" => ok [expected_check("shebang-line", "#!/bin/sh"), expected_check("window-tag", "H12 UP25"), expected_check("usage-name", "window-check.sh"), expected_check("target-path", "distribution/target-linux-amd64.json"), expected_check("fail-init", "fail=0"), expected_check("warn-init", "warn=0"), expected_check("pass-body", "PASS: $1"), expected_check("block-body", "BLOCKED: $1"), expected_check("note-body", "warn=$((warn + 1))"), expected_check("arch-probe", "uname -m"), expected_check("arch-want", "x86_64"), expected_check("os-release-path", "/etc/os-release"), expected_check("version-id-name", "VERSION_ID"), expected_check("major-name", "MAJOR"), expected_check("debian-floor", "-ge 13"), expected_check("glibc-probe", "getconf GNU_LIBC_VERSION"), expected_check("qemu-name", "qemu-x86_64"), expected_check("qemu-glob", "/usr/bin/qemu-*"), expected_check("docker-probe", "docker ps --format"), expected_check("emu-platform", "linux/amd64"), expected_check("dockerenv-path", "/.dockerenv"), expected_check("pid1-environ", "/proc/1/environ"), expected_check("container-needle", "container="), expected_check("helper-count", "3"), expected_check("banner-count", "2"), expected_check("env-name-count", "2")]
+        unknown: "nope" => ok []
+    match case is "edge/preflight-host"
+        false => ok []
+        true => ok [expected_check("shebang-line", "#!/bin/sh"), expected_check("window-tag", "H12 UP25"), expected_check("usage-name", "window-check.sh"), expected_check("target-path", "distribution/target-linux-amd64.json"), expected_check("fail-init", "fail=0"), expected_check("warn-init", "warn=0"), expected_check("pass-body", "PASS: $1"), expected_check("block-body", "BLOCKED: $1"), expected_check("note-body", "warn=$((warn + 1))"), expected_check("arch-probe", "uname -m"), expected_check("arch-want", "x86_64"), expected_check("os-release-path", "/etc/os-release"), expected_check("version-id-name", "VERSION_ID"), expected_check("major-name", "MAJOR"), expected_check("debian-floor", "-ge 13"), expected_check("glibc-probe", "getconf GNU_LIBC_VERSION"), expected_check("qemu-name", "qemu-x86_64"), expected_check("qemu-glob", "/usr/bin/qemu-*"), expected_check("docker-probe", "docker ps --format"), expected_check("emu-platform", "linux/amd64"), expected_check("dockerenv-path", "/.dockerenv"), expected_check("pid1-environ", "/proc/1/environ"), expected_check("container-needle", "container="), expected_check("helper-count", "3"), expected_check("banner-count", "2"), expected_check("env-name-count", "2")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("edge/preflight-host", "default", "", "offline") => ok
+        seed_shebang_line: context("edge/preflight-host", "seed-shebang-line-drift", "", "offline") => failed{"shebang-line"}
+        seed_window_tag: context("edge/preflight-host", "seed-window-tag-drift", "", "offline") => failed{"window-tag"}
+        seed_usage_name: context("edge/preflight-host", "seed-usage-name-drift", "", "offline") => failed{"usage-name"}
+        seed_target_path: context("edge/preflight-host", "seed-target-path-drift", "", "offline") => failed{"target-path"}
+        seed_fail_init: context("edge/preflight-host", "seed-fail-init-drift", "", "offline") => failed{"fail-init"}
+        seed_warn_init: context("edge/preflight-host", "seed-warn-init-drift", "", "offline") => failed{"warn-init"}
+        seed_pass_body: context("edge/preflight-host", "seed-pass-body-drift", "", "offline") => failed{"pass-body"}
+        seed_block_body: context("edge/preflight-host", "seed-block-body-drift", "", "offline") => failed{"block-body"}
+        seed_note_body: context("edge/preflight-host", "seed-note-body-drift", "", "offline") => failed{"note-body"}
+        seed_arch_probe: context("edge/preflight-host", "seed-arch-probe-drift", "", "offline") => failed{"arch-probe"}
+        seed_arch_want: context("edge/preflight-host", "seed-arch-want-drift", "", "offline") => failed{"arch-want"}
+        seed_os_release_path: context("edge/preflight-host", "seed-os-release-path-drift", "", "offline") => failed{"os-release-path"}
+        seed_version_id_name: context("edge/preflight-host", "seed-version-id-name-drift", "", "offline") => failed{"version-id-name"}
+        seed_major_name: context("edge/preflight-host", "seed-major-name-drift", "", "offline") => failed{"major-name"}
+        seed_debian_floor: context("edge/preflight-host", "seed-debian-floor-drift", "", "offline") => failed{"debian-floor"}
+        seed_glibc_probe: context("edge/preflight-host", "seed-glibc-probe-drift", "", "offline") => failed{"glibc-probe"}
+        seed_qemu_name: context("edge/preflight-host", "seed-qemu-name-drift", "", "offline") => failed{"qemu-name"}
+        seed_qemu_glob: context("edge/preflight-host", "seed-qemu-glob-drift", "", "offline") => failed{"qemu-glob"}
+        seed_docker_probe: context("edge/preflight-host", "seed-docker-probe-drift", "", "offline") => failed{"docker-probe"}
+        seed_emu_platform: context("edge/preflight-host", "seed-emu-platform-drift", "", "offline") => failed{"emu-platform"}
+        seed_dockerenv_path: context("edge/preflight-host", "seed-dockerenv-path-drift", "", "offline") => failed{"dockerenv-path"}
+        seed_pid1_environ: context("edge/preflight-host", "seed-pid1-environ-drift", "", "offline") => failed{"pid1-environ"}
+        seed_container_needle: context("edge/preflight-host", "seed-container-needle-drift", "", "offline") => failed{"container-needle"}
+        seed_helper_count: context("edge/preflight-host", "seed-helper-count-drift", "", "offline") => failed{"helper-count"}
+        seed_banner_count: context("edge/preflight-host", "seed-banner-count-drift", "", "offline") => failed{"banner-count"}
+        seed_env_name_count: context("edge/preflight-host", "seed-env-name-count-drift", "", "offline") => failed{"env-name-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.shebang_line, "#!/bin/sh", c, "shebang-line")
+            failed
+            ok evidence shebang_line_evidence => match call require_text(got.window_tag, "H12 UP25", c, "window-tag")
+                failed
+                ok evidence window_tag_evidence => match call require_text(got.usage_name, "window-check.sh", c, "usage-name")
+                    failed
+                    ok evidence usage_name_evidence => match call require_text(got.target_path, "distribution/target-linux-amd64.json", c, "target-path")
+                        failed
+                        ok evidence target_path_evidence => match call require_text(got.fail_init, "fail=0", c, "fail-init")
+                            failed
+                            ok evidence fail_init_evidence => match call require_text(got.warn_init, "warn=0", c, "warn-init")
+                                failed
+                                ok evidence warn_init_evidence => match call require_text(got.pass_body, "PASS: $1", c, "pass-body")
+                                    failed
+                                    ok evidence pass_body_evidence => match call require_text(got.block_body, "BLOCKED: $1", c, "block-body")
+                                        failed
+                                        ok evidence block_body_evidence => match call require_text(got.note_body, "warn=$((warn + 1))", c, "note-body")
+                                            failed
+                                            ok evidence note_body_evidence => match call require_text(got.arch_probe, "uname -m", c, "arch-probe")
+                                                failed
+                                                ok evidence arch_probe_evidence => match call require_text(got.arch_want, "x86_64", c, "arch-want")
+                                                    failed
+                                                    ok evidence arch_want_evidence => match call require_text(got.os_release_path, "/etc/os-release", c, "os-release-path")
+                                                        failed
+                                                        ok evidence os_release_path_evidence => match call require_text(got.version_id_name, "VERSION_ID", c, "version-id-name")
+                                                            failed
+                                                            ok evidence version_id_name_evidence => match call require_text(got.major_name, "MAJOR", c, "major-name")
+                                                                failed
+                                                                ok evidence major_name_evidence => match call require_text(got.debian_floor, "-ge 13", c, "debian-floor")
+                                                                    failed
+                                                                    ok evidence debian_floor_evidence => match call require_text(got.glibc_probe, "getconf GNU_LIBC_VERSION", c, "glibc-probe")
+                                                                        failed
+                                                                        ok evidence glibc_probe_evidence => match call require_text(got.qemu_name, "qemu-x86_64", c, "qemu-name")
+                                                                            failed
+                                                                            ok evidence qemu_name_evidence => match call require_text(got.qemu_glob, "/usr/bin/qemu-*", c, "qemu-glob")
+                                                                                failed
+                                                                                ok evidence qemu_glob_evidence => match call require_text(got.docker_probe, "docker ps --format", c, "docker-probe")
+                                                                                    failed
+                                                                                    ok evidence docker_probe_evidence => match call require_text(got.emu_platform, "linux/amd64", c, "emu-platform")
+                                                                                        failed
+                                                                                        ok evidence emu_platform_evidence => match call require_text(got.dockerenv_path, "/.dockerenv", c, "dockerenv-path")
+                                                                                            failed
+                                                                                            ok evidence dockerenv_path_evidence => match call require_text(got.pid1_environ, "/proc/1/environ", c, "pid1-environ")
+                                                                                                failed
+                                                                                                ok evidence pid1_environ_evidence => match call require_text(got.container_needle, "container=", c, "container-needle")
+                                                                                                    failed
+                                                                                                    ok evidence container_needle_evidence => match call require_int(got.helper_count, 3, c, "helper-count")
+                                                                                                        failed
+                                                                                                        ok evidence helper_count_evidence => match call require_int(got.banner_count, 2, c, "banner-count")
+                                                                                                            failed
+                                                                                                            ok evidence banner_count_evidence => match call require_int(got.env_name_count, 2, c, "env-name-count")
+                                                                                                                failed
+                                                                                                                ok evidence env_name_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e013: "m44-e013" => ok test_case("edge/preflight-host", ["edge", "m44"], [], 120000, [check_ref("shebang-line"), check_ref("window-tag"), check_ref("usage-name"), check_ref("target-path"), check_ref("fail-init"), check_ref("warn-init"), check_ref("pass-body"), check_ref("block-body"), check_ref("note-body"), check_ref("arch-probe"), check_ref("arch-want"), check_ref("os-release-path"), check_ref("version-id-name"), check_ref("major-name"), check_ref("debian-floor"), check_ref("glibc-probe"), check_ref("qemu-name"), check_ref("qemu-glob"), check_ref("docker-probe"), check_ref("emu-platform"), check_ref("dockerenv-path"), check_ref("pid1-environ"), check_ref("container-needle"), check_ref("helper-count"), check_ref("banner-count"), check_ref("env-name-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m44-e013"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("edge/preflight-host", ["edge", "m44"], [], 120000, [check_ref("shebang-line"), check_ref("window-tag"), check_ref("usage-name"), check_ref("target-path"), check_ref("fail-init"), check_ref("warn-init"), check_ref("pass-body"), check_ref("block-body"), check_ref("note-body"), check_ref("arch-probe"), check_ref("arch-want"), check_ref("os-release-path"), check_ref("version-id-name"), check_ref("major-name"), check_ref("debian-floor"), check_ref("glibc-probe"), check_ref("qemu-name"), check_ref("qemu-glob"), check_ref("docker-probe"), check_ref("emu-platform"), check_ref("dockerenv-path"), check_ref("pid1-environ"), check_ref("container-needle"), check_ref("helper-count"), check_ref("banner-count"), check_ref("env-name-count")], callable case_body)

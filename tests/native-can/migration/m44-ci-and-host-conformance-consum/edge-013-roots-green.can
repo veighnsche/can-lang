@@ -1,0 +1,388 @@
+package m44edge013roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M44 EDGE-013 "qualification
+/// prerequisites plus browser-path
+/// preflight" caller pact.
+/// Source: distribution/h12/
+/// window-check.sh
+/// symbol "qualification
+/// prerequisites plus browser-path
+/// preflight" (L67-100): pinned tooling
+/// plus embedded archive check.
+/// Disposition: rewire (this row owns the
+/// caller pact as reviewable Can
+/// facts; old shell call stays until
+/// integrator rewires it after each linked
+/// row, variant, plus gate has accepted
+/// proof).
+/// Protects (this file): the four tool
+/// probes (L68-84, plus the stale
+/// qualify.py note) plus the archive env
+/// plus embedded python size plus digest
+/// check (L86-100) plus tallies that bound
+/// the span.
+/// ADAPTATION (noted, plus source lines):
+/// probe pins hold tool spellings; want
+/// pins hold pinned versions; check pins
+/// hold embedded python bytes; count pins
+/// hold ints tallied from L67-68 plus
+/// L74 plus L83-84 plus L96-97.
+/// probe-bun pins command -v bun (L68);
+/// bun-version-call pins bun --version
+/// (L69); want-bun pins 1.4.2 (L70 twice);
+/// probe-go pins command -v go (L74);
+/// go-version-call pins go version (L75
+/// plus L77); want-go pins go1.27.1 (L77
+/// plus L78 plus L81); probe-gcc pins
+/// command -v gcc (L83); gcc-dump-call
+/// pins gcc -dumpversion (L83); probe-python
+/// pins command -v python3 (L84);
+/// python-version-call pins python3
+/// --version (L84); stale-qualify-need pins
+/// qualify.py needs it (L84, stale Python
+/// assumption kept as fact); archive-env
+/// pins CAN_BUN_ARCHIVE (L6 plus L87-90
+/// plus L92, seven hits); archive-kind pins
+/// bun-linux-x64.zip (L88); py-heredoc pins
+/// <<'PY' (L92); py-imports pins import
+/// hashlib, json, sys (L93); argv-use pins
+/// sys.argv (L94 plus L95); upstream-field
+/// pins upstream (L96 plus L97); len-call
+/// pins len(archive) (L96 plus L98);
+/// digest-call pins hexdigest (L97 plus
+/// L98); size-msg pins archive size
+/// mismatch (L96); digest-msg pins archive
+/// digest mismatch (L97); target-id-name
+/// pins targetId (L98); archive-pass pins
+/// PASS: archive (L98); tool-probe-count
+/// pins int (4) from L68 plus L74 plus
+/// L83-84; archive-assert-count pins int
+/// (2) from L96-97; banner-count pins int
+/// (2) from L67 plus L86.
+/// Facet map (tool then check order):
+/// probe-bun, bun-version-call,
+/// want-bun, probe-go, go-version-call,
+/// want-go, probe-gcc, gcc-dump-call,
+/// probe-python, python-version-call,
+/// stale-qualify-need, archive-env,
+/// archive-kind, py-heredoc, py-imports,
+/// argv-use, upstream-field, len-call,
+/// digest-call, size-msg, digest-msg,
+/// target-id-name, archive-pass,
+/// tool-probe-count, archive-assert-count,
+/// banner-count.
+/// The host plus emulation probes live in
+/// edge-013-base-semantics.can; the verdict
+/// shape plus summaries live in
+/// edge-013-run-shape.can.
+/// Variants: none listed (row lists zero
+/// variants; one default run).
+/// Environment: none listed (row lists
+/// zero gates; bind at P23; no live run
+/// now).
+/// Logical gates SUITE/BUILD/B1/ENV/WORK
+/// bind at P23; no live run now.
+/// Timeout 120000ms is the offline default
+/// bound (binds at P23 like the M37
+/// no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// accept gate unmet).
+/// Intended consumed report: none exists
+/// (no P23-qualified Can report yet; P23
+/// unmet).
+/// Rewire stays blocked; window-check.sh
+/// intact; no call retired.
+/// Case edge/preflight-toolchain
+/// checks: probe-bun, bun-version-call,
+/// want-bun, probe-go, go-version-call,
+/// want-go, probe-gcc, gcc-dump-call,
+/// probe-python, python-version-call,
+/// stale-qualify-need, archive-env,
+/// archive-kind, py-heredoc, py-imports,
+/// argv-use, upstream-field, len-call,
+/// digest-call, size-msg, digest-msg,
+/// target-id-name, archive-pass,
+/// tool-probe-count, archive-assert-count,
+/// banner-count.
+/// Shared old files intact; retirement is a
+/// later integrator choice.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str probe_bun
+    str bun_version_call
+    str want_bun
+    str probe_go
+    str go_version_call
+    str want_go
+    str probe_gcc
+    str gcc_dump_call
+    str probe_python
+    str python_version_call
+    str stale_qualify_need
+    str archive_env
+    str archive_kind
+    str py_heredoc
+    str py_imports
+    str argv_use
+    str upstream_field
+    str len_call
+    str digest_call
+    str size_msg
+    str digest_msg
+    str target_id_name
+    str archive_pass
+    int tool_probe_count
+    int archive_assert_count
+    int banner_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("edge/preflight-toolchain", "default", "", "offline"), "probe-bun" => ok "case edge/preflight-toolchain variant default root probe-bun run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("edge/preflight-toolchain", "default", "", "offline"), "probe-bun" => ok evidence("probe-bun", "true", "true", true, "case edge/preflight-toolchain variant default root probe-bun run offline")
+        different: false, true, context("edge/preflight-toolchain", "default", "", "offline"), "probe-bun" => failed{"probe-bun"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("edge/preflight-toolchain", "default", "", "offline"), "tool-probe-count" => ok evidence("tool-probe-count", "4", "4", true, "case edge/preflight-toolchain variant default root tool-probe-count run offline")
+        different: 3, 4, context("edge/preflight-toolchain", "default", "", "offline"), "tool-probe-count" => failed{"tool-probe-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "command -v bun", "command -v bun", context("edge/preflight-toolchain", "default", "", "offline"), "probe-bun" => ok evidence("probe-bun", "command -v bun", "command -v bun", true, "case edge/preflight-toolchain variant default root probe-bun run offline")
+        different: "command -v bun_2", "command -v bun", context("edge/preflight-toolchain", "default", "", "offline"), "probe-bun" => failed{"probe-bun"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_probe_bun: "seed-probe-bun-drift" => ok observation("command -v bun_2", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_bun_version_call: "seed-bun-version-call-drift" => ok observation("command -v bun", "bun --version_2", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_want_bun: "seed-want-bun-drift" => ok observation("command -v bun", "bun --version", "1.4.2_2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_probe_go: "seed-probe-go-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go_2", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_go_version_call: "seed-go-version-call-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version_2", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_want_go: "seed-want-go-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1_2", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_probe_gcc: "seed-probe-gcc-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc_2", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_gcc_dump_call: "seed-gcc-dump-call-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion_2", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_probe_python: "seed-probe-python-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3_2", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_python_version_call: "seed-python-version-call-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version_2", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_stale_qualify_need: "seed-stale-qualify-need-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it_2", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_archive_env: "seed-archive-env-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE_2", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_archive_kind: "seed-archive-kind-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip_2", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_py_heredoc: "seed-py-heredoc-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'_2", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_py_imports: "seed-py-imports-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys_2", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_argv_use: "seed-argv-use-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv_2", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_upstream_field: "seed-upstream-field-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream_2", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_len_call: "seed-len-call-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)_2", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_digest_call: "seed-digest-call-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest_2", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_size_msg: "seed-size-msg-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch_2", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        seed_digest_msg: "seed-digest-msg-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch_2", "targetId", "PASS: archive", 4, 2, 2)
+        seed_target_id_name: "seed-target-id-name-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId_2", "PASS: archive", 4, 2, 2)
+        seed_archive_pass: "seed-archive-pass-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive_2", 4, 2, 2)
+        seed_tool_probe_count: "seed-tool-probe-count-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 3, 2, 2)
+        seed_archive_assert_count: "seed-archive-assert-count-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 1, 2)
+        seed_banner_count: "seed-banner-count-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 1)
+    match variant_id
+        "seed-probe-bun-drift" => ok observation("command -v bun_2", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-bun-version-call-drift" => ok observation("command -v bun", "bun --version_2", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-want-bun-drift" => ok observation("command -v bun", "bun --version", "1.4.2_2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-probe-go-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go_2", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-go-version-call-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version_2", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-want-go-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1_2", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-probe-gcc-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc_2", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-gcc-dump-call-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion_2", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-probe-python-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3_2", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-python-version-call-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version_2", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-stale-qualify-need-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it_2", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-archive-env-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE_2", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-archive-kind-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip_2", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-py-heredoc-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'_2", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-py-imports-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys_2", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-argv-use-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv_2", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-upstream-field-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream_2", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-len-call-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)_2", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-digest-call-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest_2", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-size-msg-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch_2", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-digest-msg-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch_2", "targetId", "PASS: archive", 4, 2, 2)
+        "seed-target-id-name-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId_2", "PASS: archive", 4, 2, 2)
+        "seed-archive-pass-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive_2", 4, 2, 2)
+        "seed-tool-probe-count-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 3, 2, 2)
+        "seed-archive-assert-count-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 1, 2)
+        "seed-banner-count-drift" => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 1)
+        _ => ok observation("command -v bun", "bun --version", "1.4.2", "command -v go", "go version", "go1.27.1", "command -v gcc", "gcc -dumpversion", "command -v python3", "python3 --version", "qualify.py needs it", "CAN_BUN_ARCHIVE", "bun-linux-x64.zip", "<<'PY'", "import hashlib, json, sys", "sys.argv", "upstream", "len(archive)", "hexdigest", "archive size mismatch", "archive digest mismatch", "targetId", "PASS: archive", 4, 2, 2)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e013: "m44-e013" => ok [check("probe-bun", "bun probe keeps its bytes"), check("bun-version-call", "bun version call keeps its bytes"), check("want-bun", "want bun keeps its spelling"), check("probe-go", "go probe keeps its bytes"), check("go-version-call", "go version call keeps its bytes"), check("want-go", "want go keeps its spelling"), check("probe-gcc", "gcc probe keeps its bytes"), check("gcc-dump-call", "gcc dump call keeps its bytes"), check("probe-python", "python probe keeps its bytes"), check("python-version-call", "python version call keeps its bytes"), check("stale-qualify-need", "stale qualify need keeps its bytes"), check("archive-env", "archive env keeps its spelling"), check("archive-kind", "archive kind keeps its bytes"), check("py-heredoc", "py heredoc keeps its bytes"), check("py-imports", "py imports keep their bytes"), check("argv-use", "argv use keeps its bytes"), check("upstream-field", "upstream field keeps its spelling"), check("len-call", "len call keeps its bytes"), check("digest-call", "digest call keeps its spelling"), check("size-msg", "size msg keeps its bytes"), check("digest-msg", "digest msg keeps its bytes"), check("target-id-name", "target id name keeps its spelling"), check("archive-pass", "archive pass keeps its bytes"), check("tool-probe-count", "four tool probes exist"), check("archive-assert-count", "two archive asserts exist"), check("banner-count", "two banners exist")]
+        other: "nope" => ok []
+    match scope is "m44-e013"
+        false => ok []
+        true => ok [check("probe-bun", "bun probe keeps its bytes"), check("bun-version-call", "bun version call keeps its bytes"), check("want-bun", "want bun keeps its spelling"), check("probe-go", "go probe keeps its bytes"), check("go-version-call", "go version call keeps its bytes"), check("want-go", "want go keeps its spelling"), check("probe-gcc", "gcc probe keeps its bytes"), check("gcc-dump-call", "gcc dump call keeps its bytes"), check("probe-python", "python probe keeps its bytes"), check("python-version-call", "python version call keeps its bytes"), check("stale-qualify-need", "stale qualify need keeps its bytes"), check("archive-env", "archive env keeps its spelling"), check("archive-kind", "archive kind keeps its bytes"), check("py-heredoc", "py heredoc keeps its bytes"), check("py-imports", "py imports keep their bytes"), check("argv-use", "argv use keeps its bytes"), check("upstream-field", "upstream field keeps its spelling"), check("len-call", "len call keeps its bytes"), check("digest-call", "digest call keeps its spelling"), check("size-msg", "size msg keeps its bytes"), check("digest-msg", "digest msg keeps its bytes"), check("target-id-name", "target id name keeps its spelling"), check("archive-pass", "archive pass keeps its bytes"), check("tool-probe-count", "four tool probes exist"), check("archive-assert-count", "two archive asserts exist"), check("banner-count", "two banners exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "edge/preflight-toolchain" => ok [expected_check("probe-bun", "command -v bun"), expected_check("bun-version-call", "bun --version"), expected_check("want-bun", "1.4.2"), expected_check("probe-go", "command -v go"), expected_check("go-version-call", "go version"), expected_check("want-go", "go1.27.1"), expected_check("probe-gcc", "command -v gcc"), expected_check("gcc-dump-call", "gcc -dumpversion"), expected_check("probe-python", "command -v python3"), expected_check("python-version-call", "python3 --version"), expected_check("stale-qualify-need", "qualify.py needs it"), expected_check("archive-env", "CAN_BUN_ARCHIVE"), expected_check("archive-kind", "bun-linux-x64.zip"), expected_check("py-heredoc", "<<'PY'"), expected_check("py-imports", "import hashlib, json, sys"), expected_check("argv-use", "sys.argv"), expected_check("upstream-field", "upstream"), expected_check("len-call", "len(archive)"), expected_check("digest-call", "hexdigest"), expected_check("size-msg", "archive size mismatch"), expected_check("digest-msg", "archive digest mismatch"), expected_check("target-id-name", "targetId"), expected_check("archive-pass", "PASS: archive"), expected_check("tool-probe-count", "4"), expected_check("archive-assert-count", "2"), expected_check("banner-count", "2")]
+        unknown: "nope" => ok []
+    match case is "edge/preflight-toolchain"
+        false => ok []
+        true => ok [expected_check("probe-bun", "command -v bun"), expected_check("bun-version-call", "bun --version"), expected_check("want-bun", "1.4.2"), expected_check("probe-go", "command -v go"), expected_check("go-version-call", "go version"), expected_check("want-go", "go1.27.1"), expected_check("probe-gcc", "command -v gcc"), expected_check("gcc-dump-call", "gcc -dumpversion"), expected_check("probe-python", "command -v python3"), expected_check("python-version-call", "python3 --version"), expected_check("stale-qualify-need", "qualify.py needs it"), expected_check("archive-env", "CAN_BUN_ARCHIVE"), expected_check("archive-kind", "bun-linux-x64.zip"), expected_check("py-heredoc", "<<'PY'"), expected_check("py-imports", "import hashlib, json, sys"), expected_check("argv-use", "sys.argv"), expected_check("upstream-field", "upstream"), expected_check("len-call", "len(archive)"), expected_check("digest-call", "hexdigest"), expected_check("size-msg", "archive size mismatch"), expected_check("digest-msg", "archive digest mismatch"), expected_check("target-id-name", "targetId"), expected_check("archive-pass", "PASS: archive"), expected_check("tool-probe-count", "4"), expected_check("archive-assert-count", "2"), expected_check("banner-count", "2")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("edge/preflight-toolchain", "default", "", "offline") => ok
+        seed_probe_bun: context("edge/preflight-toolchain", "seed-probe-bun-drift", "", "offline") => failed{"probe-bun"}
+        seed_bun_version_call: context("edge/preflight-toolchain", "seed-bun-version-call-drift", "", "offline") => failed{"bun-version-call"}
+        seed_want_bun: context("edge/preflight-toolchain", "seed-want-bun-drift", "", "offline") => failed{"want-bun"}
+        seed_probe_go: context("edge/preflight-toolchain", "seed-probe-go-drift", "", "offline") => failed{"probe-go"}
+        seed_go_version_call: context("edge/preflight-toolchain", "seed-go-version-call-drift", "", "offline") => failed{"go-version-call"}
+        seed_want_go: context("edge/preflight-toolchain", "seed-want-go-drift", "", "offline") => failed{"want-go"}
+        seed_probe_gcc: context("edge/preflight-toolchain", "seed-probe-gcc-drift", "", "offline") => failed{"probe-gcc"}
+        seed_gcc_dump_call: context("edge/preflight-toolchain", "seed-gcc-dump-call-drift", "", "offline") => failed{"gcc-dump-call"}
+        seed_probe_python: context("edge/preflight-toolchain", "seed-probe-python-drift", "", "offline") => failed{"probe-python"}
+        seed_python_version_call: context("edge/preflight-toolchain", "seed-python-version-call-drift", "", "offline") => failed{"python-version-call"}
+        seed_stale_qualify_need: context("edge/preflight-toolchain", "seed-stale-qualify-need-drift", "", "offline") => failed{"stale-qualify-need"}
+        seed_archive_env: context("edge/preflight-toolchain", "seed-archive-env-drift", "", "offline") => failed{"archive-env"}
+        seed_archive_kind: context("edge/preflight-toolchain", "seed-archive-kind-drift", "", "offline") => failed{"archive-kind"}
+        seed_py_heredoc: context("edge/preflight-toolchain", "seed-py-heredoc-drift", "", "offline") => failed{"py-heredoc"}
+        seed_py_imports: context("edge/preflight-toolchain", "seed-py-imports-drift", "", "offline") => failed{"py-imports"}
+        seed_argv_use: context("edge/preflight-toolchain", "seed-argv-use-drift", "", "offline") => failed{"argv-use"}
+        seed_upstream_field: context("edge/preflight-toolchain", "seed-upstream-field-drift", "", "offline") => failed{"upstream-field"}
+        seed_len_call: context("edge/preflight-toolchain", "seed-len-call-drift", "", "offline") => failed{"len-call"}
+        seed_digest_call: context("edge/preflight-toolchain", "seed-digest-call-drift", "", "offline") => failed{"digest-call"}
+        seed_size_msg: context("edge/preflight-toolchain", "seed-size-msg-drift", "", "offline") => failed{"size-msg"}
+        seed_digest_msg: context("edge/preflight-toolchain", "seed-digest-msg-drift", "", "offline") => failed{"digest-msg"}
+        seed_target_id_name: context("edge/preflight-toolchain", "seed-target-id-name-drift", "", "offline") => failed{"target-id-name"}
+        seed_archive_pass: context("edge/preflight-toolchain", "seed-archive-pass-drift", "", "offline") => failed{"archive-pass"}
+        seed_tool_probe_count: context("edge/preflight-toolchain", "seed-tool-probe-count-drift", "", "offline") => failed{"tool-probe-count"}
+        seed_archive_assert_count: context("edge/preflight-toolchain", "seed-archive-assert-count-drift", "", "offline") => failed{"archive-assert-count"}
+        seed_banner_count: context("edge/preflight-toolchain", "seed-banner-count-drift", "", "offline") => failed{"banner-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.probe_bun, "command -v bun", c, "probe-bun")
+            failed
+            ok evidence probe_bun_evidence => match call require_text(got.bun_version_call, "bun --version", c, "bun-version-call")
+                failed
+                ok evidence bun_version_call_evidence => match call require_text(got.want_bun, "1.4.2", c, "want-bun")
+                    failed
+                    ok evidence want_bun_evidence => match call require_text(got.probe_go, "command -v go", c, "probe-go")
+                        failed
+                        ok evidence probe_go_evidence => match call require_text(got.go_version_call, "go version", c, "go-version-call")
+                            failed
+                            ok evidence go_version_call_evidence => match call require_text(got.want_go, "go1.27.1", c, "want-go")
+                                failed
+                                ok evidence want_go_evidence => match call require_text(got.probe_gcc, "command -v gcc", c, "probe-gcc")
+                                    failed
+                                    ok evidence probe_gcc_evidence => match call require_text(got.gcc_dump_call, "gcc -dumpversion", c, "gcc-dump-call")
+                                        failed
+                                        ok evidence gcc_dump_call_evidence => match call require_text(got.probe_python, "command -v python3", c, "probe-python")
+                                            failed
+                                            ok evidence probe_python_evidence => match call require_text(got.python_version_call, "python3 --version", c, "python-version-call")
+                                                failed
+                                                ok evidence python_version_call_evidence => match call require_text(got.stale_qualify_need, "qualify.py needs it", c, "stale-qualify-need")
+                                                    failed
+                                                    ok evidence stale_qualify_need_evidence => match call require_text(got.archive_env, "CAN_BUN_ARCHIVE", c, "archive-env")
+                                                        failed
+                                                        ok evidence archive_env_evidence => match call require_text(got.archive_kind, "bun-linux-x64.zip", c, "archive-kind")
+                                                            failed
+                                                            ok evidence archive_kind_evidence => match call require_text(got.py_heredoc, "<<'PY'", c, "py-heredoc")
+                                                                failed
+                                                                ok evidence py_heredoc_evidence => match call require_text(got.py_imports, "import hashlib, json, sys", c, "py-imports")
+                                                                    failed
+                                                                    ok evidence py_imports_evidence => match call require_text(got.argv_use, "sys.argv", c, "argv-use")
+                                                                        failed
+                                                                        ok evidence argv_use_evidence => match call require_text(got.upstream_field, "upstream", c, "upstream-field")
+                                                                            failed
+                                                                            ok evidence upstream_field_evidence => match call require_text(got.len_call, "len(archive)", c, "len-call")
+                                                                                failed
+                                                                                ok evidence len_call_evidence => match call require_text(got.digest_call, "hexdigest", c, "digest-call")
+                                                                                    failed
+                                                                                    ok evidence digest_call_evidence => match call require_text(got.size_msg, "archive size mismatch", c, "size-msg")
+                                                                                        failed
+                                                                                        ok evidence size_msg_evidence => match call require_text(got.digest_msg, "archive digest mismatch", c, "digest-msg")
+                                                                                            failed
+                                                                                            ok evidence digest_msg_evidence => match call require_text(got.target_id_name, "targetId", c, "target-id-name")
+                                                                                                failed
+                                                                                                ok evidence target_id_name_evidence => match call require_text(got.archive_pass, "PASS: archive", c, "archive-pass")
+                                                                                                    failed
+                                                                                                    ok evidence archive_pass_evidence => match call require_int(got.tool_probe_count, 4, c, "tool-probe-count")
+                                                                                                        failed
+                                                                                                        ok evidence tool_probe_count_evidence => match call require_int(got.archive_assert_count, 2, c, "archive-assert-count")
+                                                                                                            failed
+                                                                                                            ok evidence archive_assert_count_evidence => match call require_int(got.banner_count, 2, c, "banner-count")
+                                                                                                                failed
+                                                                                                                ok evidence banner_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e013: "m44-e013" => ok test_case("edge/preflight-toolchain", ["edge", "m44"], [], 120000, [check_ref("probe-bun"), check_ref("bun-version-call"), check_ref("want-bun"), check_ref("probe-go"), check_ref("go-version-call"), check_ref("want-go"), check_ref("probe-gcc"), check_ref("gcc-dump-call"), check_ref("probe-python"), check_ref("python-version-call"), check_ref("stale-qualify-need"), check_ref("archive-env"), check_ref("archive-kind"), check_ref("py-heredoc"), check_ref("py-imports"), check_ref("argv-use"), check_ref("upstream-field"), check_ref("len-call"), check_ref("digest-call"), check_ref("size-msg"), check_ref("digest-msg"), check_ref("target-id-name"), check_ref("archive-pass"), check_ref("tool-probe-count"), check_ref("archive-assert-count"), check_ref("banner-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m44-e013"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("edge/preflight-toolchain", ["edge", "m44"], [], 120000, [check_ref("probe-bun"), check_ref("bun-version-call"), check_ref("want-bun"), check_ref("probe-go"), check_ref("go-version-call"), check_ref("want-go"), check_ref("probe-gcc"), check_ref("gcc-dump-call"), check_ref("probe-python"), check_ref("python-version-call"), check_ref("stale-qualify-need"), check_ref("archive-env"), check_ref("archive-kind"), check_ref("py-heredoc"), check_ref("py-imports"), check_ref("argv-use"), check_ref("upstream-field"), check_ref("len-call"), check_ref("digest-call"), check_ref("size-msg"), check_ref("digest-msg"), check_ref("target-id-name"), check_ref("archive-pass"), check_ref("tool-probe-count"), check_ref("archive-assert-count"), check_ref("banner-count")], callable case_body)

@@ -1,0 +1,345 @@
+package m44edge013run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M44 EDGE-013 "qualification
+/// prerequisites plus browser-path
+/// preflight" caller pact.
+/// Source: distribution/h12/
+/// window-check.sh
+/// symbol "qualification
+/// prerequisites plus browser-path
+/// preflight" (L102-132): offline plus
+/// browser plus verdict summaries.
+/// Disposition: rewire (this row owns the
+/// caller pact as reviewable Can
+/// facts; old shell call stays until
+/// integrator rewires it after each linked
+/// row, variant, plus gate has accepted
+/// proof).
+/// Protects (this file): the offline gate
+/// (L102-107) plus the old-browser leg
+/// (L109-118, stale dir kept as fact)
+/// plus db env names (L120-125, names
+/// only; values never pinned) plus the
+/// verdict summaries (L127-132) plus
+/// tallies that bound the span.
+/// ADAPTATION (noted, plus source lines):
+/// gate pins hold offline spellings; dir
+/// pins hold browser path bytes; verdict
+/// pins hold summary bytes; count pins
+/// hold ints tallied from L102 plus L109
+/// plus L120 plus L127-132.
+/// unshare-flag pins unshare -n (L103 plus
+/// L104 plus L106); offline-note pins outer
+/// offline wrapper (L104); no-fallback-note
+/// pins no quiet fallback (L106);
+/// old-browser-tag pins old-browser leg
+/// (L109); browser-dir pins
+/// tests/integration/browser (L110 plus L111
+/// plus L117); playwright-call pins bunx
+/// --bun playwright@1.55.1 --version (L111);
+/// playwright-pass pins playwright 1.55.1
+/// resolvable (L112); want-playwright pins
+/// 1.55.1 (L111 twice plus L112 plus L114);
+/// db-env pins DATABASE_URL (L6 plus L121
+/// plus L122 plus L124); never-printed-note
+/// pins value never printed (L124);
+/// entry-blocked pins WINDOW-ENTRY: BLOCKED
+/// (L129); entry-ready pins WINDOW-ENTRY:
+/// READY (L132); blocked-tally-words pins
+/// blocking failures (L129);
+/// ready-tally-words pins notes to clear
+/// (L132); fail-use pins $fail (L128 plus
+/// L129); warn-use pins $warn (L129 plus
+/// L132); banner-count pins int (4) from
+/// L102 plus L109 plus L120 plus L127;
+/// verdict-line-count pins int (2) from
+/// L129 plus L132; fail-use-count pins int
+/// (2) from L128-129; warn-use-count pins
+/// int (2) from L129 plus L132.
+/// Facet map (gate then verdict order):
+/// unshare-flag, offline-note,
+/// no-fallback-note, old-browser-tag,
+/// browser-dir, playwright-call,
+/// playwright-pass, want-playwright, db-env,
+/// never-printed-note, entry-blocked,
+/// entry-ready, blocked-tally-words,
+/// ready-tally-words, fail-use, warn-use,
+/// banner-count, verdict-line-count,
+/// fail-use-count, warn-use-count.
+/// The host plus emulation probes live in
+/// edge-013-base-semantics.can; the
+/// toolchain plus archive roots live in
+/// edge-013-roots-green.can.
+/// Variants: none listed (row lists zero
+/// variants; one default run).
+/// Environment: none listed (row lists
+/// zero gates; bind at P23; no live run
+/// now).
+/// Logical gates SUITE/BUILD/B1/ENV/WORK
+/// bind at P23; no live run now.
+/// Timeout 120000ms is the offline default
+/// bound (binds at P23 like the M37
+/// no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// accept gate unmet).
+/// Intended consumed report: none exists
+/// (no P23-qualified Can report yet; P23
+/// unmet).
+/// Rewire stays blocked; window-check.sh
+/// intact; no call retired.
+/// Case edge/preflight-verdict
+/// checks: unshare-flag, offline-note,
+/// no-fallback-note, old-browser-tag,
+/// browser-dir, playwright-call,
+/// playwright-pass, want-playwright, db-env,
+/// never-printed-note, entry-blocked,
+/// entry-ready, blocked-tally-words,
+/// ready-tally-words, fail-use, warn-use,
+/// banner-count, verdict-line-count,
+/// fail-use-count, warn-use-count.
+/// Shared old files intact; retirement is a
+/// later integrator choice.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str unshare_flag
+    str offline_note
+    str no_fallback_note
+    str old_browser_tag
+    str browser_dir
+    str playwright_call
+    str playwright_pass
+    str want_playwright
+    str db_env
+    str never_printed_note
+    str entry_blocked
+    str entry_ready
+    str blocked_tally_words
+    str ready_tally_words
+    str fail_use
+    str warn_use
+    int banner_count
+    int verdict_line_count
+    int fail_use_count
+    int warn_use_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("edge/preflight-verdict", "default", "", "offline"), "unshare-flag" => ok "case edge/preflight-verdict variant default root unshare-flag run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("edge/preflight-verdict", "default", "", "offline"), "unshare-flag" => ok evidence("unshare-flag", "true", "true", true, "case edge/preflight-verdict variant default root unshare-flag run offline")
+        different: false, true, context("edge/preflight-verdict", "default", "", "offline"), "unshare-flag" => failed{"unshare-flag"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("edge/preflight-verdict", "default", "", "offline"), "banner-count" => ok evidence("banner-count", "4", "4", true, "case edge/preflight-verdict variant default root banner-count run offline")
+        different: 3, 4, context("edge/preflight-verdict", "default", "", "offline"), "banner-count" => failed{"banner-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "unshare -n", "unshare -n", context("edge/preflight-verdict", "default", "", "offline"), "unshare-flag" => ok evidence("unshare-flag", "unshare -n", "unshare -n", true, "case edge/preflight-verdict variant default root unshare-flag run offline")
+        different: "unshare -n_2", "unshare -n", context("edge/preflight-verdict", "default", "", "offline"), "unshare-flag" => failed{"unshare-flag"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        seed_unshare_flag: "seed-unshare-flag-drift" => ok observation("unshare -n_2", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        seed_offline_note: "seed-offline-note-drift" => ok observation("unshare -n", "outer offline wrapper_2", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        seed_no_fallback_note: "seed-no-fallback-note-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback_2", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        seed_old_browser_tag: "seed-old-browser-tag-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg_2", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        seed_browser_dir: "seed-browser-dir-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser_2", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        seed_playwright_call: "seed-playwright-call-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version_2", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        seed_playwright_pass: "seed-playwright-pass-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable_2", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        seed_want_playwright: "seed-want-playwright-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1_2", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        seed_db_env: "seed-db-env-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL_2", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        seed_never_printed_note: "seed-never-printed-note-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed_2", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        seed_entry_blocked: "seed-entry-blocked-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED_2", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        seed_entry_ready: "seed-entry-ready-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY_2", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        seed_blocked_tally_words: "seed-blocked-tally-words-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures_2", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        seed_ready_tally_words: "seed-ready-tally-words-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear_2", "$fail", "$warn", 4, 2, 2, 2)
+        seed_fail_use: "seed-fail-use-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail_2", "$warn", 4, 2, 2, 2)
+        seed_warn_use: "seed-warn-use-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn_2", 4, 2, 2, 2)
+        seed_banner_count: "seed-banner-count-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 3, 2, 2, 2)
+        seed_verdict_line_count: "seed-verdict-line-count-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 1, 2, 2)
+        seed_fail_use_count: "seed-fail-use-count-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 1, 2)
+        seed_warn_use_count: "seed-warn-use-count-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 1)
+    match variant_id
+        "seed-unshare-flag-drift" => ok observation("unshare -n_2", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        "seed-offline-note-drift" => ok observation("unshare -n", "outer offline wrapper_2", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        "seed-no-fallback-note-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback_2", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        "seed-old-browser-tag-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg_2", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        "seed-browser-dir-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser_2", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        "seed-playwright-call-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version_2", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        "seed-playwright-pass-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable_2", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        "seed-want-playwright-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1_2", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        "seed-db-env-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL_2", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        "seed-never-printed-note-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed_2", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        "seed-entry-blocked-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED_2", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        "seed-entry-ready-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY_2", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        "seed-blocked-tally-words-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures_2", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+        "seed-ready-tally-words-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear_2", "$fail", "$warn", 4, 2, 2, 2)
+        "seed-fail-use-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail_2", "$warn", 4, 2, 2, 2)
+        "seed-warn-use-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn_2", 4, 2, 2, 2)
+        "seed-banner-count-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 3, 2, 2, 2)
+        "seed-verdict-line-count-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 1, 2, 2)
+        "seed-fail-use-count-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 1, 2)
+        "seed-warn-use-count-drift" => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 1)
+        _ => ok observation("unshare -n", "outer offline wrapper", "no quiet fallback", "old-browser leg", "tests/integration/browser", "bunx --bun playwright@1.55.1 --version", "playwright 1.55.1 resolvable", "1.55.1", "DATABASE_URL", "value never printed", "WINDOW-ENTRY: BLOCKED", "WINDOW-ENTRY: READY", "blocking failures", "notes to clear", "$fail", "$warn", 4, 2, 2, 2)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e013: "m44-e013" => ok [check("unshare-flag", "unshare flag keeps its bytes"), check("offline-note", "offline note keeps its bytes"), check("no-fallback-note", "no fallback note keeps its bytes"), check("old-browser-tag", "old browser tag keeps its bytes"), check("browser-dir", "browser dir keeps its bytes"), check("playwright-call", "playwright call keeps its bytes"), check("playwright-pass", "playwright pass keeps its bytes"), check("want-playwright", "want playwright keeps its spelling"), check("db-env", "db env keeps its spelling"), check("never-printed-note", "never printed note keeps its bytes"), check("entry-blocked", "entry blocked keeps its bytes"), check("entry-ready", "entry ready keeps its bytes"), check("blocked-tally-words", "blocked tally words keep their bytes"), check("ready-tally-words", "ready tally words keep their bytes"), check("fail-use", "fail use keeps its bytes"), check("warn-use", "warn use keeps its bytes"), check("banner-count", "four banners exist"), check("verdict-line-count", "two verdict lines exist"), check("fail-use-count", "two fail uses exist"), check("warn-use-count", "two warn uses exist")]
+        other: "nope" => ok []
+    match scope is "m44-e013"
+        false => ok []
+        true => ok [check("unshare-flag", "unshare flag keeps its bytes"), check("offline-note", "offline note keeps its bytes"), check("no-fallback-note", "no fallback note keeps its bytes"), check("old-browser-tag", "old browser tag keeps its bytes"), check("browser-dir", "browser dir keeps its bytes"), check("playwright-call", "playwright call keeps its bytes"), check("playwright-pass", "playwright pass keeps its bytes"), check("want-playwright", "want playwright keeps its spelling"), check("db-env", "db env keeps its spelling"), check("never-printed-note", "never printed note keeps its bytes"), check("entry-blocked", "entry blocked keeps its bytes"), check("entry-ready", "entry ready keeps its bytes"), check("blocked-tally-words", "blocked tally words keep their bytes"), check("ready-tally-words", "ready tally words keep their bytes"), check("fail-use", "fail use keeps its bytes"), check("warn-use", "warn use keeps its bytes"), check("banner-count", "four banners exist"), check("verdict-line-count", "two verdict lines exist"), check("fail-use-count", "two fail uses exist"), check("warn-use-count", "two warn uses exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "edge/preflight-verdict" => ok [expected_check("unshare-flag", "unshare -n"), expected_check("offline-note", "outer offline wrapper"), expected_check("no-fallback-note", "no quiet fallback"), expected_check("old-browser-tag", "old-browser leg"), expected_check("browser-dir", "tests/integration/browser"), expected_check("playwright-call", "bunx --bun playwright@1.55.1 --version"), expected_check("playwright-pass", "playwright 1.55.1 resolvable"), expected_check("want-playwright", "1.55.1"), expected_check("db-env", "DATABASE_URL"), expected_check("never-printed-note", "value never printed"), expected_check("entry-blocked", "WINDOW-ENTRY: BLOCKED"), expected_check("entry-ready", "WINDOW-ENTRY: READY"), expected_check("blocked-tally-words", "blocking failures"), expected_check("ready-tally-words", "notes to clear"), expected_check("fail-use", "$fail"), expected_check("warn-use", "$warn"), expected_check("banner-count", "4"), expected_check("verdict-line-count", "2"), expected_check("fail-use-count", "2"), expected_check("warn-use-count", "2")]
+        unknown: "nope" => ok []
+    match case is "edge/preflight-verdict"
+        false => ok []
+        true => ok [expected_check("unshare-flag", "unshare -n"), expected_check("offline-note", "outer offline wrapper"), expected_check("no-fallback-note", "no quiet fallback"), expected_check("old-browser-tag", "old-browser leg"), expected_check("browser-dir", "tests/integration/browser"), expected_check("playwright-call", "bunx --bun playwright@1.55.1 --version"), expected_check("playwright-pass", "playwright 1.55.1 resolvable"), expected_check("want-playwright", "1.55.1"), expected_check("db-env", "DATABASE_URL"), expected_check("never-printed-note", "value never printed"), expected_check("entry-blocked", "WINDOW-ENTRY: BLOCKED"), expected_check("entry-ready", "WINDOW-ENTRY: READY"), expected_check("blocked-tally-words", "blocking failures"), expected_check("ready-tally-words", "notes to clear"), expected_check("fail-use", "$fail"), expected_check("warn-use", "$warn"), expected_check("banner-count", "4"), expected_check("verdict-line-count", "2"), expected_check("fail-use-count", "2"), expected_check("warn-use-count", "2")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("edge/preflight-verdict", "default", "", "offline") => ok
+        seed_unshare_flag: context("edge/preflight-verdict", "seed-unshare-flag-drift", "", "offline") => failed{"unshare-flag"}
+        seed_offline_note: context("edge/preflight-verdict", "seed-offline-note-drift", "", "offline") => failed{"offline-note"}
+        seed_no_fallback_note: context("edge/preflight-verdict", "seed-no-fallback-note-drift", "", "offline") => failed{"no-fallback-note"}
+        seed_old_browser_tag: context("edge/preflight-verdict", "seed-old-browser-tag-drift", "", "offline") => failed{"old-browser-tag"}
+        seed_browser_dir: context("edge/preflight-verdict", "seed-browser-dir-drift", "", "offline") => failed{"browser-dir"}
+        seed_playwright_call: context("edge/preflight-verdict", "seed-playwright-call-drift", "", "offline") => failed{"playwright-call"}
+        seed_playwright_pass: context("edge/preflight-verdict", "seed-playwright-pass-drift", "", "offline") => failed{"playwright-pass"}
+        seed_want_playwright: context("edge/preflight-verdict", "seed-want-playwright-drift", "", "offline") => failed{"want-playwright"}
+        seed_db_env: context("edge/preflight-verdict", "seed-db-env-drift", "", "offline") => failed{"db-env"}
+        seed_never_printed_note: context("edge/preflight-verdict", "seed-never-printed-note-drift", "", "offline") => failed{"never-printed-note"}
+        seed_entry_blocked: context("edge/preflight-verdict", "seed-entry-blocked-drift", "", "offline") => failed{"entry-blocked"}
+        seed_entry_ready: context("edge/preflight-verdict", "seed-entry-ready-drift", "", "offline") => failed{"entry-ready"}
+        seed_blocked_tally_words: context("edge/preflight-verdict", "seed-blocked-tally-words-drift", "", "offline") => failed{"blocked-tally-words"}
+        seed_ready_tally_words: context("edge/preflight-verdict", "seed-ready-tally-words-drift", "", "offline") => failed{"ready-tally-words"}
+        seed_fail_use: context("edge/preflight-verdict", "seed-fail-use-drift", "", "offline") => failed{"fail-use"}
+        seed_warn_use: context("edge/preflight-verdict", "seed-warn-use-drift", "", "offline") => failed{"warn-use"}
+        seed_banner_count: context("edge/preflight-verdict", "seed-banner-count-drift", "", "offline") => failed{"banner-count"}
+        seed_verdict_line_count: context("edge/preflight-verdict", "seed-verdict-line-count-drift", "", "offline") => failed{"verdict-line-count"}
+        seed_fail_use_count: context("edge/preflight-verdict", "seed-fail-use-count-drift", "", "offline") => failed{"fail-use-count"}
+        seed_warn_use_count: context("edge/preflight-verdict", "seed-warn-use-count-drift", "", "offline") => failed{"warn-use-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.unshare_flag, "unshare -n", c, "unshare-flag")
+            failed
+            ok evidence unshare_flag_evidence => match call require_text(got.offline_note, "outer offline wrapper", c, "offline-note")
+                failed
+                ok evidence offline_note_evidence => match call require_text(got.no_fallback_note, "no quiet fallback", c, "no-fallback-note")
+                    failed
+                    ok evidence no_fallback_note_evidence => match call require_text(got.old_browser_tag, "old-browser leg", c, "old-browser-tag")
+                        failed
+                        ok evidence old_browser_tag_evidence => match call require_text(got.browser_dir, "tests/integration/browser", c, "browser-dir")
+                            failed
+                            ok evidence browser_dir_evidence => match call require_text(got.playwright_call, "bunx --bun playwright@1.55.1 --version", c, "playwright-call")
+                                failed
+                                ok evidence playwright_call_evidence => match call require_text(got.playwright_pass, "playwright 1.55.1 resolvable", c, "playwright-pass")
+                                    failed
+                                    ok evidence playwright_pass_evidence => match call require_text(got.want_playwright, "1.55.1", c, "want-playwright")
+                                        failed
+                                        ok evidence want_playwright_evidence => match call require_text(got.db_env, "DATABASE_URL", c, "db-env")
+                                            failed
+                                            ok evidence db_env_evidence => match call require_text(got.never_printed_note, "value never printed", c, "never-printed-note")
+                                                failed
+                                                ok evidence never_printed_note_evidence => match call require_text(got.entry_blocked, "WINDOW-ENTRY: BLOCKED", c, "entry-blocked")
+                                                    failed
+                                                    ok evidence entry_blocked_evidence => match call require_text(got.entry_ready, "WINDOW-ENTRY: READY", c, "entry-ready")
+                                                        failed
+                                                        ok evidence entry_ready_evidence => match call require_text(got.blocked_tally_words, "blocking failures", c, "blocked-tally-words")
+                                                            failed
+                                                            ok evidence blocked_tally_words_evidence => match call require_text(got.ready_tally_words, "notes to clear", c, "ready-tally-words")
+                                                                failed
+                                                                ok evidence ready_tally_words_evidence => match call require_text(got.fail_use, "$fail", c, "fail-use")
+                                                                    failed
+                                                                    ok evidence fail_use_evidence => match call require_text(got.warn_use, "$warn", c, "warn-use")
+                                                                        failed
+                                                                        ok evidence warn_use_evidence => match call require_int(got.banner_count, 4, c, "banner-count")
+                                                                            failed
+                                                                            ok evidence banner_count_evidence => match call require_int(got.verdict_line_count, 2, c, "verdict-line-count")
+                                                                                failed
+                                                                                ok evidence verdict_line_count_evidence => match call require_int(got.fail_use_count, 2, c, "fail-use-count")
+                                                                                    failed
+                                                                                    ok evidence fail_use_count_evidence => match call require_int(got.warn_use_count, 2, c, "warn-use-count")
+                                                                                        failed
+                                                                                        ok evidence warn_use_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m44_e013: "m44-e013" => ok test_case("edge/preflight-verdict", ["edge", "m44"], [], 120000, [check_ref("unshare-flag"), check_ref("offline-note"), check_ref("no-fallback-note"), check_ref("old-browser-tag"), check_ref("browser-dir"), check_ref("playwright-call"), check_ref("playwright-pass"), check_ref("want-playwright"), check_ref("db-env"), check_ref("never-printed-note"), check_ref("entry-blocked"), check_ref("entry-ready"), check_ref("blocked-tally-words"), check_ref("ready-tally-words"), check_ref("fail-use"), check_ref("warn-use"), check_ref("banner-count"), check_ref("verdict-line-count"), check_ref("fail-use-count"), check_ref("warn-use-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m44-e013"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("edge/preflight-verdict", ["edge", "m44"], [], 120000, [check_ref("unshare-flag"), check_ref("offline-note"), check_ref("no-fallback-note"), check_ref("old-browser-tag"), check_ref("browser-dir"), check_ref("playwright-call"), check_ref("playwright-pass"), check_ref("want-playwright"), check_ref("db-env"), check_ref("never-printed-note"), check_ref("entry-blocked"), check_ref("entry-ready"), check_ref("blocked-tally-words"), check_ref("ready-tally-words"), check_ref("fail-use"), check_ref("warn-use"), check_ref("banner-count"), check_ref("verdict-line-count"), check_ref("fail-use-count"), check_ref("warn-use-count")], callable case_body)
