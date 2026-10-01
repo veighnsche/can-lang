@@ -5890,7 +5890,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Move SQL setup and query answers into Can; verify optional/one/many/execute, null/bytes/limits, hostile binds and native rows. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.",
       "commit": "test(native-can): add postgresql-query-semantics cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "Conditional rows require per-row current-contract relevance and reviewer disposition; preserve historical records/static fixtures where still useful. The integrator alone may retire shared old files after all linked rows and callers are resolved.",
       "delegated_oracles_owned": [],
       "delegated_oracles_shared": [],

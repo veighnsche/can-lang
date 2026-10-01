@@ -1,0 +1,252 @@
+package m22history001roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M22 HISTORY-001 "SQL queries: roots green, staged inventory".
+/// Source: tests/integration/sql_test.go manifest sqlQueriesManifest
+/// (L17-22) plus staging helper writeSQLQueriesProject (L24-44);
+/// fixture compiler/testdata/current/sql/queries.can; assert leg
+/// (L81-88).
+/// Disposition: migrate (this row ports TestCurrentSQLQueries to
+/// ordinary Can functions; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): static staged inventory as the green
+/// baseline: the queries.can fixture path, the can.project.json and
+/// can.errors.json names, the empty starting error registry, the
+/// src/main.can entry, the source_root/error_registry manifest keys,
+/// the parameter and row type bindings, and the assert leg green
+/// (exit 0, empty diagnostics).
+/// ADAPTATION (recorded, with source lines): the empty registry pins
+/// the exact L42 JSON bytes; type bindings pin the manifest spellings
+/// (L18-22) rather than the fixture record bodies; the assert
+/// exit/diag predicates (L82) pin the leg green without claiming a
+/// live run (accept_after P23 unmet).
+/// Facet map (sql_test.go legs): fixture-path pins queries.can (L27);
+/// project-name pins can.project.json (L41); errors-name pins
+/// can.errors.json (L42); errors-empty pins the empty registry (L42);
+/// entry-src pins src/main.can (L43); source-root-key and
+/// error-registry-key pin the manifest keys (L17); param-id-type pins
+/// app::id_parameters (L18); param-search-type pins
+/// app::search_parameters (L19); row-account-type pins
+/// app::account_row (L18); row-cover-type pins app::cover_row (L22);
+/// assert-exit pins exit 0 (L82); assert-diag-empty pins empty
+/// diagnostics (L82).
+/// Report/descriptor semantics live in
+/// history-001-queries-semantics.can; the build/emitted/negative
+/// shape lives in history-001-run-shape.can.
+/// Variants: none in this file (default only); descriptor
+/// cardinalities live in queries-semantics.
+/// Environment: CAN_BUN_ARCHIVE gate; requires can-bun-archive.
+/// Logical gates SUITE/CAN/BUILD/DIAG/WORK and C/R/N/S/A identities
+/// bind at P23; no live run now. The offline legs additionally use
+/// /usr/bin/sandbox-exec plus the bundled runtime/bun (recorded
+/// mechanism, not waived). Descriptor timeout 240000ms mirrors the Go
+/// 4-minute ctx (L51).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/queries-roots checks: fixture-path, project-name,
+/// errors-name, errors-empty, entry-src, source-root-key,
+/// error-registry-key, param-id-type, param-search-type,
+/// row-account-type, row-cover-type, assert-exit, assert-diag-empty.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str fixture_path
+    str project_name
+    str errors_name
+    str errors_empty
+    str entry_src
+    str source_root_key
+    str error_registry_key
+    str param_id_type
+    str param_search_type
+    str row_account_type
+    str row_cover_type
+    int assert_exit
+    bool assert_diag_empty
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/queries-roots", "default", "", "offline"), "fixture-path" => ok "case history/queries-roots variant default root fixture-path run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/queries-roots", "default", "", "offline"), "assert-diag-empty" => ok evidence("assert-diag-empty", "true", "true", true, "case history/queries-roots variant default root assert-diag-empty run offline")
+        different: false, true, context("history/queries-roots", "default", "", "offline"), "assert-diag-empty" => failed{"assert-diag-empty"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("history/queries-roots", "default", "", "offline"), "assert-exit" => ok evidence("assert-exit", "0", "0", true, "case history/queries-roots variant default root assert-exit run offline")
+        different: 1, 0, context("history/queries-roots", "default", "", "offline"), "assert-exit" => failed{"assert-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "compiler/testdata/current/sql/queries.can", "compiler/testdata/current/sql/queries.can", context("history/queries-roots", "default", "", "offline"), "fixture-path" => ok evidence("fixture-path", "compiler/testdata/current/sql/queries.can", "compiler/testdata/current/sql/queries.can", true, "case history/queries-roots variant default root fixture-path run offline")
+        different: "compiler/testdata/current/sql/other.can", "compiler/testdata/current/sql/queries.can", context("history/queries-roots", "default", "", "offline"), "fixture-path" => failed{"fixture-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+        seed_fixture_path: "seed-fixture-path-drift" => ok observation("compiler/testdata/current/sql/other.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+        seed_project_name: "seed-project-name-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.other.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+        seed_errors_name: "seed-errors-name-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors2.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+        seed_errors_empty: "seed-errors-empty-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[\"x\"],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+        seed_entry_src: "seed-entry-src-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/other.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+        seed_source_root_key: "seed-source-root-key-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source-root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+        seed_error_registry_key: "seed-error-registry-key-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error-registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+        seed_param_id_type: "seed-param-id-type-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::other_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+        seed_param_search_type: "seed-param-search-type-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::other_search", "app::account_row", "app::cover_row", 0, true)
+        seed_row_account_type: "seed-row-account-type-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::other_row", "app::cover_row", 0, true)
+        seed_row_cover_type: "seed-row-cover-type-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::other_cover", 0, true)
+        seed_assert_exit: "seed-assert-exit-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 1, true)
+        seed_assert_diag_empty: "seed-assert-diag-empty-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, false)
+    match variant_id
+        "seed-fixture-path-drift" => ok observation("compiler/testdata/current/sql/other.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+        "seed-project-name-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.other.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+        "seed-errors-name-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors2.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+        "seed-errors-empty-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[\"x\"],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+        "seed-entry-src-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/other.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+        "seed-source-root-key-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source-root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+        "seed-error-registry-key-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error-registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+        "seed-param-id-type-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::other_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+        "seed-param-search-type-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::other_search", "app::account_row", "app::cover_row", 0, true)
+        "seed-row-account-type-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::other_row", "app::cover_row", 0, true)
+        "seed-row-cover-type-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::other_cover", 0, true)
+        "seed-assert-exit-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 1, true)
+        "seed-assert-diag-empty-drift" => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, false)
+        _ => ok observation("compiler/testdata/current/sql/queries.can", "can.project.json", "can.errors.json", "{\"active\":[],\"retired\":[]}", "src/main.can", "source_root", "error_registry", "app::id_parameters", "app::search_parameters", "app::account_row", "app::cover_row", 0, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m22_h001: "m22-h001" => ok [check("fixture-path", "project stages the queries.can fixture"), check("project-name", "project manifest is can.project.json"), check("errors-name", "error registry file is can.errors.json"), check("errors-empty", "staged error registry starts empty"), check("entry-src", "fixture stages as src/main.can"), check("source-root-key", "manifest carries the source_root key"), check("error-registry-key", "manifest carries the error_registry key"), check("param-id-type", "id reads bind app::id_parameters"), check("param-search-type", "term reads bind app::search_parameters"), check("row-account-type", "account reads bind app::account_row"), check("row-cover-type", "cover reads bind app::cover_row"), check("assert-exit", "assert leg exits 0"), check("assert-diag-empty", "assert leg keeps diagnostics empty")]
+        other: "nope" => ok []
+    match scope is "m22-h001"
+        false => ok []
+        true => ok [check("fixture-path", "project stages the queries.can fixture"), check("project-name", "project manifest is can.project.json"), check("errors-name", "error registry file is can.errors.json"), check("errors-empty", "staged error registry starts empty"), check("entry-src", "fixture stages as src/main.can"), check("source-root-key", "manifest carries the source_root key"), check("error-registry-key", "manifest carries the error_registry key"), check("param-id-type", "id reads bind app::id_parameters"), check("param-search-type", "term reads bind app::search_parameters"), check("row-account-type", "account reads bind app::account_row"), check("row-cover-type", "cover reads bind app::cover_row"), check("assert-exit", "assert leg exits 0"), check("assert-diag-empty", "assert leg keeps diagnostics empty")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/queries-roots" => ok [expected_check("fixture-path", "compiler/testdata/current/sql/queries.can"), expected_check("project-name", "can.project.json"), expected_check("errors-name", "can.errors.json"), expected_check("errors-empty", "{\"active\":[],\"retired\":[]}"), expected_check("entry-src", "src/main.can"), expected_check("source-root-key", "source_root"), expected_check("error-registry-key", "error_registry"), expected_check("param-id-type", "app::id_parameters"), expected_check("param-search-type", "app::search_parameters"), expected_check("row-account-type", "app::account_row"), expected_check("row-cover-type", "app::cover_row"), expected_check("assert-exit", "0"), expected_check("assert-diag-empty", "true")]
+        unknown: "nope" => ok []
+    match case is "history/queries-roots"
+        false => ok []
+        true => ok [expected_check("fixture-path", "compiler/testdata/current/sql/queries.can"), expected_check("project-name", "can.project.json"), expected_check("errors-name", "can.errors.json"), expected_check("errors-empty", "{\"active\":[],\"retired\":[]}"), expected_check("entry-src", "src/main.can"), expected_check("source-root-key", "source_root"), expected_check("error-registry-key", "error_registry"), expected_check("param-id-type", "app::id_parameters"), expected_check("param-search-type", "app::search_parameters"), expected_check("row-account-type", "app::account_row"), expected_check("row-cover-type", "app::cover_row"), expected_check("assert-exit", "0"), expected_check("assert-diag-empty", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/queries-roots", "default", "", "offline") => ok
+        seed_fixture_path: context("history/queries-roots", "seed-fixture-path-drift", "", "offline") => failed{"fixture-path"}
+        seed_project_name: context("history/queries-roots", "seed-project-name-drift", "", "offline") => failed{"project-name"}
+        seed_errors_name: context("history/queries-roots", "seed-errors-name-drift", "", "offline") => failed{"errors-name"}
+        seed_errors_empty: context("history/queries-roots", "seed-errors-empty-drift", "", "offline") => failed{"errors-empty"}
+        seed_entry_src: context("history/queries-roots", "seed-entry-src-drift", "", "offline") => failed{"entry-src"}
+        seed_source_root_key: context("history/queries-roots", "seed-source-root-key-drift", "", "offline") => failed{"source-root-key"}
+        seed_error_registry_key: context("history/queries-roots", "seed-error-registry-key-drift", "", "offline") => failed{"error-registry-key"}
+        seed_param_id_type: context("history/queries-roots", "seed-param-id-type-drift", "", "offline") => failed{"param-id-type"}
+        seed_param_search_type: context("history/queries-roots", "seed-param-search-type-drift", "", "offline") => failed{"param-search-type"}
+        seed_row_account_type: context("history/queries-roots", "seed-row-account-type-drift", "", "offline") => failed{"row-account-type"}
+        seed_row_cover_type: context("history/queries-roots", "seed-row-cover-type-drift", "", "offline") => failed{"row-cover-type"}
+        seed_assert_exit: context("history/queries-roots", "seed-assert-exit-drift", "", "offline") => failed{"assert-exit"}
+        seed_assert_diag_empty: context("history/queries-roots", "seed-assert-diag-empty-drift", "", "offline") => failed{"assert-diag-empty"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.fixture_path, "compiler/testdata/current/sql/queries.can", c, "fixture-path")
+            failed
+            ok evidence fixture_path_evidence => match call require_text(got.project_name, "can.project.json", c, "project-name")
+                failed
+                ok evidence project_name_evidence => match call require_text(got.errors_name, "can.errors.json", c, "errors-name")
+                    failed
+                    ok evidence errors_name_evidence => match call require_text(got.errors_empty, "{\"active\":[],\"retired\":[]}", c, "errors-empty")
+                        failed
+                        ok evidence errors_empty_evidence => match call require_text(got.entry_src, "src/main.can", c, "entry-src")
+                            failed
+                            ok evidence entry_src_evidence => match call require_text(got.source_root_key, "source_root", c, "source-root-key")
+                                failed
+                                ok evidence source_root_key_evidence => match call require_text(got.error_registry_key, "error_registry", c, "error-registry-key")
+                                    failed
+                                    ok evidence error_registry_key_evidence => match call require_text(got.param_id_type, "app::id_parameters", c, "param-id-type")
+                                        failed
+                                        ok evidence param_id_type_evidence => match call require_text(got.param_search_type, "app::search_parameters", c, "param-search-type")
+                                            failed
+                                            ok evidence param_search_type_evidence => match call require_text(got.row_account_type, "app::account_row", c, "row-account-type")
+                                                failed
+                                                ok evidence row_account_type_evidence => match call require_text(got.row_cover_type, "app::cover_row", c, "row-cover-type")
+                                                    failed
+                                                    ok evidence row_cover_type_evidence => match call require_int(got.assert_exit, 0, c, "assert-exit")
+                                                        failed
+                                                        ok evidence assert_exit_evidence => match call require_bool(got.assert_diag_empty, true, c, "assert-diag-empty")
+                                                            failed
+                                                            ok evidence assert_diag_empty_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m22_h001: "m22-h001" => ok test_case("history/queries-roots", ["history", "m22"], ["can-bun-archive"], 240000, [check_ref("fixture-path"), check_ref("project-name"), check_ref("errors-name"), check_ref("errors-empty"), check_ref("entry-src"), check_ref("source-root-key"), check_ref("error-registry-key"), check_ref("param-id-type"), check_ref("param-search-type"), check_ref("row-account-type"), check_ref("row-cover-type"), check_ref("assert-exit"), check_ref("assert-diag-empty")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m22-h001"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/queries-roots", ["history", "m22"], ["can-bun-archive"], 240000, [check_ref("fixture-path"), check_ref("project-name"), check_ref("errors-name"), check_ref("errors-empty"), check_ref("entry-src"), check_ref("source-root-key"), check_ref("error-registry-key"), check_ref("param-id-type"), check_ref("param-search-type"), check_ref("row-account-type"), check_ref("row-cover-type"), check_ref("assert-exit"), check_ref("assert-diag-empty")], callable case_body)
