@@ -150,6 +150,7 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 		lateOperationBindings(),
 		dbOperationBindings(),
 		dbTransactionOperationBindings(),
+		dbPoisonOperationBindings(),
 		streamOperationBindings(),
 		assembly.streamSpecializationBindings(),
 		websocketOperationBindings(),

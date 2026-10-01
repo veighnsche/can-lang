@@ -1,0 +1,39 @@
+package test_db_poison
+    provides []
+    uses [db, test]
+fn int poison_roundtrip
+    emits {test::invalid_grant, test::stale_handle, db::db_fault}
+    given
+        str grant
+    asserts
+        probe: "ng1-0123456789abcdef0123456789abcdef" => ok 0
+    match chain
+        call test::grant_admit(grant) as test::owner owner
+        call db::begin_poison_attempt(owner, ["number"], db::seed_row([db::number_cell("7")]), "DELETE FROM items") as db::poison_attempt_record begun
+        call db::begin_control_attempt(owner, ["number"], db::seed_row([db::number_cell("1")])) as db::poison_attempt_record controlled
+        call db::attempt_record(owner, "attempt-0") as db::poison_attempt_record reread
+        call db::record_poison_error(owner, "attempt-0", "23505", "duplicate key") as db::poison_error_facts errored
+        call db::error_facts(owner, "attempt-0") as db::poison_error_facts reread_error
+        call db::record_callback_report(owner, "attempt-0", "success") as db::poison_callback_facts reported
+        call db::callback_facts(owner, "attempt-0") as db::poison_callback_facts reread_report
+        call db::record_poison_settlement(owner, "attempt-0", "rolled-back") as db::poison_settlement_record settled
+        call db::poison_settlement_facts(owner, "attempt-0") as db::poison_settlement_record reread_settlement
+        call db::record_fresh_read(owner, "attempt-0", [db::seed_row([db::number_cell("7")])]) as db::fresh_sentinel_facts fresh
+        call db::fresh_facts(owner, "attempt-0") as db::fresh_sentinel_facts reread_fresh
+        call db::record_replay_read(owner, "attempt-0", [db::seed_row([db::number_cell("7")])]) as db::replay_sentinel_facts replay
+        call db::replay_facts(owner, "attempt-0") as db::replay_sentinel_facts reread_replay
+        call db::compare_fresh_to_replay(owner, fresh, replay) as db::sentinel_comparison agreed
+        call db::sentinel_present_in_fresh(owner, "attempt-0", fresh) as bool in_fresh
+        call db::sentinel_present_in_replay(owner, "attempt-0", replay) as bool in_replay
+        call db::settlement_agrees_with_reads(owner, "attempt-0") as db::settlement_agreement verdict
+        test::invalid_grant
+        test::stale_handle
+        db::db_fault
+        ok => ok 0
+fn void main
+    emits {}
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok
