@@ -1,0 +1,263 @@
+package m04core033ownership
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M04 CORE-033 "bundled ownership: scopes, leases, late work".
+/// Source: tests/integration/owners_test.go symbol
+/// TestBundledOwnershipOffline (L13-38) and runtime/test/owner.test.ts
+/// (every verbatim pin below comes from its 18 test roots),
+/// runtime/test/owner-roots.test.ts (CLI/assertion wait) and
+/// runtime/test/owner-hung.test.ts (leased/unleased supervisor kills).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): losing outcomes inspected once, deduplicated
+/// late diagnostics, preserved subleases with rollback, native async
+/// context, cross-root/escaped/forged rejection, scoped drain, CLI and
+/// assertion waits for late work, and supervisor kills of nonsettling
+/// leased and unleased owners.
+/// The 23-root staged pin lives in core-033-roots-green.can; the
+/// reverse-cleanup shape lives in core-033-cleanup-shape.can.
+/// Variants: leased=false and true hung owners; late losers;
+/// forged/cross-root/escaped handles.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/CHILD/
+/// NATIVE/FAULT and C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: DELEGATE-014 (owner-hung.test.ts, read-only),
+/// DELEGATE-015 (owner-roots.test.ts, read-only), DELEGATE-016
+/// (owner.test.ts, read-only; not executed here).
+/// Execution credit: NOT claimed (accept_after P23/QN2/QN3 unmet).
+/// Case bundled/ownership-scopes checks: losing-outcome-once,
+/// late-diagnostic-dedup, late-losers-observed, lease-preserved,
+/// lease-rollback, async-context, cross-root-rejection,
+/// escaped-handle-rejection, forged-handle-rejection, scoped-drain,
+/// hung-unleased-killed, hung-leased-killed, cli-waits-late,
+/// assertion-waits.
+/// Facet map (owner.test.ts roots): losing-outcome-once pins published
+/// groups inspecting each loser once (L29: count 256; L64: inspections
+/// 256); late-diagnostic-dedup pins repeated losing occurrences
+/// reporting once (L559-581: diagnostics 1, "Error: one occurrence");
+/// late-losers-observed pins late failures staying observed (L72-110:
+/// value 7n kept, diagnostics 1, "Error: late boom", phase late);
+/// lease-preserved pins closing preserving subleases (L112-158: state
+/// closing leases 1, events ["sublease","native-close"]);
+/// lease-rollback pins failed preparation (L220-246: launched 0, leases
+/// 0); async-context pins interleaved roots (L248-279: native "a"/"b",
+/// completions ["first","second"]); cross-root-rejection pins foreign
+/// handles refused (L265-266: standard); escaped-handle-rejection pins
+/// scoped escapes refused (L184-218: executions 0, closed);
+/// forged-handle-rejection pins forged handles refused (L325-364: traps
+/// 0, touched 0); scoped-drain pins scoped shutdown draining losers
+/// (L281-323: closed true after gate). Hung pins (owner-hung.test.ts
+/// L8-9/L47-51): both leased variants print "owned-pending", never
+/// "drained"/"native-close", empty stderr, signal "SIGKILL". CLI/
+/// assertion pins (owner-roots.test.ts): cli-waits-late pins status 0
+/// with one late diagnostic (L15-49: "Error: late boom");
+/// assertion-waits pins passed true with the late diagnostic retained
+/// (L73-98: "Error: late assertion task").
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int losing_inspections
+    int late_diagnostic_count
+    str late_diagnostic_message
+    int lease_count
+    int rollback_launched
+    str async_first
+    bool cross_root_rejected
+    int escaped_executions
+    int forged_traps
+    bool scoped_drained
+    str hung_unleased_signal
+    str hung_leased_signal
+    int cli_status
+    bool assertion_passed
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/ownership-scopes", "default", "", "offline"), "losing-outcome-once" => ok "case bundled/ownership-scopes variant default root losing-outcome-once run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/ownership-scopes", "default", "", "offline"), "cross-root-rejection" => ok evidence("cross-root-rejection", "true", "true", true, "case bundled/ownership-scopes variant default root cross-root-rejection run offline")
+        different: false, true, context("bundled/ownership-scopes", "default", "", "offline"), "cross-root-rejection" => failed{"cross-root-rejection"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 256, 256, context("bundled/ownership-scopes", "default", "", "offline"), "losing-outcome-once" => ok evidence("losing-outcome-once", "256", "256", true, "case bundled/ownership-scopes variant default root losing-outcome-once run offline")
+        different: 255, 256, context("bundled/ownership-scopes", "default", "", "offline"), "losing-outcome-once" => failed{"losing-outcome-once"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "Error: late boom", "Error: late boom", context("bundled/ownership-scopes", "default", "", "offline"), "late-losers-observed" => ok evidence("late-losers-observed", "Error: late boom", "Error: late boom", true, "case bundled/ownership-scopes variant default root late-losers-observed run offline")
+        different: "Error: missing", "Error: late boom", context("bundled/ownership-scopes", "default", "", "offline"), "late-losers-observed" => failed{"late-losers-observed"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(256, 1, "Error: late boom", 1, 0, "first", true, 0, 0, true, "SIGKILL", "SIGKILL", 0, true)
+        seed_inspect_short: "seed-inspect-short" => ok observation(255, 1, "Error: late boom", 1, 0, "first", true, 0, 0, true, "SIGKILL", "SIGKILL", 0, true)
+        seed_diagnostic_noisy: "seed-diagnostic-noisy" => ok observation(256, 2, "Error: late boom", 1, 0, "first", true, 0, 0, true, "SIGKILL", "SIGKILL", 0, true)
+        seed_late_drift: "seed-late-drift" => ok observation(256, 1, "Error: missing", 1, 0, "first", true, 0, 0, true, "SIGKILL", "SIGKILL", 0, true)
+        seed_lease_lost: "seed-lease-lost" => ok observation(256, 1, "Error: late boom", 0, 0, "first", true, 0, 0, true, "SIGKILL", "SIGKILL", 0, true)
+        seed_rollback_ran: "seed-rollback-ran" => ok observation(256, 1, "Error: late boom", 1, 1, "first", true, 0, 0, true, "SIGKILL", "SIGKILL", 0, true)
+        seed_async_drift: "seed-async-drift" => ok observation(256, 1, "Error: late boom", 1, 0, "lost", true, 0, 0, true, "SIGKILL", "SIGKILL", 0, true)
+        seed_cross_accepted: "seed-cross-accepted" => ok observation(256, 1, "Error: late boom", 1, 0, "first", false, 0, 0, true, "SIGKILL", "SIGKILL", 0, true)
+        seed_escaped_ran: "seed-escaped-ran" => ok observation(256, 1, "Error: late boom", 1, 0, "first", true, 1, 0, true, "SIGKILL", "SIGKILL", 0, true)
+        seed_forged_trapped: "seed-forged-trapped" => ok observation(256, 1, "Error: late boom", 1, 0, "first", true, 0, 1, true, "SIGKILL", "SIGKILL", 0, true)
+        seed_scoped_early: "seed-scoped-early" => ok observation(256, 1, "Error: late boom", 1, 0, "first", true, 0, 0, false, "SIGKILL", "SIGKILL", 0, true)
+        seed_hung_unleased_survived: "seed-hung-unleased-survived" => ok observation(256, 1, "Error: late boom", 1, 0, "first", true, 0, 0, true, "exited", "SIGKILL", 0, true)
+        seed_hung_leased_survived: "seed-hung-leased-survived" => ok observation(256, 1, "Error: late boom", 1, 0, "first", true, 0, 0, true, "SIGKILL", "exited", 0, true)
+        seed_cli_red: "seed-cli-red" => ok observation(256, 1, "Error: late boom", 1, 0, "first", true, 0, 0, true, "SIGKILL", "SIGKILL", 1, true)
+        seed_assertion_red: "seed-assertion-red" => ok observation(256, 1, "Error: late boom", 1, 0, "first", true, 0, 0, true, "SIGKILL", "SIGKILL", 0, false)
+    match variant_id
+        "seed-inspect-short" => ok observation(255, 1, "Error: late boom", 1, 0, "first", true, 0, 0, true, "SIGKILL", "SIGKILL", 0, true)
+        "seed-diagnostic-noisy" => ok observation(256, 2, "Error: late boom", 1, 0, "first", true, 0, 0, true, "SIGKILL", "SIGKILL", 0, true)
+        "seed-late-drift" => ok observation(256, 1, "Error: missing", 1, 0, "first", true, 0, 0, true, "SIGKILL", "SIGKILL", 0, true)
+        "seed-lease-lost" => ok observation(256, 1, "Error: late boom", 0, 0, "first", true, 0, 0, true, "SIGKILL", "SIGKILL", 0, true)
+        "seed-rollback-ran" => ok observation(256, 1, "Error: late boom", 1, 1, "first", true, 0, 0, true, "SIGKILL", "SIGKILL", 0, true)
+        "seed-async-drift" => ok observation(256, 1, "Error: late boom", 1, 0, "lost", true, 0, 0, true, "SIGKILL", "SIGKILL", 0, true)
+        "seed-cross-accepted" => ok observation(256, 1, "Error: late boom", 1, 0, "first", false, 0, 0, true, "SIGKILL", "SIGKILL", 0, true)
+        "seed-escaped-ran" => ok observation(256, 1, "Error: late boom", 1, 0, "first", true, 1, 0, true, "SIGKILL", "SIGKILL", 0, true)
+        "seed-forged-trapped" => ok observation(256, 1, "Error: late boom", 1, 0, "first", true, 0, 1, true, "SIGKILL", "SIGKILL", 0, true)
+        "seed-scoped-early" => ok observation(256, 1, "Error: late boom", 1, 0, "first", true, 0, 0, false, "SIGKILL", "SIGKILL", 0, true)
+        "seed-hung-unleased-survived" => ok observation(256, 1, "Error: late boom", 1, 0, "first", true, 0, 0, true, "exited", "SIGKILL", 0, true)
+        "seed-hung-leased-survived" => ok observation(256, 1, "Error: late boom", 1, 0, "first", true, 0, 0, true, "SIGKILL", "exited", 0, true)
+        "seed-cli-red" => ok observation(256, 1, "Error: late boom", 1, 0, "first", true, 0, 0, true, "SIGKILL", "SIGKILL", 1, true)
+        "seed-assertion-red" => ok observation(256, 1, "Error: late boom", 1, 0, "first", true, 0, 0, true, "SIGKILL", "SIGKILL", 0, false)
+        _ => ok observation(256, 1, "Error: late boom", 1, 0, "first", true, 0, 0, true, "SIGKILL", "SIGKILL", 0, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m04_033: "m04-033" => ok [check("losing-outcome-once", "published groups inspect each losing outcome once (256)"), check("late-diagnostic-dedup", "repeated losing occurrences report once"), check("late-losers-observed", "late standard failures stay observed with Error: late boom"), check("lease-preserved", "closing preserves the existing-owner sublease"), check("lease-rollback", "failed preparation launches zero participants"), check("async-context", "interleaved roots preserve native async context (first)"), check("cross-root-rejection", "cross-root handles reject"), check("escaped-handle-rejection", "escaped scoped handles reject without executing"), check("forged-handle-rejection", "forged resources reject without proxy traps"), check("scoped-drain", "scoped shutdown drains losers before releasing native resource"), check("hung-unleased-killed", "supervisor kills the nonsettling unleased owner (SIGKILL)"), check("hung-leased-killed", "supervisor kills the nonsettling leased owner (SIGKILL)"), check("cli-waits-late", "CLI waits for late losers with status zero"), check("assertion-waits", "assertion result waits for every participant")]
+        other: "nope" => ok []
+    match scope is "m04-033"
+        false => ok []
+        true => ok [check("losing-outcome-once", "published groups inspect each losing outcome once (256)"), check("late-diagnostic-dedup", "repeated losing occurrences report once"), check("late-losers-observed", "late standard failures stay observed with Error: late boom"), check("lease-preserved", "closing preserves the existing-owner sublease"), check("lease-rollback", "failed preparation launches zero participants"), check("async-context", "interleaved roots preserve native async context (first)"), check("cross-root-rejection", "cross-root handles reject"), check("escaped-handle-rejection", "escaped scoped handles reject without executing"), check("forged-handle-rejection", "forged resources reject without proxy traps"), check("scoped-drain", "scoped shutdown drains losers before releasing native resource"), check("hung-unleased-killed", "supervisor kills the nonsettling unleased owner (SIGKILL)"), check("hung-leased-killed", "supervisor kills the nonsettling leased owner (SIGKILL)"), check("cli-waits-late", "CLI waits for late losers with status zero"), check("assertion-waits", "assertion result waits for every participant")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/ownership-scopes" => ok [expected_check("losing-outcome-once", "256"), expected_check("late-diagnostic-dedup", "1"), expected_check("late-losers-observed", "Error: late boom"), expected_check("lease-preserved", "1"), expected_check("lease-rollback", "0"), expected_check("async-context", "first"), expected_check("cross-root-rejection", "true"), expected_check("escaped-handle-rejection", "0"), expected_check("forged-handle-rejection", "0"), expected_check("scoped-drain", "true"), expected_check("hung-unleased-killed", "SIGKILL"), expected_check("hung-leased-killed", "SIGKILL"), expected_check("cli-waits-late", "0"), expected_check("assertion-waits", "true")]
+        unknown: "nope" => ok []
+    match case is "bundled/ownership-scopes"
+        false => ok []
+        true => ok [expected_check("losing-outcome-once", "256"), expected_check("late-diagnostic-dedup", "1"), expected_check("late-losers-observed", "Error: late boom"), expected_check("lease-preserved", "1"), expected_check("lease-rollback", "0"), expected_check("async-context", "first"), expected_check("cross-root-rejection", "true"), expected_check("escaped-handle-rejection", "0"), expected_check("forged-handle-rejection", "0"), expected_check("scoped-drain", "true"), expected_check("hung-unleased-killed", "SIGKILL"), expected_check("hung-leased-killed", "SIGKILL"), expected_check("cli-waits-late", "0"), expected_check("assertion-waits", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/ownership-scopes", "default", "", "offline") => ok
+        seed_inspect_short: context("bundled/ownership-scopes", "seed-inspect-short", "", "offline") => failed{"losing-outcome-once"}
+        seed_diagnostic_noisy: context("bundled/ownership-scopes", "seed-diagnostic-noisy", "", "offline") => failed{"late-diagnostic-dedup"}
+        seed_late_drift: context("bundled/ownership-scopes", "seed-late-drift", "", "offline") => failed{"late-losers-observed"}
+        seed_lease_lost: context("bundled/ownership-scopes", "seed-lease-lost", "", "offline") => failed{"lease-preserved"}
+        seed_rollback_ran: context("bundled/ownership-scopes", "seed-rollback-ran", "", "offline") => failed{"lease-rollback"}
+        seed_async_drift: context("bundled/ownership-scopes", "seed-async-drift", "", "offline") => failed{"async-context"}
+        seed_cross_accepted: context("bundled/ownership-scopes", "seed-cross-accepted", "", "offline") => failed{"cross-root-rejection"}
+        seed_escaped_ran: context("bundled/ownership-scopes", "seed-escaped-ran", "", "offline") => failed{"escaped-handle-rejection"}
+        seed_forged_trapped: context("bundled/ownership-scopes", "seed-forged-trapped", "", "offline") => failed{"forged-handle-rejection"}
+        seed_scoped_early: context("bundled/ownership-scopes", "seed-scoped-early", "", "offline") => failed{"scoped-drain"}
+        seed_hung_unleased_survived: context("bundled/ownership-scopes", "seed-hung-unleased-survived", "", "offline") => failed{"hung-unleased-killed"}
+        seed_hung_leased_survived: context("bundled/ownership-scopes", "seed-hung-leased-survived", "", "offline") => failed{"hung-leased-killed"}
+        seed_cli_red: context("bundled/ownership-scopes", "seed-cli-red", "", "offline") => failed{"cli-waits-late"}
+        seed_assertion_red: context("bundled/ownership-scopes", "seed-assertion-red", "", "offline") => failed{"assertion-waits"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.losing_inspections, 256, c, "losing-outcome-once")
+            failed
+            ok evidence losing_evidence => match call require_int(got.late_diagnostic_count, 1, c, "late-diagnostic-dedup")
+                failed
+                ok evidence dedup_evidence => match call require_text(got.late_diagnostic_message, "Error: late boom", c, "late-losers-observed")
+                    failed
+                    ok evidence late_evidence => match call require_int(got.lease_count, 1, c, "lease-preserved")
+                        failed
+                        ok evidence lease_evidence => match call require_int(got.rollback_launched, 0, c, "lease-rollback")
+                            failed
+                            ok evidence rollback_evidence => match call require_text(got.async_first, "first", c, "async-context")
+                                failed
+                                ok evidence async_evidence => match call require_bool(got.cross_root_rejected, true, c, "cross-root-rejection")
+                                    failed
+                                    ok evidence cross_evidence => match call require_int(got.escaped_executions, 0, c, "escaped-handle-rejection")
+                                        failed
+                                        ok evidence escaped_evidence => match call require_int(got.forged_traps, 0, c, "forged-handle-rejection")
+                                            failed
+                                            ok evidence forged_evidence => match call require_bool(got.scoped_drained, true, c, "scoped-drain")
+                                                failed
+                                                ok evidence drain_evidence => match call require_text(got.hung_unleased_signal, "SIGKILL", c, "hung-unleased-killed")
+                                                    failed
+                                                    ok evidence unleased_evidence => match call require_text(got.hung_leased_signal, "SIGKILL", c, "hung-leased-killed")
+                                                        failed
+                                                        ok evidence leased_evidence => match call require_int(got.cli_status, 0, c, "cli-waits-late")
+                                                            failed
+                                                            ok evidence cli_evidence => match call require_bool(got.assertion_passed, true, c, "assertion-waits")
+                                                                failed
+                                                                ok evidence assertion_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m04_033: "m04-033" => ok test_case("bundled/ownership-scopes", ["ownership", "m04"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("losing-outcome-once"), check_ref("late-diagnostic-dedup"), check_ref("late-losers-observed"), check_ref("lease-preserved"), check_ref("lease-rollback"), check_ref("async-context"), check_ref("cross-root-rejection"), check_ref("escaped-handle-rejection"), check_ref("forged-handle-rejection"), check_ref("scoped-drain"), check_ref("hung-unleased-killed"), check_ref("hung-leased-killed"), check_ref("cli-waits-late"), check_ref("assertion-waits")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m04-033"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/ownership-scopes", ["ownership", "m04"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("losing-outcome-once"), check_ref("late-diagnostic-dedup"), check_ref("late-losers-observed"), check_ref("lease-preserved"), check_ref("lease-rollback"), check_ref("async-context"), check_ref("cross-root-rejection"), check_ref("escaped-handle-rejection"), check_ref("forged-handle-rejection"), check_ref("scoped-drain"), check_ref("hung-unleased-killed"), check_ref("hung-leased-killed"), check_ref("cli-waits-late"), check_ref("assertion-waits")], callable case_body)

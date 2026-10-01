@@ -1,0 +1,228 @@
+package m04core033roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M04 CORE-033 "bundled ownership: roots green".
+/// Source: tests/integration/owners_test.go symbol
+/// TestBundledOwnershipOffline (L13-38; staged bun leg L26-37).
+/// Related fixtures: runtime/test/owner.test.ts (18 roots),
+/// runtime/test/owner-roots.test.ts (3 roots),
+/// runtime/test/owner-hung.test.ts (1 template x 2 leased variants).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): staged bun leg exits 0 with "0 fail", exactly 23
+/// executed roots grounded per suite (owner 18, owner-roots 3, owner-hung
+/// 2), the 6-row Go evidence table, the deny-network sandbox profile and
+/// the 120000ms stage timeout.
+/// Ownership scope semantics live in core-033-ownership-scopes.can; the
+/// reverse-cleanup shape lives in core-033-cleanup-shape.can.
+/// Variants: leased=false and true hung owners are counted as 2 executed
+/// roots from 1 template (dynamic dimension, not separate declarations).
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/CHILD/NATIVE/
+/// FAULT and C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: DELEGATE-014 (owner-hung.test.ts, 1 declaration,
+/// 1 dynamic; read-only), DELEGATE-015 (owner-roots.test.ts, 3
+/// declarations; read-only), DELEGATE-016 (owner.test.ts, 18
+/// declarations; read-only; not executed here).
+/// Execution credit: NOT claimed (accept_after P23/QN2/QN3 unmet).
+/// Case bundled/ownership-roots checks: assert-green, report-passed,
+/// root-count, fixture-name, owner-suite-roots, roots-suite-roots,
+/// hung-suite-roots, evidence-count, sandbox-profile, stage-timeout.
+/// Facet map (owners_test.go legs): assert-green pins the staged leg
+/// (L29-31: err nil, exit 0); report-passed pins the pass oracle (L30:
+/// output contains "0 fail" verbatim); root-count pins the executed
+/// total (23 = 18 + 3 + 2); fixture-name grounds the pins in the staged
+/// primary suite (L26: "runtime/test/owner.test.ts" verbatim);
+/// owner-suite-roots pins owner.test.ts (18 test roots L28/72/112/160/
+/// 184/220/248/281/325/366/386/430/460/484/507/544/559/583);
+/// roots-suite-roots pins owner-roots.test.ts (3 roots L15/L51/L73);
+/// hung-suite-roots pins owner-hung.test.ts (L8: leased in [false,true];
+/// L9: template "external supervisor kills a nonsettling owner
+/// (leased=${leased})" x 2 executions); evidence-count pins the Go table
+/// (L33: 6 evidence strings); sandbox-profile pins the offline run shape
+/// (L26: "(version 1)(allow default)(deny network*)" verbatim);
+/// stage-timeout pins the Go context (L19: 2*time.Minute = 120000ms).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int root_count
+    str fixture_name
+    int owner_suite_roots
+    int roots_suite_roots
+    int hung_suite_roots
+    int evidence_count
+    str sandbox_profile
+    int stage_timeout_ms
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/ownership-roots", "default", "", "offline"), "assert-green" => ok "case bundled/ownership-roots variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/ownership-roots", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case bundled/ownership-roots variant default root assert-green run offline")
+        different: false, true, context("bundled/ownership-roots", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 23, 23, context("bundled/ownership-roots", "default", "", "offline"), "root-count" => ok evidence("root-count", "23", "23", true, "case bundled/ownership-roots variant default root root-count run offline")
+        different: 22, 23, context("bundled/ownership-roots", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "runtime/test/owner.test.ts", "runtime/test/owner.test.ts", context("bundled/ownership-roots", "default", "", "offline"), "fixture-name" => ok evidence("fixture-name", "runtime/test/owner.test.ts", "runtime/test/owner.test.ts", true, "case bundled/ownership-roots variant default root fixture-name run offline")
+        different: "runtime/test/owner-roots.test.ts", "runtime/test/owner.test.ts", context("bundled/ownership-roots", "default", "", "offline"), "fixture-name" => failed{"fixture-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 23, "runtime/test/owner.test.ts", 18, 3, 2, 6, "(version 1)(allow default)(deny network*)", 120000)
+        seed_assert_red: "seed-assert-red" => ok observation(false, true, 23, "runtime/test/owner.test.ts", 18, 3, 2, 6, "(version 1)(allow default)(deny network*)", 120000)
+        seed_report_red: "seed-report-red" => ok observation(true, false, 23, "runtime/test/owner.test.ts", 18, 3, 2, 6, "(version 1)(allow default)(deny network*)", 120000)
+        seed_root_short: "seed-root-short" => ok observation(true, true, 22, "runtime/test/owner.test.ts", 18, 3, 2, 6, "(version 1)(allow default)(deny network*)", 120000)
+        seed_fixture_drift: "seed-fixture-drift" => ok observation(true, true, 23, "runtime/test/owner-roots.test.ts", 18, 3, 2, 6, "(version 1)(allow default)(deny network*)", 120000)
+        seed_owner_short: "seed-owner-short" => ok observation(true, true, 23, "runtime/test/owner.test.ts", 17, 3, 2, 6, "(version 1)(allow default)(deny network*)", 120000)
+        seed_roots_short: "seed-roots-short" => ok observation(true, true, 23, "runtime/test/owner.test.ts", 18, 2, 2, 6, "(version 1)(allow default)(deny network*)", 120000)
+        seed_hung_short: "seed-hung-short" => ok observation(true, true, 23, "runtime/test/owner.test.ts", 18, 3, 1, 6, "(version 1)(allow default)(deny network*)", 120000)
+        seed_evidence_short: "seed-evidence-short" => ok observation(true, true, 23, "runtime/test/owner.test.ts", 18, 3, 2, 5, "(version 1)(allow default)(deny network*)", 120000)
+        seed_profile_drift: "seed-profile-drift" => ok observation(true, true, 23, "runtime/test/owner.test.ts", 18, 3, 2, 6, "(version 1)(allow default)", 120000)
+        seed_timeout_drift: "seed-timeout-drift" => ok observation(true, true, 23, "runtime/test/owner.test.ts", 18, 3, 2, 6, "(version 1)(allow default)(deny network*)", 60000)
+    match variant_id
+        "seed-assert-red" => ok observation(false, true, 23, "runtime/test/owner.test.ts", 18, 3, 2, 6, "(version 1)(allow default)(deny network*)", 120000)
+        "seed-report-red" => ok observation(true, false, 23, "runtime/test/owner.test.ts", 18, 3, 2, 6, "(version 1)(allow default)(deny network*)", 120000)
+        "seed-root-short" => ok observation(true, true, 22, "runtime/test/owner.test.ts", 18, 3, 2, 6, "(version 1)(allow default)(deny network*)", 120000)
+        "seed-fixture-drift" => ok observation(true, true, 23, "runtime/test/owner-roots.test.ts", 18, 3, 2, 6, "(version 1)(allow default)(deny network*)", 120000)
+        "seed-owner-short" => ok observation(true, true, 23, "runtime/test/owner.test.ts", 17, 3, 2, 6, "(version 1)(allow default)(deny network*)", 120000)
+        "seed-roots-short" => ok observation(true, true, 23, "runtime/test/owner.test.ts", 18, 2, 2, 6, "(version 1)(allow default)(deny network*)", 120000)
+        "seed-hung-short" => ok observation(true, true, 23, "runtime/test/owner.test.ts", 18, 3, 1, 6, "(version 1)(allow default)(deny network*)", 120000)
+        "seed-evidence-short" => ok observation(true, true, 23, "runtime/test/owner.test.ts", 18, 3, 2, 5, "(version 1)(allow default)(deny network*)", 120000)
+        "seed-profile-drift" => ok observation(true, true, 23, "runtime/test/owner.test.ts", 18, 3, 2, 6, "(version 1)(allow default)", 120000)
+        "seed-timeout-drift" => ok observation(true, true, 23, "runtime/test/owner.test.ts", 18, 3, 2, 6, "(version 1)(allow default)(deny network*)", 60000)
+        _ => ok observation(true, true, 23, "runtime/test/owner.test.ts", 18, 3, 2, 6, "(version 1)(allow default)(deny network*)", 120000)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m04_033: "m04-033" => ok [check("assert-green", "staged bun leg exits 0"), check("report-passed", "staged output pins 0 fail"), check("root-count", "staged suites carry exactly 23 executed roots"), check("fixture-name", "root pins ground the runtime/test/owner.test.ts suite"), check("owner-suite-roots", "owner.test.ts contributes 18 roots"), check("roots-suite-roots", "owner-roots.test.ts contributes 3 roots"), check("hung-suite-roots", "owner-hung.test.ts contributes 2 executed roots"), check("evidence-count", "Go table pins 6 named evidence strings"), check("sandbox-profile", "sandbox-exec pins the deny-network profile"), check("stage-timeout", "Go context pins the 120000ms stage timeout")]
+        other: "nope" => ok []
+    match scope is "m04-033"
+        false => ok []
+        true => ok [check("assert-green", "staged bun leg exits 0"), check("report-passed", "staged output pins 0 fail"), check("root-count", "staged suites carry exactly 23 executed roots"), check("fixture-name", "root pins ground the runtime/test/owner.test.ts suite"), check("owner-suite-roots", "owner.test.ts contributes 18 roots"), check("roots-suite-roots", "owner-roots.test.ts contributes 3 roots"), check("hung-suite-roots", "owner-hung.test.ts contributes 2 executed roots"), check("evidence-count", "Go table pins 6 named evidence strings"), check("sandbox-profile", "sandbox-exec pins the deny-network profile"), check("stage-timeout", "Go context pins the 120000ms stage timeout")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/ownership-roots" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "23"), expected_check("fixture-name", "runtime/test/owner.test.ts"), expected_check("owner-suite-roots", "18"), expected_check("roots-suite-roots", "3"), expected_check("hung-suite-roots", "2"), expected_check("evidence-count", "6"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("stage-timeout", "120000")]
+        unknown: "nope" => ok []
+    match case is "bundled/ownership-roots"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "23"), expected_check("fixture-name", "runtime/test/owner.test.ts"), expected_check("owner-suite-roots", "18"), expected_check("roots-suite-roots", "3"), expected_check("hung-suite-roots", "2"), expected_check("evidence-count", "6"), expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("stage-timeout", "120000")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/ownership-roots", "default", "", "offline") => ok
+        seed_assert_red: context("bundled/ownership-roots", "seed-assert-red", "", "offline") => failed{"assert-green"}
+        seed_report_red: context("bundled/ownership-roots", "seed-report-red", "", "offline") => failed{"report-passed"}
+        seed_root_short: context("bundled/ownership-roots", "seed-root-short", "", "offline") => failed{"root-count"}
+        seed_fixture_drift: context("bundled/ownership-roots", "seed-fixture-drift", "", "offline") => failed{"fixture-name"}
+        seed_owner_short: context("bundled/ownership-roots", "seed-owner-short", "", "offline") => failed{"owner-suite-roots"}
+        seed_roots_short: context("bundled/ownership-roots", "seed-roots-short", "", "offline") => failed{"roots-suite-roots"}
+        seed_hung_short: context("bundled/ownership-roots", "seed-hung-short", "", "offline") => failed{"hung-suite-roots"}
+        seed_evidence_short: context("bundled/ownership-roots", "seed-evidence-short", "", "offline") => failed{"evidence-count"}
+        seed_profile_drift: context("bundled/ownership-roots", "seed-profile-drift", "", "offline") => failed{"sandbox-profile"}
+        seed_timeout_drift: context("bundled/ownership-roots", "seed-timeout-drift", "", "offline") => failed{"stage-timeout"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence assert_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence passed_evidence => match call require_int(got.root_count, 23, c, "root-count")
+                    failed
+                    ok evidence count_evidence => match call require_text(got.fixture_name, "runtime/test/owner.test.ts", c, "fixture-name")
+                        failed
+                        ok evidence fixture_evidence => match call require_int(got.owner_suite_roots, 18, c, "owner-suite-roots")
+                            failed
+                            ok evidence owner_evidence => match call require_int(got.roots_suite_roots, 3, c, "roots-suite-roots")
+                                failed
+                                ok evidence roots_evidence => match call require_int(got.hung_suite_roots, 2, c, "hung-suite-roots")
+                                    failed
+                                    ok evidence hung_evidence => match call require_int(got.evidence_count, 6, c, "evidence-count")
+                                        failed
+                                        ok evidence table_evidence => match call require_text(got.sandbox_profile, "(version 1)(allow default)(deny network*)", c, "sandbox-profile")
+                                            failed
+                                            ok evidence profile_evidence => match call require_int(got.stage_timeout_ms, 120000, c, "stage-timeout")
+                                                failed
+                                                ok evidence timeout_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m04_033: "m04-033" => ok test_case("bundled/ownership-roots", ["ownership", "m04"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("owner-suite-roots"), check_ref("roots-suite-roots"), check_ref("hung-suite-roots"), check_ref("evidence-count"), check_ref("sandbox-profile"), check_ref("stage-timeout")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m04-033"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/ownership-roots", ["ownership", "m04"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("owner-suite-roots"), check_ref("roots-suite-roots"), check_ref("hung-suite-roots"), check_ref("evidence-count"), check_ref("sandbox-profile"), check_ref("stage-timeout")], callable case_body)

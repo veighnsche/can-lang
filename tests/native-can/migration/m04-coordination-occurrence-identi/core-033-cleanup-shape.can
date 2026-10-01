@@ -1,0 +1,247 @@
+package m04core033cleanup
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M04 CORE-033 "bundled ownership: reverse cleanup shape".
+/// Source: tests/integration/owners_test.go symbol
+/// TestBundledOwnershipOffline (L13-38) and runtime/test/owner.test.ts
+/// (reverse cleanup, reentrant close, wrong-kind/forged rejection)
+/// plus runtime/test/owner-roots.test.ts (omitted-close CLI status).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): reverse automatic cleanup order with omitted
+/// and failed closes reported, reentrant idempotent close sharing one
+/// native attempt, wrong-kind and forged handles failing without
+/// touching native state, explicit and child-scope closes, callable
+/// receipts without self-deadlock leases, host callback capture
+/// preservation, and loser-opened lease retention.
+/// The 23-root staged pin lives in core-033-roots-green.can; the scope/
+/// lease/late-work semantics live in core-033-ownership-scopes.can.
+/// Variants: omitted/automatic close; late loser retention; forged and
+/// wrong-kind handles.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/CHILD/
+/// NATIVE/FAULT and C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: DELEGATE-014 (owner-hung.test.ts, read-only),
+/// DELEGATE-015 (owner-roots.test.ts, read-only), DELEGATE-016
+/// (owner.test.ts, read-only; not executed here).
+/// Execution credit: NOT claimed (accept_after P23/QN2/QN3 unmet).
+/// Case bundled/ownership-cleanup checks: reverse-cleanup-order,
+/// omitted-close-reported, failed-close-reported, cleanup-count,
+/// reentrant-idempotent, wrong-kind-rejection, forged-no-touch,
+/// explicit-close-ok, child-scope-release, callable-no-deadlock,
+/// host-callback-preserved, loser-lease-retained.
+/// Facet map (owner.test.ts roots): reverse-cleanup-order pins reverse
+/// automatic cleanup (L160-182: events ["second","first"], first is
+/// "second"); cleanup-count pins the omitted-close diagnostics (L181:
+/// categories ["cleanup","cleanup"], count 2); failed-close-reported
+/// pins native close faults (L366-384: cleanupFailed true, completion
+/// standard, kind "cleanup"); reentrant-idempotent pins the shared
+/// native attempt (L484-505: both closes ok, calls 1);
+/// wrong-kind-rejection pins wrong-kind refusal (L325-364: refused
+/// standard); forged-no-touch pins forged refusal without native
+/// effects (L362: touched 0; L363: traps 0 recorded on the scopes
+/// slice); explicit-close-ok pins participant explicit close (L460-482:
+/// closed 1); child-scope-release pins managed child release (L430-458:
+/// closes 1); callable-no-deadlock pins ordinary receipts (L544-557:
+/// leases 0, closes 1); host-callback-preserved pins nested capture
+/// evidence (L507-542: leases 1, closed true);
+/// loser-lease-retained pins loser-opened retention (L386-428: state
+/// "closing" leases 1, closed true after use). Omitted-close pin
+/// (owner-roots.test.ts L51-71): omitted-close-reported pins status 1
+/// with closed true and phase/category cleanup/cleanup.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str first_event
+    int omitted_status
+    str failure_kind
+    int cleanup_count
+    int reentrant_calls
+    str refused_kind
+    int native_touches
+    int explicit_closes
+    int child_closes
+    int receipt_leases
+    int host_leases
+    str loser_state
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/ownership-cleanup", "default", "", "offline"), "reverse-cleanup-order" => ok "case bundled/ownership-cleanup variant default root reverse-cleanup-order run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/ownership-cleanup", "default", "", "offline"), "explicit-close-ok" => ok evidence("explicit-close-ok", "true", "true", true, "case bundled/ownership-cleanup variant default root explicit-close-ok run offline")
+        different: false, true, context("bundled/ownership-cleanup", "default", "", "offline"), "explicit-close-ok" => failed{"explicit-close-ok"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("bundled/ownership-cleanup", "default", "", "offline"), "omitted-close-reported" => ok evidence("omitted-close-reported", "1", "1", true, "case bundled/ownership-cleanup variant default root omitted-close-reported run offline")
+        different: 0, 1, context("bundled/ownership-cleanup", "default", "", "offline"), "omitted-close-reported" => failed{"omitted-close-reported"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "second", "second", context("bundled/ownership-cleanup", "default", "", "offline"), "reverse-cleanup-order" => ok evidence("reverse-cleanup-order", "second", "second", true, "case bundled/ownership-cleanup variant default root reverse-cleanup-order run offline")
+        different: "first", "second", context("bundled/ownership-cleanup", "default", "", "offline"), "reverse-cleanup-order" => failed{"reverse-cleanup-order"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("second", 1, "cleanup", 2, 1, "standard", 0, 1, 1, 0, 1, "closing")
+        seed_order_forward: "seed-order-forward" => ok observation("first", 1, "cleanup", 2, 1, "standard", 0, 1, 1, 0, 1, "closing")
+        seed_omitted_green: "seed-omitted-green" => ok observation("second", 0, "cleanup", 2, 1, "standard", 0, 1, 1, 0, 1, "closing")
+        seed_kind_drift: "seed-kind-drift" => ok observation("second", 1, "resource_state", 2, 1, "standard", 0, 1, 1, 0, 1, "closing")
+        seed_cleanup_short: "seed-cleanup-short" => ok observation("second", 1, "cleanup", 1, 1, "standard", 0, 1, 1, 0, 1, "closing")
+        seed_reentrant_twice: "seed-reentrant-twice" => ok observation("second", 1, "cleanup", 2, 2, "standard", 0, 1, 1, 0, 1, "closing")
+        seed_kind_accepted: "seed-kind-accepted" => ok observation("second", 1, "cleanup", 2, 1, "ok", 0, 1, 1, 0, 1, "closing")
+        seed_native_touched: "seed-native-touched" => ok observation("second", 1, "cleanup", 2, 1, "standard", 1, 1, 1, 0, 1, "closing")
+        seed_explicit_lost: "seed-explicit-lost" => ok observation("second", 1, "cleanup", 2, 1, "standard", 0, 0, 1, 0, 1, "closing")
+        seed_child_leaked: "seed-child-leaked" => ok observation("second", 1, "cleanup", 2, 1, "standard", 0, 1, 0, 0, 1, "closing")
+        seed_receipt_leased: "seed-receipt-leased" => ok observation("second", 1, "cleanup", 2, 1, "standard", 0, 1, 1, 1, 1, "closing")
+        seed_host_lost: "seed-host-lost" => ok observation("second", 1, "cleanup", 2, 1, "standard", 0, 1, 1, 0, 0, "closing")
+        seed_loser_drift: "seed-loser-drift" => ok observation("second", 1, "cleanup", 2, 1, "standard", 0, 1, 1, 0, 1, "closed")
+    match variant_id
+        "seed-order-forward" => ok observation("first", 1, "cleanup", 2, 1, "standard", 0, 1, 1, 0, 1, "closing")
+        "seed-omitted-green" => ok observation("second", 0, "cleanup", 2, 1, "standard", 0, 1, 1, 0, 1, "closing")
+        "seed-kind-drift" => ok observation("second", 1, "resource_state", 2, 1, "standard", 0, 1, 1, 0, 1, "closing")
+        "seed-cleanup-short" => ok observation("second", 1, "cleanup", 1, 1, "standard", 0, 1, 1, 0, 1, "closing")
+        "seed-reentrant-twice" => ok observation("second", 1, "cleanup", 2, 2, "standard", 0, 1, 1, 0, 1, "closing")
+        "seed-kind-accepted" => ok observation("second", 1, "cleanup", 2, 1, "ok", 0, 1, 1, 0, 1, "closing")
+        "seed-native-touched" => ok observation("second", 1, "cleanup", 2, 1, "standard", 1, 1, 1, 0, 1, "closing")
+        "seed-explicit-lost" => ok observation("second", 1, "cleanup", 2, 1, "standard", 0, 0, 1, 0, 1, "closing")
+        "seed-child-leaked" => ok observation("second", 1, "cleanup", 2, 1, "standard", 0, 1, 0, 0, 1, "closing")
+        "seed-receipt-leased" => ok observation("second", 1, "cleanup", 2, 1, "standard", 0, 1, 1, 1, 1, "closing")
+        "seed-host-lost" => ok observation("second", 1, "cleanup", 2, 1, "standard", 0, 1, 1, 0, 0, "closing")
+        "seed-loser-drift" => ok observation("second", 1, "cleanup", 2, 1, "standard", 0, 1, 1, 0, 1, "closed")
+        _ => ok observation("second", 1, "cleanup", 2, 1, "standard", 0, 1, 1, 0, 1, "closing")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m04_033: "m04-033" => ok [check("reverse-cleanup-order", "reverse automatic cleanup runs second then first"), check("omitted-close-reported", "omitted close reports nonzero status"), check("failed-close-reported", "failed native close propagates the cleanup kind"), check("cleanup-count", "reverse cleanup emits two cleanup diagnostics"), check("reentrant-idempotent", "reentrant close shares one native attempt"), check("wrong-kind-rejection", "wrong-kind resources reject as standard"), check("forged-no-touch", "forged handles fail without touching native state"), check("explicit-close-ok", "a participant can explicitly close its own resource"), check("child-scope-release", "participant child scope releases its lease at exit"), check("callable-no-deadlock", "ordinary callable receipts add zero close leases"), check("host-callback-preserved", "host callback wrappers preserve capture leases"), check("loser-lease-retained", "loser-opened resources retain the closing lease")]
+        other: "nope" => ok []
+    match scope is "m04-033"
+        false => ok []
+        true => ok [check("reverse-cleanup-order", "reverse automatic cleanup runs second then first"), check("omitted-close-reported", "omitted close reports nonzero status"), check("failed-close-reported", "failed native close propagates the cleanup kind"), check("cleanup-count", "reverse cleanup emits two cleanup diagnostics"), check("reentrant-idempotent", "reentrant close shares one native attempt"), check("wrong-kind-rejection", "wrong-kind resources reject as standard"), check("forged-no-touch", "forged handles fail without touching native state"), check("explicit-close-ok", "a participant can explicitly close its own resource"), check("child-scope-release", "participant child scope releases its lease at exit"), check("callable-no-deadlock", "ordinary callable receipts add zero close leases"), check("host-callback-preserved", "host callback wrappers preserve capture leases"), check("loser-lease-retained", "loser-opened resources retain the closing lease")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/ownership-cleanup" => ok [expected_check("reverse-cleanup-order", "second"), expected_check("omitted-close-reported", "1"), expected_check("failed-close-reported", "cleanup"), expected_check("cleanup-count", "2"), expected_check("reentrant-idempotent", "1"), expected_check("wrong-kind-rejection", "standard"), expected_check("forged-no-touch", "0"), expected_check("explicit-close-ok", "1"), expected_check("child-scope-release", "1"), expected_check("callable-no-deadlock", "0"), expected_check("host-callback-preserved", "1"), expected_check("loser-lease-retained", "closing")]
+        unknown: "nope" => ok []
+    match case is "bundled/ownership-cleanup"
+        false => ok []
+        true => ok [expected_check("reverse-cleanup-order", "second"), expected_check("omitted-close-reported", "1"), expected_check("failed-close-reported", "cleanup"), expected_check("cleanup-count", "2"), expected_check("reentrant-idempotent", "1"), expected_check("wrong-kind-rejection", "standard"), expected_check("forged-no-touch", "0"), expected_check("explicit-close-ok", "1"), expected_check("child-scope-release", "1"), expected_check("callable-no-deadlock", "0"), expected_check("host-callback-preserved", "1"), expected_check("loser-lease-retained", "closing")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/ownership-cleanup", "default", "", "offline") => ok
+        seed_order_forward: context("bundled/ownership-cleanup", "seed-order-forward", "", "offline") => failed{"reverse-cleanup-order"}
+        seed_omitted_green: context("bundled/ownership-cleanup", "seed-omitted-green", "", "offline") => failed{"omitted-close-reported"}
+        seed_kind_drift: context("bundled/ownership-cleanup", "seed-kind-drift", "", "offline") => failed{"failed-close-reported"}
+        seed_cleanup_short: context("bundled/ownership-cleanup", "seed-cleanup-short", "", "offline") => failed{"cleanup-count"}
+        seed_reentrant_twice: context("bundled/ownership-cleanup", "seed-reentrant-twice", "", "offline") => failed{"reentrant-idempotent"}
+        seed_kind_accepted: context("bundled/ownership-cleanup", "seed-kind-accepted", "", "offline") => failed{"wrong-kind-rejection"}
+        seed_native_touched: context("bundled/ownership-cleanup", "seed-native-touched", "", "offline") => failed{"forged-no-touch"}
+        seed_explicit_lost: context("bundled/ownership-cleanup", "seed-explicit-lost", "", "offline") => failed{"explicit-close-ok"}
+        seed_child_leaked: context("bundled/ownership-cleanup", "seed-child-leaked", "", "offline") => failed{"child-scope-release"}
+        seed_receipt_leased: context("bundled/ownership-cleanup", "seed-receipt-leased", "", "offline") => failed{"callable-no-deadlock"}
+        seed_host_lost: context("bundled/ownership-cleanup", "seed-host-lost", "", "offline") => failed{"host-callback-preserved"}
+        seed_loser_drift: context("bundled/ownership-cleanup", "seed-loser-drift", "", "offline") => failed{"loser-lease-retained"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.first_event, "second", c, "reverse-cleanup-order")
+            failed
+            ok evidence order_evidence => match call require_int(got.omitted_status, 1, c, "omitted-close-reported")
+                failed
+                ok evidence omitted_evidence => match call require_text(got.failure_kind, "cleanup", c, "failed-close-reported")
+                    failed
+                    ok evidence kind_evidence => match call require_int(got.cleanup_count, 2, c, "cleanup-count")
+                        failed
+                        ok evidence cleanup_evidence => match call require_int(got.reentrant_calls, 1, c, "reentrant-idempotent")
+                            failed
+                            ok evidence reentrant_evidence => match call require_text(got.refused_kind, "standard", c, "wrong-kind-rejection")
+                                failed
+                                ok evidence refused_evidence => match call require_int(got.native_touches, 0, c, "forged-no-touch")
+                                    failed
+                                    ok evidence touched_evidence => match call require_int(got.explicit_closes, 1, c, "explicit-close-ok")
+                                        failed
+                                        ok evidence explicit_evidence => match call require_int(got.child_closes, 1, c, "child-scope-release")
+                                            failed
+                                            ok evidence child_evidence => match call require_int(got.receipt_leases, 0, c, "callable-no-deadlock")
+                                                failed
+                                                ok evidence receipt_evidence => match call require_int(got.host_leases, 1, c, "host-callback-preserved")
+                                                    failed
+                                                    ok evidence host_evidence => match call require_text(got.loser_state, "closing", c, "loser-lease-retained")
+                                                        failed
+                                                        ok evidence loser_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m04_033: "m04-033" => ok test_case("bundled/ownership-cleanup", ["ownership", "m04"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("reverse-cleanup-order"), check_ref("omitted-close-reported"), check_ref("failed-close-reported"), check_ref("cleanup-count"), check_ref("reentrant-idempotent"), check_ref("wrong-kind-rejection"), check_ref("forged-no-touch"), check_ref("explicit-close-ok"), check_ref("child-scope-release"), check_ref("callable-no-deadlock"), check_ref("host-callback-preserved"), check_ref("loser-lease-retained")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m04-033"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/ownership-cleanup", ["ownership", "m04"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("reverse-cleanup-order"), check_ref("omitted-close-reported"), check_ref("failed-close-reported"), check_ref("cleanup-count"), check_ref("reentrant-idempotent"), check_ref("wrong-kind-rejection"), check_ref("forged-no-touch"), check_ref("explicit-close-ok"), check_ref("child-scope-release"), check_ref("callable-no-deadlock"), check_ref("host-callback-preserved"), check_ref("loser-lease-retained")], callable case_body)
