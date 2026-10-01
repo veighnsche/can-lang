@@ -1,0 +1,330 @@
+package m06core040streams
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M06 CORE-040 "bundled streams: native semantics, live tree, rejects".
+/// Source: tests/integration/streams_test.go symbol
+/// TestCurrentBundledStreams (L196-339).
+/// Related sources: runtime/test/streams.test.ts (the 11 bun-trace roots
+/// behind DELEGATE-021; every behavior pin below cites its root) and the
+/// inline streamsLiveProgramTmpl (L59-129), streamsOverrunProgram
+/// (L131-159), streamsUnderrunProgram (L161-194) and four rejection
+/// programs (L318-325), each staged as src/main.can at L233.
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): native byte/line reader and writer semantics
+/// (order, UTF-8 framing, caps, cancellation, close/failure, copies) with
+/// the 11-case suite anchor; the Can live stream tree (assert green,
+/// live output, independent disk bytes); overrun/underrun transcript
+/// violations; and the four rejection programs (wrong type, missing arm
+/// with its detail rule, wrong result binding, unknown operation) with
+/// their shared main.can source span.
+/// The pump roots-green pin lives in core-040-roots-green.can; the
+/// production process shape lives in core-040-run-shape.can (which pins
+/// the same live "2" stdout as run-stdout; both cite Go L291 and the
+/// files stay self-contained).
+/// Variants: 11 runtime cases (order, framing, caps x2, cancel, close x5,
+/// copies), live tree, transcript over/underrun, four rejections.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/WORK/PROC/N1
+/// and C/R/N/S/A identities bind at P23; no live run now. Descriptor
+/// timeout 180000ms mirrors the Go 3-minute ctx (L202).
+/// Delegated oracles: DELEGATE-021 (runtime/test/streams.test.ts, 11
+/// declarations, sha256 e94fd828...ed6d74b506a; recorded read-only, not
+/// executed; the Go "11 pass"/"0 fail" spellings at streams_test.go L212
+/// are old pass-count spellings needing current-contract relevance
+/// review per the delegate delete_when).
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case streams/stream-semantics checks: order, utf8-framing, caps,
+/// cancellation, close-failure, copy, eleven-pass, zero-fail,
+/// live-assert-green, live-report-passed, live-root-count, live-output,
+/// live-disk-bytes, overrun-reject, underrun-reject, wrong-type-reject,
+/// missing-arm-reject, missing-arm-detail, result-binding-reject,
+/// unknown-op-reject, reject-span.
+/// Facet map (streams.test.ts roots + streams_test.go legs): order pins
+/// chunk order with exact end (L113-140: [1,2,3]+[4,5] reads back
+/// [[1,2],[3,4],[5]] then []); utf8-framing pins line framing
+/// (L141-195: "one\r\ntwo\n€\npartial" frames ["one","two","€",
+/// "partial"], split € bytes [0xe2]+[0x82,0xac,0x0a] rejoin, malformed
+/// [0xff,0xfe,0x0a] fails stream::read_failed reason utf8); caps pins the
+/// cap reports (L196-216: 10-byte line over cap 4 => files::
+/// limit_exceeded limit 4 once, reader ends; L469-495: shared drain
+/// overflows 4 bytes over cap 3 before retaining, concatenates [5]+[6,7]
+/// within cap 8); cancellation pins pending-read cancel (L217-245:
+/// cancelReader reason "deadline" => stream::cancelled, delivers
+/// nothing); close-failure pins close/failure semantics (L246-299: close
+/// twice, use-after-close and foreign handles throw resource-state;
+/// L300-346: native EIO reports stream::read_failed once, close still
+/// succeeds, end stays sticky; L347-369: data [3] then EIO delivers data
+/// first; L402-434: short writes report partial counts 1n, failing ends
+/// report stream::close_failed reason close; L435-468: open failures
+/// attribute acquisition with not_found/unexpected_kind/limit_exceeded,
+/// writers truncate at open); copy pins detach both directions
+/// (L370-401: backing mutated to 99 still writes [10,20], disk
+/// overwritten with [30,40] still reads held [10,20]); eleven-pass and
+/// zero-fail pin the staged suite anchor (Go L212: "11 pass" and "0
+/// fail"); live-assert-green/live-report-passed/live-root-count pin the
+/// live assert leg (Go L279-282: status 0, empty diag; L287: passed, 1
+/// root from the sample arm at L66-67); live-output pins the live line
+/// count (Go L291: "2"; shared with run-stdout in the run-shape file);
+/// live-disk-bytes pins the independent disk read (Go L294: note.txt
+/// holds "l1\nl2\n"); overrun-reject pins the extra-fixture violation (Go
+/// L303: "unused fixture"); underrun-reject pins the short-transcript
+/// violation (Go L304: "missing fixture"); wrong-type-reject pins the
+/// reader-type diagnostic (Go L319: "inference shape mismatch");
+/// missing-arm-reject and missing-arm-detail pin the unhandled-error
+/// diagnostics (Go L321: "missing completion arm" + "requires an arm for
+/// each bound member"); result-binding-reject pins the binding diagnostic
+/// (Go L323: "completion arm binding type mismatch"); unknown-op-reject
+/// pins the unknown-call diagnostic (Go L325: "no eligible call stream::
+/// dance"); reject-span pins the shared source span (Go L319/321/323/325:
+/// every rejection names "main.can").
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str order_chunks
+    str utf8_framing
+    str caps_domain
+    str cancel_domain
+    str close_failure
+    str copy_bytes
+    str eleven_pass
+    str zero_fail
+    bool live_assert_green
+    bool live_report_passed
+    int live_root_count
+    str live_output
+    str live_disk_bytes
+    str overrun_reject
+    str underrun_reject
+    str wrong_type_reject
+    str missing_arm_reject
+    str missing_arm_detail
+    str result_binding_reject
+    str unknown_op_reject
+    str reject_span
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("streams/stream-semantics", "default", "", "offline"), "order" => ok "case streams/stream-semantics variant default root order run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("streams/stream-semantics", "default", "", "offline"), "live-assert-green" => ok evidence("live-assert-green", "true", "true", true, "case streams/stream-semantics variant default root live-assert-green run offline")
+        different: false, true, context("streams/stream-semantics", "default", "", "offline"), "live-assert-green" => failed{"live-assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("streams/stream-semantics", "default", "", "offline"), "live-root-count" => ok evidence("live-root-count", "1", "1", true, "case streams/stream-semantics variant default root live-root-count run offline")
+        different: 0, 1, context("streams/stream-semantics", "default", "", "offline"), "live-root-count" => failed{"live-root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "[[1, 2], [3, 4], [5]]", "[[1, 2], [3, 4], [5]]", context("streams/stream-semantics", "default", "", "offline"), "order" => ok evidence("order", "[[1, 2], [3, 4], [5]]", "[[1, 2], [3, 4], [5]]", true, "case streams/stream-semantics variant default root order run offline")
+        different: "[[1, 2], [3, 5], [4]]", "[[1, 2], [3, 4], [5]]", context("streams/stream-semantics", "default", "", "offline"), "order" => failed{"order"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_order_scrambled: "seed-order-scrambled" => ok observation("[[1, 2], [3, 5], [4]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_framing_loss: "seed-framing-loss" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_caps_admitted: "seed-caps-admitted" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "stream::read_failed", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_cancel_lost: "seed-cancel-lost" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::read_failed", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_close_admitted: "seed-close-admitted" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "ok", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_copy_aliasing: "seed-copy-aliasing" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[99, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_pass_short: "seed-pass-short" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "10 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_fail_noisy: "seed-fail-noisy" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "1 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_live_assert_red: "seed-live-assert-red" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", false, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_live_report_red: "seed-live-report-red" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, false, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_live_root_short: "seed-live-root-short" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 0, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_live_output_drift: "seed-live-output-drift" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "3", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_disk_drift: "seed-disk-drift" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_overrun_admitted: "seed-overrun-admitted" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "missing fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_underrun_admitted: "seed-underrun-admitted" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "unused fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_wrong_type_admitted: "seed-wrong-type-admitted" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape match", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_missing_arm_admitted: "seed-missing-arm-admitted" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "completion arm present", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_arm_detail_drift: "seed-arm-detail-drift" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        seed_binding_admitted: "seed-binding-admitted" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type match", "no eligible call stream::dance", "main.can")
+        seed_unknown_op_admitted: "seed-unknown-op-admitted" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::read_many", "main.can")
+        seed_span_drift: "seed-span-drift" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "other.can")
+    match variant_id
+        "seed-order-scrambled" => ok observation("[[1, 2], [3, 5], [4]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-framing-loss" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-caps-admitted" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "stream::read_failed", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-cancel-lost" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::read_failed", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-close-admitted" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "ok", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-copy-aliasing" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[99, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-pass-short" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "10 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-fail-noisy" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "1 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-live-assert-red" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", false, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-live-report-red" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, false, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-live-root-short" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 0, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-live-output-drift" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "3", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-disk-drift" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-overrun-admitted" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "missing fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-underrun-admitted" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "unused fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-wrong-type-admitted" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape match", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-missing-arm-admitted" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "completion arm present", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-arm-detail-drift" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+        "seed-binding-admitted" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type match", "no eligible call stream::dance", "main.can")
+        "seed-unknown-op-admitted" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::read_many", "main.can")
+        "seed-span-drift" => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "other.can")
+        _ => ok observation("[[1, 2], [3, 4], [5]]", "[\"one\", \"two\", \"€\", \"partial\"]", "files::limit_exceeded", "stream::cancelled", "resource_state", "[10, 20]", "11 pass", "0 fail", true, true, 1, "2", "l1\nl2\n", "unused fixture", "missing fixture", "inference shape mismatch", "missing completion arm", "requires an arm for each bound member", "completion arm binding type mismatch", "no eligible call stream::dance", "main.can")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m06_040: "m06-040" => ok [check("order", "byte chunks preserve order [[1,2],[3,4],[5]] with exact end"), check("utf8-framing", "lines frame CRLF/trailing/split UTF-8; malformed fails"), check("caps", "line over cap reports files::limit_exceeded once and ends"), check("cancellation", "cancel during pending read reports stream::cancelled"), check("close-failure", "close misuse throws resource-state; failures report once"), check("copy", "boundary copies detach both directions ([10,20])"), check("eleven-pass", "staged suite reports 11 pass"), check("zero-fail", "staged suite reports 0 fail"), check("live-assert-green", "live assert exits 0 with empty diagnostics"), check("live-report-passed", "live assert report passes"), check("live-root-count", "live assert report carries exactly 1 root"), check("live-output", "live run prints 2"), check("live-disk-bytes", "live tree writes l1/l2 bytes to disk"), check("overrun-reject", "overrun transcript rejects with unused fixture"), check("underrun-reject", "underrun transcript rejects with missing fixture"), check("wrong-type-reject", "wrong reader type rejects with inference mismatch"), check("missing-arm-reject", "unhandled error rejects with missing completion arm"), check("missing-arm-detail", "missing arm names the each-bound-member rule"), check("result-binding-reject", "wrong result binding rejects with binding mismatch"), check("unknown-op-reject", "unknown operation rejects with no eligible call"), check("reject-span", "rejections carry the main.can source span")]
+        other: "nope" => ok []
+    match scope is "m06-040"
+        false => ok []
+        true => ok [check("order", "byte chunks preserve order [[1,2],[3,4],[5]] with exact end"), check("utf8-framing", "lines frame CRLF/trailing/split UTF-8; malformed fails"), check("caps", "line over cap reports files::limit_exceeded once and ends"), check("cancellation", "cancel during pending read reports stream::cancelled"), check("close-failure", "close misuse throws resource-state; failures report once"), check("copy", "boundary copies detach both directions ([10,20])"), check("eleven-pass", "staged suite reports 11 pass"), check("zero-fail", "staged suite reports 0 fail"), check("live-assert-green", "live assert exits 0 with empty diagnostics"), check("live-report-passed", "live assert report passes"), check("live-root-count", "live assert report carries exactly 1 root"), check("live-output", "live run prints 2"), check("live-disk-bytes", "live tree writes l1/l2 bytes to disk"), check("overrun-reject", "overrun transcript rejects with unused fixture"), check("underrun-reject", "underrun transcript rejects with missing fixture"), check("wrong-type-reject", "wrong reader type rejects with inference mismatch"), check("missing-arm-reject", "unhandled error rejects with missing completion arm"), check("missing-arm-detail", "missing arm names the each-bound-member rule"), check("result-binding-reject", "wrong result binding rejects with binding mismatch"), check("unknown-op-reject", "unknown operation rejects with no eligible call"), check("reject-span", "rejections carry the main.can source span")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "streams/stream-semantics" => ok [expected_check("order", "[[1, 2], [3, 4], [5]]"), expected_check("utf8-framing", "[\"one\", \"two\", \"€\", \"partial\"]"), expected_check("caps", "files::limit_exceeded"), expected_check("cancellation", "stream::cancelled"), expected_check("close-failure", "resource_state"), expected_check("copy", "[10, 20]"), expected_check("eleven-pass", "11 pass"), expected_check("zero-fail", "0 fail"), expected_check("live-assert-green", "true"), expected_check("live-report-passed", "true"), expected_check("live-root-count", "1"), expected_check("live-output", "2"), expected_check("live-disk-bytes", "l1\nl2\n"), expected_check("overrun-reject", "unused fixture"), expected_check("underrun-reject", "missing fixture"), expected_check("wrong-type-reject", "inference shape mismatch"), expected_check("missing-arm-reject", "missing completion arm"), expected_check("missing-arm-detail", "requires an arm for each bound member"), expected_check("result-binding-reject", "completion arm binding type mismatch"), expected_check("unknown-op-reject", "no eligible call stream::dance"), expected_check("reject-span", "main.can")]
+        unknown: "nope" => ok []
+    match case is "streams/stream-semantics"
+        false => ok []
+        true => ok [expected_check("order", "[[1, 2], [3, 4], [5]]"), expected_check("utf8-framing", "[\"one\", \"two\", \"€\", \"partial\"]"), expected_check("caps", "files::limit_exceeded"), expected_check("cancellation", "stream::cancelled"), expected_check("close-failure", "resource_state"), expected_check("copy", "[10, 20]"), expected_check("eleven-pass", "11 pass"), expected_check("zero-fail", "0 fail"), expected_check("live-assert-green", "true"), expected_check("live-report-passed", "true"), expected_check("live-root-count", "1"), expected_check("live-output", "2"), expected_check("live-disk-bytes", "l1\nl2\n"), expected_check("overrun-reject", "unused fixture"), expected_check("underrun-reject", "missing fixture"), expected_check("wrong-type-reject", "inference shape mismatch"), expected_check("missing-arm-reject", "missing completion arm"), expected_check("missing-arm-detail", "requires an arm for each bound member"), expected_check("result-binding-reject", "completion arm binding type mismatch"), expected_check("unknown-op-reject", "no eligible call stream::dance"), expected_check("reject-span", "main.can")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("streams/stream-semantics", "default", "", "offline") => ok
+        seed_order_scrambled: context("streams/stream-semantics", "seed-order-scrambled", "", "offline") => failed{"order"}
+        seed_framing_loss: context("streams/stream-semantics", "seed-framing-loss", "", "offline") => failed{"utf8-framing"}
+        seed_caps_admitted: context("streams/stream-semantics", "seed-caps-admitted", "", "offline") => failed{"caps"}
+        seed_cancel_lost: context("streams/stream-semantics", "seed-cancel-lost", "", "offline") => failed{"cancellation"}
+        seed_close_admitted: context("streams/stream-semantics", "seed-close-admitted", "", "offline") => failed{"close-failure"}
+        seed_copy_aliasing: context("streams/stream-semantics", "seed-copy-aliasing", "", "offline") => failed{"copy"}
+        seed_pass_short: context("streams/stream-semantics", "seed-pass-short", "", "offline") => failed{"eleven-pass"}
+        seed_fail_noisy: context("streams/stream-semantics", "seed-fail-noisy", "", "offline") => failed{"zero-fail"}
+        seed_live_assert_red: context("streams/stream-semantics", "seed-live-assert-red", "", "offline") => failed{"live-assert-green"}
+        seed_live_report_red: context("streams/stream-semantics", "seed-live-report-red", "", "offline") => failed{"live-report-passed"}
+        seed_live_root_short: context("streams/stream-semantics", "seed-live-root-short", "", "offline") => failed{"live-root-count"}
+        seed_live_output_drift: context("streams/stream-semantics", "seed-live-output-drift", "", "offline") => failed{"live-output"}
+        seed_disk_drift: context("streams/stream-semantics", "seed-disk-drift", "", "offline") => failed{"live-disk-bytes"}
+        seed_overrun_admitted: context("streams/stream-semantics", "seed-overrun-admitted", "", "offline") => failed{"overrun-reject"}
+        seed_underrun_admitted: context("streams/stream-semantics", "seed-underrun-admitted", "", "offline") => failed{"underrun-reject"}
+        seed_wrong_type_admitted: context("streams/stream-semantics", "seed-wrong-type-admitted", "", "offline") => failed{"wrong-type-reject"}
+        seed_missing_arm_admitted: context("streams/stream-semantics", "seed-missing-arm-admitted", "", "offline") => failed{"missing-arm-reject"}
+        seed_arm_detail_drift: context("streams/stream-semantics", "seed-arm-detail-drift", "", "offline") => failed{"missing-arm-detail"}
+        seed_binding_admitted: context("streams/stream-semantics", "seed-binding-admitted", "", "offline") => failed{"result-binding-reject"}
+        seed_unknown_op_admitted: context("streams/stream-semantics", "seed-unknown-op-admitted", "", "offline") => failed{"unknown-op-reject"}
+        seed_span_drift: context("streams/stream-semantics", "seed-span-drift", "", "offline") => failed{"reject-span"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.order_chunks, "[[1, 2], [3, 4], [5]]", c, "order")
+            failed
+            ok evidence order_evidence => match call require_text(got.utf8_framing, "[\"one\", \"two\", \"€\", \"partial\"]", c, "utf8-framing")
+                failed
+                ok evidence framing_evidence => match call require_text(got.caps_domain, "files::limit_exceeded", c, "caps")
+                    failed
+                    ok evidence caps_evidence => match call require_text(got.cancel_domain, "stream::cancelled", c, "cancellation")
+                        failed
+                        ok evidence cancel_evidence => match call require_text(got.close_failure, "resource_state", c, "close-failure")
+                            failed
+                            ok evidence close_evidence => match call require_text(got.copy_bytes, "[10, 20]", c, "copy")
+                                failed
+                                ok evidence copy_evidence => match call require_text(got.eleven_pass, "11 pass", c, "eleven-pass")
+                                    failed
+                                    ok evidence pass_evidence => match call require_text(got.zero_fail, "0 fail", c, "zero-fail")
+                                        failed
+                                        ok evidence fail_evidence => match call require_bool(got.live_assert_green, true, c, "live-assert-green")
+                                            failed
+                                            ok evidence assert_evidence => match call require_bool(got.live_report_passed, true, c, "live-report-passed")
+                                                failed
+                                                ok evidence passed_evidence => match call require_int(got.live_root_count, 1, c, "live-root-count")
+                                                    failed
+                                                    ok evidence count_evidence => match call require_text(got.live_output, "2", c, "live-output")
+                                                        failed
+                                                        ok evidence output_evidence => match call require_text(got.live_disk_bytes, "l1\nl2\n", c, "live-disk-bytes")
+                                                            failed
+                                                            ok evidence disk_evidence => match call require_text(got.overrun_reject, "unused fixture", c, "overrun-reject")
+                                                                failed
+                                                                ok evidence overrun_evidence => match call require_text(got.underrun_reject, "missing fixture", c, "underrun-reject")
+                                                                    failed
+                                                                    ok evidence underrun_evidence => match call require_text(got.wrong_type_reject, "inference shape mismatch", c, "wrong-type-reject")
+                                                                        failed
+                                                                        ok evidence type_evidence => match call require_text(got.missing_arm_reject, "missing completion arm", c, "missing-arm-reject")
+                                                                            failed
+                                                                            ok evidence arm_evidence => match call require_text(got.missing_arm_detail, "requires an arm for each bound member", c, "missing-arm-detail")
+                                                                                failed
+                                                                                ok evidence detail_evidence => match call require_text(got.result_binding_reject, "completion arm binding type mismatch", c, "result-binding-reject")
+                                                                                    failed
+                                                                                    ok evidence binding_evidence => match call require_text(got.unknown_op_reject, "no eligible call stream::dance", c, "unknown-op-reject")
+                                                                                        failed
+                                                                                        ok evidence op_evidence => match call require_text(got.reject_span, "main.can", c, "reject-span")
+                                                                                            failed
+                                                                                            ok evidence span_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m06_040: "m06-040" => ok test_case("streams/stream-semantics", ["streams", "m06"], ["can-bun-archive", "macos-sandbox-exec"], 180000, [check_ref("order"), check_ref("utf8-framing"), check_ref("caps"), check_ref("cancellation"), check_ref("close-failure"), check_ref("copy"), check_ref("eleven-pass"), check_ref("zero-fail"), check_ref("live-assert-green"), check_ref("live-report-passed"), check_ref("live-root-count"), check_ref("live-output"), check_ref("live-disk-bytes"), check_ref("overrun-reject"), check_ref("underrun-reject"), check_ref("wrong-type-reject"), check_ref("missing-arm-reject"), check_ref("missing-arm-detail"), check_ref("result-binding-reject"), check_ref("unknown-op-reject"), check_ref("reject-span")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m06-040"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("streams/stream-semantics", ["streams", "m06"], ["can-bun-archive", "macos-sandbox-exec"], 180000, [check_ref("order"), check_ref("utf8-framing"), check_ref("caps"), check_ref("cancellation"), check_ref("close-failure"), check_ref("copy"), check_ref("eleven-pass"), check_ref("zero-fail"), check_ref("live-assert-green"), check_ref("live-report-passed"), check_ref("live-root-count"), check_ref("live-output"), check_ref("live-disk-bytes"), check_ref("overrun-reject"), check_ref("underrun-reject"), check_ref("wrong-type-reject"), check_ref("missing-arm-reject"), check_ref("missing-arm-detail"), check_ref("result-binding-reject"), check_ref("unknown-op-reject"), check_ref("reject-span")], callable case_body)

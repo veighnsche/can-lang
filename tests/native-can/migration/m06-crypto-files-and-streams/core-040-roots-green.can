@@ -1,0 +1,199 @@
+package m06core040roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M06 CORE-040 "bundled streams: pump roots green, three assert roots".
+/// Source: tests/integration/streams_test.go symbol
+/// TestCurrentBundledStreams (L196-339).
+/// Related fixture: the inline streamsPumpProgram const (L18-57), staged
+/// as src/main.can at L233; every count pin below grounds an assert arm
+/// in that program (pump 2, main 1; total 3).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): canlc assert green with a passed report carrying
+/// exactly 3 roots, grounded per function in the pump program. The
+/// pull-loop transcript values (end 5 => ok 5, more 0 => ok 2) replay
+/// FIFO across recursion (L259) and are recorded in the facet map; the
+/// count pins below anchor the green shape.
+/// Live runtime cases, the live tree leg, transcript bounds and the four
+/// rejections live in core-040-streams-semantics.can; the production
+/// process shape lives in core-040-run-shape.can.
+/// Variants: none in this file (default only); the 11 runtime cases, live
+/// tree, transcript over/underrun and four rejection programs live in the
+/// streams-semantics file.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/WORK/PROC/N1
+/// and C/R/N/S/A identities bind at P23; no live run now. Descriptor
+/// timeout 180000ms mirrors the Go 3-minute ctx (L202).
+/// Delegated oracles: none in this file (DELEGATE-021 belongs to the
+/// streams-semantics file).
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case streams/pump-roots checks: assert-green, report-passed,
+/// root-count, fixture-name, pump-roots, main-roots.
+/// Facet map (streams_test.go legs): assert-green pins the pump assert leg
+/// (L261-264: status 0 and empty diagnostics or the test fatals);
+/// report-passed pins the pump report leg (L269: passed true); root-count
+/// pins the three roots (L269: len assertions is 3); fixture-name grounds
+/// the pins in the staged program (L233: src/main.can); pump-roots pins
+/// pump (L26-28: end/more, 2 roots; end 5 => ok 5 drains the empty
+/// transcript, more 0 => ok 2 replays ["a","b"] then [] FIFO);
+/// main-roots pins main (L54-55: sample => ok, 1 root).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int root_count
+    str fixture_name
+    int pump_roots
+    int main_roots
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("streams/pump-roots", "default", "", "offline"), "assert-green" => ok "case streams/pump-roots variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("streams/pump-roots", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case streams/pump-roots variant default root assert-green run offline")
+        different: false, true, context("streams/pump-roots", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("streams/pump-roots", "default", "", "offline"), "root-count" => ok evidence("root-count", "3", "3", true, "case streams/pump-roots variant default root root-count run offline")
+        different: 2, 3, context("streams/pump-roots", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "src/main.can", "src/main.can", context("streams/pump-roots", "default", "", "offline"), "fixture-name" => ok evidence("fixture-name", "src/main.can", "src/main.can", true, "case streams/pump-roots variant default root fixture-name run offline")
+        different: "src/other.can", "src/main.can", context("streams/pump-roots", "default", "", "offline"), "fixture-name" => failed{"fixture-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 3, "src/main.can", 2, 1)
+        seed_assert_red: "seed-assert-red" => ok observation(false, true, 3, "src/main.can", 2, 1)
+        seed_report_red: "seed-report-red" => ok observation(true, false, 3, "src/main.can", 2, 1)
+        seed_root_short: "seed-root-short" => ok observation(true, true, 2, "src/main.can", 2, 1)
+        seed_fixture_drift: "seed-fixture-drift" => ok observation(true, true, 3, "src/other.can", 2, 1)
+        seed_pump_short: "seed-pump-short" => ok observation(true, true, 3, "src/main.can", 1, 1)
+        seed_main_loss: "seed-main-loss" => ok observation(true, true, 3, "src/main.can", 2, 0)
+    match variant_id
+        "seed-assert-red" => ok observation(false, true, 3, "src/main.can", 2, 1)
+        "seed-report-red" => ok observation(true, false, 3, "src/main.can", 2, 1)
+        "seed-root-short" => ok observation(true, true, 2, "src/main.can", 2, 1)
+        "seed-fixture-drift" => ok observation(true, true, 3, "src/other.can", 2, 1)
+        "seed-pump-short" => ok observation(true, true, 3, "src/main.can", 1, 1)
+        "seed-main-loss" => ok observation(true, true, 3, "src/main.can", 2, 0)
+        _ => ok observation(true, true, 3, "src/main.can", 2, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m06_040: "m06-040" => ok [check("assert-green", "canlc assert exits 0 with empty diagnostics"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 3 roots"), check("fixture-name", "root pins ground the staged src/main.can program"), check("pump-roots", "pump contributes 2 roots (end/more)"), check("main-roots", "main contributes 1 root (sample => ok)")]
+        other: "nope" => ok []
+    match scope is "m06-040"
+        false => ok []
+        true => ok [check("assert-green", "canlc assert exits 0 with empty diagnostics"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 3 roots"), check("fixture-name", "root pins ground the staged src/main.can program"), check("pump-roots", "pump contributes 2 roots (end/more)"), check("main-roots", "main contributes 1 root (sample => ok)")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "streams/pump-roots" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "3"), expected_check("fixture-name", "src/main.can"), expected_check("pump-roots", "2"), expected_check("main-roots", "1")]
+        unknown: "nope" => ok []
+    match case is "streams/pump-roots"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "3"), expected_check("fixture-name", "src/main.can"), expected_check("pump-roots", "2"), expected_check("main-roots", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("streams/pump-roots", "default", "", "offline") => ok
+        seed_assert_red: context("streams/pump-roots", "seed-assert-red", "", "offline") => failed{"assert-green"}
+        seed_report_red: context("streams/pump-roots", "seed-report-red", "", "offline") => failed{"report-passed"}
+        seed_root_short: context("streams/pump-roots", "seed-root-short", "", "offline") => failed{"root-count"}
+        seed_fixture_drift: context("streams/pump-roots", "seed-fixture-drift", "", "offline") => failed{"fixture-name"}
+        seed_pump_short: context("streams/pump-roots", "seed-pump-short", "", "offline") => failed{"pump-roots"}
+        seed_main_loss: context("streams/pump-roots", "seed-main-loss", "", "offline") => failed{"main-roots"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence assert_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence passed_evidence => match call require_int(got.root_count, 3, c, "root-count")
+                    failed
+                    ok evidence count_evidence => match call require_text(got.fixture_name, "src/main.can", c, "fixture-name")
+                        failed
+                        ok evidence fixture_evidence => match call require_int(got.pump_roots, 2, c, "pump-roots")
+                            failed
+                            ok evidence pump_evidence => match call require_int(got.main_roots, 1, c, "main-roots")
+                                failed
+                                ok evidence main_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m06_040: "m06-040" => ok test_case("streams/pump-roots", ["streams", "m06"], ["can-bun-archive", "macos-sandbox-exec"], 180000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("pump-roots"), check_ref("main-roots")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m06-040"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("streams/pump-roots", ["streams", "m06"], ["can-bun-archive", "macos-sandbox-exec"], 180000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("pump-roots"), check_ref("main-roots")], callable case_body)
