@@ -1,0 +1,103 @@
+package i15_example
+    provides [error_demo, full_demo]
+    uses [db, i15, option, test]
+
+/// Tiny typed I15 example: two worked flows over the poison
+/// wrappers. error_demo runs begin, error record/re-read, and a
+/// success callback report/re-read; full_demo runs settlement,
+/// both sentinel reads with re-reads, fresh-vs-replay compare,
+/// both presence probes, and the agreement verdict. Rows are
+/// offline/provisional asserts (static until qualified
+/// execution); when-stubs pin the wrapper call shapes.
+
+/// Begin one poison attempt, record its error, and report success.
+fn db::poison_callback_facts error_demo
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+    asserts
+        fresh: => ok db::poison_callback_facts("attempt-0", "success", "nothing")
+    match call i15::begin_poison(owner, ["number"], db::seed_row([db::number_cell("7")]), "DELETE FROM items")
+        when
+            fresh: owner, ["number"], db::seed_row([db::number_cell("7")]), "DELETE FROM items" => ok db::poison_attempt_record("attempt-0", "poison", ["number"], "sha256:stub", option::some("sha256:stub"))
+        test::stale_handle
+        db::db_fault
+        ok db::poison_attempt_record begun => match call i15::record_error(owner, "attempt-0", "23505", "duplicate key")
+            when
+                fresh: owner, "attempt-0", "23505", "duplicate key" => ok db::poison_error_facts("attempt-0", "23505", "23", "duplicate key", "sha256:stub")
+            test::stale_handle
+            db::db_fault
+            ok db::poison_error_facts errored => match call i15::read_error(owner, "attempt-0")
+                when
+                    fresh: owner, "attempt-0" => ok db::poison_error_facts("attempt-0", "23505", "23", "duplicate key", "sha256:stub")
+                test::stale_handle
+                db::db_fault
+                ok db::poison_error_facts reread => match call i15::report_success(owner, "attempt-0")
+                    when
+                        fresh: owner, "attempt-0" => ok db::poison_callback_facts("attempt-0", "success", "nothing")
+                    test::stale_handle
+                    db::db_fault
+                    ok db::poison_callback_facts reported => match call i15::read_callback(owner, "attempt-0")
+                        when
+                            fresh: owner, "attempt-0" => ok db::poison_callback_facts("attempt-0", "success", "nothing")
+                        test::stale_handle
+                        db::db_fault
+                        ok db::poison_callback_facts reread_report => ok reread_report
+/// Settle rolled-back, record both reads, and verify agreement.
+fn db::settlement_agreement full_demo
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+    asserts
+        fresh: => ok db::settlement_agreement(true, "sentinel-absent-after-rollback")
+    match call i15::settle_poison_rolled_back(owner, "attempt-0")
+        when
+            fresh: owner, "attempt-0" => ok db::poison_settlement_record("attempt-0", "rolled-back", true)
+        test::stale_handle
+        db::db_fault
+        ok db::poison_settlement_record settled => match call i15::read_poison_settlement(owner, "attempt-0")
+            when
+                fresh: owner, "attempt-0" => ok db::poison_settlement_record("attempt-0", "rolled-back", true)
+            test::stale_handle
+            db::db_fault
+            ok db::poison_settlement_record reread_settlement => match call i15::record_fresh(owner, "attempt-0", [db::seed_row([db::number_cell("7")])])
+                when
+                    fresh: owner, "attempt-0", [db::seed_row([db::number_cell("7")])] => ok db::fresh_sentinel_facts("attempt-0", "fresh", 1, [db::sentinel_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub")
+                test::stale_handle
+                db::db_fault
+                ok db::fresh_sentinel_facts fresh => match call i15::read_fresh(owner, "attempt-0")
+                    when
+                        fresh: owner, "attempt-0" => ok db::fresh_sentinel_facts("attempt-0", "fresh", 1, [db::sentinel_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub")
+                    test::stale_handle
+                    db::db_fault
+                    ok db::fresh_sentinel_facts reread_fresh => match call i15::record_replay(owner, "attempt-0", [db::seed_row([db::number_cell("7")])])
+                        when
+                            fresh: owner, "attempt-0", [db::seed_row([db::number_cell("7")])] => ok db::replay_sentinel_facts("attempt-0", "replay", 1, [db::sentinel_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub")
+                        test::stale_handle
+                        db::db_fault
+                        ok db::replay_sentinel_facts replay => match call i15::read_replay(owner, "attempt-0")
+                            when
+                                fresh: owner, "attempt-0" => ok db::replay_sentinel_facts("attempt-0", "replay", 1, [db::sentinel_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub")
+                            test::stale_handle
+                            db::db_fault
+                            ok db::replay_sentinel_facts reread_replay => match call i15::compare_reads(owner, fresh, replay)
+                                when
+                                    fresh: owner, db::fresh_sentinel_facts("attempt-0", "fresh", 1, [db::sentinel_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub"), db::replay_sentinel_facts("attempt-0", "replay", 1, [db::sentinel_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub") => ok db::sentinel_comparison(true, [])
+                                test::stale_handle
+                                db::db_fault
+                                ok db::sentinel_comparison agreed => match call i15::probe_fresh(owner, "attempt-0", fresh)
+                                    when
+                                        fresh: owner, "attempt-0", db::fresh_sentinel_facts("attempt-0", "fresh", 1, [db::sentinel_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub") => ok true
+                                    test::stale_handle
+                                    db::db_fault
+                                    ok bool in_fresh => match call i15::probe_replay(owner, "attempt-0", replay)
+                                        when
+                                            fresh: owner, "attempt-0", db::replay_sentinel_facts("attempt-0", "replay", 1, [db::sentinel_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub") => ok true
+                                        test::stale_handle
+                                        db::db_fault
+                                        ok bool in_replay => match call i15::read_agreement(owner, "attempt-0")
+                                            when
+                                                fresh: owner, "attempt-0" => ok db::settlement_agreement(true, "sentinel-absent-after-rollback")
+                                            test::stale_handle
+                                            db::db_fault
+                                            ok db::settlement_agreement verdict => ok verdict
