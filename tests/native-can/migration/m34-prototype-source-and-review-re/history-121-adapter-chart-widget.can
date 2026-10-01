@@ -1,5 +1,5 @@
 package m34history121
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M34 HISTORY-121 "adapters/chart-widget.ts".

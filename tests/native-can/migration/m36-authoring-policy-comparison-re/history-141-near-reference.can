@@ -1,5 +1,5 @@
 package m36history141
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M36 HISTORY-141 "near reference main.can".

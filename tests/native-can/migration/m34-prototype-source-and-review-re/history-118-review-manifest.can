@@ -1,5 +1,5 @@
 package m34history118
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M34 HISTORY-118 "REVIEW-MANIFEST.json".

@@ -1,0 +1,104 @@
+{
+ "task_id": "M36",
+ "row_or_file_slice": "HISTORY-141",
+ "status": "complete",
+ "executor": "worker M36-HISTORY-141 repair",
+ "writing_owner": "migration-history",
+ "changed_paths": [
+  "tests/native-can/migration/m36-authoring-policy-comparison-re/history-141-near-reference.can",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/M36-HISTORY-141.json"
+ ],
+ "commands_with_deadlines_and_results": [
+  {
+   "command": "go build -o /tmp/m34m36gates/canlc ./compiler (once; shared by all 20 rows)",
+   "deadline": "280s",
+   "result": "exit 0: compiler binary built from the untouched ./compiler sources so the 60 gate invocations run without per-call go rebuilds; byte-identical behavior to `go run ./compiler` (same sources, same catalogue)."
+  },
+  {
+   "command": "/tmp/m34m36gates/canlc check --json /Users/vince/Projects/can-lang/tests/native-can > /tmp/m34m36gates/live.json 2>/tmp/m34m36gates/live.err (once; shared by all 20 rows)",
+   "deadline": "280s",
+   "result": "exit 0, accepted:true, diagnostics: 2 (0 errors, 2 warnings), exactly the pre-existing CAN-CHECK-STRING-MATCH-LADDER warnings in untouched src/report/reducer/reducer.can (start_line 466 and 486, nested string comparisons on execution). Stderr capture empty (0 bytes). The 20 repaired M34/M36 slices live outside the src/ source root, so the live tree attributes zero diagnostics to them."
+  },
+  {
+   "command": "env | grep -c '^CAN_TEST_'; go env GOCACHE; go version; uname -sm (once; shared by all 20 rows)",
+   "deadline": "60s",
+   "result": "CAN_TEST_* count 0 in environment (nothing contacted); no cache directory created or removed (default GOCACHE /Users/vince/Library/Caches/go-build only; no temp cache created); no registry, setting, or source mutation (read-only over the repo except the 20 owned .can repairs plus these evidence files; only /tmp scratch plus owned paths written). Host: Darwin arm64; go1.27.1 darwin/arm64."
+  },
+  {
+   "command": "REPAIR provides line only: edit tests/native-can/migration/m36-authoring-policy-comparison-re/history-141-near-reference.can line 2 '    provides [decide]' -> '    provides [decide, disposition]' (H023 precedent; disposition is the file's only declared shape type; no error declared) && git diff --numstat -- tests/native-can/migration/m36-authoring-policy-comparison-re/history-141-near-reference.can",
+   "deadline": "60s",
+   "result": "provides [decide] -> [decide, disposition] (shape type appended, existing entry/order preserved; H023 precedent). git diff --numstat: 1/1 on this file, only the provides line. This row: history-141-near-reference.can md5 9c581b84b60454797e2908e6d4798bcb -> b6ff8bcbad42930630a3a8fb48bfa92d, 2087 -> 2100 bytes (+13). Pre-repair md5 matches `git show HEAD:tests/native-can/migration/m36-authoring-policy-comparison-re/history-141-near-reference.can`; no value, comment, or disposition edit."
+  },
+  {
+   "command": "/tmp/m34m36gates/canlc parse /Users/vince/Projects/can-lang/tests/native-can/migration/m36-authoring-policy-comparison-re/history-141-near-reference.can",
+   "deadline": "120s",
+   "result": "exit 0: parsed /Users/vince/Projects/can-lang/tests/native-can/migration/m36-authoring-policy-comparison-re/history-141-near-reference.can: package m36history141, 2 declarations (repaired bytes, read-only)."
+  },
+  {
+   "command": "grep -c '^    text ' + '^        text ' + record/given type extraction + text-token census + non-ASCII scan over history-141-near-reference.can (repaired bytes)",
+   "deadline": "60s",
+   "result": "Vocabulary control: '^    text ' count 0, '^        text ' count 0; zero bare `text` type positions (record types str/str/str/str; given types str). Non-header text-tokens: none. Non-ASCII bytes: 0. No `error` declaration in this file, so the staged registry uses active [] (a phantom pkg::failed entry would manufacture a CAN-PROJECT mismatch). Vocabulary: NO BLOCKER."
+  },
+  {
+   "command": "rm -rf /tmp/m34m36gates/check-141 && mkdir -p /tmp/m34m36gates/check-141/src && cp tests/native-can/migration/m36-authoring-policy-comparison-re/history-141-near-reference.can /tmp/m34m36gates/check-141/src/main.can && cp tests/native-can/can.project.json /tmp/m34m36gates/check-141/can.project.json && printf '{\"active\":[],\"retired\":[]}' > /tmp/m34m36gates/check-141/can.errors.json && diff tests/native-can/migration/m36-authoring-policy-comparison-re/history-141-near-reference.can /tmp/m34m36gates/check-141/src/main.can",
+   "deadline": "60s",
+   "result": "STAGE-IDENTICAL: diff exit 0, empty output (absolute probe path /tmp/m34m36gates/check-141/src/main.can)."
+  },
+  {
+   "command": "/tmp/m34m36gates/canlc check --json /tmp/m34m36gates/check-141 (mandated single-package probe; registry active [] retired [])",
+   "deadline": "280s",
+   "result": "exit 0, accepted:true, diagnostics:[] (0 errors, 0 warnings). The provides repair clears every diagnostic: with disposition exported, the decide signature no longer trips CAN-CHECK 'exported signature exposes private type', and the error-less registry matches the file's zero error declarations."
+  },
+  {
+   "command": "rm -rf /tmp/m34m36gates/neg-141 && cp -r /tmp/m34m36gates/check-141 /tmp/m34m36gates/neg-141 && anchored single-site mutation in the COPY ONLY (record disposition field L26: 'str verdict' -> 'int verdict'; replacements 1, old spelling remaining 0) && /tmp/m34m36gates/canlc check --json /tmp/m34m36gates/neg-141",
+   "deadline": "280s",
+   "result": "Negative control FIRED on repaired bytes: exit 1, accepted:false, N=4 errors, all severity error code CAN-CHECK 'expression type does not fit expected type', every one naming the mutated file src/main.can and no other file (sites L33-L33, L34-L34, L36-L36, L37-L37: the 2 assert rows plus the 2 match arms covering the mutated field)."
+  },
+  {
+   "command": "md5 tests/native-can/migration/m36-authoring-policy-comparison-re/history-141-near-reference.can (pre-gate vs post-gate, repaired bytes)",
+   "deadline": "60s",
+   "result": "Repaired file intact through gates: pre-gate md5 b6ff8bcbad42930630a3a8fb48bfa92d == post-gate md5 b6ff8bcbad42930630a3a8fb48bfa92d (2100 bytes); the neg seed touched only the /tmp copy."
+  },
+  {
+   "command": "rm -rf /tmp/m34m36gates /tmp/m34m36-postrepair-md5.txt (20 staged probes check-118..142, 20 negatives neg-118..142, 40 results captures staged-*.json/neg-*.json, live.json/live.err, driver.py/render.py, results.json, canlc binary, post-repair md5 lock) && ls /tmp/m34m36gates /tmp/m34m36-postrepair-md5.txt (expect no such file)",
+   "deadline": "60s",
+   "result": "All owned /tmp scratch removed (rm exit 0). Post-cleanup verification: ls reports no such file or directory for both paths; no scratch remains under this worker. Evidence files were written before cleanup and are unaffected by it."
+  }
+ ],
+ "identities": {
+  "reference": "R-seed scope per reference-seed.md (R-core/P26 and suite acceptance/P23 unfinished). No R bundle built or used; mandatory R checks deferred to P23 (retained rows) / never (obsolete/preserved rows).",
+  "owner": "N/A as an N artifact; this slice exercises no N admission path.",
+  "candidate": "N/A: no candidate executed; Can asserts are static/type-level only (provisional until P23).",
+  "suite": "1 standalone Can package m36history141 under tests/native-can/migration/m36-authoring-policy-comparison-re (history-141-near-reference.can, 2100 bytes, md5 b6ff8bcbad42930630a3a8fb48bfa92d (repaired provides; pre-repair 9c581b84b60454797e2908e6d4798bcb)); uses [] only; self-contained local shapes; S identity binding deferred to P23 (no execution credit). Disposition RETAIN-FIXTURE pre-recorded in the file header; this gate verifies mechanics only and re-decides nothing.",
+  "artifact": "N/A: no built executable promoted; no live Can run, so no artifact identity to bind (binds at P23 for retained rows).",
+  "host_profile": "Darwin arm64; go1.27.1 darwin/arm64 (observed via uname/go version this session).",
+  "observer": "/tmp/m34m36gates/canlc parse output (package + declaration counts), canlc check --json output (accepted flag + full diagnostic records), md5/wc bytes recorded verbatim in commands above."
+ },
+ "coverage": {
+  "case_check_ids": [
+   "near-reference/capture-restored: decide HISTORY-141 -> retain-fixture, unknown -> unreviewed (history-141-near-reference.can, package m36history141)"
+  ],
+  "controls": [
+   "Positive (static): parse exit 0 with 2 declarations on repaired bytes; staged check accepted:true diagnostics:[] proves every assert/match-arm body is sound.",
+   "Staged gate (PASS): single-package probe (registry active [] retired [], matching the file's zero error declarations) accepted:true diagnostics:[].",
+   "Seeded defect: anchored seed (record disposition field L26: 'str verdict' -> 'int verdict') on a copy of the repaired probe fires exit 1 with N=4 errors all naming src/main.can at L33-L33, L34-L34, L36-L36, L37-L37; repaired file md5 unchanged by the neg step.",
+   "Byte truth: repaired .can md5 b6ff8bcbad42930630a3a8fb48bfa92d 2100 bytes (pre-repair 9c581b84b60454797e2908e6d4798bcb 2087 bytes, +13 from the provides-line repair); NO byte-truth BLOCKER.",
+   "Vocabulary: zero bare `text` type positions on repaired bytes; record/given types str only; non-ASCII 0; NO vocabulary BLOCKER."
+  ]
+ },
+ "blockers": [],
+ "limitations": [
+  "Static-only verification: parse + staged cancheck + negative control + live-tree attribution + byte-truth audit. Assert bodies are unaudited by execution; P23 qualification + an execution leg must bind before any execution credit (retained rows).",
+  "RELEVANCE DECISION: pre-recorded in the committed file header (Disposition: RETAIN-FIXTURE.) and in group evidence M36.json (status complete, parse-only scope); this gate verifies mechanics only and re-decides nothing.",
+  "Slice package avoids uses [spec] (outside the src/ source root, M32/M33/M34/M36 group precedent); disposition shapes are local to each history slice.",
+  "Repair applied to the committed file by this worker: provides line only (shape type appended per the H023 precedent: provides includes the shape types because cancheck rejects exported signatures over private types). No value, comment, or disposition edit; bodies verified identical to the committed baseline except line 2."
+ ],
+ "resource_and_cleanup_receipts": [
+  "No live Can runs, no R-seed use, no bundles built, no network, no database contact, no filesystem mutation outside /tmp scratch plus owned paths (20 repaired .can slices + 20 evidence files; no cache directory created or removed; default GOCACHE only).",
+  "Repo writes limited to owned paths: tests/native-can/migration/m36-authoring-policy-comparison-re/history-141-near-reference.can (provides line only) + this evidence file; shared compiler/catalogue/runtime, M36.json, tasks.json, prompt files, and muse-resume.md untouched; nothing staged, nothing committed, nothing pushed.",
+  "Cleanup receipt: /tmp/m34m36gates (all staged/neg probes, results captures, live captures, driver/render scripts, canlc binary) plus /tmp/m34m36-postrepair-md5.txt removed, verified absent; foreign /tmp entries left untouched; no scratch remains under this worker."
+ ],
+ "deletion_policy": "No shared old file is deleted by this slice. The header-cited Source and Related fixtures stay intact; the integrator alone retires shared old files after linked rows and callers resolve.",
+ "retirement_eligible": false,
+ "reviewer_disposition": null
+}

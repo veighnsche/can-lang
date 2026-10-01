@@ -1,5 +1,5 @@
 package m34history126
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M34 HISTORY-126 "companions/storage.ts".

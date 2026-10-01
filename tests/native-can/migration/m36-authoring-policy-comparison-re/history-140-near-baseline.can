@@ -1,5 +1,5 @@
 package m36history140
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M36 HISTORY-140 "near baseline main.can".

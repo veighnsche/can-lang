@@ -1,5 +1,5 @@
 package m34history123
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M34 HISTORY-123 "adapters/storage.ts".

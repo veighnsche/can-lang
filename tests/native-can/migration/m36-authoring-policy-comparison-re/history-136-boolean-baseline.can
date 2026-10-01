@@ -1,5 +1,5 @@
 package m36history136
-    provides [decide]
+    provides [decide, disposition]
     uses []
 
 /// M36 HISTORY-136 "boolean baseline main.can".
