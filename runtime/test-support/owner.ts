@@ -94,6 +94,15 @@ export function createTestOwner(
       if (!isOwnerHandle(handle)) return false;
       return owners.get(handle[ownerBrand])?.live === true;
     },
+    // Grant string for N-owner request envelopes (NT-I01): the live grant
+    // bound to this handle, or null for foreign/dead handles. The caller
+    // enforces admission-first; this accessor only reads.
+    grantOf(handle: unknown): string | null {
+      if (!isOwnerHandle(handle)) return null;
+      const cell = owners.get(handle[ownerBrand]);
+      if (cell === undefined || !cell.live) return null;
+      return cell.grant;
+    },
   });
 }
 
