@@ -61,6 +61,31 @@ func TestNativeStaticAdmissionRefusals(t *testing.T) {
 	}
 }
 
+func nativeElisionFixture() string {
+	return "package app\n    provides []\n    uses [native]\nfn native::release_facts drop\n    emits {}\n    given\n        native::session s\n        native::gate g\n    asserts\n        drained: => ok native::release_facts(true, 0, true)\n    match call native::release(g)\n        when\n            drained: g => ok native::release_facts(true, 0, true)\n        ok native::release_facts got => ok got\n" + programMain + "    ok\n"
+}
+
+func TestNativeAssertionScopeElision(t *testing.T) {
+	if _, err := programFixture(t, map[string]string{"src/main.can": nativeElisionFixture()}); err != nil {
+		t.Fatalf("rejected elided session/gate rows: %v", err)
+	}
+	original := nativeElisionFixture()
+	for _, tc := range []struct{ name, old, replacement string }{
+		{"extra scope argument", "drained: => ok", "drained: \"x\" => ok"},
+		{"supplied scope value", "drained: => ok", "drained: g => ok"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			source := strings.Replace(original, tc.old, tc.replacement, 1)
+			if source == original {
+				t.Fatal("invalid refusal fixture")
+			}
+			if _, err := programFixture(t, map[string]string{"src/main.can": source}); err == nil {
+				t.Fatalf("accepted invalid scope row: %s", tc.name)
+			}
+		})
+	}
+}
+
 func TestNativeDiagnosticSpans(t *testing.T) {
 	for _, tc := range []struct{ name, from, to, want string }{
 		{"make kind", `call native::make(s, "text", lit)`, `call native::make(s, "ordered-entires", lit)`, `"ordered-entires"`},

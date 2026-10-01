@@ -5,6 +5,7 @@ import (
 
 	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
+	"github.com/veighnsche/can-lang/compiler/internal/types"
 )
 
 const (
@@ -61,6 +62,27 @@ func checkNativeObserveKind(kind string) error {
 // hostile descriptor, tag/coherence) stay service-enforced at runtime; the
 // checker has no record-literal inspection precedent and the service
 // validates them before any effect.
+// isNativeScopeRequest admits the five native opaque handles to assertion
+// elision. No Can expression constructs a session, value handle, pending
+// action, gate or fault, so assertion rows omit those inputs while the
+// harness splices its scope token; any native operation the row does not
+// when-supply fails at the denied live boundary. The test owner admission
+// stays with I04; this disjunct covers only the N-owned handles.
+func isNativeScopeRequest(typ *types.Type) bool {
+	if typ == nil || typ.Kind() != types.Opaque {
+		return false
+	}
+	switch typ.Declaration() {
+	case "can.std.native@1::session",
+		"can.std.native@1::value_handle",
+		"can.std.native@1::pending_action",
+		"can.std.native@1::gate",
+		"can.std.native@1::fault":
+		return true
+	}
+	return false
+}
+
 func (c *regionChecker) checkNativeCall(identity string, args []syntax.Argument, span source.Span) error {
 	fixed := func(count int) ([]syntax.Argument, error) {
 		if len(args) != count {
