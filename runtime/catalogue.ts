@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "8f2f684aa95e177c938656830d6907d61126d3ed9676a68d4515cf6db4ff2eaf";
+export const catalogueSHA256 = "d9660fe17b89b053887fb427f4f73fd92eae6c21ec96a9db5b5403bd0c5a23d3";
 export const catalogue = freeze({
  "schemaVersion": 1,
  "revision": 1,
@@ -176,6 +176,10 @@ export const catalogue = freeze({
   {
    "name": "native",
    "identity": "can.std.native@1"
+  },
+  {
+   "name": "descriptor",
+   "identity": "can.std.descriptor@1"
   }
  ],
  "prelude": [
@@ -3516,6 +3520,338 @@ export const catalogue = freeze({
    "leaves": [],
    "projections": [],
    "constructible": true
+  },
+  {
+   "name": "descriptor::launch",
+   "identity": "can.std.descriptor@1::launch",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "descriptor::env_entry",
+   "identity": "can.std.descriptor@1::env_entry",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "descriptor::spec",
+   "identity": "can.std.descriptor@1::spec",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "executable",
+     "type": "str"
+    },
+    {
+     "name": "args",
+     "type": "str[]"
+    },
+    {
+     "name": "env",
+     "type": "descriptor::env_entry[]"
+    },
+    {
+     "name": "with_lease",
+     "type": "bool"
+    },
+    {
+     "name": "detached",
+     "type": "bool"
+    },
+    {
+     "name": "dir",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "descriptor::exit",
+   "identity": "can.std.descriptor@1::exit",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "code",
+     "type": "int"
+    },
+    {
+     "name": "signaled",
+     "type": "bool"
+    },
+    {
+     "name": "signal",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "descriptor::facts",
+   "identity": "can.std.descriptor@1::facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "offered",
+     "type": "bool"
+    },
+    {
+     "name": "offered_bytes",
+     "type": "int"
+    },
+    {
+     "name": "writer_done",
+     "type": "bool"
+    },
+    {
+     "name": "writer_err",
+     "type": "str"
+    },
+    {
+     "name": "accepted",
+     "type": "bool"
+    },
+    {
+     "name": "malformed",
+     "type": "bool"
+    },
+    {
+     "name": "eof",
+     "type": "bool"
+    },
+    {
+     "name": "reaped",
+     "type": "bool"
+    },
+    {
+     "name": "child_exit",
+     "type": "option::value<descriptor::exit>"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "descriptor::lease_report",
+   "identity": "can.std.descriptor@1::lease_report",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "path",
+     "type": "str"
+    },
+    {
+     "name": "inherited",
+     "type": "bool"
+    },
+    {
+     "name": "held",
+     "type": "bool"
+    },
+    {
+     "name": "released",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "descriptor::report",
+   "identity": "can.std.descriptor@1::report",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "executable",
+     "type": "str"
+    },
+    {
+     "name": "facts",
+     "type": "descriptor::facts"
+    },
+    {
+     "name": "lease",
+     "type": "descriptor::lease_report"
+    },
+    {
+     "name": "orphan",
+     "type": "bool"
+    },
+    {
+     "name": "clean",
+     "type": "bool"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "descriptor::fd_entry",
+   "identity": "can.std.descriptor@1::fd_entry",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "fd",
+     "type": "int"
+    },
+    {
+     "name": "owner",
+     "type": "str"
+    },
+    {
+     "name": "direction",
+     "type": "str"
+    },
+    {
+     "name": "byte_state",
+     "type": "str"
+    },
+    {
+     "name": "eof_state",
+     "type": "str"
+    },
+    {
+     "name": "lifetime",
+     "type": "str"
+    },
+    {
+     "name": "bytes_offered",
+     "type": "int"
+    },
+    {
+     "name": "bytes_accepted",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "descriptor::snapshot",
+   "identity": "can.std.descriptor@1::snapshot",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "state",
+     "type": "str"
+    },
+    {
+     "name": "generation_digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "descriptor::descriptor_map",
+   "identity": "can.std.descriptor@1::descriptor_map",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "schema_version",
+     "type": "str"
+    },
+    {
+     "name": "run_id",
+     "type": "str"
+    },
+    {
+     "name": "launch_id",
+     "type": "str"
+    },
+    {
+     "name": "snapshot",
+     "type": "descriptor::snapshot"
+    },
+    {
+     "name": "descriptors",
+     "type": "descriptor::fd_entry[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "descriptor::environment",
+   "identity": "can.std.descriptor@1::environment",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "schema_version",
+     "type": "str"
+    },
+    {
+     "name": "run_id",
+     "type": "str"
+    },
+    {
+     "name": "launch_id",
+     "type": "str"
+    },
+    {
+     "name": "entry",
+     "type": "str"
+    },
+    {
+     "name": "argv",
+     "type": "str[]"
+    },
+    {
+     "name": "env_names",
+     "type": "str[]"
+    },
+    {
+     "name": "env_digest",
+     "type": "str"
+    },
+    {
+     "name": "log_sink",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
   }
  ],
  "errors": [
@@ -4954,6 +5290,21 @@ export const catalogue = freeze({
   {
    "name": "http_peer::http_fault",
    "identity": "can.std.http_peer@1::http_fault",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "descriptor::descriptor_fault",
+   "identity": "can.std.descriptor@1::descriptor_fault",
    "parameters": [],
    "fields": [
     {
@@ -22755,6 +23106,505 @@ export const catalogueTypeShapes = freeze([
     "leaves": []
   },
   {
+    "name": "descriptor::launch",
+    "identity": "can.std.descriptor@1::launch",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "descriptor::env_entry",
+    "identity": "can.std.descriptor@1::env_entry",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "key",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "descriptor::spec",
+    "identity": "can.std.descriptor@1::spec",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "executable",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "args",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "env",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "descriptor::env_entry",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "with_lease",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "detached",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "dir",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "descriptor::exit",
+    "identity": "can.std.descriptor@1::exit",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "code",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "signaled",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "signal",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "descriptor::facts",
+    "identity": "can.std.descriptor@1::facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "offered",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "offered_bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "writer_done",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "writer_err",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "accepted",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "malformed",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "eof",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reaped",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "child_exit",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "descriptor::exit",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "descriptor::lease_report",
+    "identity": "can.std.descriptor@1::lease_report",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "path",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "inherited",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "held",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "released",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "descriptor::report",
+    "identity": "can.std.descriptor@1::report",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "executable",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "facts",
+        "type": {
+          "name": "descriptor::facts",
+          "arguments": null
+        }
+      },
+      {
+        "name": "lease",
+        "type": {
+          "name": "descriptor::lease_report",
+          "arguments": null
+        }
+      },
+      {
+        "name": "orphan",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "clean",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "descriptor::fd_entry",
+    "identity": "can.std.descriptor@1::fd_entry",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "fd",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "owner",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "direction",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "byte_state",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "eof_state",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "lifetime",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "bytes_offered",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "bytes_accepted",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "descriptor::snapshot",
+    "identity": "can.std.descriptor@1::snapshot",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "state",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "generation_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "descriptor::descriptor_map",
+    "identity": "can.std.descriptor@1::descriptor_map",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "schema_version",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "run_id",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "launch_id",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "snapshot",
+        "type": {
+          "name": "descriptor::snapshot",
+          "arguments": null
+        }
+      },
+      {
+        "name": "descriptors",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "descriptor::fd_entry",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "descriptor::environment",
+    "identity": "can.std.descriptor@1::environment",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "schema_version",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "run_id",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "launch_id",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "entry",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "argv",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "env_names",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "env_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "log_sink",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
     "name": "all_failed",
     "identity": "can.prelude@1::all_failed",
     "kind": "error",
@@ -24873,6 +25723,29 @@ export const catalogueTypeShapes = freeze([
   {
     "name": "http_peer::http_fault",
     "identity": "can.std.http_peer@1::http_fault",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "kind",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "descriptor::descriptor_fault",
+    "identity": "can.std.descriptor@1::descriptor_fault",
     "kind": "error",
     "parameters": [],
     "fields": [

@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 8f2f684aa95e177c938656830d6907d61126d3ed9676a68d4515cf6db4ff2eaf.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: d9660fe17b89b053887fb427f4f73fd92eae6c21ec96a9db5b5403bd0c5a23d3.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -54,6 +54,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - test → can.std.test@1
 - http_peer → can.std.http_peer@1
 - native → can.std.native@1
+- descriptor → can.std.descriptor@1
 
 ## Types
 
@@ -227,6 +228,17 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | native::release_facts | record |  | bool released, int waiters, bool joined | true |
 | native::restore_outcome | record |  | bool restored, str timing, str outcome | true |
 | native::close_receipt | record |  | str sessionId, int released, int remaining, str[] forced, bool joined, int cellsReleased | true |
+| descriptor::launch | opaque |  |  | false |
+| descriptor::env_entry | record |  | str key, str value | true |
+| descriptor::spec | record |  | str executable, str[] args, descriptor::env_entry[] env, bool with_lease, bool detached, str dir | true |
+| descriptor::exit | record |  | int code, bool signaled, str signal | true |
+| descriptor::facts | record |  | bool offered, int offered_bytes, bool writer_done, str writer_err, bool accepted, bool malformed, bool eof, bool reaped, option::value&lt;descriptor::exit&gt; child_exit | true |
+| descriptor::lease_report | record |  | str path, bool inherited, bool held, bool released | true |
+| descriptor::report | record |  | str executable, descriptor::facts facts, descriptor::lease_report lease, bool orphan, bool clean, str reason | true |
+| descriptor::fd_entry | record |  | int fd, str owner, str direction, str byte_state, str eof_state, str lifetime, int bytes_offered, int bytes_accepted | true |
+| descriptor::snapshot | record |  | str state, str generation_digest | true |
+| descriptor::descriptor_map | record |  | str schema_version, str run_id, str launch_id, descriptor::snapshot snapshot, descriptor::fd_entry[] descriptors | true |
+| descriptor::environment | record |  | str schema_version, str run_id, str launch_id, str entry, str[] argv, str[] env_names, str env_digest, str log_sink | true |
 
 ## Domain errors
 
@@ -357,6 +369,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | test::invalid_name | can.std.test@1::invalid_name |  | str name, str reason |
 | http_peer::peer_fault | can.std.http_peer@1::peer_fault |  | str kind, str reason |
 | http_peer::http_fault | can.std.http_peer@1::http_fault |  | str kind, str reason |
+| descriptor::descriptor_fault | can.std.descriptor@1::descriptor_fault |  | str kind, str reason |
 
 ## Operations
 
