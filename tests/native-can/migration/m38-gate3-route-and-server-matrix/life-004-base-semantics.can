@@ -1,0 +1,360 @@
+package m38life004base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M38 LIFE-004 TestGate3AdapterMatrix
+/// route legs: unknown plus wrong-way.
+/// Source: tests/integration/
+/// gate3_matrix_test.go symbol
+/// TestGate3AdapterMatrix (L909-1192):
+/// missing routes answer 404 and
+/// wrong-way routes answer 405 with
+/// the sorted Allow set, all without
+/// handler-entry effect.
+/// Disposition: migrate (this row owns
+/// the route legs as reviewable Can
+/// facts; the old go check stays until
+/// the integrator retires it after every
+/// linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): facet one route
+/// half (L966-1005): four unknown legs
+/// plus seven wrong-way legs with path,
+/// note, Allow and verdict bytes.
+/// ADAPTATION (recorded, with source
+/// lines): save-path pins the api save
+/// route (L928); form-path pins the form
+/// save route (L929); unknown-note-first
+/// pins unknown GET (L970);
+/// unknown-path-first pins /no-such-path
+/// (L970); unknown-note-last pins
+/// trailing slash (L973);
+/// unknown-suffix-deep pins /extra/deep
+/// (L971); unknown-prefix-path pins the
+/// prefix without invoice (L972);
+/// op-404-body pins the unknown op body
+/// (L976); not-found-body pins Not Found
+/// (L977); wrong-note-first pins api
+/// delete (L988); wrong-note-last pins
+/// health post (L994); allow-sorted-pair
+/// pins GET, POST (L988);
+/// allow-header-name pins Allow (L1001);
+/// page-path pins the invoice form page
+/// (L992); grid-path pins the grid page
+/// (L993); health-path pins /health
+/// (L994); op-405-body pins the wrong-way
+/// op body (L997); method-not-allowed-body
+/// pins Method Not Allowed (L998);
+/// unknown-count pins int (4) from
+/// L970-973; wrong-method-count pins int
+/// (7) from L988-994; status-not-found
+/// pins int (404) from L977;
+/// status-method-not-allowed pins int (405)
+/// from L998. Middle notes (unknown POST,
+/// captured prefix note, api put, form
+/// get, form delete, page post, grid put)
+/// and the POST plus GET singleton Allow
+/// sets stay cited at L971-972 plus
+/// L989-994, not pinned, to bound the
+/// slice.
+/// Facet map (leg order): save-path,
+/// form-path, unknown-note-first,
+/// unknown-path-first, unknown-note-last,
+/// unknown-suffix-deep, unknown-prefix-path,
+/// op-404-body, not-found-body,
+/// wrong-note-first, wrong-note-last,
+/// allow-sorted-pair, allow-header-name,
+/// page-path, grid-path, health-path,
+/// op-405-body, method-not-allowed-body,
+/// unknown-count, wrong-method-count,
+/// status-not-found,
+/// status-method-not-allowed.
+/// Capture plus separator plus dot legs live
+/// in life-004-roots-green.can; media plus
+/// commit plus outage legs and the run
+/// frame live in life-004-run-shape.can.
+/// Variants: four unknown plus seven
+/// wrong-way legs; default plus seeded
+/// drifts only here.
+/// Environment: CAN_BUN_ARCHIVE plus a
+/// staged bundle plus cut-off homes (row
+/// lists three gates; bind at P23; no live
+/// run now).
+/// Logical gates BUILD plus DIAG plus DB
+/// plus HTTP bind at P23 plus QHTTP plus
+/// QD1; no live run now.
+/// Timeout 120000ms is the offline default
+/// bound (the live fourteen minute hold is
+/// pinned in the run slice; binds at P23
+/// like the M31 no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// plus QHTTP plus QD1 accept gates
+/// unmet).
+/// Case life/adapter-routes-base
+/// checks: save-path, form-path,
+/// unknown-note-first, unknown-path-first,
+/// unknown-note-last, unknown-suffix-deep,
+/// unknown-prefix-path, op-404-body,
+/// not-found-body, wrong-note-first,
+/// wrong-note-last, allow-sorted-pair,
+/// allow-header-name, page-path, grid-path,
+/// health-path, op-405-body,
+/// method-not-allowed-body, unknown-count,
+/// wrong-method-count, status-not-found,
+/// status-method-not-allowed.
+/// Shared old files untouched; retirement
+/// is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str save_path
+    str form_path
+    str unknown_note_first
+    str unknown_path_first
+    str unknown_note_last
+    str unknown_suffix_deep
+    str unknown_prefix_path
+    str op_404_body
+    str not_found_body
+    str wrong_note_first
+    str wrong_note_last
+    str allow_sorted_pair
+    str allow_header_name
+    str page_path
+    str grid_path
+    str health_path
+    str op_405_body
+    str method_not_allowed_body
+    int unknown_count
+    int wrong_method_count
+    int status_not_found
+    int status_method_not_allowed
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/adapter-routes-base", "default", "", "offline"), "save-path" => ok "case life/adapter-routes-base variant default root save-path run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/adapter-routes-base", "default", "", "offline"), "save-path" => ok evidence("save-path", "true", "true", true, "case life/adapter-routes-base variant default root save-path run offline")
+        different: false, true, context("life/adapter-routes-base", "default", "", "offline"), "save-path" => failed{"save-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("life/adapter-routes-base", "default", "", "offline"), "unknown-count" => ok evidence("unknown-count", "4", "4", true, "case life/adapter-routes-base variant default root unknown-count run offline")
+        different: 3, 4, context("life/adapter-routes-base", "default", "", "offline"), "unknown-count" => failed{"unknown-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "/api/tenants/1/invoices/7", "/api/tenants/1/invoices/7", context("life/adapter-routes-base", "default", "", "offline"), "save-path" => ok evidence("save-path", "/api/tenants/1/invoices/7", "/api/tenants/1/invoices/7", true, "case life/adapter-routes-base variant default root save-path run offline")
+        different: "/api/tenants/1/invoices/7_2", "/api/tenants/1/invoices/7", context("life/adapter-routes-base", "default", "", "offline"), "save-path" => failed{"save-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        seed_save_path: "seed-save-path-drift" => ok observation("/api/tenants/1/invoices/7_2", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        seed_form_path: "seed-form-path-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7_2", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        seed_unknown_note_first: "seed-unknown-note-first-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET_2", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        seed_unknown_path_first: "seed-unknown-path-first-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path_2", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        seed_unknown_note_last: "seed-unknown-note-last-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash_2", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        seed_unknown_suffix_deep: "seed-unknown-suffix-deep-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep_2", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        seed_unknown_prefix_path: "seed-unknown-prefix-path-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices_2", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        seed_op_404_body: "seed-op-404-body-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}_2", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        seed_not_found_body: "seed-not-found-body-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found_2", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        seed_wrong_note_first: "seed-wrong-note-first-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete_2", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        seed_wrong_note_last: "seed-wrong-note-last-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post_2", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        seed_allow_sorted_pair: "seed-allow-sorted-pair-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST_2", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        seed_allow_header_name: "seed-allow-header-name-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow_2", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        seed_page_path: "seed-page-path-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7_2", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        seed_grid_path: "seed-grid-path-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7_2", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        seed_health_path: "seed-health-path-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health_2", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        seed_op_405_body: "seed-op-405-body-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}_2", "Method Not Allowed", 4, 7, 404, 405)
+        seed_method_not_allowed_body: "seed-method-not-allowed-body-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed_2", 4, 7, 404, 405)
+        seed_unknown_count: "seed-unknown-count-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 3, 7, 404, 405)
+        seed_wrong_method_count: "seed-wrong-method-count-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 6, 404, 405)
+        seed_status_not_found: "seed-status-not-found-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 403, 405)
+        seed_status_method_not_allowed: "seed-status-method-not-allowed-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 404)
+    match variant_id
+        "seed-save-path-drift" => ok observation("/api/tenants/1/invoices/7_2", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        "seed-form-path-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7_2", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        "seed-unknown-note-first-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET_2", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        "seed-unknown-path-first-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path_2", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        "seed-unknown-note-last-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash_2", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        "seed-unknown-suffix-deep-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep_2", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        "seed-unknown-prefix-path-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices_2", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        "seed-op-404-body-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}_2", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        "seed-not-found-body-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found_2", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        "seed-wrong-note-first-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete_2", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        "seed-wrong-note-last-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post_2", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        "seed-allow-sorted-pair-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST_2", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        "seed-allow-header-name-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow_2", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        "seed-page-path-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7_2", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        "seed-grid-path-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7_2", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        "seed-health-path-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health_2", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+        "seed-op-405-body-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}_2", "Method Not Allowed", 4, 7, 404, 405)
+        "seed-method-not-allowed-body-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed_2", 4, 7, 404, 405)
+        "seed-unknown-count-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 3, 7, 404, 405)
+        "seed-wrong-method-count-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 6, 404, 405)
+        "seed-status-not-found-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 403, 405)
+        "seed-status-method-not-allowed-drift" => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 404)
+        _ => ok observation("/api/tenants/1/invoices/7", "/tenants/1/invoices/7", "unknown GET", "/no-such-path", "trailing slash", "/extra/deep", "/api/tenants/1/invoices", "{\"operation_id\":\"op-404\"}", "Not Found", "api delete", "health post", "GET, POST", "Allow", "/invoices/form?tenant_id=1&invoice_id=7", "/invoice-grid?tenant=1&invoice=7", "/health", "{\"operation_id\":\"op-405\"}", "Method Not Allowed", 4, 7, 404, 405)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m38_l004: "m38-l004" => ok [check("save-path", "save path keeps its route bytes"), check("form-path", "form path keeps its route bytes"), check("unknown-note-first", "first unknown leg keeps its note"), check("unknown-path-first", "first unknown leg keeps its path"), check("unknown-note-last", "last unknown leg keeps its note"), check("unknown-suffix-deep", "deep unknown leg keeps its suffix"), check("unknown-prefix-path", "prefix unknown leg keeps its path"), check("op-404-body", "unknown legs send the 404 op body"), check("not-found-body", "unknown legs answer Not Found"), check("wrong-note-first", "first wrong-way leg keeps its note"), check("wrong-note-last", "last wrong-way leg keeps its note"), check("allow-sorted-pair", "api legs allow the sorted pair"), check("allow-header-name", "405 legs name the Allow header"), check("page-path", "page leg keeps its form path"), check("grid-path", "grid leg keeps its grid path"), check("health-path", "health leg keeps its health path"), check("op-405-body", "wrong-way legs send the 405 op body"), check("method-not-allowed-body", "wrong-way legs answer Method Not Allowed"), check("unknown-count", "four unknown legs exist"), check("wrong-method-count", "seven wrong-way legs exist"), check("status-not-found", "unknown legs use 404"), check("status-method-not-allowed", "wrong-way legs use 405")]
+        other: "nope" => ok []
+    match scope is "m38-l004"
+        false => ok []
+        true => ok [check("save-path", "save path keeps its route bytes"), check("form-path", "form path keeps its route bytes"), check("unknown-note-first", "first unknown leg keeps its note"), check("unknown-path-first", "first unknown leg keeps its path"), check("unknown-note-last", "last unknown leg keeps its note"), check("unknown-suffix-deep", "deep unknown leg keeps its suffix"), check("unknown-prefix-path", "prefix unknown leg keeps its path"), check("op-404-body", "unknown legs send the 404 op body"), check("not-found-body", "unknown legs answer Not Found"), check("wrong-note-first", "first wrong-way leg keeps its note"), check("wrong-note-last", "last wrong-way leg keeps its note"), check("allow-sorted-pair", "api legs allow the sorted pair"), check("allow-header-name", "405 legs name the Allow header"), check("page-path", "page leg keeps its form path"), check("grid-path", "grid leg keeps its grid path"), check("health-path", "health leg keeps its health path"), check("op-405-body", "wrong-way legs send the 405 op body"), check("method-not-allowed-body", "wrong-way legs answer Method Not Allowed"), check("unknown-count", "four unknown legs exist"), check("wrong-method-count", "seven wrong-way legs exist"), check("status-not-found", "unknown legs use 404"), check("status-method-not-allowed", "wrong-way legs use 405")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/adapter-routes-base" => ok [expected_check("save-path", "/api/tenants/1/invoices/7"), expected_check("form-path", "/tenants/1/invoices/7"), expected_check("unknown-note-first", "unknown GET"), expected_check("unknown-path-first", "/no-such-path"), expected_check("unknown-note-last", "trailing slash"), expected_check("unknown-suffix-deep", "/extra/deep"), expected_check("unknown-prefix-path", "/api/tenants/1/invoices"), expected_check("op-404-body", "{\"operation_id\":\"op-404\"}"), expected_check("not-found-body", "Not Found"), expected_check("wrong-note-first", "api delete"), expected_check("wrong-note-last", "health post"), expected_check("allow-sorted-pair", "GET, POST"), expected_check("allow-header-name", "Allow"), expected_check("page-path", "/invoices/form?tenant_id=1&invoice_id=7"), expected_check("grid-path", "/invoice-grid?tenant=1&invoice=7"), expected_check("health-path", "/health"), expected_check("op-405-body", "{\"operation_id\":\"op-405\"}"), expected_check("method-not-allowed-body", "Method Not Allowed"), expected_check("unknown-count", "4"), expected_check("wrong-method-count", "7"), expected_check("status-not-found", "404"), expected_check("status-method-not-allowed", "405")]
+        unknown: "nope" => ok []
+    match case is "life/adapter-routes-base"
+        false => ok []
+        true => ok [expected_check("save-path", "/api/tenants/1/invoices/7"), expected_check("form-path", "/tenants/1/invoices/7"), expected_check("unknown-note-first", "unknown GET"), expected_check("unknown-path-first", "/no-such-path"), expected_check("unknown-note-last", "trailing slash"), expected_check("unknown-suffix-deep", "/extra/deep"), expected_check("unknown-prefix-path", "/api/tenants/1/invoices"), expected_check("op-404-body", "{\"operation_id\":\"op-404\"}"), expected_check("not-found-body", "Not Found"), expected_check("wrong-note-first", "api delete"), expected_check("wrong-note-last", "health post"), expected_check("allow-sorted-pair", "GET, POST"), expected_check("allow-header-name", "Allow"), expected_check("page-path", "/invoices/form?tenant_id=1&invoice_id=7"), expected_check("grid-path", "/invoice-grid?tenant=1&invoice=7"), expected_check("health-path", "/health"), expected_check("op-405-body", "{\"operation_id\":\"op-405\"}"), expected_check("method-not-allowed-body", "Method Not Allowed"), expected_check("unknown-count", "4"), expected_check("wrong-method-count", "7"), expected_check("status-not-found", "404"), expected_check("status-method-not-allowed", "405")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/adapter-routes-base", "default", "", "offline") => ok
+        seed_save_path: context("life/adapter-routes-base", "seed-save-path-drift", "", "offline") => failed{"save-path"}
+        seed_form_path: context("life/adapter-routes-base", "seed-form-path-drift", "", "offline") => failed{"form-path"}
+        seed_unknown_note_first: context("life/adapter-routes-base", "seed-unknown-note-first-drift", "", "offline") => failed{"unknown-note-first"}
+        seed_unknown_path_first: context("life/adapter-routes-base", "seed-unknown-path-first-drift", "", "offline") => failed{"unknown-path-first"}
+        seed_unknown_note_last: context("life/adapter-routes-base", "seed-unknown-note-last-drift", "", "offline") => failed{"unknown-note-last"}
+        seed_unknown_suffix_deep: context("life/adapter-routes-base", "seed-unknown-suffix-deep-drift", "", "offline") => failed{"unknown-suffix-deep"}
+        seed_unknown_prefix_path: context("life/adapter-routes-base", "seed-unknown-prefix-path-drift", "", "offline") => failed{"unknown-prefix-path"}
+        seed_op_404_body: context("life/adapter-routes-base", "seed-op-404-body-drift", "", "offline") => failed{"op-404-body"}
+        seed_not_found_body: context("life/adapter-routes-base", "seed-not-found-body-drift", "", "offline") => failed{"not-found-body"}
+        seed_wrong_note_first: context("life/adapter-routes-base", "seed-wrong-note-first-drift", "", "offline") => failed{"wrong-note-first"}
+        seed_wrong_note_last: context("life/adapter-routes-base", "seed-wrong-note-last-drift", "", "offline") => failed{"wrong-note-last"}
+        seed_allow_sorted_pair: context("life/adapter-routes-base", "seed-allow-sorted-pair-drift", "", "offline") => failed{"allow-sorted-pair"}
+        seed_allow_header_name: context("life/adapter-routes-base", "seed-allow-header-name-drift", "", "offline") => failed{"allow-header-name"}
+        seed_page_path: context("life/adapter-routes-base", "seed-page-path-drift", "", "offline") => failed{"page-path"}
+        seed_grid_path: context("life/adapter-routes-base", "seed-grid-path-drift", "", "offline") => failed{"grid-path"}
+        seed_health_path: context("life/adapter-routes-base", "seed-health-path-drift", "", "offline") => failed{"health-path"}
+        seed_op_405_body: context("life/adapter-routes-base", "seed-op-405-body-drift", "", "offline") => failed{"op-405-body"}
+        seed_method_not_allowed_body: context("life/adapter-routes-base", "seed-method-not-allowed-body-drift", "", "offline") => failed{"method-not-allowed-body"}
+        seed_unknown_count: context("life/adapter-routes-base", "seed-unknown-count-drift", "", "offline") => failed{"unknown-count"}
+        seed_wrong_method_count: context("life/adapter-routes-base", "seed-wrong-method-count-drift", "", "offline") => failed{"wrong-method-count"}
+        seed_status_not_found: context("life/adapter-routes-base", "seed-status-not-found-drift", "", "offline") => failed{"status-not-found"}
+        seed_status_method_not_allowed: context("life/adapter-routes-base", "seed-status-method-not-allowed-drift", "", "offline") => failed{"status-method-not-allowed"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.save_path, "/api/tenants/1/invoices/7", c, "save-path")
+            failed
+            ok evidence save_path_evidence => match call require_text(got.form_path, "/tenants/1/invoices/7", c, "form-path")
+                failed
+                ok evidence form_path_evidence => match call require_text(got.unknown_note_first, "unknown GET", c, "unknown-note-first")
+                    failed
+                    ok evidence unknown_note_first_evidence => match call require_text(got.unknown_path_first, "/no-such-path", c, "unknown-path-first")
+                        failed
+                        ok evidence unknown_path_first_evidence => match call require_text(got.unknown_note_last, "trailing slash", c, "unknown-note-last")
+                            failed
+                            ok evidence unknown_note_last_evidence => match call require_text(got.unknown_suffix_deep, "/extra/deep", c, "unknown-suffix-deep")
+                                failed
+                                ok evidence unknown_suffix_deep_evidence => match call require_text(got.unknown_prefix_path, "/api/tenants/1/invoices", c, "unknown-prefix-path")
+                                    failed
+                                    ok evidence unknown_prefix_path_evidence => match call require_text(got.op_404_body, "{\"operation_id\":\"op-404\"}", c, "op-404-body")
+                                        failed
+                                        ok evidence op_404_body_evidence => match call require_text(got.not_found_body, "Not Found", c, "not-found-body")
+                                            failed
+                                            ok evidence not_found_body_evidence => match call require_text(got.wrong_note_first, "api delete", c, "wrong-note-first")
+                                                failed
+                                                ok evidence wrong_note_first_evidence => match call require_text(got.wrong_note_last, "health post", c, "wrong-note-last")
+                                                    failed
+                                                    ok evidence wrong_note_last_evidence => match call require_text(got.allow_sorted_pair, "GET, POST", c, "allow-sorted-pair")
+                                                        failed
+                                                        ok evidence allow_sorted_pair_evidence => match call require_text(got.allow_header_name, "Allow", c, "allow-header-name")
+                                                            failed
+                                                            ok evidence allow_header_name_evidence => match call require_text(got.page_path, "/invoices/form?tenant_id=1&invoice_id=7", c, "page-path")
+                                                                failed
+                                                                ok evidence page_path_evidence => match call require_text(got.grid_path, "/invoice-grid?tenant=1&invoice=7", c, "grid-path")
+                                                                    failed
+                                                                    ok evidence grid_path_evidence => match call require_text(got.health_path, "/health", c, "health-path")
+                                                                        failed
+                                                                        ok evidence health_path_evidence => match call require_text(got.op_405_body, "{\"operation_id\":\"op-405\"}", c, "op-405-body")
+                                                                            failed
+                                                                            ok evidence op_405_body_evidence => match call require_text(got.method_not_allowed_body, "Method Not Allowed", c, "method-not-allowed-body")
+                                                                                failed
+                                                                                ok evidence method_not_allowed_body_evidence => match call require_int(got.unknown_count, 4, c, "unknown-count")
+                                                                                    failed
+                                                                                    ok evidence unknown_count_evidence => match call require_int(got.wrong_method_count, 7, c, "wrong-method-count")
+                                                                                        failed
+                                                                                        ok evidence wrong_method_count_evidence => match call require_int(got.status_not_found, 404, c, "status-not-found")
+                                                                                            failed
+                                                                                            ok evidence status_not_found_evidence => match call require_int(got.status_method_not_allowed, 405, c, "status-method-not-allowed")
+                                                                                                failed
+                                                                                                ok evidence status_method_not_allowed_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m38_l004: "m38-l004" => ok test_case("life/adapter-routes-base", ["life", "m38"], [], 120000, [check_ref("save-path"), check_ref("form-path"), check_ref("unknown-note-first"), check_ref("unknown-path-first"), check_ref("unknown-note-last"), check_ref("unknown-suffix-deep"), check_ref("unknown-prefix-path"), check_ref("op-404-body"), check_ref("not-found-body"), check_ref("wrong-note-first"), check_ref("wrong-note-last"), check_ref("allow-sorted-pair"), check_ref("allow-header-name"), check_ref("page-path"), check_ref("grid-path"), check_ref("health-path"), check_ref("op-405-body"), check_ref("method-not-allowed-body"), check_ref("unknown-count"), check_ref("wrong-method-count"), check_ref("status-not-found"), check_ref("status-method-not-allowed")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m38-l004"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/adapter-routes-base", ["life", "m38"], [], 120000, [check_ref("save-path"), check_ref("form-path"), check_ref("unknown-note-first"), check_ref("unknown-path-first"), check_ref("unknown-note-last"), check_ref("unknown-suffix-deep"), check_ref("unknown-prefix-path"), check_ref("op-404-body"), check_ref("not-found-body"), check_ref("wrong-note-first"), check_ref("wrong-note-last"), check_ref("allow-sorted-pair"), check_ref("allow-header-name"), check_ref("page-path"), check_ref("grid-path"), check_ref("health-path"), check_ref("op-405-body"), check_ref("method-not-allowed-body"), check_ref("unknown-count"), check_ref("wrong-method-count"), check_ref("status-not-found"), check_ref("status-method-not-allowed")], callable case_body)
