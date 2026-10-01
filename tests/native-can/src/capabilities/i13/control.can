@@ -1,0 +1,318 @@
+package i13
+    provides [open_ns, read_receipt, close_ns, seed_table, pin_conn, conn_token, unpin_conn, begin_table_read, fetch_table, end_table_read, compare_cells, record_statement, read_compile, record_payload, read_payload, record_final, read_final, compare_payload_final, compare_claimed_cells, read_credit_verdict]
+    uses [db, test]
+
+/// Database-observer operation wrappers (I13): one function per
+/// operation (all db inputs are dynamic names, so no per-word
+/// split is needed). Wrappers are check-time-only: when-stubs pin
+/// the call shape and stub facts; rows execute live at the Q
+/// gate. Owners are admission-first (test::owner elides in rows).
+/// Rejection verdicts stay visible as db::db_fault{layer, code}
+/// (the adapter contract tests pin those verdicts instead).
+
+/// Open an owned namespace; reopening joins the same handle.
+fn db::namespace_receipt open_ns
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str namespace
+    asserts
+        fresh: "tenant-alpha" => ok db::namespace_receipt("tenant-alpha", "owner-a", "ns-handle:owner-a:tenant-alpha", "sha256:stub", 0)
+    match call db::open_namespace(owner, namespace)
+        when
+            fresh: owner, "tenant-alpha" => ok db::namespace_receipt("tenant-alpha", "owner-a", "ns-handle:owner-a:tenant-alpha", "sha256:stub", 0)
+        test::stale_handle
+        db::db_fault
+        ok db::namespace_receipt got => ok got
+/// Re-read a namespace receipt (digest only, never the raw token).
+fn db::namespace_receipt read_receipt
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str namespace
+    asserts
+        fresh: "tenant-alpha" => ok db::namespace_receipt("tenant-alpha", "owner-a", "ns-handle:owner-a:tenant-alpha", "sha256:stub", 1)
+    match call db::receipt(owner, namespace)
+        when
+            fresh: owner, "tenant-alpha" => ok db::namespace_receipt("tenant-alpha", "owner-a", "ns-handle:owner-a:tenant-alpha", "sha256:stub", 1)
+        test::stale_handle
+        db::db_fault
+        ok db::namespace_receipt got => ok got
+/// Close an owned namespace once its connections drain.
+fn void close_ns
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str namespace
+    asserts
+        closed: "tenant-alpha" => ok
+    match call db::close_namespace(owner, namespace)
+        when
+            closed: owner, "tenant-alpha" => ok
+        test::stale_handle
+        db::db_fault
+        ok => ok
+/// Seed exact typed cells into a table; ragged rows reject row-arity.
+fn db::seed_facts seed_table
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str namespace
+        str table
+        db::seed_row[] rows
+    asserts
+        one: "tenant-alpha", "items", [db::seed_row([db::number_cell("1.10"), db::text_cell("hi"), db::null_cell()])] => ok db::seed_facts("items", 1)
+    match call db::seed(owner, namespace, table, rows)
+        when
+            one: owner, "tenant-alpha", "items", [db::seed_row([db::number_cell("1.10"), db::text_cell("hi"), db::null_cell()])] => ok db::seed_facts("items", 1)
+        test::stale_handle
+        db::db_fault
+        ok db::seed_facts got => ok got
+/// Pin one identity-bound raw connection for a conversation.
+fn db::connection_facts pin_conn
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str namespace
+        str connection
+    asserts
+        fresh: "tenant-alpha", "raw-1" => ok db::connection_facts("raw-1", "tenant-alpha", "owner-a", "sha256:stub", true, false)
+    match call db::pin_connection(owner, namespace, connection)
+        when
+            fresh: owner, "tenant-alpha", "raw-1" => ok db::connection_facts("raw-1", "tenant-alpha", "owner-a", "sha256:stub", true, false)
+        test::stale_handle
+        db::db_fault
+        ok db::connection_facts got => ok got
+/// Reveal the raw connection token for test driving.
+fn str conn_token
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str namespace
+        str connection
+    asserts
+        fresh: "tenant-alpha", "raw-1" => ok "conn-token-stub"
+    match call db::connection_token_for_test(owner, namespace, connection)
+        when
+            fresh: owner, "tenant-alpha", "raw-1" => ok "conn-token-stub"
+        test::stale_handle
+        db::db_fault
+        ok str got => ok got
+/// Release a pinned connection by token.
+fn void unpin_conn
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str namespace
+        str connection
+        str token
+    asserts
+        freed: "tenant-alpha", "raw-1", "conn-token-stub" => ok
+    match call db::unpin_connection(owner, namespace, connection, token)
+        when
+            freed: owner, "tenant-alpha", "raw-1", "conn-token-stub" => ok
+        test::stale_handle
+        db::db_fault
+        ok => ok
+/// Open a single read conversation on a table.
+fn db::conversation_facts begin_table_read
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str namespace
+        str connection
+        str token
+        str table
+    asserts
+        fresh: "tenant-alpha", "raw-1", "conn-token-stub", "items" => ok db::conversation_facts("raw-1:items")
+    match call db::begin_read(owner, namespace, connection, token, table)
+        when
+            fresh: owner, "tenant-alpha", "raw-1", "conn-token-stub", "items" => ok db::conversation_facts("raw-1:items")
+        test::stale_handle
+        db::db_fault
+        ok db::conversation_facts got => ok got
+/// Read exact rows with per-row digests; bytes cross as copies.
+fn db::read_facts fetch_table
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str namespace
+        str connection
+        str token
+        str table
+    asserts
+        fresh: "tenant-alpha", "raw-1", "conn-token-stub", "items" => ok db::read_facts("raw-1", "tenant-alpha", "items", [db::row_facts(0, [db::number_cell("1.10")], "sha256:stub")], 1, "sha256:stub")
+    match call db::fetch(owner, namespace, connection, token, table)
+        when
+            fresh: owner, "tenant-alpha", "raw-1", "conn-token-stub", "items" => ok db::read_facts("raw-1", "tenant-alpha", "items", [db::row_facts(0, [db::number_cell("1.10")], "sha256:stub")], 1, "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::read_facts got => ok got
+/// Close the read conversation.
+fn void end_table_read
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str namespace
+        str connection
+        str token
+    asserts
+        done: "tenant-alpha", "raw-1", "conn-token-stub" => ok
+    match call db::end_read(owner, namespace, connection, token)
+        when
+            done: owner, "tenant-alpha", "raw-1", "conn-token-stub" => ok
+        test::stale_handle
+        db::db_fault
+        ok => ok
+/// Compare claimed cells tag-for-tag against stored cells; narrowing,
+/// re-encoding, dropped bytes, and null/empty confusion mismatch.
+/// Never throws: emits stale_handle only.
+fn db::row_comparison compare_cells
+    emits {test::stale_handle}
+    given
+        test::owner owner
+        db::cell[] stored
+        db::cell[] claimed
+    asserts
+        exact: [db::number_cell("1.10")], [db::number_cell("1.10")] => ok db::row_comparison(true, [])
+        narrowed: [db::number_cell("9007199254740993")], [db::number_cell("9007199254740992")] => ok db::row_comparison(false, [0])
+    match call db::compare_row(owner, stored, claimed)
+        when
+            exact: owner, [db::number_cell("1.10")], [db::number_cell("1.10")] => ok db::row_comparison(true, [])
+            narrowed: owner, [db::number_cell("9007199254740993")], [db::number_cell("9007199254740992")] => ok db::row_comparison(false, [0])
+        test::stale_handle
+        ok db::row_comparison got => ok got
+/// Record a compiled statement with its schema pin.
+fn db::compile_facts record_statement
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str fixture
+        str statement
+        str[] schema
+    asserts
+        first: "d1", "INSERT ... RETURNING id", ["number"] => ok db::compile_facts("compile-0", "d1", "sha256:stub", ["number"])
+    match call db::record_compile(owner, fixture, statement, schema)
+        when
+            first: owner, "d1", "INSERT ... RETURNING id", ["number"] => ok db::compile_facts("compile-0", "d1", "sha256:stub", ["number"])
+        test::stale_handle
+        db::db_fault
+        ok db::compile_facts got => ok got
+/// Re-read a compile record.
+fn db::compile_facts read_compile
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str compile
+    asserts
+        first: "compile-0" => ok db::compile_facts("compile-0", "d1", "sha256:stub", ["number"])
+    match call db::compile_record(owner, compile)
+        when
+            first: owner, "compile-0" => ok db::compile_facts("compile-0", "d1", "sha256:stub", ["number"])
+        test::stale_handle
+        db::db_fault
+        ok db::compile_facts got => ok got
+/// Record the RETURNING payload rows of one compile.
+fn db::returning_payload_facts record_payload
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str compile
+        db::seed_row[] rows
+    asserts
+        one: "compile-0", [db::seed_row([db::number_cell("7")])] => ok db::returning_payload_facts("compile-0", 1, [db::returning_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub")
+    match call db::record_returning(owner, compile, rows)
+        when
+            one: owner, "compile-0", [db::seed_row([db::number_cell("7")])] => ok db::returning_payload_facts("compile-0", 1, [db::returning_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::returning_payload_facts got => ok got
+/// Re-read RETURNING payload facts.
+fn db::returning_payload_facts read_payload
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str compile
+    asserts
+        first: "compile-0" => ok db::returning_payload_facts("compile-0", 1, [db::returning_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub")
+    match call db::payload_facts(owner, compile)
+        when
+            first: owner, "compile-0" => ok db::returning_payload_facts("compile-0", 1, [db::returning_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::returning_payload_facts got => ok got
+/// Record final table rows beside the payload.
+fn db::final_rows_facts record_final
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str compile
+        db::seed_row[] rows
+    asserts
+        one: "compile-0", [db::seed_row([db::number_cell("7")])] => ok db::final_rows_facts("compile-0", 1, [db::returning_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub")
+    match call db::record_final_rows(owner, compile, rows)
+        when
+            one: owner, "compile-0", [db::seed_row([db::number_cell("7")])] => ok db::final_rows_facts("compile-0", 1, [db::returning_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::final_rows_facts got => ok got
+/// Re-read final-row facts.
+fn db::final_rows_facts read_final
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str compile
+    asserts
+        first: "compile-0" => ok db::final_rows_facts("compile-0", 1, [db::returning_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub")
+    match call db::final_facts(owner, compile)
+        when
+            first: owner, "compile-0" => ok db::final_rows_facts("compile-0", 1, [db::returning_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::final_rows_facts got => ok got
+/// Compare payload rows against final rows of one compile;
+/// cross-compile facts reject malformed-statement.
+fn db::returning_comparison compare_payload_final
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        db::returning_payload_facts payload
+        db::final_rows_facts final
+    asserts
+        agreed: db::returning_payload_facts("compile-0", 1, [db::returning_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub"), db::final_rows_facts("compile-0", 1, [db::returning_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub") => ok db::returning_comparison(true, [])
+    match call db::compare_payload_to_final(owner, payload, final)
+        when
+            agreed: owner, db::returning_payload_facts("compile-0", 1, [db::returning_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub"), db::final_rows_facts("compile-0", 1, [db::returning_row_facts(0, [db::number_cell("7")], "sha256:stub")], "sha256:stub") => ok db::returning_comparison(true, [])
+        test::stale_handle
+        db::db_fault
+        ok db::returning_comparison got => ok got
+/// Compare claimed cells against stored payload or final cells.
+/// Never throws: emits stale_handle only.
+fn db::returning_comparison compare_claimed_cells
+    emits {test::stale_handle}
+    given
+        test::owner owner
+        db::cell[] stored
+        db::cell[] claimed
+    asserts
+        exact: [db::text_cell("a")], [db::text_cell("a")] => ok db::returning_comparison(true, [])
+        drifted: [db::text_cell("a")], [db::text_cell("b")] => ok db::returning_comparison(false, [0])
+    match call db::compare_claimed_row(owner, stored, claimed)
+        when
+            exact: owner, [db::text_cell("a")], [db::text_cell("a")] => ok db::returning_comparison(true, [])
+            drifted: owner, [db::text_cell("a")], [db::text_cell("b")] => ok db::returning_comparison(false, [0])
+        test::stale_handle
+        ok db::returning_comparison got => ok got
+/// Report the constant never-credit-C verdict: raw RETURNING
+/// alone cannot credit C; QD1 holds credit.
+fn db::returning_credit_verdict read_credit_verdict
+    emits {test::stale_handle}
+    given
+        test::owner owner
+    asserts
+        fresh: => ok db::returning_credit_verdict(false, "raw RETURNING alone cannot credit C")
+    match call db::credit_verdict(owner)
+        when
+            fresh: owner => ok db::returning_credit_verdict(false, "raw RETURNING alone cannot credit C")
+        test::stale_handle
+        ok db::returning_credit_verdict got => ok got

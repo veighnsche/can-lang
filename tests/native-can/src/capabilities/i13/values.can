@@ -1,0 +1,97 @@
+package i13
+    provides [cell_tag_known, layer_known, name_ok, name_length_ok, compile_id_ok]
+    uses [text]
+
+/// Database-observer closed vocabularies and name shapes (I13). The
+/// word sets are exactly the K22/K23 closed vocabularies (cell tags
+/// number/text/bytes/null, layers engine/driver/sql); name_ok
+/// compiles the K22 checkName charset
+/// (^[A-Za-z0-9][A-Za-z0-9_.:-]*$), name_length_ok pins the 128-code
+/// cap, and compile_id_ok compiles the K23 checkCompileId shape
+/// (^compile-[0-9]+$). The adapter re-validates at runtime and
+/// fails violations as db_fault. Regex failures relay
+/// invalid_regex/invalid_limit (patterns are static literals, so
+/// rows never see them); every assert pins a real computed answer.
+/// Length edge: the service counts UTF-16 code units while Can
+/// counts Unicode scalars, so astral-plane names differ by a hair;
+/// the adapter enforces the exact bound.
+
+/// Closed cell-tag vocabulary: exactly number/text/bytes/null.
+fn bool cell_tag_known
+    emits {}
+    given
+        str tag
+    asserts
+        number: "number" => ok true
+        text: "text" => ok true
+        bytes: "bytes" => ok true
+        null: "null" => ok true
+        string: "string" => ok false
+        empty: "" => ok false
+    match tag
+        "number" => ok true
+        "text" => ok true
+        "bytes" => ok true
+        "null" => ok true
+        _ => ok false
+/// Closed layer vocabulary: exactly engine/driver/sql.
+fn bool layer_known
+    emits {}
+    given
+        str layer
+    asserts
+        engine: "engine" => ok true
+        driver: "driver" => ok true
+        sql: "sql" => ok true
+        store: "store" => ok false
+        empty: "" => ok false
+    match layer
+        "engine" => ok true
+        "driver" => ok true
+        "sql" => ok true
+        _ => ok false
+/// K22 name charset: ^[A-Za-z0-9][A-Za-z0-9_.:-]*$ (namespaces,
+/// owners, connections, tables).
+fn bool name_ok
+    emits {text::invalid_regex, text::invalid_limit}
+    given
+        str name
+    asserts
+        tenant: "tenant-alpha" => ok true
+        dotted: "raw-1:items" => ok true
+        underscores: "owner_a.1" => ok true
+        leading_dash: "-alpha" => ok false
+        spaced: "tenant alpha" => ok false
+        empty: "" => ok false
+    match call text::compile_regex("^[A-Za-z0-9][A-Za-z0-9_.:-]*$", "")
+        text::invalid_regex
+        ok text::regex re => match call text::matches(re, name, 1)
+            text::invalid_limit
+            ok text::regex_match[] hits => ok hits.length >= 1
+/// K22 name length cap: at most 128 codes (scalars approximation).
+fn bool name_length_ok
+    emits {text::invalid_unicode}
+    given
+        str name
+    asserts
+        short: "tenant-alpha" => ok true
+        empty: "" => ok true
+    match call text::scalars(name)
+        text::invalid_unicode
+        ok int[] points => ok points.length <= 128
+/// K23 compile id shape: ^compile-[0-9]+$ (recordCompile mints compileN).
+fn bool compile_id_ok
+    emits {text::invalid_regex, text::invalid_limit}
+    given
+        str compile
+    asserts
+        zeroth: "compile-0" => ok true
+        twelfth: "compile-12" => ok true
+        bare: "compile" => ok false
+        alpha: "compile-x" => ok false
+        empty: "" => ok false
+    match call text::compile_regex("^compile-[0-9]+$", "")
+        text::invalid_regex
+        ok text::regex re => match call text::matches(re, compile, 1)
+            text::invalid_limit
+            ok text::regex_match[] hits => ok hits.length >= 1
